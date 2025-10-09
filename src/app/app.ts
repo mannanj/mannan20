@@ -1,19 +1,15 @@
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { AsyncPipe } from '@angular/common';
 import { AppState } from './store/app.state';
 import { selectHeaderText } from './store/app.selectors';
-import { HeaderComponent } from "./components/header/header.component";
+import { HeaderComponent } from "./components/header/header";
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, HeaderComponent],
+  imports: [HeaderComponent],
   template: `
-    <app-header></app-header>
-      <h1 class="text-3xl font-bold">
-      {{ headerText$ | async }}
-      </h1>
+    <header></header>
   `,
 })
 export class AppComponent {
