@@ -19,26 +19,9 @@ export class NavigationService {
     help.scrollToSection(link);
   }
 
-  /**
-   * Sets that the component is visible, they use the
-   * Link for name for consistency & simplicity.
-   * @param link 
-   * @param threshold % of the element in view
-   */
   setComponentIsVisible(link: Links): void {
     this.visibleComponent$.next(link);
   }
-
-  /**
-   * 
-   * Creates an IntersectionObserver to check if a component became
-   * visible in the page, and if so, then sets our flags accordingly
-   * and emits an update to the link subject.
-   * 
-   * @param component component to observe
-   * @param threshold number corresponding to top-level document viewport
-   * @returns 
-   */
 
   makeIntersectionObsAndSetFlags(component: Links, threshold: number): IntersectionObserver {
     return new IntersectionObserver(
