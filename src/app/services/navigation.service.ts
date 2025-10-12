@@ -14,7 +14,7 @@ export class NavigationService {
   selectedLink$: Observable<Links>;
   visibleComponent$: Observable<Links>;
   private intersectingSections = new Map<Links, IntersectionObserverEntry>();
-  private readonly sectionOrder = [Links.home, Links.about, Links.resume, Links.contact];
+  private readonly sectionOrder = [Links.home, Links.about, Links.contact];
 
   get Links() {
     return Links;

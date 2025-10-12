@@ -10,26 +10,22 @@ export function scrollToSection(section: Links): void {
 
 export function determineOffsetPx(link: Links): number {
   let offsetRatio;
-  switch(link) { 
+  switch(link) {
     case Links.home: {
       offsetRatio = 0.33;
-      break; 
+      break;
     }
     case Links.about: {
-      offsetRatio = 0.22;
-      break; 
-    }
-    case Links.resume: {
       offsetRatio = 0.17;
-      break; 
+      break;
     }
     case Links.contact: {
       offsetRatio = 0.11;
-      break; 
+      break;
     }
     default: {
       offsetRatio = 0.11;
-      break; 
+      break;
     }
   }
   return document.documentElement.clientHeight * offsetRatio;

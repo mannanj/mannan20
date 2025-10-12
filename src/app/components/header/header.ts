@@ -102,7 +102,6 @@ export class HeaderComponent {
 
   constructor(private store: Store<AppState>, public navService: NavigationService) {
     this.selectedLink$ = this.store.select(selectSelectedLink);
-    this.linksArray = [Links.home, Links.about, Links.resume, Links.contact];
-    console.log('linksarray', this.linksArray);
+    this.linksArray = [Links.home, Links.about, Links.contact];
   }
 }

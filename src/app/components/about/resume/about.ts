@@ -2,19 +2,37 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Links } from '../../models/models';
 import { NavigationService } from '../../services/navigation.service';
-import { DataService, ResumeData } from '../../services/data.service';
+import { DataService, AboutData } from '../../services/data.service';
 import { fadeIn, scaleIn, slideInLeft, slideInRight } from '../../animations/animations';
 import { BaseSectionComponent } from '../../shared/base-section.component';
 
 @Component({
-  selector: 'resume',
+  selector: 'about',
   standalone: true,
   imports: [CommonModule],
   animations: [fadeIn, scaleIn, slideInLeft, slideInRight],
   template: `
     <div #main>
-      <h1 class="text-end" @scaleIn>Resume</h1>
+      <h1 class="text-end" @scaleIn>About</h1>
       <hr @fadeIn>
+      <p class="margin-0 margin-top-25" style="font-size: 14px;" @slideInRight>
+        I am a multi-disciplinary engineer, leader, and student. I'm passionate about success through effective practice, strong communication, and asymmetric risk taking.
+      </p>
+
+      <div id="more-about">
+        <div *ngIf="displayMoreAbout" @fadeIn>
+          <p style="font-size: 14px; margin-top: 12px;">
+            I grew through a career of tight teams in fast-paced initiatives. I've had experience building unique products in a range of environments, from non-profits to government and commercial.
+          </p>
+
+          <p style="font-size: 14px; margin-top: 12px;">
+            I measure my success by the strength of those around me. My greatest passion is to distill the simple from the complex, and to find flow and trust within my teams.
+          </p>
+        </div>
+
+        <button *ngIf="!displayMoreAbout" type="button" class="collapsible" (click)="toggleDisplayMoreAbout()">more</button>
+        <button *ngIf="displayMoreAbout" type="button" class="collapsible" (click)="toggleDisplayNoMoreAbout()">less</button>
+      </div>
 
       <h2 @slideInLeft>Employment History</h2>
       <div class="section margin-top">
@@ -242,12 +260,14 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
     }
   `]
 })
-export class ResumeComponent extends BaseSectionComponent {
-  protected sectionLink = Links.resume;
+export class AboutComponent extends BaseSectionComponent {
+  protected sectionLink = Links.about;
   protected observerThreshold = 0.33;
 
-  resumeData: ResumeData | null = null;
+  aboutData: AboutData | null = null;
 
+  displayMoreAbout = false;
+  moreAboutSectionsShown = 0;
   displayMoreEd = false;
   moreEdSectionsShown = 0;
   displayMoreJobs = false;
@@ -262,9 +282,17 @@ export class ResumeComponent extends BaseSectionComponent {
     private dataService: DataService
   ) {
     super(navService);
-    this.dataService.getResumeData().subscribe(data => {
-      this.resumeData = data;
+    this.dataService.getAboutData().subscribe(data => {
+      this.aboutData = data;
     });
+  }
+
+  toggleDisplayMoreAbout(): void {
+    this.displayMoreAbout = true;
+  }
+
+  toggleDisplayNoMoreAbout(): void {
+    this.displayMoreAbout = false;
   }
 
   toggleDisplayMoreEd(): void {

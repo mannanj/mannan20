@@ -24,7 +24,7 @@ export interface Skill {
   items: string[];
 }
 
-export interface ResumeData {
+export interface AboutData {
   experiences: Experience[];
   education: Education[];
   skills: Skill[];
@@ -34,7 +34,7 @@ export interface ResumeData {
   providedIn: 'root'
 })
 export class DataService {
-  private mockResumeData: ResumeData = {
+  private mockAboutData: AboutData = {
     experiences: [
       {
         title: 'Senior Software Engineer',
@@ -90,7 +90,7 @@ export class DataService {
 
   constructor() { }
 
-  getResumeData(): Observable<ResumeData> {
-    return of(this.mockResumeData);
+  getAboutData(): Observable<AboutData> {
+    return of(this.mockAboutData);
   }
 }

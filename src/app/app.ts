@@ -7,13 +7,12 @@ import { selectSelectedLink } from './store/app.selectors';
 import { HeaderComponent } from "./components/header/header";
 import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
-import { ResumeComponent } from "./components/resume/resume";
 import { ContactComponent } from "./components/contact/contact";
 import { Links } from './models/models';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ResumeComponent, ContactComponent],
+  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent],
   template: `
     <div id="page">
       <div id="header">
@@ -27,10 +26,6 @@ import { Links } from './models/models';
 
         <div id="about">
           <about></about>
-        </div>
-
-        <div id="resume">
-          <resume></resume>
         </div>
 
         <div id="contact">
@@ -55,7 +50,6 @@ import { Links } from './models/models';
     }
 
     #home,
-    #resume,
     #contact {
       margin-top: 33vh;
     }

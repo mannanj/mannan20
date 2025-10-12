@@ -19,7 +19,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
         <a href="tel:15712288302" class="margin-top-12 margin-bottom-12">+1 (571) 228-8302</a>
         <p class="margin-0">Alexandria, Virginia</p>
       </div>
-      <button (click)="navService.goTo(navService.Links.home)" class="margin-top-50" @fadeIn>Back To Home</button>
+      <button (click)="navService.goTo(navService.Links.home)" class="margin-top-50" @fadeIn>Back to Top</button>
     </div>
   `,
   styles: []
