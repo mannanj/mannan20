@@ -30,3 +30,7 @@ export function determineOffsetPx(link: Links): number {
   }
   return document.documentElement.clientHeight * offsetRatio;
 }
+
+export function getPhoneLink(phone: string): string {
+  return 'tel:' + phone.replace(/[^0-9+]/g, '');
+}

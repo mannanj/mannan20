@@ -17,3 +17,8 @@ export const selectVisibleComponent = createSelector(
   selectAppState,
   (state: AppState) => state.visibleComponent
 );
+
+export const selectContactFormData = createSelector(
+  selectAppState,
+  (state: AppState) => state.contactFormData
+);
