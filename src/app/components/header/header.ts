@@ -1,5 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { AppState } from '../../store/app.state';
+import { Links } from '../../models/models';
+import { selectSelectedLink } from '../../store/app.selectors';
 import { NavigationService } from '../../services/navigation.service';
 
 @Component({
@@ -7,26 +12,33 @@ import { NavigationService } from '../../services/navigation.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div id="header">
+    <div id="main">
       <div id="picture">
         <img src="mannan.jpg" width="48" height="48">
       </div>
-      <div id="links" *ngIf="navService.selectedLink$ | async as link">
-        <a id="home-link" [class.selected]="link === 'home'" class="link" (click)="navService.goTo(navService.Links.home)">Home</a>
-        <a id="about-link" [class.selected]="link === 'about'" class="link" (click)="navService.goTo(navService.Links.about)">About</a>
-        <a id="resume-link" [class.selected]="link === 'resume'" class="link" (click)="navService.goTo(navService.Links.resume)">Resume</a>
-        <a id="contact-link" [class.selected]="link === 'contact'" class="link" (click)="navService.goTo(navService.Links.contact)">Contact</a>
+      <div id="links">
+        <div *ngFor="let link of linksArray">
+          <a
+            [id]="link + '-link'"
+            [class.selected]="(selectedLink$ | async) === link"
+            class="link"
+            (click)="navService.goTo(link)"
+          >
+            {{ link | titlecase }}
+          </a>
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    #header {
+    #main {
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: fixed;
       top: 0;
       width: 100vw;
+      background-color: #0b0b0b;
       border-bottom: 1px solid white;
       height: 66px;
       z-index: 99;
@@ -68,7 +80,7 @@ import { NavigationService } from '../../services/navigation.service';
       position: absolute;
       width: 0;
       height: 2px;
-      bottom: -19px;
+      bottom: -25px;
       left: 0;
       background-color: #4fc3f7;
       transition: width 0.3s ease;
@@ -85,5 +97,12 @@ import { NavigationService } from '../../services/navigation.service';
   `]
 })
 export class HeaderComponent {
-  constructor(public navService: NavigationService) {}
+  selectedLink$: Observable<Links>;
+  linksArray: Links[];
+
+  constructor(private store: Store<AppState>, public navService: NavigationService) {
+    this.selectedLink$ = this.store.select(selectSelectedLink);
+    this.linksArray = [Links.home, Links.about, Links.resume, Links.contact];
+    console.log('linksarray', this.linksArray);
+  }
 }
