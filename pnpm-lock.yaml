@@ -47,6 +47,9 @@ importers:
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0
+      '@vercel/speed-insights':
+        specifier: ^1.2.0
+        version: 1.2.0
       postcss:
         specifier: ^8.5.6
         version: 8.5.6
@@ -1934,6 +1937,29 @@ packages:
     peerDependenciesMeta:
       '@remix-run/react':
         optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
+
+  '@vercel/speed-insights@1.2.0':
+    resolution: {integrity: sha512-y9GVzrUJ2xmgtQlzFP2KhVRoCglwfRQgjyfY607aU0hh0Un6d0OUyrJkjuAlsV18qR4zfoFPs/BiIj9YDS6Wzw==}
+    peerDependencies:
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
       '@sveltejs/kit':
         optional: true
       next:
@@ -6579,6 +6605,8 @@ snapshots:
       '@types/node': 24.7.0
 
   '@vercel/analytics@1.5.0': {}
+
+  '@vercel/speed-insights@1.2.0': {}
 
   '@vitejs/plugin-basic-ssl@2.1.0(vite@7.1.5(@types/node@24.7.0)(jiti@2.6.1)(less@4.4.0)(lightningcss@1.30.1)(sass@1.90.0)(terser@5.43.1))':
     dependencies:
