@@ -15,25 +15,17 @@ import { ModalComponent } from '../../shared/modal';
     <div #main>
       <h1 class="text-end" @scaleIn>Contact</h1>
       <hr @fadeIn>
-      <div class="contact-container margin-top-60" @slideInLeft>
+      <div class="contact-container margin-top-25" @slideInLeft>
         <div class="contact-grid">
           <div class="contact-info">
-            <div class="contact-value">*****&#64;mannan.is</div>
-            <div class="contact-value margin-top-12">+1 (***) *** 8302</div>
+            <a class="contact-link" (click)="openModal()" title="Request contact info">*****&#64;mannan.is</a>
+            <a class="contact-link margin-top-8" (click)="openModal()" title="Request contact info">+1 (***) *** 8302</a>
           </div>
-          <button class="say-hello-btn" (click)="openModal()" title="Request contact info">
-            <span class="say-hello-text">Say<br>Hi</span>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-          </button>
-          <div class="emoji-container">
-            <span class="smiley-emoji">😊</span>
+          <div class="ripple-container" (click)="openModal()" title="Request contact info">
+            <div class="circle"></div>
           </div>
         </div>
-        <p class="margin-0 margin-top-24">Alexandria, Virginia</p>
+        <p class="margin-0 margin-top-12">Alexandria, Virginia</p>
       </div>
       <button (click)="navService.goTo(navService.Links.home)" class="margin-top-50" @fadeIn>Back to Top</button>
     </div>
@@ -51,9 +43,9 @@ import { ModalComponent } from '../../shared/modal';
 
     .contact-grid {
       display: grid;
-      grid-template-columns: 2.4fr 1.3fr 1fr;
+      grid-template-columns: 2fr auto;
       align-items: center;
-      gap: 42px;
+      gap: 24px;
     }
 
     .contact-info {
@@ -61,50 +53,91 @@ import { ModalComponent } from '../../shared/modal';
       flex-direction: column;
     }
 
-    .contact-value {
+    .contact-link {
       font-size: 1rem;
       letter-spacing: 0.5px;
+      color: #039be5;
+      text-decoration: none;
+      cursor: pointer;
     }
 
-    .say-hello-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      transition: transform 0.2s, opacity 0.2s;
-      opacity: 0.7;
-      font-size: 1.25rem;
-      line-height: 1.2;
-      justify-self: center;
+    .contact-link:hover {
+      color: #0277bd;
+    }
+
+    .ripple-container {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      cursor: pointer;
+      justify-self: center;
+      align-self: center;
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin-top: 20px;
     }
 
-    .say-hello-btn:hover {
-      opacity: 1;
-      transform: translateY(-2px);
-    }
-
-    .say-hello-text {
-      display: inline-block;
-      text-transform: none;
-    }
-
-    .say-hello-btn svg {
+    .circle {
       width: 18px;
       height: 18px;
-      flex-shrink: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(77, 184, 255, 1);
+      position: relative;
+      transition: all 0.3s ease;
     }
 
-    .emoji-container {
-      display: flex;
-      justify-content: flex-start;
+    .circle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 200%;
+      border-radius: 50%;
+      border: 2px solid rgba(77, 184, 255, 0.75);
+      transform: translate(-50%, -50%);
+      transition: all 0.3s ease;
     }
 
-    .smiley-emoji {
-      font-size: 2rem;
+    .circle::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      border-radius: 50%;
+      border: 2px solid rgba(77, 184, 255, 0.45);
+      transform: translate(-50%, -50%);
+      transition: all 0.3s ease;
     }
+
+    .ripple-container:hover .circle {
+      border-color: rgba(3, 155, 229, 1);
+    }
+
+    .ripple-container:hover .circle::before {
+      border-color: rgba(3, 155, 229, 0.9);
+      animation: pulse 1.5s ease-out infinite;
+    }
+
+    .ripple-container:hover .circle::after {
+      border-color: rgba(3, 155, 229, 0.6);
+      animation: pulse 1.5s ease-out infinite 0.3s;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+    }
+
   `]
 })
 export class ContactComponent extends BaseSectionComponent {
