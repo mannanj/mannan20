@@ -1,51 +1,43 @@
 # Mannan
 
-A modern full-stack application built with Angular 20 and Spring Boot.
+Full-stack portfolio built with Angular 20 and Spring Boot.
 
-## Tech Stack
+## Stack
 
-### Frontend
-- Angular 20
-- NgRx for state management
-- TypeScript
-- Tailwind CSS
+**Frontend:** Angular 20, NgRx, Tailwind CSS
+**Backend:** Spring Boot, Java REST API
 
-### Backend
-- Spring Boot
-- Java
-- REST API
+## Development
 
-## Getting Started
-
-### Frontend Development
 ```bash
-ng serve
+npm start
 ```
-Navigate to `http://localhost:4200/`
+Frontend runs at `http://localhost:4200`
 
-### Backend Development
 ```bash
-cd backend
-./mvnw spring-boot:run
+cd backend && ./mvnw spring-boot:run
+```
+Backend development server
+
+## Scripts
+
+```bash
+npm run build      # Production build
+npm run watch      # Build with auto-reload
+npm test           # Run tests
 ```
 
-## Project Structure
+## Structure
 
-- `/src` - Angular frontend source code
-- `/backend` - Spring Boot backend application
-- `/src/app/store` - NgRx state management
-- `/src/app/components` - Angular components
-- `/src/app/services` - Angular services
-
-## Building
-
-### Frontend
-```bash
-ng build
+```
+/src            # Angular frontend
+/backend        # Spring Boot API
+/src/app/store  # NgRx state
 ```
 
-### Backend
+## Deploy
+
 ```bash
-cd backend
-./run.sh
+npm i -g vercel
+vercel
 ```
