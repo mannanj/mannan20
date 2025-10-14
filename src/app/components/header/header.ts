@@ -97,11 +97,8 @@ import { NavigationService } from '../../services/navigation.service';
   `]
 })
 export class HeaderComponent {
-  selectedLink$: Observable<Links>;
-  linksArray: Links[];
+  selectedLink$: Observable<Links> = this.store.select(selectSelectedLink);
+  linksArray: Links[] = [Links.home, Links.about, Links.contact];
 
-  constructor(private store: Store<AppState>, public navService: NavigationService) {
-    this.selectedLink$ = this.store.select(selectSelectedLink);
-    this.linksArray = [Links.home, Links.about, Links.contact];
-  }
+  constructor(private store: Store<AppState>, public navService: NavigationService) {}
 }

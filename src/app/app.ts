@@ -1,14 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
-import { AppState } from './store/app.state';
-import { selectSelectedLink } from './store/app.selectors';
 import { HeaderComponent } from "./components/header/header";
 import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
 import { ContactComponent } from "./components/contact/contact";
-import { Links } from './models/models';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +14,7 @@ import { Links } from './models/models';
         <header></header>
       </div>
 
-      <div id="body" *ngIf="selectedLink$ | async">
+      <div id="body">
         <div id="home">
           <home></home>
         </div>
@@ -65,9 +60,4 @@ import { Links } from './models/models';
 })
 export class AppComponent {
   title = 'mannan';
-  selectedLink$: Observable<Links>;
-
-  constructor(private store: Store<AppState>) {
-    this.selectedLink$ = this.store.select(selectSelectedLink);
-  }
 }
