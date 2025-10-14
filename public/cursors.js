@@ -19,6 +19,8 @@
   const RECONNECT_DELAY = 3000;
   let cursorsHidden = false;
   const colorMap = window.cursorColors || ['#FF6B6B'];
+  let lastCursorSendTime = 0;
+  const CURSOR_SEND_THROTTLE = 50;
 
   function updateUsername() {
     const newUsername = window.cursorUsername || 'happy possum';
@@ -298,31 +300,42 @@
   }
 
   document.addEventListener("mousemove", (e) => {
-    updateUsername();
     updateMyCursor(e.clientX, e.clientY);
-    sendMessage({
-      type: "sync",
-      cursor: {
-        x: e.clientX,
-        y: e.clientY,
-        pointer: "mouse",
-        username: myUsername
-      }
-    });
+
+    const now = Date.now();
+    if (now - lastCursorSendTime >= CURSOR_SEND_THROTTLE) {
+      lastCursorSendTime = now;
+      updateUsername();
+      sendMessage({
+        type: "sync",
+        cursor: {
+          x: e.clientX,
+          y: e.clientY,
+          pointer: "mouse",
+          username: myUsername
+        }
+      });
+    }
   });
 
   document.addEventListener("touchmove", (e) => {
     const touch = e.touches[0];
     updateMyCursor(touch.clientX, touch.clientY);
-    sendMessage({
-      type: "sync",
-      cursor: {
-        x: touch.clientX,
-        y: touch.clientY,
-        pointer: "touch",
-        username: myUsername
-      }
-    });
+
+    const now = Date.now();
+    if (now - lastCursorSendTime >= CURSOR_SEND_THROTTLE) {
+      lastCursorSendTime = now;
+      updateUsername();
+      sendMessage({
+        type: "sync",
+        cursor: {
+          x: touch.clientX,
+          y: touch.clientY,
+          pointer: "touch",
+          username: myUsername
+        }
+      });
+    }
   });
 
   const style = document.createElement("style");

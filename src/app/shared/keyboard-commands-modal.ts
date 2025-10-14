@@ -36,7 +36,7 @@ export class KeyboardCommandsModal implements OnInit, OnDestroy {
 
   protected commands: Command[] = [
     { key: '/', description: 'Send message to others' },
-    { key: 'Esc', description: 'Hide/show multiplayer cursors' },
+    { key: 'Esc', description: 'Hide/show cursors' },
     { key: 'H', description: 'Show/hide this help' }
   ];
 
