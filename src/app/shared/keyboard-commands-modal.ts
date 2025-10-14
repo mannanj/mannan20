@@ -97,12 +97,6 @@ export class KeyboardCommandsModal implements OnInit, OnDestroy {
 
   toggleCursors() {
     this.store.dispatch(toggleCursorsVisible());
-    const event = new KeyboardEvent('keydown', {
-      key: 'Escape',
-      bubbles: true,
-      cancelable: true
-    });
-    document.dispatchEvent(event);
   }
 
   toggle() {
