@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Links } from '../../models/models';
 import { NavigationService } from '../../services/navigation.service';
-import { DataService, AboutData } from '../../services/data.service';
 import { fadeIn, scaleIn, slideInLeft, slideInRight } from '../../animations/animations';
 import { BaseSectionComponent } from '../../shared/base-section.component';
 
@@ -264,8 +263,6 @@ export class AboutComponent extends BaseSectionComponent {
   protected sectionLink = Links.about;
   protected observerThreshold = 0.33;
 
-  aboutData: AboutData | null = null;
-
   sections = new Map([
     ['About', { display: false, count: 0 }],
     ['CapitalOne', { display: false, count: 0 }],
@@ -274,14 +271,8 @@ export class AboutComponent extends BaseSectionComponent {
     ['Ed', { display: false, count: 0 }]
   ]);
 
-  constructor(
-    navService: NavigationService,
-    private dataService: DataService
-  ) {
+  constructor(navService: NavigationService) {
     super(navService);
-    this.dataService.getAboutData().subscribe(data => {
-      this.aboutData = data;
-    });
   }
 
   toggleSection(sectionName: string, expand: boolean): void {
