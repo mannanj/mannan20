@@ -93,7 +93,6 @@ export class KeyboardCommandsModal implements OnInit, OnDestroy {
       cancelable: true
     });
     document.dispatchEvent(event);
-    this.close();
   }
 
   toggleCursors() {
