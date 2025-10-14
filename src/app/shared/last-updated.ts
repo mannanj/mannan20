@@ -9,9 +9,9 @@ import { selectLastUpdated } from '../store/app.selectors';
   imports: [AsyncPipe, DatePipe],
   template: `
     @if (lastUpdated$ | async; as lastUpdated) {
-      <div class="fixed bottom-4 right-4 z-50 px-4 py-2 rounded-lg backdrop-blur-md bg-gradient-to-br from-black/60 to-black/40 border border-white/10 shadow-lg">
-        <p class="text-white text-xs font-light tracking-wide">
-          Last Updated: {{ lastUpdated | date: 'MMM d, y' }}
+      <div class="fixed bottom-0 right-2 z-50 px-2 py-1 rounded backdrop-blur-md bg-black/60">
+        <p class="text-white text-[10px] font-light italic">
+          Last Update {{ lastUpdated | date: 'MMM d, y' }}
         </p>
       </div>
     }

@@ -6,7 +6,7 @@ import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
 import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
-import { selectCursorChatPlaceholder } from './store/app.selectors';
+import { selectCursorChatPlaceholder, selectCursorUsernames } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
@@ -71,6 +71,10 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.store.select(selectCursorChatPlaceholder).subscribe(placeholder => {
       (window as any).cursorChatPlaceholder = placeholder;
+    });
+
+    this.store.select(selectCursorUsernames).subscribe(usernames => {
+      (window as any).cursorUsernames = usernames;
     });
   }
 }

@@ -57,3 +57,8 @@ export const selectCursorChatPlaceholder = createSelector(
   selectAppState,
   (state: AppState) => state.cursorChatPlaceholder
 );
+
+export const selectCursorUsernames = createSelector(
+  selectAppState,
+  (state: AppState) => state.cursorUsernames
+);

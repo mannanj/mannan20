@@ -11,12 +11,19 @@
   let chatInput = null;
   let lastMessageTime = 0;
   const MESSAGE_COOLDOWN = 5000;
+  let myUsername = null;
+
+  function getRandomUsername() {
+    const usernames = window.cursorUsernames || ['happy possum'];
+    return usernames[Math.floor(Math.random() * usernames.length)];
+  }
 
   function connect() {
     ws = new WebSocket(WS_HOST);
 
     ws.addEventListener("open", () => {
       console.log("Connected to cursor party");
+      myUsername = getRandomUsername();
       sendMessage({ type: "ping" });
     });
 
@@ -48,11 +55,15 @@
     if (!cursors.has(id)) {
       const cursorEl = document.createElement("div");
       cursorEl.className = "cursor-party-cursor";
+      const flag = cursor.country ? getFlagEmoji(cursor.country) : '';
+      const username = cursor.username || '';
+      const label = flag && username ? `${flag} ${username}` : flag || username;
+
       cursorEl.innerHTML = `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M5.65376 12.3673L5 5L12.3673 5.65376L18.2888 11.5753L12.9728 16.8913L11.5753 18.2888L5.65376 12.3673Z" fill="currentColor"/>
         </svg>
-        ${cursor.country ? `<span class="cursor-flag">${getFlagEmoji(cursor.country)}</span>` : ''}
+        ${label ? `<span class="cursor-label">${label}</span>` : ''}
       `;
       document.body.appendChild(cursorEl);
       cursors.set(id, cursorEl);
@@ -88,7 +99,7 @@
 
     setTimeout(() => {
       chatBubble.remove();
-    }, 3000);
+    }, 12000);
   }
 
   function initChat() {
@@ -171,7 +182,8 @@
       cursor: {
         x: e.clientX,
         y: e.clientY,
-        pointer: "mouse"
+        pointer: "mouse",
+        username: myUsername
       }
     });
   });
@@ -183,7 +195,8 @@
       cursor: {
         x: touch.clientX,
         y: touch.clientY,
-        pointer: "touch"
+        pointer: "touch",
+        username: myUsername
       }
     });
   });
@@ -199,17 +212,23 @@
       display: none;
     }
 
-    .cursor-flag {
+    .cursor-label {
       position: absolute;
-      left: 20px;
-      top: 0;
-      font-size: 16px;
+      left: 24px;
+      top: 2px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      white-space: nowrap;
+      font-family: Lucida Grande, sans-serif;
     }
 
     .cursor-chat-bubble {
       position: absolute;
       left: 24px;
-      top: 0;
+      top: 18px;
       background: rgba(255, 255, 255, 0.9);
       color: black;
       padding: 4px 8px;

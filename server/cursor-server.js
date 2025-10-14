@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const http = require('http');
+const geoip = require('geoip-lite');
 
 const PORT = process.env.WS_PORT || 8080;
 
@@ -12,11 +13,20 @@ const wss = new WebSocket.Server({ server });
 
 const clients = new Map();
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   const clientId = generateId();
-  clients.set(clientId, ws);
 
-  console.log(`Client connected: ${clientId} (Total: ${clients.size})`);
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+  const geo = geoip.lookup(ip);
+
+  let country = geo?.country || null;
+  if (!country && (ip === '::1' || ip === '127.0.0.1' || ip?.includes('::ffff:127.0.0.1'))) {
+    country = 'US';
+  }
+
+  clients.set(clientId, { ws, country });
+
+  console.log(`Client connected: ${clientId} from ${country || 'unknown'} (Total: ${clients.size})`);
 
   ws.on('message', (data) => {
     try {
@@ -27,10 +37,14 @@ wss.on('connection', (ws) => {
       }
 
       if (message.type === 'sync') {
+        const client = clients.get(clientId);
         broadcast({
           type: 'sync',
           id: clientId,
-          cursor: message.cursor
+          cursor: {
+            ...message.cursor,
+            country: client?.country
+          }
         }, clientId);
       }
 
@@ -59,8 +73,8 @@ wss.on('connection', (ws) => {
 function broadcast(message, excludeId) {
   const data = JSON.stringify(message);
   clients.forEach((client, id) => {
-    if (id !== excludeId && client.readyState === WebSocket.OPEN) {
-      client.send(data);
+    if (id !== excludeId && client.ws.readyState === WebSocket.OPEN) {
+      client.ws.send(data);
     }
   });
 }
