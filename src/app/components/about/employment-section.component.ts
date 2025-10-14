@@ -15,8 +15,8 @@ import { JOBS } from './about.constants';
     <content-card [data]="jobs['capitalOne']" [applyMarginTop]="true"></content-card>
 
     <div id="more-capital-one">
-      <div *ngIf="sections.capitalOne.display" class="bg-gray-100 text-black p-1.5 rounded-md" @fadeIn>
-        <p class="text-xs mt-1.5 text-black" [innerHTML]="jobs['capitalOne'].expandedContent"></p>
+      <div *ngIf="sections.capitalOne.display" class="content" @fadeIn>
+        <content-card [data]="{ description: jobs['capitalOne'].expandedContent }"></content-card>
       </div>
       <button *ngIf="!sections.capitalOne.display" type="button" class="collapsible" (click)="toggleCapitalOne(true)">more</button>
       <button *ngIf="sections.capitalOne.display" type="button" class="collapsible" (click)="toggleCapitalOne(false)">less</button>

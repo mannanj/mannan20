@@ -102,6 +102,14 @@ button:active {
   @apply bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc];
 }
 
+.content {
+  @apply bg-[#f1f1f1] text-black p-1.5 rounded-md;
+}
+
+.content p {
+  color: black;
+}
+
 .section {
   padding: 0;
 }
