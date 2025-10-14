@@ -39,7 +39,7 @@ import { ContactResultComponent } from './contact-result';
   `,
   styles: [`
     .contact-wrapper {
-      padding-bottom: 200px;
+      padding-bottom: 100px;
     }
 
     .contact-container {
