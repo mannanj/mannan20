@@ -1,13 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngrx/store';
 import { HeaderComponent } from "./components/header/header";
 import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
 import { ContactComponent } from "./components/contact/contact";
+import { LastUpdated } from "./shared/last-updated";
+import { selectCursorChatPlaceholder } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent],
+  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent, LastUpdated],
   template: `
     <div id="page">
       <div id="header">
@@ -27,6 +30,8 @@ import { ContactComponent } from "./components/contact/contact";
           <contact></contact>
         </div>
       </div>
+
+      <last-updated />
     </div>
   `,
   styles: [`
@@ -58,6 +63,14 @@ import { ContactComponent } from "./components/contact/contact";
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'mannan';
+
+  constructor(private store: Store) {}
+
+  ngOnInit() {
+    this.store.select(selectCursorChatPlaceholder).subscribe(placeholder => {
+      (window as any).cursorChatPlaceholder = placeholder;
+    });
+  }
 }

@@ -49,9 +49,16 @@ export interface AboutData {
   education: EducationInfo;
 }
 
+export interface Metadata {
+  lastUpdated: string;
+}
+
 export interface AppState {
   selectedLink: Links;
   aboutData: AboutData | null;
+  metadata: Metadata | null;
+  cursorChatPlaceholder: string;
+  cursorUsernames: string[];
 }
 
 export interface ContactResult {

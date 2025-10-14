@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Links, AboutData } from '../models/models';
+import { Links, AboutData, Metadata } from '../models/models';
 
 export const setSelectedLink = createAction(
   '[Navigation] Set Selected Link',
@@ -15,5 +15,15 @@ export const loadAboutDataSuccess = createAction(
 
 export const loadAboutDataFailure = createAction(
   '[About] Load About Data Failure',
+  props<{ error: string }>()
+);
+
+export const loadMetadataSuccess = createAction(
+  '[Metadata] Load Metadata Success',
+  props<{ metadata: Metadata }>()
+);
+
+export const loadMetadataFailure = createAction(
+  '[Metadata] Load Metadata Failure',
   props<{ error: string }>()
 );

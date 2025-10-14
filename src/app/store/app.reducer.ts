@@ -4,7 +4,9 @@ import * as AppActions from './app.actions';
 
 export const initialState: AppState = {
   selectedLink: Links.home,
-  aboutData: null
+  aboutData: null,
+  metadata: null,
+  cursorChatPlaceholder: 'say hello to your friend'
 };
 
 export const appReducer = createReducer(
@@ -16,5 +18,9 @@ export const appReducer = createReducer(
   on(AppActions.loadAboutDataSuccess, (state, { data }) => ({
     ...state,
     aboutData: data
+  })),
+  on(AppActions.loadMetadataSuccess, (state, { metadata }) => ({
+    ...state,
+    metadata
   }))
 );

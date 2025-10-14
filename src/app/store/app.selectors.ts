@@ -42,3 +42,18 @@ export const selectEducation = createSelector(
   selectAboutData,
   (data) => data?.education
 );
+
+export const selectMetadata = createSelector(
+  selectAppState,
+  (state: AppState) => state.metadata
+);
+
+export const selectLastUpdated = createSelector(
+  selectMetadata,
+  (metadata) => metadata?.lastUpdated
+);
+
+export const selectCursorChatPlaceholder = createSelector(
+  selectAppState,
+  (state: AppState) => state.cursorChatPlaceholder
+);

@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType, ROOT_EFFECTS_INIT } from '@ngrx/effects';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap, mergeMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import * as AppActions from './app.actions';
-import { AboutData } from '../models/models';
+import { AboutData, Metadata } from '../models/models';
 
 @Injectable()
 export class AppEffects {
@@ -19,6 +19,20 @@ export class AppEffects {
           map((data) => AppActions.loadAboutDataSuccess({ data })),
           catchError((error) =>
             of(AppActions.loadAboutDataFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
+
+  loadMetadata$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      mergeMap(() =>
+        this.http.get<Metadata>('data/metadata.json').pipe(
+          map((metadata) => AppActions.loadMetadataSuccess({ metadata })),
+          catchError((error) =>
+            of(AppActions.loadMetadataFailure({ error: error.message }))
           )
         )
       )
