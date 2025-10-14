@@ -49,3 +49,9 @@
 ### Task 10: Review ViewChild References
 - [ ] Verify if ViewChild references in ContactComponent are needed
 - Location: `src/app/components/contact/contact.ts`
+
+### Task 11: Rename Component Files
+- [ ] Rename all component files to remove `.component` from the file name
+- [ ] Update all imports across the codebase
+- [ ] Ensure Angular recognizes files correctly after renaming
+- Location: All `*.component.ts`, `*.component.html`, `*.component.css` files throughout the project
