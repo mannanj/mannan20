@@ -20,11 +20,11 @@ export interface ProfileItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="section" [class.margin-top]="applyMarginTop">
+    <div class="section text-inherit" [class.margin-top]="applyMarginTop">
       <a *ngIf="data.link && data.title" [href]="data.link" target="_blank">
         <b>{{ data.title }}</b>
       </a>
-      <a *ngIf="!data.link && data.title">
+      <a *ngIf="!data.link && data.title" class="text-inherit cursor-default pointer-events-none hover:text-inherit hover:transform-none">
         <b>{{ data.title }}</b>
       </a>
       <br *ngIf="data.title && data.position">
@@ -33,38 +33,23 @@ export interface ProfileItem {
 
       <p *ngIf="data.dates">{{ data.dates }}</p>
 
-      <p *ngIf="data.skills" style="font-size: 12px; font-style: italic; margin-top: 6px;">
+      <p *ngIf="data.skills" class="text-xs italic mt-1.5">
         {{ data.skills }}
       </p>
 
-      <p *ngIf="data.description" style="font-size: 12px; margin-top: 6px;" [innerHTML]="data.description"></p>
+      <p *ngIf="data.description" class="text-xs mt-1.5" [innerHTML]="data.description"></p>
 
-      <p *ngIf="data.additionalContent" style="font-size: 12px; margin-top: 6px;" [innerHTML]="data.additionalContent"></p>
+      <p *ngIf="data.additionalContent" class="text-xs mt-1.5" [innerHTML]="data.additionalContent"></p>
 
       <a *ngIf="data.downloadLink"
          [href]="data.downloadLink"
          [download]="data.downloadFilename"
-         style="color: #039be5;">
+         class="text-[#039be5]">
         {{ data.downloadLabel }}
       </a>
     </div>
   `,
   styles: [`
-    .section {
-      color: inherit;
-    }
-
-    a:not([href]) {
-      color: inherit;
-      cursor: default;
-      pointer-events: none;
-    }
-
-    a:not([href]):hover {
-      color: inherit;
-      transform: none;
-    }
-
     :host-context(.content) .section {
       color: black;
       font-size: 80%;
