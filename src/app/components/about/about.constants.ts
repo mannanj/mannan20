@@ -38,8 +38,8 @@ export const ABOUT_INTRO: AboutIntro = {
   ]
 };
 
-export const JOBS: Record<string, ProfileItem> = {
-  capitalOne: {
+export const JOBS: ProfileItem[] = [
+  {
     title: 'Capital One',
     link: 'https://www.capitalone.com/',
     dates: '2024-2025, 2021-2022',
@@ -50,7 +50,7 @@ export const JOBS: Record<string, ProfileItem> = {
 ▸ Led production security monitoring and incident response operations using Splunk and New Relic, creating custom SPL queries for threat detection, building real-time alerting dashboards, and providing 24/7 on-call support via PagerDuty to ensure rapid response to security events.<br>
 ▸ Drove platform reliability and security remediation initiatives across 3M+ DAU applications, leading Springboot upgrades and vulnerability patching programs, enhancing CI/CD pipelines to strengthen cloud security posture, and reducing API failures by 100K through systematic infrastructure improvements.`
   },
-  publicis: {
+  {
     title: 'Publicis Sapient',
     link: 'https://www.publicissapient.com/',
     dates: '2022-2023',
@@ -58,7 +58,7 @@ export const JOBS: Record<string, ProfileItem> = {
     skills: 'Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership',
     description: 'Led implementation and oversight of developers to deliver features ahead of schedule and improve company-wide velocity. Initiated and introduced major feature rewrites.'
   },
-  radiant: {
+  {
     title: 'Radiant (now Maxar)',
     link: 'https://www.maxar.com/',
     dates: '2018-2022',
@@ -66,7 +66,7 @@ export const JOBS: Record<string, ProfileItem> = {
     skills: 'Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture',
     description: 'Mid-level frontend engineer on mapping systems that informed national security needs. Champion and advocate for company culture.'
   },
-  mitre: {
+  {
     title: 'MITRE Corporation',
     link: 'https://www.mitre.org/',
     dates: '2016-2018',
@@ -74,23 +74,23 @@ export const JOBS: Record<string, ProfileItem> = {
     skills: 'Javascript, Typescript, Angular, Python, Python Django, AWS, research',
     description: 'Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages.'
   },
-  coop: {
-    title: "America's Electric Cooperatives",
-    link: 'https://www.electric.coop/',
-    dates: '2014-2016 (contract)',
-    position: 'Software Engineer',
-    skills: 'Javascript, jQuery, Python, Python-Flask, research',
-    description: 'Fullstack engineer for America\'s cooperatives. Committed to stewarding sustainability in energy generation and <a href="assets/data/documents/OMF-DR.pdf" download="OMF-Energy-Demand-Response" style="color: #039be5;">cutting edge research.</a>'
-  },
-  mealFairy: {
+  {
     title: 'Meal Fairy, LLC',
     link: 'https://meal-fairy-ce3bf.web.app/',
     dates: '2018 (self-employed)',
     position: 'Founder',
     skills: 'Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing',
     description: 'Founder for a plate to door food delivery startup in the greater Washington DC area.'
+  },
+  {
+    title: "America's Electric Cooperatives",
+    link: 'https://www.electric.coop/',
+    dates: '2014-2016 (contract)',
+    position: 'Software Engineer',
+    skills: 'Javascript, jQuery, Python, Python-Flask, research',
+    description: 'Fullstack engineer for America\'s cooperatives. Committed to stewarding sustainability in energy generation and <a href="assets/data/documents/OMF-DR.pdf" download="OMF-Energy-Demand-Response" style="color: #039be5;">cutting edge research.</a>'
   }
-};
+];
 
 export const ACTIVITIES: Record<string, ProfileItem> = {
   teaching: {

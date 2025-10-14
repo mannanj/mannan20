@@ -40,23 +40,14 @@ export class EmploymentSectionComponent {
   readonly DEFAULT_JOBS_TO_SHOW = 3;
   readonly JOBS_INCREMENT = 2;
 
-  jobsArray: ProfileItem[] = [
-    JOBS['capitalOne'],
-    JOBS['publicis'],
-    JOBS['radiant'],
-    JOBS['mitre'],
-    JOBS['mealFairy'],
-    JOBS['coop']
-  ];
-
   jobsToShow = this.DEFAULT_JOBS_TO_SHOW;
 
   get visibleJobs(): ProfileItem[] {
-    return this.jobsArray.slice(0, this.jobsToShow);
+    return JOBS.slice(0, this.jobsToShow);
   }
 
   get totalJobs(): number {
-    return this.jobsArray.length;
+    return JOBS.length;
   }
 
   showMore(): void {
