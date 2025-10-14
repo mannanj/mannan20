@@ -34,3 +34,7 @@ export function determineOffsetPx(link: Links): number {
 export function getPhoneLink(phone: string): string {
   return 'tel:' + phone.replace(/[^0-9+]/g, '');
 }
+
+export function copyToClipboard(text: string): Promise<void> {
+  return navigator.clipboard.writeText(text);
+}

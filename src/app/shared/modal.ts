@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { getPhoneLink } from '../utils/help';
+import { getPhoneLink, copyToClipboard } from '../utils/help';
 
 export interface ContactResult {
   email: string;
@@ -18,83 +18,11 @@ export interface ContactResult {
         <button class="close-btn" (click)="closeModal()">&times;</button>
 
         <div *ngIf="!showResult" class="modal-body">
-          <div class="header-text">
-            <h2 class="main-heading">Ready to collaborate?</h2>
-            <p class="sub-heading">Let's create something exceptional.</p>
-          </div>
-
-          <form (ngSubmit)="onSubmit()">
-            <button type="button" class="btn-google" disabled>
-              <svg width="18" height="18" viewBox="0 0 18 18">
-                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z"/>
-                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-              </svg>
-              Continue with Google
-            </button>
-
-            <div class="divider">
-              <span>OR</span>
-            </div>
-
-            <textarea
-              [(ngModel)]="userInput"
-              name="userInput"
-              rows="4"
-              class="form-input"
-              [placeholder]="placeholder"
-              [disabled]="isLoading"></textarea>
-
-            <div class="button-wrapper">
-              <button
-                type="submit"
-                class="btn-primary"
-                (mouseenter)="showTooltip = true"
-                (mouseleave)="showTooltip = false">
-                {{ isLoading ? 'Sending...' : 'Continue your request' }}
-              </button>
-              <div class="tooltip" *ngIf="showTooltip && !isValid()">
-                Enter a name, email or reason
-              </div>
-            </div>
-
-            <p class="privacy-text">
-              I will never reach out to you without your consent.
-            </p>
-          </form>
+          <ng-content select="[modal-form]"></ng-content>
         </div>
 
         <div *ngIf="showResult && result" class="result-view">
-          <h3>Say Hi <span aria-label="wave" title="Wave">👋</span></h3>
-          <div class="contact-result">
-            <div class="contact-item">
-              <strong>Email:</strong>
-              <a [href]="'mailto:' + result.email">{{ result.email }}</a>
-              <button class="copy-btn" (click)="copyToClipboard(result.email)" [title]="copiedEmail ? 'Copied!' : 'Copy'">
-                <svg *ngIf="!copiedEmail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <svg *ngIf="copiedEmail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </button>
-            </div>
-            <div class="contact-item">
-              <strong>Phone:</strong>
-              <a [href]="formatPhoneLink(result.phone)">{{ result.phone }}</a>
-              <button class="copy-btn" (click)="copyToClipboard(result.phone)" [title]="copiedPhone ? 'Copied!' : 'Copy'">
-                <svg *ngIf="!copiedPhone" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <svg *ngIf="copiedPhone" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </button>
-            </div>
-          </div>
+          <ng-content select="[modal-result]"></ng-content>
         </div>
       </div>
     </div>
@@ -415,78 +343,11 @@ export interface ContactResult {
 })
 export class ModalComponent {
   @Input() isOpen = false;
+  @Input() showResult = false;
+  @Input() result: ContactResult | null = null;
   @Output() close = new EventEmitter<void>();
 
-  userInput = '';
-  showResult = false;
-  isLoading = false;
-  showTooltip = false;
-  result: ContactResult | null = null;
-  copiedEmail = false;
-  copiedPhone = false;
-
-  private placeholders = [
-    'Please share your name, email, or reason for reaching out',
-    `Hi my name is John Doe and I want to chat about an AI business opportunity.
-
-My email is john.doe@aiop.com`
-  ];
-  placeholder: string;
-
-  constructor() {
-    this.placeholder = this.placeholders[Math.floor(Math.random() * this.placeholders.length)];
-  }
-
-  isValid(): boolean {
-    const trimmed = this.userInput.trim();
-    if (trimmed.includes('@')) {
-      return true;
-    }
-    const words = trimmed.split(/\s+/).filter(word => word.length > 0);
-    return words.length >= 2;
-  }
-
-  onSubmit() {
-    if (!this.isValid()) {
-      return;
-    }
-
-    console.log('Contact request submitted:', this.userInput);
-
-    this.isLoading = true;
-
-    setTimeout(() => {
-      this.isLoading = false;
-      this.showResult = true;
-      this.result = {
-        email: 'hello@mannan.is',
-        phone: '+1 (571) 228-8302'
-      };
-    }, 2000);
-  }
-
   closeModal() {
-    this.showResult = false;
-    this.isLoading = false;
-    this.result = null;
-    this.copiedEmail = false;
-    this.copiedPhone = false;
     this.close.emit();
-  }
-
-  formatPhoneLink(phone: string): string {
-    return getPhoneLink(phone);
-  }
-
-  copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text).then(() => {
-      if (text.includes('@')) {
-        this.copiedEmail = true;
-        setTimeout(() => this.copiedEmail = false, 2000);
-      } else {
-        this.copiedPhone = true;
-        setTimeout(() => this.copiedPhone = false, 2000);
-      }
-    });
   }
 }
