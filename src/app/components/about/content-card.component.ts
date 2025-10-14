@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { fadeIn } from '../../animations/animations';
 
 export interface ProfileItem {
   title?: string;
@@ -19,6 +20,7 @@ export interface ProfileItem {
   selector: 'content-card',
   standalone: true,
   imports: [CommonModule],
+  animations: [fadeIn],
   template: `
     <div class="section text-inherit" [class.margin-top]="applyMarginTop">
       <a *ngIf="data.link && data.title" [href]="data.link" target="_blank">
@@ -47,6 +49,14 @@ export interface ProfileItem {
          class="text-[#039be5]">
         {{ data.downloadLabel }}
       </a>
+
+      <div *ngIf="data.expandedContent">
+        <div *ngIf="isExpanded" class="content" @fadeIn>
+          <p class="text-xs mt-1.5" [innerHTML]="data.expandedContent"></p>
+        </div>
+        <button *ngIf="!isExpanded" type="button" class="collapsible" (click)="toggleExpanded()">more</button>
+        <button *ngIf="isExpanded" type="button" class="collapsible" (click)="toggleExpanded()">less</button>
+      </div>
     </div>
   `,
   styles: [`
@@ -71,4 +81,10 @@ export interface ProfileItem {
 export class ContentCardComponent {
   @Input() data!: ProfileItem;
   @Input() applyMarginTop = false;
+
+  isExpanded = false;
+
+  toggleExpanded(): void {
+    this.isExpanded = !this.isExpanded;
+  }
 }

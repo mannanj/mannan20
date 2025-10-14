@@ -13,15 +13,6 @@ import { JOBS } from './about.constants';
   template: `
     <h2 @slideInLeft>Employment History</h2>
     <content-card [data]="jobs['capitalOne']" [applyMarginTop]="true"></content-card>
-
-    <div id="more-capital-one">
-      <div *ngIf="sections.capitalOne.display" class="content" @fadeIn>
-        <content-card [data]="{ description: jobs['capitalOne'].expandedContent }"></content-card>
-      </div>
-      <button *ngIf="!sections.capitalOne.display" type="button" class="collapsible" (click)="toggleCapitalOne(true)">more</button>
-      <button *ngIf="sections.capitalOne.display" type="button" class="collapsible" (click)="toggleCapitalOne(false)">less</button>
-    </div>
-
     <content-card [data]="jobs['publicis']" [applyMarginTop]="true"></content-card>
     <content-card [data]="jobs['radiant']" [applyMarginTop]="true"></content-card>
 
@@ -41,19 +32,9 @@ import { JOBS } from './about.constants';
 export class EmploymentSectionComponent {
   jobs = JOBS;
 
-  sections: { capitalOne: ExpandableSection; jobs: ExpandableSection } = {
-    capitalOne: { display: false, count: 0 },
+  sections: { jobs: ExpandableSection } = {
     jobs: { display: false, count: 0 }
   };
-
-  toggleCapitalOne(expand: boolean): void {
-    this.sections.capitalOne.display = expand;
-    if (expand) {
-      this.sections.capitalOne.count += 1;
-    } else {
-      this.sections.capitalOne.count = 0;
-    }
-  }
 
   toggleJobs(expand: boolean): void {
     this.sections.jobs.display = expand;
