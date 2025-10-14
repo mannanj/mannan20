@@ -98,6 +98,10 @@ button:active {
   box-shadow: 0 4px 15px 0 rgba(3, 155, 229, 0.3);
 }
 
+.collapsible {
+  @apply bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc];
+}
+
 .section {
   padding: 0;
 }

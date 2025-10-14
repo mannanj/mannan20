@@ -18,8 +18,8 @@ import { JOBS } from './about.constants';
       <div *ngIf="sections.capitalOne.display" class="bg-gray-100 text-black p-1.5 rounded-md" @fadeIn>
         <p class="text-xs mt-1.5 text-black" [innerHTML]="jobs['capitalOne'].expandedContent"></p>
       </div>
-      <button *ngIf="!sections.capitalOne.display" type="button" class="bg-gray-200 text-gray-700 cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-gray-300" (click)="toggleCapitalOne(true)">more</button>
-      <button *ngIf="sections.capitalOne.display" type="button" class="bg-gray-200 text-gray-700 cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-gray-300" (click)="toggleCapitalOne(false)">less</button>
+      <button *ngIf="!sections.capitalOne.display" type="button" class="collapsible" (click)="toggleCapitalOne(true)">more</button>
+      <button *ngIf="sections.capitalOne.display" type="button" class="collapsible" (click)="toggleCapitalOne(false)">less</button>
     </div>
 
     <content-card [data]="jobs['publicis']" [applyMarginTop]="true"></content-card>
@@ -32,8 +32,8 @@ import { JOBS } from './about.constants';
         <content-card *ngIf="sections.jobs.count === 2"  [data]="jobs['coop']" [applyMarginTop]="true"></content-card>
       </div>
 
-      <button *ngIf="sections.jobs.count < 2" type="button" class="bg-gray-200 text-gray-700 cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-gray-300" (click)="toggleJobs(true)">more</button>
-      <button *ngIf="sections.jobs.count === 2" type="button" class="bg-gray-200 text-gray-700 cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-gray-300" (click)="toggleJobs(false)">less</button>
+      <button *ngIf="sections.jobs.count < 2" type="button" class="collapsible" (click)="toggleJobs(true)">more</button>
+      <button *ngIf="sections.jobs.count === 2" type="button" class="collapsible" (click)="toggleJobs(false)">less</button>
     </div>
   `,
   styles: []
