@@ -266,16 +266,23 @@ export class AboutComponent extends BaseSectionComponent {
 
   aboutData: AboutData | null = null;
 
-  displayMoreAbout = false;
-  moreAboutSectionsShown = 0;
-  displayMoreEd = false;
-  moreEdSectionsShown = 0;
-  displayMoreJobs = false;
-  moreJobsSectionsShown = 0;
-  displayMoreEC = false;
-  moreECSectionsShown = 0;
-  displayMoreCapitalOne = false;
-  moreCapitalOneSectionsShown = 0;
+  private sections = new Map([
+    ['About', { display: false, count: 0 }],
+    ['CapitalOne', { display: false, count: 0 }],
+    ['Jobs', { display: false, count: 0 }],
+    ['EC', { display: false, count: 0 }],
+    ['Ed', { display: false, count: 0 }]
+  ]);
+
+  get displayMoreAbout() { return this.sections.get('About')!.display; }
+  get displayMoreCapitalOne() { return this.sections.get('CapitalOne')!.display; }
+  get moreCapitalOneSectionsShown() { return this.sections.get('CapitalOne')!.count; }
+  get displayMoreJobs() { return this.sections.get('Jobs')!.display; }
+  get moreJobsSectionsShown() { return this.sections.get('Jobs')!.count; }
+  get displayMoreEC() { return this.sections.get('EC')!.display; }
+  get moreECSectionsShown() { return this.sections.get('EC')!.count; }
+  get displayMoreEd() { return this.sections.get('Ed')!.display; }
+  get moreEdSectionsShown() { return this.sections.get('Ed')!.count; }
 
   constructor(
     navService: NavigationService,
@@ -287,51 +294,55 @@ export class AboutComponent extends BaseSectionComponent {
     });
   }
 
+  toggleSection(sectionName: string, expand: boolean): void {
+    const section = this.sections.get(sectionName);
+    if (section) {
+      section.display = expand;
+      if (expand) {
+        section.count += 1;
+      } else {
+        section.count = 0;
+      }
+    }
+  }
+
   toggleDisplayMoreAbout(): void {
-    this.displayMoreAbout = true;
+    this.toggleSection('About', true);
   }
 
   toggleDisplayNoMoreAbout(): void {
-    this.displayMoreAbout = false;
+    this.toggleSection('About', false);
   }
 
   toggleDisplayMoreEd(): void {
-    this.displayMoreEd = true;
-    this.moreEdSectionsShown += 1;
+    this.toggleSection('Ed', true);
   }
 
   toggleDisplayNoMoreEd(): void {
-    this.displayMoreEd = false;
-    this.moreEdSectionsShown = 0;
+    this.toggleSection('Ed', false);
   }
 
   toggleDisplayMoreJobs(): void {
-    this.displayMoreJobs = true;
-    this.moreJobsSectionsShown += 1;
+    this.toggleSection('Jobs', true);
   }
 
   toggleDisplayNoMoreJobs(): void {
-    this.displayMoreJobs = false;
-    this.moreJobsSectionsShown = 0;
+    this.toggleSection('Jobs', false);
   }
 
   toggleDisplayMoreEC(): void {
-    this.displayMoreEC = true;
-    this.moreECSectionsShown += 1;
+    this.toggleSection('EC', true);
   }
 
   toggleDisplayNoMoreEC(): void {
-    this.displayMoreEC = false;
-    this.moreECSectionsShown = 0;
+    this.toggleSection('EC', false);
   }
 
   toggleDisplayMoreCapitalOne(): void {
-    this.displayMoreCapitalOne = true;
-    this.moreCapitalOneSectionsShown += 1;
+    this.toggleSection('CapitalOne', true);
   }
 
   toggleDisplayNoMoreCapitalOne(): void {
-    this.displayMoreCapitalOne = false;
-    this.moreCapitalOneSectionsShown = 0;
+    this.toggleSection('CapitalOne', false);
   }
 }
