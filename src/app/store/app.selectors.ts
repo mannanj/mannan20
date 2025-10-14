@@ -62,3 +62,8 @@ export const selectCursorUsername = createSelector(
   selectAppState,
   (state: AppState) => state.cursorUsername
 );
+
+export const selectActiveViewerCount = createSelector(
+  selectAppState,
+  (state: AppState) => state.activeViewerCount
+);

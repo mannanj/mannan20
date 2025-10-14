@@ -59,6 +59,7 @@ export interface AppState {
   metadata: Metadata | null;
   cursorChatPlaceholder: string;
   cursorUsername: string;
+  activeViewerCount: number;
 }
 
 export interface ContactResult {

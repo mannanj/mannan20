@@ -6,11 +6,13 @@ import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
 import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
+import { ViewerStats } from "./shared/viewer-stats";
+import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
 import { selectCursorChatPlaceholder, selectCursorUsername } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent, LastUpdated],
+  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent, LastUpdated, ViewerStats, KeyboardCommandsModal],
   template: `
     <div id="page">
       <div id="header">
@@ -31,7 +33,9 @@ import { selectCursorChatPlaceholder, selectCursorUsername } from './store/app.s
         </div>
       </div>
 
+      <viewer-stats />
       <last-updated />
+      <keyboard-commands-modal />
     </div>
   `,
   styles: [`

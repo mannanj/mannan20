@@ -37,3 +37,8 @@ export const loadCursorUsernameFailure = createAction(
   '[Cursor] Load Cursor Username Failure',
   props<{ error: string }>()
 );
+
+export const updateActiveViewerCount = createAction(
+  '[Cursor] Update Active Viewer Count',
+  props<{ count: number }>()
+);

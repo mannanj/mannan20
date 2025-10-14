@@ -7,7 +7,8 @@ export const initialState: AppState = {
   aboutData: null,
   metadata: null,
   cursorChatPlaceholder: 'say hello to your friend',
-  cursorUsername: 'happy possum'
+  cursorUsername: 'happy possum',
+  activeViewerCount: 0
 };
 
 export const appReducer = createReducer(
@@ -27,5 +28,9 @@ export const appReducer = createReducer(
   on(AppActions.loadCursorUsernameSuccess, (state, { username }) => ({
     ...state,
     cursorUsername: username
+  })),
+  on(AppActions.updateActiveViewerCount, (state, { count }) => ({
+    ...state,
+    activeViewerCount: count
   }))
 );

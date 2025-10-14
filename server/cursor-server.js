@@ -63,6 +63,10 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     clients.delete(clientId);
     console.log(`Client disconnected: ${clientId} (Total: ${clients.size})`);
+    broadcast({
+      type: 'disconnect',
+      id: clientId
+    });
   });
 
   ws.on('error', (error) => {

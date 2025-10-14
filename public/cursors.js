@@ -16,6 +16,14 @@
   let reconnectAttempts = 0;
   const MAX_RECONNECT_ATTEMPTS = 3;
   const RECONNECT_DELAY = 3000;
+  let cursorsHidden = false;
+
+  function updateUsername() {
+    const newUsername = window.cursorUsername || 'happy possum';
+    if (myUsername !== newUsername) {
+      myUsername = newUsername;
+    }
+  }
 
   function connect() {
     ws = new WebSocket(WS_HOST);
@@ -23,7 +31,7 @@
     ws.addEventListener("open", () => {
       console.log("Connected to cursor party");
       reconnectAttempts = 0;
-      myUsername = window.cursorUsername || 'happy possum';
+      updateUsername();
       sendMessage({ type: "ping" });
     });
 
@@ -36,6 +44,10 @@
 
       if (msg.type === "chat" && ENABLE_CHAT) {
         showChatMessage(msg.id, msg.message);
+      }
+
+      if (msg.type === "disconnect") {
+        removeCursor(msg.id);
       }
     });
 
@@ -73,17 +85,41 @@
       `;
       document.body.appendChild(cursorEl);
       cursors.set(id, cursorEl);
+      updateActiveViewerCount();
     }
 
     const cursorEl = cursors.get(id);
     cursorEl.style.left = cursor.x + "px";
     cursorEl.style.top = cursor.y + "px";
-    cursorEl.style.display = "block";
+    cursorEl.style.display = cursorsHidden ? "none" : "block";
+  }
 
-    clearTimeout(cursorEl.timeout);
-    cursorEl.timeout = setTimeout(() => {
-      cursorEl.style.display = "none";
-    }, 3000);
+  function removeCursor(id) {
+    const cursorEl = cursors.get(id);
+    if (cursorEl) {
+      cursorEl.remove();
+      cursors.delete(id);
+      updateActiveViewerCount();
+    }
+  }
+
+  function updateActiveViewerCount() {
+    let activeCount = 0;
+    cursors.forEach((cursorEl) => {
+      if (cursorEl.style.display !== "none") {
+        activeCount++;
+      }
+    });
+    window.activeViewerCount = activeCount;
+    window.dispatchEvent(new CustomEvent('viewerCountUpdate', { detail: activeCount }));
+  }
+
+  function toggleCursors() {
+    cursorsHidden = !cursorsHidden;
+    cursors.forEach((cursorEl) => {
+      cursorEl.style.display = cursorsHidden ? "none" : "block";
+    });
+    updateActiveViewerCount();
   }
 
   function getFlagEmoji(countryCode) {
@@ -121,8 +157,12 @@
       if (e.key === "/" && !chatVisible && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
         e.preventDefault();
         showChatInput(lastMouseEvent);
-      } else if (e.key === "Escape" && chatVisible) {
-        hideChatInput();
+      } else if (e.key === "Escape") {
+        if (chatVisible) {
+          hideChatInput();
+        } else {
+          toggleCursors();
+        }
       }
     });
   }
@@ -195,6 +235,7 @@
   }
 
   document.addEventListener("mousemove", (e) => {
+    updateUsername();
     sendMessage({
       type: "sync",
       cursor: {
