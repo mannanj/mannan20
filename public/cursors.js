@@ -170,12 +170,7 @@
   }
 
   function updateActiveViewerCount() {
-    let activeCount = 0;
-    cursors.forEach((cursorEl) => {
-      if (cursorEl.style.display !== "none") {
-        activeCount++;
-      }
-    });
+    const activeCount = cursors.size;
     window.activeViewerCount = activeCount;
     window.dispatchEvent(new CustomEvent('viewerCountUpdate', { detail: activeCount }));
   }
@@ -185,7 +180,6 @@
     cursors.forEach((cursorEl) => {
       cursorEl.style.display = cursorsHidden ? "none" : "block";
     });
-    updateActiveViewerCount();
   }
 
   function getFlagEmoji(countryCode) {
