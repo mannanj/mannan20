@@ -13,12 +13,16 @@
   const MESSAGE_COOLDOWN = 10000;
   let myUsername = null;
   let isInCooldown = false;
+  let reconnectAttempts = 0;
+  const MAX_RECONNECT_ATTEMPTS = 3;
+  const RECONNECT_DELAY = 3000;
 
   function connect() {
     ws = new WebSocket(WS_HOST);
 
     ws.addEventListener("open", () => {
       console.log("Connected to cursor party");
+      reconnectAttempts = 0;
       myUsername = window.cursorUsername || 'happy possum';
       sendMessage({ type: "ping" });
     });
@@ -37,7 +41,13 @@
 
     ws.addEventListener("close", () => {
       console.log("Disconnected from cursor party");
-      setTimeout(connect, 1000);
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts++;
+        console.log(`Reconnecting... (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+        setTimeout(connect, RECONNECT_DELAY);
+      } else {
+        console.log("Max reconnection attempts reached. Cursor party disabled.");
+      }
     });
   }
 
