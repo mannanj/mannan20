@@ -63,6 +63,8 @@ export interface AppState {
   cursorColors: string[];
   myId: string | null;
   isInitialized: boolean;
+  cursorsVisible: boolean;
+  commandsModalVisible: boolean;
 }
 
 export interface ContactResult {

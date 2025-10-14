@@ -13,7 +13,7 @@ import { selectActiveViewerCount } from '../store/app.selectors';
       <div class="flex items-center gap-2.5 text-white text-xs font-light">
         <span class="text-[#039be5]">{{ viewerCount() }} viewing</span>
         <span class="text-gray-400">•</span>
-        <span class="text-gray-300">View Commands <kbd class="px-1 py-0.5 bg-white/10 rounded text-[10px]">(H)</kbd></span>
+        <span class="text-gray-300">View Commands <kbd class="px-1 py-0.5 bg-white/10 rounded text-[10px]">H</kbd></span>
       </div>
     </div>
   `

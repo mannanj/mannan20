@@ -82,3 +82,13 @@ export const selectIsInitialized = createSelector(
   selectAppState,
   (state: AppState) => state.isInitialized
 );
+
+export const selectCursorsVisible = createSelector(
+  selectAppState,
+  (state: AppState) => state.cursorsVisible
+);
+
+export const selectCommandsModalVisible = createSelector(
+  selectAppState,
+  (state: AppState) => state.commandsModalVisible
+);

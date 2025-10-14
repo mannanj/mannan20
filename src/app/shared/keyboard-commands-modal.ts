@@ -1,9 +1,13 @@
-import { Component, signal, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { ModalComponent } from './modal';
+import { selectCommandsModalVisible } from '../store/app.selectors';
+import { toggleCommandsModal, toggleCursorsVisible } from '../store/app.actions';
 
 interface Command {
   key: string;
   description: string;
+  action: () => void;
 }
 
 @Component({
@@ -15,7 +19,8 @@ interface Command {
     <modal [isOpen]="isVisible()" (close)="close()">
       <div class="space-y-2">
         @for (command of commands; track command.key) {
-          <div class="flex items-center gap-2 p-1.5 rounded hover:bg-white/5 transition-colors">
+          <div class="flex items-center gap-2 p-1.5 rounded hover:bg-white/5 transition-colors cursor-pointer"
+               (click)="executeCommand(command)">
             <kbd class="px-2 py-1 bg-[#039be5]/20 border border-[#039be5]/40 rounded text-xs font-mono text-[#4fc3f7] min-w-[2.5rem] text-center">
               {{ command.key }}
             </kbd>
@@ -31,16 +36,33 @@ interface Command {
   }
 })
 export class KeyboardCommandsModal implements OnInit, OnDestroy {
+  private store = inject(Store);
   protected isVisible = signal(false);
   private toggleListener: (() => void) | null = null;
 
   protected commands: Command[] = [
-    { key: '/', description: 'Send message to others' },
-    { key: 'Esc', description: 'Hide/show cursors' },
-    { key: 'H', description: 'Show/hide this help' }
+    {
+      key: '/',
+      description: 'Send message to others',
+      action: () => this.openChat()
+    },
+    {
+      key: 'Esc',
+      description: 'Hide/show cursors',
+      action: () => this.toggleCursors()
+    },
+    {
+      key: 'H',
+      description: 'Show/hide this help',
+      action: () => this.toggle()
+    }
   ];
 
   ngOnInit() {
+    this.store.select(selectCommandsModalVisible).subscribe(visible => {
+      this.isVisible.set(visible);
+    });
+
     this.toggleListener = () => this.toggle();
     window.addEventListener('toggleCommandsModal', this.toggleListener);
   }
@@ -60,11 +82,37 @@ export class KeyboardCommandsModal implements OnInit, OnDestroy {
     }
   }
 
+  executeCommand(command: Command) {
+    command.action();
+  }
+
+  openChat() {
+    const event = new KeyboardEvent('keydown', {
+      key: '/',
+      bubbles: true,
+      cancelable: true
+    });
+    document.dispatchEvent(event);
+    this.close();
+  }
+
+  toggleCursors() {
+    this.store.dispatch(toggleCursorsVisible());
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true
+    });
+    document.dispatchEvent(event);
+  }
+
   toggle() {
-    this.isVisible.update(v => !v);
+    this.store.dispatch(toggleCommandsModal());
   }
 
   close() {
-    this.isVisible.set(false);
+    if (this.isVisible()) {
+      this.store.dispatch(toggleCommandsModal());
+    }
   }
 }

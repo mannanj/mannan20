@@ -182,6 +182,17 @@
     });
   }
 
+  function setCursorsVisibility(visible) {
+    cursorsHidden = !visible;
+    cursors.forEach((cursorEl) => {
+      cursorEl.style.display = visible ? "block" : "none";
+    });
+  }
+
+  window.addEventListener('cursorsVisibilityChanged', (event) => {
+    setCursorsVisibility(event.detail);
+  });
+
   function getFlagEmoji(countryCode) {
     const codePoints = countryCode
       .toUpperCase()

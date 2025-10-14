@@ -8,7 +8,7 @@ import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
-import { selectCursorChatPlaceholder, selectCursorUsername, selectCursorColors, selectMyId, selectIsInitialized } from './store/app.selectors';
+import { selectCursorChatPlaceholder, selectCursorUsername, selectCursorColors, selectMyId, selectIsInitialized, selectCursorsVisible } from './store/app.selectors';
 import { filter, take, combineLatest } from 'rxjs';
 
 @Component({
@@ -87,6 +87,11 @@ export class AppComponent implements OnInit {
 
     this.store.select(selectMyId).subscribe(myId => {
       (window as any).myId = myId;
+    });
+
+    this.store.select(selectCursorsVisible).subscribe(visible => {
+      (window as any).cursorsVisible = visible;
+      window.dispatchEvent(new CustomEvent('cursorsVisibilityChanged', { detail: visible }));
     });
 
     combineLatest([

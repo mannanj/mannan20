@@ -24,7 +24,9 @@ export const initialState: AppState = {
   activeViewerCount: 0,
   cursorColors: CURSOR_COLORS,
   myId: null,
-  isInitialized: false
+  isInitialized: false,
+  cursorsVisible: true,
+  commandsModalVisible: false
 };
 
 export const appReducer = createReducer(
@@ -56,5 +58,13 @@ export const appReducer = createReducer(
   on(AppActions.setAppInitialized, (state) => ({
     ...state,
     isInitialized: true
+  })),
+  on(AppActions.toggleCursorsVisible, (state) => ({
+    ...state,
+    cursorsVisible: !state.cursorsVisible
+  })),
+  on(AppActions.toggleCommandsModal, (state) => ({
+    ...state,
+    commandsModalVisible: !state.commandsModalVisible
   }))
 );
