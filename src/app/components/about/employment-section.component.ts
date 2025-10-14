@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContentCardComponent } from './content-card.component';
 import { fadeIn, slideInLeft } from '../../animations/animations';
-import { ExpandableSection } from './about.constants';
 import { JOBS } from './about.constants';
+import { ProfileItem } from './content-card.component';
 
 @Component({
   selector: 'employment-section',
@@ -12,36 +12,58 @@ import { JOBS } from './about.constants';
   animations: [fadeIn, slideInLeft],
   template: `
     <h2 @slideInLeft>Employment History</h2>
-    <content-card [data]="jobs['capitalOne']" [applyMarginTop]="true"></content-card>
-    <content-card [data]="jobs['publicis']" [applyMarginTop]="true"></content-card>
-    <content-card [data]="jobs['radiant']" [applyMarginTop]="true"></content-card>
+    <content-card
+      *ngFor="let job of visibleJobs; let i = index"
+      [data]="job"
+      [applyMarginTop]="true"
+      [@fadeIn]="i >= DEFAULT_JOBS_TO_SHOW ? 'in' : ''">
+    </content-card>
 
-    <div id="more-jobs">
-      <div *ngIf="sections.jobs.display" @fadeIn>
-        <content-card [data]="jobs['mitre']" [applyMarginTop]="true"></content-card>
-        <content-card [data]="jobs['mealFairy']" [applyMarginTop]="true"></content-card>
-        <content-card *ngIf="sections.jobs.count === 2"  [data]="jobs['coop']" [applyMarginTop]="true"></content-card>
-      </div>
-
-      <button *ngIf="sections.jobs.count < 2" type="button" class="collapsible" (click)="toggleJobs(true)">more</button>
-      <button *ngIf="sections.jobs.count === 2" type="button" class="collapsible" (click)="toggleJobs(false)">less</button>
-    </div>
+    <button
+      *ngIf="jobsToShow < totalJobs"
+      type="button"
+      class="collapsible"
+      (click)="showMore()">
+      more
+    </button>
+    <button
+      *ngIf="jobsToShow >= totalJobs"
+      type="button"
+      class="collapsible"
+      (click)="showLess()">
+      less
+    </button>
   `,
   styles: []
 })
 export class EmploymentSectionComponent {
-  jobs = JOBS;
+  readonly DEFAULT_JOBS_TO_SHOW = 3;
+  readonly JOBS_INCREMENT = 2;
 
-  sections: { jobs: ExpandableSection } = {
-    jobs: { display: false, count: 0 }
-  };
+  jobsArray: ProfileItem[] = [
+    JOBS['capitalOne'],
+    JOBS['publicis'],
+    JOBS['radiant'],
+    JOBS['mitre'],
+    JOBS['mealFairy'],
+    JOBS['coop']
+  ];
 
-  toggleJobs(expand: boolean): void {
-    this.sections.jobs.display = expand;
-    if (expand) {
-      this.sections.jobs.count += 1;
-    } else {
-      this.sections.jobs.count = 0;
-    }
+  jobsToShow = this.DEFAULT_JOBS_TO_SHOW;
+
+  get visibleJobs(): ProfileItem[] {
+    return this.jobsArray.slice(0, this.jobsToShow);
+  }
+
+  get totalJobs(): number {
+    return this.jobsArray.length;
+  }
+
+  showMore(): void {
+    this.jobsToShow = Math.min(this.jobsToShow + this.JOBS_INCREMENT, this.totalJobs);
+  }
+
+  showLess(): void {
+    this.jobsToShow = this.DEFAULT_JOBS_TO_SHOW;
   }
 }
