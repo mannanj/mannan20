@@ -1,10 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-export interface ContactResult {
-  email: string;
-  phone: string;
-}
+import { ContactResult } from '../models/models';
 
 @Component({
   selector: 'modal',

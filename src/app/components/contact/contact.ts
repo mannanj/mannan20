@@ -1,10 +1,10 @@
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Links } from '../../models/models';
+import { Links, ContactResult } from '../../models/models';
 import { NavigationService } from '../../services/navigation.service';
 import { scaleIn, fadeIn, slideInLeft } from '../../animations/animations';
 import { BaseSectionComponent } from '../../shared/base-section.component';
-import { ModalComponent, ContactResult } from '../../shared/modal';
+import { ModalComponent } from '../../shared/modal';
 import { ContactFormComponent } from './contact-form';
 import { ContactResultComponent } from './contact-result';
 

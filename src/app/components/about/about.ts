@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Links } from '../../models/models';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { Links, AboutIntro, ExpandableSection } from '../../models/models';
 import { NavigationService } from '../../services/navigation.service';
 import { fadeIn, scaleIn, slideInLeft, slideInRight } from '../../animations/animations';
 import { BaseSectionComponent } from '../../shared/base-section.component';
 import { EmploymentSectionComponent } from './employment-section.component';
 import { ExtracurricularsSectionComponent } from './extracurriculars-section.component';
 import { EducationSectionComponent } from './education-section.component';
-import { ABOUT_INTRO, ExpandableSection } from './about.constants';
+import { selectAboutIntro } from '../../store/app.selectors';
 
 @Component({
   selector: 'about',
@@ -19,12 +21,12 @@ import { ABOUT_INTRO, ExpandableSection } from './about.constants';
       <h1 class="text-end" @scaleIn>About</h1>
       <hr @fadeIn>
       <p class="margin-0 margin-top-25" style="font-size: 14px;" @slideInRight>
-        {{ aboutIntro.primary }}
+        {{ (aboutIntro$ | async)?.primary }}
       </p>
 
       <div id="more-about">
         <div *ngIf="aboutSection.display" @fadeIn>
-          <p *ngFor="let paragraph of aboutIntro.expanded" style="font-size: 14px; margin-top: 12px;">
+          <p *ngFor="let paragraph of (aboutIntro$ | async)?.expanded || []" style="font-size: 14px; margin-top: 12px;">
             {{ paragraph }}
           </p>
         </div>
@@ -120,11 +122,12 @@ export class AboutComponent extends BaseSectionComponent {
   protected sectionLink = Links.about;
   protected observerThreshold = 0.33;
 
-  aboutIntro = ABOUT_INTRO;
+  aboutIntro$: Observable<AboutIntro | undefined>;
   aboutSection: ExpandableSection = { display: false, count: 0 };
 
-  constructor(navService: NavigationService) {
+  constructor(navService: NavigationService, private store: Store) {
     super(navService);
+    this.aboutIntro$ = this.store.select(selectAboutIntro);
   }
 
   toggleAbout(expand: boolean): void {

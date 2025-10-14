@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import { ContentCardComponent } from './content-card.component';
 import { fadeIn, slideInLeft } from '../../animations/animations';
-import { ExpandableSection } from './about.constants';
-import { ACTIVITIES, PUBLISHED_WORKS } from './about.constants';
+import { ExpandableSection, PublishedWork, ProfileItem } from '../../models/models';
+import { selectActivities, selectPublishedWorks } from '../../store/app.selectors';
 
 @Component({
   selector: 'extracurriculars-section',
@@ -12,17 +14,17 @@ import { ACTIVITIES, PUBLISHED_WORKS } from './about.constants';
   animations: [fadeIn, slideInLeft],
   template: `
     <h2 @slideInLeft>Extracurriculars</h2>
-    <content-card [data]="activities['teaching']" [applyMarginTop]="true"></content-card>
+    <content-card *ngIf="activities$ | async" [data]="(activities$ | async)!['teaching']" [applyMarginTop]="true"></content-card>
 
     <div id="more-ec">
       <div *ngIf="section.display" @fadeIn>
-        <content-card *ngIf="section.count >= 1" [data]="activities['volunteering']" [applyMarginTop]="true"></content-card>
-        <content-card *ngIf="section.count >= 1" [data]="activities['travel']" [applyMarginTop]="true"></content-card>
-        <content-card *ngIf="section.count === 2" [data]="activities['jung']" [applyMarginTop]="true"></content-card>
+        <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['volunteering']" [applyMarginTop]="true"></content-card>
+        <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['travel']" [applyMarginTop]="true"></content-card>
+        <content-card *ngIf="section.count === 2 && (activities$ | async)" [data]="(activities$ | async)!['jung']" [applyMarginTop]="true"></content-card>
 
         <div *ngIf="section.count === 2" class="section margin-top">
           <b>Published Works</b>
-          <p *ngFor="let work of publishedWorks" style="font-size: 14px;">
+          <p *ngFor="let work of (publishedWorks$ | async) || []" style="font-size: 14px;">
             &#x2022; <a [href]="work.downloadPath" [download]="work.downloadFilename" style="color: #039be5;">{{ work.title }}</a>
           </p>
         </div>
@@ -58,10 +60,15 @@ import { ACTIVITIES, PUBLISHED_WORKS } from './about.constants';
   `]
 })
 export class ExtracurricularsSectionComponent {
-  activities = ACTIVITIES;
-  publishedWorks = PUBLISHED_WORKS;
+  activities$: Observable<Record<string, ProfileItem> | undefined>;
+  publishedWorks$: Observable<PublishedWork[] | undefined>;
 
   section: ExpandableSection = { display: false, count: 0 };
+
+  constructor(private store: Store) {
+    this.activities$ = this.store.select(selectActivities);
+    this.publishedWorks$ = this.store.select(selectPublishedWorks);
+  }
 
   toggle(expand: boolean): void {
     this.section.display = expand;

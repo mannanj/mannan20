@@ -1,4 +1,4 @@
-import { trigger, state, style, transition, animate, keyframes } from '@angular/animations';
+import { trigger, style, transition, animate, keyframes } from '@angular/animations';
 
 export const fadeIn = trigger('fadeIn', [
   transition(':enter', [
@@ -35,12 +35,5 @@ export const bounceIn = trigger('bounceIn', [
       style({ opacity: 0.9, transform: 'scale(1.05)', offset: 0.7 }),
       style({ opacity: 1, transform: 'scale(1)', offset: 1 })
     ]))
-  ])
-]);
-
-export const staggerFadeIn = trigger('staggerFadeIn', [
-  transition('* => *', [
-    style({ opacity: 0, transform: 'translateY(20px)' }),
-    animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
   ])
 ]);

@@ -2,8 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { AppState } from '../../store/app.state';
-import { Links } from '../../models/models';
+import { AppState, Links } from '../../models/models';
 import { selectSelectedLink } from '../../store/app.selectors';
 import { NavigationService } from '../../services/navigation.service';
 

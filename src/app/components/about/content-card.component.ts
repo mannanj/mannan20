@@ -1,20 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { fadeIn } from '../../animations/animations';
-
-export interface ProfileItem {
-  title?: string;
-  link?: string;
-  dates?: string;
-  position?: string;
-  skills?: string;
-  description?: string;
-  expandedContent?: string;
-  additionalContent?: string;
-  downloadLink?: string;
-  downloadLabel?: string;
-  downloadFilename?: string;
-}
+import { ProfileItem } from '../../models/models';
 
 @Component({
   selector: 'content-card',

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ContactResult } from '../../shared/modal';
+import { ContactResult } from '../../models/models';
 import * as help from '../../utils/help';
 
 @Component({

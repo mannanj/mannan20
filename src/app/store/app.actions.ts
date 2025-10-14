@@ -1,23 +1,19 @@
 import { createAction, props } from '@ngrx/store';
-import { Links } from '../models/models';
-import { ContactFormData } from './app.state';
-
-export const setHeaderText = createAction(
-  '[App] Set Header Text',
-  props<{ text: string }>()
-);
+import { Links, AboutData } from '../models/models';
 
 export const setSelectedLink = createAction(
   '[Navigation] Set Selected Link',
   props<{ link: Links }>()
 );
 
-export const setVisibleComponent = createAction(
-  '[Navigation] Set Visible Component',
-  props<{ link: Links }>()
+export const loadAboutData = createAction('[About] Load About Data');
+
+export const loadAboutDataSuccess = createAction(
+  '[About] Load About Data Success',
+  props<{ data: AboutData }>()
 );
 
-export const updateContactFormData = createAction(
-  '[Contact] Update Form Data',
-  props<{ formData: Partial<ContactFormData> }>()
+export const loadAboutDataFailure = createAction(
+  '[About] Load About Data Failure',
+  props<{ error: string }>()
 );

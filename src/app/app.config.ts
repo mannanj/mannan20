@@ -1,18 +1,20 @@
 import { ApplicationConfig, provideZoneChangeDetection, isDevMode } from '@angular/core';
-import { provideRouter } from '@angular/router';
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideHttpClient } from '@angular/common/http';
 
 import { appReducer } from './store/app.reducer';
+import { AppEffects } from './store/app.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideAnimations(),
+    provideHttpClient(),
     provideStore({ app: appReducer }),
-    provideEffects(),
+    provideEffects([AppEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode()
