@@ -1,6 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Store } from '@ngrx/store';
 import { HeaderComponent } from "./components/header/header";
 import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
@@ -8,8 +7,6 @@ import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
-import { selectCursorChatPlaceholder, selectCursorUsername, selectCursorColors, selectMyId, selectIsInitialized, selectCursorsVisible } from './store/app.selectors';
-import { filter, take, combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -68,43 +65,6 @@ import { filter, take, combineLatest } from 'rxjs';
     }
   `]
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'mannan';
-  private store = inject(Store);
-
-  ngOnInit() {
-    this.store.select(selectCursorChatPlaceholder).subscribe(placeholder => {
-      (window as any).cursorChatPlaceholder = placeholder;
-    });
-
-    this.store.select(selectCursorUsername).subscribe(username => {
-      (window as any).cursorUsername = username;
-    });
-
-    this.store.select(selectCursorColors).subscribe(colors => {
-      (window as any).cursorColors = colors;
-    });
-
-    this.store.select(selectMyId).subscribe(myId => {
-      (window as any).myId = myId;
-    });
-
-    this.store.select(selectCursorsVisible).subscribe(visible => {
-      (window as any).cursorsVisible = visible;
-      window.dispatchEvent(new CustomEvent('cursorsVisibilityChanged', { detail: visible }));
-    });
-
-    combineLatest([
-      this.store.select(selectIsInitialized),
-      this.store.select(selectCursorUsername),
-      this.store.select(selectCursorColors)
-    ]).pipe(
-      filter(([isInitialized]) => isInitialized),
-      take(1)
-    ).subscribe(() => {
-      const script = document.createElement('script');
-      script.src = 'cursors.js';
-      document.body.appendChild(script);
-    });
-  }
 }

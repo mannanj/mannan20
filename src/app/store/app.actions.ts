@@ -50,6 +50,8 @@ export const setMyId = createAction(
 
 export const setAppInitialized = createAction('[App] Set App Initialized');
 
+export const setCursorDataInitialized = createAction('[Cursor] Set Cursor Data Initialized');
+
 export const toggleCursorsVisible = createAction('[Cursor] Toggle Cursors Visible');
 
 export const toggleCommandsModal = createAction('[Commands] Toggle Commands Modal');
