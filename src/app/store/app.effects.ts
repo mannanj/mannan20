@@ -38,4 +38,18 @@ export class AppEffects {
       )
     )
   );
+
+  loadCursorUsernames$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      mergeMap(() =>
+        this.http.get<{ usernames: string[] }>('data/cursor-usernames.json').pipe(
+          map((data) => AppActions.loadCursorUsernamesSuccess({ usernames: data.usernames })),
+          catchError((error) =>
+            of(AppActions.loadCursorUsernamesFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
 }

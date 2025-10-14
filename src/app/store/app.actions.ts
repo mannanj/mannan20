@@ -27,3 +27,13 @@ export const loadMetadataFailure = createAction(
   '[Metadata] Load Metadata Failure',
   props<{ error: string }>()
 );
+
+export const loadCursorUsernamesSuccess = createAction(
+  '[Cursor] Load Cursor Usernames Success',
+  props<{ usernames: string[] }>()
+);
+
+export const loadCursorUsernamesFailure = createAction(
+  '[Cursor] Load Cursor Usernames Failure',
+  props<{ error: string }>()
+);

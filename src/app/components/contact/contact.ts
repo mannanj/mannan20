@@ -14,7 +14,7 @@ import { ContactResultComponent } from './contact-result';
   imports: [CommonModule, ModalComponent, ContactFormComponent, ContactResultComponent],
   animations: [scaleIn, fadeIn, slideInLeft],
   template: `
-    <div #main>
+    <div #main class="contact-wrapper">
       <h1 class="text-end" @scaleIn>Contact</h1>
       <hr @fadeIn>
       <div class="contact-container margin-top-25" @slideInLeft>
@@ -38,6 +38,10 @@ import { ContactResultComponent } from './contact-result';
     </modal>
   `,
   styles: [`
+    .contact-wrapper {
+      padding-bottom: 200px;
+    }
+
     .contact-container {
       display: flex;
       flex-direction: column;
