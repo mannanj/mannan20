@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngrx/store';
 import { HeaderComponent } from "./components/header/header";
 import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
@@ -7,6 +8,7 @@ import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
+import { selectIsCursorPartyConnected } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +33,9 @@ import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
         </div>
       </div>
 
-      <viewer-stats />
+      @if (isConnected()) {
+        <viewer-stats />
+      }
       <last-updated />
       <keyboard-commands-modal />
     </div>
@@ -65,6 +69,14 @@ import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'mannan';
+  private store = inject(Store);
+  protected isConnected = signal(false);
+
+  ngOnInit() {
+    this.store.select(selectIsCursorPartyConnected).subscribe(connected => {
+      this.isConnected.set(connected);
+    });
+  }
 }
