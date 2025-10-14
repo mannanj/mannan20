@@ -78,6 +78,7 @@
       reconnectAttempts = 0;
       updateUsername();
       sendMessage({ type: "ping" });
+      window.dispatchEvent(new CustomEvent('cursorPartyConnected', { detail: true }));
     });
 
     ws.addEventListener("message", (event) => {
@@ -114,6 +115,7 @@
         setTimeout(connect, RECONNECT_DELAY);
       } else {
         console.log("Max reconnection attempts reached. Cursor party disabled.");
+        window.dispatchEvent(new CustomEvent('cursorPartyConnected', { detail: false }));
       }
     });
   }

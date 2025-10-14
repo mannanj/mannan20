@@ -92,3 +92,8 @@ export const selectCommandsModalVisible = createSelector(
   selectAppState,
   (state: AppState) => state.commandsModalVisible
 );
+
+export const selectIsCursorPartyConnected = createSelector(
+  selectAppState,
+  (state: AppState) => state.isCursorPartyConnected
+);

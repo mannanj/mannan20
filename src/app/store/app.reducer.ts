@@ -26,7 +26,8 @@ export const initialState: AppState = {
   myId: null,
   isInitialized: false,
   cursorsVisible: true,
-  commandsModalVisible: false
+  commandsModalVisible: false,
+  isCursorPartyConnected: false
 };
 
 export const appReducer = createReducer(
@@ -66,5 +67,9 @@ export const appReducer = createReducer(
   on(AppActions.toggleCommandsModal, (state) => ({
     ...state,
     commandsModalVisible: !state.commandsModalVisible
+  })),
+  on(AppActions.setCursorPartyConnected, (state, { connected }) => ({
+    ...state,
+    isCursorPartyConnected: connected
   }))
 );

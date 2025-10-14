@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType, ROOT_EFFECTS_INIT } from '@ngrx/effects'
 import { Store } from '@ngrx/store';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError, mergeMap, withLatestFrom, filter, tap, take } from 'rxjs/operators';
-import { of, combineLatest } from 'rxjs';
+import { of, combineLatest, fromEvent } from 'rxjs';
 import * as AppActions from './app.actions';
 import * as AppSelectors from './app.selectors';
 import { AboutData, Metadata } from '../models/models';
@@ -142,5 +142,11 @@ export class AppEffects {
       })
     ),
     { dispatch: false }
+  );
+
+  listenToCursorPartyConnection$ = createEffect(() =>
+    fromEvent<CustomEvent<boolean>>(window, 'cursorPartyConnected').pipe(
+      map(event => AppActions.setCursorPartyConnected({ connected: event.detail }))
+    )
   );
 }

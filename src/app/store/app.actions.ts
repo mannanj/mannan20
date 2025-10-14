@@ -55,3 +55,8 @@ export const setCursorDataInitialized = createAction('[Cursor] Set Cursor Data I
 export const toggleCursorsVisible = createAction('[Cursor] Toggle Cursors Visible');
 
 export const toggleCommandsModal = createAction('[Commands] Toggle Commands Modal');
+
+export const setCursorPartyConnected = createAction(
+  '[Cursor Party] Set Connected',
+  props<{ connected: boolean }>()
+);

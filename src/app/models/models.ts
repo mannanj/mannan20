@@ -65,6 +65,7 @@ export interface AppState {
   isInitialized: boolean;
   cursorsVisible: boolean;
   commandsModalVisible: boolean;
+  isCursorPartyConnected: boolean;
 }
 
 export interface ContactResult {
