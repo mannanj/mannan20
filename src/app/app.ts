@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { HeaderComponent } from "./components/header/header";
@@ -6,7 +6,7 @@ import { HomeComponent } from "./components/home/home";
 import { AboutComponent } from "./components/about/about";
 import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
-import { selectCursorChatPlaceholder, selectCursorUsernames } from './store/app.selectors';
+import { selectCursorChatPlaceholder, selectCursorUsername } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
@@ -65,16 +65,15 @@ import { selectCursorChatPlaceholder, selectCursorUsernames } from './store/app.
 })
 export class AppComponent implements OnInit {
   title = 'mannan';
-
-  constructor(private store: Store) {}
+  private store = inject(Store);
 
   ngOnInit() {
     this.store.select(selectCursorChatPlaceholder).subscribe(placeholder => {
       (window as any).cursorChatPlaceholder = placeholder;
     });
 
-    this.store.select(selectCursorUsernames).subscribe(usernames => {
-      (window as any).cursorUsernames = usernames;
+    this.store.select(selectCursorUsername).subscribe(username => {
+      (window as any).cursorUsername = username;
     });
   }
 }

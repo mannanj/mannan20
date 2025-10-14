@@ -58,7 +58,7 @@ export interface AppState {
   aboutData: AboutData | null;
   metadata: Metadata | null;
   cursorChatPlaceholder: string;
-  cursorUsernames: string[];
+  cursorUsername: string;
 }
 
 export interface ContactResult {

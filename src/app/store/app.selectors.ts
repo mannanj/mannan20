@@ -58,7 +58,7 @@ export const selectCursorChatPlaceholder = createSelector(
   (state: AppState) => state.cursorChatPlaceholder
 );
 
-export const selectCursorUsernames = createSelector(
+export const selectCursorUsername = createSelector(
   selectAppState,
-  (state: AppState) => state.cursorUsernames
+  (state: AppState) => state.cursorUsername
 );

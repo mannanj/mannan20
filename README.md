@@ -1,43 +1,51 @@
-# Mannan
+# Mannan Portfolio
 
-Full-stack portfolio built with Angular 20 and Spring Boot.
+Full-stack portfolio with Angular 20 frontend, Spring Boot backend, and real-time cursor tracking.
 
-## Stack
+## Tech Stack
 
-**Frontend:** Angular 20, NgRx, Tailwind CSS
-**Backend:** Spring Boot, Java REST API
+- **Frontend**: Angular 20, NgRx, Signals, Tailwind CSS 4
+- **Backend**: Spring Boot 3.5.6, Java 25
+- **Features**: WebSocket cursor tracking, Vercel Analytics
 
-## Development
+## Quick Start
 
+Frontend (http://localhost:4200):
 ```bash
 npm start
 ```
-Frontend runs at `http://localhost:4200`
 
+Backend (http://localhost:8080):
 ```bash
 cd backend && ./mvnw spring-boot:run
 ```
-Backend development server
 
-## Scripts
+WebSocket Server:
+```bash
+npm run ws-server
+```
+
+## Project Structure
+
+```
+/src                  Angular frontend
+/src/app/components   UI components (home, about, contact, header)
+/src/app/store        NgRx state management
+/src/app/services     Data and navigation services
+/backend              Spring Boot REST API
+/server               WebSocket cursor server
+```
+
+## Available Commands
 
 ```bash
-npm run build      # Production build
-npm run watch      # Build with auto-reload
-npm test           # Run tests
+npm run build    Production build
+npm run watch    Dev build with auto-reload
+npm test         Run tests
 ```
 
-## Structure
-
-```
-/src            # Angular frontend
-/backend        # Spring Boot API
-/src/app/store  # NgRx state
-```
-
-## Deploy
+## Deployment
 
 ```bash
-npm i -g vercel
 vercel
 ```

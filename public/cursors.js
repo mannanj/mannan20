@@ -10,20 +10,16 @@
   let chatVisible = false;
   let chatInput = null;
   let lastMessageTime = 0;
-  const MESSAGE_COOLDOWN = 5000;
+  const MESSAGE_COOLDOWN = 10000;
   let myUsername = null;
-
-  function getRandomUsername() {
-    const usernames = window.cursorUsernames || ['happy possum'];
-    return usernames[Math.floor(Math.random() * usernames.length)];
-  }
+  let isInCooldown = false;
 
   function connect() {
     ws = new WebSocket(WS_HOST);
 
     ws.addEventListener("open", () => {
       console.log("Connected to cursor party");
-      myUsername = getRandomUsername();
+      myUsername = window.cursorUsername || 'happy possum';
       sendMessage({ type: "ping" });
     });
 
@@ -125,37 +121,46 @@
     chatVisible = true;
     chatInput = document.createElement("input");
     chatInput.className = "cursor-chat-input";
-    chatInput.placeholder = window.cursorChatPlaceholder || "send a message to your friend";
+
+    const now = Date.now();
+    const timeSinceLastMessage = now - lastMessageTime;
+
+    if (lastMessageTime > 0 && timeSinceLastMessage < MESSAGE_COOLDOWN) {
+      isInCooldown = true;
+      chatInput.disabled = true;
+      chatInput.placeholder = `must wait 10s before sending another message`;
+      const remainingTime = MESSAGE_COOLDOWN - timeSinceLastMessage;
+      setTimeout(() => {
+        if (chatInput) {
+          chatInput.disabled = false;
+          chatInput.placeholder = window.cursorChatPlaceholder || "send a message to your friend";
+          isInCooldown = false;
+          chatInput.focus();
+        }
+      }, remainingTime);
+    } else {
+      chatInput.placeholder = window.cursorChatPlaceholder || "send a message to your friend";
+    }
+
     chatInput.style.left = (e ? e.clientX : window.innerWidth / 2) + 'px';
     chatInput.style.top = (e ? e.clientY + 20 : window.innerHeight / 2) + 'px';
     document.body.appendChild(chatInput);
-    chatInput.focus();
+    if (!chatInput.disabled) {
+      chatInput.focus();
+    }
 
     chatInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
+        if (chatInput.disabled) {
+          return;
+        }
         const text = chatInput.value.trim();
         if (text) {
-          const now = Date.now();
-          const timeSinceLastMessage = now - lastMessageTime;
-
-          if (timeSinceLastMessage < MESSAGE_COOLDOWN) {
-            chatInput.disabled = true;
-            chatInput.placeholder = `slow down happy possum`;
-            const remainingTime = MESSAGE_COOLDOWN - timeSinceLastMessage;
-            setTimeout(() => {
-              if (chatInput) {
-                chatInput.disabled = false;
-                chatInput.placeholder = window.cursorChatPlaceholder || "send a message to your friend";
-              }
-            }, remainingTime);
-            return;
-          }
-
           sendMessage({
             type: "chat",
-            message: { text, timestamp: now }
+            message: { text, timestamp: Date.now() }
           });
-          lastMessageTime = now;
+          lastMessageTime = Date.now();
         }
         hideChatInput();
       } else if (e.key === "Escape") {
@@ -164,7 +169,9 @@
     });
 
     chatInput.addEventListener("blur", () => {
-      setTimeout(hideChatInput, 100);
+      if (!isInCooldown) {
+        setTimeout(hideChatInput, 100);
+      }
     });
   }
 
@@ -174,6 +181,7 @@
       chatInput = null;
     }
     chatVisible = false;
+    isInCooldown = false;
   }
 
   document.addEventListener("mousemove", (e) => {
@@ -254,6 +262,17 @@
 
     .cursor-chat-input::placeholder {
       color: rgba(0, 0, 0, 0.5);
+    }
+
+    .cursor-chat-input:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .cursor-chat-input:disabled::placeholder {
+      color: black;
+      opacity: 1;
     }
 
     @keyframes fadeIn {

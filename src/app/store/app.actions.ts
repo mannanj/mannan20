@@ -28,12 +28,12 @@ export const loadMetadataFailure = createAction(
   props<{ error: string }>()
 );
 
-export const loadCursorUsernamesSuccess = createAction(
-  '[Cursor] Load Cursor Usernames Success',
-  props<{ usernames: string[] }>()
+export const loadCursorUsernameSuccess = createAction(
+  '[Cursor] Load Cursor Username Success',
+  props<{ username: string }>()
 );
 
-export const loadCursorUsernamesFailure = createAction(
-  '[Cursor] Load Cursor Usernames Failure',
+export const loadCursorUsernameFailure = createAction(
+  '[Cursor] Load Cursor Username Failure',
   props<{ error: string }>()
 );

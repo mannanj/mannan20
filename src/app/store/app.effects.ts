@@ -44,9 +44,12 @@ export class AppEffects {
       ofType(ROOT_EFFECTS_INIT),
       mergeMap(() =>
         this.http.get<{ usernames: string[] }>('data/cursor-usernames.json').pipe(
-          map((data) => AppActions.loadCursorUsernamesSuccess({ usernames: data.usernames })),
+          map((data) => {
+            const randomUsername = data.usernames[Math.floor(Math.random() * data.usernames.length)];
+            return AppActions.loadCursorUsernameSuccess({ username: randomUsername });
+          }),
           catchError((error) =>
-            of(AppActions.loadCursorUsernamesFailure({ error: error.message }))
+            of(AppActions.loadCursorUsernameFailure({ error: error.message }))
           )
         )
       )
