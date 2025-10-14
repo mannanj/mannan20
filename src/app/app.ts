@@ -8,7 +8,8 @@ import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
-import { selectCursorChatPlaceholder, selectCursorUsername } from './store/app.selectors';
+import { selectCursorChatPlaceholder, selectCursorUsername, selectCursorColors, selectMyId, selectIsInitialized } from './store/app.selectors';
+import { filter, take, combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -78,6 +79,27 @@ export class AppComponent implements OnInit {
 
     this.store.select(selectCursorUsername).subscribe(username => {
       (window as any).cursorUsername = username;
+    });
+
+    this.store.select(selectCursorColors).subscribe(colors => {
+      (window as any).cursorColors = colors;
+    });
+
+    this.store.select(selectMyId).subscribe(myId => {
+      (window as any).myId = myId;
+    });
+
+    combineLatest([
+      this.store.select(selectIsInitialized),
+      this.store.select(selectCursorUsername),
+      this.store.select(selectCursorColors)
+    ]).pipe(
+      filter(([isInitialized]) => isInitialized),
+      take(1)
+    ).subscribe(() => {
+      const script = document.createElement('script');
+      script.src = 'cursors.js';
+      document.body.appendChild(script);
     });
   }
 }

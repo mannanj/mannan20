@@ -60,6 +60,9 @@ export interface AppState {
   cursorChatPlaceholder: string;
   cursorUsername: string;
   activeViewerCount: number;
+  cursorColors: string[];
+  myId: string | null;
+  isInitialized: boolean;
 }
 
 export interface ContactResult {

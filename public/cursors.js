@@ -5,6 +5,7 @@
   const ENABLE_CHAT = true;
 
   const cursors = new Map();
+  const cursorOrder = [];
   let ws = null;
   let myId = null;
   let chatVisible = false;
@@ -17,6 +18,7 @@
   const MAX_RECONNECT_ATTEMPTS = 3;
   const RECONNECT_DELAY = 3000;
   let cursorsHidden = false;
+  const colorMap = window.cursorColors || ['#FF6B6B'];
 
   function updateUsername() {
     const newUsername = window.cursorUsername || 'happy possum';
@@ -37,6 +39,13 @@
 
     ws.addEventListener("message", (event) => {
       const msg = JSON.parse(event.data);
+
+      if (msg.type === "id") {
+        myId = msg.id;
+        if (!cursorOrder.includes(myId)) {
+          cursorOrder.push(myId);
+        }
+      }
 
       if (msg.type === "sync") {
         updateCursor(msg.id, msg.cursor);
@@ -71,11 +80,22 @@
 
   function updateCursor(id, cursor) {
     if (!cursors.has(id)) {
+      if (!cursorOrder.includes(id)) {
+        cursorOrder.push(id);
+      }
+
+      const colorIndex = cursorOrder.indexOf(id) % colorMap.length;
+      const color = colorMap[colorIndex];
+
       const cursorEl = document.createElement("div");
       cursorEl.className = "cursor-party-cursor";
+      cursorEl.style.color = color;
+
       const flag = cursor.country ? getFlagEmoji(cursor.country) : '';
       const username = cursor.username || '';
-      const label = flag && username ? `${flag} ${username}` : flag || username;
+      const isMe = id === myId;
+      const displayName = isMe && username ? `${username} (you)` : username;
+      const label = flag && displayName ? `${flag} ${displayName}` : flag || displayName;
 
       cursorEl.innerHTML = `
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -266,9 +286,8 @@
       position: fixed;
       pointer-events: none;
       z-index: 10000;
-      color: #ff6b6b;
       transition: left 0.1s ease-out, top 0.1s ease-out;
-      display: none;
+      display: block;
     }
 
     .cursor-label {

@@ -42,3 +42,10 @@ export const updateActiveViewerCount = createAction(
   '[Cursor] Update Active Viewer Count',
   props<{ count: number }>()
 );
+
+export const setMyId = createAction(
+  '[Cursor] Set My ID',
+  props<{ id: string }>()
+);
+
+export const setAppInitialized = createAction('[App] Set App Initialized');

@@ -33,19 +33,24 @@ wss.on('connection', (ws, req) => {
       const message = JSON.parse(data.toString());
 
       if (message.type === 'ping') {
+        ws.send(JSON.stringify({
+          type: 'id',
+          id: clientId
+        }));
         return;
       }
 
       if (message.type === 'sync') {
         const client = clients.get(clientId);
-        broadcast({
+        const syncMessage = {
           type: 'sync',
           id: clientId,
           cursor: {
             ...message.cursor,
             country: client?.country
           }
-        }, clientId);
+        };
+        broadcast(syncMessage, null);
       }
 
       if (message.type === 'chat') {

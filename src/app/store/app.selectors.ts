@@ -67,3 +67,18 @@ export const selectActiveViewerCount = createSelector(
   selectAppState,
   (state: AppState) => state.activeViewerCount
 );
+
+export const selectCursorColors = createSelector(
+  selectAppState,
+  (state: AppState) => state.cursorColors
+);
+
+export const selectMyId = createSelector(
+  selectAppState,
+  (state: AppState) => state.myId
+);
+
+export const selectIsInitialized = createSelector(
+  selectAppState,
+  (state: AppState) => state.isInitialized
+);
