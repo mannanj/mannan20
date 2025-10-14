@@ -30,8 +30,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
           </p>
         </div>
 
-        <button *ngIf="!displayMoreAbout" type="button" class="collapsible" (click)="toggleDisplayMoreAbout()">more</button>
-        <button *ngIf="displayMoreAbout" type="button" class="collapsible" (click)="toggleDisplayNoMoreAbout()">less</button>
+        <button *ngIf="!displayMoreAbout" type="button" class="collapsible" (click)="toggleSection('About', true)">more</button>
+        <button *ngIf="displayMoreAbout" type="button" class="collapsible" (click)="toggleSection('About', false)">less</button>
       </div>
 
       <h2 @slideInLeft>Employment History</h2>
@@ -50,8 +50,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
             ▸ Drove platform reliability and security remediation initiatives across 3M+ DAU applications, leading Springboot upgrades and vulnerability patching programs, enhancing CI/CD pipelines to strengthen cloud security posture, and reducing API failures by 100K through systematic infrastructure improvements.<br>
             </p>
           </div>
-          <button *ngIf="!displayMoreCapitalOne" type="button" class="collapsible" (click)="toggleDisplayMoreCapitalOne()">more</button>
-          <button *ngIf="displayMoreCapitalOne" type="button" class="collapsible" (click)="toggleDisplayNoMoreCapitalOne()">less</button>
+          <button *ngIf="!displayMoreCapitalOne" type="button" class="collapsible" (click)="toggleSection('CapitalOne', true)">more</button>
+          <button *ngIf="displayMoreCapitalOne" type="button" class="collapsible" (click)="toggleSection('CapitalOne', false)">less</button>
         </div>
       </div>
 
@@ -98,8 +98,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
           </div>
         </div>
 
-        <button *ngIf="moreJobsSectionsShown < 2" type="button" class="collapsible" (click)="toggleDisplayMoreJobs()">more</button>
-        <button *ngIf="moreJobsSectionsShown === 2" type="button" class="collapsible" (click)="toggleDisplayNoMoreJobs()">less</button>
+        <button *ngIf="moreJobsSectionsShown < 2" type="button" class="collapsible" (click)="toggleSection('Jobs', true)">more</button>
+        <button *ngIf="moreJobsSectionsShown === 2" type="button" class="collapsible" (click)="toggleSection('Jobs', false)">less</button>
       </div>
 
       <h2 @slideInLeft>Extracurriculars</h2>
@@ -142,8 +142,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
           </div>
         </div>
 
-        <button *ngIf="moreECSectionsShown < 2" type="button" class="collapsible" (click)="toggleDisplayMoreEC()">more</button>
-        <button *ngIf="moreECSectionsShown === 2" type="button" class="collapsible" (click)="toggleDisplayNoMoreEC()">less</button>
+        <button *ngIf="moreECSectionsShown < 2" type="button" class="collapsible" (click)="toggleSection('EC', true)">more</button>
+        <button *ngIf="moreECSectionsShown === 2" type="button" class="collapsible" (click)="toggleSection('EC', false)">less</button>
       </div>
 
       <h2 class="margin-top-60" @slideInLeft>Education</h2>
@@ -178,8 +178,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
               <p style="font-size: 12px; margin-top: 6px;">Designed dome light in 3D for use for external vendors outsourcing. Design was too complex to be used.</p>
             </div>
           </div>
-          <button *ngIf="moreEdSectionsShown < 2" type="button" class="collapsible" (click)="toggleDisplayMoreEd()">more</button>
-          <button *ngIf="moreEdSectionsShown === 2" type="button" class="collapsible" (click)="toggleDisplayNoMoreEd()">less</button>
+          <button *ngIf="moreEdSectionsShown < 2" type="button" class="collapsible" (click)="toggleSection('Ed', true)">more</button>
+          <button *ngIf="moreEdSectionsShown === 2" type="button" class="collapsible" (click)="toggleSection('Ed', false)">less</button>
         </div>
       </div>
 
@@ -304,45 +304,5 @@ export class AboutComponent extends BaseSectionComponent {
         section.count = 0;
       }
     }
-  }
-
-  toggleDisplayMoreAbout(): void {
-    this.toggleSection('About', true);
-  }
-
-  toggleDisplayNoMoreAbout(): void {
-    this.toggleSection('About', false);
-  }
-
-  toggleDisplayMoreEd(): void {
-    this.toggleSection('Ed', true);
-  }
-
-  toggleDisplayNoMoreEd(): void {
-    this.toggleSection('Ed', false);
-  }
-
-  toggleDisplayMoreJobs(): void {
-    this.toggleSection('Jobs', true);
-  }
-
-  toggleDisplayNoMoreJobs(): void {
-    this.toggleSection('Jobs', false);
-  }
-
-  toggleDisplayMoreEC(): void {
-    this.toggleSection('EC', true);
-  }
-
-  toggleDisplayNoMoreEC(): void {
-    this.toggleSection('EC', false);
-  }
-
-  toggleDisplayMoreCapitalOne(): void {
-    this.toggleSection('CapitalOne', true);
-  }
-
-  toggleDisplayNoMoreCapitalOne(): void {
-    this.toggleSection('CapitalOne', false);
   }
 }
