@@ -20,7 +20,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
       </p>
 
       <div id="more-about">
-        <div *ngIf="displayMoreAbout" @fadeIn>
+        <div *ngIf="sections.get('About')!.display" @fadeIn>
           <p style="font-size: 14px; margin-top: 12px;">
             I grew through a career of tight teams in fast-paced initiatives. I've had experience building unique products in a range of environments, from non-profits to government and commercial.
           </p>
@@ -30,8 +30,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
           </p>
         </div>
 
-        <button *ngIf="!displayMoreAbout" type="button" class="collapsible" (click)="toggleSection('About', true)">more</button>
-        <button *ngIf="displayMoreAbout" type="button" class="collapsible" (click)="toggleSection('About', false)">less</button>
+        <button *ngIf="!sections.get('About')!.display" type="button" class="collapsible" (click)="toggleSection('About', true)">more</button>
+        <button *ngIf="sections.get('About')!.display" type="button" class="collapsible" (click)="toggleSection('About', false)">less</button>
       </div>
 
       <h2 @slideInLeft>Employment History</h2>
@@ -43,15 +43,15 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
         <p style="font-size: 12px; margin-top: 6px;">Led security operations, remediation, and engineering for high-scale applications serving 3m+ DAU, achieving zero security incidents while delivering secure microservices and customer-facing features.</p>
 
         <div id="more-capital-one">
-          <div *ngIf="displayMoreCapitalOne" class="content" @fadeIn>
+          <div *ngIf="sections.get('CapitalOne')!.display" class="content" @fadeIn>
             <p style="font-size: 12px; margin-top: 6px;">
             ▸ Engineered high-traffic microservices and customer-facing features (Trade-In, Auto Loan Rates, SEO) using modern frameworks (Astro, SolidJS, Node.js), architecting scalable solutions serving millions of daily users with robust performance and zero production vulnerabilities.<br>
             ▸ Led production security monitoring and incident response operations using Splunk and New Relic, creating custom SPL queries for threat detection, building real-time alerting dashboards, and providing 24/7 on-call support via PagerDuty to ensure rapid response to security events.<br>
             ▸ Drove platform reliability and security remediation initiatives across 3M+ DAU applications, leading Springboot upgrades and vulnerability patching programs, enhancing CI/CD pipelines to strengthen cloud security posture, and reducing API failures by 100K through systematic infrastructure improvements.<br>
             </p>
           </div>
-          <button *ngIf="!displayMoreCapitalOne" type="button" class="collapsible" (click)="toggleSection('CapitalOne', true)">more</button>
-          <button *ngIf="displayMoreCapitalOne" type="button" class="collapsible" (click)="toggleSection('CapitalOne', false)">less</button>
+          <button *ngIf="!sections.get('CapitalOne')!.display" type="button" class="collapsible" (click)="toggleSection('CapitalOne', true)">more</button>
+          <button *ngIf="sections.get('CapitalOne')!.display" type="button" class="collapsible" (click)="toggleSection('CapitalOne', false)">less</button>
         </div>
       </div>
 
@@ -72,7 +72,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
       </div>
 
       <div id="more-jobs">
-        <div *ngIf="displayMoreJobs" @fadeIn>
+        <div *ngIf="sections.get('Jobs')!.display" @fadeIn>
           <div class="section margin-top">
             <a href="https://www.mitre.org/" target="_blank"><b>MITRE Corporation</b></a>
             <p>2016-2018</p>
@@ -81,7 +81,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
             <p style="font-size: 12px; margin-top: 6px;">Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages.</p>
           </div>
 
-          <div *ngIf="moreJobsSectionsShown >=1" class="section margin-top">
+          <div *ngIf="sections.get('Jobs')!.count >= 1" class="section margin-top">
             <a href="https://www.electric.coop/" target="_blank"><b>America's Electric Cooperatives</b></a>
             <p>2014-2016 (contract)</p>
             <p>Software Engineer</p>
@@ -89,7 +89,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
             <p style="font-size: 12px; margin-top: 6px;">Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and <a href="assets/data/documents/OMF-DR.pdf" download="OMF-Energy-Demand-Response" style="color: #039be5;">cutting edge research.</a></p>
           </div>
 
-          <div *ngIf="moreJobsSectionsShown == 2" class="section margin-top">
+          <div *ngIf="sections.get('Jobs')!.count === 2" class="section margin-top">
             <a href="https://meal-fairy-ce3bf.web.app/" target="_blank"><b>Meal Fairy, LLC</b></a>
             <p>2018 (self-employed)</p>
             <p>Founder</p>
@@ -98,8 +98,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
           </div>
         </div>
 
-        <button *ngIf="moreJobsSectionsShown < 2" type="button" class="collapsible" (click)="toggleSection('Jobs', true)">more</button>
-        <button *ngIf="moreJobsSectionsShown === 2" type="button" class="collapsible" (click)="toggleSection('Jobs', false)">less</button>
+        <button *ngIf="sections.get('Jobs')!.count < 2" type="button" class="collapsible" (click)="toggleSection('Jobs', true)">more</button>
+        <button *ngIf="sections.get('Jobs')!.count === 2" type="button" class="collapsible" (click)="toggleSection('Jobs', false)">less</button>
       </div>
 
       <h2 @slideInLeft>Extracurriculars</h2>
@@ -111,8 +111,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
       </div>
 
       <div id="more-ec">
-        <div *ngIf="displayMoreEC" @fadeIn>
-          <div *ngIf="moreECSectionsShown >=1" class="section margin-top">
+        <div *ngIf="sections.get('EC')!.display" @fadeIn>
+          <div *ngIf="sections.get('EC')!.count >= 1" class="section margin-top">
             <b>Volunteering</b>
             <p>2013-present</p>
             <p style="font-size: 12px; margin-top: 6px;">
@@ -120,13 +120,13 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
             </p>
           </div>
 
-          <div *ngIf="moreECSectionsShown >=1" class="section margin-top">
+          <div *ngIf="sections.get('EC')!.count >= 1" class="section margin-top">
             <b>Nomadic Travel</b>
             <p>2020-2023</p>
             <p style="font-size: 12px; margin-top: 6px;">Travel and living in a variety of locations from the West Coast, California, stewarding sustainability in ecovillages in California and Hawaii, to car camping across national parks across Washington, Oregon and California,</p>
           </div>
 
-          <div *ngIf="moreECSectionsShown == 2" class="section margin-top">
+          <div *ngIf="sections.get('EC')!.count === 2" class="section margin-top">
             <a href="https://appliedjung.com" target="_blank"><b>Applied Jung,</b></a>
             <br>
             <b>Community Building</b>
@@ -135,15 +135,15 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
             <p style="font-size: 12px; margin-top: 6px;">Training and application of community building and Jungian individuation techniques, holding <a href="https://thebeingman.com" target="_blank">a community space</a> for men to learn healthy models of masculinity.</p>
           </div>
 
-          <div *ngIf="moreECSectionsShown == 2" class="section margin-top">
+          <div *ngIf="sections.get('EC')!.count === 2" class="section margin-top">
             <b>Published Works</b>
             <p style="font-size: 14px;">&#x2022; <a href="assets/data/documents/GMU-ARCHR.pdf" download="ARCHR-Apparatus-for-Remote-Control of-Humanoid-Robot" style="color: #039be5;">Apparatus for Remote Control of Humanoid Robots</a></p>
             <p style="font-size: 14px;">&#x2022; <a href="assets/data/documents/OMF-DR.pdf" download="OMF-Energy-Demand-Response" style="color: #039be5;">Open Modeling Framework Demand Response</a></p>
           </div>
         </div>
 
-        <button *ngIf="moreECSectionsShown < 2" type="button" class="collapsible" (click)="toggleSection('EC', true)">more</button>
-        <button *ngIf="moreECSectionsShown === 2" type="button" class="collapsible" (click)="toggleSection('EC', false)">less</button>
+        <button *ngIf="sections.get('EC')!.count < 2" type="button" class="collapsible" (click)="toggleSection('EC', true)">more</button>
+        <button *ngIf="sections.get('EC')!.count === 2" type="button" class="collapsible" (click)="toggleSection('EC', false)">less</button>
       </div>
 
       <h2 class="margin-top-60" @slideInLeft>Education</h2>
@@ -153,8 +153,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
         <p>Electrical Engineering, B.S.</p>
 
         <div id="more-education">
-          <div *ngIf="displayMoreEd" class="content" @fadeIn>
-            <div *ngIf="moreEdSectionsShown >=1" class="section">
+          <div *ngIf="sections.get('Ed')!.display" class="content" @fadeIn>
+            <div *ngIf="sections.get('Ed')!.count >= 1" class="section">
               <a href="https://www.youtube.com/watch?v=GSx22ggePHw" target="_blank"><b>ARCHR Humanoid Robot</b></a>
               <p>2013-2014</p>
               <p>Lead Developer</p>
@@ -162,7 +162,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
               <p style="font-size: 12px; margin-top: 6px;">Humanoid robot <span><a href="assets/data/documents/GMU-ARCHR.pdf" download="ARCHR - Apparatus for Remote Control of Humanoid Robot" style="color: #039be5;">published</a></span>, taken to DARPA robotics challenge, and designed to address Daiichi Nuclear disaster response. Simplistic one-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.</p>
             </div>
 
-            <div *ngIf="moreEdSectionsShown >=1" class="section margin-top-12">
+            <div *ngIf="sections.get('Ed')!.count >= 1" class="section margin-top-12">
               <a><b>Solar Collaborative Workspace</b></a>
               <p>2013-2014</p>
               <p>Lead Developer</p>
@@ -170,7 +170,7 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
               <p style="font-size: 12px; margin-top: 6px;">Contributor who designed mechanics in solidworks 3D and wire drawings.</p>
             </div>
 
-            <div *ngIf="moreEdSectionsShown == 2" class="section margin-top-12">
+            <div *ngIf="sections.get('Ed')!.count === 2" class="section margin-top-12">
               <a><b>DC Dome Light (family)</b></a>
               <p>2014</p>
               <p>CAD Designer</p>
@@ -178,8 +178,8 @@ import { BaseSectionComponent } from '../../shared/base-section.component';
               <p style="font-size: 12px; margin-top: 6px;">Designed dome light in 3D for use for external vendors outsourcing. Design was too complex to be used.</p>
             </div>
           </div>
-          <button *ngIf="moreEdSectionsShown < 2" type="button" class="collapsible" (click)="toggleSection('Ed', true)">more</button>
-          <button *ngIf="moreEdSectionsShown === 2" type="button" class="collapsible" (click)="toggleSection('Ed', false)">less</button>
+          <button *ngIf="sections.get('Ed')!.count < 2" type="button" class="collapsible" (click)="toggleSection('Ed', true)">more</button>
+          <button *ngIf="sections.get('Ed')!.count === 2" type="button" class="collapsible" (click)="toggleSection('Ed', false)">less</button>
         </div>
       </div>
 
@@ -266,23 +266,13 @@ export class AboutComponent extends BaseSectionComponent {
 
   aboutData: AboutData | null = null;
 
-  private sections = new Map([
+  sections = new Map([
     ['About', { display: false, count: 0 }],
     ['CapitalOne', { display: false, count: 0 }],
     ['Jobs', { display: false, count: 0 }],
     ['EC', { display: false, count: 0 }],
     ['Ed', { display: false, count: 0 }]
   ]);
-
-  get displayMoreAbout() { return this.sections.get('About')!.display; }
-  get displayMoreCapitalOne() { return this.sections.get('CapitalOne')!.display; }
-  get moreCapitalOneSectionsShown() { return this.sections.get('CapitalOne')!.count; }
-  get displayMoreJobs() { return this.sections.get('Jobs')!.display; }
-  get moreJobsSectionsShown() { return this.sections.get('Jobs')!.count; }
-  get displayMoreEC() { return this.sections.get('EC')!.display; }
-  get moreECSectionsShown() { return this.sections.get('EC')!.count; }
-  get displayMoreEd() { return this.sections.get('Ed')!.display; }
-  get moreEdSectionsShown() { return this.sections.get('Ed')!.count; }
 
   constructor(
     navService: NavigationService,
