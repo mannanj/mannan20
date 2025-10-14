@@ -36,7 +36,7 @@
     const color = colorMap[colorIndex];
 
     const cursorEl = document.createElement("div");
-    cursorEl.className = "cursor-party-cursor";
+    cursorEl.className = "cursor-party-cursor local-cursor";
     cursorEl.style.color = color;
 
     const username = myUsername || window.cursorUsername || 'happy possum';
@@ -58,10 +58,11 @@
   function updateMyCursor(x, y) {
     if (!myId) return;
 
-    const cursorEl = cursors.get(myId);
+    let cursorEl = cursors.get(myId);
     if (!cursorEl) {
       initializeMyCursor();
-      return;
+      cursorEl = cursors.get(myId);
+      if (!cursorEl) return;
     }
 
     cursorEl.style.left = x + "px";
@@ -346,6 +347,10 @@
       z-index: 10000;
       transition: left 0.1s ease-out, top 0.1s ease-out;
       display: block;
+    }
+
+    .cursor-party-cursor.local-cursor {
+      transition: none;
     }
 
     .cursor-label {
