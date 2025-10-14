@@ -27,6 +27,46 @@
     }
   }
 
+  function initializeMyCursor() {
+    if (!myId || cursors.has(myId)) return;
+
+    const colorIndex = cursorOrder.indexOf(myId) % colorMap.length;
+    const color = colorMap[colorIndex];
+
+    const cursorEl = document.createElement("div");
+    cursorEl.className = "cursor-party-cursor";
+    cursorEl.style.color = color;
+
+    const username = myUsername || window.cursorUsername || 'happy possum';
+    const displayName = `${username} (you)`;
+    const label = displayName;
+
+    cursorEl.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M5.65376 12.3673L5 5L12.3673 5.65376L18.2888 11.5753L12.9728 16.8913L11.5753 18.2888L5.65376 12.3673Z" fill="currentColor"/>
+      </svg>
+      <span class="cursor-label">${label}</span>
+    `;
+    cursorEl.style.display = cursorsHidden ? "none" : "block";
+    document.body.appendChild(cursorEl);
+    cursors.set(myId, cursorEl);
+    updateActiveViewerCount();
+  }
+
+  function updateMyCursor(x, y) {
+    if (!myId) return;
+
+    const cursorEl = cursors.get(myId);
+    if (!cursorEl) {
+      initializeMyCursor();
+      return;
+    }
+
+    cursorEl.style.left = x + "px";
+    cursorEl.style.top = y + "px";
+    cursorEl.style.display = cursorsHidden ? "none" : "block";
+  }
+
   function connect() {
     ws = new WebSocket(WS_HOST);
 
@@ -45,10 +85,13 @@
         if (!cursorOrder.includes(myId)) {
           cursorOrder.push(myId);
         }
+        initializeMyCursor();
       }
 
       if (msg.type === "sync") {
-        updateCursor(msg.id, msg.cursor);
+        if (msg.id !== myId) {
+          updateCursor(msg.id, msg.cursor);
+        }
       }
 
       if (msg.type === "chat" && ENABLE_CHAT) {
@@ -256,6 +299,7 @@
 
   document.addEventListener("mousemove", (e) => {
     updateUsername();
+    updateMyCursor(e.clientX, e.clientY);
     sendMessage({
       type: "sync",
       cursor: {
@@ -269,6 +313,7 @@
 
   document.addEventListener("touchmove", (e) => {
     const touch = e.touches[0];
+    updateMyCursor(touch.clientX, touch.clientY);
     sendMessage({
       type: "sync",
       cursor: {
