@@ -249,7 +249,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`"
+    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`",
+    "completedDate": "2025-10-14T23:04:04-04:00",
+    "completedCommit": {
+      "hash": "537cf5f",
+      "fullHash": "537cf5f726b451ec760a802275341fffde82d73d",
+      "subject": "Add task completion tracking and modularize dev-stats [Task-14] [Task-15]",
+      "date": "2025-10-14T23:04:04-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/537cf5f726b451ec760a802275341fffde82d73d"
+    }
   },
   {
     "id": "task-15",
@@ -277,7 +285,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
+    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
+    "completedDate": "2025-10-14T23:08:26-04:00",
+    "completedCommit": {
+      "hash": "40f420b",
+      "fullHash": "40f420baee51cf4f80be120cb3c1d958d3c80f87",
+      "subject": "Mark Task 15 as completed",
+      "date": "2025-10-14T23:08:26-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/40f420baee51cf4f80be120cb3c1d958d3c80f87"
+    }
   },
   {
     "id": "task-16",
@@ -305,7 +321,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`"
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
+    "completedDate": "2025-10-14T23:14:15-04:00",
+    "completedCommit": {
+      "hash": "43ed133",
+      "fullHash": "43ed1331f7fef449196524a84e5fd58ddf46cbe5",
+      "subject": "Refactor dev-stats for single responsibility and fix date logic",
+      "date": "2025-10-14T23:14:15-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/43ed1331f7fef449196524a84e5fd58ddf46cbe5"
+    }
   },
   {
     "id": "task-17",
@@ -325,7 +349,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:14:15-04:00",
+    "completedCommit": {
+      "hash": "43ed133",
+      "fullHash": "43ed1331f7fef449196524a84e5fd58ddf46cbe5",
+      "subject": "Refactor dev-stats for single responsibility and fix date logic",
+      "date": "2025-10-14T23:14:15-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/43ed1331f7fef449196524a84e5fd58ddf46cbe5"
+    }
   },
   {
     "id": "task-18",
@@ -345,7 +377,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:18:14-04:00",
+    "completedCommit": {
+      "hash": "e5f6dee",
+      "fullHash": "e5f6deeef9b4f1d6de9ec1e3faee298ebece8572",
+      "subject": "Fix completedCommit hash extraction in post-commit hook",
+      "date": "2025-10-14T23:18:14-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/e5f6deeef9b4f1d6de9ec1e3faee298ebece8572"
+    }
   },
   {
     "id": "task-19",
@@ -369,7 +409,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`"
+    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
+    "completedDate": "2025-10-14T23:31:20-04:00",
+    "completedCommit": {
+      "hash": "3cc8f8b",
+      "fullHash": "3cc8f8bf6473518496b381291c93fbd208740403",
+      "subject": "Add formatted completion date/time display to Tasks UI",
+      "date": "2025-10-14T23:31:20-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/3cc8f8bf6473518496b381291c93fbd208740403"
+    }
   },
   {
     "id": "task-20",
@@ -393,7 +441,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:39:34-04:00",
+    "completedCommit": {
+      "hash": "692bddf",
+      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
+      "subject": "Fix task completion commit detection and clean up task data",
+      "date": "2025-10-14T23:39:34-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+    }
   },
   {
     "id": "task-21",
@@ -417,6 +473,14 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:41:59-04:00",
+    "completedCommit": {
+      "hash": "ec14a70",
+      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
+      "subject": "Preserve existing task completion data in post-commit hook",
+      "date": "2025-10-14T23:41:59-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
+    }
   }
 ]

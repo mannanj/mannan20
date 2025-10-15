@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "b10b055045f4f923fd9cb58861edf77d5da9288b",
+    "hash": "b10b055",
+    "subject": "Fix grep escaping in post-commit hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:44:07-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b10b055045f4f923fd9cb58861edf77d5da9288b"
+  },
+  {
+    "fullHash": "d9e09f1abc34d83b4d3df9140f774a47770402ce",
+    "hash": "d9e09f1",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:42:45-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d9e09f1abc34d83b4d3df9140f774a47770402ce"
+  },
+  {
     "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
     "hash": "148316e",
     "subject": "Update dev data files",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T17:16:14-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/15e942cc18b45581f01044ea9f482bf0b99b3625"
-  },
-  {
-    "fullHash": "fe6b9388e8311379beaab09da1d820e208e75126",
-    "hash": "fe6b938",
-    "subject": "Reduce contact component padding to 100px",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:15:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/fe6b9388e8311379beaab09da1d820e208e75126"
-  },
-  {
-    "fullHash": "7de0cc1aec59da1736b6e93756e0ab9b6926b678",
-    "hash": "7de0cc1",
-    "subject": "Externalize cursor usernames to JSON and UI refinements",
-    "body": "Features:\n- Move cursor usernames from hardcoded array to JSON file\n- Create public/data/cursor-usernames.json with 100 usernames\n- Add NgRx actions and effects to load usernames on app init\n- Update reducer to handle username loading\n\nUI Improvements:\n- Reduce last-updated component padding (px-1.5 py-0.5)\n- Adjust position to bottom-1 for better alignment\n- Add 200px padding-bottom to contact component for more spacing\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:15:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7de0cc1aec59da1736b6e93756e0ab9b6926b678"
   }
 ]
