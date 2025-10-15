@@ -63,7 +63,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
           }
 
           <div [style.display]="activeTab() === 'tasks' ? 'block' : 'none'">
-            <tasks-container [tasks]="tasks()" />
+            @defer (on immediate) {
+              <tasks-container [tasks]="tasks()" />
+            }
           </div>
         </div>
       </div>

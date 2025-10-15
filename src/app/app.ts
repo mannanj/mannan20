@@ -36,7 +36,9 @@ import { selectDevCommits } from './store/app.selectors';
       </div>
 
       @if (isConnected()) {
-        <viewer-stats />
+        @defer (on immediate) {
+          <viewer-stats />
+        }
       }
       <div class="fixed bottom-0 right-0 z-50 flex items-end gap-2">
         @if (hasDevCommits()) {
@@ -46,7 +48,9 @@ import { selectDevCommits } from './store/app.selectors';
         }
         <last-updated />
       </div>
-      <keyboard-commands-modal />
+      @defer (on immediate) {
+        <keyboard-commands-modal />
+      }
     </div>
   `,
   styles: []
