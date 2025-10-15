@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "fb2087dace4724405749c4159de887ef96b42c34",
+    "hash": "fb2087d",
+    "subject": "Test hook with logging",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:43:28 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/fb2087dace4724405749c4159de887ef96b42c34"
+  },
+  {
+    "fullHash": "37414f23318ed71aa3b26e77f8d68132d3925231",
+    "hash": "37414f2",
+    "subject": "Update hook data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:42:18 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/37414f23318ed71aa3b26e77f8d68132d3925231"
+  },
+  {
     "fullHash": "b6f936e59f8a48e0dff8256355419d176832cdaa",
     "hash": "b6f936e",
     "subject": "Test post-commit hook",
@@ -61,23 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 20:43:42 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/b34d08fd6daa7b57f3ac558841600db905cc835b"
-  },
-  {
-    "fullHash": "05e8ef824f8cc36f54b4952bdb333cb2f0ddb0e8",
-    "hash": "05e8ef8",
-    "subject": "Fix viewer count to include local user on connection",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:38:14 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/05e8ef824f8cc36f54b4952bdb333cb2f0ddb0e8"
-  },
-  {
-    "fullHash": "33675f394451e871312379e770f6b20b2bc14eed",
-    "hash": "33675f3",
-    "subject": "Add Esc key to toggle cursor visibility when modal is closed",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:37:34 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/33675f394451e871312379e770f6b20b2bc14eed"
   }
 ]
