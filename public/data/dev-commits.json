@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "ee9e53c7b12fd785e195f702745ccac8334c5baa",
+    "hash": "ee9e53c",
+    "subject": "Add Task 14: Track task completion dates via git hooks",
+    "body": "This task will test the automated tasks.md -> tasks.json sync system.\nThe post-commit hook should automatically parse this new task and\nadd it to tasks.json.\n\nFeatures to implement:\n- Add completedDate field to Task model\n- Store timestamp when task marked complete\n- Display completion dates in UI\n- Persist dates across commits\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:47:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ee9e53c7b12fd785e195f702745ccac8334c5baa"
+  },
+  {
+    "fullHash": "8dede838894323ba8c88889e7c347409933637ca",
+    "hash": "8dede83",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:45:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8dede838894323ba8c88889e7c347409933637ca"
+  },
+  {
     "fullHash": "16ab28fd421de78c66f3d57273754ba1133853dd",
     "hash": "16ab28f",
     "subject": "Add Tasks tab to dev-stats with automatic sync from tasks.md",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-10T17:16:59-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/8343ec7435ac54cf6573b66df1c4ce613b912ac8"
-  },
-  {
-    "fullHash": "39a02aa3354cebc97fafd7f078af5c72c3adf4e6",
-    "hash": "39a02aa",
-    "subject": "backend added with viewers models",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-10T17:03:59-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/39a02aa3354cebc97fafd7f078af5c72c3adf4e6"
-  },
-  {
-    "fullHash": "bd863ea5108f6be6374a1ea50d107ddf99de13de",
-    "hash": "bd863ea",
-    "subject": "updating styles, simplifying code more, header only",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-08T20:27:16-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/bd863ea5108f6be6374a1ea50d107ddf99de13de"
   }
 ]

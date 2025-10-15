@@ -218,5 +218,37 @@
       }
     ],
     "location": "Dev stats component tab interface"
+  },
+  {
+    "id": "task-14",
+    "title": "Track Task Completion Dates via Git Hooks",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add `completedDate` field to Task interface in models",
+        "completed": false
+      },
+      {
+        "description": "Update tasks.json structure to include completedDate field",
+        "completed": false
+      },
+      {
+        "description": "Enhance post-commit hook to detect when task is marked complete",
+        "completed": false
+      },
+      {
+        "description": "Store completion timestamp when task status changes to completed",
+        "completed": false
+      },
+      {
+        "description": "Display completion date in Tasks tab UI",
+        "completed": false
+      },
+      {
+        "description": "Ensure completion date persists across commits",
+        "completed": false
+      }
+    ],
+    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`"
   }
 ]
