@@ -1490,5 +1490,37 @@
       "date": "2025-10-15T11:38:41-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/34b0f0628b23364782579e1e80a2e32698829f6e"
     }
+  },
+  {
+    "id": "task-50",
+    "title": "Fix AG Grid Performance Issues",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Investigate slow AG Grid rendering and interaction",
+        "completed": false
+      },
+      {
+        "description": "Check for subscription leaks in dev-stats, task-table, and tasks-container",
+        "completed": false
+      },
+      {
+        "description": "Verify proper cleanup with OnDestroy lifecycle hook if needed",
+        "completed": false
+      },
+      {
+        "description": "Optimize grid configuration (disable unused features, row animations)",
+        "completed": false
+      },
+      {
+        "description": "Consider virtualizing rows if dataset is large",
+        "completed": false
+      },
+      {
+        "description": "Profile performance and verify improvements",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/tasks-container.ts`"
   }
 ]
