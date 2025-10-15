@@ -220,7 +220,7 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
     }
   `]
 })
-export class ContactFormComponent {
+export class ContactForm {
   @Output() submitForm = new EventEmitter<string>();
 
   userInput = '';

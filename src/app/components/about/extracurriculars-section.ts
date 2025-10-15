@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { ContentCardComponent } from './content-card';
+import { ContentCard } from './content-card';
 import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ExpandableSection, PublishedWork, ProfileItem } from '../../models/models';
 import { selectActivities, selectPublishedWorks } from '../../store/app.selectors';
@@ -10,7 +10,7 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
 @Component({
   selector: 'extracurriculars-section',
   standalone: true,
-  imports: [CommonModule, ContentCardComponent],
+  imports: [CommonModule, ContentCard],
   animations: [fadeIn, slideInLeft],
   template: `
     <h2 @slideInLeft>Extracurriculars</h2>
@@ -59,7 +59,7 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
     }
   `]
 })
-export class ExtracurricularsSectionComponent {
+export class ExtracurricularsSection {
   activities$: Observable<Record<string, ProfileItem> | undefined>;
   publishedWorks$: Observable<PublishedWork[] | undefined>;
 

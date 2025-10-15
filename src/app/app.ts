@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { HeaderComponent } from "./components/header/header";
-import { HomeComponent } from "./components/home/home";
-import { AboutComponent } from "./components/about/about";
-import { ContactComponent } from "./components/contact/contact";
+import { Header } from "./components/header/header";
+import { Home } from "./components/home/home";
+import { About } from "./components/about/about";
+import { Contact } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
@@ -14,7 +14,7 @@ import { selectDevCommits } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats],
+  imports: [CommonModule, Header, Home, About, Contact, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats],
   template: `
     <div id="page">
       <div id="header">
@@ -76,7 +76,7 @@ import { selectDevCommits } from './store/app.selectors';
     }
   `]
 })
-export class AppComponent implements OnInit {
+export class App implements OnInit {
   title = 'mannan';
   private store = inject(Store);
   protected isConnected = signal(false);

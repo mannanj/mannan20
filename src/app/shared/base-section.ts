@@ -4,7 +4,7 @@ import { Links } from '../models/models';
 import { createIntersectionObserver } from '../utils/help';
 
 @Directive()
-export abstract class BaseSectionComponent implements AfterViewInit, OnDestroy {
+export abstract class BaseSection implements AfterViewInit, OnDestroy {
   @ViewChild('main') elementRef!: ElementRef;
 
   protected store = inject(Store);
@@ -16,7 +16,7 @@ export abstract class BaseSectionComponent implements AfterViewInit, OnDestroy {
     this.intersectionObserver = createIntersectionObserver(
       this.store,
       this.sectionLink,
-      BaseSectionComponent.intersectingSections
+      BaseSection.intersectingSections
     );
     this.intersectionObserver.observe(this.elementRef.nativeElement);
   }

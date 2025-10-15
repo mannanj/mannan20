@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { ModalComponent } from './modal';
+import { Modal } from './modal';
 import { selectCommandsModalVisible } from '../store/app.selectors';
 import { toggleCommandsModal } from '../store/app.actions';
 import { toggleCursorsVisible } from '../store/cursor.actions';
@@ -13,7 +13,7 @@ interface Command {
 
 @Component({
   selector: 'keyboard-commands-modal',
-  imports: [ModalComponent],
+  imports: [Modal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <modal [isOpen]="isVisible()" (close)="close()">

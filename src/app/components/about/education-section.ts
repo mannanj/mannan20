@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { ContentCardComponent } from './content-card';
+import { ContentCard } from './content-card';
 import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ExpandableSection, EducationInfo, ProfileItem } from '../../models/models';
 import { selectEducation, selectEducationProjects } from '../../store/app.selectors';
@@ -10,7 +10,7 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
 @Component({
   selector: 'education-section',
   standalone: true,
-  imports: [CommonModule, ContentCardComponent],
+  imports: [CommonModule, ContentCard],
   animations: [fadeIn, slideInLeft],
   template: `
     <h2 class="margin-top-60" @slideInLeft>Education</h2>
@@ -80,7 +80,7 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
     }
   `]
 })
-export class EducationSectionComponent {
+export class EducationSection {
   education$: Observable<EducationInfo | undefined>;
   projects$: Observable<Record<string, ProfileItem> | undefined>;
 

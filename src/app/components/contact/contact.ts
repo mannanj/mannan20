@@ -1,11 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Links, ContactResult } from '../../models/models';
+import { Links, ContactResult as ContactResultData } from '../../models/models';
 import { scaleIn, fadeIn, slideInLeft } from '../../animations/animations';
-import { BaseSectionComponent } from '../../shared/base-section';
-import { ModalComponent } from '../../shared/modal';
-import { ContactFormComponent } from './contact-form';
-import { ContactResultComponent } from './contact-result';
+import { BaseSection } from '../../shared/base-section';
+import { Modal } from '../../shared/modal';
+import { ContactForm } from './contact-form';
+import { ContactResult } from './contact-result';
 import { navigateTo } from '../../utils/help';
 
 const FORM_SUBMIT_DELAY_MS = 2000;
@@ -13,7 +13,7 @@ const FORM_SUBMIT_DELAY_MS = 2000;
 @Component({
   selector: 'contact',
   standalone: true,
-  imports: [CommonModule, ModalComponent, ContactFormComponent, ContactResultComponent],
+  imports: [CommonModule, Modal, ContactForm, ContactResult],
   animations: [scaleIn, fadeIn, slideInLeft],
   template: `
     <div #main class="contact-wrapper">
@@ -147,14 +147,14 @@ const FORM_SUBMIT_DELAY_MS = 2000;
     }
   `]
 })
-export class ContactComponent extends BaseSectionComponent {
+export class Contact extends BaseSection {
   protected sectionLink = Links.contact;
-  @ViewChild(ContactFormComponent) contactForm?: ContactFormComponent;
-  @ViewChild(ContactResultComponent) contactResult?: ContactResultComponent;
+  @ViewChild(ContactForm) contactForm?: ContactForm;
+  @ViewChild(ContactResult) contactResult?: ContactResult;
 
   isModalOpen = false;
   showResult = false;
-  result: ContactResult | null = null;
+  result: ContactResultData | null = null;
 
   openModal() {
     this.isModalOpen = true;

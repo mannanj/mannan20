@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Links } from '../../models/models';
 import { bounceIn, fadeIn, slideInLeft } from '../../animations/animations';
-import { BaseSectionComponent } from '../../shared/base-section';
+import { BaseSection } from '../../shared/base-section';
 import { navigateTo } from '../../utils/help';
 
 @Component({
@@ -22,7 +22,7 @@ import { navigateTo } from '../../utils/help';
   `,
   styles: []
 })
-export class HomeComponent extends BaseSectionComponent {
+export class Home extends BaseSection {
   protected sectionLink = Links.home;
   Links = Links;
 

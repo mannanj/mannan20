@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ContactResult } from '../../models/models';
+import { ContactResult as ContactResultData } from '../../models/models';
 import * as help from '../../utils/help';
 import { CopyIcon } from '../icons/copy-icon';
 import { CheckIcon } from '../icons/check-icon';
@@ -104,8 +104,8 @@ const COPY_FEEDBACK_DURATION_MS = 2000;
     }
   `]
 })
-export class ContactResultComponent {
-  @Input() result: ContactResult | null = null;
+export class ContactResult {
+  @Input() result: ContactResultData | null = null;
 
   copiedEmail = false;
   copiedPhone = false;

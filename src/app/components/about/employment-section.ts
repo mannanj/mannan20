@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ContentCardComponent } from './content-card';
+import { ContentCard } from './content-card';
 import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ProfileItem } from '../../models/models';
 import { selectJobs } from '../../store/app.selectors';
@@ -11,7 +11,7 @@ import { selectJobs } from '../../store/app.selectors';
 @Component({
   selector: 'employment-section',
   standalone: true,
-  imports: [CommonModule, ContentCardComponent],
+  imports: [CommonModule, ContentCard],
   animations: [fadeIn, slideInLeft],
   template: `
     <h2 @slideInLeft>Employment History</h2>
@@ -39,7 +39,7 @@ import { selectJobs } from '../../store/app.selectors';
   `,
   styles: []
 })
-export class EmploymentSectionComponent {
+export class EmploymentSection {
   readonly DEFAULT_JOBS_TO_SHOW = 3;
   readonly JOBS_INCREMENT = 2;
 

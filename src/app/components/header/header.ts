@@ -95,7 +95,7 @@ import { navigateTo } from '../../utils/help';
     }
   `]
 })
-export class HeaderComponent {
+export class Header {
   private store = inject(Store<AppState>);
   selectedLink$: Observable<Links> = this.store.select(selectSelectedLink);
   linksArray: Links[] = [Links.home, Links.about, Links.contact];

@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { ModalComponent } from './modal';
+import { Modal } from './modal';
 import { TasksContainer } from './tasks-container';
 import { selectDevCommits, selectTasks } from '../store/app.selectors';
 import { DevStatsIcon } from '../components/icons/dev-stats-icon';
@@ -10,7 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'dev-stats',
-  imports: [AsyncPipe, DatePipe, ModalComponent, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon],
+  imports: [AsyncPipe, DatePipe, Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div

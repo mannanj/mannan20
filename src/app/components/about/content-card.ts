@@ -65,7 +65,7 @@ import { ProfileItem } from '../../models/models';
     }
   `]
 })
-export class ContentCardComponent {
+export class ContentCard {
   @Input() data!: ProfileItem;
   @Input() applyMarginTop = false;
 

@@ -4,17 +4,17 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { Links, AboutIntro, ExpandableSection } from '../../models/models';
 import { fadeIn, scaleIn, slideInLeft, slideInRight } from '../../animations/animations';
-import { BaseSectionComponent } from '../../shared/base-section';
-import { EmploymentSectionComponent } from './employment-section';
-import { ExtracurricularsSectionComponent } from './extracurriculars-section';
-import { EducationSectionComponent } from './education-section';
+import { BaseSection } from '../../shared/base-section';
+import { EmploymentSection } from './employment-section';
+import { ExtracurricularsSection } from './extracurriculars-section';
+import { EducationSection } from './education-section';
 import { selectAboutIntro } from '../../store/app.selectors';
 import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'about',
   standalone: true,
-  imports: [CommonModule, EmploymentSectionComponent, ExtracurricularsSectionComponent, EducationSectionComponent],
+  imports: [CommonModule, EmploymentSection, ExtracurricularsSection, EducationSection],
   animations: [fadeIn, scaleIn, slideInLeft, slideInRight],
   template: `
     <div #main>
@@ -126,7 +126,7 @@ import { navigateTo } from '../../utils/help';
     }
   `]
 })
-export class AboutComponent extends BaseSectionComponent {
+export class About extends BaseSection {
   protected sectionLink = Links.about;
   private localStore = inject(Store);
   aboutIntro$: Observable<AboutIntro | undefined> = this.localStore.select(selectAboutIntro);

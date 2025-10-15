@@ -70,7 +70,7 @@ import { ContactResult } from '../models/models';
     }
   `]
 })
-export class ModalComponent {
+export class Modal {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
 
