@@ -958,22 +958,30 @@
   {
     "id": "task-35",
     "title": "Update Modal Greeting Text",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Change greeting from \"Hi <>\" to \"Hi there 👋\" (3 words with hand waving emoji)",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Update modal template to use new greeting format",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure emoji displays correctly across browsers",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/components/contact/contact-result.ts` or modal component"
+    "location": "`src/app/components/contact/contact-result.ts` or modal component",
+    "completedDate": "2025-10-15T11:49:43-04:00",
+    "completedCommit": {
+      "hash": "ba2fbea",
+      "fullHash": "ba2fbea3a8a36609a1122237a6908c5f0af98e2a",
+      "subject": "Task 35: Update Modal Greeting Text",
+      "date": "2025-10-15T11:49:43-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/ba2fbea3a8a36609a1122237a6908c5f0af98e2a"
+    }
   },
   {
     "id": "task-36",
