@@ -21,15 +21,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/components/about/about.ts:290-336`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/components/about/about.ts:290-336`"
   },
   {
     "id": "task-2",
@@ -49,15 +41,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/store/app.state.ts`, actions, reducers, selectors",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/store/app.state.ts`, actions, reducers, selectors"
   },
   {
     "id": "task-3",
@@ -69,15 +53,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/services/data.service.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/services/data.service.ts`"
   },
   {
     "id": "task-4",
@@ -121,15 +97,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/animations/animations.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/animations/animations.ts`"
   },
   {
     "id": "task-7",
@@ -145,15 +113,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/services/navigation.service.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/services/navigation.service.ts`"
   },
   {
     "id": "task-8",
@@ -189,15 +149,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/components/contact/contact.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/components/contact/contact.ts`"
   },
   {
     "id": "task-11",
@@ -297,15 +249,7 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`"
   },
   {
     "id": "task-15",
@@ -333,15 +277,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
   },
   {
     "id": "task-16",
@@ -369,15 +305,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`"
   },
   {
     "id": "task-17",
@@ -397,15 +325,7 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`.githooks/post-commit`"
   },
   {
     "id": "task-18",
@@ -425,15 +345,7 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`.githooks/post-commit`"
   },
   {
     "id": "task-19",
@@ -457,15 +369,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`"
   },
   {
     "id": "task-20",
@@ -489,15 +393,7 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`.githooks/post-commit`"
   },
   {
     "id": "task-21",
@@ -521,14 +417,6 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:42:44-04:00",
-    "completedCommit": {
-      "hash": "148316e",
-      "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:42:44-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-    }
+    "location": "`.githooks/post-commit`"
   }
 ]

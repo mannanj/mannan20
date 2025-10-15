@@ -68,28 +68,32 @@ if (fs.existsSync('${TASKS_OUTPUT}')) {
 
 function findTaskCompletionCommit(taskNum, taskTitle) {
   try {
-    let commitMsgCheck = execSync(
-      \`git log --format='%H|||%h|||%s|||%aI' --grep='\\[Task-${taskNum}\\]' -i -1\`,
-      { encoding: 'utf-8', shell: '/bin/bash' }
-    ).trim();
+    const patterns = [
+      \`\\\\[Task-\${taskNum}\\\\]\`,
+      \`\\\\[Task \${taskNum}\\\\]\`
+    ];
 
-    if (!commitMsgCheck) {
-      commitMsgCheck = execSync(
-        \`git log --format='%H|||%h|||%s|||%aI' --grep='\\[Task ${taskNum}\\]' -i -1\`,
-        { encoding: 'utf-8', shell: '/bin/bash' }
-      ).trim();
-    }
+    for (const pattern of patterns) {
+      try {
+        const commitMsgCheck = execSync(
+          'git log --format=\"%H|||%h|||%s|||%aI\" --grep=\"' + pattern + '\" -i -1',
+          { encoding: 'utf-8', shell: '/bin/bash' }
+        ).trim();
 
-    if (commitMsgCheck) {
-      const parts = commitMsgCheck.split('|||');
-      if (parts.length >= 4) {
-        return {
-          hash: parts[1].trim(),
-          fullHash: parts[0].trim(),
-          subject: parts[2].trim(),
-          date: parts[3].trim(),
-          url: '${REPO_URL}/commit/' + parts[0].trim()
-        };
+        if (commitMsgCheck) {
+          const parts = commitMsgCheck.split('|||');
+          if (parts.length >= 4) {
+            return {
+              hash: parts[1].trim(),
+              fullHash: parts[0].trim(),
+              subject: parts[2].trim(),
+              date: parts[3].trim(),
+              url: '${REPO_URL}/commit/' + parts[0].trim()
+            };
+          }
+        }
+      } catch (e) {
+        continue;
       }
     }
   } catch (error) {
