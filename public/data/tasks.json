@@ -861,7 +861,7 @@
   },
   {
     "id": "task-32",
-    "title": "Remove Blue Borders from Copy Icon Buttons",
+    "title": "Fix Button Borders in Contact Components",
     "status": "completed",
     "subtasks": [
       {
@@ -881,11 +881,15 @@
         "completed": true
       },
       {
-        "description": "Test copy buttons to ensure styling is correct",
+        "description": "Add blue border to Continue with your request button",
+        "completed": true
+      },
+      {
+        "description": "Test all buttons to ensure styling is correct",
         "completed": true
       }
     ],
-    "location": "`src/app/components/contact/contact-result.ts`",
+    "location": "`src/app/components/contact/contact-result.ts`, `src/app/components/contact/contact-form.ts`",
     "completedDate": "2025-10-15T01:16:11-04:00",
     "completedCommit": {
       "hash": "b82304e",
