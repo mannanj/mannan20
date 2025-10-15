@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "11d0b891abd54bc2e86c3a2f7d3b88560d8c68ff",
+    "hash": "11d0b89",
+    "subject": "Test separate commit hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:48:02 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/11d0b891abd54bc2e86c3a2f7d3b88560d8c68ff"
+  },
+  {
     "fullHash": "28a45414cd08cad2e5d0eead6d9fc3a28ab33ae0",
     "hash": "28a4541",
     "subject": "Test fixed hook",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 21:07:44 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/8a7644545fe69a9e281e5b216095222960d2d683"
-  },
-  {
-    "fullHash": "9bd8ba342d0d3c319db2c73a79e10c29ede122a7",
-    "hash": "9bd8ba3",
-    "subject": "Add dev stats feature with git commit history",
-    "body": "Add cookie-based dev mode feature that displays recent git commits in a modal.\nWhen isMannanDev=1 cookie is set, a stats icon appears in the bottom-left.\nClicking it shows the last 9 commits with hash links, subjects, authors, and dates.\n\nGit pre-commit hook automatically updates dev-commits.json on each commit.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 21:00:51 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/9bd8ba342d0d3c319db2c73a79e10c29ede122a7"
   }
 ]
