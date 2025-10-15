@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "8b6fb041a6d22dd85f6bd28147ffba7b8b671530",
+    "hash": "8b6fb04",
+    "subject": "Update post-commit hook to use separate commits",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:49:04 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/8b6fb041a6d22dd85f6bd28147ffba7b8b671530"
+  },
+  {
     "fullHash": "0d6aa35da45fb9cdc7a823a2ec28f8932b1632bd",
     "hash": "0d6aa35",
     "subject": "Update dev data files",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 21:43:28 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/ed2d96e1368b4d71619c1e8580819f8bdc82d08d"
-  },
-  {
-    "fullHash": "37414f23318ed71aa3b26e77f8d68132d3925231",
-    "hash": "37414f2",
-    "subject": "Update hook data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 21:42:18 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/37414f23318ed71aa3b26e77f8d68132d3925231"
   }
 ]
