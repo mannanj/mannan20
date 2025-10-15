@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "eade65f2dc83ecc167b0bd098055c8eb96a98df2",
+    "hash": "eade65f",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:44:07-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/eade65f2dc83ecc167b0bd098055c8eb96a98df2"
+  },
+  {
     "fullHash": "b10b055045f4f923fd9cb58861edf77d5da9288b",
     "hash": "b10b055",
     "subject": "Fix grep escaping in post-commit hook",
@@ -889,14 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T17:45:05-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/060680d1b8088da7f1a649f647d6ac3ca1d47a33"
-  },
-  {
-    "fullHash": "15e942cc18b45581f01044ea9f482bf0b99b3625",
-    "hash": "15e942c",
-    "subject": "last updated textchnage",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:16:14-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/15e942cc18b45581f01044ea9f482bf0b99b3625"
   }
 ]
