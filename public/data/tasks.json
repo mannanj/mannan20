@@ -2270,5 +2270,37 @@
       }
     ],
     "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
+  },
+  {
+    "id": "task-69",
+    "title": "Compress Status Badge and Add White Text Stroke",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Reduce padding on COMPLETED status badge to only 2px around text",
+        "completed": false
+      },
+      {
+        "description": "Add white stroke/outline to COMPLETED text for better visibility",
+        "completed": false
+      },
+      {
+        "description": "Tighten background to fit snugly around text with minimal padding",
+        "completed": false
+      },
+      {
+        "description": "Update status badge styling in task-table cellRenderer",
+        "completed": false
+      },
+      {
+        "description": "Ensure text remains readable with new compact styling",
+        "completed": false
+      },
+      {
+        "description": "Test appearance in both table and card views",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`"
   }
 ]

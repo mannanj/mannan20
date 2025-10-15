@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "47fa88fa46e1b33c2545812b91d8c5a499efb89c",
+    "hash": "47fa88f",
+    "subject": "Add Task 69: Compress status badge and add white text stroke",
+    "body": "Created task to tighten badge padding and add text outline\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:19:05-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/47fa88fa46e1b33c2545812b91d8c5a499efb89c"
+  },
+  {
+    "fullHash": "09e1a923799c00c1a469d786bfdf3028d7760991",
+    "hash": "09e1a92",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:18:12-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/09e1a923799c00c1a469d786bfdf3028d7760991"
+  },
+  {
     "fullHash": "8e0ac75655c57681a9f9ce2c55ab0d83dbc13952",
     "hash": "8e0ac75",
     "subject": "Add Task 68: Fix AG Grid column menu not displaying",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:50:17-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/a3f747594347e83d46e8aa4c6afe784371f776ca"
-  },
-  {
-    "fullHash": "e8235702ba0c0da69d58db4bf1601aeb7433c475",
-    "hash": "e823570",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:43:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e8235702ba0c0da69d58db4bf1601aeb7433c475"
-  },
-  {
-    "fullHash": "e479a0e3834c7635f635cdd74e63b16ca290f934",
-    "hash": "e479a0e",
-    "subject": "Task 25: Update Documentation with Tailwind Styling Requirements",
-    "body": "- [x] Update .claude/CLAUDE.md to document Tailwind CSS 4 usage requirement\n- [x] Add guidelines for when to use Tailwind vs custom CSS\n- [x] Document that inline Tailwind utilities should be preferred over component styles\n- [x] Add examples of proper Tailwind class usage\n- Location: \\`.claude/CLAUDE.md\\`\n\n[Task-25]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:43:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e479a0e3834c7635f635cdd74e63b16ca290f934"
   }
 ]
