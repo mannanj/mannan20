@@ -1330,38 +1330,46 @@
   {
     "id": "task-46",
     "title": "Style AG Grid Tables with Dark Theme",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Change ag-grid background color to black",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Set text color to white or appropriate gray for visibility",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Keep link colors blue for commit hashes",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Make task status badge colors more gray while maintaining readability",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Prevent table from overflowing modal container",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure vertical scrollbar appears when content exceeds container height",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Apply custom dark theme styling to both commits and tasks grids",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`"
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`",
+    "completedDate": "2025-10-15T11:37:06-04:00",
+    "completedCommit": {
+      "hash": "016b185",
+      "fullHash": "016b1853af52d5c771d52c36d203325a75207f51",
+      "subject": "Task 46: Style AG Grid Tables with Dark Theme",
+      "date": "2025-10-15T11:37:06-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/016b1853af52d5c771d52c36d203325a75207f51"
+    }
   },
   {
     "id": "task-47",

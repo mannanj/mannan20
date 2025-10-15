@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "016b1853af52d5c771d52c36d203325a75207f51",
+    "hash": "016b185",
+    "subject": "Task 46: Style AG Grid Tables with Dark Theme",
+    "body": "- [x] Change ag-grid background color to black\n- [x] Set text color to white or appropriate gray for visibility\n- [x] Keep link colors blue for commit hashes\n- [x] Make task status badge colors more gray while maintaining readability\n- [x] Prevent table from overflowing modal container\n- [x] Ensure vertical scrollbar appears when content exceeds container height\n- [x] Apply custom dark theme styling to both commits and tasks grids\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`\n\n[Task-46]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:37:06-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/016b1853af52d5c771d52c36d203325a75207f51"
+  },
+  {
+    "fullHash": "5eb7d597c1bd032c82f7dc4a704f9b30f1dc96f2",
+    "hash": "5eb7d59",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:34:41-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5eb7d597c1bd032c82f7dc4a704f9b30f1dc96f2"
+  },
+  {
     "fullHash": "e7587f86d5f4253056c8cbd04013f6f66c7ffba5",
     "hash": "e7587f8",
     "subject": "Task 48: Fix Empty Tasks Column in Tasks Table",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T22:47:02-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/b2b225f9245d94df107b4521f77aca28d1207556"
-  },
-  {
-    "fullHash": "ee9e53c7b12fd785e195f702745ccac8334c5baa",
-    "hash": "ee9e53c",
-    "subject": "Add Task 14: Track task completion dates via git hooks",
-    "body": "This task will test the automated tasks.md -> tasks.json sync system.\nThe post-commit hook should automatically parse this new task and\nadd it to tasks.json.\n\nFeatures to implement:\n- Add completedDate field to Task model\n- Store timestamp when task marked complete\n- Display completion dates in UI\n- Persist dates across commits\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:47:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ee9e53c7b12fd785e195f702745ccac8334c5baa"
-  },
-  {
-    "fullHash": "8dede838894323ba8c88889e7c347409933637ca",
-    "hash": "8dede83",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:45:10-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8dede838894323ba8c88889e7c347409933637ca"
   }
 ]
