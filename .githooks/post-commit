@@ -66,7 +66,8 @@ function findTaskCompletionCommit(taskNum, taskTitle) {
       const parts = commitBlock.split('|||');
       if (parts.length < 4) continue;
 
-      const fullHash = parts[0].trim();
+      const hashMatch = parts[0].match(/([a-f0-9]{40})$/);
+      const fullHash = hashMatch ? hashMatch[1] : parts[0].trim();
       const shortHash = parts[1].trim();
       const subject = parts[2].trim();
       const date = parts[3].split('\\n')[0].trim();
