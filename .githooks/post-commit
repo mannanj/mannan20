@@ -15,7 +15,7 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
 node -e "
 const { execSync } = require('child_process');
 
-const output = execSync(\`git log -9 --format='%H|||%h|||%s|||%b|||%an|||%aI|||---END---'\`, { encoding: 'utf-8', shell: '/bin/bash' });
+const output = execSync(\`git log -100 --format='%H|||%h|||%s|||%b|||%an|||%aI|||---END---'\`, { encoding: 'utf-8', shell: '/bin/bash' });
 const commits = [];
 const entries = output.split('|||---END---\n').filter(e => e.trim());
 

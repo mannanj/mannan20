@@ -55,22 +55,20 @@ import { selectDevCommits } from '../store/app.selectors';
 
         <div class="tab-content">
           @if (activeTab() === 'commits') {
-            <div class="overflow-x-auto">
+            <div class="commits-table-container">
               <table class="w-full border-collapse">
                 <tbody>
-                  @for (commit of devCommits$ | async; track commit.hash; let i = $index) {
-                    @if (i < 5) {
-                      <tr class="border-b border-gray-700 hover:bg-white/5">
-                        <td class="py-1 px-2">
-                          <a [href]="commit.url" target="_blank" class="text-[#039be5] hover:underline font-mono text-xs">
-                            {{ commit.hash }}
-                          </a>
-                        </td>
-                        <td class="py-1 px-2 text-gray-300 text-xs">{{ commit.subject }}</td>
-                        <td class="py-1 px-2 text-gray-400 text-xs">{{ commit.author }}</td>
-                        <td class="py-1 px-2 text-gray-400 text-xs">{{ commit.date | date: 'MMM d, y h:mm a' }}</td>
-                      </tr>
-                    }
+                  @for (commit of devCommits$ | async; track commit.hash) {
+                    <tr class="border-b border-gray-700 hover:bg-white/5">
+                      <td class="py-1 px-2">
+                        <a [href]="commit.url" target="_blank" class="text-[#039be5] hover:underline font-mono text-xs">
+                          {{ commit.hash }}
+                        </a>
+                      </td>
+                      <td class="py-1 px-2 text-gray-300 text-xs">{{ commit.subject }}</td>
+                      <td class="py-1 px-2 text-gray-400 text-xs">{{ commit.author }}</td>
+                      <td class="py-1 px-2 text-gray-400 text-xs">{{ commit.date | date: 'MMM d, y h:mm a' }}</td>
+                    </tr>
                   }
                 </tbody>
               </table>
@@ -130,6 +128,12 @@ import { selectDevCommits } from '../store/app.selectors';
 
     .tab-content {
       animation: fadeIn 0.3s ease-in;
+    }
+
+    .commits-table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: auto;
     }
 
     @keyframes fadeIn {
