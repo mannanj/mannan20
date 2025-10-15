@@ -43,7 +43,7 @@
 - Location: `src/app/utils/help.ts`
 
 ### Task 9: Mark ContactFormComponent Placeholder as Readonly
-- [ ] Add `readonly` to placeholder property
+- [x] Add `readonly` to placeholder property
 - Location: `src/app/components/contact/contact-form.ts`
 
 ### Task 10: Review ViewChild References

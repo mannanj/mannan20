@@ -230,7 +230,7 @@ export class ContactFormComponent {
   userInput = '';
   isLoading = false;
   showTooltip = false;
-  placeholder: string = 'Please share your name, email, or reason for reaching out'
+  readonly placeholder: string = 'Please share your name, email, or reason for reaching out'
 
   isValid(): boolean {
     const trimmed = this.userInput.trim();
