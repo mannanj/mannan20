@@ -8,6 +8,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { appReducer } from './store/app.reducer';
 import { cursorReducer } from './store/cursor.reducer';
 import { AppEffects } from './store/app.effects';
+import { CursorEffects } from './store/cursor.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(),
     provideStore({ app: appReducer, cursor: cursorReducer }),
-    provideEffects([AppEffects]),
+    provideEffects([AppEffects, CursorEffects]),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode()
