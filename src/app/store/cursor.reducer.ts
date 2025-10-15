@@ -41,7 +41,8 @@ export const cursorReducer = createReducer(
         ...state.cursors,
         [id]: { id, x: 0, y: 0, username: state.cursorUsername, color, isLocal: true }
       },
-      cursorOrder
+      cursorOrder,
+      activeViewerCount: Object.keys({ ...state.cursors, [id]: true }).length
     };
   }),
   on(CursorActions.updateActiveViewerCount, (state, { count }) => ({
