@@ -52,6 +52,20 @@ const { execSync } = require('child_process');
 
 const tasksMarkdown = fs.readFileSync('${TASKS_INPUT}', 'utf8');
 
+let existingTasks = {};
+if (fs.existsSync('${TASKS_OUTPUT}')) {
+  try {
+    const existingData = JSON.parse(fs.readFileSync('${TASKS_OUTPUT}', 'utf8'));
+    existingData.forEach(task => {
+      existingTasks[task.id] = {
+        completedDate: task.completedDate,
+        completedCommit: task.completedCommit
+      };
+    });
+  } catch (error) {
+  }
+}
+
 function findTaskCompletionCommit(taskNum, taskTitle) {
   try {
     let commitMsgCheck = execSync(
@@ -126,9 +140,15 @@ while ((taskMatch = taskRegex.exec(tasksMarkdown)) !== null) {
 
   if (status === 'completed') {
     const commitInfo = findTaskCompletionCommit(taskNum, taskTitle);
+    const taskId = \`task-\${taskNum}\`;
+    const existing = existingTasks[taskId];
+
     if (commitInfo) {
       task.completedDate = commitInfo.date;
       task.completedCommit = commitInfo;
+    } else if (existing && existing.completedDate && existing.completedCommit) {
+      task.completedDate = existing.completedDate;
+      task.completedCommit = existing.completedCommit;
     }
   }
 
