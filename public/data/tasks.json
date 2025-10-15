@@ -198,22 +198,30 @@
   {
     "id": "task-12",
     "title": "Move SVGs to Reusable Icon Components",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Extract inline SVGs to separate icon components",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Create reusable icon components that can be imported and used throughout the app",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace duplicate SVG code with icon component references",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "Components with inline SVG markup"
+    "location": "Components with inline SVG markup",
+    "completedDate": "2025-10-15T00:02:35-04:00",
+    "completedCommit": {
+      "hash": "042f531",
+      "fullHash": "042f531c2724921272bf164884a7e99f09b96164",
+      "subject": "Task 12: Move SVGs to Reusable Icon Components - [x] Extract inline SVGs to separate icon components - [x] Create reusable icon components that can be imported and used throughout the app - [x] Replace duplicate SVG code with icon component references - Location: Components with inline SVG markup",
+      "date": "2025-10-15T00:02:35-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/042f531c2724921272bf164884a7e99f09b96164"
+    }
   },
   {
     "id": "task-13",

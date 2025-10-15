@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "042f531c2724921272bf164884a7e99f09b96164",
+    "hash": "042f531",
+    "subject": "Task 12: Move SVGs to Reusable Icon Components - [x] Extract inline SVGs to separate icon components - [x] Create reusable icon components that can be imported and used throughout the app - [x] Replace duplicate SVG code with icon component references - Location: Components with inline SVG markup",
+    "body": "[Task-12]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:02:35-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/042f531c2724921272bf164884a7e99f09b96164"
+  },
+  {
+    "fullHash": "64f482d7059b5294640119b7c7fc2455040ea5f0",
+    "hash": "64f482d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:50:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/64f482d7059b5294640119b7c7fc2455040ea5f0"
+  },
+  {
     "fullHash": "f42178806f029e40b1b8f55d2ad4504ac807df9f",
     "hash": "f421788",
     "subject": "Extract magic numbers to named constants",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:15:02-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/26c975e4c8a8a74215b88e10cf9c3606d99c4695"
-  },
-  {
-    "fullHash": "f41e031c521ea9722ecdbfae7b0935843f1ff127",
-    "hash": "f41e031",
-    "subject": "Fix cursor lag by throttling WebSocket sends",
-    "body": "Before: Sent WebSocket message on EVERY mousemove event (60-144+ msg/sec)\nAfter: Throttled to max 20 messages/sec (one every 50ms)\n\nChanges:\n- Local cursor still updates instantly (no throttle)\n- WebSocket sends throttled to prevent overwhelming connection\n- Moved updateUsername() into throttled block (no need every frame)\n- Applied same throttling to touch events\n\nThis eliminates lag while keeping cursor movement smooth.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:13:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f41e031c521ea9722ecdbfae7b0935843f1ff127"
-  },
-  {
-    "fullHash": "b153483d75c57a5ec0e73ecf50e4c32e51aaef50",
-    "hash": "b153483",
-    "subject": "Add local cursor with real-time updates",
-    "body": "- Your cursor now appears immediately when you connect\n- Cursor updates in real-time on mouse/touch move without server lag\n- Server broadcasts ignored for own cursor to prevent conflicts\n- initializeMyCursor creates cursor with (you) label on ID receipt\n- updateMyCursor handles local position updates instantly\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:09:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b153483d75c57a5ec0e73ecf50e4c32e51aaef50"
   }
 ]
