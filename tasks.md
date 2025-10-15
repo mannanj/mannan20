@@ -69,3 +69,12 @@
 - [ ] Design active tab to appear linked to its corresponding page
 - [ ] Maintain minimal aesthetic while achieving a revolutionary page-like appearance
 - Location: Dev stats component tab interface
+
+### Task 14: Track Task Completion Dates via Git Hooks
+- [ ] Add `completedDate` field to Task interface in models
+- [ ] Update tasks.json structure to include completedDate field
+- [ ] Enhance post-commit hook to detect when task is marked complete
+- [ ] Store completion timestamp when task status changes to completed
+- [ ] Display completion date in Tasks tab UI
+- [ ] Ensure completion date persists across commits
+- Location: `.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`
