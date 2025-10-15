@@ -240,10 +240,12 @@
         }
         const text = chatInput.value.trim();
         if (text) {
+          const message = { text, timestamp: Date.now() };
           sendMessage({
             type: "chat",
-            message: { text, timestamp: Date.now() }
+            message: message
           });
+          showChatMessage(myId, message);
           lastMessageTime = Date.now();
         }
         hideChatInput();
