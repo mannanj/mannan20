@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "5b52652657c494794f75719fd497a68c91bfed2f",
+    "hash": "5b52652",
+    "subject": "Task 55: Refine Contact Modal Typography for Elegant Appearance",
+    "body": "- [x] Make consent text more subtle using !important overrides\n- [x] Increase header font size from 2rem to 2.5rem\n- [x] Lighten header font weight to font-light for elegant look\n- [x] Reduce tagline prominence with more subtle gray color\n- [x] Remove caps from button text (Continue your request, Continue with Google)\n- [x] Add rounded container around action section (buttons and input)\n- [x] Change button to white background with black text and blue border animation\n- [x] Remove divider lines around OR text\n- [x] Move consent text inside action container\n- [x] Match styling to Anthropic's minimal aesthetic\n- Location: `src/app/components/contact/contact-form.ts`\n\n[Task-55]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T12:06:07-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5b52652657c494794f75719fd497a68c91bfed2f"
+  },
+  {
+    "fullHash": "a94a1d99e60b7d6f5f8707dcee2d52ef654c59bd",
+    "hash": "a94a1d9",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:59:55-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a94a1d99e60b7d6f5f8707dcee2d52ef654c59bd"
+  },
+  {
     "fullHash": "de6b92f4491f7ab5e111ef5fa49f6909525d2050",
     "hash": "de6b92f",
     "subject": "Task 54: Adjust Dev Stats Modal Width and Task Column Styling",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:41:59-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-  },
-  {
-    "fullHash": "3971ebcbeef49f569d1ad974af3955008dc1c000",
-    "hash": "3971ebc",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:41:37-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/3971ebcbeef49f569d1ad974af3955008dc1c000"
-  },
-  {
-    "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
-    "hash": "51f6d4e",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:39:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
   }
 ]
