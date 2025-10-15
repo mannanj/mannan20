@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "537cf5f726b451ec760a802275341fffde82d73d",
+    "hash": "537cf5f",
+    "subject": "Add task completion tracking and modularize dev-stats [Task-14] [Task-15]",
+    "body": "Task 14: Task completion tracking\n- Add completedDate and completedCommit fields to Task interface\n- Implement git history analysis to detect task completion\n- Support dual detection: diff analysis + commit message search\n- Display completion dates and linked commits in UI\n- Add table/card view toggle and sort by completion date\n- Create comprehensive TASKS_FEATURE.md documentation\n\nTask 15: Modularize dev-stats component\n- Extract task-card component (individual task display)\n- Extract task-table component (tabular task display)\n- Extract tasks-toolbar component (view/sort controls)\n- Reduce dev-stats.ts from 574 to 239 lines (58% reduction)\n- Improve code organization and reusability\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:04:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/537cf5f726b451ec760a802275341fffde82d73d"
+  },
+  {
+    "fullHash": "b2b225f9245d94df107b4521f77aca28d1207556",
+    "hash": "b2b225f",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:47:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b2b225f9245d94df107b4521f77aca28d1207556"
+  },
+  {
     "fullHash": "ee9e53c7b12fd785e195f702745ccac8334c5baa",
     "hash": "ee9e53c",
     "subject": "Add Task 14: Track task completion dates via git hooks",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-12T00:31:46-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/3ba5d06b457d5a134ad08ecc07aecece786eb0cf"
-  },
-  {
-    "fullHash": "d2822e370d659a7c3d045339472580d49648ae4b",
-    "hash": "d2822e3",
-    "subject": "add files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-10T17:25:24-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/d2822e370d659a7c3d045339472580d49648ae4b"
-  },
-  {
-    "fullHash": "8343ec7435ac54cf6573b66df1c4ce613b912ac8",
-    "hash": "8343ec7",
-    "subject": "add spring-boot-devtools and a watch script to rebuild on change saves",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-10T17:16:59-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8343ec7435ac54cf6573b66df1c4ce613b912ac8"
   }
 ]
