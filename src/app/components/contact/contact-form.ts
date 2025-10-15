@@ -2,12 +2,11 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GoogleLogoIcon } from '../icons/google-logo-icon';
-import { CheckIcon } from '../icons/check-icon';
 
 @Component({
   selector: 'contact-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, GoogleLogoIcon, CheckIcon],
+  imports: [CommonModule, FormsModule, GoogleLogoIcon],
   template: `
     <div class="text-center mb-8">
       <h2 class="m-0 mb-2 text-[2rem] font-normal text-white tracking-tight">Ready to collaborate?</h2>
