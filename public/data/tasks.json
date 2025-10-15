@@ -2234,5 +2234,41 @@
       }
     ],
     "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
+  },
+  {
+    "id": "task-68",
+    "title": "Fix AG Grid Column Menu Not Displaying",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Investigate why column menu icons are not visible in column headers",
+        "completed": false
+      },
+      {
+        "description": "Check AG Grid documentation for proper column menu configuration",
+        "completed": false
+      },
+      {
+        "description": "Add suppressHeaderMenuButton: false to column definitions or grid options",
+        "completed": false
+      },
+      {
+        "description": "Enable menu icons in column headers",
+        "completed": false
+      },
+      {
+        "description": "Test right-click context menu functionality on column headers",
+        "completed": false
+      },
+      {
+        "description": "Verify column chooser opens and allows hiding/showing columns",
+        "completed": false
+      },
+      {
+        "description": "Ensure menu works in both commits-grid and task-table",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
   }
 ]
