@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "ffff11c21fa0bf4e3f4e4cdb6c23f4c911a03749",
+    "hash": "ffff11c",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:37:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ffff11c21fa0bf4e3f4e4cdb6c23f4c911a03749"
+  },
+  {
     "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
     "hash": "78c0eec",
     "subject": "Remove buggy diff-based fallback from task detection",
@@ -889,14 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T15:36:17-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/f0056770626afe9e28c41e9ace145620128cc077"
-  },
-  {
-    "fullHash": "60ab88dc443831bfac3429e256775f2360d120e5",
-    "hash": "60ab88d",
-    "subject": "Convert content-card component styles to Tailwind utilities",
-    "body": "Migrated inline styles and CSS classes to Tailwind utility classes for better maintainability and consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:35:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/60ab88dc443831bfac3429e256775f2360d120e5"
   }
 ]
