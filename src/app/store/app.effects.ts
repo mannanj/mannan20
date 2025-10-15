@@ -60,16 +60,20 @@ export class AppEffects {
   loadDevCommits$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ROOT_EFFECTS_INIT),
-      filter(() => isDevMode()),
-      mergeMap(() =>
-        this.http.get<DevCommit[]>('assets/dev-commits.json').pipe(
-          map(commits => AppActions.loadDevCommitsSuccess({ commits })),
+      filter(() => {
+        const devMode = isDevMode();
+        return devMode;
+      }),
+      mergeMap(() => {
+        return this.http.get<DevCommit[]>('data/dev-commits.json').pipe(
+          map(commits => {
+            return AppActions.loadDevCommitsSuccess({ commits });
+          }),
           catchError((error) => {
-            console.error('Error loading dev commits:', error);
             return of();
           })
-        )
-      )
+        );
+      })
     )
   );
 }

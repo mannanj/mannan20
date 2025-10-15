@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "8a7644545fe69a9e281e5b216095222960d2d683",
+    "hash": "8a76445",
+    "subject": "Refactor dev stats to use NgRx effects and conditional rendering",
+    "body": "Move data fetching logic from component to NgRx effects - effect only loads\ndev-commits.json when isDevMode() cookie is true. Simplify DevStats component\nto be a dumb presentation component with no lifecycle hooks or HTTP calls.\n\nAdd conditional rendering in app.ts with @if (hasDevCommits()) similar to\nisConnected() pattern. Component now only renders when data is available.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:07:44 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/8a7644545fe69a9e281e5b216095222960d2d683"
+  },
+  {
     "fullHash": "9bd8ba342d0d3c319db2c73a79e10c29ede122a7",
     "hash": "9bd8ba3",
     "subject": "Add dev stats feature with git commit history",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 20:26:08 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/892433edc6d57ef757b92a9d6ccf5231f420c445"
-  },
-  {
-    "fullHash": "88bdd014c2ebfee92fee0a1bd3824b998ed296ad",
-    "hash": "88bdd01",
-    "subject": "Remove cursor state from app reducer, actions, and selectors",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:24:42 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/88bdd014c2ebfee92fee0a1bd3824b998ed296ad"
   }
 ]

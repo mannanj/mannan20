@@ -17,5 +17,6 @@ export function getCookie(name: string): string | null {
 }
 
 export function isDevMode(): boolean {
+  console.log('Cookie isMannanDev:', getCookie('isMannanDev'));
   return getCookie('isMannanDev') === '1';
 }

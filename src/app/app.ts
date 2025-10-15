@@ -38,10 +38,12 @@ import { selectDevCommits } from './store/app.selectors';
       @if (isConnected()) {
         <viewer-stats />
       }
-      <last-updated />
-      @if (hasDevCommits()) {
-        <dev-stats />
-      }
+      <div class="fixed bottom-0 right-0 z-50 flex items-center gap-2">
+        @if (hasDevCommits()) {
+          <dev-stats />
+        }
+        <last-updated />
+      </div>
       <keyboard-commands-modal />
     </div>
   `,
