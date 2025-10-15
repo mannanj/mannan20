@@ -1530,5 +1530,29 @@
       "date": "2025-10-15T11:40:33-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/5a02e6ed1fd572f2ac3ac2c7c2fae61e047cbff7"
     }
+  },
+  {
+    "id": "task-51",
+    "title": "Make Status Badge Text Smaller in Table View",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Reduce font size of status badge text in task-table component",
+        "completed": false
+      },
+      {
+        "description": "Adjust padding to maintain badge appearance with smaller text",
+        "completed": false
+      },
+      {
+        "description": "Ensure badge looks more compact and refined",
+        "completed": false
+      },
+      {
+        "description": "Keep card view status badge unchanged",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/task-table.ts`"
   }
 ]
