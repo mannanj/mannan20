@@ -184,7 +184,18 @@ This project uses a custom post-commit hook (`.githooks/post-commit`) that autom
 - Location: `path/to/files`
 ```
 
-**2. Work on the task and mark subtasks complete:**
+**2. Before starting a task, ALWAYS verify if work is already done:**
+- Check the codebase to see if the task's changes are already implemented
+- Review the files mentioned in the task's Location field
+- Verify each subtask is actually completed in the code
+- If the work is already done but task is not marked complete:
+  - Mark all subtasks as `[x]` in tasks.md
+  - Commit with proper format including `[Task-N]` tag
+  - Push to git
+  - Skip to next task
+- This prevents duplicate work on already-completed tasks
+
+**3. Work on the task and mark subtasks complete:**
 ```markdown
 ### Task N: Task Title
 - [x] Subtask 1
@@ -192,7 +203,7 @@ This project uses a custom post-commit hook (`.githooks/post-commit`) that autom
 - Location: `path/to/files`
 ```
 
-**3. Commit with task title and details:**
+**4. Commit with task title and details:**
 ```bash
 git add .
 git commit -m "Task N: Task Title
