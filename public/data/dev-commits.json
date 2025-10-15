@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "90f8338dae657a404f4ea1c8a8cdbd096d4d597b",
+    "hash": "90f8338",
+    "subject": "Fix task completion commit detection in post-commit hook",
+    "body": "[Task-20]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:36:08-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/90f8338dae657a404f4ea1c8a8cdbd096d4d597b"
+  },
+  {
+    "fullHash": "53904f31707b43f593b87b1cb5712c2ba34083e3",
+    "hash": "53904f3",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:31:20-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/53904f31707b43f593b87b1cb5712c2ba34083e3"
+  },
+  {
     "fullHash": "3cc8f8bf6473518496b381291c93fbd208740403",
     "hash": "3cc8f8b",
     "subject": "Add formatted completion date/time display to Tasks UI",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T12:24:22-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/6a84dd55d10771e86e2d87777c9e06f8113737d4"
-  },
-  {
-    "fullHash": "0f55c150ff266739e73a70fe4745cab2e66bf1e7",
-    "hash": "0f55c15",
-    "subject": "refactor contact modal into separate reusable components",
-    "body": "Extract form and result logic into dedicated components with clear responsibilities. Modal now handles only UI presentation without conditional logic. Parent controls content projection.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T12:18:56-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0f55c150ff266739e73a70fe4745cab2e66bf1e7"
-  },
-  {
-    "fullHash": "f0a234e7c4aafcb5279fa3aee3bd293af6ca9a11",
-    "hash": "f0a234e",
-    "subject": "refactor modal with content projection and extract helper methods",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T12:10:24-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f0a234e7c4aafcb5279fa3aee3bd293af6ca9a11"
   }
 ]
