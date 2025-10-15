@@ -123,10 +123,11 @@ This project uses a custom post-commit hook (`.githooks/post-commit`) that autom
 - Location: `path/to/files`
 ```
 
-**3. Commit with full task content from tasks.md:**
+**3. Commit with task title and details:**
 ```bash
 git add .
 git commit -m "Task N: Task Title
+
 - [x] Subtask 1
 - [x] Subtask 2
 - Location: \`path/to/files\`
