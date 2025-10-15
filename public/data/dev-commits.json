@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "effa25252bc5e7e289637d178ac2b238de1a5249",
+    "hash": "effa252",
+    "subject": "remove resume",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:23:25-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/effa25252bc5e7e289637d178ac2b238de1a5249"
+  },
+  {
+    "fullHash": "e2366d2c922e4c90b4acb5d53d62b77acceebcb8",
+    "hash": "e2366d2",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T15:54:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e2366d2c922e4c90b4acb5d53d62b77acceebcb8"
+  },
+  {
     "fullHash": "0db59d385716a18f256f1b75dd03e335d3735e7d",
     "hash": "0db59d3",
     "subject": "Task 47: Add Search Functionality to AG Grid Tables",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:49:09-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/fe0f92c33f272b474812c3bca9fe33a8e346239c"
-  },
-  {
-    "fullHash": "5aec1cb3da5a461bd6e2fe20c3b11900f535cb0b",
-    "hash": "5aec1cb",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:48:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5aec1cb3da5a461bd6e2fe20c3b11900f535cb0b"
-  },
-  {
-    "fullHash": "2e9016938967bc7ba2b464cdfbb1f178601ad51a",
-    "hash": "2e90169",
-    "subject": "Mark ContactFormComponent placeholder property as readonly",
-    "body": "[Task-9]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:48:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/2e9016938967bc7ba2b464cdfbb1f178601ad51a"
   }
 ]
