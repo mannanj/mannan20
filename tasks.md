@@ -532,3 +532,10 @@
 - [x] Test all sections to ensure header navigation highlights update correctly when scrolling
 - [x] Verify performance is smooth with throttled scroll events
 - Location: `src/app/store/app.effects.ts`, `src/app/shared/base-section.ts`, `src/app/components/home/home.ts`, `src/app/components/about/about.ts`, `src/app/components/contact/contact.ts`, `src/app/utils/help.ts`
+
+### Task 67: Fix AG Grid Deprecated Property Warning
+- [ ] Replace suppressRowClickSelection with rowSelection.enableClickSelection in commits-grid
+- [ ] Replace suppressRowClickSelection with rowSelection.enableClickSelection in task-table
+- [ ] Test both grids to ensure row click behavior remains unchanged
+- [ ] Verify build completes without deprecation warnings
+- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
