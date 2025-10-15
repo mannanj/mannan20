@@ -1,8 +1,11 @@
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { CardViewIcon } from '../components/icons/card-view-icon';
+import { TableViewIcon } from '../components/icons/table-view-icon';
+import { SortIcon } from '../components/icons/sort-icon';
 
 @Component({
   selector: 'tasks-toolbar',
-  imports: [],
+  imports: [CardViewIcon, TableViewIcon, SortIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tasks-toolbar">
@@ -12,37 +15,21 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
           [class.active]="currentView() === 'card'"
           class="view-button"
           title="Card View">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-          </svg>
+          <card-view-icon />
         </button>
         <button
           (click)="viewChange.emit('table')"
           [class.active]="currentView() === 'table'"
           class="view-button"
           title="Table View">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <table-view-icon />
         </button>
       </div>
       <button
         (click)="sortToggle.emit()"
         class="sort-button"
         title="Sort by completion date">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 5h10M11 9h7M11 13h4"/>
-          @if (sortOrder() === 'asc') {
-            <path d="M4 16l4 4 4-4M8 20V4"/>
-          } @else {
-            <path d="M4 8l4-4 4 4M8 4v16"/>
-          }
-        </svg>
+        <sort-icon [direction]="sortOrder()" />
         {{ sortOrder() === 'asc' ? 'Oldest First' : 'Newest First' }}
       </button>
     </div>

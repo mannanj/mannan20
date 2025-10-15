@@ -2,13 +2,15 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ContactResult } from '../../models/models';
 import * as help from '../../utils/help';
+import { CopyIcon } from '../icons/copy-icon';
+import { CheckIcon } from '../icons/check-icon';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
 
 @Component({
   selector: 'contact-result',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CopyIcon, CheckIcon],
   template: `
     <h3>Say Hi <span aria-label="wave" title="Wave">👋</span></h3>
     <div class="contact-result">
@@ -16,26 +18,16 @@ const COPY_FEEDBACK_DURATION_MS = 2000;
         <strong>Email:</strong>
         <a [href]="'mailto:' + result.email">{{ result.email }}</a>
         <button class="copy-btn" (click)="copyEmail()" [title]="copiedEmail ? 'Copied!' : 'Copy'">
-          <svg *ngIf="!copiedEmail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <svg *ngIf="copiedEmail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+          <copy-icon *ngIf="!copiedEmail" />
+          <check-icon *ngIf="copiedEmail" />
         </button>
       </div>
       <div class="contact-item" *ngIf="result">
         <strong>Phone:</strong>
         <a [href]="help.getPhoneLink(result.phone)">{{ result.phone }}</a>
         <button class="copy-btn" (click)="copyPhone()" [title]="copiedPhone ? 'Copied!' : 'Copy'">
-          <svg *ngIf="!copiedPhone" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <svg *ngIf="copiedPhone" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
+          <copy-icon *ngIf="!copiedPhone" />
+          <check-icon *ngIf="copiedPhone" />
         </button>
       </div>
     </div>

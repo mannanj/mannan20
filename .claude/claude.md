@@ -123,10 +123,13 @@ This project uses a custom post-commit hook (`.githooks/post-commit`) that autom
 - Location: `path/to/files`
 ```
 
-**3. Commit with task ID in message:**
+**3. Commit with full task content from tasks.md:**
 ```bash
 git add .
-git commit -m "Description of changes
+git commit -m "Task N: Task Title
+- [x] Subtask 1
+- [x] Subtask 2
+- Location: \`path/to/files\`
 
 [Task-N]
 
@@ -135,7 +138,11 @@ git commit -m "Description of changes
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-**IMPORTANT:** Include `[Task-N]` or `[Task N]` in commit message for proper tracking
+**IMPORTANT:**
+- Include the complete task entry from tasks.md in the commit message
+- Include all subtasks with their completion status
+- Include `[Task-N]` or `[Task N]` tag for proper tracking
+- Only one task per commit.
 
 ### Post-Commit Hook Behavior
 
