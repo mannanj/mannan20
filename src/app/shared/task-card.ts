@@ -10,7 +10,7 @@ import { formatCompletionDate } from '../utils/date';
     <div class="bg-[#2a2a2a] border border-[#404040] rounded-lg p-3">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-sm font-semibold text-white m-0">{{ task().title }}</h3>
-        <span [class]="task().status === 'completed' ? 'py-[2px] px-[3px] rounded text-[10px] uppercase bg-[#22c55e] text-white font-semibold inline-block' : 'py-0.5 px-2 rounded text-[10px] uppercase bg-[#404040] text-[#888] font-semibold'">
+        <span [class]="task().status === 'completed' ? 'py-[3px] px-[2px] rounded text-[10px] uppercase bg-[#22c55e] text-white font-semibold inline-block leading-none' : 'py-0.5 px-2 rounded text-[10px] uppercase bg-[#404040] text-[#888] font-semibold'">
           {{ task().status }}
         </span>
       </div>
