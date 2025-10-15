@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "145eae8debdbd245f74899b52e04538831485085",
+    "hash": "145eae8",
+    "subject": "Convert global CSS classes to inline Tailwind utilities",
+    "body": "- Added unique IDs to divs for identification (not styling)\n- Converted .collapsible class to inline Tailwind (10 instances)\n- Converted .content class to inline Tailwind (2 instances)\n- Converted #body, #home, #about, #contact styles to inline Tailwind\n- Removed all component styles arrays (now empty)\n- Cleaned up styles.css (kept #body a pseudo-element styles)\n- Location: `src/app/app.ts`, `src/app/components/about/`, `src/styles.css`\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T12:40:38-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/145eae8debdbd245f74899b52e04538831485085"
+  },
+  {
+    "fullHash": "c726266a931f60ed9dad8ed125b76295a72daf81",
+    "hash": "c726266",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T12:32:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/c726266a931f60ed9dad8ed125b76295a72daf81"
+  },
+  {
     "fullHash": "28e67af8542261bf87712088056fe36047297ede",
     "hash": "28e67af",
     "subject": "Task 61: Convert All Global Styles to Inline Tailwind Utilities",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:42:45-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/d9e09f1abc34d83b4d3df9140f774a47770402ce"
-  },
-  {
-    "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
-    "hash": "148316e",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:42:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
-  },
-  {
-    "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
-    "hash": "a06c7dd",
-    "subject": "Clear all completion data to reset for proper hook function",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:42:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
   }
 ]
