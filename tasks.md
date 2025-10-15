@@ -370,3 +370,10 @@
 - [x] Consider virtualizing rows if dataset is large
 - [x] Profile performance and verify improvements
 - Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/tasks-container.ts`
+
+### Task 51: Make Status Badge Text Smaller in Table View
+- [ ] Reduce font size of status badge text in task-table component
+- [ ] Adjust padding to maintain badge appearance with smaller text
+- [ ] Ensure badge looks more compact and refined
+- [ ] Keep card view status badge unchanged
+- Location: `src/app/shared/task-table.ts`
