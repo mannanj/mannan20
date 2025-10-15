@@ -9,6 +9,7 @@ import { ServicesPlaceholderIcon } from '../components/icons/services-placeholde
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { themeQuartz } from 'ag-grid-community';
 
 @Component({
   selector: 'dev-stats',
@@ -49,9 +50,9 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
         <div class="tab-content">
           @if (activeTab() === 'commits') {
             <ag-grid-angular
-              class="ag-theme-quartz-dark"
               [rowData]="filteredCommits()"
               [columnDefs]="commitsColDefs"
+              [theme]="gridTheme"
               [domLayout]="'autoHeight'"
               [suppressCellFocus]="true"
               style="width: 100%; max-height: 400px;"
@@ -152,6 +153,14 @@ export class DevStats {
   protected filteredCommits = computed(() =>
     this.allCommits().filter(commit => commit.subject !== 'Update dev data files')
   );
+
+  protected gridTheme = themeQuartz.withParams({
+    backgroundColor: '#000',
+    foregroundColor: '#fff',
+    headerBackgroundColor: '#1a1a1a',
+    headerTextColor: '#fff',
+    oddRowBackgroundColor: '#0a0a0a',
+  });
 
   protected commitsColDefs: ColDef[] = [
     {

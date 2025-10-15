@@ -3,6 +3,7 @@ import { Task } from '../models/models';
 import { formatCompletionDate } from '../utils/date';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { themeQuartz } from 'ag-grid-community';
 
 @Component({
   selector: 'task-table',
@@ -10,9 +11,9 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ag-grid-angular
-      class="ag-theme-quartz-dark"
       [rowData]="tasks()"
       [columnDefs]="colDefs"
+      [theme]="gridTheme"
       [domLayout]="'autoHeight'"
       [suppressCellFocus]="true"
       style="width: 100%; max-height: 400px;"
@@ -22,6 +23,14 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 })
 export class TaskTable {
   tasks = input.required<Task[]>();
+
+  protected gridTheme = themeQuartz.withParams({
+    backgroundColor: '#000',
+    foregroundColor: '#fff',
+    headerBackgroundColor: '#1a1a1a',
+    headerTextColor: '#fff',
+    oddRowBackgroundColor: '#0a0a0a',
+  });
 
   protected colDefs: ColDef[] = [
     {
@@ -61,6 +70,7 @@ export class TaskTable {
       headerName: 'Commit',
       width: 100,
       resizable: true,
+      valueFormatter: (params) => params.value?.hash || '-',
       cellRenderer: (params: ICellRendererParams) => {
         if (params.value) {
           return `<a href="${params.value.url}" target="_blank" style="color: #039be5; font-family: monospace; font-size: 12px; text-decoration: none;">${params.value.hash}</a>`;
