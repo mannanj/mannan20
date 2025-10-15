@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ModalComponent } from './modal';
 import { selectCommandsModalVisible } from '../store/app.selectors';
@@ -12,7 +12,6 @@ interface Command {
 
 @Component({
   selector: 'keyboard-commands-modal',
-  standalone: true,
   imports: [ModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -35,10 +34,9 @@ interface Command {
     '(document:keydown)': 'handleKeydown($event)'
   }
 })
-export class KeyboardCommandsModal implements OnInit, OnDestroy {
+export class KeyboardCommandsModal {
   private store = inject(Store);
-  protected isVisible = signal(false);
-  private toggleListener: (() => void) | null = null;
+  protected isVisible = this.store.selectSignal(selectCommandsModalVisible);
 
   protected commands: Command[] = [
     {
@@ -57,21 +55,6 @@ export class KeyboardCommandsModal implements OnInit, OnDestroy {
       action: () => this.toggle()
     }
   ];
-
-  ngOnInit() {
-    this.store.select(selectCommandsModalVisible).subscribe(visible => {
-      this.isVisible.set(visible);
-    });
-
-    this.toggleListener = () => this.toggle();
-    window.addEventListener('toggleCommandsModal', this.toggleListener);
-  }
-
-  ngOnDestroy() {
-    if (this.toggleListener) {
-      window.removeEventListener('toggleCommandsModal', this.toggleListener);
-    }
-  }
 
   handleKeydown(event: KeyboardEvent) {
     if ((event.key === 'h' || event.key === 'H') && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
