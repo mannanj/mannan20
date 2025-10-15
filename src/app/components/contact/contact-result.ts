@@ -12,7 +12,7 @@ const COPY_FEEDBACK_DURATION_MS = 2000;
   standalone: true,
   imports: [CommonModule, CopyIcon, CheckIcon],
   template: `
-    <h3 class="m-0 mb-6 text-xl text-white text-center">Say Hi <span aria-label="wave" title="Wave">👋</span></h3>
+    <h3 class="m-0 mb-6 text-xl text-white text-center">Hi there 👋</h3>
     <div class="bg-[#2a2a2a] border border-[#404040] p-5 rounded-lg mb-5">
       <div class="mb-3 last:mb-0 text-[0.95rem] text-white flex items-center gap-3" *ngIf="result">
         <strong class="inline-block w-[70px] text-[#999] shrink-0">Email:</strong>
