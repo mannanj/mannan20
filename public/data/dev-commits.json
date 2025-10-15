@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "fe0f92c33f272b474812c3bca9fe33a8e346239c",
+    "hash": "fe0f92c",
+    "subject": "Replace switch statement with object lookup in determineOffsetPx",
+    "body": "[Task-8]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:49:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fe0f92c33f272b474812c3bca9fe33a8e346239c"
+  },
+  {
+    "fullHash": "5aec1cb3da5a461bd6e2fe20c3b11900f535cb0b",
+    "hash": "5aec1cb",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:48:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5aec1cb3da5a461bd6e2fe20c3b11900f535cb0b"
+  },
+  {
     "fullHash": "2e9016938967bc7ba2b464cdfbb1f178601ad51a",
     "hash": "2e90169",
     "subject": "Mark ContactFormComponent placeholder property as readonly",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:02:05-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/eee693d352d871992938a62212625e039a786757"
-  },
-  {
-    "fullHash": "c79f20b20c1a91e01592482bce64c28d0e6ff1bf",
-    "hash": "c79f20b",
-    "subject": "Regenerate pnpm-lock.yaml after removing trystero",
-    "body": "- Remove trystero from lock file\n- Fix Vercel deployment build issue\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:54:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c79f20b20c1a91e01592482bce64c28d0e6ff1bf"
-  },
-  {
-    "fullHash": "b668aac763a5dfbd5404ff35d0cf3f57ffcfa97c",
-    "hash": "b668aac",
-    "subject": "Make last updated date 50% opaque",
-    "body": "- Add opacity-50 to last-updated component\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:50:36-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b668aac763a5dfbd5404ff35d0cf3f57ffcfa97c"
   }
 ]

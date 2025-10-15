@@ -118,14 +118,22 @@
   {
     "id": "task-8",
     "title": "Switch to Object Lookup in Help Utils",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Replace switch statement with object lookup",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/utils/help.ts`"
+    "location": "`src/app/utils/help.ts`",
+    "completedDate": "2025-10-14T23:49:09-04:00",
+    "completedCommit": {
+      "hash": "fe0f92c",
+      "fullHash": "fe0f92c33f272b474812c3bca9fe33a8e346239c",
+      "subject": "Replace switch statement with object lookup in determineOffsetPx",
+      "date": "2025-10-14T23:49:09-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/fe0f92c33f272b474812c3bca9fe33a8e346239c"
+    }
   },
   {
     "id": "task-9",
