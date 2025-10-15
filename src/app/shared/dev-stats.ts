@@ -49,14 +49,15 @@ import { themeQuartz } from 'ag-grid-community';
 
         <div class="tab-content">
           @if (activeTab() === 'commits') {
-            <ag-grid-angular
-              [rowData]="filteredCommits()"
-              [columnDefs]="commitsColDefs"
-              [theme]="gridTheme"
-              [domLayout]="'autoHeight'"
-              [suppressCellFocus]="true"
-              style="width: 100%; max-height: 400px;"
-            />
+            <div style="height: 400px; width: 100%;">
+              <ag-grid-angular
+                [rowData]="filteredCommits()"
+                [columnDefs]="commitsColDefs"
+                [theme]="gridTheme"
+                [suppressCellFocus]="true"
+                style="width: 100%; height: 100%;"
+              />
+            </div>
           }
 
           @if (activeTab() === 'services') {
@@ -160,6 +161,8 @@ export class DevStats {
     headerBackgroundColor: '#1a1a1a',
     headerTextColor: '#fff',
     oddRowBackgroundColor: '#0a0a0a',
+    headerFontSize: 11,
+    headerVerticalPaddingScale: 0.5,
   });
 
   protected commitsColDefs: ColDef[] = [

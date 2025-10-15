@@ -10,14 +10,15 @@ import { themeQuartz } from 'ag-grid-community';
   imports: [AgGridAngular],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ag-grid-angular
-      [rowData]="tasks()"
-      [columnDefs]="colDefs"
-      [theme]="gridTheme"
-      [domLayout]="'autoHeight'"
-      [suppressCellFocus]="true"
-      style="width: 100%; max-height: 400px;"
-    />
+    <div style="height: 400px; width: 100%;">
+      <ag-grid-angular
+        [rowData]="tasks()"
+        [columnDefs]="colDefs"
+        [theme]="gridTheme"
+        [suppressCellFocus]="true"
+        style="width: 100%; height: 100%;"
+      />
+    </div>
   `,
   styles: []
 })
@@ -30,6 +31,8 @@ export class TaskTable {
     headerBackgroundColor: '#1a1a1a',
     headerTextColor: '#fff',
     oddRowBackgroundColor: '#0a0a0a',
+    headerFontSize: 11,
+    headerVerticalPaddingScale: 0.5,
   });
 
   protected colDefs: ColDef[] = [
