@@ -39,7 +39,7 @@
 - Location: `src/app/services/navigation.service.ts`
 
 ### Task 8: Switch to Object Lookup in Help Utils
-- [ ] Replace switch statement with object lookup
+- [x] Replace switch statement with object lookup
 - Location: `src/app/utils/help.ts`
 
 ### Task 9: Mark ContactFormComponent Placeholder as Readonly
