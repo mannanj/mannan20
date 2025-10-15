@@ -1,13 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { fadeIn } from '../../animations/animations';
 import { ProfileItem } from '../../models/models';
 
 @Component({
   selector: 'content-card',
   standalone: true,
   imports: [CommonModule],
-  animations: [fadeIn],
   template: `
     <div class="p-0 m-0 text-inherit" [class.mt-[25px]]="applyMarginTop">
       <a *ngIf="data.link && data.title" [href]="data.link" target="_blank" class="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
@@ -38,7 +36,7 @@ import { ProfileItem } from '../../models/models';
       </a>
 
       <div *ngIf="data.expandedContent">
-        <div *ngIf="isExpanded" class="content bg-[#f1f1f1] text-black p-1.5 rounded-md" @fadeIn>
+        <div *ngIf="isExpanded" class="content bg-[#f1f1f1] text-black p-1.5 rounded-md">
           <p class="text-xs mt-1.5" [innerHTML]="data.expandedContent"></p>
         </div>
         <button *ngIf="!isExpanded" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleExpanded()">more</button>

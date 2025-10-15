@@ -21,7 +21,7 @@ import { selectDevCommits } from './store/app.selectors';
         <header></header>
       </div>
 
-      <div id="body" class="my-[20vh] mx-[28vw] md:my-[10vh] md:mx-[14vw]">
+      <div id="body" class="my-[20vh] px-5 md:my-[10vh] md:w-[70%] md:mx-auto lg:max-w-[720px]">
         <div id="home" class="mt-[33vh]">
           <home></home>
         </div>

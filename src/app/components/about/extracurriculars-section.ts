@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { ContentCard } from './content-card';
-import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ExpandableSection, PublishedWork, ProfileItem } from '../../models/models';
 import { selectActivities, selectPublishedWorks } from '../../store/app.selectors';
 
@@ -11,13 +10,12 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
   selector: 'extracurriculars-section',
   standalone: true,
   imports: [CommonModule, ContentCard],
-  animations: [fadeIn, slideInLeft],
   template: `
-    <h2 class="text-[2em] mt-[50px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]" @slideInLeft>Extracurriculars</h2>
+    <h2 class="text-[2em] mt-[50px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Extracurriculars</h2>
     <content-card *ngIf="activities$ | async" [data]="(activities$ | async)!['teaching']" [applyMarginTop]="true"></content-card>
 
     <div id="more-extracurriculars">
-      <div *ngIf="section.display" @fadeIn>
+      <div *ngIf="section.display">
         <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['volunteering']" [applyMarginTop]="true"></content-card>
         <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['travel']" [applyMarginTop]="true"></content-card>
         <content-card *ngIf="section.count === 2 && (activities$ | async)" [data]="(activities$ | async)!['jung']" [applyMarginTop]="true"></content-card>

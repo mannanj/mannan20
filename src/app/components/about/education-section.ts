@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { ContentCard } from './content-card';
-import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ExpandableSection, EducationInfo, ProfileItem } from '../../models/models';
 import { selectEducation, selectEducationProjects } from '../../store/app.selectors';
 
@@ -11,16 +10,15 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
   selector: 'education-section',
   standalone: true,
   imports: [CommonModule, ContentCard],
-  animations: [fadeIn, slideInLeft],
   template: `
-    <h2 class="text-[2em] mt-[60px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]" @slideInLeft>Education</h2>
+    <h2 class="text-[2em] mt-[60px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Education</h2>
     <div class="p-0 m-0 text-inherit">
       <b>{{ (education$ | async)?.institution }}</b>
       <p class="leading-[1.6] m-0 mb-[1em] text-white">{{ (education$ | async)?.dates }}</p>
       <p class="leading-[1.6] m-0 mb-[1em] text-white">{{ (education$ | async)?.degree }}</p>
 
       <div id="more-education" class="mt-1.5">
-        <div *ngIf="section.display" class="content bg-[#f1f1f1] text-black p-1.5 rounded-md" @fadeIn>
+        <div *ngIf="section.display" class="content bg-[#f1f1f1] text-black p-1.5 rounded-md">
           <content-card *ngIf="section.count >= 1 && (projects$ | async)" [data]="(projects$ | async)!['archr']"></content-card>
           <content-card *ngIf="section.count >= 1 && (projects$ | async)" [data]="(projects$ | async)!['solar']" [applyMarginTop]="true"></content-card>
           <content-card *ngIf="section.count === 2 && (projects$ | async)" [data]="(projects$ | async)!['dome']" [applyMarginTop]="true"></content-card>

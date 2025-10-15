@@ -4,7 +4,6 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ContentCard } from './content-card';
-import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ProfileItem } from '../../models/models';
 import { selectJobs } from '../../store/app.selectors';
 
@@ -12,14 +11,12 @@ import { selectJobs } from '../../store/app.selectors';
   selector: 'employment-section',
   standalone: true,
   imports: [CommonModule, ContentCard],
-  animations: [fadeIn, slideInLeft],
   template: `
-    <h2 class="text-[2em] mt-[50px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]" @slideInLeft>Employment History</h2>
+    <h2 class="text-[2em] mt-[50px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Employment History</h2>
     <content-card
-      *ngFor="let job of visibleJobs$ | async; let i = index"
+      *ngFor="let job of visibleJobs$ | async"
       [data]="job"
-      [applyMarginTop]="true"
-      [@fadeIn]="i >= DEFAULT_JOBS_TO_SHOW ? 'in' : ''">
+      [applyMarginTop]="true">
     </content-card>
 
     <button
