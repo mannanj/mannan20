@@ -934,26 +934,34 @@
   {
     "id": "task-34",
     "title": "Add Consent Checkmark Icon",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Add green checkmark SVG icon next to consent text",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Position checkmark before \"I will never reach out to you without your consent\"",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Style checkmark with green color using Tailwind utilities",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure checkmark aligns properly with text",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/components/contact/contact-form.ts`"
+    "location": "`src/app/components/contact/contact-form.ts`",
+    "completedDate": "2025-10-15T11:51:03-04:00",
+    "completedCommit": {
+      "hash": "f24d277",
+      "fullHash": "f24d2774b7a3e5cdc36d348026ead97eeb7fe989",
+      "subject": "Task 34: Add Consent Checkmark Icon",
+      "date": "2025-10-15T11:51:03-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/f24d2774b7a3e5cdc36d348026ead97eeb7fe989"
+    }
   },
   {
     "id": "task-35",
@@ -1578,5 +1586,33 @@
       "date": "2025-10-15T11:41:26-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/5851b1f4118cfb23b4a7b10fba48dd927f4784e9"
     }
+  },
+  {
+    "id": "task-52",
+    "title": "Add Column Hiding Feature to AG Grid Tables",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add column visibility controls to git commits table",
+        "completed": false
+      },
+      {
+        "description": "Add column visibility controls to tasks table",
+        "completed": false
+      },
+      {
+        "description": "Use AG Grid's built-in column menu for show/hide functionality",
+        "completed": false
+      },
+      {
+        "description": "Persist column visibility preferences in localStorage",
+        "completed": false
+      },
+      {
+        "description": "Ensure all columns can be toggled on/off",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`"
   }
 ]
