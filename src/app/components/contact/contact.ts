@@ -147,8 +147,6 @@ import { navigateTo } from '../../utils/help';
 })
 export class ContactComponent extends BaseSectionComponent {
   protected sectionLink = Links.contact;
-  protected observerThreshold = 0.99;
-
   @ViewChild(ContactFormComponent) contactForm?: ContactFormComponent;
   @ViewChild(ContactResultComponent) contactResult?: ContactResultComponent;
 

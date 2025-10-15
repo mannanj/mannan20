@@ -41,18 +41,16 @@ export function navigateTo(store: Store, link: Links): void {
 export function createIntersectionObserver(
   store: Store,
   component: Links,
-  threshold: number,
   intersectingSections: Map<Links, IntersectionObserverEntry>
 ): IntersectionObserver {
   const thresholds = Array.from({ length: 21 }, (_, i) => i * 0.05);
-  const sectionOrder = [Links.home, Links.about, Links.contact];
 
   return new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRatio >= threshold) {
+        if (entry.isIntersecting) {
           intersectingSections.set(component, entry);
-        } else if (entry.intersectionRatio < threshold) {
+        } else {
           intersectingSections.delete(component);
         }
       });

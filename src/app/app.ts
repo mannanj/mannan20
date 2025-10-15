@@ -38,7 +38,7 @@ import { selectDevCommits } from './store/app.selectors';
       @if (isConnected()) {
         <viewer-stats />
       }
-      <div class="fixed bottom-0 right-0 z-50 flex items-center gap-2">
+      <div class="fixed bottom-0 right-0 z-50 flex items-end gap-2">
         @if (hasDevCommits()) {
           <dev-stats />
         }

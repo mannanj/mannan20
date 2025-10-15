@@ -10,7 +10,7 @@ import { selectDevCommits } from '../store/app.selectors';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span
-      class="inline-block text-white cursor-pointer text-lg hover:scale-150 transition-transform mb-1"
+      class="inline-block text-white cursor-pointer text-lg hover:scale-150 transition-transform pb-1"
       (click)="toggleModal()"
       title="Open Dev Stats">
       📊

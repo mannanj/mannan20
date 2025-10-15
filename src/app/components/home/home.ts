@@ -24,8 +24,6 @@ import { navigateTo } from '../../utils/help';
 })
 export class HomeComponent extends BaseSectionComponent {
   protected sectionLink = Links.home;
-  protected observerThreshold = 0.99;
-
   Links = Links;
 
   goToAbout(): void {

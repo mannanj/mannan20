@@ -10,14 +10,12 @@ export abstract class BaseSectionComponent implements AfterViewInit, OnDestroy {
   protected store = inject(Store);
   protected intersectionObserver!: IntersectionObserver;
   protected abstract sectionLink: Links;
-  protected abstract observerThreshold: number;
   protected static intersectingSections = new Map<Links, IntersectionObserverEntry>();
 
   ngAfterViewInit(): void {
     this.intersectionObserver = createIntersectionObserver(
       this.store,
       this.sectionLink,
-      this.observerThreshold,
       BaseSectionComponent.intersectingSections
     );
     this.intersectionObserver.observe(this.elementRef.nativeElement);

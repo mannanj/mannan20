@@ -120,8 +120,6 @@ import { navigateTo } from '../../utils/help';
 })
 export class AboutComponent extends BaseSectionComponent {
   protected sectionLink = Links.about;
-  protected observerThreshold = 0.6;
-
   private localStore = inject(Store);
   aboutIntro$: Observable<AboutIntro | undefined> = this.localStore.select(selectAboutIntro);
   aboutSection: ExpandableSection = { display: false, count: 0 };
