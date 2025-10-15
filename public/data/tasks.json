@@ -242,30 +242,38 @@
   {
     "id": "task-13",
     "title": "Redesign Dev Stats Tab Interface",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Replace current tab UI with larger text-based tabs",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Add light white horizontal lines next to tab labels",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Create white illuminated shadow effect to simulate stacked pages",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Design active tab to appear linked to its corresponding page",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Maintain minimal aesthetic while achieving a revolutionary page-like appearance",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "Dev stats component tab interface"
+    "location": "Dev stats component tab interface",
+    "completedDate": "2025-10-15T19:34:14-04:00",
+    "completedCommit": {
+      "hash": "a4c3c4f",
+      "fullHash": "a4c3c4ffb4615707e70c1964f7bdb820eb3092e1",
+      "subject": "Task 13: Redesign Dev Stats Tab Interface",
+      "date": "2025-10-15T19:34:14-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a4c3c4ffb4615707e70c1964f7bdb820eb3092e1"
+    }
   },
   {
     "id": "task-14",
