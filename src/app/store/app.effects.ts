@@ -6,6 +6,8 @@ import { map, catchError, mergeMap, withLatestFrom, filter, tap, take } from 'rx
 import { of, combineLatest, fromEvent } from 'rxjs';
 import * as AppActions from './app.actions';
 import * as AppSelectors from './app.selectors';
+import * as CursorActions from './cursor.actions';
+import * as CursorSelectors from './cursor.selectors';
 import { AboutData, Metadata } from '../models/models';
 
 @Injectable()
@@ -44,18 +46,18 @@ export class AppEffects {
     )
   );
 
-  loadCursorUsername$ = createEffect(() =>
+  loadCursorData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ROOT_EFFECTS_INIT),
       mergeMap(() =>
-        this.http.get<{ usernames: string[] }>('data/cursor-usernames.json').pipe(
-          map(({ usernames }) => {
+        this.http.get<{ usernames: string[]; colors: string[] }>('data/cursor-usernames.json').pipe(
+          map(({ usernames, colors }) => {
             const randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
-            return AppActions.loadCursorUsernameSuccess({ username: randomUsername });
+            return CursorActions.loadCursorDataSuccess({ username: randomUsername, colors });
           }),
           catchError((error) => {
-            console.error('Error loading cursor usernames:', error);
-            return of(AppActions.loadCursorUsernameSuccess({ username: 'happy possum' }));
+            console.error('Error loading cursor data:', error);
+            return of(CursorActions.loadCursorDataFailure({ error: 'Failed to load cursor data' }));
           })
         )
       )
@@ -76,13 +78,13 @@ export class AppEffects {
 
   cursorDataInitialized$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AppActions.loadCursorUsernameSuccess),
-      map(() => AppActions.setCursorDataInitialized())
+      ofType(CursorActions.loadCursorDataSuccess),
+      map(() => CursorActions.setCursorDataInitialized())
     )
   );
 
   syncCursorChatPlaceholder$ = createEffect(() =>
-    this.store.select(AppSelectors.selectCursorChatPlaceholder).pipe(
+    this.store.select(CursorSelectors.selectCursorChatPlaceholder).pipe(
       tap(placeholder => {
         (window as any).cursorChatPlaceholder = placeholder;
       })
@@ -91,7 +93,7 @@ export class AppEffects {
   );
 
   syncCursorUsername$ = createEffect(() =>
-    this.store.select(AppSelectors.selectCursorUsername).pipe(
+    this.store.select(CursorSelectors.selectCursorUsername).pipe(
       tap(username => {
         (window as any).cursorUsername = username;
       })
@@ -100,16 +102,16 @@ export class AppEffects {
   );
 
   syncCursorColors$ = createEffect(() =>
-    this.store.select(AppSelectors.selectCursorColors).pipe(
+    this.store.select(CursorSelectors.selectCursorColors).pipe(
       tap(colors => {
-        (window as any).cursorColors = colors;
+        window.dispatchEvent(new CustomEvent('cursorColorsChanged', { detail: colors }));
       })
     ),
     { dispatch: false }
   );
 
   syncMyId$ = createEffect(() =>
-    this.store.select(AppSelectors.selectMyId).pipe(
+    this.store.select(CursorSelectors.selectMyId).pipe(
       tap(myId => {
         (window as any).myId = myId;
       })
@@ -118,7 +120,7 @@ export class AppEffects {
   );
 
   syncCursorsVisible$ = createEffect(() =>
-    this.store.select(AppSelectors.selectCursorsVisible).pipe(
+    this.store.select(CursorSelectors.selectCursorsVisible).pipe(
       tap(visible => {
         (window as any).cursorsVisible = visible;
         window.dispatchEvent(new CustomEvent('cursorsVisibilityChanged', { detail: visible }));
@@ -130,8 +132,8 @@ export class AppEffects {
   loadCursorScript$ = createEffect(() =>
     combineLatest([
       this.store.select(AppSelectors.selectIsInitialized),
-      this.store.select(AppSelectors.selectCursorUsername),
-      this.store.select(AppSelectors.selectCursorColors)
+      this.store.select(CursorSelectors.selectCursorUsername),
+      this.store.select(CursorSelectors.selectCursorColors)
     ]).pipe(
       filter(([isInitialized]) => isInitialized),
       take(1),
@@ -146,7 +148,51 @@ export class AppEffects {
 
   listenToCursorPartyConnection$ = createEffect(() =>
     fromEvent<CustomEvent<boolean>>(window, 'cursorPartyConnected').pipe(
-      map(event => AppActions.setCursorPartyConnected({ connected: event.detail }))
+      map(event => CursorActions.setCursorPartyConnected({ connected: event.detail }))
+    )
+  );
+
+  listenToMyIdAssignment$ = createEffect(() =>
+    fromEvent<CustomEvent<string>>(window, 'cursorPartyIdAssigned').pipe(
+      map(event => CursorActions.setMyId({ id: event.detail }))
+    )
+  );
+
+  listenToCursorSync$ = createEffect(() =>
+    fromEvent<CustomEvent<{ id: string; cursor: any }>>(window, 'cursorPartySync').pipe(
+      map(event => CursorActions.receiveCursorSync({ id: event.detail.id, cursor: event.detail.cursor }))
+    )
+  );
+
+  listenToCursorDisconnect$ = createEffect(() =>
+    fromEvent<CustomEvent<{ id: string }>>(window, 'cursorPartyDisconnect').pipe(
+      map(event => CursorActions.receiveCursorDisconnect({ id: event.detail.id }))
+    )
+  );
+
+  syncCursorsToWindow$ = createEffect(() =>
+    this.store.select(CursorSelectors.selectCursors).pipe(
+      tap(cursors => {
+        window.dispatchEvent(new CustomEvent('cursorStateChanged', { detail: cursors }));
+      })
+    ),
+    { dispatch: false }
+  );
+
+  syncCursorOrderToWindow$ = createEffect(() =>
+    this.store.select(CursorSelectors.selectCursorOrder).pipe(
+      tap(cursorOrder => {
+        window.dispatchEvent(new CustomEvent('cursorOrderChanged', { detail: cursorOrder }));
+      })
+    ),
+    { dispatch: false }
+  );
+
+  listenToLocalCursorMove$ = createEffect(() =>
+    fromEvent<CustomEvent<{ x: number; y: number }>>(window, 'localCursorMove').pipe(
+      withLatestFrom(this.store.select(CursorSelectors.selectMyId)),
+      filter(([, myId]) => myId !== null),
+      map(([event, myId]) => CursorActions.updateCursorPosition({ id: myId!, x: event.detail.x, y: event.detail.y }))
     )
   );
 }
