@@ -24,7 +24,7 @@ import { themeQuartz } from 'ag-grid-community';
       <dev-stats-icon />
     </div>
 
-    <modal [isOpen]="isModalOpen()" (close)="toggleModal()">
+    <modal [isOpen]="isModalOpen()" [widthStyle]="'large'" (close)="toggleModal()">
       <div class="tabs-container">
         <div class="tabs-header">
           <button

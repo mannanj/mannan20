@@ -8,7 +8,7 @@ import { ContactResult } from '../models/models';
   imports: [CommonModule],
   template: `
     <div *ngIf="isOpen" class="modal-backdrop" (click)="closeModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-content" [class.modal-content-large]="widthStyle === 'large'" (click)="$event.stopPropagation()">
         <button class="close-btn" (click)="closeModal()">&times;</button>
         <div class="modal-body">
           <ng-content></ng-content>
@@ -35,21 +35,26 @@ import { ContactResult } from '../models/models';
       background: #1a1a1a;
       border: 1px solid #333;
       border-radius: 16px;
-      max-width: 1028px;
-      width: 95vw;
+      max-width: 520px;
+      width: 100%;
       padding: 40px;
       position: relative;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     }
 
+    .modal-content-large {
+      max-width: 1028px;
+      width: 95vw;
+    }
+
     @media (min-width: 768px) {
-      .modal-content {
+      .modal-content-large {
         width: 85vw;
       }
     }
 
     @media (min-width: 1024px) {
-      .modal-content {
+      .modal-content-large {
         width: 90vw;
       }
     }
@@ -84,6 +89,7 @@ import { ContactResult } from '../models/models';
 })
 export class Modal {
   @Input() isOpen = false;
+  @Input() widthStyle: 'default' | 'large' = 'default';
   @Output() close = new EventEmitter<void>();
 
   closeModal() {

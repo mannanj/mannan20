@@ -46,7 +46,6 @@ import { CheckIcon } from '../icons/check-icon';
       </div>
 
       <p class="m-0 mt-4 p-0 text-[0.8125rem] leading-normal text-[#888] flex items-center justify-center gap-2">
-        <check-icon class="w-4 h-4 text-green-500 shrink-0" />
         <span>I will never reach out to you without your consent.</span>
       </p>
     </form>
