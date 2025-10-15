@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { Links, AboutIntro, ExpandableSection } from '../../models/models';
-import { BaseSection } from '../../shared/base-section';
 import { EmploymentSection } from './employment-section';
 import { ExtracurricularsSection } from './extracurriculars-section';
 import { EducationSection } from './education-section';
@@ -15,7 +14,7 @@ import { navigateTo } from '../../utils/help';
   standalone: true,
   imports: [CommonModule, EmploymentSection, ExtracurricularsSection, EducationSection],
   template: `
-    <div id="about-main">
+    <div>
       <h1 class="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">About</h1>
       <hr class="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5">
       <p class="m-0 mt-[25px] text-sm leading-[1.6] text-white">
@@ -44,10 +43,9 @@ import { navigateTo } from '../../utils/help';
   `,
   styles: []
 })
-export class About extends BaseSection {
-  protected sectionLink = Links.about;
-  private localStore = inject(Store);
-  aboutIntro$: Observable<AboutIntro | undefined> = this.localStore.select(selectAboutIntro);
+export class About {
+  private store = inject(Store);
+  aboutIntro$: Observable<AboutIntro | undefined> = this.store.select(selectAboutIntro);
   aboutSection: ExpandableSection = { display: false, count: 0 };
 
   toggleAbout(expand: boolean): void {

@@ -1,7 +1,7 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngrx/store';
 import { Links, ContactResult as ContactResultData } from '../../models/models';
-import { BaseSection } from '../../shared/base-section';
 import { Modal } from '../../shared/modal';
 import { ContactForm } from './contact-form';
 import { ContactResult } from './contact-result';
@@ -14,7 +14,7 @@ const FORM_SUBMIT_DELAY_MS = 2000;
   standalone: true,
   imports: [CommonModule, Modal, ContactForm, ContactResult],
   template: `
-    <div #main class="pb-[100px]">
+    <div class="pb-[100px]">
       <h1 class="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">Contact</h1>
       <hr class="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5">
       <div class="flex flex-col mt-[25px]">
@@ -119,8 +119,8 @@ const FORM_SUBMIT_DELAY_MS = 2000;
     }
   `]
 })
-export class Contact extends BaseSection {
-  protected sectionLink = Links.contact;
+export class Contact {
+  private store = inject(Store);
   @ViewChild(ContactForm) contactForm?: ContactForm;
   @ViewChild(ContactResult) contactResult?: ContactResult;
 

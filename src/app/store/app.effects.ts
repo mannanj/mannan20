@@ -2,11 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType, ROOT_EFFECTS_INIT } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { HttpClient } from '@angular/common/http';
-import { map, catchError, mergeMap, withLatestFrom, filter } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { map, catchError, mergeMap, withLatestFrom, filter, throttleTime } from 'rxjs/operators';
+import { of, fromEvent } from 'rxjs';
 import * as AppActions from './app.actions';
 import * as AppSelectors from './app.selectors';
-import { AboutData, Metadata, DevCommit, Task } from '../models/models';
+import { AboutData, Metadata, DevCommit, Task, Links } from '../models/models';
 import { isDevMode } from '../utils/cookies';
 
 @Injectable()
@@ -93,6 +93,37 @@ export class AppEffects {
             return of();
           })
         );
+      })
+    )
+  );
+
+  trackNavigation$ = createEffect(() =>
+    fromEvent(window, 'scroll').pipe(
+      throttleTime(100),
+      map(() => {
+        const sections: Links[] = [Links.home, Links.about, Links.contact];
+        let maxVisible = 0;
+        let activeSection: Links = Links.home;
+
+        sections.forEach(link => {
+          const element = document.getElementById(link);
+          if (!element) return;
+
+          const rect = element.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+
+          const visibleTop = Math.max(rect.top, 0);
+          const visibleBottom = Math.min(rect.bottom, viewportHeight);
+          const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+          const percentage = visibleHeight / rect.height;
+
+          if (percentage > maxVisible) {
+            maxVisible = percentage;
+            activeSection = link;
+          }
+        });
+
+        return AppActions.setSelectedLink({ link: activeSection });
       })
     )
   );

@@ -31,43 +31,6 @@ export function navigateTo(store: Store, link: Links): void {
   scrollToSection(link);
 }
 
-export function createIntersectionObserver(
-  store: Store,
-  component: Links,
-  intersectingSections: Map<Links, IntersectionObserverEntry>
-): IntersectionObserver {
-  const thresholds = Array.from({ length: 21 }, (_, i) => i * 0.05);
-
-  return new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          intersectingSections.set(component, entry);
-        } else {
-          intersectingSections.delete(component);
-        }
-      });
-
-      if (intersectingSections.size === 0) return;
-
-      let maxRatio = 0;
-      let activeSection: Links | null = null;
-
-      intersectingSections.forEach((entry, section) => {
-        if (entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio;
-          activeSection = section;
-        }
-      });
-
-      if (activeSection) {
-        store.dispatch(setSelectedLink({ link: activeSection }));
-      }
-    },
-    { threshold: thresholds }
-  );
-}
-
 export function getPhoneLink(phone: string): string {
   return 'tel:' + phone.replace(/[^0-9+]/g, '');
 }
