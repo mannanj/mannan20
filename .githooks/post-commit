@@ -78,50 +78,6 @@ function findTaskCompletionCommit(taskNum, taskTitle) {
         };
       }
     }
-
-    const logOutput = execSync(
-      \`git log --all --format='%H|||%h|||%s|||%aI|||---END---' --follow -p -- ${TASKS_INPUT}\`,
-      { encoding: 'utf-8', shell: '/bin/bash' }
-    );
-
-    const commitPattern = /^commit ([a-f0-9]{40})/gm;
-    const commits = logOutput.split('|||---END---\\n').filter(e => e.trim());
-
-    for (const commitBlock of commits) {
-      const parts = commitBlock.split('|||');
-      if (parts.length < 4) continue;
-
-      const hashMatch = parts[0].match(/([a-f0-9]{40})$/);
-      const fullHash = hashMatch ? hashMatch[1] : parts[0].trim();
-      const shortHash = parts[1].trim();
-      const subject = parts[2].trim();
-      const date = parts[3].split('\\n')[0].trim();
-
-      const diffMatch = commitBlock.match(/### Task (\d+): (.+?)\\n([\\s\\S]*?)(?=###|diff|$)/g);
-      if (!diffMatch) continue;
-
-      for (const taskBlock of diffMatch) {
-        const taskMatch = taskBlock.match(/### Task (\d+): (.+?)\\n([\\s\\S]*)/);
-        if (!taskMatch) continue;
-
-        const blockTaskNum = taskMatch[1];
-        if (blockTaskNum !== taskNum) continue;
-
-        const content = taskMatch[3];
-        const allCheckboxes = content.match(/- \\[([x ])\\]/g) || [];
-        const checkedCount = allCheckboxes.filter(cb => cb.includes('x')).length;
-
-        if (checkedCount === allCheckboxes.length && allCheckboxes.length > 0) {
-          return {
-            hash: shortHash,
-            fullHash: fullHash,
-            subject: subject,
-            date: date,
-            url: '${REPO_URL}/commit/' + fullHash
-          };
-        }
-      }
-    }
   } catch (error) {
     return null;
   }
