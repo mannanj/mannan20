@@ -4,8 +4,7 @@
     : 'wss://' + window.location.host;
   const ENABLE_CHAT = true;
 
-  const cursors = new Map();
-  const cursorOrder = [];
+  const cursorElements = new Map();
   let ws = null;
   let myId = null;
   let chatVisible = false;
@@ -18,7 +17,6 @@
   const MAX_RECONNECT_ATTEMPTS = 3;
   const RECONNECT_DELAY = 3000;
   let cursorsHidden = false;
-  const colorMap = window.cursorColors || ['#FF6B6B'];
   let lastCursorSendTime = 0;
   const CURSOR_SEND_THROTTLE = 50;
 
@@ -27,47 +25,6 @@
     if (myUsername !== newUsername) {
       myUsername = newUsername;
     }
-  }
-
-  function initializeMyCursor() {
-    if (!myId || cursors.has(myId)) return;
-
-    const colorIndex = cursorOrder.indexOf(myId) % colorMap.length;
-    const color = colorMap[colorIndex];
-
-    const cursorEl = document.createElement("div");
-    cursorEl.className = "cursor-party-cursor local-cursor";
-    cursorEl.style.color = color;
-
-    const username = myUsername || window.cursorUsername || 'happy possum';
-    const displayName = `${username} (you)`;
-    const label = displayName;
-
-    cursorEl.innerHTML = `
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M5.65376 12.3673L5 5L12.3673 5.65376L18.2888 11.5753L12.9728 16.8913L11.5753 18.2888L5.65376 12.3673Z" fill="currentColor"/>
-      </svg>
-      <span class="cursor-label">${label}</span>
-    `;
-    cursorEl.style.display = cursorsHidden ? "none" : "block";
-    document.body.appendChild(cursorEl);
-    cursors.set(myId, cursorEl);
-    updateActiveViewerCount();
-  }
-
-  function updateMyCursor(x, y) {
-    if (!myId) return;
-
-    let cursorEl = cursors.get(myId);
-    if (!cursorEl) {
-      initializeMyCursor();
-      cursorEl = cursors.get(myId);
-      if (!cursorEl) return;
-    }
-
-    cursorEl.style.left = x + "px";
-    cursorEl.style.top = y + "px";
-    cursorEl.style.display = cursorsHidden ? "none" : "block";
   }
 
   function connect() {
@@ -86,16 +43,13 @@
 
       if (msg.type === "id") {
         myId = msg.id;
-        if (!cursorOrder.includes(myId)) {
-          cursorOrder.push(myId);
-        }
-        initializeMyCursor();
+        window.dispatchEvent(new CustomEvent('cursorPartyIdAssigned', { detail: msg.id }));
       }
 
       if (msg.type === "sync") {
-        if (msg.id !== myId) {
-          updateCursor(msg.id, msg.cursor);
-        }
+        window.dispatchEvent(new CustomEvent('cursorPartySync', {
+          detail: { id: msg.id, cursor: msg.cursor }
+        }));
       }
 
       if (msg.type === "chat" && ENABLE_CHAT) {
@@ -103,7 +57,9 @@
       }
 
       if (msg.type === "disconnect") {
-        removeCursor(msg.id);
+        window.dispatchEvent(new CustomEvent('cursorPartyDisconnect', {
+          detail: { id: msg.id }
+        }));
       }
     });
 
@@ -126,23 +82,17 @@
     }
   }
 
-  function updateCursor(id, cursor) {
-    if (!cursors.has(id)) {
-      if (!cursorOrder.includes(id)) {
-        cursorOrder.push(id);
-      }
+  function renderCursor(cursorData) {
+    let cursorEl = cursorElements.get(cursorData.id);
 
-      const colorIndex = cursorOrder.indexOf(id) % colorMap.length;
-      const color = colorMap[colorIndex];
+    if (!cursorEl) {
+      cursorEl = document.createElement("div");
+      cursorEl.className = cursorData.isLocal ? "cursor-party-cursor local-cursor" : "cursor-party-cursor";
+      cursorEl.style.color = cursorData.color;
 
-      const cursorEl = document.createElement("div");
-      cursorEl.className = "cursor-party-cursor";
-      cursorEl.style.color = color;
-
-      const flag = cursor.country ? getFlagEmoji(cursor.country) : '';
-      const username = cursor.username || '';
-      const isMe = id === myId;
-      const displayName = isMe && username ? `${username} (you)` : username;
+      const flag = cursorData.country ? getFlagEmoji(cursorData.country) : '';
+      const username = cursorData.username || '';
+      const displayName = cursorData.isLocal && username ? `${username} (you)` : username;
       const label = flag && displayName ? `${flag} ${displayName}` : flag || displayName;
 
       cursorEl.innerHTML = `
@@ -152,41 +102,54 @@
         ${label ? `<span class="cursor-label">${label}</span>` : ''}
       `;
       document.body.appendChild(cursorEl);
-      cursors.set(id, cursorEl);
-      updateActiveViewerCount();
+      cursorElements.set(cursorData.id, cursorEl);
+    } else {
+      cursorEl.style.color = cursorData.color;
+
+      const flag = cursorData.country ? getFlagEmoji(cursorData.country) : '';
+      const username = cursorData.username || '';
+      const displayName = cursorData.isLocal && username ? `${username} (you)` : username;
+      const label = flag && displayName ? `${flag} ${displayName}` : flag || displayName;
+
+      const labelEl = cursorEl.querySelector('.cursor-label');
+      if (labelEl && label) {
+        labelEl.textContent = label;
+      }
     }
 
-    const cursorEl = cursors.get(id);
-    cursorEl.style.left = cursor.x + "px";
-    cursorEl.style.top = cursor.y + "px";
+    cursorEl.style.left = cursorData.x + "px";
+    cursorEl.style.top = cursorData.y + "px";
     cursorEl.style.display = cursorsHidden ? "none" : "block";
   }
 
-  function removeCursor(id) {
-    const cursorEl = cursors.get(id);
+  function removeCursorElement(id) {
+    const cursorEl = cursorElements.get(id);
     if (cursorEl) {
       cursorEl.remove();
-      cursors.delete(id);
-      updateActiveViewerCount();
+      cursorElements.delete(id);
     }
   }
 
-  function updateActiveViewerCount() {
-    const activeCount = cursors.size;
-    window.activeViewerCount = activeCount;
-    window.dispatchEvent(new CustomEvent('viewerCountUpdate', { detail: activeCount }));
-  }
+  window.addEventListener('cursorStateChanged', (event) => {
+    const cursors = event.detail;
 
-  function toggleCursors() {
-    cursorsHidden = !cursorsHidden;
-    cursors.forEach((cursorEl) => {
-      cursorEl.style.display = cursorsHidden ? "none" : "block";
+    const currentIds = new Set(Object.keys(cursors));
+    const renderedIds = new Set(cursorElements.keys());
+
+    renderedIds.forEach(id => {
+      if (!currentIds.has(id)) {
+        removeCursorElement(id);
+      }
     });
-  }
+
+    Object.values(cursors).forEach(cursorData => {
+      renderCursor(cursorData);
+    });
+  });
 
   function setCursorsVisibility(visible) {
     cursorsHidden = !visible;
-    cursors.forEach((cursorEl) => {
+    cursorElements.forEach((cursorEl) => {
       cursorEl.style.display = visible ? "block" : "none";
     });
   }
@@ -204,7 +167,7 @@
   }
 
   function showChatMessage(id, message) {
-    const cursorEl = cursors.get(id);
+    const cursorEl = cursorElements.get(id);
     if (!cursorEl) return;
 
     const chatBubble = document.createElement("div");
@@ -233,8 +196,6 @@
       } else if (e.key === "Escape") {
         if (chatVisible) {
           hideChatInput();
-        } else {
-          toggleCursors();
         }
       }
     });
@@ -308,7 +269,9 @@
   }
 
   document.addEventListener("mousemove", (e) => {
-    updateMyCursor(e.clientX, e.clientY);
+    window.dispatchEvent(new CustomEvent('localCursorMove', {
+      detail: { x: e.clientX, y: e.clientY }
+    }));
 
     const now = Date.now();
     if (now - lastCursorSendTime >= CURSOR_SEND_THROTTLE) {
@@ -328,7 +291,9 @@
 
   document.addEventListener("touchmove", (e) => {
     const touch = e.touches[0];
-    updateMyCursor(touch.clientX, touch.clientY);
+    window.dispatchEvent(new CustomEvent('localCursorMove', {
+      detail: { x: touch.clientX, y: touch.clientY }
+    }));
 
     const now = Date.now();
     if (now - lastCursorSendTime >= CURSOR_SEND_THROTTLE) {
