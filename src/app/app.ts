@@ -16,7 +16,7 @@ import { selectDevCommits } from './store/app.selectors';
   selector: 'app-root',
   imports: [CommonModule, Header, Home, About, Contact, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats],
   template: `
-    <div id="page">
+    <div class="font-[Lucida_Grande]">
       <div id="header">
         <header></header>
       </div>
@@ -48,10 +48,6 @@ import { selectDevCommits } from './store/app.selectors';
     </div>
   `,
   styles: [`
-    #page {
-      font-family: Lucida Grande;
-    }
-
     #body {
       margin: 20vh 28vw;
     }

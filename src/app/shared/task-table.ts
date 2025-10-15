@@ -7,43 +7,43 @@ import { formatCompletionDate } from '../utils/date';
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tasks-table-container">
-      <table class="tasks-table">
-        <thead>
+    <div class="max-h-[400px] overflow-y-auto overflow-x-auto">
+      <table class="w-full border-collapse text-xs">
+        <thead class="bg-[#2a2a2a] sticky top-0 z-[1]">
           <tr>
-            <th>Task</th>
-            <th>Status</th>
-            <th>Completed</th>
-            <th>Commit</th>
-            <th>Progress</th>
+            <th class="text-left py-2 px-3 text-[#888] font-semibold border-b border-[#404040]">Task</th>
+            <th class="text-left py-2 px-3 text-[#888] font-semibold border-b border-[#404040]">Status</th>
+            <th class="text-left py-2 px-3 text-[#888] font-semibold border-b border-[#404040]">Completed</th>
+            <th class="text-left py-2 px-3 text-[#888] font-semibold border-b border-[#404040]">Commit</th>
+            <th class="text-left py-2 px-3 text-[#888] font-semibold border-b border-[#404040]">Progress</th>
           </tr>
         </thead>
         <tbody>
           @for (task of tasks(); track task.id) {
-            <tr>
-              <td class="task-name">{{ task.title }}</td>
-              <td>
-                <span class="task-status-badge" [class.completed]="task.status === 'completed'">
+            <tr class="hover:bg-[#2a2a2a]">
+              <td class="py-2 px-3 border-b border-[#333] text-white font-medium">{{ task.title }}</td>
+              <td class="py-2 px-3 border-b border-[#333] text-[#ccc]">
+                <span [class]="task.status === 'completed' ? 'py-0.5 px-2 rounded text-[10px] uppercase bg-[#1a4d2e] text-[#4ade80] font-semibold inline-block' : 'py-0.5 px-2 rounded text-[10px] uppercase bg-[#404040] text-[#888] font-semibold inline-block'">
                   {{ task.status }}
                 </span>
               </td>
-              <td class="completion-cell">
+              <td class="py-2 px-3 border-b border-[#333] text-[#4ade80]">
                 @if (task.completedDate) {
                   <span>{{ formatDate(task.completedDate!) }}</span>
                 } @else {
-                  <span class="text-gray-600">-</span>
+                  <span class="text-[#666]">-</span>
                 }
               </td>
-              <td class="commit-cell">
+              <td class="py-2 px-3 border-b border-[#333] text-[#ccc]">
                 @if (task.completedCommit) {
-                  <a [href]="task.completedCommit.url" target="_blank" class="commit-link">
+                  <a [href]="task.completedCommit.url" target="_blank" class="text-[#039be5] no-underline font-mono hover:underline">
                     {{ task.completedCommit.hash }}
                   </a>
                 } @else {
-                  <span class="text-gray-600">-</span>
+                  <span class="text-[#666]">-</span>
                 }
               </td>
-              <td class="progress-cell">
+              <td class="py-2 px-3 border-b border-[#333] text-[#888] font-mono">
                 {{ getCompletedCount(task) }}/{{ task.subtasks.length }}
               </td>
             </tr>
@@ -52,88 +52,7 @@ import { formatCompletionDate } from '../utils/date';
       </table>
     </div>
   `,
-  styles: [`
-    .tasks-table-container {
-      max-height: 400px;
-      overflow-y: auto;
-      overflow-x: auto;
-    }
-
-    .tasks-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    .tasks-table thead {
-      background: #2a2a2a;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    .tasks-table th {
-      text-align: left;
-      padding: 8px 12px;
-      color: #888;
-      font-weight: 600;
-      border-bottom: 1px solid #404040;
-    }
-
-    .tasks-table td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #333;
-      color: #ccc;
-    }
-
-    .tasks-table tbody tr:hover {
-      background: #2a2a2a;
-    }
-
-    .task-name {
-      color: #fff;
-      font-weight: 500;
-    }
-
-    .task-status-badge {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      text-transform: uppercase;
-      background: #404040;
-      color: #888;
-      font-weight: 600;
-      display: inline-block;
-    }
-
-    .task-status-badge.completed {
-      background: #1a4d2e;
-      color: #4ade80;
-    }
-
-    .completion-cell {
-      color: #4ade80;
-    }
-
-    .commit-link {
-      color: #039be5;
-      text-decoration: none;
-      font-family: monospace;
-    }
-
-    .commit-link:hover {
-      text-decoration: underline;
-    }
-
-    .progress-cell {
-      color: #888;
-      font-family: monospace;
-    }
-
-    .text-gray-600 {
-      color: #666;
-    }
-  `]
+  styles: []
 })
 export class TaskTable {
   tasks = input.required<Task[]>();

@@ -9,7 +9,7 @@ import { TasksToolbar } from './tasks-toolbar';
   imports: [TaskCard, TaskTable, TasksToolbar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="tasks-view">
+    <div class="flex flex-col gap-3">
       <tasks-toolbar
         [currentView]="taskView()"
         [sortOrder]="sortOrder()"
@@ -17,7 +17,7 @@ import { TasksToolbar } from './tasks-toolbar';
         (sortToggle)="toggleSortOrder()" />
 
       @if (taskView() === 'card') {
-        <div class="tasks-container">
+        <div class="max-h-[400px] overflow-y-auto flex flex-col gap-4">
           @for (task of sortedTasks(); track task.id) {
             <task-card [task]="task" />
           }
@@ -27,21 +27,7 @@ import { TasksToolbar } from './tasks-toolbar';
       }
     </div>
   `,
-  styles: [`
-    .tasks-view {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .tasks-container {
-      max-height: 400px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-  `]
+  styles: []
 })
 export class TasksContainer {
   tasks = input.required<Task[]>();

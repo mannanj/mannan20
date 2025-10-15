@@ -12,97 +12,27 @@ const COPY_FEEDBACK_DURATION_MS = 2000;
   standalone: true,
   imports: [CommonModule, CopyIcon, CheckIcon],
   template: `
-    <h3>Say Hi <span aria-label="wave" title="Wave">👋</span></h3>
-    <div class="contact-result">
-      <div class="contact-item" *ngIf="result">
-        <strong>Email:</strong>
-        <a [href]="'mailto:' + result.email">{{ result.email }}</a>
-        <button class="copy-btn" (click)="copyEmail()" [title]="copiedEmail ? 'Copied!' : 'Copy'">
-          <copy-icon *ngIf="!copiedEmail" />
-          <check-icon *ngIf="copiedEmail" />
+    <h3 class="m-0 mb-6 text-xl text-white text-center">Say Hi <span aria-label="wave" title="Wave">👋</span></h3>
+    <div class="bg-[#2a2a2a] border border-[#404040] p-5 rounded-lg mb-5">
+      <div class="mb-3 last:mb-0 text-[0.95rem] text-white flex items-center gap-3" *ngIf="result">
+        <strong class="inline-block w-[70px] text-[#999] shrink-0">Email:</strong>
+        <a class="text-white no-underline hover:underline flex-1" [href]="'mailto:' + result.email">{{ result.email }}</a>
+        <button class="bg-transparent border border-[#404040] rounded-md p-1.5 cursor-pointer text-[#999] transition-all duration-200 flex items-center justify-center shrink-0 hover:bg-[#2a2a2a] hover:text-white hover:border-[#555]" (click)="copyEmail()" [title]="copiedEmail ? 'Copied!' : 'Copy'">
+          <copy-icon class="w-4 h-4" *ngIf="!copiedEmail" />
+          <check-icon class="w-4 h-4" *ngIf="copiedEmail" />
         </button>
       </div>
-      <div class="contact-item" *ngIf="result">
-        <strong>Phone:</strong>
-        <a [href]="help.getPhoneLink(result.phone)">{{ result.phone }}</a>
-        <button class="copy-btn" (click)="copyPhone()" [title]="copiedPhone ? 'Copied!' : 'Copy'">
-          <copy-icon *ngIf="!copiedPhone" />
-          <check-icon *ngIf="copiedPhone" />
+      <div class="mb-3 last:mb-0 text-[0.95rem] text-white flex items-center gap-3" *ngIf="result">
+        <strong class="inline-block w-[70px] text-[#999] shrink-0">Phone:</strong>
+        <a class="text-white no-underline hover:underline flex-1" [href]="help.getPhoneLink(result.phone)">{{ result.phone }}</a>
+        <button class="bg-transparent border border-[#404040] rounded-md p-1.5 cursor-pointer text-[#999] transition-all duration-200 flex items-center justify-center shrink-0 hover:bg-[#2a2a2a] hover:text-white hover:border-[#555]" (click)="copyPhone()" [title]="copiedPhone ? 'Copied!' : 'Copy'">
+          <copy-icon class="w-4 h-4" *ngIf="!copiedPhone" />
+          <check-icon class="w-4 h-4" *ngIf="copiedPhone" />
         </button>
       </div>
     </div>
   `,
-  styles: [`
-    h3 {
-      margin: 0 0 24px 0;
-      font-size: 1.25rem;
-      color: #fff;
-      text-align: center;
-    }
-
-    .contact-result {
-      background-color: #2a2a2a;
-      border: 1px solid #404040;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .contact-item {
-      margin-bottom: 12px;
-      font-size: 0.95rem;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .contact-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .contact-item strong {
-      display: inline-block;
-      width: 70px;
-      color: #999;
-      flex-shrink: 0;
-    }
-
-    .contact-item a {
-      color: #fff;
-      text-decoration: none;
-      flex: 1;
-    }
-
-    .contact-item a:hover {
-      text-decoration: underline;
-    }
-
-    .copy-btn {
-      background: none;
-      border: 1px solid #404040;
-      border-radius: 6px;
-      padding: 6px;
-      cursor: pointer;
-      color: #999;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .copy-btn:hover {
-      background: #2a2a2a;
-      color: #fff;
-      border-color: #555;
-    }
-
-    .copy-btn svg {
-      width: 16px;
-      height: 16px;
-    }
-  `]
+  styles: []
 })
 export class ContactResult {
   @Input() result: ContactResultData | null = null;

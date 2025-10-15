@@ -38,11 +38,11 @@ import { ProfileItem } from '../../models/models';
       </a>
 
       <div *ngIf="data.expandedContent">
-        <div *ngIf="isExpanded" class="content" @fadeIn>
+        <div *ngIf="isExpanded" class="bg-[#f1f1f1] text-black p-1.5 rounded-md" @fadeIn>
           <p class="text-xs mt-1.5" [innerHTML]="data.expandedContent"></p>
         </div>
-        <button *ngIf="!isExpanded" type="button" class="collapsible" (click)="toggleExpanded()">more</button>
-        <button *ngIf="isExpanded" type="button" class="collapsible" (click)="toggleExpanded()">less</button>
+        <button *ngIf="!isExpanded" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleExpanded()">more</button>
+        <button *ngIf="isExpanded" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleExpanded()">less</button>
       </div>
     </div>
   `,

@@ -16,14 +16,14 @@ const FORM_SUBMIT_DELAY_MS = 2000;
   imports: [CommonModule, Modal, ContactForm, ContactResult],
   animations: [scaleIn, fadeIn, slideInLeft],
   template: `
-    <div #main class="contact-wrapper">
+    <div #main class="pb-[100px]">
       <h1 class="text-end" @scaleIn>Contact</h1>
       <hr @fadeIn>
-      <div class="contact-container margin-top-25" @slideInLeft>
+      <div class="flex flex-col margin-top-25" @slideInLeft>
         <div class="contact-grid">
-          <div class="contact-info">
-            <a class="contact-link" (click)="openModal()" title="Request contact info">*****&#64;mannan.is</a>
-            <a class="contact-link margin-top-8" (click)="openModal()" title="Request contact info">+1 (***) *** 8302</a>
+          <div class="flex flex-col">
+            <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer hover:text-[#0277bd]" (click)="openModal()" title="Request contact info">*****&#64;mannan.is</a>
+            <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer margin-top-8 hover:text-[#0277bd]" (click)="openModal()" title="Request contact info">+1 (***) *** 8302</a>
           </div>
           <div class="ripple-container" (click)="openModal()" title="Request contact info">
             <div class="circle"></div>
@@ -40,37 +40,11 @@ const FORM_SUBMIT_DELAY_MS = 2000;
     </modal>
   `,
   styles: [`
-    .contact-wrapper {
-      padding-bottom: 100px;
-    }
-
-    .contact-container {
-      display: flex;
-      flex-direction: column;
-    }
-
     .contact-grid {
       display: grid;
       grid-template-columns: 2fr auto;
       align-items: center;
       gap: 24px;
-    }
-
-    .contact-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .contact-link {
-      font-size: 1rem;
-      letter-spacing: 0.5px;
-      color: #039be5;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .contact-link:hover {
-      color: #0277bd;
     }
 
     .ripple-container {

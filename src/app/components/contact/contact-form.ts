@@ -8,14 +8,14 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
   standalone: true,
   imports: [CommonModule, FormsModule, GoogleLogoIcon],
   template: `
-    <div class="header-text">
-      <h2 class="main-heading">Ready to collaborate?</h2>
-      <p class="sub-heading">Let's create something exceptional.</p>
+    <div class="text-center mb-8">
+      <h2 class="m-0 mb-2 text-[2rem] font-normal text-white tracking-tight">Ready to collaborate?</h2>
+      <p class="m-0 text-lg text-[#999] font-light">Let's create something exceptional.</p>
     </div>
 
     <form (ngSubmit)="onSubmit()">
-      <button type="button" class="btn-google" disabled>
-        <google-logo-icon />
+      <button type="button" class="w-full py-3.5 px-6 rounded-lg text-base font-medium cursor-pointer transition-all duration-200 border border-[#404040] bg-transparent text-white flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-[#2a2a2a] enabled:hover:border-[#555]" disabled>
+        <google-logo-icon class="shrink-0" />
         Continue with Google
       </button>
 
@@ -27,14 +27,14 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
         [(ngModel)]="userInput"
         name="userInput"
         rows="4"
-        class="form-input"
+        class="w-full py-3.5 px-4 border border-[#404040] rounded-lg text-base text-white bg-[#2a2a2a] transition-all duration-200 box-border resize-y font-[inherit] leading-normal placeholder:text-[#666] focus:outline-none focus:border-[#555] focus:bg-[#333] disabled:opacity-60 disabled:cursor-not-allowed"
         [placeholder]="placeholder"
         [disabled]="isLoading"></textarea>
 
-      <div class="button-wrapper">
+      <div class="mt-5 relative">
         <button
           type="submit"
-          class="btn-primary"
+          class="w-full py-3.5 px-6 rounded-lg text-base font-medium cursor-pointer transition-all duration-200 border-0 bg-[#f0ede6] text-[#1a1a1a] hover:bg-[#e5e0d8] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
           (mouseenter)="showTooltip = true"
           (mouseleave)="showTooltip = false">
           {{ isLoading ? 'Sending...' : 'Continue your request' }}
@@ -44,63 +44,12 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
         </div>
       </div>
 
-      <p class="privacy-text">
+      <p class="m-0 mt-4 p-0 text-[0.8125rem] leading-normal text-[#888] text-center">
         I will never reach out to you without your consent.
       </p>
     </form>
   `,
   styles: [`
-    .header-text {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .main-heading {
-      margin: 0 0 8px 0;
-      font-size: 2rem;
-      font-weight: 400;
-      color: #fff;
-      letter-spacing: -0.02em;
-    }
-
-    .sub-heading {
-      margin: 0;
-      font-size: 1.125rem;
-      color: #999;
-      font-weight: 300;
-    }
-
-    .btn-google {
-      width: 100%;
-      padding: 14px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid #404040;
-      background: transparent;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .btn-google:not(:disabled):hover {
-      background: #2a2a2a;
-      border-color: #555;
-    }
-
-    .btn-google:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .btn-google svg {
-      flex-shrink: 0;
-    }
-
     .divider {
       display: flex;
       align-items: center;
@@ -121,67 +70,6 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
       padding: 0 16px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid #404040;
-      border-radius: 8px;
-      font-size: 1rem;
-      color: #fff;
-      background: #2a2a2a;
-      transition: all 0.2s;
-      box-sizing: border-box;
-      resize: vertical;
-      font-family: inherit;
-      line-height: 1.5;
-    }
-
-    .form-input::placeholder {
-      color: #666;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: #555;
-      background: #333;
-    }
-
-    .form-input:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .button-wrapper {
-      margin-top: 20px;
-      position: relative;
-    }
-
-    .btn-primary {
-      width: 100%;
-      padding: 14px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      background-color: #f0ede6;
-      color: #1a1a1a;
-    }
-
-    .btn-primary:hover {
-      background-color: #e5e0d8;
-    }
-
-    .btn-primary:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
     }
 
     .tooltip {
@@ -208,15 +96,6 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
       transform: translateX(-50%);
       border: 6px solid transparent;
       border-top-color: #333;
-    }
-
-    .privacy-text {
-      margin: 16px 0 0 0;
-      padding: 0;
-      font-size: 0.8125rem;
-      line-height: 1.5;
-      color: #888;
-      text-align: center;
     }
   `]
 })

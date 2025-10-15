@@ -22,30 +22,27 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
     <modal [isOpen]="isModalOpen()" (close)="toggleModal()">
       <div class="tabs-container">
-        <div class="tabs-header">
+        <div class="flex gap-2 border-b border-[#333] mb-4">
           <button
-            [class.active]="activeTab() === 'commits'"
-            (click)="setActiveTab('commits')"
-            class="tab-button">
+            [class]="activeTab() === 'commits' ? 'bg-transparent border-0 text-[#039be5] py-2 px-4 cursor-pointer text-sm border-b-2 border-[#039be5] transition-all duration-200 relative top-px' : 'bg-transparent border-0 text-[#888] py-2 px-4 cursor-pointer text-sm border-b-2 border-transparent transition-all duration-200 relative top-px hover:text-[#4dd8ff]'"
+            (click)="setActiveTab('commits')">
             Git Commits
           </button>
           <button
-            [class.active]="activeTab() === 'services'"
-            (click)="setActiveTab('services')"
-            class="tab-button">
+            [class]="activeTab() === 'services' ? 'bg-transparent border-0 text-[#039be5] py-2 px-4 cursor-pointer text-sm border-b-2 border-[#039be5] transition-all duration-200 relative top-px' : 'bg-transparent border-0 text-[#888] py-2 px-4 cursor-pointer text-sm border-b-2 border-transparent transition-all duration-200 relative top-px hover:text-[#4dd8ff]'"
+            (click)="setActiveTab('services')">
             Services Status
           </button>
           <button
-            [class.active]="activeTab() === 'tasks'"
-            (click)="setActiveTab('tasks')"
-            class="tab-button">
+            [class]="activeTab() === 'tasks' ? 'bg-transparent border-0 text-[#039be5] py-2 px-4 cursor-pointer text-sm border-b-2 border-[#039be5] transition-all duration-200 relative top-px' : 'bg-transparent border-0 text-[#888] py-2 px-4 cursor-pointer text-sm border-b-2 border-transparent transition-all duration-200 relative top-px hover:text-[#4dd8ff]'"
+            (click)="setActiveTab('tasks')">
             Tasks
           </button>
         </div>
 
         <div class="tab-content">
           @if (activeTab() === 'commits') {
-            <div class="commits-table-container">
+            <div class="max-h-[400px] overflow-y-auto overflow-x-auto">
               <table class="w-full border-collapse">
                 <tbody>
                   @for (commit of filteredCommits(); track commit.hash) {
@@ -89,43 +86,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
       min-height: 300px;
     }
 
-    .tabs-header {
-      display: flex;
-      gap: 8px;
-      border-bottom: 1px solid #333;
-      margin-bottom: 16px;
-    }
-
-    .tab-button {
-      background: none;
-      border: none;
-      color: #888;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 14px;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      position: relative;
-      top: 1px;
-    }
-
-    .tab-button:hover {
-      color: #4dd8ff;
-    }
-
-    .tab-button.active {
-      color: #039be5;
-      border-bottom-color: #039be5;
-    }
-
     .tab-content {
       animation: fadeIn 0.3s ease-in;
-    }
-
-    .commits-table-container {
-      max-height: 400px;
-      overflow-y: auto;
-      overflow-x: auto;
     }
 
     @keyframes fadeIn {

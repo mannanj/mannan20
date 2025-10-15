@@ -14,54 +14,24 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
   animations: [fadeIn, slideInLeft],
   template: `
     <h2 class="margin-top-60" @slideInLeft>Education</h2>
-    <div class="section">
+    <div class="section text-inherit">
       <b>{{ (education$ | async)?.institution }}</b>
       <p>{{ (education$ | async)?.dates }}</p>
       <p>{{ (education$ | async)?.degree }}</p>
 
       <div id="more-education">
-        <div *ngIf="section.display" class="content" @fadeIn>
+        <div *ngIf="section.display" class="bg-[#f1f1f1] text-black p-1.5 rounded-md" @fadeIn>
           <content-card *ngIf="section.count >= 1 && (projects$ | async)" [data]="(projects$ | async)!['archr']"></content-card>
           <content-card *ngIf="section.count >= 1 && (projects$ | async)" [data]="(projects$ | async)!['solar']" [applyMarginTop]="true"></content-card>
           <content-card *ngIf="section.count === 2 && (projects$ | async)" [data]="(projects$ | async)!['dome']" [applyMarginTop]="true"></content-card>
         </div>
 
-        <button *ngIf="section.count < 2" type="button" class="collapsible" (click)="toggle(true)">more</button>
-        <button *ngIf="section.count === 2" type="button" class="collapsible" (click)="toggle(false)">less</button>
+        <button *ngIf="section.count < 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(true)">more</button>
+        <button *ngIf="section.count === 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(false)">less</button>
       </div>
     </div>
   `,
   styles: [`
-    .section {
-      color: inherit;
-    }
-
-    .collapsible {
-      background-color: #eee;
-      color: #444;
-      cursor: pointer;
-      border: none;
-      text-align: left;
-      font-size: 9px;
-      border: 1px solid white;
-      border-radius: 5px;
-      text-transform: lowercase;
-      padding: 1px 6px;
-      margin-top: 5px;
-    }
-
-    .active,
-    .collapsible:hover {
-      background-color: #ccc;
-    }
-
-    .content {
-      background-color: #f1f1f1;
-      color: black;
-      padding: 6px;
-      border-radius: 6px;
-    }
-
     .content .section {
       color: black;
       font-size: 80%;

@@ -7,128 +7,36 @@ import { formatCompletionDate } from '../utils/date';
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="task-card">
-      <div class="task-header">
-        <h3 class="task-title">{{ task().title }}</h3>
-        <span class="task-status" [class.completed]="task().status === 'completed'">
+    <div class="bg-[#2a2a2a] border border-[#404040] rounded-lg p-3">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-sm font-semibold text-white m-0">{{ task().title }}</h3>
+        <span [class]="task().status === 'completed' ? 'py-0.5 px-2 rounded text-[10px] uppercase bg-[#1a4d2e] text-[#4ade80] font-semibold' : 'py-0.5 px-2 rounded text-[10px] uppercase bg-[#404040] text-[#888] font-semibold'">
           {{ task().status }}
         </span>
       </div>
       @if (task().completedDate && task().completedCommit) {
-        <div class="task-completion">
-          <span class="completion-label">Completed:</span>
-          <span class="completion-date">{{ formatDate(task().completedDate!) }}</span>
-          <a [href]="task().completedCommit!.url" target="_blank" class="completion-commit">
+        <div class="flex items-center gap-2 mb-2 text-[11px]">
+          <span class="text-[#888]">Completed:</span>
+          <span class="text-[#4ade80] font-semibold">{{ formatDate(task().completedDate!) }}</span>
+          <a [href]="task().completedCommit!.url" target="_blank" class="text-[#039be5] no-underline font-mono hover:underline">
             {{ task().completedCommit!.hash }}
           </a>
         </div>
       }
-      <div class="task-subtasks">
+      <div class="flex flex-col gap-2 mb-2">
         @for (subtask of task().subtasks; track subtask.description) {
-          <div class="subtask">
-            <input type="checkbox" [checked]="subtask.completed" disabled />
-            <span [class.completed]="subtask.completed">{{ subtask.description }}</span>
+          <div class="flex items-center gap-2 text-xs text-[#ccc]">
+            <input type="checkbox" [checked]="subtask.completed" disabled class="cursor-not-allowed" />
+            <span [class.line-through]="subtask.completed" [class.text-[#666]]="subtask.completed">{{ subtask.description }}</span>
           </div>
         }
       </div>
-      <div class="task-location">
+      <div class="pt-2 border-t border-[#333]">
         <span class="text-xs text-gray-500">{{ task().location }}</span>
       </div>
     </div>
   `,
-  styles: [`
-    .task-card {
-      background: #2a2a2a;
-      border: 1px solid #404040;
-      border-radius: 8px;
-      padding: 12px;
-    }
-
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .task-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-      margin: 0;
-    }
-
-    .task-status {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      text-transform: uppercase;
-      background: #404040;
-      color: #888;
-      font-weight: 600;
-    }
-
-    .task-status.completed {
-      background: #1a4d2e;
-      color: #4ade80;
-    }
-
-    .task-completion {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-size: 11px;
-    }
-
-    .completion-label {
-      color: #888;
-    }
-
-    .completion-date {
-      color: #4ade80;
-      font-weight: 600;
-    }
-
-    .completion-commit {
-      color: #039be5;
-      text-decoration: none;
-      font-family: monospace;
-    }
-
-    .completion-commit:hover {
-      text-decoration: underline;
-    }
-
-    .task-subtasks {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .subtask {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #ccc;
-    }
-
-    .subtask input[type="checkbox"] {
-      cursor: not-allowed;
-    }
-
-    .subtask span.completed {
-      text-decoration: line-through;
-      color: #666;
-    }
-
-    .task-location {
-      padding-top: 8px;
-      border-top: 1px solid #333;
-    }
-  `]
+  styles: []
 })
 export class TaskCard {
   task = input.required<Task>();

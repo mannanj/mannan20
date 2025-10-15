@@ -11,12 +11,12 @@ import { navigateTo } from '../../utils/help';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div id="main">
-      <div id="picture">
-        <img src="mannan.jpg" width="48" height="48">
+    <div class="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99]">
+      <div class="flex items-center relative z-[-99] hover:cursor-pointer">
+        <img src="mannan.jpg" width="48" height="48" class="rounded-full">
       </div>
-      <div id="links">
-        <div *ngFor="let link of linksArray">
+      <div class="flex pr-[50px] pl-[15px]">
+        <div *ngFor="let link of linksArray" class="pl-[15px]">
           <a
             [id]="link + '-link'"
             [class.selected]="(selectedLink$ | async) === link"
@@ -30,45 +30,10 @@ import { navigateTo } from '../../utils/help';
     </div>
   `,
   styles: [`
-    #main {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      width: 100vw;
-      background-color: #0b0b0b;
-      border-bottom: 1px solid white;
-      height: 66px;
-      z-index: 99;
-    }
-
     a {
       color: white;
     }
 
-    #picture {
-      display: flex;
-      align-items: center;
-      position: relative;
-      z-index: -99;
-    }
-
-    #picture:hover {
-      cursor: pointer;
-    }
-
-    img {
-      border-radius: 50%;
-    }
-
-    #links {
-      display: flex;
-      padding: 0 50px 0 15px;
-    }
-    #links > * {
-      padding-left: 15px;
-    }
     .link {
       cursor: pointer;
       position: relative;

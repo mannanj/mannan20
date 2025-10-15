@@ -22,38 +22,19 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
         <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['travel']" [applyMarginTop]="true"></content-card>
         <content-card *ngIf="section.count === 2 && (activities$ | async)" [data]="(activities$ | async)!['jung']" [applyMarginTop]="true"></content-card>
 
-        <div *ngIf="section.count === 2" class="section margin-top">
+        <div *ngIf="section.count === 2" class="section text-inherit margin-top">
           <b>Published Works</b>
-          <p *ngFor="let work of (publishedWorks$ | async) || []" style="font-size: 14px;">
-            &#x2022; <a [href]="work.downloadPath" [download]="work.downloadFilename" style="color: #039be5;">{{ work.title }}</a>
+          <p *ngFor="let work of (publishedWorks$ | async) || []" class="text-sm">
+            &#x2022; <a [href]="work.downloadPath" [download]="work.downloadFilename" class="text-[#039be5]">{{ work.title }}</a>
           </p>
         </div>
       </div>
 
-      <button *ngIf="section.count < 2" type="button" class="collapsible" (click)="toggle(true)">more</button>
-      <button *ngIf="section.count === 2" type="button" class="collapsible" (click)="toggle(false)">less</button>
+      <button *ngIf="section.count < 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(true)">more</button>
+      <button *ngIf="section.count === 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(false)">less</button>
     </div>
   `,
   styles: [`
-    .collapsible {
-      background-color: #eee;
-      color: #444;
-      cursor: pointer;
-      border: none;
-      text-align: left;
-      font-size: 9px;
-      border: 1px solid white;
-      border-radius: 5px;
-      text-transform: lowercase;
-      padding: 1px 6px;
-      margin-top: 5px;
-    }
-
-    .active,
-    .collapsible:hover {
-      background-color: #ccc;
-    }
-
     .section {
       color: inherit;
     }
