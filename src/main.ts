@@ -3,9 +3,6 @@ import { appConfig } from './app/app.config';
 import { App } from './app/app';
 import { inject } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 inject();
 injectSpeedInsights();

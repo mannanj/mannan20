@@ -40,7 +40,9 @@ import { selectDevCommits } from './store/app.selectors';
       }
       <div class="fixed bottom-0 right-0 z-50 flex items-end gap-2">
         @if (hasDevCommits()) {
-          <dev-stats />
+          @defer (on immediate) {
+            <dev-stats />
+          }
         }
         <last-updated />
       </div>

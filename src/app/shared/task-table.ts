@@ -1,9 +1,8 @@
-import { Component, ChangeDetectionStrategy, input, signal, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, viewChild, OnInit } from '@angular/core';
 import { Task } from '../models/models';
 import { formatCompletionDate } from '../utils/date';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
-import { themeQuartz } from 'ag-grid-community';
 
 @Component({
   selector: 'task-table',
@@ -19,19 +18,21 @@ import { themeQuartz } from 'ag-grid-community';
         class="search-input"
       />
     </div>
-    <div style="height: 400px; width: 100%;">
-      <ag-grid-angular
-        #tasksGrid
-        [rowData]="tasks()"
-        [columnDefs]="colDefs"
-        [theme]="gridTheme"
-        [suppressCellFocus]="true"
-        [suppressRowClickSelection]="true"
-        [animateRows]="false"
-        [getRowId]="getTaskRowId"
-        style="width: 100%; height: 100%;"
-      />
-    </div>
+    @if (gridTheme()) {
+      <div style="height: 400px; width: 100%;">
+        <ag-grid-angular
+          #tasksGrid
+          [rowData]="tasks()"
+          [columnDefs]="colDefs"
+          [theme]="gridTheme()"
+          [suppressCellFocus]="true"
+          [suppressRowClickSelection]="true"
+          [animateRows]="false"
+          [getRowId]="getTaskRowId"
+          style="width: 100%; height: 100%;"
+        />
+      </div>
+    }
   `,
   styles: [`
     .search-input {
@@ -55,11 +56,26 @@ import { themeQuartz } from 'ag-grid-community';
     }
   `]
 })
-export class TaskTable {
+export class TaskTable implements OnInit {
   tasks = input.required<Task[]>();
   protected searchText = signal('');
+  protected gridTheme = signal<any>(null);
 
   private tasksGrid = viewChild<AgGridAngular>('tasksGrid');
+
+  async ngOnInit() {
+    const { themeQuartz } = await import('ag-grid-community');
+
+    this.gridTheme.set(themeQuartz.withParams({
+      backgroundColor: '#000',
+      foregroundColor: '#fff',
+      headerBackgroundColor: '#1a1a1a',
+      headerTextColor: '#fff',
+      oddRowBackgroundColor: '#0a0a0a',
+      headerFontSize: 11,
+      headerVerticalPaddingScale: 0.5,
+    }));
+  }
 
   protected getTaskRowId = (params: any) => params.data.id;
 
@@ -71,16 +87,6 @@ export class TaskTable {
       gridApi.setGridOption('quickFilterText', value);
     }
   }
-
-  protected gridTheme = themeQuartz.withParams({
-    backgroundColor: '#000',
-    foregroundColor: '#fff',
-    headerBackgroundColor: '#1a1a1a',
-    headerTextColor: '#fff',
-    oddRowBackgroundColor: '#0a0a0a',
-    headerFontSize: 11,
-    headerVerticalPaddingScale: 0.5,
-  });
 
   protected colDefs: ColDef[] = [
     {

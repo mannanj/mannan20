@@ -1,20 +1,16 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { DatePipe } from '@angular/common';
 import { Modal } from './modal';
 import { TasksContainer } from './tasks-container';
+import { CommitsGrid } from './commits-grid';
 import { selectDevCommits, selectTasks } from '../store/app.selectors';
 import { DevStatsIcon } from '../components/icons/dev-stats-icon';
 import { ServicesPlaceholderIcon } from '../components/icons/services-placeholder-icon';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, ICellRendererParams, GridApi } from 'ag-grid-community';
-import { themeQuartz } from 'ag-grid-community';
 
 @Component({
   selector: 'dev-stats',
-  imports: [Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon, AgGridAngular],
-  providers: [DatePipe],
+  imports: [Modal, TasksContainer, CommitsGrid, DevStatsIcon, ServicesPlaceholderIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -49,28 +45,11 @@ import { themeQuartz } from 'ag-grid-community';
 
         <div class="tab-content">
           <div [style.display]="activeTab() === 'commits' ? 'block' : 'none'">
-            <div class="mb-3">
-              <input
-                type="text"
-                placeholder="Search commits..."
-                [value]="commitsSearchText()"
-                (input)="onCommitsSearchChange($event)"
-                class="search-input"
-              />
-            </div>
-            <div style="height: 400px; width: 100%;">
-              <ag-grid-angular
-                #commitsGrid
-                [rowData]="filteredCommits()"
-                [columnDefs]="commitsColDefs"
-                [theme]="gridTheme"
-                [suppressCellFocus]="true"
-                [suppressRowClickSelection]="true"
-                [animateRows]="false"
-                [getRowId]="getCommitRowId"
-                style="width: 100%; height: 100%;"
-              />
-            </div>
+            @defer (on immediate) {
+              <commits-grid [commits]="filteredCommits()" />
+            } @placeholder {
+              <div class="text-center py-8 text-gray-400">Loading...</div>
+            }
           </div>
 
           @if (activeTab() === 'services') {
@@ -135,31 +114,6 @@ import { themeQuartz } from 'ag-grid-community';
       animation: fadeIn 0.3s ease-in;
     }
 
-    .commits-table-container {
-      max-height: 400px;
-      overflow-y: auto;
-      overflow-x: auto;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 8px 12px;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 4px;
-      color: #fff;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .search-input::placeholder {
-      color: #666;
-    }
-
-    .search-input:focus {
-      border-color: #039be5;
-    }
 
     @keyframes fadeIn {
       from {
@@ -175,63 +129,15 @@ import { themeQuartz } from 'ag-grid-community';
 })
 export class DevStats {
   private store = inject(Store);
-  private datePipe = inject(DatePipe);
 
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
   protected tasks = toSignal(this.store.select(selectTasks), { initialValue: [] });
-  protected commitsSearchText = signal('');
-
-  private commitsGrid = viewChild<AgGridAngular>('commitsGrid');
 
   private allCommits = toSignal(this.store.select(selectDevCommits), { initialValue: [] });
   protected filteredCommits = computed(() =>
     this.allCommits().filter(commit => commit.subject !== 'Update dev data files')
   );
-
-  protected gridTheme = themeQuartz.withParams({
-    backgroundColor: '#000',
-    foregroundColor: '#fff',
-    headerBackgroundColor: '#1a1a1a',
-    headerTextColor: '#fff',
-    oddRowBackgroundColor: '#0a0a0a',
-    headerFontSize: 11,
-    headerVerticalPaddingScale: 0.5,
-  });
-
-  protected commitsColDefs: ColDef[] = [
-    {
-      field: 'hash',
-      headerName: 'Hash',
-      width: 100,
-      resizable: true,
-      cellRenderer: (params: ICellRendererParams) => {
-        return `<a href="${params.data.url}" target="_blank" style="color: #039be5; font-family: monospace; font-size: 12px; text-decoration: none;">${params.value}</a>`;
-      }
-    },
-    {
-      field: 'subject',
-      headerName: 'Subject',
-      flex: 1,
-      resizable: true,
-      cellStyle: { fontSize: '12px', color: '#d1d1d1' }
-    },
-    {
-      field: 'author',
-      headerName: 'Author',
-      width: 120,
-      resizable: true,
-      cellStyle: { fontSize: '12px', color: '#999', overflow: 'hidden', textOverflow: 'ellipsis' }
-    },
-    {
-      field: 'date',
-      headerName: 'Date',
-      width: 180,
-      resizable: true,
-      valueFormatter: (params) => this.datePipe.transform(params.value, 'MMM d, y h:mm a') || '',
-      cellStyle: { fontSize: '12px', color: '#999', whiteSpace: 'nowrap' }
-    }
-  ];
 
   toggleModal() {
     this.isModalOpen.update(value => !value);
@@ -240,15 +146,4 @@ export class DevStats {
   setActiveTab(tab: 'commits' | 'services' | 'tasks') {
     this.activeTab.set(tab);
   }
-
-  onCommitsSearchChange(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.commitsSearchText.set(value);
-    const gridApi = this.commitsGrid()?.api;
-    if (gridApi) {
-      gridApi.setGridOption('quickFilterText', value);
-    }
-  }
-
-  protected getCommitRowId = (params: any) => params.data.hash;
 }
