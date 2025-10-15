@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "508429fbc184ee897e2075d9702e6cc13f45919f",
+    "hash": "508429f",
+    "subject": "Task 71: Investigate and Configure AG Grid Row Selection",
+    "body": "- [x] Research AG Grid row selection documentation and capabilities\n- [x] Understand what current row selection configuration does (multiRow, enableClickSelection: false)\n- [x] Determine if row selection checkboxes should be visible or hidden\n- [x] Investigate use cases for row selection (bulk actions, export selected rows, etc.)\n- [x] Decide whether to disable row selection entirely or implement useful features\n- [x] Remove checkboxes if row selection is not needed\n- [x] Test changes in both commits-grid and task-table components\n- Location: \\`src/app/shared/commits-grid.ts\\`, \\`src/app/shared/task-table.ts\\`\n\n[Task-71]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:45:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/508429fbc184ee897e2075d9702e6cc13f45919f"
+  },
+  {
+    "fullHash": "43f0685dd9f029c48bc0719be1b219754c5d91f7",
+    "hash": "43f0685",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:35:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/43f0685dd9f029c48bc0719be1b219754c5d91f7"
+  },
+  {
     "fullHash": "4d9437f6216581ed19e8d56a3ff7a5db4e7f2625",
     "hash": "4d9437f",
     "subject": "Task 33: Add Email Validation to Contact Form",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T02:04:12-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/68818839d6daf35826d04f933495e496cfaa76c7"
-  },
-  {
-    "fullHash": "213d3917d7dd7846c169206f93241a64e16e4c8f",
-    "hash": "213d391",
-    "subject": "Task 43: Aggressively Minimize Tasks Toolbar Vertical Space",
-    "body": "- [x] Remove all vertical padding from toolbar container\n- [x] Remove all vertical padding from icon and sort buttons\n- [x] Make toolbar as compact as possible with minimal whitespace\n- [x] Ensure icons and text remain visible and clickable\n- Location: `src/app/shared/tasks-toolbar.ts`\n\n[Task-43]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T02:04:12-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/213d3917d7dd7846c169206f93241a64e16e4c8f"
-  },
-  {
-    "fullHash": "129e7111b7d4a4223dfd171752a1b4f9243cc757",
-    "hash": "129e711",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:38:15-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/129e7111b7d4a4223dfd171752a1b4f9243cc757"
   }
 ]
