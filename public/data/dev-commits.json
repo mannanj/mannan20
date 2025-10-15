@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "b82304eedea5656f14eb3668f43d038ca574654b",
+    "hash": "b82304e",
+    "subject": "Task 32: Remove Blue Borders from Copy Icon Buttons",
+    "body": "- [x] Add !important overrides to copy icon buttons in contact-result\n- [x] Override global button border styles for email copy button\n- [x] Override global button border styles for phone copy button\n- [x] Add focus:outline-none to prevent focus borders\n- [x] Test copy buttons to ensure styling is correct\n- Location: `src/app/components/contact/contact-result.ts`\n\n[Task-32]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:16:11-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b82304eedea5656f14eb3668f43d038ca574654b"
+  },
+  {
+    "fullHash": "7bbc80b399728f92f197e068b6595447f2d20466",
+    "hash": "7bbc80b",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:12:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7bbc80b399728f92f197e068b6595447f2d20466"
+  },
+  {
     "fullHash": "49f0457ba2755e2a2e4d95eced644b3a1eb1a48a",
     "hash": "49f0457",
     "subject": "Add Task 30 and Task 31 to tasks.md",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T21:44:14-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/e5abdd8271c6299e1d0b8b592c2f9a9955f9f2fd"
-  },
-  {
-    "fullHash": "ed2d96e1368b4d71619c1e8580819f8bdc82d08d",
-    "hash": "ed2d96e",
-    "subject": "Test hook with logging",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:43:28-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ed2d96e1368b4d71619c1e8580819f8bdc82d08d"
-  },
-  {
-    "fullHash": "37414f23318ed71aa3b26e77f8d68132d3925231",
-    "hash": "37414f2",
-    "subject": "Update hook data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:42:18-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/37414f23318ed71aa3b26e77f8d68132d3925231"
   }
 ]

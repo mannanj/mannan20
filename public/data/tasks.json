@@ -858,5 +858,41 @@
       }
     ],
     "location": "Git history"
+  },
+  {
+    "id": "task-32",
+    "title": "Remove Blue Borders from Copy Icon Buttons",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Add !important overrides to copy icon buttons in contact-result",
+        "completed": true
+      },
+      {
+        "description": "Override global button border styles for email copy button",
+        "completed": true
+      },
+      {
+        "description": "Override global button border styles for phone copy button",
+        "completed": true
+      },
+      {
+        "description": "Add focus:outline-none to prevent focus borders",
+        "completed": true
+      },
+      {
+        "description": "Test copy buttons to ensure styling is correct",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/contact/contact-result.ts`",
+    "completedDate": "2025-10-15T01:16:11-04:00",
+    "completedCommit": {
+      "hash": "b82304e",
+      "fullHash": "b82304eedea5656f14eb3668f43d038ca574654b",
+      "subject": "Task 32: Remove Blue Borders from Copy Icon Buttons",
+      "date": "2025-10-15T01:16:11-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/b82304eedea5656f14eb3668f43d038ca574654b"
+    }
   }
 ]
