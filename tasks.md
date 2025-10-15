@@ -203,3 +203,11 @@
 - [x] Preserve commit history for Update dev data files commits
 - [x] Force push consolidated commits to remote
 - Location: Git history
+
+### Task 32: Remove Blue Borders from Copy Icon Buttons
+- [x] Add !important overrides to copy icon buttons in contact-result
+- [x] Override global button border styles for email copy button
+- [x] Override global button border styles for phone copy button
+- [x] Add focus:outline-none to prevent focus borders
+- [x] Test copy buttons to ensure styling is correct
+- Location: `src/app/components/contact/contact-result.ts`
