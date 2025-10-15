@@ -34,7 +34,7 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
       <div class="mt-5 relative">
         <button
           type="submit"
-          class="w-full py-3.5 px-6 rounded-lg text-base font-medium cursor-pointer transition-all duration-200 !border-0 bg-[#f0ede6] text-[#1a1a1a] hover:bg-[#e5e0d8] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed !shadow-none !normal-case !mt-0"
+          class="w-full py-3.5 px-6 rounded-lg text-base font-medium cursor-pointer transition-all duration-200 !border-2 !border-[#039be5] bg-[#f0ede6] text-[#1a1a1a] hover:bg-[#e5e0d8] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed !shadow-none !normal-case !mt-0 focus:outline-none"
           (mouseenter)="showTooltip = true"
           (mouseleave)="showTooltip = false">
           {{ isLoading ? 'Sending...' : 'Continue your request' }}
