@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "148316e8e7bcd92c5636244ff18cc2e54c78a80c",
+    "hash": "148316e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:42:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/148316e8e7bcd92c5636244ff18cc2e54c78a80c"
+  },
+  {
     "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
     "hash": "a06c7dd",
     "subject": "Clear all completion data to reset for proper hook function",
@@ -889,14 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T17:15:26-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/7de0cc1aec59da1736b6e93756e0ab9b6926b678"
-  },
-  {
-    "fullHash": "ce92586f92777cc31239ca006532ff0424d9ad9e",
-    "hash": "ce92586",
-    "subject": "Add usernames and country flags to cursor party",
-    "body": "Features:\n- Add 100 cute/quirky usernames (happy possum, sleepy koala, etc.)\n- Usernames randomly assigned from app state on connection\n- Install and integrate geoip-lite for country detection\n- Server detects country from IP address (localhost defaults to US)\n- Display country flag emoji + username together next to cursors\n- Update chat bubble position below username label\n- Extend chat message duration from 3s to 12s\n\nUI Improvements:\n- Update last-updated component styling\n- Move closer to bottom edge (bottom-0)\n- Move more to the right (right-2)\n- Make text italic and smaller (10px)\n- Remove colon, change to \"Last Update\"\n- Remove gradient border, simplify to opaque background\n\nFuture Task:\n- Add task to move username management to server-side in FEATURES.md\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:12:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ce92586f92777cc31239ca006532ff0424d9ad9e"
   }
 ]
