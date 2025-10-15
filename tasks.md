@@ -212,3 +212,81 @@
 - [x] Add blue border to Continue with your request button
 - [x] Test all buttons to ensure styling is correct
 - Location: `src/app/components/contact/contact-result.ts`, `src/app/components/contact/contact-form.ts`
+
+### Task 33: Add Email Validation to Contact Form
+- [ ] Implement robust email validation for contact form input
+- [ ] Add email format validation (RFC 5322 compliant)
+- [ ] Show validation error messages for invalid email formats
+- [ ] Prevent form submission with invalid email data
+- Location: `src/app/components/contact/contact-form.ts`
+
+### Task 34: Add Consent Checkmark Icon
+- [ ] Add green checkmark SVG icon next to consent text
+- [ ] Position checkmark before "I will never reach out to you without your consent"
+- [ ] Style checkmark with green color using Tailwind utilities
+- [ ] Ensure checkmark aligns properly with text
+- Location: `src/app/components/contact/contact-form.ts`
+
+### Task 35: Update Modal Greeting Text
+- [ ] Change greeting from "Hi <>" to "Hi there 👋" (3 words with hand waving emoji)
+- [ ] Update modal template to use new greeting format
+- [ ] Ensure emoji displays correctly across browsers
+- Location: `src/app/components/contact/contact-result.ts` or modal component
+
+### Task 36: Create LLM Form Validation Backend Endpoint
+- [ ] Create Spring Boot REST endpoint for LLM-based form validation
+- [ ] Integrate LLM API (OpenAI/Anthropic) for input parsing
+- [ ] Extract name, email, and reason from user input text
+- [ ] Generate contextual reasonResponse based on detected intent
+- [ ] Add recruiter-specific response: "Welcome! I'm open for job placement conversations Mon-Fri 11am-4pm ET"
+- [ ] Add multiple example reason responses for different visitor types
+- [ ] Return structured JSON response with extracted fields and reasonResponse
+- [ ] Handle async processing with appropriate HTTP status codes
+- Location: `backend/src/main/java/com/mannan/controllers/`, create new LLM service
+
+### Task 37: Integrate LLM Validation in Frontend Contact Form
+- [ ] Create service to call LLM validation endpoint
+- [ ] Add loading indicator while LLM processes input
+- [ ] Display extracted name, email, reason to user for confirmation
+- [ ] Show LLM-generated reasonResponse in real-time as it arrives
+- [ ] Allow form submission once validation completes
+- [ ] Handle streaming/async response display
+- Location: `src/app/components/contact/contact-form.ts`, `src/app/services/`
+
+### Task 38: Implement Queue Messaging System
+- [ ] Design queue messaging architecture (WebSocket or Server-Sent Events)
+- [ ] Create backend queue management service
+- [ ] Implement frontend queue display component
+- [ ] Add real-time message notifications
+- [ ] Create message persistence storage
+- [ ] Add message read/unread status tracking
+- Location: `backend/src/main/java/com/mannan/`, `src/app/components/`, `src/app/services/`
+
+### Task 39: Add Real-Time Chat Feature
+- [ ] Create WebSocket chat server endpoint
+- [ ] Design chat UI component with message input and display
+- [ ] Implement real-time bidirectional messaging
+- [ ] Add typing indicators
+- [ ] Add message history persistence
+- [ ] Create chat notification system
+- [ ] Style chat component with Tailwind utilities
+- Location: `backend/src/main/java/com/mannan/`, `server/`, `src/app/components/chat/`
+
+### Task 40: Implement Video and Audio Calling
+- [ ] Research WebRTC library integration (e.g., PeerJS, Simple-Peer)
+- [ ] Create call invitation link generation system
+- [ ] Implement WebRTC peer connection setup
+- [ ] Add video/audio stream handling
+- [ ] Create call UI component with video display and controls
+- [ ] Add microphone and camera permission handling
+- [ ] Implement call status indicators (connecting, connected, ended)
+- [ ] Add mute/unmute and video on/off controls
+- [ ] Test browser compatibility for WebRTC features
+- Location: `src/app/components/call/`, `src/app/services/call.service.ts`, backend signaling server
+
+### Task 41: Add Task Completion Verification to Workflow
+- [x] Update claude.md with instructions to check task completion status before starting
+- [x] Add step to verify all subtasks are not already marked complete
+- [x] Include instruction to mark task as complete and push if already done
+- [x] Ensure workflow prevents duplicate work on completed tasks
+- Location: `.claude/CLAUDE.md`
