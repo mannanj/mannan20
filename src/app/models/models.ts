@@ -53,19 +53,38 @@ export interface Metadata {
   lastUpdated: string;
 }
 
-export interface AppState {
-  selectedLink: Links;
-  aboutData: AboutData | null;
-  metadata: Metadata | null;
+export interface CursorData {
+  id: string;
+  x: number;
+  y: number;
+  username?: string;
+  country?: string;
+  color: string;
+  isLocal: boolean;
+}
+
+export interface Cursors {
+  [id: string]: CursorData;
+}
+
+export interface CursorState {
   cursorChatPlaceholder: string;
   cursorUsername: string;
   activeViewerCount: number;
   cursorColors: string[];
   myId: string | null;
-  isInitialized: boolean;
   cursorsVisible: boolean;
-  commandsModalVisible: boolean;
   isCursorPartyConnected: boolean;
+  cursors: Cursors;
+  cursorOrder: string[];
+}
+
+export interface AppState {
+  selectedLink: Links;
+  aboutData: AboutData | null;
+  metadata: Metadata | null;
+  isInitialized: boolean;
+  commandsModalVisible: boolean;
 }
 
 export interface ContactResult {
