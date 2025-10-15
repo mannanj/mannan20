@@ -189,11 +189,11 @@
 - Location: `src/app/shared/modal.ts`
 
 ### Task 30: Reduce Whitespace in Tasks Toolbar Header
-- [ ] Reduce vertical padding in tasks toolbar container
-- [ ] Adjust spacing above icons and buttons to minimal needed space
-- [ ] Make toolbar height more compact while keeping icons/buttons readable
-- [ ] Ensure visual balance with only slightly more space than necessary
-- [ ] Test both card/table view icons and sort button alignment
+- [x] Reduce vertical padding in tasks toolbar container
+- [x] Adjust spacing above icons and buttons to minimal needed space
+- [x] Make toolbar height more compact while keeping icons/buttons readable
+- [x] Ensure visual balance with only slightly more space than necessary
+- [x] Test both card/table view icons and sort button alignment
 - Location: `src/app/shared/tasks-toolbar.ts`
 
 ### Task 31: Consolidate Border Removal Commits
