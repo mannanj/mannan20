@@ -147,3 +147,18 @@
 - [x] Update any references to component class names in tests or documentation
 - [x] Ensure TypeScript compiles successfully after renaming
 - Location: All component class definitions throughout the project
+
+### Task 25: Update Documentation with Tailwind Styling Requirements
+- [x] Update .claude/CLAUDE.md to document Tailwind CSS 4 usage requirement
+- [x] Add guidelines for when to use Tailwind vs custom CSS
+- [x] Document that inline Tailwind utilities should be preferred over component styles
+- [x] Add examples of proper Tailwind class usage
+- Location: `.claude/CLAUDE.md`
+
+### Task 26: Restore Original More/Less Button Styling
+- [x] Check commit c1922e1 for original more/less button styles
+- [x] Identify which styles can be converted to Tailwind utilities
+- [x] Keep custom CSS for styles Tailwind doesn't support
+- [x] Apply restored styling to all more/less buttons (about, education, extracurriculars, content-card, employment)
+- [x] Ensure visual appearance matches pre-Task-23 styling
+- Location: `src/app/components/about/*.ts`

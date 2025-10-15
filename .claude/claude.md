@@ -43,6 +43,75 @@ Full-stack portfolio application with real-time cursor tracking.
 - Never use `@HostBinding` or `@HostListener`
 - Put host bindings in the `host` object of `@Component`/`@Directive`
 
+## Tailwind CSS Styling
+
+### Styling Requirements
+
+- **Always prefer Tailwind utility classes** over component-level `styles` arrays
+- Apply Tailwind classes directly to elements in templates
+- Use arbitrary values with bracket notation when needed: `text-[#039be5]`, `w-[400px]`
+- Minimize component `styles` arrays - keep them empty when possible
+
+### When to Use Custom CSS
+
+Use component-level or global CSS only when Tailwind cannot achieve the desired effect:
+
+**Required custom CSS:**
+- `::before` and `::after` pseudo-elements with `content` property
+- Angular-specific selectors (`:host`, `:host-context()`)
+- `@keyframes` animations
+- Complex nested selectors that depend on parent state
+
+**Example - Custom CSS needed:**
+```css
+button::before {
+  content: '';
+  position: absolute;
+  /* Tailwind cannot set content property */
+}
+
+:host-context(.dark-mode) {
+  /* Angular-specific selector */
+}
+
+@keyframes slideIn {
+  /* Custom animation */
+}
+```
+
+### Global Utility Classes
+
+Reusable utility classes are defined in `src/styles.css`:
+- `.collapsible` - Styled more/less buttons
+- `.content` - Expandable content containers
+- `.margin-top`, `.margin-top-60`, etc. - Spacing utilities
+
+Use these classes instead of duplicating styles across components.
+
+### Best Practices
+
+✅ **Good:**
+```html
+<button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">
+  Click me
+</button>
+
+<button class="collapsible" (click)="toggle()">more</button>
+```
+
+❌ **Avoid:**
+```typescript
+@Component({
+  styles: [`
+    button {
+      background-color: #3b82f6;
+      padding: 8px 16px;
+      border-radius: 4px;
+    }
+  `]
+})
+```
+
 ## TypeScript Standards
 
 - Strict type checking enabled
