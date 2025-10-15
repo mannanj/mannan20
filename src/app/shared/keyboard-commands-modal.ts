@@ -62,7 +62,11 @@ export class KeyboardCommandsModal {
       event.preventDefault();
       this.toggle();
     } else if (event.key === 'Escape') {
-      this.close();
+      if (this.isVisible()) {
+        this.close();
+      } else if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        this.toggleCursors();
+      }
     }
   }
 
