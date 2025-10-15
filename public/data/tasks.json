@@ -2138,5 +2138,53 @@
       "date": "2025-10-15T17:32:18-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/9fa13155f4d19dbd1efb3adceff3dffe7cf60425"
     }
+  },
+  {
+    "id": "task-66",
+    "title": "Replace Intersection Observer with NgRx Effect Scroll Listener",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Create NgRx effect with scroll event listener using fromEvent and throttleTime (100ms)",
+        "completed": true
+      },
+      {
+        "description": "Calculate which section (home, about, contact) has highest visible percentage using getBoundingClientRect",
+        "completed": true
+      },
+      {
+        "description": "Dispatch setSelectedLink action with most visible section to store from effect",
+        "completed": true
+      },
+      {
+        "description": "Remove BaseSection directive entirely from codebase",
+        "completed": true
+      },
+      {
+        "description": "Remove `extends BaseSection` from Home, About, and Contact components",
+        "completed": true
+      },
+      {
+        "description": "Remove `createIntersectionObserver` function from help.ts",
+        "completed": true
+      },
+      {
+        "description": "Test all sections to ensure header navigation highlights update correctly when scrolling",
+        "completed": true
+      },
+      {
+        "description": "Verify performance is smooth with throttled scroll events",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/store/app.effects.ts`, `src/app/shared/base-section.ts`, `src/app/components/home/home.ts`, `src/app/components/about/about.ts`, `src/app/components/contact/contact.ts`, `src/app/utils/help.ts`",
+    "completedDate": "2025-10-15T18:02:22-04:00",
+    "completedCommit": {
+      "hash": "bcab63e",
+      "fullHash": "bcab63ef45d272b70d7b3f9fc9e1eaab4debdc93",
+      "subject": "Task 66: Replace Intersection Observer with NgRx Effect Scroll Listener",
+      "date": "2025-10-15T18:02:22-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/bcab63ef45d272b70d7b3f9fc9e1eaab4debdc93"
+    }
   }
 ]
