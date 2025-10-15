@@ -539,3 +539,13 @@
 - [ ] Test both grids to ensure row click behavior remains unchanged
 - [ ] Verify build completes without deprecation warnings
 - Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
+
+### Task 68: Fix AG Grid Column Menu Not Displaying
+- [ ] Investigate why column menu icons are not visible in column headers
+- [ ] Check AG Grid documentation for proper column menu configuration
+- [ ] Add suppressHeaderMenuButton: false to column definitions or grid options
+- [ ] Enable menu icons in column headers
+- [ ] Test right-click context menu functionality on column headers
+- [ ] Verify column chooser opens and allows hiding/showing columns
+- [ ] Ensure menu works in both commits-grid and task-table
+- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
