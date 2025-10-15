@@ -21,15 +21,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/components/about/about.ts:290-336`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/components/about/about.ts:290-336`"
   },
   {
     "id": "task-2",
@@ -49,15 +41,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/store/app.state.ts`, actions, reducers, selectors",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/store/app.state.ts`, actions, reducers, selectors"
   },
   {
     "id": "task-3",
@@ -69,15 +53,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/services/data.service.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/services/data.service.ts`"
   },
   {
     "id": "task-4",
@@ -121,15 +97,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/animations/animations.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/animations/animations.ts`"
   },
   {
     "id": "task-7",
@@ -145,15 +113,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/services/navigation.service.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/services/navigation.service.ts`"
   },
   {
     "id": "task-8",
@@ -189,15 +149,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/components/contact/contact.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/components/contact/contact.ts`"
   },
   {
     "id": "task-11",
@@ -298,13 +250,13 @@
       }
     ],
     "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
+    "completedDate": "2025-10-14T23:04:04-04:00",
     "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
+      "hash": "537cf5f",
+      "fullHash": "537cf5f726b451ec760a802275341fffde82d73d",
+      "subject": "Add task completion tracking and modularize dev-stats [Task-14] [Task-15]",
+      "date": "2025-10-14T23:04:04-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/537cf5f726b451ec760a802275341fffde82d73d"
     }
   },
   {
@@ -333,15 +285,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
   },
   {
     "id": "task-16",
@@ -369,15 +313,7 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`"
   },
   {
     "id": "task-17",
@@ -397,15 +333,7 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`.githooks/post-commit`"
   },
   {
     "id": "task-18",
@@ -425,15 +353,7 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
-    "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
-    }
+    "location": "`.githooks/post-commit`"
   },
   {
     "id": "task-19",
@@ -458,13 +378,13 @@
       }
     ],
     "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
+    "completedDate": "2025-10-14T23:31:20-04:00",
     "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
+      "hash": "3cc8f8b",
+      "fullHash": "3cc8f8bf6473518496b381291c93fbd208740403",
+      "subject": "Add formatted completion date/time display to Tasks UI",
+      "date": "2025-10-14T23:31:20-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/3cc8f8bf6473518496b381291c93fbd208740403"
     }
   },
   {
@@ -490,13 +410,13 @@
       }
     ],
     "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:41:59-04:00",
+    "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "ec14a70",
-      "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
-      "subject": "Preserve existing task completion data in post-commit hook",
-      "date": "2025-10-14T23:41:59-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
+      "hash": "692bddf",
+      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
+      "subject": "Fix task completion commit detection and clean up task data",
+      "date": "2025-10-14T23:39:34-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
     }
   },
   {
