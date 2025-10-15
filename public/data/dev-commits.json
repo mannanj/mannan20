@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "de6b92f4491f7ab5e111ef5fa49f6909525d2050",
+    "hash": "de6b92f",
+    "subject": "Task 54: Adjust Dev Stats Modal Width and Task Column Styling",
+    "body": "- [x] Reduce dev-stats modal large width from 1028px to 768px\n- [x] Increase Task column default width to show more task text\n- [x] Remove bold font weight from task text in table\n- [x] Make consent text in contact form less prominent (lighter gray)\n- [x] Allow horizontal scroll bar to appear when needed\n- Location: `src/app/shared/modal.ts`, `src/app/shared/task-table.ts`, `src/app/components/contact/contact-form.ts`\n\n[Task-54]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:59:55-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/de6b92f4491f7ab5e111ef5fa49f6909525d2050"
+  },
+  {
+    "fullHash": "0825efd0d557526610becbe9c6ab5d12e802ce60",
+    "hash": "0825efd",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:55:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0825efd0d557526610becbe9c6ab5d12e802ce60"
+  },
+  {
     "fullHash": "b031c69209cc7d82a1d0ef60fae279470e6f0e70",
     "hash": "b031c69",
     "subject": "Remove unused CheckIcon import from contact-form",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:39:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
-  },
-  {
-    "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-    "hash": "692bddf",
-    "subject": "Fix task completion commit detection and clean up task data",
-    "body": "[Task-20]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:39:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
-  },
-  {
-    "fullHash": "6078dac37ab1852df521516407ddc8ae02f886f4",
-    "hash": "6078dac",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:37:32-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/6078dac37ab1852df521516407ddc8ae02f886f4"
   }
 ]

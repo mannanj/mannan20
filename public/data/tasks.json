@@ -1654,5 +1654,41 @@
       "date": "2025-10-15T11:54:26-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/84410ad23f7feb893ac77cce062dca438a61193f"
     }
+  },
+  {
+    "id": "task-54",
+    "title": "Adjust Dev Stats Modal Width and Task Column Styling",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Reduce dev-stats modal large width from 1028px to 768px",
+        "completed": true
+      },
+      {
+        "description": "Increase Task column default width to show more task text",
+        "completed": true
+      },
+      {
+        "description": "Remove bold font weight from task text in table",
+        "completed": true
+      },
+      {
+        "description": "Make consent text in contact form less prominent (lighter gray)",
+        "completed": true
+      },
+      {
+        "description": "Allow horizontal scroll bar to appear when needed",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/modal.ts`, `src/app/shared/task-table.ts`, `src/app/components/contact/contact-form.ts`",
+    "completedDate": "2025-10-15T11:59:55-04:00",
+    "completedCommit": {
+      "hash": "de6b92f",
+      "fullHash": "de6b92f4491f7ab5e111ef5fa49f6909525d2050",
+      "subject": "Task 54: Adjust Dev Stats Modal Width and Task Column Styling",
+      "date": "2025-10-15T11:59:55-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/de6b92f4491f7ab5e111ef5fa49f6909525d2050"
+    }
   }
 ]
