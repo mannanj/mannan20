@@ -28,18 +28,20 @@ export class NavigationService {
   }
 
   makeIntersectionObsAndSetFlags(component: Links, threshold: number): IntersectionObserver {
+    const thresholds = Array.from({ length: 21 }, (_, i) => i * 0.05);
+
     return new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && entry.intersectionRatio >= threshold) {
             this.intersectingSections.set(component, entry);
-          } else {
+          } else if (entry.intersectionRatio < threshold) {
             this.intersectingSections.delete(component);
           }
         });
         this.setActiveSection();
       },
-      { threshold }
+      { threshold: thresholds }
     );
   }
 
