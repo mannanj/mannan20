@@ -278,5 +278,69 @@
       }
     ],
     "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
+  },
+  {
+    "id": "task-16",
+    "title": "Refactor Dev Stats for Single Responsibility",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Create tasks-container component to encapsulate task-specific state",
+        "completed": true
+      },
+      {
+        "description": "Move task view state from dev-stats to tasks-container",
+        "completed": true
+      },
+      {
+        "description": "Move sort order state from dev-stats to tasks-container",
+        "completed": true
+      },
+      {
+        "description": "Move sorting logic from dev-stats to tasks-container",
+        "completed": true
+      },
+      {
+        "description": "Refactor dev-stats to only manage modal and tab state",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
+    "completedDate": "2025-10-14T23:08:26-04:00",
+    "completedCommit": {
+      "hash": "40f420b",
+      "fullHash": "diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87",
+      "subject": "Mark Task 15 as completed",
+      "date": "2025-10-14T23:08:26-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87"
+    }
+  },
+  {
+    "id": "task-17",
+    "title": "Fix Date Logic Bugs in Post-Commit Hook",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Fix template literal variable interpolation bug on line 89",
+        "completed": true
+      },
+      {
+        "description": "Fix template literal variable interpolation bug in grep command on line 103",
+        "completed": true
+      },
+      {
+        "description": "Fix logic to get newest commit instead of oldest (line 109)",
+        "completed": true
+      }
+    ],
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:08:26-04:00",
+    "completedCommit": {
+      "hash": "40f420b",
+      "fullHash": "diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87",
+      "subject": "Mark Task 15 as completed",
+      "date": "2025-10-14T23:08:26-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87"
+    }
   }
 ]

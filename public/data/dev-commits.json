@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "43ed1331f7fef449196524a84e5fd58ddf46cbe5",
+    "hash": "43ed133",
+    "subject": "Refactor dev-stats for single responsibility and fix date logic",
+    "body": "Task 16: Refactored dev-stats component to follow single responsibility principle\n- Created tasks-container component to encapsulate task-specific state\n- Moved task view and sort order state to tasks-container\n- Moved sorting logic to tasks-container\n- dev-stats now only manages modal and tab state\n\nTask 17: Fixed critical bugs in post-commit hook date logic\n- Fixed template literal variable interpolation on line 89\n- Fixed template literal variable interpolation in grep command on line 103\n- Fixed logic to get newest commit instead of oldest on line 109\n\n[Task-16] [Task-17]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:14:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/43ed1331f7fef449196524a84e5fd58ddf46cbe5"
+  },
+  {
+    "fullHash": "72d69aa6a58bc3661df625a87bcdd960f2a8d47c",
+    "hash": "72d69aa",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:08:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/72d69aa6a58bc3661df625a87bcdd960f2a8d47c"
+  },
+  {
     "fullHash": "40f420baee51cf4f80be120cb3c1d958d3c80f87",
     "hash": "40f420b",
     "subject": "Mark Task 15 as completed",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-12T14:40:30-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/ceeb6e398f151bdcb03f6e78f9e43a25d302e4ed"
-  },
-  {
-    "fullHash": "7d34af765799520155e2da8ed01c1be484fca6c0",
-    "hash": "7d34af7",
-    "subject": "remove old code, add vercel to gitignore",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-12T14:37:38-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7d34af765799520155e2da8ed01c1be484fca6c0"
-  },
-  {
-    "fullHash": "582b014c9d464eb9bb123019ac4ec574c081663a",
-    "hash": "582b014",
-    "subject": "Replace simple about component with comprehensive version",
-    "body": "Removed duplicate about component. The comprehensive version includes full employment history, extracurriculars, education sections with collapsible details, replacing the simple 3-paragraph version.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-12T00:52:53-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/582b014c9d464eb9bb123019ac4ec574c081663a"
   }
 ]
