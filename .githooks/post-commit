@@ -54,10 +54,17 @@ const tasksMarkdown = fs.readFileSync('${TASKS_INPUT}', 'utf8');
 
 function findTaskCompletionCommit(taskNum, taskTitle) {
   try {
-    const commitMsgCheck = execSync(
-      \`git log --format='%H|||%h|||%s|||%aI' --grep='\\[Task.\\?${taskNum}\\]' -i -1\`,
+    let commitMsgCheck = execSync(
+      \`git log --format='%H|||%h|||%s|||%aI' --grep='\\[Task-${taskNum}\\]' -i -1\`,
       { encoding: 'utf-8', shell: '/bin/bash' }
     ).trim();
+
+    if (!commitMsgCheck) {
+      commitMsgCheck = execSync(
+        \`git log --format='%H|||%h|||%s|||%aI' --grep='\\[Task ${taskNum}\\]' -i -1\`,
+        { encoding: 'utf-8', shell: '/bin/bash' }
+      ).trim();
+    }
 
     if (commitMsgCheck) {
       const parts = commitMsgCheck.split('|||');
