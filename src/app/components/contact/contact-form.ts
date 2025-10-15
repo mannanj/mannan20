@@ -2,11 +2,12 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GoogleLogoIcon } from '../icons/google-logo-icon';
+import { CheckIcon } from '../icons/check-icon';
 
 @Component({
   selector: 'contact-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, GoogleLogoIcon],
+  imports: [CommonModule, FormsModule, GoogleLogoIcon, CheckIcon],
   template: `
     <div class="text-center mb-8">
       <h2 class="m-0 mb-2 text-[2rem] font-normal text-white tracking-tight">Ready to collaborate?</h2>
@@ -44,8 +45,9 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
         </div>
       </div>
 
-      <p class="m-0 mt-4 p-0 text-[0.8125rem] leading-normal text-[#888] text-center">
-        I will never reach out to you without your consent.
+      <p class="m-0 mt-4 p-0 text-[0.8125rem] leading-normal text-[#888] flex items-center justify-center gap-2">
+        <check-icon class="w-4 h-4 text-green-500 shrink-0" />
+        <span>I will never reach out to you without your consent.</span>
       </p>
     </form>
   `,

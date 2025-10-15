@@ -221,10 +221,10 @@
 - Location: `src/app/components/contact/contact-form.ts`
 
 ### Task 34: Add Consent Checkmark Icon
-- [ ] Add green checkmark SVG icon next to consent text
-- [ ] Position checkmark before "I will never reach out to you without your consent"
-- [ ] Style checkmark with green color using Tailwind utilities
-- [ ] Ensure checkmark aligns properly with text
+- [x] Add green checkmark SVG icon next to consent text
+- [x] Position checkmark before "I will never reach out to you without your consent"
+- [x] Style checkmark with green color using Tailwind utilities
+- [x] Ensure checkmark aligns properly with text
 - Location: `src/app/components/contact/contact-form.ts`
 
 ### Task 35: Update Modal Greeting Text
@@ -377,3 +377,11 @@
 - [x] Ensure badge looks more compact and refined
 - [x] Keep card view status badge unchanged
 - Location: `src/app/shared/task-table.ts`
+
+### Task 52: Add Column Hiding Feature to AG Grid Tables
+- [ ] Add column visibility controls to git commits table
+- [ ] Add column visibility controls to tasks table
+- [ ] Use AG Grid's built-in column menu for show/hide functionality
+- [ ] Persist column visibility preferences in localStorage
+- [ ] Ensure all columns can be toggled on/off
+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`
