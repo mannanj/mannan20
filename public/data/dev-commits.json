@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "d4d8b8bb7486c816a80b8118c3cc38b229dd0e9f",
+    "hash": "d4d8b8b",
+    "subject": "Add lazy loading to additional components",
+    "body": "- Wrap viewer-stats in @defer for conditional loading\n- Wrap keyboard-commands-modal in @defer for background loading\n- Wrap tasks-container in @defer within dev-stats modal\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:41:06-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d4d8b8bb7486c816a80b8118c3cc38b229dd0e9f"
+  },
+  {
+    "fullHash": "1369fca42e5244ec0525b4677f3d85eafa5a3b3c",
+    "hash": "1369fca",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:32:18-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1369fca42e5244ec0525b4677f3d85eafa5a3b3c"
+  },
+  {
     "fullHash": "9fa13155f4d19dbd1efb3adceff3dffe7cf60425",
     "hash": "9fa1315",
     "subject": "Task 65: Remove Spacing Between Contact Info Lines",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:08:24-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/802e890cc407b6273501f0da7f37779ef0662725"
-  },
-  {
-    "fullHash": "3113d56fc6e3c8acc72d02944e6e8a377e730fac",
-    "hash": "3113d56",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:06:33-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/3113d56fc6e3c8acc72d02944e6e8a377e730fac"
-  },
-  {
-    "fullHash": "9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc",
-    "hash": "9fb294a",
-    "subject": "Task 22: Update Commit Message Format",
-    "body": "- [x] Modify claude.md to separate task title from description\n- [x] Update commit format example to show blank line after title\n- [x] Ensure subtasks appear in commit description, not title\n- Location: `.claude/claude.md`\n\n[Task-22]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:06:33-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc"
   }
 ]
