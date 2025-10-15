@@ -45,7 +45,7 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
           </div>
         </div>
 
-        <p class="m-0 mt-4 p-0 !text-[0.75rem] leading-normal !text-[#555] !font-light flex items-center justify-center gap-2">
+        <p class="m-0 mt-6 p-0 !text-[0.75rem] leading-normal !text-[#555] !font-light flex items-center justify-center gap-2">
           <span>I will never reach out to you without your consent.</span>
         </p>
       </div>
@@ -103,7 +103,7 @@ export class ContactForm {
   userInput = '';
   isLoading = false;
   showTooltip = false;
-  readonly placeholder: string = 'Please share your name, email, or reason for reaching out'
+  readonly placeholder: string = 'Enter your name, email, or reason for reaching out'
 
   isValid(): boolean {
     const trimmed = this.userInput.trim();
