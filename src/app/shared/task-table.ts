@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, signal, viewChild, OnInit } 
 import { Task } from '../models/models';
 import { formatCompletionDate } from '../utils/date';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, ICellRendererParams, GridState } from 'ag-grid-community';
 
 @Component({
   selector: 'task-table',
@@ -29,6 +29,9 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
           [suppressRowClickSelection]="true"
           [animateRows]="false"
           [getRowId]="getTaskRowId"
+          columnMenu="new"
+          [initialState]="initialState()"
+          (stateUpdated)="onStateUpdated()"
           style="width: 100%; height: 100%;"
         />
       </div>
@@ -57,9 +60,12 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
   `]
 })
 export class TaskTable implements OnInit {
+  private static readonly STORAGE_KEY = 'tasks-grid-state';
+
   tasks = input.required<Task[]>();
   protected searchText = signal('');
   protected gridTheme = signal<any>(null);
+  protected initialState = signal<GridState | undefined>(undefined);
 
   private tasksGrid = viewChild<AgGridAngular>('tasksGrid');
 
@@ -75,6 +81,27 @@ export class TaskTable implements OnInit {
       headerFontSize: 11,
       headerVerticalPaddingScale: 0.5,
     }));
+
+    this.loadState();
+  }
+
+  private loadState() {
+    const savedState = localStorage.getItem(TaskTable.STORAGE_KEY);
+    if (savedState) {
+      try {
+        this.initialState.set(JSON.parse(savedState));
+      } catch (e) {
+        console.error('Failed to parse saved grid state', e);
+      }
+    }
+  }
+
+  protected onStateUpdated() {
+    const gridApi = this.tasksGrid()?.api;
+    if (gridApi) {
+      const state = gridApi.getState();
+      localStorage.setItem(TaskTable.STORAGE_KEY, JSON.stringify(state));
+    }
   }
 
   protected getTaskRowId = (params: any) => params.data.id;

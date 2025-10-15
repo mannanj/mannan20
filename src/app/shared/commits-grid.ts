@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, inject, signal, viewChild, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, ICellRendererParams, GridState } from 'ag-grid-community';
 
 interface Commit {
   hash: string;
@@ -37,6 +37,9 @@ interface Commit {
           [suppressRowClickSelection]="true"
           [animateRows]="false"
           [getRowId]="getCommitRowId"
+          columnMenu="new"
+          [initialState]="initialState()"
+          (stateUpdated)="onStateUpdated()"
           style="width: 100%; height: 100%;"
         />
       </div>
@@ -65,9 +68,12 @@ interface Commit {
   `]
 })
 export class CommitsGrid implements OnInit {
+  private static readonly STORAGE_KEY = 'commits-grid-state';
+
   commits = input.required<Commit[]>();
   protected searchText = signal('');
   protected gridTheme = signal<any>(null);
+  protected initialState = signal<GridState | undefined>(undefined);
 
   private datePipe = inject(DatePipe);
   private commitsGrid = viewChild<AgGridAngular>('commitsGrid');
@@ -85,6 +91,27 @@ export class CommitsGrid implements OnInit {
       headerFontSize: 11,
       headerVerticalPaddingScale: 0.5,
     }));
+
+    this.loadState();
+  }
+
+  private loadState() {
+    const savedState = localStorage.getItem(CommitsGrid.STORAGE_KEY);
+    if (savedState) {
+      try {
+        this.initialState.set(JSON.parse(savedState));
+      } catch (e) {
+        console.error('Failed to parse saved grid state', e);
+      }
+    }
+  }
+
+  protected onStateUpdated() {
+    const gridApi = this.commitsGrid()?.api;
+    if (gridApi) {
+      const state = gridApi.getState();
+      localStorage.setItem(CommitsGrid.STORAGE_KEY, JSON.stringify(state));
+    }
   }
 
   protected getCommitRowId = (params: any) => params.data.hash;
