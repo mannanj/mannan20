@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { Task } from '../models/models';
+import { formatCompletionDate } from '../utils/date';
 
 @Component({
   selector: 'task-table',
-  imports: [DatePipe],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="tasks-table-container">
@@ -29,7 +29,7 @@ import { Task } from '../models/models';
               </td>
               <td class="completion-cell">
                 @if (task.completedDate) {
-                  <span>{{ task.completedDate | date: 'MMM d, y' }}</span>
+                  <span>{{ formatDate(task.completedDate!) }}</span>
                 } @else {
                   <span class="text-gray-600">-</span>
                 }
@@ -137,6 +137,8 @@ import { Task } from '../models/models';
 })
 export class TaskTable {
   tasks = input.required<Task[]>();
+
+  formatDate = formatCompletionDate;
 
   getCompletedCount(task: Task): number {
     return task.subtasks.filter(st => st.completed).length;

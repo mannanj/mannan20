@@ -71,12 +71,12 @@
 - Location: Dev stats component tab interface
 
 ### Task 14: Track Task Completion Dates via Git Hooks
-- [ ] Add `completedDate` field to Task interface in models
-- [ ] Update tasks.json structure to include completedDate field
-- [ ] Enhance post-commit hook to detect when task is marked complete
-- [ ] Store completion timestamp when task status changes to completed
-- [ ] Display completion date in Tasks tab UI
-- [ ] Ensure completion date persists across commits
+- [x] Add `completedDate` field to Task interface in models
+- [x] Update tasks.json structure to include completedDate field
+- [x] Enhance post-commit hook to detect when task is marked complete
+- [x] Store completion timestamp when task status changes to completed
+- [x] Display completion date in Tasks tab UI
+- [x] Ensure completion date persists across commits
 - Location: `.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`
 
 ### Task 15: Modularize Dev Stats Component
@@ -106,3 +106,10 @@
 - [x] Fix URL field to use fullHash instead of diff content
 - [x] Verify task completion data is correctly populated
 - Location: `.githooks/post-commit`
+
+### Task 19: Format Completion Date Display in Tasks UI
+- [x] Create date formatting utility to convert ISO date to readable format
+- [x] Display completion time in table "Completed" column (e.g., "Oct 14, 2025 1p" or "Oct 14, 2025 1205p")
+- [x] Display completion time in card view (e.g., "Oct 14, 2025 1p" or "Oct 14, 2025 1205p")
+- [x] Use short hour format (1p, 2p) when minutes are 00, full format otherwise (1205p, 245p)
+- Location: `src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`

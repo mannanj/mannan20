@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { Task } from '../models/models';
+import { formatCompletionDate } from '../utils/date';
 
 @Component({
   selector: 'task-card',
-  imports: [DatePipe],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="task-card">
@@ -17,7 +17,7 @@ import { Task } from '../models/models';
       @if (task().completedDate && task().completedCommit) {
         <div class="task-completion">
           <span class="completion-label">Completed:</span>
-          <span class="completion-date">{{ task().completedDate | date: 'MMM d, y' }}</span>
+          <span class="completion-date">{{ formatDate(task().completedDate!) }}</span>
           <a [href]="task().completedCommit!.url" target="_blank" class="completion-commit">
             {{ task().completedCommit!.hash }}
           </a>
@@ -132,4 +132,6 @@ import { Task } from '../models/models';
 })
 export class TaskCard {
   task = input.required<Task>();
+
+  formatDate = formatCompletionDate;
 }
