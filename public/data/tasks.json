@@ -186,22 +186,30 @@
   {
     "id": "task-11",
     "title": "Rename Component Files",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Rename all component files to remove `.component` from the file name",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Update all imports across the codebase",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure Angular recognizes files correctly after renaming",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "All `*.component.ts`, `*.component.html`, `*.component.css` files throughout the project"
+    "location": "All `*.component.ts`, `*.component.html`, `*.component.css` files throughout the project",
+    "completedDate": "2025-10-15T00:18:03-04:00",
+    "completedCommit": {
+      "hash": "09545fb",
+      "fullHash": "09545fbdc663ac9e83e34d7065e1badc71ca7c24",
+      "subject": "Task 11: Rename Component Files",
+      "date": "2025-10-15T00:18:03-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/09545fbdc663ac9e83e34d7065e1badc71ca7c24"
+    }
   },
   {
     "id": "task-12",
@@ -550,5 +558,33 @@
       "date": "2025-10-15T00:06:33-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc"
     }
+  },
+  {
+    "id": "task-23",
+    "title": "Convert CSS Classes to Tailwind Utility Classes",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace custom CSS classes with Tailwind utility classes applied directly to elements",
+        "completed": false
+      },
+      {
+        "description": "Convert inline styles to Tailwind utility classes",
+        "completed": false
+      },
+      {
+        "description": "Remove component-level styles where Tailwind equivalents exist",
+        "completed": false
+      },
+      {
+        "description": "Maintain existing visual appearance while using Tailwind utilities",
+        "completed": false
+      },
+      {
+        "description": "Ensure all components use Tailwind classes consistently",
+        "completed": false
+      }
+    ],
+    "location": "All component files with `styles` array and inline `style` attributes"
   }
 ]

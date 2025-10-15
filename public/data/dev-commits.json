@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "09545fbdc663ac9e83e34d7065e1badc71ca7c24",
+    "hash": "09545fb",
+    "subject": "Task 11: Rename Component Files",
+    "body": "- [x] Rename all component files to remove `.component` from the file name\n- [x] Update all imports across the codebase\n- [x] Ensure Angular recognizes files correctly after renaming\n- Location: All `*.component.ts`, `*.component.html`, `*.component.css` files throughout the project\n\n[Task-11]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:18:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/09545fbdc663ac9e83e34d7065e1badc71ca7c24"
+  },
+  {
+    "fullHash": "5a4ef1b2db47c44aac9f8e790283374609b02258",
+    "hash": "5a4ef1b",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:11:57-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5a4ef1b2db47c44aac9f8e790283374609b02258"
+  },
+  {
     "fullHash": "13971ef4cb63b0df234ee6f27c80a01ed4578fdc",
     "hash": "13971ef",
     "subject": "Task 4: Extract Inline Styles to CSS Classes",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:50:30-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/2401a17025950515632a3fcfec3aa780aee3e504"
-  },
-  {
-    "fullHash": "08dfda019c970ca7f2e6c4ca945e8a16df1cc5b7",
-    "hash": "08dfda0",
-    "subject": "Show ViewerStats only when cursor party WebSocket connection succeeds",
-    "body": "Added connection state tracking to conditionally display the ViewerStats component based on cursor party WebSocket connection status. The component now only appears after a successful connection, preventing display when max reconnection attempts are reached.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:47:28-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/08dfda019c970ca7f2e6c4ca945e8a16df1cc5b7"
-  },
-  {
-    "fullHash": "5bf22265cd4cc3f1e631966bcaac92398fb7b2f2",
-    "hash": "5bf2226",
-    "subject": "Move window object synchronization from component to NgRx effects",
-    "body": "Moved all window object updates and cursor script loading from AppComponent.ngOnInit to dedicated NgRx effects for better separation of concerns and state management.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:41:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5bf22265cd4cc3f1e631966bcaac92398fb7b2f2"
   }
 ]
