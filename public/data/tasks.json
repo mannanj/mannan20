@@ -1770,5 +1770,197 @@
       "date": "2025-10-15T12:07:03-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/8aaa990bc9315fdc69337b765509c10271c9aa11"
     }
+  },
+  {
+    "id": "task-57",
+    "title": "Compact Contact Modal Layout and Reduce Whitespace",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Reduce white space around the modal container",
+        "completed": true
+      },
+      {
+        "description": "Reduce space above and below the OR text",
+        "completed": true
+      },
+      {
+        "description": "Make the OR text smaller",
+        "completed": true
+      },
+      {
+        "description": "Add padding above the consent label",
+        "completed": true
+      },
+      {
+        "description": "Reduce padding/space below the consent text inside the action container",
+        "completed": true
+      },
+      {
+        "description": "Increase \"Ready to collaborate?\" header size to match source screenshot proportions",
+        "completed": true
+      },
+      {
+        "description": "Adjust all other font sizes proportionally (Continue with Google button, input placeholder, consent text, etc.)",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts`"
+  },
+  {
+    "id": "task-58",
+    "title": "Refactor All Modals to Content-Based Sizing",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Update modal component default styles to use content-based width and height",
+        "completed": false
+      },
+      {
+        "description": "Set max-width to 728px for all modals",
+        "completed": false
+      },
+      {
+        "description": "Set max-height to 90vh or 800px (whichever is smaller)",
+        "completed": false
+      },
+      {
+        "description": "Ensure modals don't take up more space than their content needs",
+        "completed": false
+      },
+      {
+        "description": "Test all modals (contact, dev-stats, etc.) to ensure proper sizing",
+        "completed": false
+      },
+      {
+        "description": "Make sure overflow behavior works correctly when content exceeds max dimensions",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/modal.ts`"
+  },
+  {
+    "id": "task-59",
+    "title": "Tighten Contact Modal Vertical Spacing and Padding",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Make modal height start at the line of the X button (reduce top padding)",
+        "completed": true
+      },
+      {
+        "description": "Minimize padding around the modal content",
+        "completed": true
+      },
+      {
+        "description": "Ensure even padding inside action container around all content",
+        "completed": true
+      },
+      {
+        "description": "Add padding above consent line",
+        "completed": true
+      },
+      {
+        "description": "Reduce padding below consent text to match other sides",
+        "completed": true
+      },
+      {
+        "description": "Ensure all padding is consistent and minimal throughout",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts`, `src/app/shared/modal.ts`"
+  },
+  {
+    "id": "task-60",
+    "title": "Convert Modal Component Styles to Tailwind Utilities",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace modal-backdrop CSS with Tailwind utility classes",
+        "completed": false
+      },
+      {
+        "description": "Replace modal-content CSS with Tailwind utility classes",
+        "completed": false
+      },
+      {
+        "description": "Replace modal-content-large CSS with Tailwind utility classes",
+        "completed": false
+      },
+      {
+        "description": "Replace close-btn CSS with Tailwind utility classes",
+        "completed": false
+      },
+      {
+        "description": "Replace modal-body CSS with Tailwind utility classes",
+        "completed": false
+      },
+      {
+        "description": "Remove styles array from component and apply all classes directly in template",
+        "completed": false
+      },
+      {
+        "description": "Ensure all visual appearance remains identical after conversion",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/modal.ts`"
+  },
+  {
+    "id": "task-61",
+    "title": "Convert All Global Styles to Inline Tailwind Utilities",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Convert body element styles to Tailwind (keep color, bg-color as default theme)",
+        "completed": true
+      },
+      {
+        "description": "Convert h1, h2 element styles to inline Tailwind utilities in all components",
+        "completed": true
+      },
+      {
+        "description": "Convert p element styles to inline Tailwind utilities in all components",
+        "completed": true
+      },
+      {
+        "description": "Convert hr element styles to inline Tailwind utilities in all components",
+        "completed": true
+      },
+      {
+        "description": "Convert button element styles to inline Tailwind utilities in all components",
+        "completed": true
+      },
+      {
+        "description": "Convert link (a) element styles to inline Tailwind utilities in all components",
+        "completed": true
+      },
+      {
+        "description": "Replace .text-end, .margin-*, .flex-column utility classes with Tailwind equivalents",
+        "completed": true
+      },
+      {
+        "description": "Keep only required custom CSS (.collapsible, .content, button::before, a::after, hover states)",
+        "completed": true
+      },
+      {
+        "description": "Update all component templates to use new inline Tailwind classes",
+        "completed": true
+      },
+      {
+        "description": "Test all components to ensure visual appearance remains identical",
+        "completed": true
+      }
+    ],
+    "location": "`src/styles.css`, all component files",
+    "completedDate": "2025-10-15T12:32:34-04:00",
+    "completedCommit": {
+      "hash": "28e67af",
+      "fullHash": "28e67af8542261bf87712088056fe36047297ede",
+      "subject": "Task 61: Convert All Global Styles to Inline Tailwind Utilities",
+      "date": "2025-10-15T12:32:34-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/28e67af8542261bf87712088056fe36047297ede"
+    }
   }
 ]
