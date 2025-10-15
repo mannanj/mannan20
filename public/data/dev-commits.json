@@ -1,5 +1,32 @@
 [
   {
+    "fullHash": "a2694b7bb588332474511eeeb4ef15eee6506652",
+    "hash": "a2694b7",
+    "subject": "Remove borders and focus outlines from all modal buttons",
+    "body": "Consolidated commit for all border/outline removal fixes:\n- Remove blue border from Continue with Google button in contact form\n- Remove borders from tasks toolbar icon buttons (card/table view)\n- Remove borders from tasks toolbar sort button\n- Remove focus outlines from modal icon buttons\n- Remove focus outlines from task card/table links and checkboxes\n- Override global button styles with !important for all modal buttons\n- Add focus:outline-none to prevent browser default focus styling\n\nThis fixes unwanted blue borders caused by global button styles in styles.css\naffecting buttons and links within modals.\n\nFiles modified:\n- src/app/components/contact/contact-form.ts\n- src/app/shared/dev-stats.ts\n- src/app/shared/tasks-toolbar.ts\n- src/app/shared/task-card.ts\n- src/app/shared/task-table.ts\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:11:49-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a2694b7bb588332474511eeeb4ef15eee6506652"
+  },
+  {
+    "fullHash": "f1ec52bece4e8764d705bc6d7c451a4370a71633",
+    "hash": "f1ec52b",
+    "subject": "Task 29: Revert Modal Component to Original Styling",
+    "body": "- [x] Compare current modal.ts with pre-refactor version\n- [x] Remove blue border from X icon and buttons\n- [x] Move close button back to top-right position\n- [x] Restore original modal backdrop and content styling\n- [x] Revert to CSS classes instead of inline Tailwind utilities\n- [x] Verify all modals display correctly after changes\n- Location: \\`src/app/shared/modal.ts\\`\n\n[Task-29]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:57:43-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f1ec52bece4e8764d705bc6d7c451a4370a71633"
+  },
+  {
+    "fullHash": "7b8e0048f972413b01c37d3ecbbbf125df3e70ed",
+    "hash": "7b8e004",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:54:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7b8e0048f972413b01c37d3ecbbbf125df3e70ed"
+  },
+  {
     "fullHash": "3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452",
     "hash": "3fc5e5c",
     "subject": "Task 28: Revert Dev Stats Modal to Original Styling",
@@ -871,32 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T21:34:45-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/8094a992f0b7811154eebcae0b70fc8c07cb6197"
-  },
-  {
-    "fullHash": "8a7644545fe69a9e281e5b216095222960d2d683",
-    "hash": "8a76445",
-    "subject": "Refactor dev stats to use NgRx effects and conditional rendering",
-    "body": "Move data fetching logic from component to NgRx effects - effect only loads\ndev-commits.json when isDevMode() cookie is true. Simplify DevStats component\nto be a dumb presentation component with no lifecycle hooks or HTTP calls.\n\nAdd conditional rendering in app.ts with @if (hasDevCommits()) similar to\nisConnected() pattern. Component now only renders when data is available.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:07:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8a7644545fe69a9e281e5b216095222960d2d683"
-  },
-  {
-    "fullHash": "9bd8ba342d0d3c319db2c73a79e10c29ede122a7",
-    "hash": "9bd8ba3",
-    "subject": "Add dev stats feature with git commit history",
-    "body": "Add cookie-based dev mode feature that displays recent git commits in a modal.\nWhen isMannanDev=1 cookie is set, a stats icon appears in the bottom-left.\nClicking it shows the last 9 commits with hash links, subjects, authors, and dates.\n\nGit pre-commit hook automatically updates dev-commits.json on each commit.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:00:51-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9bd8ba342d0d3c319db2c73a79e10c29ede122a7"
-  },
-  {
-    "fullHash": "ff7a43f667c649e12430011cbba014ef4ea9f517",
-    "hash": "ff7a43f",
-    "subject": "Fix about section intersection observer threshold",
-    "body": "Increased threshold from 0.33 to 0.6 to ensure the about link is properly set as active when scrolling to the about section.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:51:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ff7a43f667c649e12430011cbba014ef4ea9f517"
   }
 ]
