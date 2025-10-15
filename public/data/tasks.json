@@ -1326,5 +1326,109 @@
       "date": "2025-10-15T11:21:00-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/81cbcdb7a34420fa0619d4473b1280655616804a"
     }
+  },
+  {
+    "id": "task-46",
+    "title": "Style AG Grid Tables with Dark Theme",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Change ag-grid background color to black",
+        "completed": false
+      },
+      {
+        "description": "Set text color to white or appropriate gray for visibility",
+        "completed": false
+      },
+      {
+        "description": "Keep link colors blue for commit hashes",
+        "completed": false
+      },
+      {
+        "description": "Make task status badge colors more gray while maintaining readability",
+        "completed": false
+      },
+      {
+        "description": "Prevent table from overflowing modal container",
+        "completed": false
+      },
+      {
+        "description": "Ensure vertical scrollbar appears when content exceeds container height",
+        "completed": false
+      },
+      {
+        "description": "Apply custom dark theme styling to both commits and tasks grids",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`"
+  },
+  {
+    "id": "task-47",
+    "title": "Add Search Functionality to AG Grid Tables",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Research AG Grid official documentation for search/filter implementation",
+        "completed": false
+      },
+      {
+        "description": "Add search input field above git commits table",
+        "completed": false
+      },
+      {
+        "description": "Add search input field above tasks table",
+        "completed": false
+      },
+      {
+        "description": "Implement quick filter functionality using AG Grid API",
+        "completed": false
+      },
+      {
+        "description": "Style search inputs to match dark theme",
+        "completed": false
+      },
+      {
+        "description": "Ensure search works across all visible columns",
+        "completed": false
+      },
+      {
+        "description": "Add clear search button or functionality",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`"
+  },
+  {
+    "id": "task-48",
+    "title": "Fix Empty Tasks Column in Tasks Table",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Debug why task title column shows empty values",
+        "completed": false
+      },
+      {
+        "description": "Verify field mapping in column definitions matches data structure",
+        "completed": false
+      },
+      {
+        "description": "Check if Task interface property names match ag-grid field names",
+        "completed": false
+      },
+      {
+        "description": "Ensure task data is properly passed to ag-grid component",
+        "completed": false
+      },
+      {
+        "description": "Test with console logging to verify data availability",
+        "completed": false
+      },
+      {
+        "description": "Fix column definition to properly display task titles",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/task-table.ts`, `src/app/models/models.ts`"
   }
 ]
