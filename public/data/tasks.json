@@ -2214,26 +2214,34 @@
   {
     "id": "task-67",
     "title": "Fix AG Grid Deprecated Property Warning",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Replace suppressRowClickSelection with rowSelection.enableClickSelection in commits-grid",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace suppressRowClickSelection with rowSelection.enableClickSelection in task-table",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Test both grids to ensure row click behavior remains unchanged",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Verify build completes without deprecation warnings",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
+    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`",
+    "completedDate": "2025-10-15T19:20:05-04:00",
+    "completedCommit": {
+      "hash": "1a8b8f9",
+      "fullHash": "1a8b8f9239b276ef39eed1490a2c0bd46228cb4c",
+      "subject": "Task 67: Fix AG Grid Deprecated Property Warning",
+      "date": "2025-10-15T19:20:05-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/1a8b8f9239b276ef39eed1490a2c0bd46228cb4c"
+    }
   },
   {
     "id": "task-68",

@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "1a8b8f9239b276ef39eed1490a2c0bd46228cb4c",
+    "hash": "1a8b8f9",
+    "subject": "Task 67: Fix AG Grid Deprecated Property Warning",
+    "body": "- [x] Replace suppressRowClickSelection with rowSelection.enableClickSelection in commits-grid\n- [x] Replace suppressRowClickSelection with rowSelection.enableClickSelection in task-table\n- [x] Test both grids to ensure row click behavior remains unchanged\n- [x] Verify build completes without deprecation warnings\n- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`\n\n[Task-67]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:20:05-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1a8b8f9239b276ef39eed1490a2c0bd46228cb4c"
+  },
+  {
+    "fullHash": "cb1c529d0dc2dcc75db0c34c246a0a5581e4adc3",
+    "hash": "cb1c529",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:18:32-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/cb1c529d0dc2dcc75db0c34c246a0a5581e4adc3"
+  },
+  {
     "fullHash": "e5f9179c5c8f68c673666cd2f9b20b55e4084ae8",
     "hash": "e5f9179",
     "subject": "Task 68: Fix AG Grid Column Menu Not Displaying",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:57:43-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/f1ec52bece4e8764d705bc6d7c451a4370a71633"
-  },
-  {
-    "fullHash": "7b8e0048f972413b01c37d3ecbbbf125df3e70ed",
-    "hash": "7b8e004",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:54:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7b8e0048f972413b01c37d3ecbbbf125df3e70ed"
-  },
-  {
-    "fullHash": "3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452",
-    "hash": "3fc5e5c",
-    "subject": "Task 28: Revert Dev Stats Modal to Original Styling",
-    "body": "- [x] Examine git history to identify CSS-to-Tailwind refactor changes\n- [x] Compare current modal styles with original version\n- [x] Restore original CSS classes for tabs (tabs-header, tab-button)\n- [x] Replace long inline Tailwind class bindings with clean CSS classes\n- [x] Restore commits-table-container CSS class\n- [x] Verify build succeeds after reverting styles\n- Location: \\`src/app/shared/dev-stats.ts\\`\n\n[Task-28]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:54:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452"
   }
 ]
