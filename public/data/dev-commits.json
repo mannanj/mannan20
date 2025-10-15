@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "90cd4e4bd63f53aa7c88306ac55f2dfc1ed72401",
+    "hash": "90cd4e4",
+    "subject": "Add git workflow and task management documentation",
+    "body": "Updated CLAUDE.md and README.md to include comprehensive documentation about:\n- Post-commit hook system and how it works\n- Task creation and completion workflow\n- Proper commit message format with task tags [Task-N]\n- Automatic data file generation and commit behavior\n- Push workflow for dual commits\n\nThis documentation helps developers and AI assistants understand the\nautomated task tracking system.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:19:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/90cd4e4bd63f53aa7c88306ac55f2dfc1ed72401"
+  },
+  {
+    "fullHash": "6c0ab2e75aa10a577e796669bfb22c40b163e9ee",
+    "hash": "6c0ab2e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:18:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6c0ab2e75aa10a577e796669bfb22c40b163e9ee"
+  },
+  {
     "fullHash": "e5f6deeef9b4f1d6de9ec1e3faee298ebece8572",
     "hash": "e5f6dee",
     "subject": "Fix completedCommit hash extraction in post-commit hook",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-12T16:13:00-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/cb2b5ce35ea249b5412cfe2fb13bc0290d6b794c"
-  },
-  {
-    "fullHash": "3d9c5d97ec9a1f8c8bb0899095cf2406dde890ef",
-    "hash": "3d9c5d9",
-    "subject": "add modal",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-12T15:55:31-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/3d9c5d97ec9a1f8c8bb0899095cf2406dde890ef"
-  },
-  {
-    "fullHash": "398ca311c271b49790060aa96cd6c66b6567cee0",
-    "hash": "398ca31",
-    "subject": "add speed insights",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-12T14:49:10-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/398ca311c271b49790060aa96cd6c66b6567cee0"
   }
 ]
