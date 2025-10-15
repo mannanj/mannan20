@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "f30bf00b30576ab1b70d8b7b39586dc199d8309f",
+    "hash": "f30bf00",
+    "subject": "Fix task completion data for tasks 14, 19, and 20",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:42:23-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f30bf00b30576ab1b70d8b7b39586dc199d8309f"
+  },
+  {
+    "fullHash": "68961c5f5cc8fe61a4f29115f19a646f07bb88e1",
+    "hash": "68961c5",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:41:59-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/68961c5f5cc8fe61a4f29115f19a646f07bb88e1"
+  },
+  {
     "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
     "hash": "ec14a70",
     "subject": "Preserve existing task completion data in post-commit hook",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T16:37:56-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/c8dd9f25f134a73b6f89ee3811a8918b36969355"
-  },
-  {
-    "fullHash": "bb6004970b0ce8085b5827d16df5e338469f1f8a",
-    "hash": "bb60049",
-    "subject": "Convert JOBS from Record to array and remove redundant jobsArray",
-    "body": "- Change JOBS from Record<string, ProfileItem> to ProfileItem[] in constants\n- Remove jobsArray property from employment-section component\n- Use JOBS directly in visibleJobs and totalJobs getters\n- Simplifies data structure and eliminates redundant array conversion\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:54:14-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/bb6004970b0ce8085b5827d16df5e338469f1f8a"
-  },
-  {
-    "fullHash": "9ded4379c543c5b90577cb78e53cadd88fbb6424",
-    "hash": "9ded437",
-    "subject": "Add Task 11: Rename component files to remove .component suffix",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:49:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9ded4379c543c5b90577cb78e53cadd88fbb6424"
   }
 ]
