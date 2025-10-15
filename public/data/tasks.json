@@ -2358,5 +2358,41 @@
       }
     ],
     "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/dev-stats.ts`"
+  },
+  {
+    "id": "task-71",
+    "title": "Investigate and Configure AG Grid Row Selection",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Research AG Grid row selection documentation and capabilities",
+        "completed": false
+      },
+      {
+        "description": "Understand what current row selection configuration does (multiRow, enableClickSelection: false)",
+        "completed": false
+      },
+      {
+        "description": "Determine if row selection checkboxes should be visible or hidden",
+        "completed": false
+      },
+      {
+        "description": "Investigate use cases for row selection (bulk actions, export selected rows, etc.)",
+        "completed": false
+      },
+      {
+        "description": "Decide whether to disable row selection entirely or implement useful features",
+        "completed": false
+      },
+      {
+        "description": "Remove checkboxes if row selection is not needed",
+        "completed": false
+      },
+      {
+        "description": "Test changes in both commits-grid and task-table components",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
   }
 ]

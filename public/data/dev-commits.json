@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "791ae3375d5a662d3823ed2cb43399580353b3d9",
+    "hash": "791ae33",
+    "subject": "Add Task 71: Investigate and Configure AG Grid Row Selection",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:25:13-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/791ae3375d5a662d3823ed2cb43399580353b3d9"
+  },
+  {
+    "fullHash": "ec5f182234b35ccab3236cda5de13acde902e9b9",
+    "hash": "ec5f182",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:23:49-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ec5f182234b35ccab3236cda5de13acde902e9b9"
+  },
+  {
     "fullHash": "c384ab87141101902529ee4050991b4f5289abd9",
     "hash": "c384ab8",
     "subject": "Task 69: Compress Status Badge and Add White Text Stroke",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T01:12:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/7bbc80b399728f92f197e068b6595447f2d20466"
-  },
-  {
-    "fullHash": "49f0457ba2755e2a2e4d95eced644b3a1eb1a48a",
-    "hash": "49f0457",
-    "subject": "Add Task 30 and Task 31 to tasks.md",
-    "body": "Task 30: Reduce Whitespace in Tasks Toolbar Header\nTask 31: Consolidate Border Removal Commits (completed)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:12:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/49f0457ba2755e2a2e4d95eced644b3a1eb1a48a"
-  },
-  {
-    "fullHash": "a229f66fb68edb5df1a5189617b9584269390bd8",
-    "hash": "a229f66",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:11:49-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a229f66fb68edb5df1a5189617b9584269390bd8"
   }
 ]
