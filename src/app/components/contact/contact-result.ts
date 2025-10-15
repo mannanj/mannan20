@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ContactResult } from '../../models/models';
 import * as help from '../../utils/help';
 
+const COPY_FEEDBACK_DURATION_MS = 2000;
+
 @Component({
   selector: 'contact-result',
   standalone: true,
@@ -121,7 +123,7 @@ export class ContactResultComponent {
     if (this.result) {
       help.copyToClipboard(this.result.email);
       this.copiedEmail = true;
-      setTimeout(() => this.copiedEmail = false, 2000);
+      setTimeout(() => this.copiedEmail = false, COPY_FEEDBACK_DURATION_MS);
     }
   }
 
@@ -129,7 +131,7 @@ export class ContactResultComponent {
     if (this.result) {
       help.copyToClipboard(this.result.phone);
       this.copiedPhone = true;
-      setTimeout(() => this.copiedPhone = false, 2000);
+      setTimeout(() => this.copiedPhone = false, COPY_FEEDBACK_DURATION_MS);
     }
   }
 

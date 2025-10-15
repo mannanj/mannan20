@@ -8,6 +8,8 @@ import { ContactFormComponent } from './contact-form';
 import { ContactResultComponent } from './contact-result';
 import { navigateTo } from '../../utils/help';
 
+const FORM_SUBMIT_DELAY_MS = 2000;
+
 @Component({
   selector: 'contact',
   standalone: true,
@@ -175,7 +177,7 @@ export class ContactComponent extends BaseSectionComponent {
         email: 'hello@mannan.is',
         phone: '+1 (571) 228-8302'
       };
-    }, 2000);
+    }, FORM_SUBMIT_DELAY_MS);
   }
 
   goToHome(): void {

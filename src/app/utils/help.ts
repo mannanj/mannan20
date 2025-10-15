@@ -2,6 +2,11 @@ import { Store } from "@ngrx/store";
 import { Links } from "../models/models";
 import { setSelectedLink } from "../store/app.actions";
 
+const HOME_OFFSET_RATIO = 0.33;
+const ABOUT_OFFSET_RATIO = 0.17;
+const CONTACT_OFFSET_RATIO = 0.11;
+const DEFAULT_OFFSET_RATIO = 0.11;
+
 export function scrollToSection(section: Links): void {
   const elem: HTMLElement | null = document.getElementById(section);
   if (elem) {
@@ -12,12 +17,12 @@ export function scrollToSection(section: Links): void {
 
 export function determineOffsetPx(link: Links): number {
   const offsetRatios: Record<Links, number> = {
-    [Links.home]: 0.33,
-    [Links.about]: 0.17,
-    [Links.contact]: 0.11,
+    [Links.home]: HOME_OFFSET_RATIO,
+    [Links.about]: ABOUT_OFFSET_RATIO,
+    [Links.contact]: CONTACT_OFFSET_RATIO,
   };
 
-  const offsetRatio = offsetRatios[link] ?? 0.11;
+  const offsetRatio = offsetRatios[link] ?? DEFAULT_OFFSET_RATIO;
   return document.documentElement.clientHeight * offsetRatio;
 }
 

@@ -25,8 +25,8 @@
 - Location: `src/app/components/about/about.ts` template
 
 ### Task 5: Extract Magic Numbers to Constants
-- [ ] Extract timeout values (2000ms) to named constants
-- [ ] Extract offset ratios in help.ts
+- [x] Extract timeout values (2000ms) to named constants
+- [x] Extract offset ratios in help.ts
 - Locations: `contact.ts`, `contact-result.ts`, `help.ts`
 
 ### Task 6: Remove Unused Animation
