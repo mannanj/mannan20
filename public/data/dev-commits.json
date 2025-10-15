@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "f836f3321631b9dffb403c5f1e670e30e4dd6975",
+    "hash": "f836f33",
+    "subject": "Task 64: Remove Spacing Between Published Works Bullet Points",
+    "body": "- [x] Find published works section in About component\n- [x] Remove vertical spacing between bullet point items\n- [x] Ensure bullet points display tightly together with no gaps\n- Location: \\`src/app/components/about/extracurriculars-section.ts\\`\n\n[Task-64]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:31:19-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f836f3321631b9dffb403c5f1e670e30e4dd6975"
+  },
+  {
+    "fullHash": "0f17d0da94b3f1c10827ad4afa21fd45e238e1bd",
+    "hash": "0f17d0d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:28:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0f17d0da94b3f1c10827ad4afa21fd45e238e1bd"
+  },
+  {
     "fullHash": "923bbd2b94611ae1e84899641cc062bff2a0155d",
     "hash": "923bbd2",
     "subject": "Task 63: Reduce Production Bundle Size",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:02:35-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/042f531c2724921272bf164884a7e99f09b96164"
-  },
-  {
-    "fullHash": "64f482d7059b5294640119b7c7fc2455040ea5f0",
-    "hash": "64f482d",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:50:24-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/64f482d7059b5294640119b7c7fc2455040ea5f0"
-  },
-  {
-    "fullHash": "f42178806f029e40b1b8f55d2ad4504ac807df9f",
-    "hash": "f421788",
-    "subject": "Extract magic numbers to named constants",
-    "body": "[Task-5]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:50:24-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f42178806f029e40b1b8f55d2ad4504ac807df9f"
   }
 ]

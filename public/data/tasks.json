@@ -2082,5 +2082,33 @@
       "date": "2025-10-15T17:28:03-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/923bbd2b94611ae1e84899641cc062bff2a0155d"
     }
+  },
+  {
+    "id": "task-64",
+    "title": "Remove Spacing Between Published Works Bullet Points",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Find published works section in About component",
+        "completed": true
+      },
+      {
+        "description": "Remove vertical spacing between bullet point items",
+        "completed": true
+      },
+      {
+        "description": "Ensure bullet points display tightly together with no gaps",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/about/extracurriculars-section.ts`",
+    "completedDate": "2025-10-15T17:31:19-04:00",
+    "completedCommit": {
+      "hash": "f836f33",
+      "fullHash": "f836f3321631b9dffb403c5f1e670e30e4dd6975",
+      "subject": "Task 64: Remove Spacing Between Published Works Bullet Points",
+      "date": "2025-10-15T17:31:19-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/f836f3321631b9dffb403c5f1e670e30e4dd6975"
+    }
   }
 ]
