@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Links } from '../../models/models';
 import { bounceIn, fadeIn, slideInLeft } from '../../animations/animations';
-import { BaseSectionComponent } from '../../shared/base-section.component';
+import { BaseSectionComponent } from '../../shared/base-section';
 import { navigateTo } from '../../utils/help';
 
 @Component({

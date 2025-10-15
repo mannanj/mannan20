@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { ContentCardComponent } from './content-card.component';
+import { ContentCardComponent } from './content-card';
 import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ExpandableSection, PublishedWork, ProfileItem } from '../../models/models';
 import { selectActivities, selectPublishedWorks } from '../../store/app.selectors';

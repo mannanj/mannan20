@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Links, ContactResult } from '../../models/models';
 import { scaleIn, fadeIn, slideInLeft } from '../../animations/animations';
-import { BaseSectionComponent } from '../../shared/base-section.component';
+import { BaseSectionComponent } from '../../shared/base-section';
 import { ModalComponent } from '../../shared/modal';
 import { ContactFormComponent } from './contact-form';
 import { ContactResultComponent } from './contact-result';

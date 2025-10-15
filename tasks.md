@@ -51,9 +51,9 @@
 - Location: `src/app/components/contact/contact.ts`
 
 ### Task 11: Rename Component Files
-- [ ] Rename all component files to remove `.component` from the file name
-- [ ] Update all imports across the codebase
-- [ ] Ensure Angular recognizes files correctly after renaming
+- [x] Rename all component files to remove `.component` from the file name
+- [x] Update all imports across the codebase
+- [x] Ensure Angular recognizes files correctly after renaming
 - Location: All `*.component.ts`, `*.component.html`, `*.component.css` files throughout the project
 
 ### Task 12: Move SVGs to Reusable Icon Components
@@ -133,3 +133,11 @@
 - [x] Update commit format example to show blank line after title
 - [x] Ensure subtasks appear in commit description, not title
 - Location: `.claude/claude.md`
+
+### Task 23: Convert CSS Classes to Tailwind Utility Classes
+- [ ] Replace custom CSS classes with Tailwind utility classes applied directly to elements
+- [ ] Convert inline styles to Tailwind utility classes
+- [ ] Remove component-level styles where Tailwind equivalents exist
+- [ ] Maintain existing visual appearance while using Tailwind utilities
+- [ ] Ensure all components use Tailwind classes consistently
+- Location: All component files with `styles` array and inline `style` attributes

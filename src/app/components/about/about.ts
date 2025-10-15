@@ -4,10 +4,10 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { Links, AboutIntro, ExpandableSection } from '../../models/models';
 import { fadeIn, scaleIn, slideInLeft, slideInRight } from '../../animations/animations';
-import { BaseSectionComponent } from '../../shared/base-section.component';
-import { EmploymentSectionComponent } from './employment-section.component';
-import { ExtracurricularsSectionComponent } from './extracurriculars-section.component';
-import { EducationSectionComponent } from './education-section.component';
+import { BaseSectionComponent } from '../../shared/base-section';
+import { EmploymentSectionComponent } from './employment-section';
+import { ExtracurricularsSectionComponent } from './extracurriculars-section';
+import { EducationSectionComponent } from './education-section';
 import { selectAboutIntro } from '../../store/app.selectors';
 import { navigateTo } from '../../utils/help';
 

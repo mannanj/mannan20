@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ContentCardComponent } from './content-card.component';
+import { ContentCardComponent } from './content-card';
 import { fadeIn, slideInLeft } from '../../animations/animations';
 import { ProfileItem } from '../../models/models';
 import { selectJobs } from '../../store/app.selectors';
