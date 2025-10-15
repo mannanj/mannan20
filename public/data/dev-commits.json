@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "baff27948919e947fbb9c7a964645a8645d726b5",
+    "hash": "baff279",
+    "subject": "Task 24: Rename Component Class Names",
+    "body": "- [x] Remove \"Component\" suffix from all component class names (e.g., AboutComponent → About)\n- [x] Update any references to component class names in tests or documentation\n- [x] Ensure TypeScript compiles successfully after renaming\n- Location: All component class definitions throughout the project\n\n[Task-24]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:24:43-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/baff27948919e947fbb9c7a964645a8645d726b5"
+  },
+  {
+    "fullHash": "0b9527187915e58f538ddc57f122ad090ba506df",
+    "hash": "0b95271",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:19:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0b9527187915e58f538ddc57f122ad090ba506df"
+  },
+  {
     "fullHash": "e156a030d66b1ce492538384128779ad702b41e2",
     "hash": "e156a03",
     "subject": "Add Task 24: Rename Component Class Names",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T20:21:09-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/529c21d5b5aab7cf2ee6b944d13083dfd9f2b7bf"
-  },
-  {
-    "fullHash": "9809a49c356c62b6a3a5221350f6f659f62ca88a",
-    "hash": "9809a49",
-    "subject": "Create cursor-specific state, actions, reducer, and selectors",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:20:39-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9809a49c356c62b6a3a5221350f6f659f62ca88a"
-  },
-  {
-    "fullHash": "1cc3bb0154a76338bb8d32277dce13cd16d2b5a7",
-    "hash": "1cc3bb0",
-    "subject": "Move cursor colors to cursor data JSON file",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:19:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/1cc3bb0154a76338bb8d32277dce13cd16d2b5a7"
   }
 ]
