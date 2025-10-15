@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "9d2676eda55cfb08937efb73693350619d21d765",
+    "hash": "9d2676e",
+    "subject": "Task 30: Reduce Whitespace in Tasks Toolbar Header",
+    "body": "- [x] Reduce vertical padding in tasks toolbar container\n- [x] Adjust spacing above icons and buttons to minimal needed space\n- [x] Make toolbar height more compact while keeping icons/buttons readable\n- [x] Ensure visual balance with only slightly more space than necessary\n- [x] Test both card/table view icons and sort button alignment\n- Location: `src/app/shared/tasks-toolbar.ts`\n\n[Task-30]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:48:59-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9d2676eda55cfb08937efb73693350619d21d765"
+  },
+  {
+    "fullHash": "770fed9ae1d64c217038c544f28ab8f7f34d45c0",
+    "hash": "770fed9",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:41:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/770fed9ae1d64c217038c544f28ab8f7f34d45c0"
+  },
+  {
     "fullHash": "5851b1f4118cfb23b4a7b10fba48dd927f4784e9",
     "hash": "5851b1f",
     "subject": "Task 51: Make Status Badge Text Smaller in Table View",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:31:20-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/53904f31707b43f593b87b1cb5712c2ba34083e3"
-  },
-  {
-    "fullHash": "3cc8f8bf6473518496b381291c93fbd208740403",
-    "hash": "3cc8f8b",
-    "subject": "Add formatted completion date/time display to Tasks UI",
-    "body": "[Task-19]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:31:20-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/3cc8f8bf6473518496b381291c93fbd208740403"
-  },
-  {
-    "fullHash": "e435e4a8d4b9b50376619a9c001958ef7c9703ab",
-    "hash": "e435e4a",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:19:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e435e4a8d4b9b50376619a9c001958ef7c9703ab"
   }
 ]

@@ -806,30 +806,38 @@
   {
     "id": "task-30",
     "title": "Reduce Whitespace in Tasks Toolbar Header",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Reduce vertical padding in tasks toolbar container",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Adjust spacing above icons and buttons to minimal needed space",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Make toolbar height more compact while keeping icons/buttons readable",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure visual balance with only slightly more space than necessary",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Test both card/table view icons and sort button alignment",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/tasks-toolbar.ts`"
+    "location": "`src/app/shared/tasks-toolbar.ts`",
+    "completedDate": "2025-10-15T11:48:59-04:00",
+    "completedCommit": {
+      "hash": "9d2676e",
+      "fullHash": "9d2676eda55cfb08937efb73693350619d21d765",
+      "subject": "Task 30: Reduce Whitespace in Tasks Toolbar Header",
+      "date": "2025-10-15T11:48:59-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/9d2676eda55cfb08937efb73693350619d21d765"
+    }
   },
   {
     "id": "task-31",
