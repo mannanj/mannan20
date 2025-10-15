@@ -26,7 +26,6 @@ import type { ColDef, ICellRendererParams, GridState } from 'ag-grid-community';
           [columnDefs]="colDefs"
           [theme]="gridTheme()"
           [suppressCellFocus]="true"
-          [rowSelection]="{ mode: 'multiRow', enableClickSelection: false }"
           [animateRows]="false"
           [getRowId]="getTaskRowId"
           columnMenu="new"

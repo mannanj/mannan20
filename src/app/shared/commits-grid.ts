@@ -34,7 +34,6 @@ interface Commit {
           [columnDefs]="colDefs"
           [theme]="gridTheme()"
           [suppressCellFocus]="true"
-          [rowSelection]="{ mode: 'multiRow', enableClickSelection: false }"
           [animateRows]="false"
           [getRowId]="getCommitRowId"
           columnMenu="new"
