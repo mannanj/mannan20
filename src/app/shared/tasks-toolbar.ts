@@ -8,24 +8,24 @@ import { SortIcon } from '../components/icons/sort-icon';
   imports: [CardViewIcon, TableViewIcon, SortIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex justify-between items-center p-2 bg-[#2a2a2a] rounded-md border border-[#404040]">
+    <div class="flex justify-between items-center py-1 px-2 bg-[#2a2a2a] rounded-md border border-[#404040]">
       <div class="flex gap-1">
         <button
           (click)="viewChange.emit('card')"
-          [class]="currentView() === 'card' ? '!border-0 !shadow-none bg-[#039be5] text-white flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none' : '!border-0 !shadow-none bg-[#1a1a1a] text-[#888] hover:text-[#4dd8ff] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none'"
+          [class]="currentView() === 'card' ? '!border-0 !shadow-none bg-[#039be5] text-white flex items-center justify-center px-2 py-1 cursor-pointer rounded transition-all duration-200 focus:outline-none' : '!border-0 !shadow-none bg-[#1a1a1a] text-[#888] hover:text-[#4dd8ff] flex items-center justify-center px-2 py-1 cursor-pointer rounded transition-all duration-200 focus:outline-none'"
           title="Card View">
           <card-view-icon />
         </button>
         <button
           (click)="viewChange.emit('table')"
-          [class]="currentView() === 'table' ? '!border-0 !shadow-none bg-[#039be5] text-white flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none' : '!border-0 !shadow-none bg-[#1a1a1a] text-[#888] hover:text-[#4dd8ff] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none'"
+          [class]="currentView() === 'table' ? '!border-0 !shadow-none bg-[#039be5] text-white flex items-center justify-center px-2 py-1 cursor-pointer rounded transition-all duration-200 focus:outline-none' : '!border-0 !shadow-none bg-[#1a1a1a] text-[#888] hover:text-[#4dd8ff] flex items-center justify-center px-2 py-1 cursor-pointer rounded transition-all duration-200 focus:outline-none'"
           title="Table View">
           <table-view-icon />
         </button>
       </div>
       <button
         (click)="sortToggle.emit()"
-        class="!border-0 !shadow-none bg-[#1a1a1a] text-[#888] px-3 py-1.5 cursor-pointer rounded transition-all duration-200 flex items-center gap-1.5 text-xs hover:text-[#4dd8ff] focus:outline-none"
+        class="!border-0 !shadow-none bg-[#1a1a1a] text-[#888] px-3 py-1 cursor-pointer rounded transition-all duration-200 flex items-center gap-1.5 text-xs hover:text-[#4dd8ff] focus:outline-none"
         title="Sort by completion date">
         <sort-icon [direction]="sortOrder()" />
         {{ sortOrder() === 'asc' ? 'Oldest First' : 'Newest First' }}
