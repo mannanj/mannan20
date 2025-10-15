@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "e7587f86d5f4253056c8cbd04013f6f66c7ffba5",
+    "hash": "e7587f8",
+    "subject": "Task 48: Fix Empty Tasks Column in Tasks Table",
+    "body": "- [x] Debug why task title column shows empty values\n- [x] Verify field mapping in column definitions matches data structure\n- [x] Check if Task interface property names match ag-grid field names\n- [x] Ensure task data is properly passed to ag-grid component\n- [x] Fix AG Grid theming conflict (removed CSS imports, use Theming API)\n- [x] Fix completedCommit object value formatter warning\n- [x] Configure dark theme with black background and white/gray text\n- Location: `src/app/shared/task-table.ts`, `src/app/shared/dev-stats.ts`, `src/styles.css`\n\n[Task-48]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:34:41-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e7587f86d5f4253056c8cbd04013f6f66c7ffba5"
+  },
+  {
+    "fullHash": "68ef7aec11fa9cddcd25cd58f1f56121ecdd685c",
+    "hash": "68ef7ae",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:31:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/68ef7aec11fa9cddcd25cd58f1f56121ecdd685c"
+  },
+  {
     "fullHash": "835853d6c24a1ce9c659b75eff543b8706ee230b",
     "hash": "835853d",
     "subject": "Add AG Grid improvement tasks",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T22:45:10-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/8dede838894323ba8c88889e7c347409933637ca"
-  },
-  {
-    "fullHash": "16ab28fd421de78c66f3d57273754ba1133853dd",
-    "hash": "16ab28f",
-    "subject": "Add Tasks tab to dev-stats with automatic sync from tasks.md",
-    "body": "Features:\n- Created tasks.json data file with all current tasks\n- Added Task and TaskSubtask types to models\n- Added tasks actions, reducer, and selectors to NgRx store\n- Added tasks effect to load tasks.json on init (dev mode only)\n- Added Tasks tab to dev-stats component with:\n  - Task cards showing title, status, subtasks, and location\n  - Checkbox UI for subtasks with completed state\n  - Styled task cards with status badges (pending/completed)\n  - Scrollable container matching commits tab design\n- Updated post-commit hook to automatically:\n  - Parse tasks.md markdown format\n  - Extract tasks, subtasks, locations\n  - Calculate completion status from subtasks\n  - Generate tasks.json in correct format\n\nNow tasks.md is the source of truth - whenever you update it and commit,\nthe hook automatically syncs changes to tasks.json for the app to display.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:45:10-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/16ab28fd421de78c66f3d57273754ba1133853dd"
-  },
-  {
-    "fullHash": "815f59d891cd4a3230bd336609df259e49b8de3c",
-    "hash": "815f59d",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:38:29-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/815f59d891cd4a3230bd336609df259e49b8de3c"
   }
 ]
