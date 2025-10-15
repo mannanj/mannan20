@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "7319b6f01c78f583ae1cf7bbb9ff09a2b0ddcd0c",
+    "hash": "7319b6f",
+    "subject": "Fix regex to match exact task numbers in commit messages",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:36:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7319b6f01c78f583ae1cf7bbb9ff09a2b0ddcd0c"
+  },
+  {
+    "fullHash": "1f66148bf181941074c662a8e0736218e4c8de8c",
+    "hash": "1f66148",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:36:08-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1f66148bf181941074c662a8e0736218e4c8de8c"
+  },
+  {
     "fullHash": "90f8338dae657a404f4ea1c8a8cdbd096d4d597b",
     "hash": "90f8338",
     "subject": "Fix task completion commit detection in post-commit hook",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T12:30:49-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/89b5d08befe1888bb89c9bd2080406017ad0cae0"
-  },
-  {
-    "fullHash": "89bd7f610319f0770ac4344e4e60464812d06ee9",
-    "hash": "89bd7f6",
-    "subject": "remove wrapper toggle methods and call toggleSection directly from template",
-    "body": "Further simplify AboutComponent by eliminating 10 wrapper methods, calling the centralized toggleSection method directly from the template instead.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T12:28:22-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/89bd7f610319f0770ac4344e4e60464812d06ee9"
-  },
-  {
-    "fullHash": "6a84dd55d10771e86e2d87777c9e06f8113737d4",
-    "hash": "6a84dd5",
-    "subject": "refactor AboutComponent toggle logic with centralized state management",
-    "body": "Replace duplicated toggle methods with a generic Map-based system to track section states, reducing code by ~30 lines while maintaining the same public API.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T12:24:22-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/6a84dd55d10771e86e2d87777c9e06f8113737d4"
   }
 ]
