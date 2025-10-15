@@ -21,7 +21,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/components/about/about.ts:290-336`"
+    "location": "`src/app/components/about/about.ts:290-336`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-2",
@@ -41,7 +49,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/store/app.state.ts`, actions, reducers, selectors"
+    "location": "`src/app/store/app.state.ts`, actions, reducers, selectors",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-3",
@@ -53,7 +69,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/services/data.service.ts`"
+    "location": "`src/app/services/data.service.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-4",
@@ -97,7 +121,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/animations/animations.ts`"
+    "location": "`src/app/animations/animations.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-7",
@@ -113,7 +145,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/services/navigation.service.ts`"
+    "location": "`src/app/services/navigation.service.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-8",
@@ -149,7 +189,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/components/contact/contact.ts`"
+    "location": "`src/app/components/contact/contact.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-11",
@@ -249,7 +297,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`"
+    "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-15",
@@ -277,7 +333,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
+    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-16",
@@ -305,7 +369,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`"
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-17",
@@ -325,7 +397,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-18",
@@ -345,7 +425,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-19",
@@ -369,7 +457,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`"
+    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-20",
@@ -393,7 +489,15 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   },
   {
     "id": "task-21",
@@ -417,6 +521,14 @@
         "completed": true
       }
     ],
-    "location": "`.githooks/post-commit`"
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:42:44-04:00",
+    "completedCommit": {
+      "hash": "a06c7dd",
+      "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+      "subject": "Clear all completion data to reset for proper hook function",
+      "date": "2025-10-14T23:42:44-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+    }
   }
 ]

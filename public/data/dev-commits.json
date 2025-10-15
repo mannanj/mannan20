@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "a06c7dd72bef35ba49e73ff1542089b10c0c6d45",
+    "hash": "a06c7dd",
+    "subject": "Clear all completion data to reset for proper hook function",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:42:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a06c7dd72bef35ba49e73ff1542089b10c0c6d45"
+  },
+  {
+    "fullHash": "baee8e012d2ce622134fb90b98cd909a82fc7111",
+    "hash": "baee8e0",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:42:23-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/baee8e012d2ce622134fb90b98cd909a82fc7111"
+  },
+  {
     "fullHash": "f30bf00b30576ab1b70d8b7b39586dc199d8309f",
     "hash": "f30bf00",
     "subject": "Fix task completion data for tasks 14, 19, and 20",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T17:12:26-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/ce92586f92777cc31239ca006532ff0424d9ad9e"
-  },
-  {
-    "fullHash": "30323eccf9347c9607eef7524351c24b8ec1bbca",
-    "hash": "30323ec",
-    "subject": "Add self-hosted cursor party with chat and rate limiting",
-    "body": "- Install ws WebSocket server dependency\n- Create Node.js WebSocket server for cursor synchronization\n- Implement client cursor tracking with chat functionality\n- Add cursor chat with 5-second rate limiting\n- Make chat placeholder configurable via NgRx state\n- Add metadata loading and last-updated component\n- Style improvements for cursor display and chat UI\n\nFeatures:\n- Real-time multiplayer cursor tracking\n- Cursor chat (press / to activate)\n- Rate limiting with friendly \"slow down happy possum\" message\n- Configurable chat placeholder text via app state\n- Self-hosted WebSocket server (no external dependencies)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T17:03:16-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/30323eccf9347c9607eef7524351c24b8ec1bbca"
-  },
-  {
-    "fullHash": "c8dd9f25f134a73b6f89ee3811a8918b36969355",
-    "hash": "c8dd9f2",
-    "subject": "Add NgRx effects and externalize about data to JSON",
-    "body": "- Add app.effects.ts to handle async actions and side effects\n- Move about section data from constants to public/data/about.json\n- Remove expandable-section and about.constants, consolidate logic into content-card\n- Update state management (actions, reducer, selectors) to support effects and new data flow\n- Delete app.state.ts as type definitions are now inline in reducer\n- Add Angular documentation files (llms-full.txt, llms.txt) for AI-assisted development\n- Update all about section components to use externalized JSON data\n- Refactor contact, modal, header, and navigation service to work with new state structure\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T16:37:56-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c8dd9f25f134a73b6f89ee3811a8918b36969355"
   }
 ]
