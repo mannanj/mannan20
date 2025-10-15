@@ -22,7 +22,7 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
 
         <div *ngIf="section.count === 2" class="p-0 m-0 text-inherit mt-[25px]">
           <b>Published Works</b>
-          <p *ngFor="let work of (publishedWorks$ | async) || []" class="text-sm leading-[1.6] m-0 mb-[1em] text-white">
+          <p *ngFor="let work of (publishedWorks$ | async) || []" class="text-sm leading-[1.6] m-0 text-white">
             &#x2022; <a [href]="work.downloadPath" [download]="work.downloadFilename" class="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">{{ work.title }}</a>
           </p>
         </div>
