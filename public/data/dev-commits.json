@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "4201a38aa421f255b17cbb21156c8c078cc6c651",
+    "hash": "4201a38",
+    "subject": "Use type-only imports for AG Grid types",
+    "body": "Follow AG Grid Angular best practices by using type keyword for type imports\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:29:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4201a38aa421f255b17cbb21156c8c078cc6c651"
+  },
+  {
+    "fullHash": "dd08c4aa390652c45f44f6f66da9170cdf425396",
+    "hash": "dd08c4a",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:27:58-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/dd08c4aa390652c45f44f6f66da9170cdf425396"
+  },
+  {
     "fullHash": "4d8533138758eb399bf4722899b264d4e2443035",
     "hash": "4d85331",
     "subject": "Register AG Grid AllCommunityModule",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T22:32:01-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/406641c8a14a3a4ed6b9d6f7f10a254bab62a6a4"
-  },
-  {
-    "fullHash": "7288168030789eed85511075663511010266a2cd",
-    "hash": "7288168",
-    "subject": "Optimize git hooks and enhance dev stats with scrollable commit history",
-    "body": "Remove redundant pre-commit hook that duplicated post-commit functionality. Update post-commit hook to capture 100 commits instead of 9 for comprehensive git history tracking. Add scrollable container with 400px max-height to dev stats commits table, removing the 5-commit display limit to show all available commits. Document SVG refactoring task for future component reusability improvements.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:32:01-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7288168030789eed85511075663511010266a2cd"
-  },
-  {
-    "fullHash": "896d9b2965c84d571adbce26578b7b28412a1b1c",
-    "hash": "896d9b2",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:28:25-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/896d9b2965c84d571adbce26578b7b28412a1b1c"
   }
 ]
