@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "715ddfa2c7f798a929e447947f3a4ea12819af7d",
+    "hash": "715ddfa",
+    "subject": "Fix Task 69: Change status badge to white text on green background",
+    "body": "Changed COMPLETED badge styling:\n- Text color: white (#fff) instead of green with white stroke\n- Background: bright green (#22c55e)\n- Padding: 2px vertical, 3px horizontal\n- Removed text-shadow stroke effect\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:26:43-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/715ddfa2c7f798a929e447947f3a4ea12819af7d"
+  },
+  {
+    "fullHash": "14dd48e7265a1cc92d2941d3734a430e79f3519a",
+    "hash": "14dd48e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:25:13-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/14dd48e7265a1cc92d2941d3734a430e79f3519a"
+  },
+  {
     "fullHash": "791ae3375d5a662d3823ed2cb43399580353b3d9",
     "hash": "791ae33",
     "subject": "Add Task 71: Investigate and Configure AG Grid Row Selection",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T01:16:11-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/8f2742148abb07294c0210076054e70b2d5bfa1e"
-  },
-  {
-    "fullHash": "b82304eedea5656f14eb3668f43d038ca574654b",
-    "hash": "b82304e",
-    "subject": "Task 32: Remove Blue Borders from Copy Icon Buttons",
-    "body": "- [x] Add !important overrides to copy icon buttons in contact-result\n- [x] Override global button border styles for email copy button\n- [x] Override global button border styles for phone copy button\n- [x] Add focus:outline-none to prevent focus borders\n- [x] Test copy buttons to ensure styling is correct\n- Location: `src/app/components/contact/contact-result.ts`\n\n[Task-32]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:16:11-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b82304eedea5656f14eb3668f43d038ca574654b"
-  },
-  {
-    "fullHash": "7bbc80b399728f92f197e068b6595447f2d20466",
-    "hash": "7bbc80b",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:12:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7bbc80b399728f92f197e068b6595447f2d20466"
   }
 ]
