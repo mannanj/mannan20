@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "0cf59c5027ea24a235cacd57de29b976bc2f79b2",
+    "hash": "0cf59c5",
+    "subject": "Task 41: Add Task Completion Verification to Workflow",
+    "body": "Updated instructions to verify codebase implementation before starting task, not just checkboxes in tasks.md.\n\n- [x] Update claude.md with instructions to check task completion status before starting\n- [x] Add step to verify all subtasks are not already marked complete\n- [x] Include instruction to mark task as complete and push if already done\n- [x] Ensure workflow prevents duplicate work on completed tasks\n- Location: `.claude/CLAUDE.md`\n\n[Task-41]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:31:01-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0cf59c5027ea24a235cacd57de29b976bc2f79b2"
+  },
+  {
+    "fullHash": "4aed96ec208cc773c4c0597456905f33102ad3f9",
+    "hash": "4aed96e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:29:25-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4aed96ec208cc773c4c0597456905f33102ad3f9"
+  },
+  {
     "fullHash": "6c5e33f993f396223c824a87462b6d4c18e665de",
     "hash": "6c5e33f",
     "subject": "Task 41: Add Task Completion Verification to Workflow",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T21:48:39-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/0d6aa35da45fb9cdc7a823a2ec28f8932b1632bd"
-  },
-  {
-    "fullHash": "7a667233e75c5ea02223105c75f28269d81ff274",
-    "hash": "7a66723",
-    "subject": "Final verification of post-commit hook",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:48:39-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7a667233e75c5ea02223105c75f28269d81ff274"
-  },
-  {
-    "fullHash": "d369483bbee48534da8ec7818a4cd7b8be07296c",
-    "hash": "d369483",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:48:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/d369483bbee48534da8ec7818a4cd7b8be07296c"
   }
 ]
