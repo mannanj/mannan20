@@ -43,7 +43,9 @@ const latestDate = execSync('git log -1 --format=%ai', { encoding: 'utf-8', shel
 console.log(JSON.stringify({ lastUpdated: latestDate }, null, 2));
 " > "$METADATA_FILE"
 
-git add "$OUTPUT_FILE" "$METADATA_FILE"
-git commit --amend --no-edit --no-verify
+if ! git diff --quiet "$OUTPUT_FILE" "$METADATA_FILE"; then
+  git add "$OUTPUT_FILE" "$METADATA_FILE"
+  git commit -m "Update dev data files" --no-verify
+fi
 
 exit 0

@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "0d6aa35da45fb9cdc7a823a2ec28f8932b1632bd",
+    "hash": "0d6aa35",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:48:39 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/0d6aa35da45fb9cdc7a823a2ec28f8932b1632bd"
+  },
+  {
     "fullHash": "7a667233e75c5ea02223105c75f28269d81ff274",
     "hash": "7a66723",
     "subject": "Final verification of post-commit hook",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 21:42:18 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/37414f23318ed71aa3b26e77f8d68132d3925231"
-  },
-  {
-    "fullHash": "b6f936e59f8a48e0dff8256355419d176832cdaa",
-    "hash": "b6f936e",
-    "subject": "Test post-commit hook",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 21:40:22 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/b6f936e59f8a48e0dff8256355419d176832cdaa"
   }
 ]
