@@ -254,27 +254,27 @@
   {
     "id": "task-15",
     "title": "Modularize Dev Stats Component",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Extract task card display into separate task-card component",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Extract task table display into separate task-table component",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Extract toolbar (view/sort controls) into separate tasks-toolbar component",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Refactor dev-stats.ts to use new modular components",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure all components follow Angular best practices (standalone, signals)",
-        "completed": false
+        "completed": true
       }
     ],
     "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
