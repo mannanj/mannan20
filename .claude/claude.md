@@ -2,181 +2,115 @@
 
 ## Project Overview
 
-Full-stack portfolio application with real-time cursor tracking.
+Full-stack portfolio with real-time cursor tracking.
 
-**Tech Stack:**
-- Frontend: Angular 20, NgRx, Signals, Tailwind CSS 4
-- Backend: Spring Boot 3.5.6, Java 25
-- WebSocket: Node.js cursor tracking server
+**Stack:** Angular 20, NgRx, Signals, Tailwind CSS 4 | Spring Boot 3.5.6, Java 25 | Node.js WebSocket
 
 ## Critical Rules
 
-**NEVER add comments to any code**
+**NEVER add comments to code**
 
 ## Angular Best Practices
 
 ### Components
-- Always use standalone components (default, don't set `standalone: true`)
-- Use `input()` and `output()` functions, not decorators
-- Use `computed()` for derived state
-- Set `changeDetection: ChangeDetectionStrategy.OnPush`
+- Standalone components (default, don't set `standalone: true`)
+- Use `input()`, `output()`, `computed()` functions (not decorators)
+- `changeDetection: ChangeDetectionStrategy.OnPush`
 - Inline templates for small components
-- Use Reactive forms over Template-driven
+- Reactive forms only
 
 ### Templates
-- Use native control flow: `@if`, `@for`, `@switch` (never `*ngIf`, `*ngFor`, `*ngSwitch`)
-- Use class/style bindings (never `ngClass`, `ngStyle`)
-- Keep templates simple, no complex logic
+- Control flow: `@if`, `@for`, `@switch` (never `*ngIf`, `*ngFor`, `*ngSwitch`)
+- Direct bindings: `[class]`, `[style]` (never `ngClass`, `ngStyle`)
+- Keep logic minimal
 
 ### State Management
-- Use signals for local component state
-- Use `computed()` for derived state
+- Signals for local state, `computed()` for derived state
 - NgRx for global state (`/src/app/store`)
-- Use `update()` or `set()` on signals (never `mutate`)
+- Use `update()` or `set()` on signals (never `mutate()`)
 
 ### Services
-- Use `inject()` function, not constructor injection
-- Single responsibility principle
-- Use `providedIn: 'root'` for singletons
+- Use `inject()` (not constructor injection)
+- Single responsibility
+- `providedIn: 'root'` for singletons
 
 ### Decorators
 - Never use `@HostBinding` or `@HostListener`
-- Put host bindings in the `host` object of `@Component`/`@Directive`
+- Use `host` object in `@Component`/`@Directive`
 
 ## Tailwind CSS Styling
 
-### Styling Requirements
+**Always prefer Tailwind utilities over component `styles` arrays.**
 
-- **Always prefer Tailwind utility classes** over component-level `styles` arrays
-- Apply Tailwind classes directly to elements in templates
-- Use arbitrary values with bracket notation when needed: `text-[#039be5]`, `w-[400px]`
-- Minimize component `styles` arrays - keep them empty when possible
+Apply classes directly in templates. Use arbitrary values: `text-[#039be5]`, `w-[400px]`
 
-### When to Use Custom CSS
-
-Use component-level or global CSS only when Tailwind cannot achieve the desired effect:
-
-**Required custom CSS:**
-- `::before` and `::after` pseudo-elements with `content` property
-- Angular-specific selectors (`:host`, `:host-context()`)
+### When Custom CSS is Required
+- `::before`/`::after` with `content` property
+- Angular selectors: `:host`, `:host-context()`
 - `@keyframes` animations
-- Complex nested selectors that depend on parent state
+- Complex nested selectors dependent on parent state
 
-**Example - Custom CSS needed:**
-```css
-button::before {
-  content: '';
-  position: absolute;
-  /* Tailwind cannot set content property */
-}
+### Global Utilities (`src/styles.css`)
+- `.collapsible` - More/less buttons
+- `.content` - Expandable containers
+- `.margin-top*` - Spacing utilities
 
-:host-context(.dark-mode) {
-  /* Angular-specific selector */
-}
-
-@keyframes slideIn {
-  /* Custom animation */
-}
-```
-
-### Global Utility Classes
-
-Reusable utility classes are defined in `src/styles.css`:
-- `.collapsible` - Styled more/less buttons
-- `.content` - Expandable content containers
-- `.margin-top`, `.margin-top-60`, etc. - Spacing utilities
-
-Use these classes instead of duplicating styles across components.
-
-### Best Practices
-
-✅ **Good:**
-```html
-<button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">
-  Click me
-</button>
-
-<button class="collapsible" (click)="toggle()">more</button>
-```
-
-❌ **Avoid:**
-```typescript
-@Component({
-  styles: [`
-    button {
-      background-color: #3b82f6;
-      padding: 8px 16px;
-      border-radius: 4px;
-    }
-  `]
-})
-```
+**Good:** `<button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">`
+**Avoid:** Component `styles` arrays with CSS that Tailwind can handle
 
 ## TypeScript Standards
 
-- Strict type checking enabled
-- Prefer type inference when obvious
-- Never use `any`, use `unknown` when uncertain
-- Keep code minimal and maintainable
+- Strict type checking
+- Prefer type inference
+- Never `any`, use `unknown` when uncertain
+- Minimal, maintainable code
+- Extract magic numbers to named constants
 
 ## Project Structure
 
 ```
 /src/app/components     Home, About, Contact, Header
 /src/app/store          NgRx state (actions, reducers, selectors)
-/src/app/services       Data and navigation services
-/src/app/models         Type definitions
+/src/app/services       Data, navigation
+/src/app/models         Types
 /src/app/animations     Animation utilities
-/backend                Spring Boot REST API for viewer management
-/server                 WebSocket server for cursor tracking
+/backend                Spring Boot REST API
+/server                 WebSocket cursor tracking
 ```
 
-## Development Workflow
+## Development
 
-**Frontend (localhost:4200):**
-```bash
-npm start
-```
-
-**Backend (localhost:8080):**
-```bash
-cd backend && ./mvnw spring-boot:run
-```
-
-**WebSocket Server:**
-```bash
-npm run ws-server
-```
+**Frontend:** `npm start` (localhost:4200)
+**Backend:** `cd backend && ./mvnw spring-boot:run` (localhost:8080)
+**WebSocket:** `npm run ws-server`
 
 ## API Endpoints
 
-Base URL: `http://localhost:8080/viewers/`
+Base: `http://localhost:8080/viewers/`
 
-- `GET /` - List all viewers
+- `GET /` - List all
 - `GET /{identifier}` - Get by id/email/name/reason
-- `POST /` - Create viewer (requires at least one field)
-- `PUT /{identifier}` - Update viewer
+- `POST /` - Create (requires ≥1 field)
+- `PUT /{identifier}` - Update
 
 ## Code Quality
 
-- Write minimal, performant code
-- Keep functions focused and small
-- Avoid duplication
-- Use const for immutable values
-- Extract magic numbers to named constants
+- Minimal, performant
+- Focused, small functions
+- No duplication
+- Use `const` for immutable values
 
 ## Git Workflow & Task Management
 
-### Post-Commit Hook System
+### Post-Commit Hook
 
-This project uses a custom post-commit hook (`.githooks/post-commit`) that automatically:
-- Generates `public/data/dev-commits.json` with recent commit history
-- Generates `public/data/tasks.json` from `tasks.md` with completion tracking
-- Detects task completions and links them to specific commits
+`.githooks/post-commit` auto-generates:
+- `public/data/dev-commits.json` - Recent commits
+- `public/data/tasks.json` - Task tracking with completion dates/commits
 
-### Creating and Completing Tasks
+### Task Workflow
 
-**1. Add new tasks to `tasks.md`:**
+**1. Create task in `tasks.md`:**
 ```markdown
 ### Task N: Task Title
 - [ ] Subtask 1
@@ -184,26 +118,17 @@ This project uses a custom post-commit hook (`.githooks/post-commit`) that autom
 - Location: `path/to/files`
 ```
 
-**2. Before starting a task, ALWAYS verify if work is already done:**
-- Check the codebase to see if the task's changes are already implemented
-- Review the files mentioned in the task's Location field
-- Verify each subtask is actually completed in the code
-- If the work is already done but task is not marked complete:
-  - Mark all subtasks as `[x]` in tasks.md
-  - Commit with proper format including `[Task-N]` tag
-  - Push to git
-  - Skip to next task
-- This prevents duplicate work on already-completed tasks
+**2. Before starting, verify work isn't already done:**
+- Check codebase for task's changes
+- Review files in Location field
+- If complete but unmarked:
+  - Mark subtasks `[x]` in tasks.md
+  - Commit with `[Task-N]` tag
+  - Push and skip to next task
 
-**3. Work on the task and mark subtasks complete:**
-```markdown
-### Task N: Task Title
-- [x] Subtask 1
-- [x] Subtask 2
-- Location: `path/to/files`
-```
+**3. Complete subtasks, mark `[x]` in tasks.md**
 
-**4. Commit with task title and details:**
+**4. Commit:**
 ```bash
 git add .
 git commit -m "Task N: Task Title
@@ -219,29 +144,12 @@ git commit -m "Task N: Task Title
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-**IMPORTANT:**
-- Include the complete task entry from tasks.md in the commit message
-- Include all subtasks with their completion status
-- Include `[Task-N]` or `[Task N]` tag for proper tracking
-- Only one task per commit.
+**Requirements:**
+- Complete task entry in commit message
+- All subtasks with status
+- `[Task-N]` tag for tracking
+- One task per commit
 
-### Post-Commit Hook Behavior
+**5. Push:** `git push`
 
-When you commit:
-1. Hook detects completed tasks (all subtasks checked)
-2. Searches git history for commits with `[Task-N]` tag
-3. Records completion date and commit hash in `tasks.json`
-4. Auto-commits updated data files
-
-### Pushing Changes
-
-After committing task completions:
-```bash
-git push
-```
-
-The hook creates two commits:
-1. Your original commit with changes
-2. Automatic "Update dev data files" commit
-
-Both will be pushed to remote.
+Hook creates two commits: your task commit + auto "Update dev data files" commit.
