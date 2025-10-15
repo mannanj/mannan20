@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc",
+    "hash": "9fb294a",
+    "subject": "Task 22: Update Commit Message Format",
+    "body": "- [x] Modify claude.md to separate task title from description\n- [x] Update commit format example to show blank line after title\n- [x] Ensure subtasks appear in commit description, not title\n- Location: `.claude/claude.md`\n\n[Task-22]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:06:33-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc"
+  },
+  {
+    "fullHash": "639faa5093e5e3b43b93977c3b3c19d5ab1e012f",
+    "hash": "639faa5",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:02:35-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/639faa5093e5e3b43b93977c3b3c19d5ab1e012f"
+  },
+  {
     "fullHash": "042f531c2724921272bf164884a7e99f09b96164",
     "hash": "042f531",
     "subject": "Task 12: Move SVGs to Reusable Icon Components - [x] Extract inline SVGs to separate icon components - [x] Create reusable icon components that can be imported and used throughout the app - [x] Replace duplicate SVG code with icon component references - Location: Components with inline SVG markup",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:17:30-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/33283532de5e7ddedd9c4d944023fa7d67224eaa"
-  },
-  {
-    "fullHash": "3e0fe174f994866c7e4c96143700a12cdab5ac1b",
-    "hash": "3e0fe17",
-    "subject": "Keep viewer count consistent when cursors are hidden",
-    "body": "Before: Viewer count decreased when cursors hidden with ESC\nAfter: Viewer count remains constant (shows total connected users)\n\nChanges:\n- updateActiveViewerCount() now uses cursors.size (line 173)\n- Removed visibility check - counts all cursors regardless of display\n- Removed updateActiveViewerCount() call from toggleCursors() (line 183)\n\nThe count only changes when users actually connect/disconnect, not when\nthey toggle visibility with ESC.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:16:13-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/3e0fe174f994866c7e4c96143700a12cdab5ac1b"
-  },
-  {
-    "fullHash": "26c975e4c8a8a74215b88e10cf9c3606d99c4695",
-    "hash": "26c975e",
-    "subject": "Remove CSS transition from local cursor for instant tracking",
-    "body": "The problem: CSS transition caused 100ms lag on local cursor\n- Remote cursors: Keep transition for smooth network updates\n- Local cursor: Remove transition for instant mouse following\n\nChanges:\n- Added 'local-cursor' class to own cursor (cursors.js:39)\n- CSS rule removes transition from .local-cursor (cursors.js:351-353)\n- Fixed initialization bug - position now set on first frame (cursors.js:64)\n\nResult: Your cursor now follows mouse with ZERO lag!\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:15:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/26c975e4c8a8a74215b88e10cf9c3606d99c4695"
   }
 ]

@@ -514,5 +514,33 @@
       "date": "2025-10-14T23:41:59-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
     }
+  },
+  {
+    "id": "task-22",
+    "title": "Update Commit Message Format",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Modify claude.md to separate task title from description",
+        "completed": true
+      },
+      {
+        "description": "Update commit format example to show blank line after title",
+        "completed": true
+      },
+      {
+        "description": "Ensure subtasks appear in commit description, not title",
+        "completed": true
+      }
+    ],
+    "location": "`.claude/claude.md`",
+    "completedDate": "2025-10-15T00:06:33-04:00",
+    "completedCommit": {
+      "hash": "9fb294a",
+      "fullHash": "9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc",
+      "subject": "Task 22: Update Commit Message Format",
+      "date": "2025-10-15T00:06:33-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc"
+    }
   }
 ]
