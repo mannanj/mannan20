@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "e479a0e3834c7635f635cdd74e63b16ca290f934",
+    "hash": "e479a0e",
+    "subject": "Task 25: Update Documentation with Tailwind Styling Requirements",
+    "body": "- [x] Update .claude/CLAUDE.md to document Tailwind CSS 4 usage requirement\n- [x] Add guidelines for when to use Tailwind vs custom CSS\n- [x] Document that inline Tailwind utilities should be preferred over component styles\n- [x] Add examples of proper Tailwind class usage\n- Location: \\`.claude/CLAUDE.md\\`\n\n[Task-25]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:43:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e479a0e3834c7635f635cdd74e63b16ca290f934"
+  },
+  {
+    "fullHash": "89b507bdaebc84443d0b575a7974c9eda3ccf7d6",
+    "hash": "89b507b",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:43:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/89b507bdaebc84443d0b575a7974c9eda3ccf7d6"
+  },
+  {
     "fullHash": "db8102e6b8ab972498317ffa290ef33301d494dd",
     "hash": "db8102e",
     "subject": "Task 26: Restore Original More/Less Button Styling",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T20:37:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/33675f394451e871312379e770f6b20b2bc14eed"
-  },
-  {
-    "fullHash": "1d7f0a0b56fce27791ca2cab60b1642c9e499bdd",
-    "hash": "1d7f0a0",
-    "subject": "Move cursor effects to separate cursor.effects.ts file",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:29:21-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/1d7f0a0b56fce27791ca2cab60b1642c9e499bdd"
-  },
-  {
-    "fullHash": "892433edc6d57ef757b92a9d6ccf5231f420c445",
-    "hash": "892433e",
-    "subject": "Refactor cursors.js to work with NgRx cursor state",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:26:08-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/892433edc6d57ef757b92a9d6ccf5231f420c445"
   }
 ]
