@@ -334,13 +334,12 @@
 - Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`
 
 ### Task 47: Add Search Functionality to AG Grid Tables
-- [ ] Research AG Grid official documentation for search/filter implementation
-- [ ] Add search input field above git commits table
-- [ ] Add search input field above tasks table
-- [ ] Implement quick filter functionality using AG Grid API
-- [ ] Style search inputs to match dark theme
-- [ ] Ensure search works across all visible columns
-- [ ] Add clear search button or functionality
+- [x] Research AG Grid official documentation for search/filter implementation
+- [x] Add search input field above git commits table
+- [x] Add search input field above tasks table
+- [x] Implement quick filter functionality using AG Grid API
+- [x] Style search inputs to match dark theme
+- [x] Ensure search works across all visible columns
 - Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`
 
 ### Task 48: Fix Empty Tasks Column in Tasks Table

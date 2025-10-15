@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, viewChild } from '@angular/core';
 import { Task } from '../models/models';
 import { formatCompletionDate } from '../utils/date';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -10,8 +10,18 @@ import { themeQuartz } from 'ag-grid-community';
   imports: [AgGridAngular],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <div class="mb-3">
+      <input
+        type="text"
+        placeholder="Search tasks..."
+        [value]="searchText()"
+        (input)="onSearchChange($event)"
+        class="search-input"
+      />
+    </div>
     <div style="height: 400px; width: 100%;">
       <ag-grid-angular
+        #tasksGrid
         [rowData]="tasks()"
         [columnDefs]="colDefs"
         [theme]="gridTheme"
@@ -23,12 +33,44 @@ import { themeQuartz } from 'ag-grid-community';
       />
     </div>
   `,
-  styles: []
+  styles: [`
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input::placeholder {
+      color: #666;
+    }
+
+    .search-input:focus {
+      border-color: #039be5;
+    }
+  `]
 })
 export class TaskTable {
   tasks = input.required<Task[]>();
+  protected searchText = signal('');
+
+  private tasksGrid = viewChild<AgGridAngular>('tasksGrid');
 
   protected getTaskRowId = (params: any) => params.data.id;
+
+  onSearchChange(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchText.set(value);
+    const gridApi = this.tasksGrid()?.api;
+    if (gridApi) {
+      gridApi.setGridOption('quickFilterText', value);
+    }
+  }
 
   protected gridTheme = themeQuartz.withParams({
     backgroundColor: '#000',

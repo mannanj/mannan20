@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, viewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { DatePipe } from '@angular/common';
 import { Modal } from './modal';
@@ -8,7 +8,7 @@ import { DevStatsIcon } from '../components/icons/dev-stats-icon';
 import { ServicesPlaceholderIcon } from '../components/icons/services-placeholder-icon';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, ICellRendererParams, GridApi } from 'ag-grid-community';
 import { themeQuartz } from 'ag-grid-community';
 
 @Component({
@@ -48,17 +48,29 @@ import { themeQuartz } from 'ag-grid-community';
         </div>
 
         <div class="tab-content">
-          <div [style.display]="activeTab() === 'commits' ? 'block' : 'none'" style="height: 400px; width: 100%;">
-            <ag-grid-angular
-              [rowData]="filteredCommits()"
-              [columnDefs]="commitsColDefs"
-              [theme]="gridTheme"
-              [suppressCellFocus]="true"
-              [suppressRowClickSelection]="true"
-              [animateRows]="false"
-              [getRowId]="getCommitRowId"
-              style="width: 100%; height: 100%;"
-            />
+          <div [style.display]="activeTab() === 'commits' ? 'block' : 'none'">
+            <div class="mb-3">
+              <input
+                type="text"
+                placeholder="Search commits..."
+                [value]="commitsSearchText()"
+                (input)="onCommitsSearchChange($event)"
+                class="search-input"
+              />
+            </div>
+            <div style="height: 400px; width: 100%;">
+              <ag-grid-angular
+                #commitsGrid
+                [rowData]="filteredCommits()"
+                [columnDefs]="commitsColDefs"
+                [theme]="gridTheme"
+                [suppressCellFocus]="true"
+                [suppressRowClickSelection]="true"
+                [animateRows]="false"
+                [getRowId]="getCommitRowId"
+                style="width: 100%; height: 100%;"
+              />
+            </div>
           </div>
 
           @if (activeTab() === 'services') {
@@ -129,6 +141,26 @@ import { themeQuartz } from 'ag-grid-community';
       overflow-x: auto;
     }
 
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input::placeholder {
+      color: #666;
+    }
+
+    .search-input:focus {
+      border-color: #039be5;
+    }
+
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -148,6 +180,9 @@ export class DevStats {
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
   protected tasks = toSignal(this.store.select(selectTasks), { initialValue: [] });
+  protected commitsSearchText = signal('');
+
+  private commitsGrid = viewChild<AgGridAngular>('commitsGrid');
 
   private allCommits = toSignal(this.store.select(selectDevCommits), { initialValue: [] });
   protected filteredCommits = computed(() =>
@@ -204,6 +239,15 @@ export class DevStats {
 
   setActiveTab(tab: 'commits' | 'services' | 'tasks') {
     this.activeTab.set(tab);
+  }
+
+  onCommitsSearchChange(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.commitsSearchText.set(value);
+    const gridApi = this.commitsGrid()?.api;
+    if (gridApi) {
+      gridApi.setGridOption('quickFilterText', value);
+    }
   }
 
   protected getCommitRowId = (params: any) => params.data.hash;
