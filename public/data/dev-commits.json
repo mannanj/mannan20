@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "16ab28fd421de78c66f3d57273754ba1133853dd",
+    "hash": "16ab28f",
+    "subject": "Add Tasks tab to dev-stats with automatic sync from tasks.md",
+    "body": "Features:\n- Created tasks.json data file with all current tasks\n- Added Task and TaskSubtask types to models\n- Added tasks actions, reducer, and selectors to NgRx store\n- Added tasks effect to load tasks.json on init (dev mode only)\n- Added Tasks tab to dev-stats component with:\n  - Task cards showing title, status, subtasks, and location\n  - Checkbox UI for subtasks with completed state\n  - Styled task cards with status badges (pending/completed)\n  - Scrollable container matching commits tab design\n- Updated post-commit hook to automatically:\n  - Parse tasks.md markdown format\n  - Extract tasks, subtasks, locations\n  - Calculate completion status from subtasks\n  - Generate tasks.json in correct format\n\nNow tasks.md is the source of truth - whenever you update it and commit,\nthe hook automatically syncs changes to tasks.json for the app to display.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:45:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/16ab28fd421de78c66f3d57273754ba1133853dd"
+  },
+  {
+    "fullHash": "815f59d891cd4a3230bd336609df259e49b8de3c",
+    "hash": "815f59d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:38:29-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/815f59d891cd4a3230bd336609df259e49b8de3c"
+  },
+  {
     "fullHash": "5a0d5427f24afe0d60c57f448d329a247e817118",
     "hash": "5a0d542",
     "subject": "Update tasks.md with completed task status",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-08T20:27:16-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/bd863ea5108f6be6374a1ea50d107ddf99de13de"
-  },
-  {
-    "fullHash": "e688744244079d07fb1025e3430efe27f0542c33",
-    "hash": "e688744",
-    "subject": "adding angular 20 code and header",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-08T20:09:50-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e688744244079d07fb1025e3430efe27f0542c33"
-  },
-  {
-    "fullHash": "8bf54cb4bf233c8752c0ae314c99d72d76d832f0",
-    "hash": "8bf54cb",
-    "subject": "initial commit",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-08T12:34:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8bf54cb4bf233c8752c0ae314c99d72d76d832f0"
   }
 ]
