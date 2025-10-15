@@ -1,6 +1,6 @@
 import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { selectActiveViewerCount } from '../store/app.selectors';
+import { selectActiveViewerCount } from '../store/cursor.selectors';
 import { toggleCommandsModal } from '../store/app.actions';
 
 @Component({

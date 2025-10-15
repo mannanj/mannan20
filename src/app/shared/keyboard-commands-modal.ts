@@ -2,7 +2,8 @@ import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ModalComponent } from './modal';
 import { selectCommandsModalVisible } from '../store/app.selectors';
-import { toggleCommandsModal, toggleCursorsVisible } from '../store/app.actions';
+import { toggleCommandsModal } from '../store/app.actions';
+import { toggleCursorsVisible } from '../store/cursor.actions';
 
 interface Command {
   key: string;

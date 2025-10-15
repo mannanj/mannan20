@@ -8,7 +8,7 @@ import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
-import { selectIsCursorPartyConnected } from './store/app.selectors';
+import { selectIsCursorPartyConnected } from './store/cursor.selectors';
 
 @Component({
   selector: 'app-root',
