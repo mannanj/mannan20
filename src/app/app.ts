@@ -8,11 +8,12 @@ import { ContactComponent } from "./components/contact/contact";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
+import { DevStats } from "./shared/dev-stats";
 import { selectIsCursorPartyConnected } from './store/cursor.selectors';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent, LastUpdated, ViewerStats, KeyboardCommandsModal],
+  imports: [CommonModule, HeaderComponent, HomeComponent, AboutComponent, ContactComponent, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats],
   template: `
     <div id="page">
       <div id="header">
@@ -37,6 +38,7 @@ import { selectIsCursorPartyConnected } from './store/cursor.selectors';
         <viewer-stats />
       }
       <last-updated />
+      <dev-stats />
       <keyboard-commands-modal />
     </div>
   `,

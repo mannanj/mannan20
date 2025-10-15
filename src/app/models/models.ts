@@ -85,9 +85,20 @@ export interface AppState {
   metadata: Metadata | null;
   isInitialized: boolean;
   commandsModalVisible: boolean;
+  devCommits: DevCommit[];
 }
 
 export interface ContactResult {
   email: string;
   phone: string;
+}
+
+export interface DevCommit {
+  fullHash: string;
+  hash: string;
+  subject: string;
+  body: string;
+  author: string;
+  date: string;
+  url: string;
 }

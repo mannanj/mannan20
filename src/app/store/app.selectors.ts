@@ -62,3 +62,8 @@ export const selectCommandsModalVisible = createSelector(
   selectAppState,
   (state: AppState) => state.commandsModalVisible
 );
+
+export const selectDevCommits = createSelector(
+  selectAppState,
+  (state: AppState) => state.devCommits
+);

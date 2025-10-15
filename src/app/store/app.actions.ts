@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Links, AboutData, Metadata } from '../models/models';
+import { Links, AboutData, Metadata, DevCommit } from '../models/models';
 
 export const setSelectedLink = createAction(
   '[Navigation] Set Selected Link',
@@ -31,3 +31,8 @@ export const loadMetadataFailure = createAction(
 export const setAppInitialized = createAction('[App] Set App Initialized');
 
 export const toggleCommandsModal = createAction('[Commands] Toggle Commands Modal');
+
+export const loadDevCommitsSuccess = createAction(
+  '[Dev] Load Dev Commits Success',
+  props<{ commits: DevCommit[] }>()
+);

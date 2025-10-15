@@ -7,7 +7,8 @@ export const initialState: AppState = {
   aboutData: null,
   metadata: null,
   isInitialized: false,
-  commandsModalVisible: false
+  commandsModalVisible: false,
+  devCommits: []
 };
 
 export const appReducer = createReducer(
@@ -31,5 +32,9 @@ export const appReducer = createReducer(
   on(AppActions.toggleCommandsModal, (state) => ({
     ...state,
     commandsModalVisible: !state.commandsModalVisible
+  })),
+  on(AppActions.loadDevCommitsSuccess, (state, { commits }) => ({
+    ...state,
+    devCommits: commits
   }))
 );
