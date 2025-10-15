@@ -120,7 +120,7 @@ import { selectAboutIntro } from '../../store/app.selectors';
 })
 export class AboutComponent extends BaseSectionComponent {
   protected sectionLink = Links.about;
-  protected observerThreshold = 0.33;
+  protected observerThreshold = 0.6;
 
   aboutIntro$: Observable<AboutIntro | undefined>;
   aboutSection: ExpandableSection = { display: false, count: 0 };
