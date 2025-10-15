@@ -1814,34 +1814,42 @@
   {
     "id": "task-58",
     "title": "Refactor All Modals to Content-Based Sizing",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Update modal component default styles to use content-based width and height",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Set max-width to 728px for all modals",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Set max-height to 90vh or 800px (whichever is smaller)",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure modals don't take up more space than their content needs",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Test all modals (contact, dev-stats, etc.) to ensure proper sizing",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Make sure overflow behavior works correctly when content exceeds max dimensions",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/modal.ts`"
+    "location": "`src/app/shared/modal.ts`",
+    "completedDate": "2025-10-15T18:09:09-04:00",
+    "completedCommit": {
+      "hash": "bc422bc",
+      "fullHash": "bc422bc563621d2f103de7fecb646a1769fc7c67",
+      "subject": "Task 58: Refactor All Modals to Content-Based Sizing",
+      "date": "2025-10-15T18:09:09-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/bc422bc563621d2f103de7fecb646a1769fc7c67"
+    }
   },
   {
     "id": "task-59",

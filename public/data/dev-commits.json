@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "bc422bc563621d2f103de7fecb646a1769fc7c67",
+    "hash": "bc422bc",
+    "subject": "Task 58: Refactor All Modals to Content-Based Sizing",
+    "body": "- [x] Update modal component default styles to use content-based width and height\n- [x] Set max-width to 728px for all modals\n- [x] Set max-height to 90vh or 800px (whichever is smaller)\n- [x] Ensure modals don't take up more space than their content needs\n- [x] Test all modals (contact, dev-stats, etc.) to ensure proper sizing\n- [x] Make sure overflow behavior works correctly when content exceeds max dimensions\n- Location: \\`src/app/shared/modal.ts\\`\n\n[Task-58]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:09:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/bc422bc563621d2f103de7fecb646a1769fc7c67"
+  },
+  {
+    "fullHash": "eb0bfb9d53cd9c583226b2ed243f3ea49308d2e1",
+    "hash": "eb0bfb9",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:02:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/eb0bfb9d53cd9c583226b2ed243f3ea49308d2e1"
+  },
+  {
     "fullHash": "bcab63ef45d272b70d7b3f9fc9e1eaab4debdc93",
     "hash": "bcab63e",
     "subject": "Task 66: Replace Intersection Observer with NgRx Effect Scroll Listener",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:19:15-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/e156a030d66b1ce492538384128779ad702b41e2"
-  },
-  {
-    "fullHash": "e255f78bf6c44733bc951ef85380c8895884a4db",
-    "hash": "e255f78",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:18:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e255f78bf6c44733bc951ef85380c8895884a4db"
-  },
-  {
-    "fullHash": "09545fbdc663ac9e83e34d7065e1badc71ca7c24",
-    "hash": "09545fb",
-    "subject": "Task 11: Rename Component Files",
-    "body": "- [x] Rename all component files to remove `.component` from the file name\n- [x] Update all imports across the codebase\n- [x] Ensure Angular recognizes files correctly after renaming\n- Location: All `*.component.ts`, `*.component.html`, `*.component.css` files throughout the project\n\n[Task-11]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:18:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/09545fbdc663ac9e83e34d7065e1badc71ca7c24"
   }
 ]
