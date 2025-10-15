@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
+    "hash": "692bddf",
+    "subject": "Fix task completion commit detection and clean up task data",
+    "body": "[Task-20]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:39:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+  },
+  {
+    "fullHash": "6078dac37ab1852df521516407ddc8ae02f886f4",
+    "hash": "6078dac",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:37:32-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6078dac37ab1852df521516407ddc8ae02f886f4"
+  },
+  {
     "fullHash": "ffff11c21fa0bf4e3f4e4cdb6c23f4c911a03749",
     "hash": "ffff11c",
     "subject": "Update dev data files",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T15:41:31-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/26f47eb2291eca00240fff1c388eba6c3d5326df"
-  },
-  {
-    "fullHash": "b40d1387f113ce260e1b5ea350057e17c53ab845",
-    "hash": "b40d138",
-    "subject": "Add global collapsible button style and update employment-section to use it",
-    "body": "Created a shared .collapsible class in global styles using Tailwind utilities, replacing duplicated inline styles with the reusable class.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:38:58-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b40d1387f113ce260e1b5ea350057e17c53ab845"
-  },
-  {
-    "fullHash": "f0056770626afe9e28c41e9ace145620128cc077",
-    "hash": "f005677",
-    "subject": "Convert employment-section component styles to Tailwind utilities",
-    "body": "Migrated all CSS styles and inline styles to Tailwind utility classes for consistency and maintainability.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:36:17-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f0056770626afe9e28c41e9ace145620128cc077"
   }
 ]
