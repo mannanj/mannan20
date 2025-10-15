@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "4d9437f6216581ed19e8d56a3ff7a5db4e7f2625",
+    "hash": "4d9437f",
+    "subject": "Task 33: Add Email Validation to Contact Form",
+    "body": "- [x] Implement robust email validation for contact form input\n- [x] Add email format validation (RFC 5322 compliant)\n- [x] Show validation error messages for invalid email formats\n- [x] Prevent form submission with invalid email data\n- Location: `src/app/components/contact/contact-form.ts`\n\n[Task-33]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:35:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4d9437f6216581ed19e8d56a3ff7a5db4e7f2625"
+  },
+  {
+    "fullHash": "b874a0ba11d98743d49b59533f311644f0b6460b",
+    "hash": "b874a0b",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:34:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b874a0ba11d98743d49b59533f311644f0b6460b"
+  },
+  {
     "fullHash": "a4c3c4ffb4615707e70c1964f7bdb820eb3092e1",
     "hash": "a4c3c4f",
     "subject": "Task 13: Redesign Dev Stats Tab Interface",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T01:38:15-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/129e7111b7d4a4223dfd171752a1b4f9243cc757"
-  },
-  {
-    "fullHash": "5962d545d9f255804d81a20d038b92a6e992aa7f",
-    "hash": "5962d54",
-    "subject": "Task 30: Reduce Whitespace in Tasks Toolbar Header",
-    "body": "- [x] Reduce vertical padding in tasks toolbar container\n- [x] Adjust spacing above icons and buttons to minimal needed space\n- [x] Make toolbar height more compact while keeping icons/buttons readable\n- [x] Ensure visual balance with only slightly more space than necessary\n- [x] Test both card/table view icons and sort button alignment\n- Location: `src/app/shared/tasks-toolbar.ts`\n\n[Task-30]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:38:15-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5962d545d9f255804d81a20d038b92a6e992aa7f"
-  },
-  {
-    "fullHash": "f2bce9207cdfd621c2b61dc9e2d82356a91147d1",
-    "hash": "f2bce92",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:32:50-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f2bce9207cdfd621c2b61dc9e2d82356a91147d1"
   }
 ]
