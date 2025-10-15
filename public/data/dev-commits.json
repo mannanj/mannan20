@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "110d8f89ba94681674594bf456b4b1bc03ce2b9d",
+    "hash": "110d8f8",
+    "subject": "Update badge background to darker green",
+    "body": "Changed background color from #22c55e to #1a4d2e for better contrast with light green text (#4ade80).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:32:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/110d8f89ba94681674594bf456b4b1bc03ce2b9d"
+  },
+  {
+    "fullHash": "794066b01341cf0021edad14101e6fad5afc768c",
+    "hash": "794066b",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:31:21-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/794066b01341cf0021edad14101e6fad5afc768c"
+  },
+  {
     "fullHash": "c2b0acf2083e21aa9a2fcae51c514689ef5dcf8a",
     "hash": "c2b0acf",
     "subject": "Change badge text color back to green",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T01:31:01-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/dc4da681a10d534d00473c61549a504b3e71204d"
-  },
-  {
-    "fullHash": "0cf59c5027ea24a235cacd57de29b976bc2f79b2",
-    "hash": "0cf59c5",
-    "subject": "Task 41: Add Task Completion Verification to Workflow",
-    "body": "Updated instructions to verify codebase implementation before starting task, not just checkboxes in tasks.md.\n\n- [x] Update claude.md with instructions to check task completion status before starting\n- [x] Add step to verify all subtasks are not already marked complete\n- [x] Include instruction to mark task as complete and push if already done\n- [x] Ensure workflow prevents duplicate work on completed tasks\n- Location: `.claude/CLAUDE.md`\n\n[Task-41]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:31:01-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0cf59c5027ea24a235cacd57de29b976bc2f79b2"
-  },
-  {
-    "fullHash": "4aed96ec208cc773c4c0597456905f33102ad3f9",
-    "hash": "4aed96e",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:29:25-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/4aed96ec208cc773c4c0597456905f33102ad3f9"
   }
 ]
