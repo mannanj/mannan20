@@ -109,10 +109,20 @@ export interface TaskSubtask {
   completed: boolean;
 }
 
+export interface TaskCommit {
+  hash: string;
+  fullHash: string;
+  subject: string;
+  date: string;
+  url: string;
+}
+
 export interface Task {
   id: string;
   title: string;
   status: 'pending' | 'completed';
   subtasks: TaskSubtask[];
   location: string;
+  completedDate?: string;
+  completedCommit?: TaskCommit;
 }

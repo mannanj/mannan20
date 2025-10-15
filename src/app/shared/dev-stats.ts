@@ -1,12 +1,16 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ModalComponent } from './modal';
+import { TaskCard } from './task-card';
+import { TaskTable } from './task-table';
+import { TasksToolbar } from './tasks-toolbar';
 import { selectDevCommits, selectTasks } from '../store/app.selectors';
 
 @Component({
   selector: 'dev-stats',
-  imports: [AsyncPipe, DatePipe, ModalComponent],
+  imports: [AsyncPipe, DatePipe, ModalComponent, TaskCard, TaskTable, TasksToolbar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -96,27 +100,21 @@ import { selectDevCommits, selectTasks } from '../store/app.selectors';
           }
 
           @if (activeTab() === 'tasks') {
-            <div class="tasks-container">
-              @for (task of tasks$ | async; track task.id) {
-                <div class="task-card">
-                  <div class="task-header">
-                    <h3 class="task-title">{{ task.title }}</h3>
-                    <span class="task-status" [class.completed]="task.status === 'completed'">
-                      {{ task.status }}
-                    </span>
-                  </div>
-                  <div class="task-subtasks">
-                    @for (subtask of task.subtasks; track subtask.description) {
-                      <div class="subtask">
-                        <input type="checkbox" [checked]="subtask.completed" disabled />
-                        <span [class.completed]="subtask.completed">{{ subtask.description }}</span>
-                      </div>
-                    }
-                  </div>
-                  <div class="task-location">
-                    <span class="text-xs text-gray-500">{{ task.location }}</span>
-                  </div>
+            <div class="tasks-view">
+              <tasks-toolbar
+                [currentView]="taskView()"
+                [sortOrder]="sortOrder()"
+                (viewChange)="setTaskView($event)"
+                (sortToggle)="toggleSortOrder()" />
+
+              @if (taskView() === 'card') {
+                <div class="tasks-container">
+                  @for (task of sortedTasks(); track task.id) {
+                    <task-card [task]="task" />
+                  }
                 </div>
+              } @else {
+                <task-table [tasks]="sortedTasks()" />
               }
             </div>
           }
@@ -168,77 +166,18 @@ import { selectDevCommits, selectTasks } from '../store/app.selectors';
       overflow-x: auto;
     }
 
+    .tasks-view {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .tasks-container {
       max-height: 400px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 16px;
-    }
-
-    .task-card {
-      background: #2a2a2a;
-      border: 1px solid #404040;
-      border-radius: 8px;
-      padding: 12px;
-    }
-
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .task-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-      margin: 0;
-    }
-
-    .task-status {
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      text-transform: uppercase;
-      background: #404040;
-      color: #888;
-      font-weight: 600;
-    }
-
-    .task-status.completed {
-      background: #1a4d2e;
-      color: #4ade80;
-    }
-
-    .task-subtasks {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .subtask {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #ccc;
-    }
-
-    .subtask input[type="checkbox"] {
-      cursor: not-allowed;
-    }
-
-    .subtask span.completed {
-      text-decoration: line-through;
-      color: #666;
-    }
-
-    .task-location {
-      padding-top: 8px;
-      border-top: 1px solid #333;
     }
 
     @keyframes fadeIn {
@@ -258,8 +197,29 @@ export class DevStats {
 
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
+  protected taskView = signal<'card' | 'table'>('card');
+  protected sortOrder = signal<'asc' | 'desc'>('desc');
   protected devCommits$ = this.store.select(selectDevCommits);
   protected tasks$ = this.store.select(selectTasks);
+  protected tasksSignal = toSignal(this.tasks$, { initialValue: [] });
+
+  protected sortedTasks = computed(() => {
+    const tasks = this.tasksSignal();
+    if (!tasks || tasks.length === 0) return [];
+
+    const sorted = [...tasks].sort((a, b) => {
+      const dateA = a.completedDate ? new Date(a.completedDate).getTime() : 0;
+      const dateB = b.completedDate ? new Date(b.completedDate).getTime() : 0;
+
+      if (dateA === 0 && dateB === 0) return 0;
+      if (dateA === 0) return 1;
+      if (dateB === 0) return -1;
+
+      return this.sortOrder() === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+
+    return sorted;
+  });
 
   toggleModal() {
     this.isModalOpen.update(value => !value);
@@ -267,5 +227,13 @@ export class DevStats {
 
   setActiveTab(tab: 'commits' | 'services' | 'tasks') {
     this.activeTab.set(tab);
+  }
+
+  setTaskView(view: 'card' | 'table') {
+    this.taskView.set(view);
+  }
+
+  toggleSortOrder() {
+    this.sortOrder.update(order => order === 'asc' ? 'desc' : 'asc');
   }
 }

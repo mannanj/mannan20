@@ -48,7 +48,82 @@ console.log(JSON.stringify({ lastUpdated: latestDate }, null, 2));
 if [ -f "$TASKS_INPUT" ]; then
   node -e "
 const fs = require('fs');
+const { execSync } = require('child_process');
+
 const tasksMarkdown = fs.readFileSync('${TASKS_INPUT}', 'utf8');
+
+function findTaskCompletionCommit(taskNum, taskTitle) {
+  try {
+    const logOutput = execSync(
+      \`git log --all --format='%H|||%h|||%s|||%aI|||---END---' --follow -p -- ${TASKS_INPUT}\`,
+      { encoding: 'utf-8', shell: '/bin/bash' }
+    );
+
+    const commitPattern = /^commit ([a-f0-9]{40})/gm;
+    const commits = logOutput.split('|||---END---\\n').filter(e => e.trim());
+
+    for (const commitBlock of commits) {
+      const parts = commitBlock.split('|||');
+      if (parts.length < 4) continue;
+
+      const fullHash = parts[0].trim();
+      const shortHash = parts[1].trim();
+      const subject = parts[2].trim();
+      const date = parts[3].split('\\n')[0].trim();
+
+      const diffMatch = commitBlock.match(/### Task (\d+): (.+?)\\n([\\s\\S]*?)(?=###|diff|$)/g);
+      if (!diffMatch) continue;
+
+      for (const taskBlock of diffMatch) {
+        const taskMatch = taskBlock.match(/### Task (\d+): (.+?)\\n([\\s\\S]*)/);
+        if (!taskMatch) continue;
+
+        const blockTaskNum = taskMatch[1];
+        if (blockTaskNum !== taskNum) continue;
+
+        const content = taskMatch[3];
+        const allCheckboxes = content.match(/- \\[([x ])\\]/g) || [];
+        const checkedCount = allCheckboxes.filter(cb => cb.includes('x')).length;
+
+        if (checkedCount === allCheckboxes.length && allCheckboxes.length > 0) {
+          const commitMessageMatch = subject.match(/\\[Task[- ]?\${taskNum}\\]/i);
+
+          return {
+            hash: shortHash,
+            fullHash: fullHash,
+            subject: subject,
+            date: date,
+            url: '${REPO_URL}/commit/' + fullHash
+          };
+        }
+      }
+    }
+
+    const commitMsgCheck = execSync(
+      \`git log --all --format='%H|||%h|||%s|||%aI' --grep='\\[Task[- ]?\${taskNum}\\]' -i\`,
+      { encoding: 'utf-8', shell: '/bin/bash' }
+    ).trim();
+
+    if (commitMsgCheck) {
+      const lines = commitMsgCheck.split('\\n');
+      const latest = lines[lines.length - 1];
+      const parts = latest.split('|||');
+      if (parts.length >= 4) {
+        return {
+          hash: parts[1].trim(),
+          fullHash: parts[0].trim(),
+          subject: parts[2].trim(),
+          date: parts[3].trim(),
+          url: '${REPO_URL}/commit/' + parts[0].trim()
+        };
+      }
+    }
+  } catch (error) {
+    return null;
+  }
+
+  return null;
+}
 
 const tasks = [];
 const taskRegex = /### Task (\\d+): (.+?)\\n([\\s\\S]*?)(?=###|$)/g;
@@ -81,13 +156,23 @@ while ((taskMatch = taskRegex.exec(tasksMarkdown)) !== null) {
   const allCompleted = subtasks.length > 0 && subtasks.every(st => st.completed);
   const status = allCompleted ? 'completed' : 'pending';
 
-  tasks.push({
+  const task = {
     id: \`task-\${taskNum}\`,
     title: taskTitle,
     status,
     subtasks,
     location
-  });
+  };
+
+  if (status === 'completed') {
+    const commitInfo = findTaskCompletionCommit(taskNum, taskTitle);
+    if (commitInfo) {
+      task.completedDate = commitInfo.date;
+      task.completedCommit = commitInfo;
+    }
+  }
+
+  tasks.push(task);
 }
 
 console.log(JSON.stringify(tasks, null, 2));
