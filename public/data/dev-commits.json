@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "34b0f0628b23364782579e1e80a2e32698829f6e",
+    "hash": "34b0f06",
+    "subject": "Task 49: Fix AG Grid Table Overflow in Modal",
+    "body": "- [x] Remove domLayout=\"autoHeight\" and use normal layout\n- [x] Set fixed height container for grids with overflow-y: auto\n- [x] Ensure horizontal scrolling works when columns exceed container width\n- [x] Prevent tables from expanding beyond modal boundaries\n- [x] Reduce column header font size and padding for tighter appearance\n- [x] Test both commits and tasks tables for proper scrolling behavior\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`\n\n[Task-49]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:38:41-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/34b0f0628b23364782579e1e80a2e32698829f6e"
+  },
+  {
+    "fullHash": "593956a7ea81db65d1599ebebecc73d5d998fe14",
+    "hash": "593956a",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:37:06-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/593956a7ea81db65d1599ebebecc73d5d998fe14"
+  },
+  {
     "fullHash": "016b1853af52d5c771d52c36d203325a75207f51",
     "hash": "016b185",
     "subject": "Task 46: Style AG Grid Tables with Dark Theme",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:04:04-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/505f0589f7b4a08990da41a18b1056b76e43a00c"
-  },
-  {
-    "fullHash": "537cf5f726b451ec760a802275341fffde82d73d",
-    "hash": "537cf5f",
-    "subject": "Add task completion tracking and modularize dev-stats [Task-14] [Task-15]",
-    "body": "Task 14: Task completion tracking\n- Add completedDate and completedCommit fields to Task interface\n- Implement git history analysis to detect task completion\n- Support dual detection: diff analysis + commit message search\n- Display completion dates and linked commits in UI\n- Add table/card view toggle and sort by completion date\n- Create comprehensive TASKS_FEATURE.md documentation\n\nTask 15: Modularize dev-stats component\n- Extract task-card component (individual task display)\n- Extract task-table component (tabular task display)\n- Extract tasks-toolbar component (view/sort controls)\n- Reduce dev-stats.ts from 574 to 239 lines (58% reduction)\n- Improve code organization and reusability\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:04:04-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/537cf5f726b451ec760a802275341fffde82d73d"
-  },
-  {
-    "fullHash": "b2b225f9245d94df107b4521f77aca28d1207556",
-    "hash": "b2b225f",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:47:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b2b225f9245d94df107b4521f77aca28d1207556"
   }
 ]

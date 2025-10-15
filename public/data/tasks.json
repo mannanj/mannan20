@@ -1450,5 +1450,45 @@
       "date": "2025-10-15T11:34:41-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/e7587f86d5f4253056c8cbd04013f6f66c7ffba5"
     }
+  },
+  {
+    "id": "task-49",
+    "title": "Fix AG Grid Table Overflow in Modal",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Remove domLayout=\"autoHeight\" and use normal layout",
+        "completed": true
+      },
+      {
+        "description": "Set fixed height container for grids with overflow-y: auto",
+        "completed": true
+      },
+      {
+        "description": "Ensure horizontal scrolling works when columns exceed container width",
+        "completed": true
+      },
+      {
+        "description": "Prevent tables from expanding beyond modal boundaries",
+        "completed": true
+      },
+      {
+        "description": "Reduce column header font size and padding for tighter appearance",
+        "completed": true
+      },
+      {
+        "description": "Test both commits and tasks tables for proper scrolling behavior",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`",
+    "completedDate": "2025-10-15T11:38:41-04:00",
+    "completedCommit": {
+      "hash": "34b0f06",
+      "fullHash": "34b0f0628b23364782579e1e80a2e32698829f6e",
+      "subject": "Task 49: Fix AG Grid Table Overflow in Modal",
+      "date": "2025-10-15T11:38:41-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/34b0f0628b23364782579e1e80a2e32698829f6e"
+    }
   }
 ]
