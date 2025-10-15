@@ -131,7 +131,7 @@ export class TaskTable implements OnInit {
       cellRenderer: (params: ICellRendererParams) => {
         const status = params.value;
         if (status === 'completed') {
-          return `<span style="padding: 1px 6px; border-radius: 3px; font-size: 8px; text-transform: uppercase; background: #1a4d2e; color: #4ade80; font-weight: 600; display: inline-block;">COMPLETED</span>`;
+          return `<span style="padding: 2px; border-radius: 3px; font-size: 8px; text-transform: uppercase; background: #1a4d2e; color: #4ade80; font-weight: 600; display: inline-block; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;">COMPLETED</span>`;
         }
         return `<span style="padding: 1px 6px; border-radius: 3px; font-size: 8px; text-transform: uppercase; background: #404040; color: #888; font-weight: 600; display: inline-block;">${status.toUpperCase()}</span>`;
       }
