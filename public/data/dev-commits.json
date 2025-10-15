@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "5962d545d9f255804d81a20d038b92a6e992aa7f",
+    "hash": "5962d54",
+    "subject": "Task 30: Reduce Whitespace in Tasks Toolbar Header",
+    "body": "- [x] Reduce vertical padding in tasks toolbar container\n- [x] Adjust spacing above icons and buttons to minimal needed space\n- [x] Make toolbar height more compact while keeping icons/buttons readable\n- [x] Ensure visual balance with only slightly more space than necessary\n- [x] Test both card/table view icons and sort button alignment\n- Location: `src/app/shared/tasks-toolbar.ts`\n\n[Task-30]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:38:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5962d545d9f255804d81a20d038b92a6e992aa7f"
+  },
+  {
+    "fullHash": "f2bce9207cdfd621c2b61dc9e2d82356a91147d1",
+    "hash": "f2bce92",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:32:50-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f2bce9207cdfd621c2b61dc9e2d82356a91147d1"
+  },
+  {
     "fullHash": "1d9dae955f2cb7ec5d9ef0fb71cabb28d133a2e7",
     "hash": "1d9dae9",
     "subject": "Task 42: Sharpen Claude.md Documentation",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T21:52:51-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/fac18c4498dd498ba62ae05436f08c5978f52b6e"
-  },
-  {
-    "fullHash": "7fe879991998e1aee9f2498dbc48c0920da3485a",
-    "hash": "7fe8799",
-    "subject": "Fix date format to ISO 8601 for Safari compatibility",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:52:51-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7fe879991998e1aee9f2498dbc48c0920da3485a"
-  },
-  {
-    "fullHash": "700b9e1fb14349fd6c28a4514494e2330cc77bcb",
-    "hash": "700b9e1",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:49:04-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/700b9e1fb14349fd6c28a4514494e2330cc77bcb"
   }
 ]
