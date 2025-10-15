@@ -13,6 +13,7 @@ import { ColDef, ICellRendererParams } from 'ag-grid-community';
 @Component({
   selector: 'dev-stats',
   imports: [AsyncPipe, Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon, AgGridAngular],
+  providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
