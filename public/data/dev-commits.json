@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+    "hash": "78c0eec",
+    "subject": "Remove buggy diff-based fallback from task detection",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:37:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
+  },
+  {
+    "fullHash": "e01213e41a132d720f835cedbd6e93fb0cbb7c01",
+    "hash": "e01213e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:36:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e01213e41a132d720f835cedbd6e93fb0cbb7c01"
+  },
+  {
     "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
     "hash": "5f0641f",
     "subject": "Update dev data files",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T15:35:02-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/60ab88dc443831bfac3429e256775f2360d120e5"
-  },
-  {
-    "fullHash": "6e043eb89d60b8995d763b6d7cb1040c0d84434e",
-    "hash": "6e043eb",
-    "subject": "move section headings into child components and rename ContentCardData to ProfileItem",
-    "body": "- moved h2 elements into employment, extracurriculars, and education section components\n- renamed ContentCardData interface to ProfileItem for clearer semantic meaning\n- consolidated CAPITAL_ONE_EXPANDED_CONTENT into capitalOne.expandedContent property\n- added optional expandedContent property to ProfileItem interface\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:08:12-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/6e043eb89d60b8995d763b6d7cb1040c0d84434e"
-  },
-  {
-    "fullHash": "8e34bd08097974adcf2dea4bb5b2c090fbd9a8ae",
-    "hash": "8e34bd0",
-    "subject": "remove datas seribvice",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T12:34:57-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8e34bd08097974adcf2dea4bb5b2c090fbd9a8ae"
   }
 ]

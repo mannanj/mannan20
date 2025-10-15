@@ -22,13 +22,13 @@
       }
     ],
     "location": "`src/app/components/about/about.ts:290-336`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -50,13 +50,13 @@
       }
     ],
     "location": "`src/app/store/app.state.ts`, actions, reducers, selectors",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -70,13 +70,13 @@
       }
     ],
     "location": "`src/app/services/data.service.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -122,13 +122,13 @@
       }
     ],
     "location": "`src/app/animations/animations.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -146,13 +146,13 @@
       }
     ],
     "location": "`src/app/services/navigation.service.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -190,13 +190,13 @@
       }
     ],
     "location": "`src/app/components/contact/contact.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -298,13 +298,13 @@
       }
     ],
     "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -334,13 +334,13 @@
       }
     ],
     "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -370,13 +370,13 @@
       }
     ],
     "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -398,13 +398,13 @@
       }
     ],
     "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -426,13 +426,13 @@
       }
     ],
     "location": "`.githooks/post-commit`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
@@ -458,13 +458,13 @@
       }
     ],
     "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
-    "completedDate": "2025-10-14T23:36:34-04:00",
+    "completedDate": "2025-10-14T23:37:31-04:00",
     "completedCommit": {
-      "hash": "5f0641f",
-      "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-      "subject": "Update dev data files",
-      "date": "2025-10-14T23:36:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+      "hash": "78c0eec",
+      "fullHash": "78c0eecdaae6b6176b80b35864015a46043ce8f2",
+      "subject": "Remove buggy diff-based fallback from task detection",
+      "date": "2025-10-14T23:37:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
     }
   },
   {
