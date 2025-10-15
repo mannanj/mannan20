@@ -30,7 +30,12 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
           rows="4"
           class="w-full py-3 px-4 border border-[#404040] rounded-lg text-[0.9375rem] text-white bg-[#2a2a2a] transition-all duration-200 box-border resize-y font-[inherit] leading-normal placeholder:text-[#666] focus:outline-none focus:border-[#555] focus:bg-[#333] disabled:opacity-60 disabled:cursor-not-allowed"
           [placeholder]="placeholder"
-          [disabled]="isLoading"></textarea>
+          [disabled]="isLoading"
+          (blur)="validateInput()"></textarea>
+
+        <div *ngIf="emailError" class="text-red-500 text-sm mt-2 ml-1">
+          {{ emailError }}
+        </div>
 
         <div class="mt-4 relative">
           <button
@@ -103,19 +108,56 @@ export class ContactForm {
   userInput = '';
   isLoading = false;
   showTooltip = false;
+  emailError = '';
   readonly placeholder: string = 'Enter your name, email, or reason for reaching out'
+
+  private readonly EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+  isValidEmail(email: string): boolean {
+    return this.EMAIL_REGEX.test(email.trim());
+  }
+
+  hasEmailInInput(): boolean {
+    return this.userInput.trim().includes('@');
+  }
+
+  validateInput(): void {
+    const trimmed = this.userInput.trim();
+
+    if (this.hasEmailInInput()) {
+      const emailMatch = trimmed.match(/\S+@\S+/);
+      if (emailMatch) {
+        const email = emailMatch[0];
+        if (!this.isValidEmail(email)) {
+          this.emailError = 'Please enter a valid email address';
+          return;
+        }
+      }
+    }
+
+    this.emailError = '';
+  }
 
   isValid(): boolean {
     const trimmed = this.userInput.trim();
-    if (trimmed.includes('@')) {
-      return true;
+
+    if (this.hasEmailInInput()) {
+      const emailMatch = trimmed.match(/\S+@\S+/);
+      if (emailMatch) {
+        const email = emailMatch[0];
+        return this.isValidEmail(email);
+      }
+      return false;
     }
+
     const words = trimmed.split(/\s+/).filter(word => word.length > 0);
     return words.length >= 2;
   }
 
   onSubmit() {
-    if (!this.isValid()) {
+    this.validateInput();
+
+    if (!this.isValid() || this.emailError) {
       return;
     }
 
@@ -127,5 +169,6 @@ export class ContactForm {
     this.userInput = '';
     this.isLoading = false;
     this.showTooltip = false;
+    this.emailError = '';
   }
 }
