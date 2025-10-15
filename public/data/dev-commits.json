@@ -1,11 +1,20 @@
 [
   {
+    "fullHash": "5445827769f1fc7888e68a619d0803aaa268811e",
+    "hash": "5445827",
+    "subject": "Enhance dev stats modal with custom SVG icon and tabbed interface",
+    "body": "Replace emoji icon with custom animated SVG featuring wave gradient design and version number. Implement tabbed navigation system with Git Commits and Services Status tabs, including smooth fade-in animations and active state styling. Add placeholder for upcoming services monitoring feature with centered loading state design.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:28:25-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5445827769f1fc7888e68a619d0803aaa268811e"
+  },
+  {
     "fullHash": "89efe3df620c0976d2c63bf1a254d955426471c8",
     "hash": "89efe3d",
     "subject": "Update dev data files",
     "body": "",
     "author": "Mannan Javid",
-    "date": "2025-10-14 22:25:02 -0400",
+    "date": "2025-10-14T22:25:02-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/89efe3df620c0976d2c63bf1a254d955426471c8"
   },
   {
@@ -14,7 +23,7 @@
     "subject": "Simplify intersection observer to use highest visibility ratio",
     "body": "Removed per-component threshold configuration in favor of automatic selection based on which section occupies the most viewport space. This eliminates the need for manual threshold tuning and fixes active link detection for tall sections.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
     "author": "Mannan Javid",
-    "date": "2025-10-14 22:25:02 -0400",
+    "date": "2025-10-14T22:25:02-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/f3ed40a7111ccce694e219fbe018f0f11b9de0f8"
   },
   {
@@ -23,7 +32,7 @@
     "subject": "Update dev data files",
     "body": "",
     "author": "Mannan Javid",
-    "date": "2025-10-14 22:05:13 -0400",
+    "date": "2025-10-14T22:05:13-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/1515c000f09453e2355b1fd1fb288e460dbe334c"
   },
   {
@@ -32,7 +41,7 @@
     "subject": "Remove NavigationService and migrate to NgRx with helper functions",
     "body": "Refactored navigation logic to use NgRx state management and helper functions instead of a dedicated service:\n\n- Moved navigation logic to helper functions (navigateTo, createIntersectionObserver)\n- Updated BaseSectionComponent to inject Store directly and use helpers\n- Updated all components (Home, About, Contact, Header) to use navigateTo helper\n- Removed NavigationService and its spec file\n- Maintained all intersection observer functionality with improved state management\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
     "author": "Mannan Javid",
-    "date": "2025-10-14 22:05:13 -0400",
+    "date": "2025-10-14T22:05:13-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/5b0eceaccbe77aa4584496978c5961e381a0c3b2"
   },
   {
@@ -41,7 +50,7 @@
     "subject": "Update dev data files",
     "body": "",
     "author": "Mannan Javid",
-    "date": "2025-10-14 22:01:55 -0400",
+    "date": "2025-10-14T22:01:55-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/5c2b6ca90808f582b7a98f7687658dd5caf7bcf6"
   },
   {
@@ -50,7 +59,7 @@
     "subject": "Add secret handshake access system to features backlog",
     "body": "Documents planned feature for passcode-based access control with modal interface and NgRx state management.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
     "author": "Mannan Javid",
-    "date": "2025-10-14 22:01:55 -0400",
+    "date": "2025-10-14T22:01:55-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/a47752cfe08eeff7f2ae0957ff6820dab6018cfc"
   },
   {
@@ -59,7 +68,7 @@
     "subject": "Update dev data files",
     "body": "",
     "author": "Mannan Javid",
-    "date": "2025-10-14 21:57:47 -0400",
+    "date": "2025-10-14T21:57:47-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/c70b057e67dad24e9e307187de99ad484c59a949"
   },
   {
@@ -68,16 +77,7 @@
     "subject": "Fix intersection observer with continuous threshold updates",
     "body": "The previous fix compared stale intersection ratios. Now using an array of thresholds (0, 0.05, 0.1, ..., 1.0) to ensure the observer continuously updates intersection ratios as sections scroll into view. This ensures the most visible section is accurately detected and set as active.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
     "author": "Mannan Javid",
-    "date": "2025-10-14 21:57:47 -0400",
+    "date": "2025-10-14T21:57:47-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/1bf4ef4b739b167e386fb556b358ea3b2f0de3a3"
-  },
-  {
-    "fullHash": "d111a958cbb20f6f7badaa56c2f8393cb8391040",
-    "hash": "d111a95",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 21:56:04 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/d111a958cbb20f6f7badaa56c2f8393cb8391040"
   }
 ]
