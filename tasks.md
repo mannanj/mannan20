@@ -361,3 +361,12 @@
 - [x] Reduce column header font size and padding for tighter appearance
 - [x] Test both commits and tasks tables for proper scrolling behavior
 - Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`
+
+### Task 50: Fix AG Grid Performance Issues
+- [ ] Investigate slow AG Grid rendering and interaction
+- [ ] Check for subscription leaks in dev-stats, task-table, and tasks-container
+- [ ] Verify proper cleanup with OnDestroy lifecycle hook if needed
+- [ ] Optimize grid configuration (disable unused features, row animations)
+- [ ] Consider virtualizing rows if dataset is large
+- [ ] Profile performance and verify improvements
+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/tasks-container.ts`
