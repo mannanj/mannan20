@@ -54,6 +54,24 @@ const tasksMarkdown = fs.readFileSync('${TASKS_INPUT}', 'utf8');
 
 function findTaskCompletionCommit(taskNum, taskTitle) {
   try {
+    const commitMsgCheck = execSync(
+      \`git log --format='%H|||%h|||%s|||%aI' --grep='\\[Task.\\?${taskNum}\\]' -i -1\`,
+      { encoding: 'utf-8', shell: '/bin/bash' }
+    ).trim();
+
+    if (commitMsgCheck) {
+      const parts = commitMsgCheck.split('|||');
+      if (parts.length >= 4) {
+        return {
+          hash: parts[1].trim(),
+          fullHash: parts[0].trim(),
+          subject: parts[2].trim(),
+          date: parts[3].trim(),
+          url: '${REPO_URL}/commit/' + parts[0].trim()
+        };
+      }
+    }
+
     const logOutput = execSync(
       \`git log --all --format='%H|||%h|||%s|||%aI|||---END---' --follow -p -- ${TASKS_INPUT}\`,
       { encoding: 'utf-8', shell: '/bin/bash' }
@@ -87,8 +105,6 @@ function findTaskCompletionCommit(taskNum, taskTitle) {
         const checkedCount = allCheckboxes.filter(cb => cb.includes('x')).length;
 
         if (checkedCount === allCheckboxes.length && allCheckboxes.length > 0) {
-          const commitMessageMatch = subject.match(/\\[Task[- ]?${taskNum}\\]/i);
-
           return {
             hash: shortHash,
             fullHash: fullHash,
@@ -97,26 +113,6 @@ function findTaskCompletionCommit(taskNum, taskTitle) {
             url: '${REPO_URL}/commit/' + fullHash
           };
         }
-      }
-    }
-
-    const commitMsgCheck = execSync(
-      \`git log --all --format='%H|||%h|||%s|||%aI' --grep='\\[Task[- ]?${taskNum}\\]' -i\`,
-      { encoding: 'utf-8', shell: '/bin/bash' }
-    ).trim();
-
-    if (commitMsgCheck) {
-      const lines = commitMsgCheck.split('\\n');
-      const latest = lines[0];
-      const parts = latest.split('|||');
-      if (parts.length >= 4) {
-        return {
-          hash: parts[1].trim(),
-          fullHash: parts[0].trim(),
-          subject: parts[2].trim(),
-          date: parts[3].trim(),
-          url: '${REPO_URL}/commit/' + parts[0].trim()
-        };
       }
     }
   } catch (error) {
