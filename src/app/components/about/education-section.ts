@@ -26,8 +26,8 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
           <content-card *ngIf="section.count === 2 && (projects$ | async)" [data]="(projects$ | async)!['dome']" [applyMarginTop]="true"></content-card>
         </div>
 
-        <button *ngIf="section.count < 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(true)">more</button>
-        <button *ngIf="section.count === 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(false)">less</button>
+        <button *ngIf="section.count < 2" type="button" class="collapsible" (click)="toggle(true)">more</button>
+        <button *ngIf="section.count === 2" type="button" class="collapsible" (click)="toggle(false)">less</button>
       </div>
     </div>
   `,

@@ -31,8 +31,8 @@ import { navigateTo } from '../../utils/help';
           </p>
         </div>
 
-        <button *ngIf="!aboutSection.display" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleAbout(true)">more</button>
-        <button *ngIf="aboutSection.display" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white rounded-[5px] text-left text-[9px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleAbout(false)">less</button>
+        <button *ngIf="!aboutSection.display" type="button" class="collapsible" (click)="toggleAbout(true)">more</button>
+        <button *ngIf="aboutSection.display" type="button" class="collapsible" (click)="toggleAbout(false)">less</button>
       </div>
 
       <employment-section></employment-section>
