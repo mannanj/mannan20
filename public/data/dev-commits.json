@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "c384ab87141101902529ee4050991b4f5289abd9",
+    "hash": "c384ab8",
+    "subject": "Task 69: Compress Status Badge and Add White Text Stroke",
+    "body": "- [x] Reduce padding on COMPLETED status badge to only 2px around text\n- [x] Add white stroke/outline to COMPLETED text for better visibility\n- [x] Tighten background to fit snugly around text with minimal padding\n- [x] Update status badge styling in task-table cellRenderer\n- [x] Ensure text remains readable with new compact styling\n- [x] Test appearance in both table and card views\n- Location: `src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`\n\n[Task-69]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:23:49-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/c384ab87141101902529ee4050991b4f5289abd9"
+  },
+  {
+    "fullHash": "d3f4c7135b23b776bdc30b4817e228653fdb305e",
+    "hash": "d3f4c71",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:20:05-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d3f4c7135b23b776bdc30b4817e228653fdb305e"
+  },
+  {
     "fullHash": "1a8b8f9239b276ef39eed1490a2c0bd46228cb4c",
     "hash": "1a8b8f9",
     "subject": "Task 67: Fix AG Grid Deprecated Property Warning",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T01:11:49-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/a229f66fb68edb5df1a5189617b9584269390bd8"
-  },
-  {
-    "fullHash": "a2694b7bb588332474511eeeb4ef15eee6506652",
-    "hash": "a2694b7",
-    "subject": "Remove borders and focus outlines from all modal buttons",
-    "body": "Consolidated commit for all border/outline removal fixes:\n- Remove blue border from Continue with Google button in contact form\n- Remove borders from tasks toolbar icon buttons (card/table view)\n- Remove borders from tasks toolbar sort button\n- Remove focus outlines from modal icon buttons\n- Remove focus outlines from task card/table links and checkboxes\n- Override global button styles with !important for all modal buttons\n- Add focus:outline-none to prevent browser default focus styling\n\nThis fixes unwanted blue borders caused by global button styles in styles.css\naffecting buttons and links within modals.\n\nFiles modified:\n- src/app/components/contact/contact-form.ts\n- src/app/shared/dev-stats.ts\n- src/app/shared/tasks-toolbar.ts\n- src/app/shared/task-card.ts\n- src/app/shared/task-table.ts\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T01:11:49-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a2694b7bb588332474511eeeb4ef15eee6506652"
-  },
-  {
-    "fullHash": "f1ec52bece4e8764d705bc6d7c451a4370a71633",
-    "hash": "f1ec52b",
-    "subject": "Task 29: Revert Modal Component to Original Styling",
-    "body": "- [x] Compare current modal.ts with pre-refactor version\n- [x] Remove blue border from X icon and buttons\n- [x] Move close button back to top-right position\n- [x] Restore original modal backdrop and content styling\n- [x] Revert to CSS classes instead of inline Tailwind utilities\n- [x] Verify all modals display correctly after changes\n- Location: \\`src/app/shared/modal.ts\\`\n\n[Task-29]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:57:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f1ec52bece4e8764d705bc6d7c451a4370a71633"
   }
 ]

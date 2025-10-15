@@ -2290,34 +2290,42 @@
   {
     "id": "task-69",
     "title": "Compress Status Badge and Add White Text Stroke",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Reduce padding on COMPLETED status badge to only 2px around text",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Add white stroke/outline to COMPLETED text for better visibility",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Tighten background to fit snugly around text with minimal padding",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Update status badge styling in task-table cellRenderer",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure text remains readable with new compact styling",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Test appearance in both table and card views",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`"
+    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
+    "completedDate": "2025-10-15T19:23:49-04:00",
+    "completedCommit": {
+      "hash": "c384ab8",
+      "fullHash": "c384ab87141101902529ee4050991b4f5289abd9",
+      "subject": "Task 69: Compress Status Badge and Add White Text Stroke",
+      "date": "2025-10-15T19:23:49-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/c384ab87141101902529ee4050991b4f5289abd9"
+    }
   },
   {
     "id": "task-70",
