@@ -322,3 +322,32 @@
 - [x] Configure different modal widths for small, md, and lg screen sizes
 - [x] Configure ag-grid column widths (narrow author, wider task titles, full date visibility)
 - Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/modal.ts`
+
+### Task 46: Style AG Grid Tables with Dark Theme
+- [ ] Change ag-grid background color to black
+- [ ] Set text color to white or appropriate gray for visibility
+- [ ] Keep link colors blue for commit hashes
+- [ ] Make task status badge colors more gray while maintaining readability
+- [ ] Prevent table from overflowing modal container
+- [ ] Ensure vertical scrollbar appears when content exceeds container height
+- [ ] Apply custom dark theme styling to both commits and tasks grids
+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`
+
+### Task 47: Add Search Functionality to AG Grid Tables
+- [ ] Research AG Grid official documentation for search/filter implementation
+- [ ] Add search input field above git commits table
+- [ ] Add search input field above tasks table
+- [ ] Implement quick filter functionality using AG Grid API
+- [ ] Style search inputs to match dark theme
+- [ ] Ensure search works across all visible columns
+- [ ] Add clear search button or functionality
+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`
+
+### Task 48: Fix Empty Tasks Column in Tasks Table
+- [ ] Debug why task title column shows empty values
+- [ ] Verify field mapping in column definitions matches data structure
+- [ ] Check if Task interface property names match ag-grid field names
+- [ ] Ensure task data is properly passed to ag-grid component
+- [ ] Test with console logging to verify data availability
+- [ ] Fix column definition to properly display task titles
+- Location: `src/app/shared/task-table.ts`, `src/app/models/models.ts`
