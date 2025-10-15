@@ -690,5 +690,37 @@
       "date": "2025-10-15T00:43:24-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/db8102e6b8ab972498317ffa290ef33301d494dd"
     }
+  },
+  {
+    "id": "task-27",
+    "title": "Fix Text Color in Expanded More Sections",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Fix employment-section expanded content to show black text on light background",
+        "completed": true
+      },
+      {
+        "description": "Fix education-section expanded content to show black text on light background",
+        "completed": true
+      },
+      {
+        "description": "Ensure .content class properly styles nested elements",
+        "completed": true
+      },
+      {
+        "description": "Verify text is readable when more sections are expanded",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/about/content-card.ts`, `src/app/components/about/education-section.ts`, `src/styles.css`",
+    "completedDate": "2025-10-15T00:50:17-04:00",
+    "completedCommit": {
+      "hash": "a3f7475",
+      "fullHash": "a3f747594347e83d46e8aa4c6afe784371f776ca",
+      "subject": "Task 27: Fix Text Color in Expanded More Sections",
+      "date": "2025-10-15T00:50:17-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/a3f747594347e83d46e8aa4c6afe784371f776ca"
+    }
   }
 ]

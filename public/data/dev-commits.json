@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "a3f747594347e83d46e8aa4c6afe784371f776ca",
+    "hash": "a3f7475",
+    "subject": "Task 27: Fix Text Color in Expanded More Sections",
+    "body": "- [x] Fix employment-section expanded content to show black text on light background\n- [x] Fix education-section expanded content to show black text on light background\n- [x] Ensure .content class properly styles nested elements\n- [x] Verify text is readable when more sections are expanded\n- Location: `src/app/components/about/content-card.ts`, `src/app/components/about/education-section.ts`, `src/styles.css`\n\n[Task-27]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:50:17-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a3f747594347e83d46e8aa4c6afe784371f776ca"
+  },
+  {
+    "fullHash": "e8235702ba0c0da69d58db4bf1601aeb7433c475",
+    "hash": "e823570",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:43:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e8235702ba0c0da69d58db4bf1601aeb7433c475"
+  },
+  {
     "fullHash": "e479a0e3834c7635f635cdd74e63b16ca290f934",
     "hash": "e479a0e",
     "subject": "Task 25: Update Documentation with Tailwind Styling Requirements",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T20:43:42-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/b34d08fd6daa7b57f3ac558841600db905cc835b"
-  },
-  {
-    "fullHash": "05e8ef824f8cc36f54b4952bdb333cb2f0ddb0e8",
-    "hash": "05e8ef8",
-    "subject": "Fix viewer count to include local user on connection",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:38:14-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/05e8ef824f8cc36f54b4952bdb333cb2f0ddb0e8"
-  },
-  {
-    "fullHash": "33675f394451e871312379e770f6b20b2bc14eed",
-    "hash": "33675f3",
-    "subject": "Add Esc key to toggle cursor visibility when modal is closed",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:37:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/33675f394451e871312379e770f6b20b2bc14eed"
   }
 ]
