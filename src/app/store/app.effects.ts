@@ -6,7 +6,8 @@ import { map, catchError, mergeMap, withLatestFrom, filter } from 'rxjs/operator
 import { of } from 'rxjs';
 import * as AppActions from './app.actions';
 import * as AppSelectors from './app.selectors';
-import { AboutData, Metadata } from '../models/models';
+import { AboutData, Metadata, DevCommit } from '../models/models';
+import { isDevMode } from '../utils/cookies';
 
 @Injectable()
 export class AppEffects {
@@ -53,6 +54,22 @@ export class AppEffects {
       ),
       filter(([, aboutData, metadata]) => aboutData !== null && metadata !== null),
       map(() => AppActions.setAppInitialized())
+    )
+  );
+
+  loadDevCommits$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ROOT_EFFECTS_INIT),
+      filter(() => isDevMode()),
+      mergeMap(() =>
+        this.http.get<DevCommit[]>('assets/dev-commits.json').pipe(
+          map(commits => AppActions.loadDevCommitsSuccess({ commits })),
+          catchError((error) => {
+            console.error('Error loading dev commits:', error);
+            return of();
+          })
+        )
+      )
     )
   );
 }

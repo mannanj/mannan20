@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "9bd8ba342d0d3c319db2c73a79e10c29ede122a7",
+    "hash": "9bd8ba3",
+    "subject": "Add dev stats feature with git commit history",
+    "body": "Add cookie-based dev mode feature that displays recent git commits in a modal.\nWhen isMannanDev=1 cookie is set, a stats icon appears in the bottom-left.\nClicking it shows the last 9 commits with hash links, subjects, authors, and dates.\n\nGit pre-commit hook automatically updates dev-commits.json on each commit.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:00:51 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/9bd8ba342d0d3c319db2c73a79e10c29ede122a7"
+  },
+  {
     "fullHash": "ff7a43f667c649e12430011cbba014ef4ea9f517",
     "hash": "ff7a43f",
     "subject": "Fix about section intersection observer threshold",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 20:24:42 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/88bdd014c2ebfee92fee0a1bd3824b998ed296ad"
-  },
-  {
-    "fullHash": "fb6164a707478bed5a6b41310c78e1eacd0fdbf3",
-    "hash": "fb6164a",
-    "subject": "Update components to use cursor selectors",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:23:00 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/fb6164a707478bed5a6b41310c78e1eacd0fdbf3"
   }
 ]

@@ -10,6 +10,7 @@ import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
 import { DevStats } from "./shared/dev-stats";
 import { selectIsCursorPartyConnected } from './store/cursor.selectors';
+import { selectDevCommits } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
@@ -38,7 +39,9 @@ import { selectIsCursorPartyConnected } from './store/cursor.selectors';
         <viewer-stats />
       }
       <last-updated />
-      <dev-stats />
+      @if (hasDevCommits()) {
+        <dev-stats />
+      }
       <keyboard-commands-modal />
     </div>
   `,
@@ -75,10 +78,15 @@ export class AppComponent implements OnInit {
   title = 'mannan';
   private store = inject(Store);
   protected isConnected = signal(false);
+  protected hasDevCommits = signal(false);
 
   ngOnInit() {
     this.store.select(selectIsCursorPartyConnected).subscribe(connected => {
       this.isConnected.set(connected);
+    });
+
+    this.store.select(selectDevCommits).subscribe(commits => {
+      this.hasDevCommits.set(commits.length > 0);
     });
   }
 }
