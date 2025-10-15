@@ -1,21 +1,24 @@
-import { AfterViewInit, Directive, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { Links } from '../models/models';
-import { NavigationService } from '../services/navigation.service';
+import { createIntersectionObserver } from '../utils/help';
 
 @Directive()
 export abstract class BaseSectionComponent implements AfterViewInit, OnDestroy {
   @ViewChild('main') elementRef!: ElementRef;
 
+  protected store = inject(Store);
   protected intersectionObserver!: IntersectionObserver;
   protected abstract sectionLink: Links;
   protected abstract observerThreshold: number;
-
-  constructor(protected navService: NavigationService) {}
+  protected static intersectingSections = new Map<Links, IntersectionObserverEntry>();
 
   ngAfterViewInit(): void {
-    this.intersectionObserver = this.navService.makeIntersectionObsAndSetFlags(
+    this.intersectionObserver = createIntersectionObserver(
+      this.store,
       this.sectionLink,
-      this.observerThreshold
+      this.observerThreshold,
+      BaseSectionComponent.intersectingSections
     );
     this.intersectionObserver.observe(this.elementRef.nativeElement);
   }

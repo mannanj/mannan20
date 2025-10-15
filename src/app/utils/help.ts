@@ -1,4 +1,6 @@
+import { Store } from "@ngrx/store";
 import { Links } from "../models/models";
+import { setSelectedLink } from "../store/app.actions";
 
 export function scrollToSection(section: Links): void {
   const elem: HTMLElement | null = document.getElementById(section);
@@ -29,6 +31,50 @@ export function determineOffsetPx(link: Links): number {
     }
   }
   return document.documentElement.clientHeight * offsetRatio;
+}
+
+export function navigateTo(store: Store, link: Links): void {
+  store.dispatch(setSelectedLink({ link }));
+  scrollToSection(link);
+}
+
+export function createIntersectionObserver(
+  store: Store,
+  component: Links,
+  threshold: number,
+  intersectingSections: Map<Links, IntersectionObserverEntry>
+): IntersectionObserver {
+  const thresholds = Array.from({ length: 21 }, (_, i) => i * 0.05);
+  const sectionOrder = [Links.home, Links.about, Links.contact];
+
+  return new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= threshold) {
+          intersectingSections.set(component, entry);
+        } else if (entry.intersectionRatio < threshold) {
+          intersectingSections.delete(component);
+        }
+      });
+
+      if (intersectingSections.size === 0) return;
+
+      let maxRatio = 0;
+      let activeSection: Links | null = null;
+
+      intersectingSections.forEach((entry, section) => {
+        if (entry.intersectionRatio > maxRatio) {
+          maxRatio = entry.intersectionRatio;
+          activeSection = section;
+        }
+      });
+
+      if (activeSection) {
+        store.dispatch(setSelectedLink({ link: activeSection }));
+      }
+    },
+    { threshold: thresholds }
+  );
 }
 
 export function getPhoneLink(phone: string): string {

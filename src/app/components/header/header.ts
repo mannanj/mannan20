@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { AppState, Links } from '../../models/models';
 import { selectSelectedLink } from '../../store/app.selectors';
-import { NavigationService } from '../../services/navigation.service';
+import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'header',
@@ -21,7 +21,7 @@ import { NavigationService } from '../../services/navigation.service';
             [id]="link + '-link'"
             [class.selected]="(selectedLink$ | async) === link"
             class="link"
-            (click)="navService.goTo(link)"
+            (click)="goTo(link)"
           >
             {{ link | titlecase }}
           </a>
@@ -96,8 +96,11 @@ import { NavigationService } from '../../services/navigation.service';
   `]
 })
 export class HeaderComponent {
+  private store = inject(Store<AppState>);
   selectedLink$: Observable<Links> = this.store.select(selectSelectedLink);
   linksArray: Links[] = [Links.home, Links.about, Links.contact];
 
-  constructor(private store: Store<AppState>, public navService: NavigationService) {}
+  goTo(link: Links): void {
+    navigateTo(this.store, link);
+  }
 }

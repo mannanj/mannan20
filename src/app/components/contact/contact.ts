@@ -1,12 +1,12 @@
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Links, ContactResult } from '../../models/models';
-import { NavigationService } from '../../services/navigation.service';
 import { scaleIn, fadeIn, slideInLeft } from '../../animations/animations';
 import { BaseSectionComponent } from '../../shared/base-section.component';
 import { ModalComponent } from '../../shared/modal';
 import { ContactFormComponent } from './contact-form';
 import { ContactResultComponent } from './contact-result';
+import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'contact',
@@ -29,7 +29,7 @@ import { ContactResultComponent } from './contact-result';
         </div>
         <p class="margin-0 margin-top-12">Alexandria, Virginia</p>
       </div>
-      <button (click)="navService.goTo(navService.Links.home)" class="margin-top-50" @fadeIn>Back to Top</button>
+      <button (click)="goToHome()" class="margin-top-50" @fadeIn>Back to Top</button>
     </div>
 
     <modal [isOpen]="isModalOpen" (close)="closeModal()">
@@ -156,10 +156,6 @@ export class ContactComponent extends BaseSectionComponent {
   showResult = false;
   result: ContactResult | null = null;
 
-  constructor(navService: NavigationService) {
-    super(navService);
-  }
-
   openModal() {
     this.isModalOpen = true;
   }
@@ -182,5 +178,9 @@ export class ContactComponent extends BaseSectionComponent {
         phone: '+1 (571) 228-8302'
       };
     }, 2000);
+  }
+
+  goToHome(): void {
+    navigateTo(this.store, Links.home);
   }
 }

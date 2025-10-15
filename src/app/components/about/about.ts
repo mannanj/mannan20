@@ -1,15 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { Links, AboutIntro, ExpandableSection } from '../../models/models';
-import { NavigationService } from '../../services/navigation.service';
 import { fadeIn, scaleIn, slideInLeft, slideInRight } from '../../animations/animations';
 import { BaseSectionComponent } from '../../shared/base-section.component';
 import { EmploymentSectionComponent } from './employment-section.component';
 import { ExtracurricularsSectionComponent } from './extracurriculars-section.component';
 import { EducationSectionComponent } from './education-section.component';
 import { selectAboutIntro } from '../../store/app.selectors';
+import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'about',
@@ -41,7 +41,7 @@ import { selectAboutIntro } from '../../store/app.selectors';
 
       <education-section></education-section>
 
-      <button (click)="navService.goTo(navService.Links.contact)" class="margin-top-60">Get In Touch</button>
+      <button (click)="goToContact()" class="margin-top-60">Get In Touch</button>
     </div>
   `,
   styles: [`
@@ -122,13 +122,9 @@ export class AboutComponent extends BaseSectionComponent {
   protected sectionLink = Links.about;
   protected observerThreshold = 0.6;
 
-  aboutIntro$: Observable<AboutIntro | undefined>;
+  private localStore = inject(Store);
+  aboutIntro$: Observable<AboutIntro | undefined> = this.localStore.select(selectAboutIntro);
   aboutSection: ExpandableSection = { display: false, count: 0 };
-
-  constructor(navService: NavigationService, private store: Store) {
-    super(navService);
-    this.aboutIntro$ = this.store.select(selectAboutIntro);
-  }
 
   toggleAbout(expand: boolean): void {
     this.aboutSection.display = expand;
@@ -137,5 +133,9 @@ export class AboutComponent extends BaseSectionComponent {
     } else {
       this.aboutSection.count = 0;
     }
+  }
+
+  goToContact(): void {
+    navigateTo(this.store, Links.contact);
   }
 }
