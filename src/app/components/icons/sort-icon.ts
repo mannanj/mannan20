@@ -4,7 +4,7 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
   selector: 'sort-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <svg class="block" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M11 5h10M11 9h7M11 13h4"/>
       @if (direction() === 'asc') {
         <path d="M4 16l4 4 4-4M8 20V4"/>

@@ -298,3 +298,10 @@
 - [x] Ensure all important best practices remain intact
 - [x] Reorganize sections for better flow if needed
 - Location: `.claude/CLAUDE.md`
+
+### Task 43: Aggressively Minimize Tasks Toolbar Vertical Space
+- [ ] Remove all vertical padding from toolbar container
+- [ ] Remove all vertical padding from icon and sort buttons
+- [ ] Make toolbar as compact as possible with minimal whitespace
+- [ ] Ensure icons and text remain visible and clickable
+- Location: `src/app/shared/tasks-toolbar.ts`
