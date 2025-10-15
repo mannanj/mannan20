@@ -6,6 +6,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
 
 import { appReducer } from './store/app.reducer';
+import { cursorReducer } from './store/cursor.reducer';
 import { AppEffects } from './store/app.effects';
 
 export const appConfig: ApplicationConfig = {
@@ -13,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideAnimations(),
     provideHttpClient(),
-    provideStore({ app: appReducer }),
+    provideStore({ app: appReducer, cursor: cursorReducer }),
     provideEffects([AppEffects]),
     provideStoreDevtools({
       maxAge: 25,
