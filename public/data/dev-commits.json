@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "5a02e6ed1fd572f2ac3ac2c7c2fae61e047cbff7",
+    "hash": "5a02e6e",
+    "subject": "Task 50: Fix AG Grid Performance Issues",
+    "body": "- [x] Investigate slow AG Grid rendering and interaction\n- [x] Check for subscription leaks in dev-stats, task-table, and tasks-container\n- [x] Verify proper cleanup with OnDestroy lifecycle hook if needed\n- [x] Optimize grid configuration (disable unused features, row animations)\n- [x] Consider virtualizing rows if dataset is large\n- [x] Profile performance and verify improvements\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/tasks-container.ts`\n\n[Task-50]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:40:33-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5a02e6ed1fd572f2ac3ac2c7c2fae61e047cbff7"
+  },
+  {
+    "fullHash": "b4f7307cc1b34826e8e5e67a525754d5613e0fb4",
+    "hash": "b4f7307",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:39:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b4f7307cc1b34826e8e5e67a525754d5613e0fb4"
+  },
+  {
     "fullHash": "79d6ba7ebae79836ab4c38949389b6581897050d",
     "hash": "79d6ba7",
     "subject": "Add Task 50: Fix AG Grid Performance Issues",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:14:15-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/75a92a615fd858daefeabe79e91797aad3ec0949"
-  },
-  {
-    "fullHash": "43ed1331f7fef449196524a84e5fd58ddf46cbe5",
-    "hash": "43ed133",
-    "subject": "Refactor dev-stats for single responsibility and fix date logic",
-    "body": "Task 16: Refactored dev-stats component to follow single responsibility principle\n- Created tasks-container component to encapsulate task-specific state\n- Moved task view and sort order state to tasks-container\n- Moved sorting logic to tasks-container\n- dev-stats now only manages modal and tab state\n\nTask 17: Fixed critical bugs in post-commit hook date logic\n- Fixed template literal variable interpolation on line 89\n- Fixed template literal variable interpolation in grep command on line 103\n- Fixed logic to get newest commit instead of oldest on line 109\n\n[Task-16] [Task-17]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:14:15-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/43ed1331f7fef449196524a84e5fd58ddf46cbe5"
-  },
-  {
-    "fullHash": "72d69aa6a58bc3661df625a87bcdd960f2a8d47c",
-    "hash": "72d69aa",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:08:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/72d69aa6a58bc3661df625a87bcdd960f2a8d47c"
   }
 ]
