@@ -8,7 +8,7 @@ import { DevStatsIcon } from '../components/icons/dev-stats-icon';
 import { ServicesPlaceholderIcon } from '../components/icons/services-placeholder-icon';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 
 @Component({
   selector: 'dev-stats',

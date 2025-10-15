@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { Task } from '../models/models';
 import { formatCompletionDate } from '../utils/date';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 
 @Component({
   selector: 'task-table',
