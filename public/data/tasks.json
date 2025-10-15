@@ -722,5 +722,45 @@
       "date": "2025-10-15T00:50:17-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/a3f747594347e83d46e8aa4c6afe784371f776ca"
     }
+  },
+  {
+    "id": "task-28",
+    "title": "Revert Dev Stats Modal to Original Styling",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Examine git history to identify CSS-to-Tailwind refactor changes",
+        "completed": true
+      },
+      {
+        "description": "Compare current modal styles with original version",
+        "completed": true
+      },
+      {
+        "description": "Restore original CSS classes for tabs (tabs-header, tab-button)",
+        "completed": true
+      },
+      {
+        "description": "Replace long inline Tailwind class bindings with clean CSS classes",
+        "completed": true
+      },
+      {
+        "description": "Restore commits-table-container CSS class",
+        "completed": true
+      },
+      {
+        "description": "Verify build succeeds after reverting styles",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`",
+    "completedDate": "2025-10-15T00:54:34-04:00",
+    "completedCommit": {
+      "hash": "3fc5e5c",
+      "fullHash": "3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452",
+      "subject": "Task 28: Revert Dev Stats Modal to Original Styling",
+      "date": "2025-10-15T00:54:34-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452"
+    }
   }
 ]

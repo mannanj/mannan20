@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452",
+    "hash": "3fc5e5c",
+    "subject": "Task 28: Revert Dev Stats Modal to Original Styling",
+    "body": "- [x] Examine git history to identify CSS-to-Tailwind refactor changes\n- [x] Compare current modal styles with original version\n- [x] Restore original CSS classes for tabs (tabs-header, tab-button)\n- [x] Replace long inline Tailwind class bindings with clean CSS classes\n- [x] Restore commits-table-container CSS class\n- [x] Verify build succeeds after reverting styles\n- Location: \\`src/app/shared/dev-stats.ts\\`\n\n[Task-28]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:54:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452"
+  },
+  {
+    "fullHash": "a461309d0cdfce9feb64c92a5508e4bf77af70b4",
+    "hash": "a461309",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:50:17-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a461309d0cdfce9feb64c92a5508e4bf77af70b4"
+  },
+  {
     "fullHash": "a3f747594347e83d46e8aa4c6afe784371f776ca",
     "hash": "a3f7475",
     "subject": "Task 27: Fix Text Color in Expanded More Sections",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T20:51:07-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/ff7a43f667c649e12430011cbba014ef4ea9f517"
-  },
-  {
-    "fullHash": "a899fd1dc2b03adc430a4a1488cfd0da11c7ccfb",
-    "hash": "a899fd1",
-    "subject": "update cursor text",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:47:48-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a899fd1dc2b03adc430a4a1488cfd0da11c7ccfb"
-  },
-  {
-    "fullHash": "b34d08fd6daa7b57f3ac558841600db905cc835b",
-    "hash": "b34d08f",
-    "subject": "Add local echo for chat messages",
-    "body": "Users can now see their own chat messages displayed on their cursor.\nSince the server excludes the sender from chat broadcasts, we need\nto call showChatMessage locally for immediate feedback.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:43:42-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b34d08fd6daa7b57f3ac558841600db905cc835b"
   }
 ]
