@@ -1398,38 +1398,42 @@
   {
     "id": "task-47",
     "title": "Add Search Functionality to AG Grid Tables",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Research AG Grid official documentation for search/filter implementation",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Add search input field above git commits table",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Add search input field above tasks table",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Implement quick filter functionality using AG Grid API",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Style search inputs to match dark theme",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure search works across all visible columns",
-        "completed": false
-      },
-      {
-        "description": "Add clear search button or functionality",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`"
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`",
+    "completedDate": "2025-10-15T15:54:26-04:00",
+    "completedCommit": {
+      "hash": "0db59d3",
+      "fullHash": "0db59d385716a18f256f1b75dd03e335d3735e7d",
+      "subject": "Task 47: Add Search Functionality to AG Grid Tables",
+      "date": "2025-10-15T15:54:26-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/0db59d385716a18f256f1b75dd03e335d3735e7d"
+    }
   },
   {
     "id": "task-48",

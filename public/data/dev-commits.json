@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "0db59d385716a18f256f1b75dd03e335d3735e7d",
+    "hash": "0db59d3",
+    "subject": "Task 47: Add Search Functionality to AG Grid Tables",
+    "body": "- [x] Research AG Grid official documentation for search/filter implementation\n- [x] Add search input field above git commits table\n- [x] Add search input field above tasks table\n- [x] Implement quick filter functionality using AG Grid API\n- [x] Style search inputs to match dark theme\n- [x] Ensure search works across all visible columns\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`\n\n[Task-47]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T15:54:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0db59d385716a18f256f1b75dd03e335d3735e7d"
+  },
+  {
+    "fullHash": "9fe08bc63612d051f3a4b0d2e0b8b1dd92e8e92b",
+    "hash": "9fe08bc",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T13:59:51-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9fe08bc63612d051f3a4b0d2e0b8b1dd92e8e92b"
+  },
+  {
     "fullHash": "fdce0aa3ea6ef9a0157ce3f3bb8c3d08489e8187",
     "hash": "fdce0aa",
     "subject": "Task 62: Comprehensive CSS Overhaul and Simplification",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:48:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/2e9016938967bc7ba2b464cdfbb1f178601ad51a"
-  },
-  {
-    "fullHash": "8dcdcb3d847a17240ab8b1df5dec0630ac5d233b",
-    "hash": "8dcdcb3",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:44:09-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8dcdcb3d847a17240ab8b1df5dec0630ac5d233b"
-  },
-  {
-    "fullHash": "eade65f2dc83ecc167b0bd098055c8eb96a98df2",
-    "hash": "eade65f",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:44:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/eade65f2dc83ecc167b0bd098055c8eb96a98df2"
   }
 ]
