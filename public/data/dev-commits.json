@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+    "hash": "51f6d4e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:39:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
+  },
+  {
     "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
     "hash": "692bddf",
     "subject": "Fix task completion commit detection and clean up task data",
@@ -889,14 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T15:43:40-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/b31bc547851e231e56a25f6eced0633b0cde6fe9"
-  },
-  {
-    "fullHash": "26f47eb2291eca00240fff1c388eba6c3d5326df",
-    "hash": "26f47eb",
-    "subject": "Fix Capital One expandedContent styling and add global .content style",
-    "body": "Moved expandedContent rendering to use content-card component within .content wrapper for proper text color styling. Added global .content class using Tailwind utilities.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:41:31-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/26f47eb2291eca00240fff1c388eba6c3d5326df"
   }
 ]

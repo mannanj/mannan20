@@ -24,11 +24,11 @@
     "location": "`src/app/components/about/about.ts:290-336`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -52,11 +52,11 @@
     "location": "`src/app/store/app.state.ts`, actions, reducers, selectors",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -72,11 +72,11 @@
     "location": "`src/app/services/data.service.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -124,11 +124,11 @@
     "location": "`src/app/animations/animations.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -148,11 +148,11 @@
     "location": "`src/app/services/navigation.service.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -192,11 +192,11 @@
     "location": "`src/app/components/contact/contact.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -300,11 +300,11 @@
     "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -336,11 +336,11 @@
     "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -372,11 +372,11 @@
     "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -400,11 +400,11 @@
     "location": "`.githooks/post-commit`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -428,11 +428,11 @@
     "location": "`.githooks/post-commit`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -460,11 +460,11 @@
     "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   },
   {
@@ -492,11 +492,43 @@
     "location": "`.githooks/post-commit`",
     "completedDate": "2025-10-14T23:39:34-04:00",
     "completedCommit": {
-      "hash": "692bddf",
-      "fullHash": "692bddf3365c361c8b73598345f21f9e2c2ab04f",
-      "subject": "Fix task completion commit detection and clean up task data",
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
       "date": "2025-10-14T23:39:34-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/692bddf3365c361c8b73598345f21f9e2c2ab04f"
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
+    }
+  },
+  {
+    "id": "task-21",
+    "title": "Preserve Existing Task Completion Data in Post-Commit Hook",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Read existing tasks.json before regenerating",
+        "completed": true
+      },
+      {
+        "description": "Store existing completedDate and completedCommit data in memory",
+        "completed": true
+      },
+      {
+        "description": "Only update completion data when [Task-N] tag found in git log",
+        "completed": true
+      },
+      {
+        "description": "Preserve existing completion data for tasks without [Task-N] tags",
+        "completed": true
+      }
+    ],
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:39:34-04:00",
+    "completedCommit": {
+      "hash": "51f6d4e",
+      "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
+      "subject": "Update dev data files",
+      "date": "2025-10-14T23:39:34-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/51f6d4e878391f1d6cbfd83f3784e068edfc4a58"
     }
   }
 ]
