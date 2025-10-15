@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "84410ad23f7feb893ac77cce062dca438a61193f",
+    "hash": "84410ad",
+    "subject": "Task 53: Restore Default Modal Width for Non-Dev-Stats Modals",
+    "body": "- [x] Review modal width changes from commits 81cbcdb and 7c3b43f\n- [x] Restore original smaller modal width as default for all modals\n- [x] Create custom width override specifically for dev-stats modal\n- [x] Ensure dev-stats modal and children retain larger responsive widths\n- [x] Verify other modals (contact, etc.) use smaller default width\n- [x] Test all modals across different screen sizes\n- Location: `src/app/shared/modal.ts`, `src/app/shared/dev-stats.ts`\n\n[Task-53]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:54:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/84410ad23f7feb893ac77cce062dca438a61193f"
+  },
+  {
+    "fullHash": "bf27a63970993fcd9c73ff4cd808ba76002d3462",
+    "hash": "bf27a63",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:51:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/bf27a63970993fcd9c73ff4cd808ba76002d3462"
+  },
+  {
     "fullHash": "f24d2774b7a3e5cdc36d348026ead97eeb7fe989",
     "hash": "f24d277",
     "subject": "Task 34: Add Consent Checkmark Icon",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:37:31-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/78c0eecdaae6b6176b80b35864015a46043ce8f2"
-  },
-  {
-    "fullHash": "e01213e41a132d720f835cedbd6e93fb0cbb7c01",
-    "hash": "e01213e",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:36:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e01213e41a132d720f835cedbd6e93fb0cbb7c01"
-  },
-  {
-    "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
-    "hash": "5f0641f",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:36:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
   }
 ]

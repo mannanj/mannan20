@@ -1614,5 +1614,45 @@
       }
     ],
     "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`"
+  },
+  {
+    "id": "task-53",
+    "title": "Restore Default Modal Width for Non-Dev-Stats Modals",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Review modal width changes from commits 81cbcdb and 7c3b43f",
+        "completed": true
+      },
+      {
+        "description": "Restore original smaller modal width as default for all modals",
+        "completed": true
+      },
+      {
+        "description": "Create custom width override specifically for dev-stats modal",
+        "completed": true
+      },
+      {
+        "description": "Ensure dev-stats modal and children retain larger responsive widths",
+        "completed": true
+      },
+      {
+        "description": "Verify other modals (contact, etc.) use smaller default width",
+        "completed": true
+      },
+      {
+        "description": "Test all modals across different screen sizes",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/modal.ts`, `src/app/shared/dev-stats.ts`",
+    "completedDate": "2025-10-15T11:54:26-04:00",
+    "completedCommit": {
+      "hash": "84410ad",
+      "fullHash": "84410ad23f7feb893ac77cce062dca438a61193f",
+      "subject": "Task 53: Restore Default Modal Width for Non-Dev-Stats Modals",
+      "date": "2025-10-15T11:54:26-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/84410ad23f7feb893ac77cce062dca438a61193f"
+    }
   }
 ]
