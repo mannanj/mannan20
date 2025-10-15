@@ -25,14 +25,14 @@ import { selectJobs } from '../../store/app.selectors';
     <button
       *ngIf="(totalJobs$ | async) && jobsToShow < (totalJobs$ | async)!"
       type="button"
-      class="collapsible"
+      class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
       (click)="showMore()">
       more
     </button>
     <button
       *ngIf="(totalJobs$ | async) && jobsToShow >= (totalJobs$ | async)!"
       type="button"
-      class="collapsible"
+      class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
       (click)="showLess()">
       less
     </button>

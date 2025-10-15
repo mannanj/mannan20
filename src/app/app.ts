@@ -21,16 +21,16 @@ import { selectDevCommits } from './store/app.selectors';
         <header></header>
       </div>
 
-      <div id="body">
-        <div id="home">
+      <div id="body" class="my-[20vh] mx-[28vw] md:my-[10vh] md:mx-[14vw]">
+        <div id="home" class="mt-[33vh]">
           <home></home>
         </div>
 
-        <div id="about">
+        <div id="about" class="mt-[66vh]">
           <about></about>
         </div>
 
-        <div id="contact">
+        <div id="contact" class="mt-[33vh] h-[44vh]">
           <contact></contact>
         </div>
       </div>
@@ -47,30 +47,7 @@ import { selectDevCommits } from './store/app.selectors';
       <keyboard-commands-modal />
     </div>
   `,
-  styles: [`
-    #body {
-      margin: 20vh 28vw;
-    }
-
-    @media only screen and (max-width: 768px) {
-      #body {
-        margin: 10vh 14vw;
-      }
-    }
-
-    #home,
-    #contact {
-      margin-top: 33vh;
-    }
-
-    #about {
-      margin-top: 66vh;
-    }
-
-    #contact {
-      height: 44vh;
-    }
-  `]
+  styles: []
 })
 export class App implements OnInit {
   title = 'mannan';

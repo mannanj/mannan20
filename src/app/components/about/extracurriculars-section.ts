@@ -16,7 +16,7 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
     <h2 class="text-[2em] mt-[50px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]" @slideInLeft>Extracurriculars</h2>
     <content-card *ngIf="activities$ | async" [data]="(activities$ | async)!['teaching']" [applyMarginTop]="true"></content-card>
 
-    <div id="more-ec">
+    <div id="more-extracurriculars">
       <div *ngIf="section.display" @fadeIn>
         <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['volunteering']" [applyMarginTop]="true"></content-card>
         <content-card *ngIf="section.count >= 1 && (activities$ | async)" [data]="(activities$ | async)!['travel']" [applyMarginTop]="true"></content-card>
@@ -30,8 +30,8 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
         </div>
       </div>
 
-      <button *ngIf="section.count < 2" type="button" class="collapsible" (click)="toggle(true)">more</button>
-      <button *ngIf="section.count === 2" type="button" class="collapsible" (click)="toggle(false)">less</button>
+      <button *ngIf="section.count < 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(true)">more</button>
+      <button *ngIf="section.count === 2" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggle(false)">less</button>
     </div>
   `,
   styles: []
