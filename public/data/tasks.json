@@ -58,18 +58,26 @@
   {
     "id": "task-4",
     "title": "Extract Inline Styles to CSS Classes",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Extract repeated `font-size: 12px` styles",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Create reusable CSS classes for common styles",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/components/about/about.ts` template"
+    "location": "`src/app/components/about/about.ts` template",
+    "completedDate": "2025-10-15T00:11:57-04:00",
+    "completedCommit": {
+      "hash": "13971ef",
+      "fullHash": "13971ef4cb63b0df234ee6f27c80a01ed4578fdc",
+      "subject": "Task 4: Extract Inline Styles to CSS Classes",
+      "date": "2025-10-15T00:11:57-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/13971ef4cb63b0df234ee6f27c80a01ed4578fdc"
+    }
   },
   {
     "id": "task-5",

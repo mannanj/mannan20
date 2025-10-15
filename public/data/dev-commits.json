@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "13971ef4cb63b0df234ee6f27c80a01ed4578fdc",
+    "hash": "13971ef",
+    "subject": "Task 4: Extract Inline Styles to CSS Classes",
+    "body": "- [x] Extract repeated font-size: 14px styles\n- [x] Create reusable CSS classes for common styles\n- Location: `src/app/components/about/about.ts` template\n\n[Task-4]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:11:57-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/13971ef4cb63b0df234ee6f27c80a01ed4578fdc"
+  },
+  {
+    "fullHash": "6670f2cc0fd8986c186317989ebe12e740f28c9c",
+    "hash": "6670f2c",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:08:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6670f2cc0fd8986c186317989ebe12e740f28c9c"
+  },
+  {
     "fullHash": "802e890cc407b6273501f0da7f37779ef0662725",
     "hash": "802e890",
     "subject": "Filter out 'Update dev data files' commits from git commits table",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:41:03-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/5bf22265cd4cc3f1e631966bcaac92398fb7b2f2"
-  },
-  {
-    "fullHash": "0ec84c1f493d324b2fecfe167e66c36541721d5b",
-    "hash": "0ec84c1",
-    "subject": "Fix Esc command click closing modal",
-    "body": "Removed keyboard event dispatch from toggleCursors() to prevent\nthe modal from closing when clicking the Esc command.\n\nThe cursor visibility still works correctly because:\n- NgRx state updates via toggleCursorsVisible action\n- App component dispatches cursorsVisibilityChanged event\n- cursor.js listens to that event and updates cursor display\n\nNow clicking Esc in modal only toggles cursors, doesn't close modal.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:23:32-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0ec84c1f493d324b2fecfe167e66c36541721d5b"
-  },
-  {
-    "fullHash": "2ddf2a22d7b58af5855a13bef4c0f87a5a181ac8",
-    "hash": "2ddf2a2",
-    "subject": "Keep modal open when clicking commands except H",
-    "body": "Removed modal close from openChat() so clicking commands keeps\nmodal open. Only the H command closes the modal (via toggle).\n\nBehavior:\n- Click \"/\" - Opens chat, modal stays open\n- Click \"Esc\" - Toggles cursors, modal stays open\n- Click \"H\" - Closes modal (toggles modal state)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:22:32-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/2ddf2a22d7b58af5855a13bef4c0f87a5a181ac8"
   }
 ]
