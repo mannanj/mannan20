@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "4a88f93e102fff95f95327e2a22aabbbb0703810",
+    "hash": "4a88f93",
+    "subject": "Test hook in correct location",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:44:38 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/4a88f93e102fff95f95327e2a22aabbbb0703810"
+  },
+  {
+    "fullHash": "e5abdd8271c6299e1d0b8b592c2f9a9955f9f2fd",
+    "hash": "e5abdd8",
+    "subject": "Final hook test",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:44:14 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/e5abdd8271c6299e1d0b8b592c2f9a9955f9f2fd"
+  },
+  {
     "fullHash": "ed2d96e1368b4d71619c1e8580819f8bdc82d08d",
     "hash": "ed2d96e",
     "subject": "Test hook with logging",
@@ -61,23 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 20:51:07 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/ff7a43f667c649e12430011cbba014ef4ea9f517"
-  },
-  {
-    "fullHash": "a899fd1dc2b03adc430a4a1488cfd0da11c7ccfb",
-    "hash": "a899fd1",
-    "subject": "update cursor text",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:47:48 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/a899fd1dc2b03adc430a4a1488cfd0da11c7ccfb"
-  },
-  {
-    "fullHash": "b34d08fd6daa7b57f3ac558841600db905cc835b",
-    "hash": "b34d08f",
-    "subject": "Add local echo for chat messages",
-    "body": "Users can now see their own chat messages displayed on their cursor.\nSince the server excludes the sender from chat broadcasts, we need\nto call showChatMessage locally for immediate feedback.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:43:42 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/b34d08fd6daa7b57f3ac558841600db905cc835b"
   }
 ]
