@@ -2210,5 +2210,29 @@
       "date": "2025-10-15T18:02:22-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/bcab63ef45d272b70d7b3f9fc9e1eaab4debdc93"
     }
+  },
+  {
+    "id": "task-67",
+    "title": "Fix AG Grid Deprecated Property Warning",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace suppressRowClickSelection with rowSelection.enableClickSelection in commits-grid",
+        "completed": false
+      },
+      {
+        "description": "Replace suppressRowClickSelection with rowSelection.enableClickSelection in task-table",
+        "completed": false
+      },
+      {
+        "description": "Test both grids to ensure row click behavior remains unchanged",
+        "completed": false
+      },
+      {
+        "description": "Verify build completes without deprecation warnings",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
   }
 ]
