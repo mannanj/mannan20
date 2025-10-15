@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "4d8533138758eb399bf4722899b264d4e2443035",
+    "hash": "4d85331",
+    "subject": "Register AG Grid AllCommunityModule",
+    "body": "Fix AG Grid error 272 by registering AllCommunityModule globally\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:27:58-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4d8533138758eb399bf4722899b264d4e2443035"
+  },
+  {
+    "fullHash": "2f9335d51ce68c5f5852f6698adc52d7f123cc2e",
+    "hash": "2f9335d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:26:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/2f9335d51ce68c5f5852f6698adc52d7f123cc2e"
+  },
+  {
     "fullHash": "7ed99c9b1d04fb8cc70a72101c4b7bcc96986b80",
     "hash": "7ed99c9",
     "subject": "Fix DatePipe provider error",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T22:28:25-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/896d9b2965c84d571adbce26578b7b28412a1b1c"
-  },
-  {
-    "fullHash": "5445827769f1fc7888e68a619d0803aaa268811e",
-    "hash": "5445827",
-    "subject": "Enhance dev stats modal with custom SVG icon and tabbed interface",
-    "body": "Replace emoji icon with custom animated SVG featuring wave gradient design and version number. Implement tabbed navigation system with Git Commits and Services Status tabs, including smooth fade-in animations and active state styling. Add placeholder for upcoming services monitoring feature with centered loading state design.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:28:25-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5445827769f1fc7888e68a619d0803aaa268811e"
-  },
-  {
-    "fullHash": "89efe3df620c0976d2c63bf1a254d955426471c8",
-    "hash": "89efe3d",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:25:02-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/89efe3df620c0976d2c63bf1a254d955426471c8"
   }
 ]
