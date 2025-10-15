@@ -222,31 +222,31 @@
   {
     "id": "task-14",
     "title": "Track Task Completion Dates via Git Hooks",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Add `completedDate` field to Task interface in models",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Update tasks.json structure to include completedDate field",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Enhance post-commit hook to detect when task is marked complete",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Store completion timestamp when task status changes to completed",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Display completion date in Tasks tab UI",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure completion date persists across commits",
-        "completed": false
+        "completed": true
       }
     ],
     "location": "`.githooks/post-commit`, `src/app/models/models.ts`, `src/app/shared/dev-stats.ts`"
@@ -277,7 +277,15 @@
         "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`"
+    "location": "`src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`",
+    "completedDate": "2025-10-14T23:18:14-04:00",
+    "completedCommit": {
+      "hash": "e5f6dee",
+      "fullHash": "e5f6deeef9b4f1d6de9ec1e3faee298ebece8572",
+      "subject": "Fix completedCommit hash extraction in post-commit hook",
+      "date": "2025-10-14T23:18:14-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/e5f6deeef9b4f1d6de9ec1e3faee298ebece8572"
+    }
   },
   {
     "id": "task-16",
@@ -369,6 +377,38 @@
       "subject": "Refactor dev-stats for single responsibility and fix date logic",
       "date": "2025-10-14T23:14:15-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/43ed1331f7fef449196524a84e5fd58ddf46cbe5"
+    }
+  },
+  {
+    "id": "task-19",
+    "title": "Format Completion Date Display in Tasks UI",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Create date formatting utility to convert ISO date to readable format",
+        "completed": true
+      },
+      {
+        "description": "Display completion time in table \"Completed\" column (e.g., \"Oct 14, 2025 1p\" or \"Oct 14, 2025 1205p\")",
+        "completed": true
+      },
+      {
+        "description": "Display completion time in card view (e.g., \"Oct 14, 2025 1p\" or \"Oct 14, 2025 1205p\")",
+        "completed": true
+      },
+      {
+        "description": "Use short hour format (1p, 2p) when minutes are 00, full format otherwise (1205p, 245p)",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`",
+    "completedDate": "2025-10-14T23:18:14-04:00",
+    "completedCommit": {
+      "hash": "e5f6dee",
+      "fullHash": "e5f6deeef9b4f1d6de9ec1e3faee298ebece8572",
+      "subject": "Fix completedCommit hash extraction in post-commit hook",
+      "date": "2025-10-14T23:18:14-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/e5f6deeef9b4f1d6de9ec1e3faee298ebece8572"
     }
   }
 ]
