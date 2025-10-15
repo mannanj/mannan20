@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "8094a992f0b7811154eebcae0b70fc8c07cb6197",
+    "hash": "8094a99",
+    "subject": "Add dev stats with modal and update last-updated tooltip",
+    "body": "- Refactor dev-stats to use ModalComponent for consistent styling\n- Position dev-stats icon next to last-updated in bottom-right corner\n- Add hover tooltip and scale effect to dev-stats icon\n- Add tooltip to last-updated showing full date and time\n- Update git hooks to automatically update metadata.json with commit timestamp\n- Update README with setup instructions for git hooks\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:34:45 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/8094a992f0b7811154eebcae0b70fc8c07cb6197"
+  },
+  {
     "fullHash": "8a7644545fe69a9e281e5b216095222960d2d683",
     "hash": "8a76445",
     "subject": "Refactor dev stats to use NgRx effects and conditional rendering",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 20:29:21 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/1d7f0a0b56fce27791ca2cab60b1642c9e499bdd"
-  },
-  {
-    "fullHash": "892433edc6d57ef757b92a9d6ccf5231f420c445",
-    "hash": "892433e",
-    "subject": "Refactor cursors.js to work with NgRx cursor state",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:26:08 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/892433edc6d57ef757b92a9d6ccf5231f420c445"
   }
 ]
