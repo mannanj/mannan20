@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "ec14a706ce62e847867797b3b983f174ce5f5aed",
+    "hash": "ec14a70",
+    "subject": "Preserve existing task completion data in post-commit hook",
+    "body": "[Task-21]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:41:59-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ec14a706ce62e847867797b3b983f174ce5f5aed"
+  },
+  {
+    "fullHash": "3971ebcbeef49f569d1ad974af3955008dc1c000",
+    "hash": "3971ebc",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:41:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3971ebcbeef49f569d1ad974af3955008dc1c000"
+  },
+  {
     "fullHash": "51f6d4e878391f1d6cbfd83f3784e068edfc4a58",
     "hash": "51f6d4e",
     "subject": "Update dev data files",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T15:49:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/9ded4379c543c5b90577cb78e53cadd88fbb6424"
-  },
-  {
-    "fullHash": "9b214ff7ca47f38fce971e48166b8a3af5357544",
-    "hash": "9b214ff",
-    "subject": "Refactor employment-section to use ngFor with simplified state management",
-    "body": "- Replace hardcoded content-cards with ngFor loop\n- Simplify state from {display, count} to single jobsToShow variable\n- Add programmable constants: DEFAULT_JOBS_TO_SHOW (3) and JOBS_INCREMENT (2)\n- Implement showMore() and showLess() methods for cleaner toggle logic\n- Show 'more' button when jobs remain, 'less' button when all shown\n- Reset to default (3) jobs when 'less' is clicked\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:49:10-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9b214ff7ca47f38fce971e48166b8a3af5357544"
-  },
-  {
-    "fullHash": "b31bc547851e231e56a25f6eced0633b0cde6fe9",
-    "hash": "b31bc54",
-    "subject": "Move expandable content logic into content-card component",
-    "body": "Content cards now manage their own expanded state and toggle buttons when expandedContent is present. Removed Capital One-specific expansion logic from employment-section - it's now handled by the content-card itself.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T15:43:40-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b31bc547851e231e56a25f6eced0633b0cde6fe9"
   }
 ]
