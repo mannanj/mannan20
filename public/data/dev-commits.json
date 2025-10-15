@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "e156a030d66b1ce492538384128779ad702b41e2",
+    "hash": "e156a03",
+    "subject": "Add Task 24: Rename Component Class Names",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:19:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e156a030d66b1ce492538384128779ad702b41e2"
+  },
+  {
+    "fullHash": "e255f78bf6c44733bc951ef85380c8895884a4db",
+    "hash": "e255f78",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:18:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e255f78bf6c44733bc951ef85380c8895884a4db"
+  },
+  {
     "fullHash": "09545fbdc663ac9e83e34d7065e1badc71ca7c24",
     "hash": "09545fb",
     "subject": "Task 11: Rename Component Files",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T20:19:30-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/1cc3bb0154a76338bb8d32277dce13cd16d2b5a7"
-  },
-  {
-    "fullHash": "35231854949d74219f049e3c029ace05d95ed5f3",
-    "hash": "3523185",
-    "subject": "Replace manual subscriptions with selectSignal in viewer stats and commands modal",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:17:45-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/35231854949d74219f049e3c029ace05d95ed5f3"
-  },
-  {
-    "fullHash": "2401a17025950515632a3fcfec3aa780aee3e504",
-    "hash": "2401a17",
-    "subject": "Move cursor party connection check to app component",
-    "body": "Moved the @if (isConnected()) conditional from ViewerStats component to AppComponent for cleaner separation of concerns. The parent component now handles the conditional rendering.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:50:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/2401a17025950515632a3fcfec3aa780aee3e504"
   }
 ]

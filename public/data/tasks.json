@@ -586,5 +586,25 @@
       }
     ],
     "location": "All component files with `styles` array and inline `style` attributes"
+  },
+  {
+    "id": "task-24",
+    "title": "Rename Component Class Names",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Remove \"Component\" suffix from all component class names (e.g., AboutComponent → About)",
+        "completed": false
+      },
+      {
+        "description": "Update any references to component class names in tests or documentation",
+        "completed": false
+      },
+      {
+        "description": "Ensure TypeScript compiles successfully after renaming",
+        "completed": false
+      }
+    ],
+    "location": "All component class definitions throughout the project"
   }
 ]
