@@ -1594,30 +1594,38 @@
   {
     "id": "task-52",
     "title": "Add Column Hiding Feature to AG Grid Tables",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Add column visibility controls to git commits table",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Add column visibility controls to tasks table",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Use AG Grid's built-in column menu for show/hide functionality",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Persist column visibility preferences in localStorage",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure all columns can be toggled on/off",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`"
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`",
+    "completedDate": "2025-10-15T18:13:57-04:00",
+    "completedCommit": {
+      "hash": "5303cd1",
+      "fullHash": "5303cd1dbee4765e3acc8ee19d54f212bb0a1cde",
+      "subject": "Task 52: Add Column Hiding Feature to AG Grid Tables",
+      "date": "2025-10-15T18:13:57-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/5303cd1dbee4765e3acc8ee19d54f212bb0a1cde"
+    }
   },
   {
     "id": "task-53",

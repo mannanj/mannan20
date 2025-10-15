@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "5303cd1dbee4765e3acc8ee19d54f212bb0a1cde",
+    "hash": "5303cd1",
+    "subject": "Task 52: Add Column Hiding Feature to AG Grid Tables",
+    "body": "- [x] Add column visibility controls to git commits table\n- [x] Add column visibility controls to tasks table\n- [x] Use AG Grid's built-in column menu for show/hide functionality\n- [x] Persist column visibility preferences in localStorage\n- [x] Ensure all columns can be toggled on/off\n- Location: \\`src/app/shared/dev-stats.ts\\`, \\`src/app/shared/task-table.ts\\`\n\n[Task-52]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:13:57-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5303cd1dbee4765e3acc8ee19d54f212bb0a1cde"
+  },
+  {
+    "fullHash": "911ec717271e6fd12a2b376b750f2cdbcbd84f80",
+    "hash": "911ec71",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:10:53-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/911ec717271e6fd12a2b376b750f2cdbcbd84f80"
+  },
+  {
     "fullHash": "78200fca24d745a5be31c0b70f2e5315d64fab4f",
     "hash": "78200fc",
     "subject": "Task 60: Convert Modal Component Styles to Tailwind Utilities",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:36:53-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/dbb42a19e16534c8644db5fb7b9c5c88452ac49a"
-  },
-  {
-    "fullHash": "c1922e14547f6683b5abee6324f08ec93e2decb9",
-    "hash": "c1922e1",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:24:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c1922e14547f6683b5abee6324f08ec93e2decb9"
-  },
-  {
-    "fullHash": "baff27948919e947fbb9c7a964645a8645d726b5",
-    "hash": "baff279",
-    "subject": "Task 24: Rename Component Class Names",
-    "body": "- [x] Remove \"Component\" suffix from all component class names (e.g., AboutComponent → About)\n- [x] Update any references to component class names in tests or documentation\n- [x] Ensure TypeScript compiles successfully after renaming\n- Location: All component class definitions throughout the project\n\n[Task-24]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:24:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/baff27948919e947fbb9c7a964645a8645d726b5"
   }
 ]
