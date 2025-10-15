@@ -187,3 +187,19 @@
 - [x] Revert to CSS classes instead of inline Tailwind utilities
 - [x] Verify all modals display correctly after changes
 - Location: `src/app/shared/modal.ts`
+
+### Task 30: Reduce Whitespace in Tasks Toolbar Header
+- [ ] Reduce vertical padding in tasks toolbar container
+- [ ] Adjust spacing above icons and buttons to minimal needed space
+- [ ] Make toolbar height more compact while keeping icons/buttons readable
+- [ ] Ensure visual balance with only slightly more space than necessary
+- [ ] Test both card/table view icons and sort button alignment
+- Location: `src/app/shared/tasks-toolbar.ts`
+
+### Task 31: Consolidate Border Removal Commits
+- [x] Use git rebase to squash related border removal commits into one
+- [x] Combine commits 6a0899d, dff5d4c, a549d9a, a39f384, 8398718, eedf4ef, 25c25b1
+- [x] Create single commit message describing all border/outline removals
+- [x] Preserve commit history for Update dev data files commits
+- [x] Force push consolidated commits to remote
+- Location: Git history
