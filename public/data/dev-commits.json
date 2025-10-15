@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "e5f6deeef9b4f1d6de9ec1e3faee298ebece8572",
+    "hash": "e5f6dee",
+    "subject": "Fix completedCommit hash extraction in post-commit hook",
+    "body": "Task 18: Fixed critical bug where fullHash field contained diff content instead\nof actual commit hash. The issue occurred when git log with -p flag prepended\ndiff content to subsequent commit blocks when split by delimiter.\n\nSolution: Use regex to extract 40-character hash from end of parts[0] to handle\ncases where diff content is prepended.\n\n[Task-18]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:18:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e5f6deeef9b4f1d6de9ec1e3faee298ebece8572"
+  },
+  {
+    "fullHash": "75a92a615fd858daefeabe79e91797aad3ec0949",
+    "hash": "75a92a6",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:14:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/75a92a615fd858daefeabe79e91797aad3ec0949"
+  },
+  {
     "fullHash": "43ed1331f7fef449196524a84e5fd58ddf46cbe5",
     "hash": "43ed133",
     "subject": "Refactor dev-stats for single responsibility and fix date logic",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-12T14:49:10-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/398ca311c271b49790060aa96cd6c66b6567cee0"
-  },
-  {
-    "fullHash": "4169cb736ed9957e29a56eadc4db86cd9f793924",
-    "hash": "4169cb7",
-    "subject": "add vercel analytics",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-12T14:45:32-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/4169cb736ed9957e29a56eadc4db86cd9f793924"
-  },
-  {
-    "fullHash": "ceeb6e398f151bdcb03f6e78f9e43a25d302e4ed",
-    "hash": "ceeb6e3",
-    "subject": "Update favicon to profile picture and streamline README",
-    "body": "- Replace default favicon with profile picture (16x16, 32x32, .ico)\n- Update index.html with multi-size favicon references\n- Streamline README with concise, minimal documentation\n- Add deployment instructions for Vercel\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-12T14:40:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ceeb6e398f151bdcb03f6e78f9e43a25d302e4ed"
   }
 ]

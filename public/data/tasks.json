@@ -309,10 +309,10 @@
     "completedDate": "2025-10-14T23:08:26-04:00",
     "completedCommit": {
       "hash": "40f420b",
-      "fullHash": "diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87",
+      "fullHash": "40f420baee51cf4f80be120cb3c1d958d3c80f87",
       "subject": "Mark Task 15 as completed",
       "date": "2025-10-14T23:08:26-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87"
+      "url": "https://github.com/mannanj/mannan20/commit/40f420baee51cf4f80be120cb3c1d958d3c80f87"
     }
   },
   {
@@ -337,10 +337,38 @@
     "completedDate": "2025-10-14T23:08:26-04:00",
     "completedCommit": {
       "hash": "40f420b",
-      "fullHash": "diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87",
+      "fullHash": "40f420baee51cf4f80be120cb3c1d958d3c80f87",
       "subject": "Mark Task 15 as completed",
       "date": "2025-10-14T23:08:26-04:00",
-      "url": "https://github.com/mannanj/mannan20/commit/diff --git a/tasks.md b/tasks.md\nindex 446e63e..85ef4fd 100644\n--- a/tasks.md\n+++ b/tasks.md\n@@ -86,3 +86,17 @@\n - [x] Refactor dev-stats.ts to use new modular components\n - [x] Ensure all components follow Angular best practices (standalone, signals)\n - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`\n+\n+### Task 16: Refactor Dev Stats for Single Responsibility\n+- [x] Create tasks-container component to encapsulate task-specific state\n+- [x] Move task view state from dev-stats to tasks-container\n+- [x] Move sort order state from dev-stats to tasks-container\n+- [x] Move sorting logic from dev-stats to tasks-container\n+- [x] Refactor dev-stats to only manage modal and tab state\n+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`\n+\n+### Task 17: Fix Date Logic Bugs in Post-Commit Hook\n+- [x] Fix template literal variable interpolation bug on line 89\n+- [x] Fix template literal variable interpolation bug in grep command on line 103\n+- [x] Fix logic to get newest commit instead of oldest (line 109)\n+- Location: `.githooks/post-commit`\n40f420baee51cf4f80be120cb3c1d958d3c80f87"
+      "url": "https://github.com/mannanj/mannan20/commit/40f420baee51cf4f80be120cb3c1d958d3c80f87"
+    }
+  },
+  {
+    "id": "task-18",
+    "title": "Fix Completed Commit Data in Post-Commit Hook",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Fix fullHash field to contain actual commit hash instead of diff",
+        "completed": true
+      },
+      {
+        "description": "Fix URL field to use fullHash instead of diff content",
+        "completed": true
+      },
+      {
+        "description": "Verify task completion data is correctly populated",
+        "completed": true
+      }
+    ],
+    "location": "`.githooks/post-commit`",
+    "completedDate": "2025-10-14T23:14:15-04:00",
+    "completedCommit": {
+      "hash": "43ed133",
+      "fullHash": "43ed1331f7fef449196524a84e5fd58ddf46cbe5",
+      "subject": "Refactor dev-stats for single responsibility and fix date logic",
+      "date": "2025-10-14T23:14:15-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/43ed1331f7fef449196524a84e5fd58ddf46cbe5"
     }
   }
 ]
