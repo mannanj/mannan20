@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "7c3b43fea80c6556876e4abe1bc0427d2d4942f7",
+    "hash": "7c3b43f",
+    "subject": "Task 44: Make Dev Stats Modal Tables Responsive to Screen Size",
+    "body": "- [x] Allow modal width to expand based on available screen width\n- [x] Make git commits table width responsive to modal size\n- [x] Make tasks table width responsive to modal size\n- [x] Ensure tables utilize available space when screen is enlarged\n- [x] Maintain readability and layout at different screen sizes\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/modal.ts`\n\n[Task-44]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:10:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7c3b43fea80c6556876e4abe1bc0427d2d4942f7"
+  },
+  {
+    "fullHash": "b56977cdfc44827002a86dbc8b4a06b605d2d6c1",
+    "hash": "b56977c",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:04:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b56977cdfc44827002a86dbc8b4a06b605d2d6c1"
+  },
+  {
     "fullHash": "40303dabfd95764c89e3d411a41384fcf0408c0b",
     "hash": "40303da",
     "subject": "push task done task 43",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T22:01:55-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/5c2b6ca90808f582b7a98f7687658dd5caf7bcf6"
-  },
-  {
-    "fullHash": "a47752cfe08eeff7f2ae0957ff6820dab6018cfc",
-    "hash": "a47752c",
-    "subject": "Add secret handshake access system to features backlog",
-    "body": "Documents planned feature for passcode-based access control with modal interface and NgRx state management.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:01:55-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a47752cfe08eeff7f2ae0957ff6820dab6018cfc"
-  },
-  {
-    "fullHash": "c70b057e67dad24e9e307187de99ad484c59a949",
-    "hash": "c70b057",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:57:47-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c70b057e67dad24e9e307187de99ad484c59a949"
   }
 ]
