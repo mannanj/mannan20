@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ModalComponent } from './modal';
@@ -6,6 +6,7 @@ import { TasksContainer } from './tasks-container';
 import { selectDevCommits, selectTasks } from '../store/app.selectors';
 import { DevStatsIcon } from '../components/icons/dev-stats-icon';
 import { ServicesPlaceholderIcon } from '../components/icons/services-placeholder-icon';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'dev-stats',
@@ -47,7 +48,7 @@ import { ServicesPlaceholderIcon } from '../components/icons/services-placeholde
             <div class="commits-table-container">
               <table class="w-full border-collapse">
                 <tbody>
-                  @for (commit of devCommits$ | async; track commit.hash) {
+                  @for (commit of filteredCommits(); track commit.hash) {
                     <tr class="border-b border-gray-700 hover:bg-white/5">
                       <td class="py-1 px-2">
                         <a [href]="commit.url" target="_blank" class="text-[#039be5] hover:underline font-mono text-xs">
@@ -144,8 +145,12 @@ export class DevStats {
 
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
-  protected devCommits$ = this.store.select(selectDevCommits);
   protected tasks$ = this.store.select(selectTasks);
+
+  private allCommits = toSignal(this.store.select(selectDevCommits), { initialValue: [] });
+  protected filteredCommits = computed(() =>
+    this.allCommits().filter(commit => commit.subject !== 'Update dev data files')
+  );
 
   toggleModal() {
     this.isModalOpen.update(value => !value);
