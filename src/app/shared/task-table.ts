@@ -16,6 +16,9 @@ import { themeQuartz } from 'ag-grid-community';
         [columnDefs]="colDefs"
         [theme]="gridTheme"
         [suppressCellFocus]="true"
+        [suppressRowClickSelection]="true"
+        [animateRows]="false"
+        [getRowId]="getTaskRowId"
         style="width: 100%; height: 100%;"
       />
     </div>
@@ -24,6 +27,8 @@ import { themeQuartz } from 'ag-grid-community';
 })
 export class TaskTable {
   tasks = input.required<Task[]>();
+
+  protected getTaskRowId = (params: any) => params.data.id;
 
   protected gridTheme = themeQuartz.withParams({
     backgroundColor: '#000',

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Modal } from './modal';
 import { TasksContainer } from './tasks-container';
 import { selectDevCommits, selectTasks } from '../store/app.selectors';
@@ -13,7 +13,7 @@ import { themeQuartz } from 'ag-grid-community';
 
 @Component({
   selector: 'dev-stats',
-  imports: [AsyncPipe, Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon, AgGridAngular],
+  imports: [Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon, AgGridAngular],
   providers: [DatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -48,17 +48,18 @@ import { themeQuartz } from 'ag-grid-community';
         </div>
 
         <div class="tab-content">
-          @if (activeTab() === 'commits') {
-            <div style="height: 400px; width: 100%;">
-              <ag-grid-angular
-                [rowData]="filteredCommits()"
-                [columnDefs]="commitsColDefs"
-                [theme]="gridTheme"
-                [suppressCellFocus]="true"
-                style="width: 100%; height: 100%;"
-              />
-            </div>
-          }
+          <div [style.display]="activeTab() === 'commits' ? 'block' : 'none'" style="height: 400px; width: 100%;">
+            <ag-grid-angular
+              [rowData]="filteredCommits()"
+              [columnDefs]="commitsColDefs"
+              [theme]="gridTheme"
+              [suppressCellFocus]="true"
+              [suppressRowClickSelection]="true"
+              [animateRows]="false"
+              [getRowId]="getCommitRowId"
+              style="width: 100%; height: 100%;"
+            />
+          </div>
 
           @if (activeTab() === 'services') {
             <div class="services-placeholder">
@@ -70,11 +71,9 @@ import { themeQuartz } from 'ag-grid-community';
             </div>
           }
 
-          @if (activeTab() === 'tasks') {
-            @if (tasks$ | async; as tasks) {
-              <tasks-container [tasks]="tasks" />
-            }
-          }
+          <div [style.display]="activeTab() === 'tasks' ? 'block' : 'none'">
+            <tasks-container [tasks]="tasks()" />
+          </div>
         </div>
       </div>
     </modal>
@@ -148,7 +147,7 @@ export class DevStats {
 
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
-  protected tasks$ = this.store.select(selectTasks);
+  protected tasks = toSignal(this.store.select(selectTasks), { initialValue: [] });
 
   private allCommits = toSignal(this.store.select(selectDevCommits), { initialValue: [] });
   protected filteredCommits = computed(() =>
@@ -206,4 +205,6 @@ export class DevStats {
   setActiveTab(tab: 'commits' | 'services' | 'tasks') {
     this.activeTab.set(tab);
   }
+
+  protected getCommitRowId = (params: any) => params.data.hash;
 }
