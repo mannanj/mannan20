@@ -1,12 +1,21 @@
 [
   {
-    "fullHash": "4a88f93e102fff95f95327e2a22aabbbb0703810",
-    "hash": "4a88f93",
+    "fullHash": "98d4bfd90e13af04c05801226e44c74426f8a52e",
+    "hash": "98d4bfd",
+    "subject": "Test fixed hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:46:25 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/98d4bfd90e13af04c05801226e44c74426f8a52e"
+  },
+  {
+    "fullHash": "dcea032d8f685049e40f48846a77a1f9ac96197d",
+    "hash": "dcea032",
     "subject": "Test hook in correct location",
     "body": "",
     "author": "Mannan Javid",
     "date": "2025-10-14 21:44:38 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/4a88f93e102fff95f95327e2a22aabbbb0703810"
+    "url": "https://github.com/mannanj/mannan20/commit/dcea032d8f685049e40f48846a77a1f9ac96197d"
   },
   {
     "fullHash": "e5abdd8271c6299e1d0b8b592c2f9a9955f9f2fd",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 21:00:51 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/9bd8ba342d0d3c319db2c73a79e10c29ede122a7"
-  },
-  {
-    "fullHash": "ff7a43f667c649e12430011cbba014ef4ea9f517",
-    "hash": "ff7a43f",
-    "subject": "Fix about section intersection observer threshold",
-    "body": "Increased threshold from 0.33 to 0.6 to ensure the about link is properly set as active when scrolling to the about section.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 20:51:07 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/ff7a43f667c649e12430011cbba014ef4ea9f517"
   }
 ]
