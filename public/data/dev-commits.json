@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "f42178806f029e40b1b8f55d2ad4504ac807df9f",
+    "hash": "f421788",
+    "subject": "Extract magic numbers to named constants",
+    "body": "[Task-5]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:50:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f42178806f029e40b1b8f55d2ad4504ac807df9f"
+  },
+  {
+    "fullHash": "7fe1760faacef161b3a54626e80c2a4f5cb5ff67",
+    "hash": "7fe1760",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:49:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7fe1760faacef161b3a54626e80c2a4f5cb5ff67"
+  },
+  {
     "fullHash": "fe0f92c33f272b474812c3bca9fe33a8e346239c",
     "hash": "fe0f92c",
     "subject": "Replace switch statement with object lookup in determineOffsetPx",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:09:07-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/b153483d75c57a5ec0e73ecf50e4c32e51aaef50"
-  },
-  {
-    "fullHash": "249f6d5f96b15497b878578d41be68f45540cd1c",
-    "hash": "249f6d5",
-    "subject": "Fix cursor party: show all cursors with color assignments",
-    "body": "Major fixes and improvements:\n- Server now broadcasts to all clients including sender\n- Server sends client ID on ping for identification\n- Added 100 distinct colors for cursor assignments\n- Colors assigned based on join order\n- Current user's cursor now displays with \"(you)\" suffix\n- All cursors including own cursor hide/show with ESC key\n- Current user included in viewer count\n- Cursor state consolidated in NgRx store\n- cursor.js loads dynamically after app initialization\n- Prevents race conditions by waiting for state to be ready\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:07:04-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/249f6d5f96b15497b878578d41be68f45540cd1c"
-  },
-  {
-    "fullHash": "eee693d352d871992938a62212625e039a786757",
-    "hash": "eee693d",
-    "subject": "Add cursor party features and WebSocket improvements",
-    "body": "- Add keyboard commands modal and viewer stats components\n- Improve cursor tracking and chat functionality\n- Update NgRx state for cursor management\n- Enhance last updated display\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:02:05-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/eee693d352d871992938a62212625e039a786757"
   }
 ]

@@ -74,18 +74,26 @@
   {
     "id": "task-5",
     "title": "Extract Magic Numbers to Constants",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Extract timeout values (2000ms) to named constants",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Extract offset ratios in help.ts",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": ""
+    "location": "",
+    "completedDate": "2025-10-14T23:50:24-04:00",
+    "completedCommit": {
+      "hash": "f421788",
+      "fullHash": "f42178806f029e40b1b8f55d2ad4504ac807df9f",
+      "subject": "Extract magic numbers to named constants",
+      "date": "2025-10-14T23:50:24-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/f42178806f029e40b1b8f55d2ad4504ac807df9f"
+    }
   },
   {
     "id": "task-6",
