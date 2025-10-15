@@ -898,5 +898,289 @@
       "date": "2025-10-15T01:16:11-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/b82304eedea5656f14eb3668f43d038ca574654b"
     }
+  },
+  {
+    "id": "task-33",
+    "title": "Add Email Validation to Contact Form",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Implement robust email validation for contact form input",
+        "completed": false
+      },
+      {
+        "description": "Add email format validation (RFC 5322 compliant)",
+        "completed": false
+      },
+      {
+        "description": "Show validation error messages for invalid email formats",
+        "completed": false
+      },
+      {
+        "description": "Prevent form submission with invalid email data",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts`"
+  },
+  {
+    "id": "task-34",
+    "title": "Add Consent Checkmark Icon",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add green checkmark SVG icon next to consent text",
+        "completed": false
+      },
+      {
+        "description": "Position checkmark before \"I will never reach out to you without your consent\"",
+        "completed": false
+      },
+      {
+        "description": "Style checkmark with green color using Tailwind utilities",
+        "completed": false
+      },
+      {
+        "description": "Ensure checkmark aligns properly with text",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts`"
+  },
+  {
+    "id": "task-35",
+    "title": "Update Modal Greeting Text",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Change greeting from \"Hi <>\" to \"Hi there 👋\" (3 words with hand waving emoji)",
+        "completed": false
+      },
+      {
+        "description": "Update modal template to use new greeting format",
+        "completed": false
+      },
+      {
+        "description": "Ensure emoji displays correctly across browsers",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact-result.ts` or modal component"
+  },
+  {
+    "id": "task-36",
+    "title": "Create LLM Form Validation Backend Endpoint",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create Spring Boot REST endpoint for LLM-based form validation",
+        "completed": false
+      },
+      {
+        "description": "Integrate LLM API (OpenAI/Anthropic) for input parsing",
+        "completed": false
+      },
+      {
+        "description": "Extract name, email, and reason from user input text",
+        "completed": false
+      },
+      {
+        "description": "Generate contextual reasonResponse based on detected intent",
+        "completed": false
+      },
+      {
+        "description": "Add recruiter-specific response: \"Welcome! I'm open for job placement conversations Mon-Fri 11am-4pm ET\"",
+        "completed": false
+      },
+      {
+        "description": "Add multiple example reason responses for different visitor types",
+        "completed": false
+      },
+      {
+        "description": "Return structured JSON response with extracted fields and reasonResponse",
+        "completed": false
+      },
+      {
+        "description": "Handle async processing with appropriate HTTP status codes",
+        "completed": false
+      }
+    ],
+    "location": "`backend/src/main/java/com/mannan/controllers/`, create new LLM service"
+  },
+  {
+    "id": "task-37",
+    "title": "Integrate LLM Validation in Frontend Contact Form",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create service to call LLM validation endpoint",
+        "completed": false
+      },
+      {
+        "description": "Add loading indicator while LLM processes input",
+        "completed": false
+      },
+      {
+        "description": "Display extracted name, email, reason to user for confirmation",
+        "completed": false
+      },
+      {
+        "description": "Show LLM-generated reasonResponse in real-time as it arrives",
+        "completed": false
+      },
+      {
+        "description": "Allow form submission once validation completes",
+        "completed": false
+      },
+      {
+        "description": "Handle streaming/async response display",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts`, `src/app/services/`"
+  },
+  {
+    "id": "task-38",
+    "title": "Implement Queue Messaging System",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Design queue messaging architecture (WebSocket or Server-Sent Events)",
+        "completed": false
+      },
+      {
+        "description": "Create backend queue management service",
+        "completed": false
+      },
+      {
+        "description": "Implement frontend queue display component",
+        "completed": false
+      },
+      {
+        "description": "Add real-time message notifications",
+        "completed": false
+      },
+      {
+        "description": "Create message persistence storage",
+        "completed": false
+      },
+      {
+        "description": "Add message read/unread status tracking",
+        "completed": false
+      }
+    ],
+    "location": "`backend/src/main/java/com/mannan/`, `src/app/components/`, `src/app/services/`"
+  },
+  {
+    "id": "task-39",
+    "title": "Add Real-Time Chat Feature",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create WebSocket chat server endpoint",
+        "completed": false
+      },
+      {
+        "description": "Design chat UI component with message input and display",
+        "completed": false
+      },
+      {
+        "description": "Implement real-time bidirectional messaging",
+        "completed": false
+      },
+      {
+        "description": "Add typing indicators",
+        "completed": false
+      },
+      {
+        "description": "Add message history persistence",
+        "completed": false
+      },
+      {
+        "description": "Create chat notification system",
+        "completed": false
+      },
+      {
+        "description": "Style chat component with Tailwind utilities",
+        "completed": false
+      }
+    ],
+    "location": "`backend/src/main/java/com/mannan/`, `server/`, `src/app/components/chat/`"
+  },
+  {
+    "id": "task-40",
+    "title": "Implement Video and Audio Calling",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Research WebRTC library integration (e.g., PeerJS, Simple-Peer)",
+        "completed": false
+      },
+      {
+        "description": "Create call invitation link generation system",
+        "completed": false
+      },
+      {
+        "description": "Implement WebRTC peer connection setup",
+        "completed": false
+      },
+      {
+        "description": "Add video/audio stream handling",
+        "completed": false
+      },
+      {
+        "description": "Create call UI component with video display and controls",
+        "completed": false
+      },
+      {
+        "description": "Add microphone and camera permission handling",
+        "completed": false
+      },
+      {
+        "description": "Implement call status indicators (connecting, connected, ended)",
+        "completed": false
+      },
+      {
+        "description": "Add mute/unmute and video on/off controls",
+        "completed": false
+      },
+      {
+        "description": "Test browser compatibility for WebRTC features",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/call/`, `src/app/services/call.service.ts`, backend signaling server"
+  },
+  {
+    "id": "task-41",
+    "title": "Add Task Completion Verification to Workflow",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Update claude.md with instructions to check task completion status before starting",
+        "completed": true
+      },
+      {
+        "description": "Add step to verify all subtasks are not already marked complete",
+        "completed": true
+      },
+      {
+        "description": "Include instruction to mark task as complete and push if already done",
+        "completed": true
+      },
+      {
+        "description": "Ensure workflow prevents duplicate work on completed tasks",
+        "completed": true
+      }
+    ],
+    "location": "`.claude/CLAUDE.md`",
+    "completedDate": "2025-10-15T01:29:25-04:00",
+    "completedCommit": {
+      "hash": "6c5e33f",
+      "fullHash": "6c5e33f993f396223c824a87462b6d4c18e665de",
+      "subject": "Task 41: Add Task Completion Verification to Workflow",
+      "date": "2025-10-15T01:29:25-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/6c5e33f993f396223c824a87462b6d4c18e665de"
+    }
   }
 ]
