@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "802e890cc407b6273501f0da7f37779ef0662725",
+    "hash": "802e890",
+    "subject": "Filter out 'Update dev data files' commits from git commits table",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:08:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/802e890cc407b6273501f0da7f37779ef0662725"
+  },
+  {
+    "fullHash": "3113d56fc6e3c8acc72d02944e6e8a377e730fac",
+    "hash": "3113d56",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:06:33-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3113d56fc6e3c8acc72d02944e6e8a377e730fac"
+  },
+  {
     "fullHash": "9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc",
     "hash": "9fb294a",
     "subject": "Task 22: Update Commit Message Format",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T19:22:32-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/2ddf2a22d7b58af5855a13bef4c0f87a5a181ac8"
-  },
-  {
-    "fullHash": "52d0d98efd148a425c8d49436ccd42b4b9ed4bf4",
-    "hash": "52d0d98",
-    "subject": "Make commands clickable and track state in NgRx",
-    "body": "Changes:\n1. Removed () around H in viewer stats text\n2. Added NgRx state for cursorsVisible and commandsModalVisible\n3. Made all commands in modal clickable to execute\n4. Commands now dispatch keyboard events to trigger actions\n\nState Management:\n- Added cursorsVisible and commandsModalVisible to AppState\n- Added toggleCursorsVisible and toggleCommandsModal actions\n- Added selectors for both states\n- Modal subscribes to NgRx state for visibility\n- App component dispatches cursorsVisibilityChanged event\n\nModal Commands:\n- / - Opens chat by dispatching keyboard event\n- Esc - Toggles cursor visibility via NgRx + dispatches event\n- H - Toggles modal visibility via NgRx\n\ncursor.js Integration:\n- Listens to cursorsVisibilityChanged event\n- Syncs cursor display with NgRx state\n- Maintains backwards compatibility with local toggleCursors\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:20:38-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/52d0d98efd148a425c8d49436ccd42b4b9ed4bf4"
-  },
-  {
-    "fullHash": "33283532de5e7ddedd9c4d944023fa7d67224eaa",
-    "hash": "3328353",
-    "subject": "Update keyboard commands text to 'View Commands (H)'",
-    "body": "Changed viewer stats display from:\n  \"Press H for commands\"\nto:\n  \"View Commands (H)\"\n\nThe (H) is styled with the same kbd element for consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T19:17:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/33283532de5e7ddedd9c4d944023fa7d67224eaa"
   }
 ]
