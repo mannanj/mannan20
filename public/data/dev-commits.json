@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "5f0641fcec14b5d3e9317b180d59c40f82b23056",
+    "hash": "5f0641f",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T23:36:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5f0641fcec14b5d3e9317b180d59c40f82b23056"
+  },
+  {
     "fullHash": "7319b6f01c78f583ae1cf7bbb9ff09a2b0ddcd0c",
     "hash": "7319b6f",
     "subject": "Fix regex to match exact task numbers in commit messages",
@@ -889,14 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T12:34:57-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/8e34bd08097974adcf2dea4bb5b2c090fbd9a8ae"
-  },
-  {
-    "fullHash": "89b5d08befe1888bb89c9bd2080406017ad0cae0",
-    "hash": "89b5d08",
-    "subject": "simplify AboutComponent by removing getters and exposing sections Map",
-    "body": "Make sections Map public and access it directly in template, removing 9 redundant getters. This reduces indirection and makes the code more straightforward.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T12:30:49-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/89b5d08befe1888bb89c9bd2080406017ad0cae0"
   }
 ]
