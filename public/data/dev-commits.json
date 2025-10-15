@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "9fa13155f4d19dbd1efb3adceff3dffe7cf60425",
+    "hash": "9fa1315",
+    "subject": "Task 65: Remove Spacing Between Contact Info Lines",
+    "body": "- [x] Find contact info section (email, phone, location)\n- [x] Remove vertical spacing between contact info lines\n- [x] Maintain spacing above and below the contact info section\n- Location: \\`src/app/components/contact/contact-result.ts\\`\n\n[Task-65]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:32:18-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9fa13155f4d19dbd1efb3adceff3dffe7cf60425"
+  },
+  {
+    "fullHash": "e41d12d0e3d44e2b64d4dbcd4569f87fbce9e9da",
+    "hash": "e41d12d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T17:31:19-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e41d12d0e3d44e2b64d4dbcd4569f87fbce9e9da"
+  },
+  {
     "fullHash": "f836f3321631b9dffb403c5f1e670e30e4dd6975",
     "hash": "f836f33",
     "subject": "Task 64: Remove Spacing Between Published Works Bullet Points",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:06:33-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/9fb294a4dd1664d0ffde3ddec0c62fcd6f0b3bdc"
-  },
-  {
-    "fullHash": "639faa5093e5e3b43b93977c3b3c19d5ab1e012f",
-    "hash": "639faa5",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:02:35-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/639faa5093e5e3b43b93977c3b3c19d5ab1e012f"
-  },
-  {
-    "fullHash": "042f531c2724921272bf164884a7e99f09b96164",
-    "hash": "042f531",
-    "subject": "Task 12: Move SVGs to Reusable Icon Components - [x] Extract inline SVGs to separate icon components - [x] Create reusable icon components that can be imported and used throughout the app - [x] Replace duplicate SVG code with icon component references - Location: Components with inline SVG markup",
-    "body": "[Task-12]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:02:35-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/042f531c2724921272bf164884a7e99f09b96164"
   }
 ]

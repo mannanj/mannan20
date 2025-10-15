@@ -2110,5 +2110,33 @@
       "date": "2025-10-15T17:31:19-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/f836f3321631b9dffb403c5f1e670e30e4dd6975"
     }
+  },
+  {
+    "id": "task-65",
+    "title": "Remove Spacing Between Contact Info Lines",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Find contact info section (email, phone, location)",
+        "completed": true
+      },
+      {
+        "description": "Remove vertical spacing between contact info lines",
+        "completed": true
+      },
+      {
+        "description": "Maintain spacing above and below the contact info section",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/contact/contact-result.ts`",
+    "completedDate": "2025-10-15T17:32:18-04:00",
+    "completedCommit": {
+      "hash": "9fa1315",
+      "fullHash": "9fa13155f4d19dbd1efb3adceff3dffe7cf60425",
+      "subject": "Task 65: Remove Spacing Between Contact Info Lines",
+      "date": "2025-10-15T17:32:18-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/9fa13155f4d19dbd1efb3adceff3dffe7cf60425"
+    }
   }
 ]
