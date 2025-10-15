@@ -420,3 +420,54 @@
 - [x] Change placeholder text from "Please share your name..." to "Enter your name..."
 - [x] Add padding below button before consent text appears
 - Location: `src/app/components/contact/contact-form.ts`
+
+### Task 57: Compact Contact Modal Layout and Reduce Whitespace
+- [x] Reduce white space around the modal container
+- [x] Reduce space above and below the OR text
+- [x] Make the OR text smaller
+- [x] Add padding above the consent label
+- [x] Reduce padding/space below the consent text inside the action container
+- [x] Increase "Ready to collaborate?" header size to match source screenshot proportions
+- [x] Adjust all other font sizes proportionally (Continue with Google button, input placeholder, consent text, etc.)
+- Location: `src/app/components/contact/contact-form.ts`
+
+### Task 58: Refactor All Modals to Content-Based Sizing
+- [ ] Update modal component default styles to use content-based width and height
+- [ ] Set max-width to 728px for all modals
+- [ ] Set max-height to 90vh or 800px (whichever is smaller)
+- [ ] Ensure modals don't take up more space than their content needs
+- [ ] Test all modals (contact, dev-stats, etc.) to ensure proper sizing
+- [ ] Make sure overflow behavior works correctly when content exceeds max dimensions
+- Location: `src/app/shared/modal.ts`
+
+### Task 59: Tighten Contact Modal Vertical Spacing and Padding
+- [x] Make modal height start at the line of the X button (reduce top padding)
+- [x] Minimize padding around the modal content
+- [x] Ensure even padding inside action container around all content
+- [x] Add padding above consent line
+- [x] Reduce padding below consent text to match other sides
+- [x] Ensure all padding is consistent and minimal throughout
+- Location: `src/app/components/contact/contact-form.ts`, `src/app/shared/modal.ts`
+
+### Task 60: Convert Modal Component Styles to Tailwind Utilities
+- [ ] Replace modal-backdrop CSS with Tailwind utility classes
+- [ ] Replace modal-content CSS with Tailwind utility classes
+- [ ] Replace modal-content-large CSS with Tailwind utility classes
+- [ ] Replace close-btn CSS with Tailwind utility classes
+- [ ] Replace modal-body CSS with Tailwind utility classes
+- [ ] Remove styles array from component and apply all classes directly in template
+- [ ] Ensure all visual appearance remains identical after conversion
+- Location: `src/app/shared/modal.ts`
+
+### Task 61: Convert All Global Styles to Inline Tailwind Utilities
+- [x] Convert body element styles to Tailwind (keep color, bg-color as default theme)
+- [x] Convert h1, h2 element styles to inline Tailwind utilities in all components
+- [x] Convert p element styles to inline Tailwind utilities in all components
+- [x] Convert hr element styles to inline Tailwind utilities in all components
+- [x] Convert button element styles to inline Tailwind utilities in all components
+- [x] Convert link (a) element styles to inline Tailwind utilities in all components
+- [x] Replace .text-end, .margin-*, .flex-column utility classes with Tailwind equivalents
+- [x] Keep only required custom CSS (.collapsible, .content, button::before, a::after, hover states)
+- [x] Update all component templates to use new inline Tailwind classes
+- [x] Test all components to ensure visual appearance remains identical
+- Location: `src/styles.css`, all component files

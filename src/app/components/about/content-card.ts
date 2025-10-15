@@ -9,8 +9,8 @@ import { ProfileItem } from '../../models/models';
   imports: [CommonModule],
   animations: [fadeIn],
   template: `
-    <div class="section text-inherit" [class.margin-top]="applyMarginTop">
-      <a *ngIf="data.link && data.title" [href]="data.link" target="_blank">
+    <div class="p-0 m-0 text-inherit" [class.mt-[25px]]="applyMarginTop">
+      <a *ngIf="data.link && data.title" [href]="data.link" target="_blank" class="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
         <b>{{ data.title }}</b>
       </a>
       <a *ngIf="!data.link && data.title" class="text-inherit cursor-default pointer-events-none hover:text-inherit hover:transform-none">
@@ -20,20 +20,20 @@ import { ProfileItem } from '../../models/models';
       <b *ngIf="data.title && data.position">{{ data.position }}</b>
       <b *ngIf="!data.title && data.position">{{ data.position }}</b>
 
-      <p *ngIf="data.dates">{{ data.dates }}</p>
+      <p *ngIf="data.dates" class="leading-[1.6] m-0 mb-[1em] text-white">{{ data.dates }}</p>
 
-      <p *ngIf="data.skills" class="text-xs italic mt-1.5">
+      <p *ngIf="data.skills" class="text-xs italic mt-1.5 leading-[1.6] m-0 mb-[1em] text-white">
         {{ data.skills }}
       </p>
 
-      <p *ngIf="data.description" class="text-xs mt-1.5" [innerHTML]="data.description"></p>
+      <p *ngIf="data.description" class="text-xs mt-1.5 leading-[1.6] m-0 mb-[1em] text-white" [innerHTML]="data.description"></p>
 
-      <p *ngIf="data.additionalContent" class="text-xs mt-1.5" [innerHTML]="data.additionalContent"></p>
+      <p *ngIf="data.additionalContent" class="text-xs mt-1.5 leading-[1.6] m-0 mb-[1em] text-white" [innerHTML]="data.additionalContent"></p>
 
       <a *ngIf="data.downloadLink"
          [href]="data.downloadLink"
          [download]="data.downloadFilename"
-         class="text-[#039be5]">
+         class="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
         {{ data.downloadLabel }}
       </a>
 
@@ -47,13 +47,13 @@ import { ProfileItem } from '../../models/models';
     </div>
   `,
   styles: [`
-    :host-context(.content) .section {
+    :host-context(.content) > div {
       color: black;
       font-size: 80%;
     }
 
     :host-context(.content) p {
-      color: black;
+      color: black !important;
     }
 
     :host-context(.content) b {

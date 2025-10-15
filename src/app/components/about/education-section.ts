@@ -13,11 +13,11 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
   imports: [CommonModule, ContentCard],
   animations: [fadeIn, slideInLeft],
   template: `
-    <h2 class="margin-top-60" @slideInLeft>Education</h2>
-    <div class="section text-inherit">
+    <h2 class="text-[2em] mt-[60px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]" @slideInLeft>Education</h2>
+    <div class="p-0 m-0 text-inherit">
       <b>{{ (education$ | async)?.institution }}</b>
-      <p>{{ (education$ | async)?.dates }}</p>
-      <p>{{ (education$ | async)?.degree }}</p>
+      <p class="leading-[1.6] m-0 mb-[1em] text-white">{{ (education$ | async)?.dates }}</p>
+      <p class="leading-[1.6] m-0 mb-[1em] text-white">{{ (education$ | async)?.degree }}</p>
 
       <div id="more-education">
         <div *ngIf="section.display" class="content" @fadeIn>

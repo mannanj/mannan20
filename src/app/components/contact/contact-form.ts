@@ -8,14 +8,14 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
   standalone: true,
   imports: [CommonModule, FormsModule, GoogleLogoIcon],
   template: `
-    <div class="text-center mb-8">
-      <h2 class="m-0 mb-2 text-[2.5rem] !font-light text-white tracking-tight">Ready to collaborate?</h2>
-      <p class="m-0 text-base !text-white !font-light">Let's create something exceptional.</p>
+    <div class="text-center mb-3">
+      <h2 class="m-0 mb-2 text-[3rem] !font-light text-white tracking-tight !mt-0">Ready to collaborate?</h2>
+      <p class="m-0 text-lg !text-white !font-light">Let's create something exceptional.</p>
     </div>
 
     <form (ngSubmit)="onSubmit()">
       <div class="action-container">
-        <button type="button" class="w-full py-3.5 px-6 rounded-lg text-base font-medium cursor-pointer transition-all duration-200 !border !border-[#404040] bg-transparent text-white flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-[#2a2a2a] enabled:hover:border-[#555] focus:outline-none focus:border-[#555] !shadow-none !normal-case !mt-0" disabled>
+        <button type="button" class="w-full py-3 px-6 rounded-lg text-[0.9375rem] font-medium cursor-pointer transition-all duration-200 !border !border-[#404040] bg-transparent text-white flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-[#2a2a2a] enabled:hover:border-[#555] focus:outline-none focus:border-[#555] !shadow-none !normal-case !mt-0" disabled>
           <google-logo-icon class="shrink-0" />
           Continue with Google
         </button>
@@ -28,14 +28,14 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
           [(ngModel)]="userInput"
           name="userInput"
           rows="4"
-          class="w-full py-3.5 px-4 border border-[#404040] rounded-lg text-base text-white bg-[#2a2a2a] transition-all duration-200 box-border resize-y font-[inherit] leading-normal placeholder:text-[#666] focus:outline-none focus:border-[#555] focus:bg-[#333] disabled:opacity-60 disabled:cursor-not-allowed"
+          class="w-full py-3 px-4 border border-[#404040] rounded-lg text-[0.9375rem] text-white bg-[#2a2a2a] transition-all duration-200 box-border resize-y font-[inherit] leading-normal placeholder:text-[#666] focus:outline-none focus:border-[#555] focus:bg-[#333] disabled:opacity-60 disabled:cursor-not-allowed"
           [placeholder]="placeholder"
           [disabled]="isLoading"></textarea>
 
-        <div class="mt-5 relative">
+        <div class="mt-4 relative">
           <button
             type="submit"
-            class="w-full py-3.5 px-6 rounded-lg text-base font-medium cursor-pointer transition-all duration-200 !border !border-transparent hover:!border-[#039be5] !bg-white !text-black hover:!bg-[#f5f5f5] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed !shadow-none !normal-case !mt-0 focus:outline-none focus:!border-[#039be5]"
+            class="w-full py-3 px-6 rounded-lg text-[0.9375rem] font-medium cursor-pointer transition-all duration-200 !border !border-transparent hover:!border-[#039be5] !bg-white !text-black hover:!bg-[#f5f5f5] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed !shadow-none !normal-case !mt-0 focus:outline-none focus:!border-[#039be5]"
             (mouseenter)="showTooltip = true"
             (mouseleave)="showTooltip = false">
             {{ isLoading ? 'Sending...' : 'Continue your request' }}
@@ -45,7 +45,7 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
           </div>
         </div>
 
-        <p class="m-0 mt-6 p-0 !text-[0.75rem] leading-normal !text-[#555] !font-light flex items-center justify-center gap-2">
+        <p class="m-0 mt-5 p-0 !text-[0.6875rem] leading-normal !text-[#555] !font-light flex items-center justify-center gap-2">
           <span>I will never reach out to you without your consent.</span>
         </p>
       </div>
@@ -53,16 +53,16 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
   `,
   styles: [`
     .action-container {
-      padding: 32px;
+      padding: 20px;
       border: 1px solid #404040;
       border-radius: 16px;
     }
 
     .divider {
       text-align: center;
-      margin: 24px 0;
+      margin: 14px 0;
       color: #666;
-      font-size: 0.875rem;
+      font-size: 0.6875rem;
     }
 
     .divider span {
