@@ -46,11 +46,18 @@ export class NavigationService {
   private setActiveSection(): void {
     if (this.intersectingSections.size === 0) return;
 
-    for (const section of this.sectionOrder) {
-      if (this.intersectingSections.has(section)) {
-        this.store.dispatch(setSelectedLink({ link: section }));
-        break;
+    let maxRatio = 0;
+    let activeSection: Links | null = null;
+
+    this.intersectingSections.forEach((entry, section) => {
+      if (entry.intersectionRatio > maxRatio) {
+        maxRatio = entry.intersectionRatio;
+        activeSection = section;
       }
+    });
+
+    if (activeSection) {
+      this.store.dispatch(setSelectedLink({ link: activeSection }));
     }
   }
 }
