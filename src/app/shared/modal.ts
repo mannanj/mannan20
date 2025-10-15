@@ -43,17 +43,11 @@ import { ContactResult } from '../models/models';
     }
 
     .modal-content-large {
-      max-width: 1028px;
+      max-width: 768px;
       width: 95vw;
     }
 
     @media (min-width: 768px) {
-      .modal-content-large {
-        width: 85vw;
-      }
-    }
-
-    @media (min-width: 1024px) {
       .modal-content-large {
         width: 90vw;
       }

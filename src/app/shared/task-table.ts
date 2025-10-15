@@ -44,9 +44,9 @@ export class TaskTable {
     {
       field: 'title',
       headerName: 'Task',
-      flex: 1,
+      width: 350,
       resizable: true,
-      cellStyle: { fontSize: '12px', color: '#fff', fontWeight: '500' }
+      cellStyle: { fontSize: '12px', color: '#fff' }
     },
     {
       field: 'status',

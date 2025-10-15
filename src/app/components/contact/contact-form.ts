@@ -44,7 +44,7 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
         </div>
       </div>
 
-      <p class="m-0 mt-4 p-0 text-[0.8125rem] leading-normal text-[#888] flex items-center justify-center gap-2">
+      <p class="m-0 mt-4 p-0 text-[0.8125rem] leading-normal text-[#666] font-light flex items-center justify-center gap-2">
         <span>I will never reach out to you without your consent.</span>
       </p>
     </form>
