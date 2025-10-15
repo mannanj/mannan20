@@ -28,35 +28,6 @@ export const loadMetadataFailure = createAction(
   props<{ error: string }>()
 );
 
-export const loadCursorUsernameSuccess = createAction(
-  '[Cursor] Load Cursor Username Success',
-  props<{ username: string }>()
-);
-
-export const loadCursorUsernameFailure = createAction(
-  '[Cursor] Load Cursor Username Failure',
-  props<{ error: string }>()
-);
-
-export const updateActiveViewerCount = createAction(
-  '[Cursor] Update Active Viewer Count',
-  props<{ count: number }>()
-);
-
-export const setMyId = createAction(
-  '[Cursor] Set My ID',
-  props<{ id: string }>()
-);
-
 export const setAppInitialized = createAction('[App] Set App Initialized');
 
-export const setCursorDataInitialized = createAction('[Cursor] Set Cursor Data Initialized');
-
-export const toggleCursorsVisible = createAction('[Cursor] Toggle Cursors Visible');
-
 export const toggleCommandsModal = createAction('[Commands] Toggle Commands Modal');
-
-export const setCursorPartyConnected = createAction(
-  '[Cursor Party] Set Connected',
-  props<{ connected: boolean }>()
-);

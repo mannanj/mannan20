@@ -53,47 +53,12 @@ export const selectLastUpdated = createSelector(
   (metadata) => metadata?.lastUpdated
 );
 
-export const selectCursorChatPlaceholder = createSelector(
-  selectAppState,
-  (state: AppState) => state.cursorChatPlaceholder
-);
-
-export const selectCursorUsername = createSelector(
-  selectAppState,
-  (state: AppState) => state.cursorUsername
-);
-
-export const selectActiveViewerCount = createSelector(
-  selectAppState,
-  (state: AppState) => state.activeViewerCount
-);
-
-export const selectCursorColors = createSelector(
-  selectAppState,
-  (state: AppState) => state.cursorColors
-);
-
-export const selectMyId = createSelector(
-  selectAppState,
-  (state: AppState) => state.myId
-);
-
 export const selectIsInitialized = createSelector(
   selectAppState,
   (state: AppState) => state.isInitialized
 );
 
-export const selectCursorsVisible = createSelector(
-  selectAppState,
-  (state: AppState) => state.cursorsVisible
-);
-
 export const selectCommandsModalVisible = createSelector(
   selectAppState,
   (state: AppState) => state.commandsModalVisible
-);
-
-export const selectIsCursorPartyConnected = createSelector(
-  selectAppState,
-  (state: AppState) => state.isCursorPartyConnected
 );
