@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "49f0457ba2755e2a2e4d95eced644b3a1eb1a48a",
+    "hash": "49f0457",
+    "subject": "Add Task 30 and Task 31 to tasks.md",
+    "body": "Task 30: Reduce Whitespace in Tasks Toolbar Header\nTask 31: Consolidate Border Removal Commits (completed)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:12:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/49f0457ba2755e2a2e4d95eced644b3a1eb1a48a"
+  },
+  {
+    "fullHash": "a229f66fb68edb5df1a5189617b9584269390bd8",
+    "hash": "a229f66",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T01:11:49-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a229f66fb68edb5df1a5189617b9584269390bd8"
+  },
+  {
     "fullHash": "a2694b7bb588332474511eeeb4ef15eee6506652",
     "hash": "a2694b7",
     "subject": "Remove borders and focus outlines from all modal buttons",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T21:42:18-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/37414f23318ed71aa3b26e77f8d68132d3925231"
-  },
-  {
-    "fullHash": "b6f936e59f8a48e0dff8256355419d176832cdaa",
-    "hash": "b6f936e",
-    "subject": "Test post-commit hook",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:40:22-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b6f936e59f8a48e0dff8256355419d176832cdaa"
-  },
-  {
-    "fullHash": "8094a992f0b7811154eebcae0b70fc8c07cb6197",
-    "hash": "8094a99",
-    "subject": "Add dev stats with modal and update last-updated tooltip",
-    "body": "- Refactor dev-stats to use ModalComponent for consistent styling\n- Position dev-stats icon next to last-updated in bottom-right corner\n- Add hover tooltip and scale effect to dev-stats icon\n- Add tooltip to last-updated showing full date and time\n- Update git hooks to automatically update metadata.json with commit timestamp\n- Update README with setup instructions for git hooks\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T21:34:45-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8094a992f0b7811154eebcae0b70fc8c07cb6197"
   }
 ]

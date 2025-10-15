@@ -802,5 +802,61 @@
       "date": "2025-10-15T00:57:43-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/f1ec52bece4e8764d705bc6d7c451a4370a71633"
     }
+  },
+  {
+    "id": "task-30",
+    "title": "Reduce Whitespace in Tasks Toolbar Header",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Reduce vertical padding in tasks toolbar container",
+        "completed": false
+      },
+      {
+        "description": "Adjust spacing above icons and buttons to minimal needed space",
+        "completed": false
+      },
+      {
+        "description": "Make toolbar height more compact while keeping icons/buttons readable",
+        "completed": false
+      },
+      {
+        "description": "Ensure visual balance with only slightly more space than necessary",
+        "completed": false
+      },
+      {
+        "description": "Test both card/table view icons and sort button alignment",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/tasks-toolbar.ts`"
+  },
+  {
+    "id": "task-31",
+    "title": "Consolidate Border Removal Commits",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Use git rebase to squash related border removal commits into one",
+        "completed": true
+      },
+      {
+        "description": "Combine commits 6a0899d, dff5d4c, a549d9a, a39f384, 8398718, eedf4ef, 25c25b1",
+        "completed": true
+      },
+      {
+        "description": "Create single commit message describing all border/outline removals",
+        "completed": true
+      },
+      {
+        "description": "Preserve commit history for Update dev data files commits",
+        "completed": true
+      },
+      {
+        "description": "Force push consolidated commits to remote",
+        "completed": true
+      }
+    ],
+    "location": "Git history"
   }
 ]
