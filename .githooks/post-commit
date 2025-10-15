@@ -9,6 +9,8 @@ export IN_POST_COMMIT_HOOK=1
 REPO_URL="https://github.com/mannanj/mannan20"
 OUTPUT_FILE="public/data/dev-commits.json"
 METADATA_FILE="public/data/metadata.json"
+TASKS_INPUT="tasks.md"
+TASKS_OUTPUT="public/data/tasks.json"
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 
@@ -43,8 +45,57 @@ const latestDate = execSync('git log -1 --format=%aI', { encoding: 'utf-8', shel
 console.log(JSON.stringify({ lastUpdated: latestDate }, null, 2));
 " > "$METADATA_FILE"
 
-if ! git diff --quiet "$OUTPUT_FILE" "$METADATA_FILE"; then
-  git add "$OUTPUT_FILE" "$METADATA_FILE"
+if [ -f "$TASKS_INPUT" ]; then
+  node -e "
+const fs = require('fs');
+const tasksMarkdown = fs.readFileSync('${TASKS_INPUT}', 'utf8');
+
+const tasks = [];
+const taskRegex = /### Task (\\d+): (.+?)\\n([\\s\\S]*?)(?=###|$)/g;
+let taskMatch;
+
+while ((taskMatch = taskRegex.exec(tasksMarkdown)) !== null) {
+  const taskNum = taskMatch[1];
+  const taskTitle = taskMatch[2].trim();
+  const taskContent = taskMatch[3];
+
+  const subtasks = [];
+  const subtaskRegex = /- \\[([x ])\\] (.+?)$/gm;
+  let subtaskMatch;
+
+  while ((subtaskMatch = subtaskRegex.exec(taskContent)) !== null) {
+    const completed = subtaskMatch[1] === 'x';
+    const description = subtaskMatch[2].trim();
+
+    if (!description.startsWith('Location:')) {
+      subtasks.push({
+        description,
+        completed
+      });
+    }
+  }
+
+  const locationMatch = taskContent.match(/- Location: (.+)/);
+  const location = locationMatch ? locationMatch[1].trim() : '';
+
+  const allCompleted = subtasks.length > 0 && subtasks.every(st => st.completed);
+  const status = allCompleted ? 'completed' : 'pending';
+
+  tasks.push({
+    id: \`task-\${taskNum}\`,
+    title: taskTitle,
+    status,
+    subtasks,
+    location
+  });
+}
+
+console.log(JSON.stringify(tasks, null, 2));
+" > "$TASKS_OUTPUT"
+fi
+
+if ! git diff --quiet "$OUTPUT_FILE" "$METADATA_FILE" "$TASKS_OUTPUT"; then
+  git add "$OUTPUT_FILE" "$METADATA_FILE" "$TASKS_OUTPUT"
   git commit -m "Update dev data files" --no-verify
 fi
 

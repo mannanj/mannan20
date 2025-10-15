@@ -67,3 +67,8 @@ export const selectDevCommits = createSelector(
   selectAppState,
   (state: AppState) => state.devCommits
 );
+
+export const selectTasks = createSelector(
+  selectAppState,
+  (state: AppState) => state.tasks
+);

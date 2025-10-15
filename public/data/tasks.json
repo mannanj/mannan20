@@ -1,0 +1,222 @@
+[
+  {
+    "id": "task-1",
+    "title": "Refactor Toggle Logic Duplication",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Replace 5 pairs of toggle methods with a generic toggle system",
+        "completed": true
+      },
+      {
+        "description": "Use Map or object to track section states",
+        "completed": true
+      },
+      {
+        "description": "Reduce ~50 lines of duplicated code",
+        "completed": true
+      },
+      {
+        "description": "Call toggleSection directly from template, removing all wrapper methods",
+        "completed": true
+      }
+    ],
+    "location": "src/app/components/about/about.ts:290-336"
+  },
+  {
+    "id": "task-2",
+    "title": "Remove Unused Store State",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Remove `headerText` from app state",
+        "completed": true
+      },
+      {
+        "description": "Remove `contactFormData` from app state",
+        "completed": true
+      },
+      {
+        "description": "Remove associated actions, reducers, and selectors",
+        "completed": true
+      }
+    ],
+    "location": "src/app/store/app.state.ts, actions, reducers, selectors"
+  },
+  {
+    "id": "task-3",
+    "title": "Remove or Utilize Unused Data Service",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Either display mock data from DataService or remove it",
+        "completed": true
+      }
+    ],
+    "location": "src/app/services/data.service.ts"
+  },
+  {
+    "id": "task-4",
+    "title": "Extract Inline Styles to CSS Classes",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Extract repeated `font-size: 12px` styles",
+        "completed": false
+      },
+      {
+        "description": "Create reusable CSS classes for common styles",
+        "completed": false
+      }
+    ],
+    "location": "src/app/components/about/about.ts"
+  },
+  {
+    "id": "task-5",
+    "title": "Extract Magic Numbers to Constants",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Extract timeout values (2000ms) to named constants",
+        "completed": false
+      },
+      {
+        "description": "Extract offset ratios in help.ts",
+        "completed": false
+      }
+    ],
+    "location": "contact.ts, contact-result.ts, help.ts"
+  },
+  {
+    "id": "task-6",
+    "title": "Remove Unused Animation",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Remove `staggerFadeIn` animation if not needed",
+        "completed": true
+      }
+    ],
+    "location": "src/app/animations/animations.ts"
+  },
+  {
+    "id": "task-7",
+    "title": "Simplify NavigationService",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Remove unnecessary `Links` getter",
+        "completed": true
+      },
+      {
+        "description": "Components can import `Links` directly",
+        "completed": true
+      }
+    ],
+    "location": "src/app/services/navigation.service.ts"
+  },
+  {
+    "id": "task-8",
+    "title": "Switch to Object Lookup in Help Utils",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace switch statement with object lookup",
+        "completed": false
+      }
+    ],
+    "location": "src/app/utils/help.ts"
+  },
+  {
+    "id": "task-9",
+    "title": "Mark ContactFormComponent Placeholder as Readonly",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add `readonly` to placeholder property",
+        "completed": false
+      }
+    ],
+    "location": "src/app/components/contact/contact-form.ts"
+  },
+  {
+    "id": "task-10",
+    "title": "Review ViewChild References",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Verify if ViewChild references in ContactComponent are needed",
+        "completed": true
+      }
+    ],
+    "location": "src/app/components/contact/contact.ts"
+  },
+  {
+    "id": "task-11",
+    "title": "Rename Component Files",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Rename all component files to remove `.component` from the file name",
+        "completed": false
+      },
+      {
+        "description": "Update all imports across the codebase",
+        "completed": false
+      },
+      {
+        "description": "Ensure Angular recognizes files correctly after renaming",
+        "completed": false
+      }
+    ],
+    "location": "All *.component.ts, *.component.html, *.component.css files throughout the project"
+  },
+  {
+    "id": "task-12",
+    "title": "Move SVGs to Reusable Icon Components",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Extract inline SVGs to separate icon components",
+        "completed": false
+      },
+      {
+        "description": "Create reusable icon components that can be imported and used throughout the app",
+        "completed": false
+      },
+      {
+        "description": "Replace duplicate SVG code with icon component references",
+        "completed": false
+      }
+    ],
+    "location": "Components with inline SVG markup"
+  },
+  {
+    "id": "task-13",
+    "title": "Redesign Dev Stats Tab Interface",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace current tab UI with larger text-based tabs",
+        "completed": false
+      },
+      {
+        "description": "Add light white horizontal lines next to tab labels",
+        "completed": false
+      },
+      {
+        "description": "Create white illuminated shadow effect to simulate stacked pages",
+        "completed": false
+      },
+      {
+        "description": "Design active tab to appear linked to its corresponding page",
+        "completed": false
+      },
+      {
+        "description": "Maintain minimal aesthetic while achieving a revolutionary page-like appearance",
+        "completed": false
+      }
+    ],
+    "location": "Dev stats component tab interface"
+  }
+]

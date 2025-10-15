@@ -86,6 +86,7 @@ export interface AppState {
   isInitialized: boolean;
   commandsModalVisible: boolean;
   devCommits: DevCommit[];
+  tasks: Task[];
 }
 
 export interface ContactResult {
@@ -101,4 +102,17 @@ export interface DevCommit {
   author: string;
   date: string;
   url: string;
+}
+
+export interface TaskSubtask {
+  description: string;
+  completed: boolean;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  status: 'pending' | 'completed';
+  subtasks: TaskSubtask[];
+  location: string;
 }

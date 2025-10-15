@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/cor
 import { Store } from '@ngrx/store';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ModalComponent } from './modal';
-import { selectDevCommits } from '../store/app.selectors';
+import { selectDevCommits, selectTasks } from '../store/app.selectors';
 
 @Component({
   selector: 'dev-stats',
@@ -51,6 +51,12 @@ import { selectDevCommits } from '../store/app.selectors';
             class="tab-button">
             Services Status
           </button>
+          <button
+            [class.active]="activeTab() === 'tasks'"
+            (click)="setActiveTab('tasks')"
+            class="tab-button">
+            Tasks
+          </button>
         </div>
 
         <div class="tab-content">
@@ -86,6 +92,32 @@ import { selectDevCommits } from '../store/app.selectors';
                 <p class="text-sm">Services Status</p>
                 <p class="text-xs text-gray-500 mt-2">Coming soon...</p>
               </div>
+            </div>
+          }
+
+          @if (activeTab() === 'tasks') {
+            <div class="tasks-container">
+              @for (task of tasks$ | async; track task.id) {
+                <div class="task-card">
+                  <div class="task-header">
+                    <h3 class="task-title">{{ task.title }}</h3>
+                    <span class="task-status" [class.completed]="task.status === 'completed'">
+                      {{ task.status }}
+                    </span>
+                  </div>
+                  <div class="task-subtasks">
+                    @for (subtask of task.subtasks; track subtask.description) {
+                      <div class="subtask">
+                        <input type="checkbox" [checked]="subtask.completed" disabled />
+                        <span [class.completed]="subtask.completed">{{ subtask.description }}</span>
+                      </div>
+                    }
+                  </div>
+                  <div class="task-location">
+                    <span class="text-xs text-gray-500">{{ task.location }}</span>
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>
@@ -136,6 +168,79 @@ import { selectDevCommits } from '../store/app.selectors';
       overflow-x: auto;
     }
 
+    .tasks-container {
+      max-height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .task-card {
+      background: #2a2a2a;
+      border: 1px solid #404040;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .task-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0;
+    }
+
+    .task-status {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      background: #404040;
+      color: #888;
+      font-weight: 600;
+    }
+
+    .task-status.completed {
+      background: #1a4d2e;
+      color: #4ade80;
+    }
+
+    .task-subtasks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .subtask {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    .subtask input[type="checkbox"] {
+      cursor: not-allowed;
+    }
+
+    .subtask span.completed {
+      text-decoration: line-through;
+      color: #666;
+    }
+
+    .task-location {
+      padding-top: 8px;
+      border-top: 1px solid #333;
+    }
+
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -152,14 +257,15 @@ export class DevStats {
   private store = inject(Store);
 
   protected isModalOpen = signal(false);
-  protected activeTab = signal<'commits' | 'services'>('commits');
+  protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
   protected devCommits$ = this.store.select(selectDevCommits);
+  protected tasks$ = this.store.select(selectTasks);
 
   toggleModal() {
     this.isModalOpen.update(value => !value);
   }
 
-  setActiveTab(tab: 'commits' | 'services') {
+  setActiveTab(tab: 'commits' | 'services' | 'tasks') {
     this.activeTab.set(tab);
   }
 }
