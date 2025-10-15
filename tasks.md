@@ -541,13 +541,13 @@
 - Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
 
 ### Task 68: Fix AG Grid Column Menu Not Displaying
-- [ ] Investigate why column menu icons are not visible in column headers
-- [ ] Check AG Grid documentation for proper column menu configuration
-- [ ] Add suppressHeaderMenuButton: false to column definitions or grid options
-- [ ] Enable menu icons in column headers
-- [ ] Test right-click context menu functionality on column headers
-- [ ] Verify column chooser opens and allows hiding/showing columns
-- [ ] Ensure menu works in both commits-grid and task-table
+- [x] Investigate why column menu icons are not visible in column headers
+- [x] Check AG Grid documentation for proper column menu configuration
+- [x] Add suppressHeaderMenuButton: false to column definitions or grid options
+- [x] Enable menu icons in column headers
+- [x] Test right-click context menu functionality on column headers
+- [x] Verify column chooser opens and allows hiding/showing columns
+- [x] Ensure menu works in both commits-grid and task-table
 - Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
 
 ### Task 69: Compress Status Badge and Add White Text Stroke
@@ -558,3 +558,12 @@
 - [ ] Ensure text remains readable with new compact styling
 - [ ] Test appearance in both table and card views
 - Location: `src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`
+
+### Task 70: Fix Git Commits Table Not Displaying Data
+- [x] Investigate why Git Commits table shows empty/black display
+- [x] Debug data loading in commits-grid component
+- [x] Verify dev-commits.json is being read correctly
+- [x] Check AG Grid column definitions and field mappings
+- [x] Fix any issues preventing commit data from displaying
+- [x] Ensure table displays commit data like Tasks table does
+- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/dev-stats.ts`
