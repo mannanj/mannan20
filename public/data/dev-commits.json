@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "e5f9179c5c8f68c673666cd2f9b20b55e4084ae8",
+    "hash": "e5f9179",
+    "subject": "Task 68: Fix AG Grid Column Menu Not Displaying",
+    "body": "- [x] Investigate why column menu icons are not visible in column headers\n- [x] Check AG Grid documentation for proper column menu configuration\n- [x] Add suppressHeaderMenuButton: false to column definitions or grid options\n- [x] Enable menu icons in column headers\n- [x] Test right-click context menu functionality on column headers\n- [x] Verify column chooser opens and allows hiding/showing columns\n- [x] Ensure menu works in both commits-grid and task-table\n- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`\n\n[Task-68]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:18:32-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e5f9179c5c8f68c673666cd2f9b20b55e4084ae8"
+  },
+  {
+    "fullHash": "6d6bd40c253b3596561cd0488ba2d0d6e1c740dc",
+    "hash": "6d6bd40",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T18:19:05-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6d6bd40c253b3596561cd0488ba2d0d6e1c740dc"
+  },
+  {
     "fullHash": "47fa88fa46e1b33c2545812b91d8c5a499efb89c",
     "hash": "47fa88f",
     "subject": "Add Task 69: Compress status badge and add white text stroke",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T00:54:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/3fc5e5c1d3317515ad1e4cefd0681fe0b8c9a452"
-  },
-  {
-    "fullHash": "a461309d0cdfce9feb64c92a5508e4bf77af70b4",
-    "hash": "a461309",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:50:17-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a461309d0cdfce9feb64c92a5508e4bf77af70b4"
-  },
-  {
-    "fullHash": "a3f747594347e83d46e8aa4c6afe784371f776ca",
-    "hash": "a3f7475",
-    "subject": "Task 27: Fix Text Color in Expanded More Sections",
-    "body": "- [x] Fix employment-section expanded content to show black text on light background\n- [x] Fix education-section expanded content to show black text on light background\n- [x] Ensure .content class properly styles nested elements\n- [x] Verify text is readable when more sections are expanded\n- Location: `src/app/components/about/content-card.ts`, `src/app/components/about/education-section.ts`, `src/styles.css`\n\n[Task-27]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T00:50:17-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a3f747594347e83d46e8aa4c6afe784371f776ca"
   }
 ]

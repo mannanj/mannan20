@@ -2238,38 +2238,46 @@
   {
     "id": "task-68",
     "title": "Fix AG Grid Column Menu Not Displaying",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Investigate why column menu icons are not visible in column headers",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Check AG Grid documentation for proper column menu configuration",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Add suppressHeaderMenuButton: false to column definitions or grid options",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Enable menu icons in column headers",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Test right-click context menu functionality on column headers",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Verify column chooser opens and allows hiding/showing columns",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Ensure menu works in both commits-grid and task-table",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
+    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`",
+    "completedDate": "2025-10-15T19:18:32-04:00",
+    "completedCommit": {
+      "hash": "e5f9179",
+      "fullHash": "e5f9179c5c8f68c673666cd2f9b20b55e4084ae8",
+      "subject": "Task 68: Fix AG Grid Column Menu Not Displaying",
+      "date": "2025-10-15T19:18:32-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/e5f9179c5c8f68c673666cd2f9b20b55e4084ae8"
+    }
   },
   {
     "id": "task-69",
@@ -2302,5 +2310,37 @@
       }
     ],
     "location": "`src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`"
+  },
+  {
+    "id": "task-70",
+    "title": "Fix Git Commits Table Not Displaying Data",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Investigate why Git Commits table shows empty/black display",
+        "completed": true
+      },
+      {
+        "description": "Debug data loading in commits-grid component",
+        "completed": true
+      },
+      {
+        "description": "Verify dev-commits.json is being read correctly",
+        "completed": true
+      },
+      {
+        "description": "Check AG Grid column definitions and field mappings",
+        "completed": true
+      },
+      {
+        "description": "Fix any issues preventing commit data from displaying",
+        "completed": true
+      },
+      {
+        "description": "Ensure table displays commit data like Tasks table does",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/dev-stats.ts`"
   }
 ]
