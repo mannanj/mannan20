@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "81cbcdb7a34420fa0619d4473b1280655616804a",
+    "hash": "81cbcdb",
+    "subject": "Task 45: Fine-Tune Table Column Widths and Modal Responsive Breakpoints",
+    "body": "- [x] Install and configure ag-grid for Angular\n- [x] Replace git commits table with ag-grid with resizable columns\n- [x] Replace tasks table with ag-grid with resizable columns\n- [x] Set modal max-width to 1028px with responsive breakpoints\n- [x] Configure different modal widths for small, md, and lg screen sizes\n- [x] Configure ag-grid column widths (narrow author, wider task titles, full date visibility)\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/modal.ts`\n\n[Task-45]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:21:00-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/81cbcdb7a34420fa0619d4473b1280655616804a"
+  },
+  {
+    "fullHash": "8239f2bf356c83aa89832b8d1d27b6e47a3baff4",
+    "hash": "8239f2b",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T11:10:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8239f2bf356c83aa89832b8d1d27b6e47a3baff4"
+  },
+  {
     "fullHash": "7c3b43fea80c6556876e4abe1bc0427d2d4942f7",
     "hash": "7c3b43f",
     "subject": "Task 44: Make Dev Stats Modal Tables Responsive to Screen Size",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T22:05:13-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/1515c000f09453e2355b1fd1fb288e460dbe334c"
-  },
-  {
-    "fullHash": "5b0eceaccbe77aa4584496978c5961e381a0c3b2",
-    "hash": "5b0ecea",
-    "subject": "Remove NavigationService and migrate to NgRx with helper functions",
-    "body": "Refactored navigation logic to use NgRx state management and helper functions instead of a dedicated service:\n\n- Moved navigation logic to helper functions (navigateTo, createIntersectionObserver)\n- Updated BaseSectionComponent to inject Store directly and use helpers\n- Updated all components (Home, About, Contact, Header) to use navigateTo helper\n- Removed NavigationService and its spec file\n- Maintained all intersection observer functionality with improved state management\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:05:13-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5b0eceaccbe77aa4584496978c5961e381a0c3b2"
-  },
-  {
-    "fullHash": "5c2b6ca90808f582b7a98f7687658dd5caf7bcf6",
-    "hash": "5c2b6ca",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T22:01:55-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5c2b6ca90808f582b7a98f7687658dd5caf7bcf6"
   }
 ]

@@ -1286,5 +1286,45 @@
       "date": "2025-10-15T11:10:31-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/7c3b43fea80c6556876e4abe1bc0427d2d4942f7"
     }
+  },
+  {
+    "id": "task-45",
+    "title": "Fine-Tune Table Column Widths and Modal Responsive Breakpoints",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Install and configure ag-grid for Angular",
+        "completed": true
+      },
+      {
+        "description": "Replace git commits table with ag-grid with resizable columns",
+        "completed": true
+      },
+      {
+        "description": "Replace tasks table with ag-grid with resizable columns",
+        "completed": true
+      },
+      {
+        "description": "Set modal max-width to 1028px with responsive breakpoints",
+        "completed": true
+      },
+      {
+        "description": "Configure different modal widths for small, md, and lg screen sizes",
+        "completed": true
+      },
+      {
+        "description": "Configure ag-grid column widths (narrow author, wider task titles, full date visibility)",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/modal.ts`",
+    "completedDate": "2025-10-15T11:21:00-04:00",
+    "completedCommit": {
+      "hash": "81cbcdb",
+      "fullHash": "81cbcdb7a34420fa0619d4473b1280655616804a",
+      "subject": "Task 45: Fine-Tune Table Column Widths and Modal Responsive Breakpoints",
+      "date": "2025-10-15T11:21:00-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/81cbcdb7a34420fa0619d4473b1280655616804a"
+    }
   }
 ]
