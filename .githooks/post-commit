@@ -15,7 +15,7 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
 node -e "
 const { execSync } = require('child_process');
 
-const output = execSync(\`git log -9 --format='%H|||%h|||%s|||%b|||%an|||%ai|||---END---'\`, { encoding: 'utf-8', shell: '/bin/bash' });
+const output = execSync(\`git log -9 --format='%H|||%h|||%s|||%b|||%an|||%aI|||---END---'\`, { encoding: 'utf-8', shell: '/bin/bash' });
 const commits = [];
 const entries = output.split('|||---END---\n').filter(e => e.trim());
 
@@ -39,7 +39,7 @@ console.log(JSON.stringify(commits, null, 2));
 
 node -e "
 const { execSync } = require('child_process');
-const latestDate = execSync('git log -1 --format=%ai', { encoding: 'utf-8', shell: '/bin/bash' }).trim();
+const latestDate = execSync('git log -1 --format=%aI', { encoding: 'utf-8', shell: '/bin/bash' }).trim();
 console.log(JSON.stringify({ lastUpdated: latestDate }, null, 2));
 " > "$METADATA_FILE"
 
