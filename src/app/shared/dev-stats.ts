@@ -7,10 +7,12 @@ import { selectDevCommits, selectTasks } from '../store/app.selectors';
 import { DevStatsIcon } from '../components/icons/dev-stats-icon';
 import { ServicesPlaceholderIcon } from '../components/icons/services-placeholder-icon';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, ICellRendererParams } from 'ag-grid-community';
 
 @Component({
   selector: 'dev-stats',
-  imports: [AsyncPipe, DatePipe, Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon],
+  imports: [AsyncPipe, Modal, TasksContainer, DevStatsIcon, ServicesPlaceholderIcon, AgGridAngular],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -45,24 +47,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
         <div class="tab-content">
           @if (activeTab() === 'commits') {
-            <div class="commits-table-container">
-              <table class="w-full border-collapse">
-                <tbody>
-                  @for (commit of filteredCommits(); track commit.hash) {
-                    <tr class="border-b border-gray-700 hover:bg-white/5">
-                      <td class="py-1 px-2">
-                        <a [href]="commit.url" target="_blank" class="text-[#039be5] hover:underline font-mono text-xs">
-                          {{ commit.hash }}
-                        </a>
-                      </td>
-                      <td class="py-1 px-2 text-gray-300 text-xs">{{ commit.subject }}</td>
-                      <td class="py-1 px-2 text-gray-400 text-xs">{{ commit.author }}</td>
-                      <td class="py-1 px-2 text-gray-400 text-xs">{{ commit.date | date: 'MMM d, y h:mm a' }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <ag-grid-angular
+              class="ag-theme-quartz-dark"
+              [rowData]="filteredCommits()"
+              [columnDefs]="commitsColDefs"
+              [domLayout]="'autoHeight'"
+              [suppressCellFocus]="true"
+              style="width: 100%; max-height: 400px;"
+            />
           }
 
           @if (activeTab() === 'services') {
@@ -149,6 +141,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class DevStats {
   private store = inject(Store);
+  private datePipe = inject(DatePipe);
 
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
@@ -158,6 +151,40 @@ export class DevStats {
   protected filteredCommits = computed(() =>
     this.allCommits().filter(commit => commit.subject !== 'Update dev data files')
   );
+
+  protected commitsColDefs: ColDef[] = [
+    {
+      field: 'hash',
+      headerName: 'Hash',
+      width: 100,
+      resizable: true,
+      cellRenderer: (params: ICellRendererParams) => {
+        return `<a href="${params.data.url}" target="_blank" style="color: #039be5; font-family: monospace; font-size: 12px; text-decoration: none;">${params.value}</a>`;
+      }
+    },
+    {
+      field: 'subject',
+      headerName: 'Subject',
+      flex: 1,
+      resizable: true,
+      cellStyle: { fontSize: '12px', color: '#d1d1d1' }
+    },
+    {
+      field: 'author',
+      headerName: 'Author',
+      width: 120,
+      resizable: true,
+      cellStyle: { fontSize: '12px', color: '#999', overflow: 'hidden', textOverflow: 'ellipsis' }
+    },
+    {
+      field: 'date',
+      headerName: 'Date',
+      width: 180,
+      resizable: true,
+      valueFormatter: (params) => this.datePipe.transform(params.value, 'MMM d, y h:mm a') || '',
+      cellStyle: { fontSize: '12px', color: '#999', whiteSpace: 'nowrap' }
+    }
+  ];
 
   toggleModal() {
     this.isModalOpen.update(value => !value);
