@@ -36,7 +36,7 @@ import { formatCompletionDate } from '../utils/date';
               </td>
               <td class="py-2 px-3 border-b border-[#333] text-[#ccc]">
                 @if (task.completedCommit) {
-                  <a [href]="task.completedCommit.url" target="_blank" class="text-[#039be5] no-underline font-mono hover:underline">
+                  <a [href]="task.completedCommit.url" target="_blank" class="text-[#039be5] no-underline font-mono hover:underline focus:outline-none">
                     {{ task.completedCommit.hash }}
                   </a>
                 } @else {

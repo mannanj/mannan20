@@ -12,20 +12,20 @@ import { SortIcon } from '../components/icons/sort-icon';
       <div class="flex gap-1">
         <button
           (click)="viewChange.emit('card')"
-          [class]="currentView() === 'card' ? 'bg-[#039be5] text-white border-[#039be5] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded border transition-all duration-200' : 'bg-[#1a1a1a] border-[#404040] text-[#888] hover:text-[#4dd8ff] hover:border-[#4dd8ff] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded border transition-all duration-200'"
+          [class]="currentView() === 'card' ? '!border-0 !shadow-none bg-[#039be5] text-white flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none' : '!border-0 !shadow-none bg-[#1a1a1a] text-[#888] hover:text-[#4dd8ff] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none'"
           title="Card View">
           <card-view-icon />
         </button>
         <button
           (click)="viewChange.emit('table')"
-          [class]="currentView() === 'table' ? 'bg-[#039be5] text-white border-[#039be5] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded border transition-all duration-200' : 'bg-[#1a1a1a] border-[#404040] text-[#888] hover:text-[#4dd8ff] hover:border-[#4dd8ff] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded border transition-all duration-200'"
+          [class]="currentView() === 'table' ? '!border-0 !shadow-none bg-[#039be5] text-white flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none' : '!border-0 !shadow-none bg-[#1a1a1a] text-[#888] hover:text-[#4dd8ff] flex items-center justify-center px-2 py-1.5 cursor-pointer rounded transition-all duration-200 focus:outline-none'"
           title="Table View">
           <table-view-icon />
         </button>
       </div>
       <button
         (click)="sortToggle.emit()"
-        class="bg-[#1a1a1a] border border-[#404040] text-[#888] px-3 py-1.5 cursor-pointer rounded transition-all duration-200 flex items-center gap-1.5 text-xs hover:text-[#4dd8ff] hover:border-[#4dd8ff]"
+        class="!border-0 !shadow-none bg-[#1a1a1a] text-[#888] px-3 py-1.5 cursor-pointer rounded transition-all duration-200 flex items-center gap-1.5 text-xs hover:text-[#4dd8ff] focus:outline-none"
         title="Sort by completion date">
         <sort-icon [direction]="sortOrder()" />
         {{ sortOrder() === 'asc' ? 'Oldest First' : 'Newest First' }}

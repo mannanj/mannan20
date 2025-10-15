@@ -97,25 +97,32 @@ import { toSignal } from '@angular/core/rxjs-interop';
     }
 
     .tab-button {
-      background: none;
-      border: none;
+      background: none !important;
+      border: none !important;
       color: #888;
-      padding: 8px 16px;
+      padding: 8px 16px !important;
       cursor: pointer;
       font-size: 14px;
-      border-bottom: 2px solid transparent;
+      border-bottom: 2px solid transparent !important;
       transition: all 0.2s;
       position: relative;
       top: 1px;
+      box-shadow: none !important;
+      text-transform: none !important;
+      margin-top: 0 !important;
+      transform: none !important;
     }
 
     .tab-button:hover {
       color: #4dd8ff;
+      transform: none !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
     }
 
     .tab-button.active {
       color: #039be5;
-      border-bottom-color: #039be5;
+      border-bottom-color: #039be5 !important;
     }
 
     .tab-content {

@@ -18,7 +18,7 @@ import { formatCompletionDate } from '../utils/date';
         <div class="flex items-center gap-2 mb-2 text-[11px]">
           <span class="text-[#888]">Completed:</span>
           <span class="text-[#4ade80] font-semibold">{{ formatDate(task().completedDate!) }}</span>
-          <a [href]="task().completedCommit!.url" target="_blank" class="text-[#039be5] no-underline font-mono hover:underline">
+          <a [href]="task().completedCommit!.url" target="_blank" class="text-[#039be5] no-underline font-mono hover:underline focus:outline-none">
             {{ task().completedCommit!.hash }}
           </a>
         </div>
@@ -26,7 +26,7 @@ import { formatCompletionDate } from '../utils/date';
       <div class="flex flex-col gap-2 mb-2">
         @for (subtask of task().subtasks; track subtask.description) {
           <div class="flex items-center gap-2 text-xs text-[#ccc]">
-            <input type="checkbox" [checked]="subtask.completed" disabled class="cursor-not-allowed" />
+            <input type="checkbox" [checked]="subtask.completed" disabled class="cursor-not-allowed focus:outline-none" />
             <span [class.line-through]="subtask.completed" [class.text-[#666]]="subtask.completed">{{ subtask.description }}</span>
           </div>
         }
