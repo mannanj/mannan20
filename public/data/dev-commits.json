@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "db8102e6b8ab972498317ffa290ef33301d494dd",
+    "hash": "db8102e",
+    "subject": "Task 26: Restore Original More/Less Button Styling",
+    "body": "- [x] Check commit c1922e1 for original more/less button styles\n- [x] Identify which styles can be converted to Tailwind utilities\n- [x] Keep custom CSS for styles Tailwind doesn't support\n- [x] Apply restored styling to all more/less buttons (about, education, extracurriculars, content-card, employment)\n- [x] Ensure visual appearance matches pre-Task-23 styling\n- Location: \\`src/app/components/about/*.ts\\`\n\n[Task-26]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:43:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/db8102e6b8ab972498317ffa290ef33301d494dd"
+  },
+  {
+    "fullHash": "e6df113b3e926c934c7c20a07ea659f6bc7c1b39",
+    "hash": "e6df113",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T00:36:53-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e6df113b3e926c934c7c20a07ea659f6bc7c1b39"
+  },
+  {
     "fullHash": "dbb42a19e16534c8644db5fb7b9c5c88452ac49a",
     "hash": "dbb42a1",
     "subject": "Task 23: Convert CSS Classes to Tailwind Utility Classes",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T20:26:08-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/892433edc6d57ef757b92a9d6ccf5231f420c445"
-  },
-  {
-    "fullHash": "88bdd014c2ebfee92fee0a1bd3824b998ed296ad",
-    "hash": "88bdd01",
-    "subject": "Remove cursor state from app reducer, actions, and selectors",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:24:42-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/88bdd014c2ebfee92fee0a1bd3824b998ed296ad"
-  },
-  {
-    "fullHash": "fb6164a707478bed5a6b41310c78e1eacd0fdbf3",
-    "hash": "fb6164a",
-    "subject": "Update components to use cursor selectors",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T20:23:00-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/fb6164a707478bed5a6b41310c78e1eacd0fdbf3"
   }
 ]

@@ -622,5 +622,65 @@
       "date": "2025-10-15T00:24:43-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/baff27948919e947fbb9c7a964645a8645d726b5"
     }
+  },
+  {
+    "id": "task-25",
+    "title": "Update Documentation with Tailwind Styling Requirements",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Update .claude/CLAUDE.md to document Tailwind CSS 4 usage requirement",
+        "completed": true
+      },
+      {
+        "description": "Add guidelines for when to use Tailwind vs custom CSS",
+        "completed": true
+      },
+      {
+        "description": "Document that inline Tailwind utilities should be preferred over component styles",
+        "completed": true
+      },
+      {
+        "description": "Add examples of proper Tailwind class usage",
+        "completed": true
+      }
+    ],
+    "location": "`.claude/CLAUDE.md`"
+  },
+  {
+    "id": "task-26",
+    "title": "Restore Original More/Less Button Styling",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Check commit c1922e1 for original more/less button styles",
+        "completed": true
+      },
+      {
+        "description": "Identify which styles can be converted to Tailwind utilities",
+        "completed": true
+      },
+      {
+        "description": "Keep custom CSS for styles Tailwind doesn't support",
+        "completed": true
+      },
+      {
+        "description": "Apply restored styling to all more/less buttons (about, education, extracurriculars, content-card, employment)",
+        "completed": true
+      },
+      {
+        "description": "Ensure visual appearance matches pre-Task-23 styling",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/components/about/*.ts`",
+    "completedDate": "2025-10-15T00:43:24-04:00",
+    "completedCommit": {
+      "hash": "db8102e",
+      "fullHash": "db8102e6b8ab972498317ffa290ef33301d494dd",
+      "subject": "Task 26: Restore Original More/Less Button Styling",
+      "date": "2025-10-15T00:43:24-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/db8102e6b8ab972498317ffa290ef33301d494dd"
+    }
   }
 ]
