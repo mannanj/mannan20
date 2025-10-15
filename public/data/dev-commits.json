@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "fdce0aa3ea6ef9a0157ce3f3bb8c3d08489e8187",
+    "hash": "fdce0aa",
+    "subject": "Task 62: Comprehensive CSS Overhaul and Simplification",
+    "body": "- [x] Audit all CSS usage across codebase (global styles, component styles, inline classes)\n- [x] Create responsive layout system with consistent container padding/width:\n  - Mobile: 100% width with 20px padding on sides\n  - Tablet (md breakpoint 768px+): 70% content width (15% margin each side)\n  - Desktop (lg breakpoint 1024px+): max-width 720px, centered with auto margins\n- [x] Configure Tailwind to support responsive container system\n- [x] Remove all entry animations from components (fadeIn, slideInLeft, slideInRight, scaleIn, bounceIn)\n- [x] Remove animation imports from all components\n- [x] Simplify button interactions:\n  - Remove complex pseudo-element animations (::before ripple effects)\n  - Add simple scale transform on hover (scale-105)\n  - Add subtle shadow glow on active/click state using box-shadow\n  - Keep blue color scheme (#039be5, #4fc3f7)\n- [x] Create reusable button utility classes in Tailwind for consistent styling\n- [x] Consolidate extremely long inline Tailwind class strings into named CSS classes where appropriate\n- [x] Remove redundant custom CSS that can be replaced with Tailwind utilities\n- [x] Preserve all colors exactly: #039be5, #4fc3f7, #0b0b0b, #ffffff, #333, #666\n- [x] Keep essential custom CSS:\n  - Link underline animations (a::after with width transition)\n  - Expandable content (.content, .collapsible)\n  - Modal backdrop and animations\n  - Contact page ripple circles\n  - Any ::before/::after pseudo-elements with content\n- [x] Apply responsive container to all main page sections (Home, About, Contact)\n- [x] Test all pages at mobile, tablet, and desktop sizes\n- [x] Verify visual appearance matches screenshots in public/ui-screenshots\n- [x] Ensure no functionality is lost during CSS refactoring\n- Location: \\`src/styles.css\\`, \\`src/app/animations/animations.ts\\`, all component files\n\n[Task-62]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T13:59:51-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fdce0aa3ea6ef9a0157ce3f3bb8c3d08489e8187"
+  },
+  {
+    "fullHash": "146e9c1203d728cef0101f162d0b71c8e1a22a97",
+    "hash": "146e9c1",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T12:40:38-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/146e9c1203d728cef0101f162d0b71c8e1a22a97"
+  },
+  {
     "fullHash": "145eae8debdbd245f74899b52e04538831485085",
     "hash": "145eae8",
     "subject": "Convert global CSS classes to inline Tailwind utilities",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T23:44:07-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/eade65f2dc83ecc167b0bd098055c8eb96a98df2"
-  },
-  {
-    "fullHash": "b10b055045f4f923fd9cb58861edf77d5da9288b",
-    "hash": "b10b055",
-    "subject": "Fix grep escaping in post-commit hook",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:44:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b10b055045f4f923fd9cb58861edf77d5da9288b"
-  },
-  {
-    "fullHash": "d9e09f1abc34d83b4d3df9140f774a47770402ce",
-    "hash": "d9e09f1",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-14T23:42:45-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/d9e09f1abc34d83b4d3df9140f774a47770402ce"
   }
 ]
