@@ -1,5 +1,14 @@
 [
   {
+    "fullHash": "d369483bbee48534da8ec7818a4cd7b8be07296c",
+    "hash": "d369483",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14 21:48:02 -0400",
+    "url": "https://github.com/mannanj/mannan20/commit/d369483bbee48534da8ec7818a4cd7b8be07296c"
+  },
+  {
     "fullHash": "11d0b891abd54bc2e86c3a2f7d3b88560d8c68ff",
     "hash": "11d0b89",
     "subject": "Test separate commit hook",
@@ -70,14 +79,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-14 21:34:45 -0400",
     "url": "https://github.com/mannanj/mannan20/commit/8094a992f0b7811154eebcae0b70fc8c07cb6197"
-  },
-  {
-    "fullHash": "8a7644545fe69a9e281e5b216095222960d2d683",
-    "hash": "8a76445",
-    "subject": "Refactor dev stats to use NgRx effects and conditional rendering",
-    "body": "Move data fetching logic from component to NgRx effects - effect only loads\ndev-commits.json when isDevMode() cookie is true. Simplify DevStats component\nto be a dumb presentation component with no lifecycle hooks or HTTP calls.\n\nAdd conditional rendering in app.ts with @if (hasDevCommits()) similar to\nisConnected() pattern. Component now only renders when data is available.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-14 21:07:44 -0400",
-    "url": "https://github.com/mannanj/mannan20/commit/8a7644545fe69a9e281e5b216095222960d2d683"
   }
 ]
