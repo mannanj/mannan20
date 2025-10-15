@@ -20,7 +20,7 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
       <p>{{ (education$ | async)?.degree }}</p>
 
       <div id="more-education">
-        <div *ngIf="section.display" class="bg-[#f1f1f1] text-black p-1.5 rounded-md" @fadeIn>
+        <div *ngIf="section.display" class="content" @fadeIn>
           <content-card *ngIf="section.count >= 1 && (projects$ | async)" [data]="(projects$ | async)!['archr']"></content-card>
           <content-card *ngIf="section.count >= 1 && (projects$ | async)" [data]="(projects$ | async)!['solar']" [applyMarginTop]="true"></content-card>
           <content-card *ngIf="section.count === 2 && (projects$ | async)" [data]="(projects$ | async)!['dome']" [applyMarginTop]="true"></content-card>
