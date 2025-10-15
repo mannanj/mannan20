@@ -35,11 +35,17 @@ import { ContactResult } from '../models/models';
       background: #1a1a1a;
       border: 1px solid #333;
       border-radius: 16px;
-      max-width: 520px;
+      max-width: 90vw;
       width: 100%;
       padding: 40px;
       position: relative;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (min-width: 768px) {
+      .modal-content {
+        max-width: 1200px;
+      }
     }
 
     .close-btn {
