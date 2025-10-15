@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "7288168030789eed85511075663511010266a2cd",
+    "hash": "7288168",
+    "subject": "Optimize git hooks and enhance dev stats with scrollable commit history",
+    "body": "Remove redundant pre-commit hook that duplicated post-commit functionality. Update post-commit hook to capture 100 commits instead of 9 for comprehensive git history tracking. Add scrollable container with 400px max-height to dev stats commits table, removing the 5-commit display limit to show all available commits. Document SVG refactoring task for future component reusability improvements.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:32:01-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7288168030789eed85511075663511010266a2cd"
+  },
+  {
+    "fullHash": "896d9b2965c84d571adbce26578b7b28412a1b1c",
+    "hash": "896d9b2",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T22:28:25-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/896d9b2965c84d571adbce26578b7b28412a1b1c"
+  },
+  {
     "fullHash": "5445827769f1fc7888e68a619d0803aaa268811e",
     "hash": "5445827",
     "subject": "Enhance dev stats modal with custom SVG icon and tabbed interface",
@@ -79,5 +97,788 @@
     "author": "Mannan Javid",
     "date": "2025-10-14T21:57:47-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/1bf4ef4b739b167e386fb556b358ea3b2f0de3a3"
+  },
+  {
+    "fullHash": "d111a958cbb20f6f7badaa56c2f8393cb8391040",
+    "hash": "d111a95",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:56:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d111a958cbb20f6f7badaa56c2f8393cb8391040"
+  },
+  {
+    "fullHash": "84f2e79890c235e10bbae59c5ee34e5ec79e5a65",
+    "hash": "84f2e79",
+    "subject": "Fix intersection observer to select most visible section",
+    "body": "Updated setActiveSection() to choose the section with the highest intersection ratio instead of prioritizing by order. This ensures the about section becomes active when it's more visible than home during scrolling.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:56:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/84f2e79890c235e10bbae59c5ee34e5ec79e5a65"
+  },
+  {
+    "fullHash": "fac18c4498dd498ba62ae05436f08c5978f52b6e",
+    "hash": "fac18c4",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:52:51-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fac18c4498dd498ba62ae05436f08c5978f52b6e"
+  },
+  {
+    "fullHash": "7fe879991998e1aee9f2498dbc48c0920da3485a",
+    "hash": "7fe8799",
+    "subject": "Fix date format to ISO 8601 for Safari compatibility",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:52:51-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7fe879991998e1aee9f2498dbc48c0920da3485a"
+  },
+  {
+    "fullHash": "700b9e1fb14349fd6c28a4514494e2330cc77bcb",
+    "hash": "700b9e1",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:49:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/700b9e1fb14349fd6c28a4514494e2330cc77bcb"
+  },
+  {
+    "fullHash": "8b6fb041a6d22dd85f6bd28147ffba7b8b671530",
+    "hash": "8b6fb04",
+    "subject": "Update post-commit hook to use separate commits",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:49:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8b6fb041a6d22dd85f6bd28147ffba7b8b671530"
+  },
+  {
+    "fullHash": "0d6aa35da45fb9cdc7a823a2ec28f8932b1632bd",
+    "hash": "0d6aa35",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:48:39-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0d6aa35da45fb9cdc7a823a2ec28f8932b1632bd"
+  },
+  {
+    "fullHash": "7a667233e75c5ea02223105c75f28269d81ff274",
+    "hash": "7a66723",
+    "subject": "Final verification of post-commit hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:48:39-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7a667233e75c5ea02223105c75f28269d81ff274"
+  },
+  {
+    "fullHash": "d369483bbee48534da8ec7818a4cd7b8be07296c",
+    "hash": "d369483",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:48:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d369483bbee48534da8ec7818a4cd7b8be07296c"
+  },
+  {
+    "fullHash": "11d0b891abd54bc2e86c3a2f7d3b88560d8c68ff",
+    "hash": "11d0b89",
+    "subject": "Test separate commit hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:48:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/11d0b891abd54bc2e86c3a2f7d3b88560d8c68ff"
+  },
+  {
+    "fullHash": "28a45414cd08cad2e5d0eead6d9fc3a28ab33ae0",
+    "hash": "28a4541",
+    "subject": "Test fixed hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:46:25-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/28a45414cd08cad2e5d0eead6d9fc3a28ab33ae0"
+  },
+  {
+    "fullHash": "dcea032d8f685049e40f48846a77a1f9ac96197d",
+    "hash": "dcea032",
+    "subject": "Test hook in correct location",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:44:38-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/dcea032d8f685049e40f48846a77a1f9ac96197d"
+  },
+  {
+    "fullHash": "e5abdd8271c6299e1d0b8b592c2f9a9955f9f2fd",
+    "hash": "e5abdd8",
+    "subject": "Final hook test",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:44:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e5abdd8271c6299e1d0b8b592c2f9a9955f9f2fd"
+  },
+  {
+    "fullHash": "ed2d96e1368b4d71619c1e8580819f8bdc82d08d",
+    "hash": "ed2d96e",
+    "subject": "Test hook with logging",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:43:28-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ed2d96e1368b4d71619c1e8580819f8bdc82d08d"
+  },
+  {
+    "fullHash": "37414f23318ed71aa3b26e77f8d68132d3925231",
+    "hash": "37414f2",
+    "subject": "Update hook data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:42:18-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/37414f23318ed71aa3b26e77f8d68132d3925231"
+  },
+  {
+    "fullHash": "b6f936e59f8a48e0dff8256355419d176832cdaa",
+    "hash": "b6f936e",
+    "subject": "Test post-commit hook",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:40:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b6f936e59f8a48e0dff8256355419d176832cdaa"
+  },
+  {
+    "fullHash": "8094a992f0b7811154eebcae0b70fc8c07cb6197",
+    "hash": "8094a99",
+    "subject": "Add dev stats with modal and update last-updated tooltip",
+    "body": "- Refactor dev-stats to use ModalComponent for consistent styling\n- Position dev-stats icon next to last-updated in bottom-right corner\n- Add hover tooltip and scale effect to dev-stats icon\n- Add tooltip to last-updated showing full date and time\n- Update git hooks to automatically update metadata.json with commit timestamp\n- Update README with setup instructions for git hooks\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:34:45-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8094a992f0b7811154eebcae0b70fc8c07cb6197"
+  },
+  {
+    "fullHash": "8a7644545fe69a9e281e5b216095222960d2d683",
+    "hash": "8a76445",
+    "subject": "Refactor dev stats to use NgRx effects and conditional rendering",
+    "body": "Move data fetching logic from component to NgRx effects - effect only loads\ndev-commits.json when isDevMode() cookie is true. Simplify DevStats component\nto be a dumb presentation component with no lifecycle hooks or HTTP calls.\n\nAdd conditional rendering in app.ts with @if (hasDevCommits()) similar to\nisConnected() pattern. Component now only renders when data is available.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:07:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8a7644545fe69a9e281e5b216095222960d2d683"
+  },
+  {
+    "fullHash": "9bd8ba342d0d3c319db2c73a79e10c29ede122a7",
+    "hash": "9bd8ba3",
+    "subject": "Add dev stats feature with git commit history",
+    "body": "Add cookie-based dev mode feature that displays recent git commits in a modal.\nWhen isMannanDev=1 cookie is set, a stats icon appears in the bottom-left.\nClicking it shows the last 9 commits with hash links, subjects, authors, and dates.\n\nGit pre-commit hook automatically updates dev-commits.json on each commit.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T21:00:51-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9bd8ba342d0d3c319db2c73a79e10c29ede122a7"
+  },
+  {
+    "fullHash": "ff7a43f667c649e12430011cbba014ef4ea9f517",
+    "hash": "ff7a43f",
+    "subject": "Fix about section intersection observer threshold",
+    "body": "Increased threshold from 0.33 to 0.6 to ensure the about link is properly set as active when scrolling to the about section.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:51:07-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ff7a43f667c649e12430011cbba014ef4ea9f517"
+  },
+  {
+    "fullHash": "a899fd1dc2b03adc430a4a1488cfd0da11c7ccfb",
+    "hash": "a899fd1",
+    "subject": "update cursor text",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:47:48-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a899fd1dc2b03adc430a4a1488cfd0da11c7ccfb"
+  },
+  {
+    "fullHash": "b34d08fd6daa7b57f3ac558841600db905cc835b",
+    "hash": "b34d08f",
+    "subject": "Add local echo for chat messages",
+    "body": "Users can now see their own chat messages displayed on their cursor.\nSince the server excludes the sender from chat broadcasts, we need\nto call showChatMessage locally for immediate feedback.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:43:42-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b34d08fd6daa7b57f3ac558841600db905cc835b"
+  },
+  {
+    "fullHash": "05e8ef824f8cc36f54b4952bdb333cb2f0ddb0e8",
+    "hash": "05e8ef8",
+    "subject": "Fix viewer count to include local user on connection",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:38:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/05e8ef824f8cc36f54b4952bdb333cb2f0ddb0e8"
+  },
+  {
+    "fullHash": "33675f394451e871312379e770f6b20b2bc14eed",
+    "hash": "33675f3",
+    "subject": "Add Esc key to toggle cursor visibility when modal is closed",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:37:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/33675f394451e871312379e770f6b20b2bc14eed"
+  },
+  {
+    "fullHash": "1d7f0a0b56fce27791ca2cab60b1642c9e499bdd",
+    "hash": "1d7f0a0",
+    "subject": "Move cursor effects to separate cursor.effects.ts file",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:29:21-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1d7f0a0b56fce27791ca2cab60b1642c9e499bdd"
+  },
+  {
+    "fullHash": "892433edc6d57ef757b92a9d6ccf5231f420c445",
+    "hash": "892433e",
+    "subject": "Refactor cursors.js to work with NgRx cursor state",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:26:08-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/892433edc6d57ef757b92a9d6ccf5231f420c445"
+  },
+  {
+    "fullHash": "88bdd014c2ebfee92fee0a1bd3824b998ed296ad",
+    "hash": "88bdd01",
+    "subject": "Remove cursor state from app reducer, actions, and selectors",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:24:42-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/88bdd014c2ebfee92fee0a1bd3824b998ed296ad"
+  },
+  {
+    "fullHash": "fb6164a707478bed5a6b41310c78e1eacd0fdbf3",
+    "hash": "fb6164a",
+    "subject": "Update components to use cursor selectors",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:23:00-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fb6164a707478bed5a6b41310c78e1eacd0fdbf3"
+  },
+  {
+    "fullHash": "b4f1fdbb53f7d6d16667b0fb2ce32732a64aab99",
+    "hash": "b4f1fdb",
+    "subject": "Update effects to use cursor state and load colors from JSON",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:22:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b4f1fdbb53f7d6d16667b0fb2ce32732a64aab99"
+  },
+  {
+    "fullHash": "529c21d5b5aab7cf2ee6b944d13083dfd9f2b7bf",
+    "hash": "529c21d",
+    "subject": "Register cursor reducer in app config",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:21:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/529c21d5b5aab7cf2ee6b944d13083dfd9f2b7bf"
+  },
+  {
+    "fullHash": "9809a49c356c62b6a3a5221350f6f659f62ca88a",
+    "hash": "9809a49",
+    "subject": "Create cursor-specific state, actions, reducer, and selectors",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:20:39-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9809a49c356c62b6a3a5221350f6f659f62ca88a"
+  },
+  {
+    "fullHash": "1cc3bb0154a76338bb8d32277dce13cd16d2b5a7",
+    "hash": "1cc3bb0",
+    "subject": "Move cursor colors to cursor data JSON file",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:19:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1cc3bb0154a76338bb8d32277dce13cd16d2b5a7"
+  },
+  {
+    "fullHash": "35231854949d74219f049e3c029ace05d95ed5f3",
+    "hash": "3523185",
+    "subject": "Replace manual subscriptions with selectSignal in viewer stats and commands modal",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T20:17:45-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/35231854949d74219f049e3c029ace05d95ed5f3"
+  },
+  {
+    "fullHash": "2401a17025950515632a3fcfec3aa780aee3e504",
+    "hash": "2401a17",
+    "subject": "Move cursor party connection check to app component",
+    "body": "Moved the @if (isConnected()) conditional from ViewerStats component to AppComponent for cleaner separation of concerns. The parent component now handles the conditional rendering.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:50:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/2401a17025950515632a3fcfec3aa780aee3e504"
+  },
+  {
+    "fullHash": "08dfda019c970ca7f2e6c4ca945e8a16df1cc5b7",
+    "hash": "08dfda0",
+    "subject": "Show ViewerStats only when cursor party WebSocket connection succeeds",
+    "body": "Added connection state tracking to conditionally display the ViewerStats component based on cursor party WebSocket connection status. The component now only appears after a successful connection, preventing display when max reconnection attempts are reached.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:47:28-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/08dfda019c970ca7f2e6c4ca945e8a16df1cc5b7"
+  },
+  {
+    "fullHash": "5bf22265cd4cc3f1e631966bcaac92398fb7b2f2",
+    "hash": "5bf2226",
+    "subject": "Move window object synchronization from component to NgRx effects",
+    "body": "Moved all window object updates and cursor script loading from AppComponent.ngOnInit to dedicated NgRx effects for better separation of concerns and state management.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:41:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5bf22265cd4cc3f1e631966bcaac92398fb7b2f2"
+  },
+  {
+    "fullHash": "0ec84c1f493d324b2fecfe167e66c36541721d5b",
+    "hash": "0ec84c1",
+    "subject": "Fix Esc command click closing modal",
+    "body": "Removed keyboard event dispatch from toggleCursors() to prevent\nthe modal from closing when clicking the Esc command.\n\nThe cursor visibility still works correctly because:\n- NgRx state updates via toggleCursorsVisible action\n- App component dispatches cursorsVisibilityChanged event\n- cursor.js listens to that event and updates cursor display\n\nNow clicking Esc in modal only toggles cursors, doesn't close modal.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:23:32-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0ec84c1f493d324b2fecfe167e66c36541721d5b"
+  },
+  {
+    "fullHash": "2ddf2a22d7b58af5855a13bef4c0f87a5a181ac8",
+    "hash": "2ddf2a2",
+    "subject": "Keep modal open when clicking commands except H",
+    "body": "Removed modal close from openChat() so clicking commands keeps\nmodal open. Only the H command closes the modal (via toggle).\n\nBehavior:\n- Click \"/\" - Opens chat, modal stays open\n- Click \"Esc\" - Toggles cursors, modal stays open\n- Click \"H\" - Closes modal (toggles modal state)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:22:32-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/2ddf2a22d7b58af5855a13bef4c0f87a5a181ac8"
+  },
+  {
+    "fullHash": "52d0d98efd148a425c8d49436ccd42b4b9ed4bf4",
+    "hash": "52d0d98",
+    "subject": "Make commands clickable and track state in NgRx",
+    "body": "Changes:\n1. Removed () around H in viewer stats text\n2. Added NgRx state for cursorsVisible and commandsModalVisible\n3. Made all commands in modal clickable to execute\n4. Commands now dispatch keyboard events to trigger actions\n\nState Management:\n- Added cursorsVisible and commandsModalVisible to AppState\n- Added toggleCursorsVisible and toggleCommandsModal actions\n- Added selectors for both states\n- Modal subscribes to NgRx state for visibility\n- App component dispatches cursorsVisibilityChanged event\n\nModal Commands:\n- / - Opens chat by dispatching keyboard event\n- Esc - Toggles cursor visibility via NgRx + dispatches event\n- H - Toggles modal visibility via NgRx\n\ncursor.js Integration:\n- Listens to cursorsVisibilityChanged event\n- Syncs cursor display with NgRx state\n- Maintains backwards compatibility with local toggleCursors\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:20:38-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/52d0d98efd148a425c8d49436ccd42b4b9ed4bf4"
+  },
+  {
+    "fullHash": "33283532de5e7ddedd9c4d944023fa7d67224eaa",
+    "hash": "3328353",
+    "subject": "Update keyboard commands text to 'View Commands (H)'",
+    "body": "Changed viewer stats display from:\n  \"Press H for commands\"\nto:\n  \"View Commands (H)\"\n\nThe (H) is styled with the same kbd element for consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:17:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/33283532de5e7ddedd9c4d944023fa7d67224eaa"
+  },
+  {
+    "fullHash": "3e0fe174f994866c7e4c96143700a12cdab5ac1b",
+    "hash": "3e0fe17",
+    "subject": "Keep viewer count consistent when cursors are hidden",
+    "body": "Before: Viewer count decreased when cursors hidden with ESC\nAfter: Viewer count remains constant (shows total connected users)\n\nChanges:\n- updateActiveViewerCount() now uses cursors.size (line 173)\n- Removed visibility check - counts all cursors regardless of display\n- Removed updateActiveViewerCount() call from toggleCursors() (line 183)\n\nThe count only changes when users actually connect/disconnect, not when\nthey toggle visibility with ESC.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:16:13-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3e0fe174f994866c7e4c96143700a12cdab5ac1b"
+  },
+  {
+    "fullHash": "26c975e4c8a8a74215b88e10cf9c3606d99c4695",
+    "hash": "26c975e",
+    "subject": "Remove CSS transition from local cursor for instant tracking",
+    "body": "The problem: CSS transition caused 100ms lag on local cursor\n- Remote cursors: Keep transition for smooth network updates\n- Local cursor: Remove transition for instant mouse following\n\nChanges:\n- Added 'local-cursor' class to own cursor (cursors.js:39)\n- CSS rule removes transition from .local-cursor (cursors.js:351-353)\n- Fixed initialization bug - position now set on first frame (cursors.js:64)\n\nResult: Your cursor now follows mouse with ZERO lag!\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:15:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/26c975e4c8a8a74215b88e10cf9c3606d99c4695"
+  },
+  {
+    "fullHash": "f41e031c521ea9722ecdbfae7b0935843f1ff127",
+    "hash": "f41e031",
+    "subject": "Fix cursor lag by throttling WebSocket sends",
+    "body": "Before: Sent WebSocket message on EVERY mousemove event (60-144+ msg/sec)\nAfter: Throttled to max 20 messages/sec (one every 50ms)\n\nChanges:\n- Local cursor still updates instantly (no throttle)\n- WebSocket sends throttled to prevent overwhelming connection\n- Moved updateUsername() into throttled block (no need every frame)\n- Applied same throttling to touch events\n\nThis eliminates lag while keeping cursor movement smooth.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:13:07-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f41e031c521ea9722ecdbfae7b0935843f1ff127"
+  },
+  {
+    "fullHash": "b153483d75c57a5ec0e73ecf50e4c32e51aaef50",
+    "hash": "b153483",
+    "subject": "Add local cursor with real-time updates",
+    "body": "- Your cursor now appears immediately when you connect\n- Cursor updates in real-time on mouse/touch move without server lag\n- Server broadcasts ignored for own cursor to prevent conflicts\n- initializeMyCursor creates cursor with (you) label on ID receipt\n- updateMyCursor handles local position updates instantly\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:09:07-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b153483d75c57a5ec0e73ecf50e4c32e51aaef50"
+  },
+  {
+    "fullHash": "249f6d5f96b15497b878578d41be68f45540cd1c",
+    "hash": "249f6d5",
+    "subject": "Fix cursor party: show all cursors with color assignments",
+    "body": "Major fixes and improvements:\n- Server now broadcasts to all clients including sender\n- Server sends client ID on ping for identification\n- Added 100 distinct colors for cursor assignments\n- Colors assigned based on join order\n- Current user's cursor now displays with \"(you)\" suffix\n- All cursors including own cursor hide/show with ESC key\n- Current user included in viewer count\n- Cursor state consolidated in NgRx store\n- cursor.js loads dynamically after app initialization\n- Prevents race conditions by waiting for state to be ready\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:07:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/249f6d5f96b15497b878578d41be68f45540cd1c"
+  },
+  {
+    "fullHash": "eee693d352d871992938a62212625e039a786757",
+    "hash": "eee693d",
+    "subject": "Add cursor party features and WebSocket improvements",
+    "body": "- Add keyboard commands modal and viewer stats components\n- Improve cursor tracking and chat functionality\n- Update NgRx state for cursor management\n- Enhance last updated display\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T19:02:05-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/eee693d352d871992938a62212625e039a786757"
+  },
+  {
+    "fullHash": "c79f20b20c1a91e01592482bce64c28d0e6ff1bf",
+    "hash": "c79f20b",
+    "subject": "Regenerate pnpm-lock.yaml after removing trystero",
+    "body": "- Remove trystero from lock file\n- Fix Vercel deployment build issue\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:54:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/c79f20b20c1a91e01592482bce64c28d0e6ff1bf"
+  },
+  {
+    "fullHash": "b668aac763a5dfbd5404ff35d0cf3f57ffcfa97c",
+    "hash": "b668aac",
+    "subject": "Make last updated date 50% opaque",
+    "body": "- Add opacity-50 to last-updated component\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:50:36-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b668aac763a5dfbd5404ff35d0cf3f57ffcfa97c"
+  },
+  {
+    "fullHash": "7df558b1c41b96c38e648f88eaf499dc7dce77e1",
+    "hash": "7df558b",
+    "subject": "Limit WebSocket reconnection attempts to 3",
+    "body": "- Add max reconnection attempts (3 times)\n- Add 3 second delay between reconnection attempts\n- Reset counter on successful connection\n- Log reconnection attempts and max reached message\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:47:43-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7df558b1c41b96c38e648f88eaf499dc7dce77e1"
+  },
+  {
+    "fullHash": "060680d1b8088da7f1a649f647d6ac3ca1d47a33",
+    "hash": "060680d",
+    "subject": "Improve chat rate limiting and clean up unused code",
+    "body": "- Increase chat cooldown to 10 seconds\n- Add disabled input state with visual feedback\n- Remove Trystero P2P and consent services\n- Update project documentation\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:45:05-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/060680d1b8088da7f1a649f647d6ac3ca1d47a33"
+  },
+  {
+    "fullHash": "15e942cc18b45581f01044ea9f482bf0b99b3625",
+    "hash": "15e942c",
+    "subject": "last updated textchnage",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:16:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/15e942cc18b45581f01044ea9f482bf0b99b3625"
+  },
+  {
+    "fullHash": "fe6b9388e8311379beaab09da1d820e208e75126",
+    "hash": "fe6b938",
+    "subject": "Reduce contact component padding to 100px",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:15:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fe6b9388e8311379beaab09da1d820e208e75126"
+  },
+  {
+    "fullHash": "7de0cc1aec59da1736b6e93756e0ab9b6926b678",
+    "hash": "7de0cc1",
+    "subject": "Externalize cursor usernames to JSON and UI refinements",
+    "body": "Features:\n- Move cursor usernames from hardcoded array to JSON file\n- Create public/data/cursor-usernames.json with 100 usernames\n- Add NgRx actions and effects to load usernames on app init\n- Update reducer to handle username loading\n\nUI Improvements:\n- Reduce last-updated component padding (px-1.5 py-0.5)\n- Adjust position to bottom-1 for better alignment\n- Add 200px padding-bottom to contact component for more spacing\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:15:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7de0cc1aec59da1736b6e93756e0ab9b6926b678"
+  },
+  {
+    "fullHash": "ce92586f92777cc31239ca006532ff0424d9ad9e",
+    "hash": "ce92586",
+    "subject": "Add usernames and country flags to cursor party",
+    "body": "Features:\n- Add 100 cute/quirky usernames (happy possum, sleepy koala, etc.)\n- Usernames randomly assigned from app state on connection\n- Install and integrate geoip-lite for country detection\n- Server detects country from IP address (localhost defaults to US)\n- Display country flag emoji + username together next to cursors\n- Update chat bubble position below username label\n- Extend chat message duration from 3s to 12s\n\nUI Improvements:\n- Update last-updated component styling\n- Move closer to bottom edge (bottom-0)\n- Move more to the right (right-2)\n- Make text italic and smaller (10px)\n- Remove colon, change to \"Last Update\"\n- Remove gradient border, simplify to opaque background\n\nFuture Task:\n- Add task to move username management to server-side in FEATURES.md\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:12:26-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ce92586f92777cc31239ca006532ff0424d9ad9e"
+  },
+  {
+    "fullHash": "30323eccf9347c9607eef7524351c24b8ec1bbca",
+    "hash": "30323ec",
+    "subject": "Add self-hosted cursor party with chat and rate limiting",
+    "body": "- Install ws WebSocket server dependency\n- Create Node.js WebSocket server for cursor synchronization\n- Implement client cursor tracking with chat functionality\n- Add cursor chat with 5-second rate limiting\n- Make chat placeholder configurable via NgRx state\n- Add metadata loading and last-updated component\n- Style improvements for cursor display and chat UI\n\nFeatures:\n- Real-time multiplayer cursor tracking\n- Cursor chat (press / to activate)\n- Rate limiting with friendly \"slow down happy possum\" message\n- Configurable chat placeholder text via app state\n- Self-hosted WebSocket server (no external dependencies)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T17:03:16-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/30323eccf9347c9607eef7524351c24b8ec1bbca"
+  },
+  {
+    "fullHash": "c8dd9f25f134a73b6f89ee3811a8918b36969355",
+    "hash": "c8dd9f2",
+    "subject": "Add NgRx effects and externalize about data to JSON",
+    "body": "- Add app.effects.ts to handle async actions and side effects\n- Move about section data from constants to public/data/about.json\n- Remove expandable-section and about.constants, consolidate logic into content-card\n- Update state management (actions, reducer, selectors) to support effects and new data flow\n- Delete app.state.ts as type definitions are now inline in reducer\n- Add Angular documentation files (llms-full.txt, llms.txt) for AI-assisted development\n- Update all about section components to use externalized JSON data\n- Refactor contact, modal, header, and navigation service to work with new state structure\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T16:37:56-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/c8dd9f25f134a73b6f89ee3811a8918b36969355"
+  },
+  {
+    "fullHash": "bb6004970b0ce8085b5827d16df5e338469f1f8a",
+    "hash": "bb60049",
+    "subject": "Convert JOBS from Record to array and remove redundant jobsArray",
+    "body": "- Change JOBS from Record<string, ProfileItem> to ProfileItem[] in constants\n- Remove jobsArray property from employment-section component\n- Use JOBS directly in visibleJobs and totalJobs getters\n- Simplifies data structure and eliminates redundant array conversion\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:54:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/bb6004970b0ce8085b5827d16df5e338469f1f8a"
+  },
+  {
+    "fullHash": "9ded4379c543c5b90577cb78e53cadd88fbb6424",
+    "hash": "9ded437",
+    "subject": "Add Task 11: Rename component files to remove .component suffix",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:49:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9ded4379c543c5b90577cb78e53cadd88fbb6424"
+  },
+  {
+    "fullHash": "9b214ff7ca47f38fce971e48166b8a3af5357544",
+    "hash": "9b214ff",
+    "subject": "Refactor employment-section to use ngFor with simplified state management",
+    "body": "- Replace hardcoded content-cards with ngFor loop\n- Simplify state from {display, count} to single jobsToShow variable\n- Add programmable constants: DEFAULT_JOBS_TO_SHOW (3) and JOBS_INCREMENT (2)\n- Implement showMore() and showLess() methods for cleaner toggle logic\n- Show 'more' button when jobs remain, 'less' button when all shown\n- Reset to default (3) jobs when 'less' is clicked\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:49:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9b214ff7ca47f38fce971e48166b8a3af5357544"
+  },
+  {
+    "fullHash": "b31bc547851e231e56a25f6eced0633b0cde6fe9",
+    "hash": "b31bc54",
+    "subject": "Move expandable content logic into content-card component",
+    "body": "Content cards now manage their own expanded state and toggle buttons when expandedContent is present. Removed Capital One-specific expansion logic from employment-section - it's now handled by the content-card itself.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:43:40-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b31bc547851e231e56a25f6eced0633b0cde6fe9"
+  },
+  {
+    "fullHash": "26f47eb2291eca00240fff1c388eba6c3d5326df",
+    "hash": "26f47eb",
+    "subject": "Fix Capital One expandedContent styling and add global .content style",
+    "body": "Moved expandedContent rendering to use content-card component within .content wrapper for proper text color styling. Added global .content class using Tailwind utilities.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:41:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/26f47eb2291eca00240fff1c388eba6c3d5326df"
+  },
+  {
+    "fullHash": "b40d1387f113ce260e1b5ea350057e17c53ab845",
+    "hash": "b40d138",
+    "subject": "Add global collapsible button style and update employment-section to use it",
+    "body": "Created a shared .collapsible class in global styles using Tailwind utilities, replacing duplicated inline styles with the reusable class.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:38:58-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b40d1387f113ce260e1b5ea350057e17c53ab845"
+  },
+  {
+    "fullHash": "f0056770626afe9e28c41e9ace145620128cc077",
+    "hash": "f005677",
+    "subject": "Convert employment-section component styles to Tailwind utilities",
+    "body": "Migrated all CSS styles and inline styles to Tailwind utility classes for consistency and maintainability.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:36:17-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f0056770626afe9e28c41e9ace145620128cc077"
+  },
+  {
+    "fullHash": "60ab88dc443831bfac3429e256775f2360d120e5",
+    "hash": "60ab88d",
+    "subject": "Convert content-card component styles to Tailwind utilities",
+    "body": "Migrated inline styles and CSS classes to Tailwind utility classes for better maintainability and consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:35:02-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/60ab88dc443831bfac3429e256775f2360d120e5"
+  },
+  {
+    "fullHash": "6e043eb89d60b8995d763b6d7cb1040c0d84434e",
+    "hash": "6e043eb",
+    "subject": "move section headings into child components and rename ContentCardData to ProfileItem",
+    "body": "- moved h2 elements into employment, extracurriculars, and education section components\n- renamed ContentCardData interface to ProfileItem for clearer semantic meaning\n- consolidated CAPITAL_ONE_EXPANDED_CONTENT into capitalOne.expandedContent property\n- added optional expandedContent property to ProfileItem interface\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T15:08:12-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6e043eb89d60b8995d763b6d7cb1040c0d84434e"
+  },
+  {
+    "fullHash": "8e34bd08097974adcf2dea4bb5b2c090fbd9a8ae",
+    "hash": "8e34bd0",
+    "subject": "remove datas seribvice",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T12:34:57-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8e34bd08097974adcf2dea4bb5b2c090fbd9a8ae"
+  },
+  {
+    "fullHash": "89b5d08befe1888bb89c9bd2080406017ad0cae0",
+    "hash": "89b5d08",
+    "subject": "simplify AboutComponent by removing getters and exposing sections Map",
+    "body": "Make sections Map public and access it directly in template, removing 9 redundant getters. This reduces indirection and makes the code more straightforward.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T12:30:49-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/89b5d08befe1888bb89c9bd2080406017ad0cae0"
+  },
+  {
+    "fullHash": "89bd7f610319f0770ac4344e4e60464812d06ee9",
+    "hash": "89bd7f6",
+    "subject": "remove wrapper toggle methods and call toggleSection directly from template",
+    "body": "Further simplify AboutComponent by eliminating 10 wrapper methods, calling the centralized toggleSection method directly from the template instead.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T12:28:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/89bd7f610319f0770ac4344e4e60464812d06ee9"
+  },
+  {
+    "fullHash": "6a84dd55d10771e86e2d87777c9e06f8113737d4",
+    "hash": "6a84dd5",
+    "subject": "refactor AboutComponent toggle logic with centralized state management",
+    "body": "Replace duplicated toggle methods with a generic Map-based system to track section states, reducing code by ~30 lines while maintaining the same public API.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T12:24:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6a84dd55d10771e86e2d87777c9e06f8113737d4"
+  },
+  {
+    "fullHash": "0f55c150ff266739e73a70fe4745cab2e66bf1e7",
+    "hash": "0f55c15",
+    "subject": "refactor contact modal into separate reusable components",
+    "body": "Extract form and result logic into dedicated components with clear responsibilities. Modal now handles only UI presentation without conditional logic. Parent controls content projection.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T12:18:56-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0f55c150ff266739e73a70fe4745cab2e66bf1e7"
+  },
+  {
+    "fullHash": "f0a234e7c4aafcb5279fa3aee3bd293af6ca9a11",
+    "hash": "f0a234e",
+    "subject": "refactor modal with content projection and extract helper methods",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T12:10:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f0a234e7c4aafcb5279fa3aee3bd293af6ca9a11"
+  },
+  {
+    "fullHash": "9941fcd926b6a4046481931b0cdd88760c21135d",
+    "hash": "9941fcd",
+    "subject": "simplify code",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-14T11:49:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9941fcd926b6a4046481931b0cdd88760c21135d"
+  },
+  {
+    "fullHash": "cb2b5ce35ea249b5412cfe2fb13bc0290d6b794c",
+    "hash": "cb2b5ce",
+    "subject": "Refine contact section with concentric ripple effect",
+    "body": "Updated contact section styling and interaction:\n- Changed contact info to clickable links matching app-wide link styles\n- Replaced \"Say Hi\" button with minimalist concentric circles ripple effect\n- Reduced spacing throughout section for tighter, cleaner layout\n- Updated grid from 3 columns to 2 columns\n- Adjusted margins to improve visual hierarchy\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T16:13:00-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/cb2b5ce35ea249b5412cfe2fb13bc0290d6b794c"
+  },
+  {
+    "fullHash": "3d9c5d97ec9a1f8c8bb0899095cf2406dde890ef",
+    "hash": "3d9c5d9",
+    "subject": "add modal",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T15:55:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3d9c5d97ec9a1f8c8bb0899095cf2406dde890ef"
+  },
+  {
+    "fullHash": "398ca311c271b49790060aa96cd6c66b6567cee0",
+    "hash": "398ca31",
+    "subject": "add speed insights",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T14:49:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/398ca311c271b49790060aa96cd6c66b6567cee0"
+  },
+  {
+    "fullHash": "4169cb736ed9957e29a56eadc4db86cd9f793924",
+    "hash": "4169cb7",
+    "subject": "add vercel analytics",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T14:45:32-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4169cb736ed9957e29a56eadc4db86cd9f793924"
+  },
+  {
+    "fullHash": "ceeb6e398f151bdcb03f6e78f9e43a25d302e4ed",
+    "hash": "ceeb6e3",
+    "subject": "Update favicon to profile picture and streamline README",
+    "body": "- Replace default favicon with profile picture (16x16, 32x32, .ico)\n- Update index.html with multi-size favicon references\n- Streamline README with concise, minimal documentation\n- Add deployment instructions for Vercel\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T14:40:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ceeb6e398f151bdcb03f6e78f9e43a25d302e4ed"
+  },
+  {
+    "fullHash": "7d34af765799520155e2da8ed01c1be484fca6c0",
+    "hash": "7d34af7",
+    "subject": "remove old code, add vercel to gitignore",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T14:37:38-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/7d34af765799520155e2da8ed01c1be484fca6c0"
+  },
+  {
+    "fullHash": "582b014c9d464eb9bb123019ac4ec574c081663a",
+    "hash": "582b014",
+    "subject": "Replace simple about component with comprehensive version",
+    "body": "Removed duplicate about component. The comprehensive version includes full employment history, extracurriculars, education sections with collapsible details, replacing the simple 3-paragraph version.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T00:52:53-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/582b014c9d464eb9bb123019ac4ec574c081663a"
+  },
+  {
+    "fullHash": "e45be1de935760743b0af504cfddc9b2427e9681",
+    "hash": "e45be1d",
+    "subject": "simplify sections",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T00:48:57-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e45be1de935760743b0af504cfddc9b2427e9681"
+  },
+  {
+    "fullHash": "3ba5d06b457d5a134ad08ecc07aecece786eb0cf",
+    "hash": "3ba5d06",
+    "subject": "add content back",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-12T00:31:46-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3ba5d06b457d5a134ad08ecc07aecece786eb0cf"
+  },
+  {
+    "fullHash": "d2822e370d659a7c3d045339472580d49648ae4b",
+    "hash": "d2822e3",
+    "subject": "add files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-10T17:25:24-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d2822e370d659a7c3d045339472580d49648ae4b"
+  },
+  {
+    "fullHash": "8343ec7435ac54cf6573b66df1c4ce613b912ac8",
+    "hash": "8343ec7",
+    "subject": "add spring-boot-devtools and a watch script to rebuild on change saves",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-10T17:16:59-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8343ec7435ac54cf6573b66df1c4ce613b912ac8"
+  },
+  {
+    "fullHash": "39a02aa3354cebc97fafd7f078af5c72c3adf4e6",
+    "hash": "39a02aa",
+    "subject": "backend added with viewers models",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-10T17:03:59-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/39a02aa3354cebc97fafd7f078af5c72c3adf4e6"
+  },
+  {
+    "fullHash": "bd863ea5108f6be6374a1ea50d107ddf99de13de",
+    "hash": "bd863ea",
+    "subject": "updating styles, simplifying code more, header only",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-08T20:27:16-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/bd863ea5108f6be6374a1ea50d107ddf99de13de"
+  },
+  {
+    "fullHash": "e688744244079d07fb1025e3430efe27f0542c33",
+    "hash": "e688744",
+    "subject": "adding angular 20 code and header",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-08T20:09:50-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e688744244079d07fb1025e3430efe27f0542c33"
+  },
+  {
+    "fullHash": "8bf54cb4bf233c8752c0ae314c99d72d76d832f0",
+    "hash": "8bf54cb",
+    "subject": "initial commit",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-08T12:34:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8bf54cb4bf233c8752c0ae314c99d72d76d832f0"
   }
 ]
