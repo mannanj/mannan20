@@ -20,13 +20,13 @@ import { navigateTo } from '../../utils/help';
     <div #main>
       <h1 class="text-end" @scaleIn>About</h1>
       <hr @fadeIn>
-      <p class="margin-0 margin-top-25" style="font-size: 14px;" @slideInRight>
+      <p class="margin-0 margin-top-25 text-14" @slideInRight>
         {{ (aboutIntro$ | async)?.primary }}
       </p>
 
       <div id="more-about">
         <div *ngIf="aboutSection.display" @fadeIn>
-          <p *ngFor="let paragraph of (aboutIntro$ | async)?.expanded || []" style="font-size: 14px; margin-top: 12px;">
+          <p *ngFor="let paragraph of (aboutIntro$ | async)?.expanded || []" class="text-14 margin-top-12">
             {{ paragraph }}
           </p>
         </div>
@@ -54,6 +54,14 @@ import { navigateTo } from '../../utils/help';
     #main a:not([href]):hover {
       color: inherit;
       transform: none;
+    }
+
+    .text-14 {
+      font-size: 14px;
+    }
+
+    .margin-top-12 {
+      margin-top: 12px;
     }
 
     .download-link {

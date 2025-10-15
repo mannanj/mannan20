@@ -20,8 +20,8 @@
 - Location: `src/app/services/data.service.ts`
 
 ### Task 4: Extract Inline Styles to CSS Classes
-- [ ] Extract repeated `font-size: 12px` styles
-- [ ] Create reusable CSS classes for common styles
+- [x] Extract repeated `font-size: 12px` styles
+- [x] Create reusable CSS classes for common styles
 - Location: `src/app/components/about/about.ts` template
 
 ### Task 5: Extract Magic Numbers to Constants
