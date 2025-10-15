@@ -1,16 +1,13 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { ModalComponent } from './modal';
-import { TaskCard } from './task-card';
-import { TaskTable } from './task-table';
-import { TasksToolbar } from './tasks-toolbar';
+import { TasksContainer } from './tasks-container';
 import { selectDevCommits, selectTasks } from '../store/app.selectors';
 
 @Component({
   selector: 'dev-stats',
-  imports: [AsyncPipe, DatePipe, ModalComponent, TaskCard, TaskTable, TasksToolbar],
+  imports: [AsyncPipe, DatePipe, ModalComponent, TasksContainer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -100,23 +97,9 @@ import { selectDevCommits, selectTasks } from '../store/app.selectors';
           }
 
           @if (activeTab() === 'tasks') {
-            <div class="tasks-view">
-              <tasks-toolbar
-                [currentView]="taskView()"
-                [sortOrder]="sortOrder()"
-                (viewChange)="setTaskView($event)"
-                (sortToggle)="toggleSortOrder()" />
-
-              @if (taskView() === 'card') {
-                <div class="tasks-container">
-                  @for (task of sortedTasks(); track task.id) {
-                    <task-card [task]="task" />
-                  }
-                </div>
-              } @else {
-                <task-table [tasks]="sortedTasks()" />
-              }
-            </div>
+            @if (tasks$ | async; as tasks) {
+              <tasks-container [tasks]="tasks" />
+            }
           }
         </div>
       </div>
@@ -166,20 +149,6 @@ import { selectDevCommits, selectTasks } from '../store/app.selectors';
       overflow-x: auto;
     }
 
-    .tasks-view {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .tasks-container {
-      max-height: 400px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -197,29 +166,8 @@ export class DevStats {
 
   protected isModalOpen = signal(false);
   protected activeTab = signal<'commits' | 'services' | 'tasks'>('commits');
-  protected taskView = signal<'card' | 'table'>('card');
-  protected sortOrder = signal<'asc' | 'desc'>('desc');
   protected devCommits$ = this.store.select(selectDevCommits);
   protected tasks$ = this.store.select(selectTasks);
-  protected tasksSignal = toSignal(this.tasks$, { initialValue: [] });
-
-  protected sortedTasks = computed(() => {
-    const tasks = this.tasksSignal();
-    if (!tasks || tasks.length === 0) return [];
-
-    const sorted = [...tasks].sort((a, b) => {
-      const dateA = a.completedDate ? new Date(a.completedDate).getTime() : 0;
-      const dateB = b.completedDate ? new Date(b.completedDate).getTime() : 0;
-
-      if (dateA === 0 && dateB === 0) return 0;
-      if (dateA === 0) return 1;
-      if (dateB === 0) return -1;
-
-      return this.sortOrder() === 'asc' ? dateA - dateB : dateB - dateA;
-    });
-
-    return sorted;
-  });
 
   toggleModal() {
     this.isModalOpen.update(value => !value);
@@ -227,13 +175,5 @@ export class DevStats {
 
   setActiveTab(tab: 'commits' | 'services' | 'tasks') {
     this.activeTab.set(tab);
-  }
-
-  setTaskView(view: 'card' | 'table') {
-    this.taskView.set(view);
-  }
-
-  toggleSortOrder() {
-    this.sortOrder.update(order => order === 'asc' ? 'desc' : 'asc');
   }
 }

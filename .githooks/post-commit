@@ -86,7 +86,7 @@ function findTaskCompletionCommit(taskNum, taskTitle) {
         const checkedCount = allCheckboxes.filter(cb => cb.includes('x')).length;
 
         if (checkedCount === allCheckboxes.length && allCheckboxes.length > 0) {
-          const commitMessageMatch = subject.match(/\\[Task[- ]?\${taskNum}\\]/i);
+          const commitMessageMatch = subject.match(/\\[Task[- ]?${taskNum}\\]/i);
 
           return {
             hash: shortHash,
@@ -100,13 +100,13 @@ function findTaskCompletionCommit(taskNum, taskTitle) {
     }
 
     const commitMsgCheck = execSync(
-      \`git log --all --format='%H|||%h|||%s|||%aI' --grep='\\[Task[- ]?\${taskNum}\\]' -i\`,
+      \`git log --all --format='%H|||%h|||%s|||%aI' --grep='\\[Task[- ]?${taskNum}\\]' -i\`,
       { encoding: 'utf-8', shell: '/bin/bash' }
     ).trim();
 
     if (commitMsgCheck) {
       const lines = commitMsgCheck.split('\\n');
-      const latest = lines[lines.length - 1];
+      const latest = lines[0];
       const parts = latest.split('|||');
       if (parts.length >= 4) {
         return {

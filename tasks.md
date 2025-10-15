@@ -86,3 +86,17 @@
 - [x] Refactor dev-stats.ts to use new modular components
 - [x] Ensure all components follow Angular best practices (standalone, signals)
 - Location: `src/app/shared/dev-stats.ts`, create new components in `src/app/shared/`
+
+### Task 16: Refactor Dev Stats for Single Responsibility
+- [x] Create tasks-container component to encapsulate task-specific state
+- [x] Move task view state from dev-stats to tasks-container
+- [x] Move sort order state from dev-stats to tasks-container
+- [x] Move sorting logic from dev-stats to tasks-container
+- [x] Refactor dev-stats to only manage modal and tab state
+- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/tasks-container.ts`
+
+### Task 17: Fix Date Logic Bugs in Post-Commit Hook
+- [x] Fix template literal variable interpolation bug on line 89
+- [x] Fix template literal variable interpolation bug in grep command on line 103
+- [x] Fix logic to get newest commit instead of oldest (line 109)
+- Location: `.githooks/post-commit`
