@@ -2410,5 +2410,77 @@
       }
     ],
     "location": "`src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
+  },
+  {
+    "id": "task-72",
+    "title": "Implement Star Reward System",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create star component to display in bottom right above \"last updated\"",
+        "completed": false
+      },
+      {
+        "description": "Implement interaction tracking service to count user actions (clicks, scrolls, etc.)",
+        "completed": false
+      },
+      {
+        "description": "Add star accumulation logic based on user interactions",
+        "completed": false
+      },
+      {
+        "description": "Create hover effect to highlight and grow star group with tooltip",
+        "completed": false
+      },
+      {
+        "description": "Implement dynamic tooltip messages based on star count (5, 10, 25 stars)",
+        "completed": false
+      },
+      {
+        "description": "Add animation changes at different star thresholds (10 stars: faster glow, 25 stars: special effect)",
+        "completed": false
+      },
+      {
+        "description": "Implement special code system for / chat menu command to award bonus stars",
+        "completed": false
+      },
+      {
+        "description": "Add logic to award 15 stars for requesting contact info or entering special code",
+        "completed": false
+      },
+      {
+        "description": "Persist star count across sessions using localStorage",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/footer/`, `src/app/services/`, `src/app/components/home/`"
+  },
+  {
+    "id": "task-73",
+    "title": "Update Help Menu for / Command",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add description to help menu showing / can be used to chat or enter special codes",
+        "completed": false
+      },
+      {
+        "description": "Update help menu tooltip or documentation text",
+        "completed": false
+      },
+      {
+        "description": "Ensure special codes from star system are mentioned or hinted at",
+        "completed": false
+      },
+      {
+        "description": "Add visual feedback when special code is recognized (glow/loading effect)",
+        "completed": false
+      },
+      {
+        "description": "Disable chat input while code is being processed",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/help.ts`"
   }
 ]
