@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "8dcc6734d60b77b0ac95b62877c10109eed344f8",
+    "hash": "8dcc673",
+    "subject": "Revert Task 84 and 85, add Task 86",
+    "body": "Reverted router navigation approach due to scroll stuttering.\nReturning to scroll-based section tracking with navigateTo approach.",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:38:33-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8dcc6734d60b77b0ac95b62877c10109eed344f8"
+  },
+  {
+    "fullHash": "1f22ec5293a7c3d718e3a2f928952b7d6302807e",
+    "hash": "1f22ec5",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:08:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1f22ec5293a7c3d718e3a2f928952b7d6302807e"
+  },
+  {
     "fullHash": "3ab3c4b8c2b127064db26cebd967e0bffc6ab982",
     "hash": "3ab3c4b",
     "subject": "Keep location with contact info and fix button spacing",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T12:32:34-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/c726266a931f60ed9dad8ed125b76295a72daf81"
-  },
-  {
-    "fullHash": "28e67af8542261bf87712088056fe36047297ede",
-    "hash": "28e67af",
-    "subject": "Task 61: Convert All Global Styles to Inline Tailwind Utilities",
-    "body": "- [x] Convert body element styles to Tailwind (keep color, bg-color as default theme)\n- [x] Convert h1, h2 element styles to inline Tailwind utilities in all components\n- [x] Convert p element styles to inline Tailwind utilities in all components\n- [x] Convert hr element styles to inline Tailwind utilities in all components\n- [x] Convert button element styles to inline Tailwind utilities in all components\n- [x] Convert link (a) element styles to inline Tailwind utilities in all components\n- [x] Replace .text-end, .margin-*, .flex-column utility classes with Tailwind equivalents\n- [x] Keep only required custom CSS (.collapsible, .content, button::before, a::after, hover states)\n- [x] Update all component templates to use new inline Tailwind classes\n- [x] Test all components to ensure visual appearance remains identical\n- Location: \\`src/styles.css\\`, all component files\n\n[Task-61]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:32:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/28e67af8542261bf87712088056fe36047297ede"
-  },
-  {
-    "fullHash": "a1c13d518fd2f7b0ad83d47652074abe4f779bb3",
-    "hash": "a1c13d5",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:07:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a1c13d518fd2f7b0ad83d47652074abe4f779bb3"
   }
 ]

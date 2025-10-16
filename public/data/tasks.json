@@ -2846,5 +2846,33 @@
       "date": "2025-10-16T14:13:14-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/6b1f3f0f2b88a919770220051a5f815b2b24cbda"
     }
+  },
+  {
+    "id": "task-86",
+    "title": "Revert Router Navigation and Fix Scroll Tracking",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Revert commits from Task 84 and Task 85 (router navigation approach)",
+        "completed": true
+      },
+      {
+        "description": "Test scroll tracking and header link highlighting works correctly",
+        "completed": false
+      },
+      {
+        "description": "Fix any scroll stuttering or re-navigation issues",
+        "completed": false
+      },
+      {
+        "description": "Ensure navigation buttons work smoothly",
+        "completed": false
+      },
+      {
+        "description": "Verify no performance issues when scrolling",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/store/app.effects.ts`, `src/app/components/header/header.ts`, `src/app/utils/help.ts`"
   }
 ]
