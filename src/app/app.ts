@@ -32,7 +32,7 @@ const FORM_SUBMIT_DELAY_MS = 2000;
         <header></header>
       </div>
 
-      <div id="body" class="my-[20vh] md:my-[10vh] px-5 w-full max-w-[720px] mx-auto">
+      <div id="body" class="my-[20vh] md:my-[10vh] px-5 w-full max-w-[321px] mx-auto">
         <div id="home" class="mt-[33vh]">
           <home></home>
         </div>
