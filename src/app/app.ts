@@ -15,6 +15,8 @@ import { TasksContainer } from "./shared/tasks-container";
 import { CommitsGrid } from "./shared/commits-grid";
 import { ServicesPlaceholderIcon } from "./components/icons/services-placeholder-icon";
 import { Modal } from "./shared/modal";
+import { SnakeEyes } from "./shared/snake-eyes";
+import { SnakeEyesToggle } from "./shared/snake-eyes-toggle";
 import { selectIsCursorPartyConnected } from './store/cursor.selectors';
 import { selectDevCommits, selectTasks, selectContactModalOpen, selectContactShowResult, selectContactResult, selectDevStatsModalOpen, selectDevStatsActiveTab } from './store/app.selectors';
 import { closeContactModal, setContactResult, toggleDevStatsModal, setDevStatsTab } from './store/app.actions';
@@ -25,9 +27,10 @@ const FORM_SUBMIT_DELAY_MS = 2000;
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, Header, Home, About, Contact, ContactForm, ContactResult, Modal, TasksContainer, CommitsGrid, ServicesPlaceholderIcon, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats],
+  imports: [CommonModule, Header, Home, About, Contact, ContactForm, ContactResult, Modal, TasksContainer, CommitsGrid, ServicesPlaceholderIcon, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats, SnakeEyes, SnakeEyesToggle],
   template: `
-    <div class="font-[Lucida_Grande]">
+    <snake-eyes />
+    <div class="font-[Lucida_Grande] relative z-10">
       <div id="header">
         <header></header>
       </div>
@@ -51,6 +54,9 @@ const FORM_SUBMIT_DELAY_MS = 2000;
           <viewer-stats />
         }
       }
+      <div class="fixed bottom-0 left-0 flex items-end gap-2 p-2">
+        <snake-eyes-toggle />
+      </div>
       <div class="fixed bottom-0 right-0 flex items-end gap-2">
         @if (hasDevCommits()) {
           @defer (on immediate) {

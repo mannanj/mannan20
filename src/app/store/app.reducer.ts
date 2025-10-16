@@ -14,7 +14,8 @@ export const initialState: AppState = {
   contactShowResult: false,
   contactResult: null,
   devStatsModalOpen: false,
-  devStatsActiveTab: 'commits'
+  devStatsActiveTab: 'commits',
+  snakeEyesEnabled: false
 };
 
 export const appReducer = createReducer(
@@ -69,5 +70,9 @@ export const appReducer = createReducer(
   on(AppActions.setDevStatsTab, (state, { tab }) => ({
     ...state,
     devStatsActiveTab: tab
+  })),
+  on(AppActions.toggleSnakeEyes, (state) => ({
+    ...state,
+    snakeEyesEnabled: !state.snakeEyesEnabled
   }))
 );
