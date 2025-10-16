@@ -30,7 +30,7 @@ import { openContactModal } from '../../store/app.actions';
     .contact-grid {
       display: grid;
       grid-template-columns: 2fr auto;
-      align-items: center;
+      align-items: start;
       gap: 24px;
     }
 
@@ -40,11 +40,9 @@ import { openContactModal } from '../../store/app.actions';
       justify-content: center;
       cursor: pointer;
       justify-self: center;
-      align-self: center;
       position: relative;
       width: 90px;
       height: 90px;
-      margin-top: 20px;
     }
 
     .circle {
