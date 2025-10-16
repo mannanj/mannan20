@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "ee1abf96a7cc8c1c90bb8038baad55ecda2a769f",
+    "hash": "ee1abf9",
+    "subject": "Task 83: Update max width to 321px (correction)",
+    "body": "Corrected the max width from 720px to 321px as originally intended.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:48:06-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/ee1abf96a7cc8c1c90bb8038baad55ecda2a769f"
+  },
+  {
+    "fullHash": "fda472e4fddbd6c82a1f745b33f69064fcc6cad1",
+    "hash": "fda472e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T14:13:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fda472e4fddbd6c82a1f745b33f69064fcc6cad1"
+  },
+  {
     "fullHash": "6b1f3f0f2b88a919770220051a5f815b2b24cbda",
     "hash": "6b1f3f0",
     "subject": "Task 83: Simplify Responsive Layout with Centered Fixed Width",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:41:01-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/2fe71af1988b6ce5ece7e68fe306451cfd86d248"
-  },
-  {
-    "fullHash": "f03802363ea79ac7bb7177ad8ba5d14e61312769",
-    "hash": "f038023",
-    "subject": "Add Task 51: Make Status Badge Text Smaller in Table View",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:41:01-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f03802363ea79ac7bb7177ad8ba5d14e61312769"
-  },
-  {
-    "fullHash": "d7e208cebcc79d3f68bd40c1fa9a68ef5f46faae",
-    "hash": "d7e208c",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:40:33-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/d7e208cebcc79d3f68bd40c1fa9a68ef5f46faae"
   }
 ]
