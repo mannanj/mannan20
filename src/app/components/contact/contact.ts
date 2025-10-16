@@ -17,13 +17,13 @@ import { openContactModal } from '../../store/app.actions';
         <div class="flex flex-col">
           <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" (click)="openModal()" title="Request contact info">*****&#64;mannan.is</a>
           <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" (click)="openModal()" title="Request contact info">+1 (***) *** 8302</a>
+          <span class="text-base text-white">Alexandria, Virginia</span>
+          <button (click)="goToHome()" class="nav-button mt-[25px]">Back to Top</button>
         </div>
         <div class="ripple-container" (click)="openModal()" title="Request contact info">
           <div class="circle"></div>
         </div>
       </div>
-      <span class="text-base text-white">Alexandria, Virginia</span>
-      <button (click)="goToHome()" class="nav-button mt-[25px]">Back to Top</button>
     </div>
   `,
   styles: [`
