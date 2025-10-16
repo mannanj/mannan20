@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "fa829670a621b85824553dbabaf34f39840dbe74",
+    "hash": "fa82967",
+    "subject": "Refactor modals to use NgRx and centralize in app component",
+    "body": "- Move contact and dev stats modals to app component template\n- Add modal state to NgRx store (open/close, active tab, results)\n- Create actions, reducers, and selectors for modal state management\n- Simplify component logic to dispatch actions instead of local state\n- Fix z-index stacking context issues by removing z-index from containers\n- Modals now render as siblings to content, not children of positioned elements\n\nBenefits:\n- Single source of truth for modal state\n- Cleaner separation of concerns\n- No CSS stacking context conflicts\n- Both modals properly appear above header\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:00:06-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/fa829670a621b85824553dbabaf34f39840dbe74"
+  },
+  {
+    "fullHash": "77b408cecd77ca196ac47bcec16c1238f3bc2d12",
+    "hash": "77b408c",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T19:45:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/77b408cecd77ca196ac47bcec16c1238f3bc2d12"
+  },
+  {
     "fullHash": "508429fbc184ee897e2075d9702e6cc13f45919f",
     "hash": "508429f",
     "subject": "Task 71: Investigate and Configure AG Grid Row Selection",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:04:44-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/b56977cdfc44827002a86dbc8b4a06b605d2d6c1"
-  },
-  {
-    "fullHash": "40303dabfd95764c89e3d411a41384fcf0408c0b",
-    "hash": "40303da",
-    "subject": "push task done task 43",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:04:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/40303dabfd95764c89e3d411a41384fcf0408c0b"
-  },
-  {
-    "fullHash": "68818839d6daf35826d04f933495e496cfaa76c7",
-    "hash": "6881883",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T02:04:12-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/68818839d6daf35826d04f933495e496cfaa76c7"
   }
 ]
