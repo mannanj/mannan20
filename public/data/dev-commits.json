@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "14e1b0ee3acf5b00a3a582fd97d34d5e1b0d1378",
+    "hash": "14e1b0e",
+    "subject": "Revert \"Add Snake Eyes interactive background feature\"",
+    "body": "This reverts commit 34c0b1511d2fbdd0ab6b2b5334faceb564a7b80b.",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:17:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/14e1b0ee3acf5b00a3a582fd97d34d5e1b0d1378"
+  },
+  {
+    "fullHash": "9cfc6d91aa3924a7633351642707fb20067858ab",
+    "hash": "9cfc6d9",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:17:15-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/9cfc6d91aa3924a7633351642707fb20067858ab"
+  },
+  {
     "fullHash": "f42b314c2a2de2ee9fcbbc9d4e01c6b224e5a0eb",
     "hash": "f42b314",
     "subject": "Revert \"Transform dots to shimmering stars in Snake Eyes\"",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:27:58-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/dd08c4aa390652c45f44f6f66da9170cdf425396"
-  },
-  {
-    "fullHash": "4d8533138758eb399bf4722899b264d4e2443035",
-    "hash": "4d85331",
-    "subject": "Register AG Grid AllCommunityModule",
-    "body": "Fix AG Grid error 272 by registering AllCommunityModule globally\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:27:58-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/4d8533138758eb399bf4722899b264d4e2443035"
-  },
-  {
-    "fullHash": "2f9335d51ce68c5f5852f6698adc52d7f123cc2e",
-    "hash": "2f9335d",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:26:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/2f9335d51ce68c5f5852f6698adc52d7f123cc2e"
   }
 ]
