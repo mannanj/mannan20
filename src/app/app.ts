@@ -32,8 +32,8 @@ const FORM_SUBMIT_DELAY_MS = 2000;
         <header></header>
       </div>
 
-      <div id="body" class="my-[20vh] md:my-[10vh] w-full max-w-[321px] mx-auto">
-        <div id="home" class="mt-[33vh]">
+      <div id="body" class="w-full max-w-[321px] mx-auto px-5">
+        <div id="home" class="mt-[20vh]">
           <home></home>
         </div>
 
@@ -41,7 +41,7 @@ const FORM_SUBMIT_DELAY_MS = 2000;
           <about></about>
         </div>
 
-        <div id="contact" class="mt-[33vh] h-[44vh]">
+        <div id="contact" class="mt-[33vh] pb-[20vh]">
           <contact></contact>
         </div>
       </div>
