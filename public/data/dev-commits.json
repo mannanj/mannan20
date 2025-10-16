@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "4274fcb89919d5da76e6d1540ca4294365201add",
+    "hash": "4274fcb",
+    "subject": "Fix Contact section spacing to match other sections",
+    "body": "Removed margin-top: 20px from ripple-container\nChanged contact-grid align-items from center to start\n\nThis ensures:\n- HR → email spacing matches Home/About sections\n- Grid aligns to top properly with no extra space\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:05:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4274fcb89919d5da76e6d1540ca4294365201add"
+  },
+  {
+    "fullHash": "6af51d754d94a6c3947420c4fa33617f00d447ba",
+    "hash": "6af51d7",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:03:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6af51d754d94a6c3947420c4fa33617f00d447ba"
+  },
+  {
     "fullHash": "4159f748f85ef55de596e9959bc036dc4faf7614",
     "hash": "4159f74",
     "subject": "Standardize button spacing across all sections to mt-[25px]",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:59:55-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/a94a1d99e60b7d6f5f8707dcee2d52ef654c59bd"
-  },
-  {
-    "fullHash": "de6b92f4491f7ab5e111ef5fa49f6909525d2050",
-    "hash": "de6b92f",
-    "subject": "Task 54: Adjust Dev Stats Modal Width and Task Column Styling",
-    "body": "- [x] Reduce dev-stats modal large width from 1028px to 768px\n- [x] Increase Task column default width to show more task text\n- [x] Remove bold font weight from task text in table\n- [x] Make consent text in contact form less prominent (lighter gray)\n- [x] Allow horizontal scroll bar to appear when needed\n- Location: `src/app/shared/modal.ts`, `src/app/shared/task-table.ts`, `src/app/components/contact/contact-form.ts`\n\n[Task-54]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:59:55-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/de6b92f4491f7ab5e111ef5fa49f6909525d2050"
-  },
-  {
-    "fullHash": "0825efd0d557526610becbe9c6ab5d12e802ce60",
-    "hash": "0825efd",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:55:31-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0825efd0d557526610becbe9c6ab5d12e802ce60"
   }
 ]
