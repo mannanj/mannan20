@@ -610,3 +610,61 @@
 - [ ] Style help menu and status indicators with Tailwind utilities
 - [ ] Ensure help menu remains accessible and visible on all pages
 - Location: `src/app/components/contact/help.ts`, `src/app/app.ts`, `src/app/services/`
+
+### Task 75: Migrate Components to Modern Angular APIs (Signals)
+- [ ] Replace @Input/@Output decorators with input()/output() in contact-form.ts
+- [ ] Replace @Input/@Output decorators with input()/output() in contact-result.ts
+- [ ] Replace @Input/@Output decorators with input()/output() in content-card.ts
+- [ ] Replace @Input/@Output decorators with input()/output() in modal.ts
+- [ ] Replace constructor injection with inject() in employment-section.ts
+- [ ] Replace constructor injection with inject() in education-section.ts
+- [ ] Replace constructor injection with inject() in extracurriculars-section.ts
+- [ ] Remove explicit standalone: true from all 12 component decorators
+- Location: `src/app/components/contact/`, `src/app/components/about/`, `src/app/shared/`
+
+### Task 76: Convert Legacy Template Syntax to Modern Control Flow
+- [ ] Replace *ngIf with @if in contact-form.ts (lines 36, 48)
+- [ ] Replace *ngIf with @if in contact-result.ts (lines 17, 21-22, 25, 29-30)
+- [ ] Replace *ngIf with @if in content-card.ts (lines 11-43)
+- [ ] Replace *ngIf with @if in modal.ts (line 10)
+- [ ] Replace *ngFor with @for in header.ts (line 19)
+- [ ] Replace *ngIf/*ngFor with @if/@for in employment-section.ts (lines 17, 23, 30)
+- [ ] Replace *ngIf with @if in education-section.ts (lines 21-24, 27-28)
+- [ ] Replace *ngIf/*ngFor with @if/@for in extracurriculars-section.ts (lines 15, 18-21, 23, 25, 31-32)
+- [ ] Replace *ngIf with @if in app.ts (lines 66-67)
+- Location: All component template files with legacy directives
+
+### Task 77: Add OnPush Change Detection and Remove Empty Styles
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to all 13 components missing it
+- [ ] Remove empty styles: [] from extracurriculars-section.ts
+- [ ] Remove empty styles: [] from about.ts
+- [ ] Remove empty styles: [] from employment-section.ts
+- [ ] Remove empty styles: [] from education-section.ts
+- [ ] Remove empty styles: [] from contact-result.ts
+- [ ] Remove empty styles: [] from home.ts
+- [ ] Remove empty styles: [] from tasks-container.ts, tasks-toolbar.ts, task-card.ts
+- Location: All component files
+
+### Task 78: Convert Component Styles to Tailwind Utilities
+- [ ] Convert .action-container and .divider styles to Tailwind in contact-form.ts
+- [ ] Convert .tabs-container, .tabs-header, .tab-button styles to Tailwind in app.ts
+- [ ] Convert .search-input styles to Tailwind in commits-grid.ts
+- [ ] Convert .search-input styles to Tailwind in task-table.ts
+- [ ] Remove duplicate CSS patterns between commits-grid and task-table
+- Location: `src/app/components/contact/contact-form.ts`, `src/app/app.ts`, `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
+
+### Task 79: Clean Up Backend Dead Code and Improve Patterns
+- [ ] Remove unused getViewerByName() method from ViewersDAO.java
+- [ ] Remove unused getViewerByReason() method from ViewersDAO.java
+- [ ] Remove unused setViewerList() setter from Viewers.java
+- [ ] Replace @Autowired field injection with constructor injection in ViewerController.java
+- [ ] Fix redundant null assignment in ViewerController.java line 80
+- [ ] Remove unused ContactResult import from modal.ts
+- Location: `backend/src/main/java/com/example/demo/`, `src/app/shared/modal.ts`
+
+### Task 80: Remove Debug Code and Production Cleanup
+- [ ] Remove console.log statement from app.ts line 209
+- [ ] Remove console.log statement from cookies.ts line 20
+- [ ] Review codebase for any other console statements
+- [ ] Verify no debugging code remains in production bundle
+- Location: `src/app/app.ts`, `src/app/utils/cookies.ts`
