@@ -57,5 +57,3 @@ export const setDevStatsTab = createAction(
   '[DevStats] Set DevStats Tab',
   props<{ tab: 'commits' | 'services' | 'tasks' }>()
 );
-
-export const toggleSnakeEyes = createAction('[SnakeEyes] Toggle Snake Eyes');

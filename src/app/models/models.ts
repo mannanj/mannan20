@@ -92,7 +92,6 @@ export interface AppState {
   contactResult: ContactResult | null;
   devStatsModalOpen: boolean;
   devStatsActiveTab: 'commits' | 'services' | 'tasks';
-  snakeEyesEnabled: boolean;
 }
 
 export interface ContactResult {

@@ -97,8 +97,3 @@ export const selectDevStatsActiveTab = createSelector(
   selectAppState,
   (state: AppState) => state.devStatsActiveTab
 );
-
-export const selectSnakeEyesEnabled = createSelector(
-  selectAppState,
-  (state: AppState) => state.snakeEyesEnabled
-);
