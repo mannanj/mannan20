@@ -11,11 +11,11 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
   standalone: true,
   imports: [CommonModule, ContentCard],
   template: `
-    <h2 class="text-[2em] mt-[60px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Education</h2>
+    <h2 class="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Education</h2>
     <div class="p-0 m-0 text-inherit">
       <b>{{ (education$ | async)?.institution }}</b>
-      <p class="leading-[1.6] m-0 mb-[1em] text-white">{{ (education$ | async)?.dates }}</p>
-      <p class="leading-[1.6] m-0 mb-[1em] text-white">{{ (education$ | async)?.degree }}</p>
+      <p class="leading-[1.6] m-0 mb-0 text-white">{{ (education$ | async)?.dates }}</p>
+      <p class="leading-[1.6] m-0 mb-0 text-white">{{ (education$ | async)?.degree }}</p>
 
       <div id="more-education" class="mt-1.5">
         <div *ngIf="section.display" class="content bg-[#f1f1f1] text-black p-1.5 rounded-md">

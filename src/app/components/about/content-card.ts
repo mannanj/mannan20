@@ -7,7 +7,7 @@ import { ProfileItem } from '../../models/models';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="p-0 m-0 text-inherit" [class.mt-[25px]]="applyMarginTop">
+    <div class="p-0 m-0 text-inherit" [class.mt-[10px]]="applyMarginTop">
       <a *ngIf="data.link && data.title" [href]="data.link" target="_blank" class="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
         <b>{{ data.title }}</b>
       </a>
@@ -18,15 +18,15 @@ import { ProfileItem } from '../../models/models';
       <b *ngIf="data.title && data.position">{{ data.position }}</b>
       <b *ngIf="!data.title && data.position">{{ data.position }}</b>
 
-      <p *ngIf="data.dates" class="leading-[1.6] m-0 mb-[1em] text-white">{{ data.dates }}</p>
+      <p *ngIf="data.dates" class="leading-[1.6] m-0 mb-0 text-white">{{ data.dates }}</p>
 
-      <p *ngIf="data.skills" class="text-xs italic mt-1.5 leading-[1.6] m-0 mb-[1em] text-white">
+      <p *ngIf="data.skills" class="text-xs italic mt-0 leading-[1.6] m-0 mb-0 text-white">
         {{ data.skills }}
       </p>
 
-      <p *ngIf="data.description" class="text-xs mt-1.5 leading-[1.6] m-0 mb-[1em] text-white" [innerHTML]="data.description"></p>
+      <p *ngIf="data.description" class="text-xs mt-0 leading-[1.6] m-0 mb-0 text-white" [innerHTML]="data.description"></p>
 
-      <p *ngIf="data.additionalContent" class="text-xs mt-1.5 leading-[1.6] m-0 mb-[1em] text-white" [innerHTML]="data.additionalContent"></p>
+      <p *ngIf="data.additionalContent" class="text-xs mt-0 leading-[1.6] m-0 mb-0 text-white" [innerHTML]="data.additionalContent"></p>
 
       <a *ngIf="data.downloadLink"
          [href]="data.downloadLink"
@@ -37,7 +37,7 @@ import { ProfileItem } from '../../models/models';
 
       <div *ngIf="data.expandedContent">
         <div *ngIf="isExpanded" class="content bg-[#f1f1f1] text-black p-1.5 rounded-md">
-          <p class="text-xs mt-1.5" [innerHTML]="data.expandedContent"></p>
+          <p class="text-xs mt-0" [innerHTML]="data.expandedContent"></p>
         </div>
         <button *ngIf="!isExpanded" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleExpanded()">more</button>
         <button *ngIf="isExpanded" type="button" class="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]" (click)="toggleExpanded()">less</button>
