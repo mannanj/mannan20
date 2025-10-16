@@ -2762,5 +2762,41 @@
       "date": "2025-10-16T13:45:54-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/666583a1e08ace0115c04e6ee8d3b5327735f058"
     }
+  },
+  {
+    "id": "task-82",
+    "title": "Reduce Section Spacing for Visual Hierarchy and Grouping",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Minimize spacing between section headings and content",
+        "completed": false
+      },
+      {
+        "description": "Reduce spacing between individual experience entries within sections",
+        "completed": false
+      },
+      {
+        "description": "Tighten spacing between titles, dates, and description text",
+        "completed": false
+      },
+      {
+        "description": "Ensure each section appears as a tightly grouped visual chunk",
+        "completed": false
+      },
+      {
+        "description": "Apply changes to Employment History section",
+        "completed": false
+      },
+      {
+        "description": "Apply changes to Education section",
+        "completed": false
+      },
+      {
+        "description": "Apply changes to Extracurriculars section",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/about/employment-section.ts`, `src/app/components/about/education-section.ts`, `src/app/components/about/extracurriculars-section.ts`"
   }
 ]

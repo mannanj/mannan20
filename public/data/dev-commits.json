@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "4da2063b3ac8b1097b1fffd20d5021b8dec30c9d",
+    "hash": "4da2063",
+    "subject": "Add Task 82: Reduce Section Spacing for Visual Hierarchy and Grouping",
+    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T13:46:40-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/4da2063b3ac8b1097b1fffd20d5021b8dec30c9d"
+  },
+  {
+    "fullHash": "d75a3a65d064c400445d19e1b83c8a5bb7a1aa7f",
+    "hash": "d75a3a6",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T13:45:54-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d75a3a65d064c400445d19e1b83c8a5bb7a1aa7f"
+  },
+  {
     "fullHash": "666583a1e08ace0115c04e6ee8d3b5327735f058",
     "hash": "666583a",
     "subject": "Task 81: Update Responsive Layout Widths",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:38:41-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/29c41ec96f508160ab2b91f542796748430ace0a"
-  },
-  {
-    "fullHash": "34b0f0628b23364782579e1e80a2e32698829f6e",
-    "hash": "34b0f06",
-    "subject": "Task 49: Fix AG Grid Table Overflow in Modal",
-    "body": "- [x] Remove domLayout=\"autoHeight\" and use normal layout\n- [x] Set fixed height container for grids with overflow-y: auto\n- [x] Ensure horizontal scrolling works when columns exceed container width\n- [x] Prevent tables from expanding beyond modal boundaries\n- [x] Reduce column header font size and padding for tighter appearance\n- [x] Test both commits and tasks tables for proper scrolling behavior\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`\n\n[Task-49]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:38:41-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/34b0f0628b23364782579e1e80a2e32698829f6e"
-  },
-  {
-    "fullHash": "593956a7ea81db65d1599ebebecc73d5d998fe14",
-    "hash": "593956a",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:37:06-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/593956a7ea81db65d1599ebebecc73d5d998fe14"
   }
 ]
