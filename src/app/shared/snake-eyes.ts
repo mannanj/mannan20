@@ -5,7 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 const ITEM_SIZE = 30;
 const GAP_SIZE = 20;
-const CIRCLE_DIAMETER = 6;
+const CIRCLE_DIAMETER = 10;
 const MAX_CIRCLE_TRANSLATE = ITEM_SIZE / 2 - CIRCLE_DIAMETER / 2;
 const DISPLACEMENT_PROPORTIONALITY_CONSTANT = 1000;
 const DELAY_FACTOR = 0.75;
@@ -62,40 +62,11 @@ interface CircleElement extends HTMLDivElement {
     }
 
     .circle {
-      width: 6px;
-      height: 6px;
-      background-color: rgba(255, 255, 255, 0.8);
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      width: 10px;
+      height: 10px;
+      background-color: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
       transition: transform 0.1s ease-out;
-      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
-      animation: shimmer 3s ease-in-out infinite;
-    }
-
-    @keyframes shimmer {
-      0%, 100% {
-        opacity: 0.4;
-        filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
-      }
-      50% {
-        opacity: 1;
-        filter: drop-shadow(0 0 3px rgba(255, 255, 255, 1));
-      }
-    }
-
-    .circle:nth-child(2n) {
-      animation-delay: 0.5s;
-    }
-
-    .circle:nth-child(3n) {
-      animation-delay: 1s;
-    }
-
-    .circle:nth-child(5n) {
-      animation-delay: 1.5s;
-    }
-
-    .circle:nth-child(7n) {
-      animation-delay: 2s;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
