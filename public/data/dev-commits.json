@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "3ab3c4b8c2b127064db26cebd967e0bffc6ab982",
+    "hash": "3ab3c4b",
+    "subject": "Keep location with contact info and fix button spacing",
+    "body": "Moved location and button into left grid column with email/phone.\nNow email, phone, and location stay tightly grouped, and button\nspacing (mt-[25px]) measures from location text, not ripple container.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:08:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3ab3c4b8c2b127064db26cebd967e0bffc6ab982"
+  },
+  {
+    "fullHash": "701105ea21226761216d2eae9fd0cf1e9389b4e6",
+    "hash": "701105e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:06:50-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/701105ea21226761216d2eae9fd0cf1e9389b4e6"
+  },
+  {
     "fullHash": "98bdb5254b1e2a29e8cc5eaa54b057d1ee5fd9a7",
     "hash": "98bdb52",
     "subject": "Move location outside grid to fix button spacing",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T12:07:03-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/a1c13d518fd2f7b0ad83d47652074abe4f779bb3"
-  },
-  {
-    "fullHash": "8aaa990bc9315fdc69337b765509c10271c9aa11",
-    "hash": "8aaa990",
-    "subject": "Task 56: Final Polish for Contact Modal",
-    "body": "- [x] Change placeholder text from \"Please share your name...\" to \"Enter your name...\"\n- [x] Add padding below button before consent text appears\n- Location: `src/app/components/contact/contact-form.ts`\n\n[Task-56]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:07:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8aaa990bc9315fdc69337b765509c10271c9aa11"
-  },
-  {
-    "fullHash": "05f9909c87ee437946718351bfbc313ecb6a7577",
-    "hash": "05f9909",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:06:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/05f9909c87ee437946718351bfbc313ecb6a7577"
   }
 ]
