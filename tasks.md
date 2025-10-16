@@ -577,3 +577,23 @@
 - [ ] Remove checkboxes if row selection is not needed
 - [ ] Test changes in both commits-grid and task-table components
 - Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`
+
+### Task 72: Implement Star Reward System
+- [ ] Create star component to display in bottom right above "last updated"
+- [ ] Implement interaction tracking service to count user actions (clicks, scrolls, etc.)
+- [ ] Add star accumulation logic based on user interactions
+- [ ] Create hover effect to highlight and grow star group with tooltip
+- [ ] Implement dynamic tooltip messages based on star count (5, 10, 25 stars)
+- [ ] Add animation changes at different star thresholds (10 stars: faster glow, 25 stars: special effect)
+- [ ] Implement special code system for / chat menu command to award bonus stars
+- [ ] Add logic to award 15 stars for requesting contact info or entering special code
+- [ ] Persist star count across sessions using localStorage
+- Location: `src/app/components/footer/`, `src/app/services/`, `src/app/components/home/`
+
+### Task 73: Update Help Menu for / Command
+- [ ] Add description to help menu showing / can be used to chat or enter special codes
+- [ ] Update help menu tooltip or documentation text
+- [ ] Ensure special codes from star system are mentioned or hinted at
+- [ ] Add visual feedback when special code is recognized (glow/loading effect)
+- [ ] Disable chat input while code is being processed
+- Location: `src/app/components/contact/help.ts`
