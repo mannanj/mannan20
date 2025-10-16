@@ -2449,7 +2449,15 @@
         "completed": false
       },
       {
-        "description": "Persist star count across sessions using localStorage",
+        "description": "Display unique gaming mode access code at 25-star tier",
+        "completed": false
+      },
+      {
+        "description": "Allow user to enter code via / command to return to gaming mode",
+        "completed": false
+      },
+      {
+        "description": "Persist star count and gaming mode status across sessions using localStorage",
         "completed": false
       }
     ],
@@ -2482,5 +2490,45 @@
       }
     ],
     "location": "`src/app/components/contact/help.ts`"
+  },
+  {
+    "id": "task-74",
+    "title": "Persistent Help Menu with Connection Status",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Move help menu to always display at bottom left corner",
+        "completed": false
+      },
+      {
+        "description": "Display number of users online next to help icon",
+        "completed": false
+      },
+      {
+        "description": "Add connection status indicator showing (connected) or (disconnected)",
+        "completed": false
+      },
+      {
+        "description": "Monitor WebSocket connection state and internet connectivity",
+        "completed": false
+      },
+      {
+        "description": "Update connection status in real-time when connection changes",
+        "completed": false
+      },
+      {
+        "description": "Show (disconnected) when WebSocket disconnects or internet is lost",
+        "completed": false
+      },
+      {
+        "description": "Style help menu and status indicators with Tailwind utilities",
+        "completed": false
+      },
+      {
+        "description": "Ensure help menu remains accessible and visible on all pages",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/help.ts`, `src/app/app.ts`, `src/app/services/`"
   }
 ]

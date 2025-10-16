@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "37bffa008620d12fcfdc575da5e382a33eda43ba",
+    "hash": "37bffa0",
+    "subject": "Add gaming mode code and help menu connection status tasks",
+    "body": "Enhanced Task 72 with 25-star gaming mode code feature and added Task 74 for persistent help menu with connection status indicators.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:29:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/37bffa008620d12fcfdc575da5e382a33eda43ba"
+  },
+  {
+    "fullHash": "6e17b89157d4daf00d5551dcae118872269faf0d",
+    "hash": "6e17b89",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:24:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6e17b89157d4daf00d5551dcae118872269faf0d"
+  },
+  {
     "fullHash": "17f5afbb5790399e05a2925111b699ba5f59a6c3",
     "hash": "17f5afb",
     "subject": "Add star reward system and help menu tasks",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:31:30-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/68ef7aec11fa9cddcd25cd58f1f56121ecdd685c"
-  },
-  {
-    "fullHash": "835853d6c24a1ce9c659b75eff543b8706ee230b",
-    "hash": "835853d",
-    "subject": "Add AG Grid improvement tasks",
-    "body": "Add Task 46: Style AG Grid with dark theme and fix overflow\nAdd Task 47: Add search functionality to AG Grid tables\nAdd Task 48: Fix empty tasks column in tasks table\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:31:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/835853d6c24a1ce9c659b75eff543b8706ee230b"
-  },
-  {
-    "fullHash": "6894db6526fb867578e56e8f1da2c6ed5c395795",
-    "hash": "6894db6",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:29:09-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/6894db6526fb867578e56e8f1da2c6ed5c395795"
   }
 ]
