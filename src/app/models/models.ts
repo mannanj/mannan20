@@ -87,6 +87,11 @@ export interface AppState {
   commandsModalVisible: boolean;
   devCommits: DevCommit[];
   tasks: Task[];
+  contactModalOpen: boolean;
+  contactShowResult: boolean;
+  contactResult: ContactResult | null;
+  devStatsModalOpen: boolean;
+  devStatsActiveTab: 'commits' | 'services' | 'tasks';
 }
 
 export interface ContactResult {

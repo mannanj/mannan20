@@ -9,7 +9,12 @@ export const initialState: AppState = {
   isInitialized: false,
   commandsModalVisible: false,
   devCommits: [],
-  tasks: []
+  tasks: [],
+  contactModalOpen: false,
+  contactShowResult: false,
+  contactResult: null,
+  devStatsModalOpen: false,
+  devStatsActiveTab: 'commits'
 };
 
 export const appReducer = createReducer(
@@ -41,5 +46,28 @@ export const appReducer = createReducer(
   on(AppActions.loadTasksSuccess, (state, { tasks }) => ({
     ...state,
     tasks
+  })),
+  on(AppActions.openContactModal, (state) => ({
+    ...state,
+    contactModalOpen: true
+  })),
+  on(AppActions.closeContactModal, (state) => ({
+    ...state,
+    contactModalOpen: false,
+    contactShowResult: false,
+    contactResult: null
+  })),
+  on(AppActions.setContactResult, (state, { result }) => ({
+    ...state,
+    contactShowResult: true,
+    contactResult: result
+  })),
+  on(AppActions.toggleDevStatsModal, (state) => ({
+    ...state,
+    devStatsModalOpen: !state.devStatsModalOpen
+  })),
+  on(AppActions.setDevStatsTab, (state, { tab }) => ({
+    ...state,
+    devStatsActiveTab: tab
   }))
 );

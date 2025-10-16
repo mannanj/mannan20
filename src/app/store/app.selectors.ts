@@ -72,3 +72,28 @@ export const selectTasks = createSelector(
   selectAppState,
   (state: AppState) => state.tasks
 );
+
+export const selectContactModalOpen = createSelector(
+  selectAppState,
+  (state: AppState) => state.contactModalOpen
+);
+
+export const selectContactShowResult = createSelector(
+  selectAppState,
+  (state: AppState) => state.contactShowResult
+);
+
+export const selectContactResult = createSelector(
+  selectAppState,
+  (state: AppState) => state.contactResult
+);
+
+export const selectDevStatsModalOpen = createSelector(
+  selectAppState,
+  (state: AppState) => state.devStatsModalOpen
+);
+
+export const selectDevStatsActiveTab = createSelector(
+  selectAppState,
+  (state: AppState) => state.devStatsActiveTab
+);

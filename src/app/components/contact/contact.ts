@@ -1,18 +1,14 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { Links, ContactResult as ContactResultData } from '../../models/models';
-import { Modal } from '../../shared/modal';
-import { ContactForm } from './contact-form';
-import { ContactResult } from './contact-result';
+import { Links } from '../../models/models';
 import { navigateTo } from '../../utils/help';
-
-const FORM_SUBMIT_DELAY_MS = 2000;
+import { openContactModal } from '../../store/app.actions';
 
 @Component({
   selector: 'contact',
   standalone: true,
-  imports: [CommonModule, Modal, ContactForm, ContactResult],
+  imports: [CommonModule],
   template: `
     <div class="pb-[100px]">
       <h1 class="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">Contact</h1>
@@ -31,11 +27,6 @@ const FORM_SUBMIT_DELAY_MS = 2000;
       </div>
       <button (click)="goToHome()" class="nav-button mt-[50px]">Back to Top</button>
     </div>
-
-    <modal [isOpen]="isModalOpen" (close)="closeModal()">
-      <contact-form *ngIf="!showResult" (submitForm)="onFormSubmit($event)"></contact-form>
-      <contact-result *ngIf="showResult" [result]="result"></contact-result>
-    </modal>
   `,
   styles: [`
     .contact-grid {
@@ -121,35 +112,9 @@ const FORM_SUBMIT_DELAY_MS = 2000;
 })
 export class Contact {
   private store = inject(Store);
-  @ViewChild(ContactForm) contactForm?: ContactForm;
-  @ViewChild(ContactResult) contactResult?: ContactResult;
-
-  isModalOpen = false;
-  showResult = false;
-  result: ContactResultData | null = null;
 
   openModal() {
-    this.isModalOpen = true;
-  }
-
-  closeModal() {
-    this.isModalOpen = false;
-    this.showResult = false;
-    this.result = null;
-    this.contactForm?.reset();
-    this.contactResult?.reset();
-  }
-
-  onFormSubmit(userInput: string) {
-    console.log('Contact request submitted:', userInput);
-
-    setTimeout(() => {
-      this.showResult = true;
-      this.result = {
-        email: 'hello@mannan.is',
-        phone: '+1 (571) 228-8302'
-      };
-    }, FORM_SUBMIT_DELAY_MS);
+    this.store.dispatch(openContactModal());
   }
 
   goToHome(): void {

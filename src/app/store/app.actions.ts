@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Links, AboutData, Metadata, DevCommit, Task } from '../models/models';
+import { Links, AboutData, Metadata, DevCommit, Task, ContactResult } from '../models/models';
 
 export const setSelectedLink = createAction(
   '[Navigation] Set Selected Link',
@@ -40,4 +40,20 @@ export const loadDevCommitsSuccess = createAction(
 export const loadTasksSuccess = createAction(
   '[Tasks] Load Tasks Success',
   props<{ tasks: Task[] }>()
+);
+
+export const openContactModal = createAction('[Contact] Open Contact Modal');
+
+export const closeContactModal = createAction('[Contact] Close Contact Modal');
+
+export const setContactResult = createAction(
+  '[Contact] Set Contact Result',
+  props<{ result: ContactResult }>()
+);
+
+export const toggleDevStatsModal = createAction('[DevStats] Toggle DevStats Modal');
+
+export const setDevStatsTab = createAction(
+  '[DevStats] Set DevStats Tab',
+  props<{ tab: 'commits' | 'services' | 'tasks' }>()
 );
