@@ -23,7 +23,7 @@ import { openContactModal } from '../../store/app.actions';
           <div class="circle"></div>
         </div>
       </div>
-      <button (click)="goToHome()" class="nav-button mt-[50px]">Back to Top</button>
+      <button (click)="goToHome()" class="nav-button mt-[25px]">Back to Top</button>
     </div>
   `,
   styles: [`

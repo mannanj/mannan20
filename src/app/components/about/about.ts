@@ -38,7 +38,7 @@ import { navigateTo } from '../../utils/help';
 
       <education-section></education-section>
 
-      <button (click)="goToContact()" class="nav-button mt-[60px]">Get In Touch</button>
+      <button (click)="goToContact()" class="nav-button mt-[25px]">Get In Touch</button>
     </div>
   `,
   styles: []
