@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "d203080c386aece9d7f81973cc23d133260baaca",
+    "hash": "d203080",
+    "subject": "Add code quality improvement tasks",
+    "body": "Added 6 new tasks (75-80) based on comprehensive codebase analysis:\n- Task 75: Migrate components to modern Angular APIs (signals, inject)\n- Task 76: Convert legacy template syntax to modern control flow\n- Task 77: Add OnPush change detection and remove empty styles\n- Task 78: Convert component styles to Tailwind utilities\n- Task 79: Clean up backend dead code and improve patterns\n- Task 80: Remove debug code and production cleanup\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:48:01-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d203080c386aece9d7f81973cc23d133260baaca"
+  },
+  {
+    "fullHash": "017d6e7619f2ea159612c0e73a85fc09ae542122",
+    "hash": "017d6e7",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:29:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/017d6e7619f2ea159612c0e73a85fc09ae542122"
+  },
+  {
     "fullHash": "37bffa008620d12fcfdc575da5e382a33eda43ba",
     "hash": "37bffa0",
     "subject": "Add gaming mode code and help menu connection status tasks",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:34:41-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/5eb7d597c1bd032c82f7dc4a704f9b30f1dc96f2"
-  },
-  {
-    "fullHash": "e7587f86d5f4253056c8cbd04013f6f66c7ffba5",
-    "hash": "e7587f8",
-    "subject": "Task 48: Fix Empty Tasks Column in Tasks Table",
-    "body": "- [x] Debug why task title column shows empty values\n- [x] Verify field mapping in column definitions matches data structure\n- [x] Check if Task interface property names match ag-grid field names\n- [x] Ensure task data is properly passed to ag-grid component\n- [x] Fix AG Grid theming conflict (removed CSS imports, use Theming API)\n- [x] Fix completedCommit object value formatter warning\n- [x] Configure dark theme with black background and white/gray text\n- Location: `src/app/shared/task-table.ts`, `src/app/shared/dev-stats.ts`, `src/styles.css`\n\n[Task-48]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:34:41-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e7587f86d5f4253056c8cbd04013f6f66c7ffba5"
-  },
-  {
-    "fullHash": "68ef7aec11fa9cddcd25cd58f1f56121ecdd685c",
-    "hash": "68ef7ae",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:31:30-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/68ef7aec11fa9cddcd25cd58f1f56121ecdd685c"
   }
 ]

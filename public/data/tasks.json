@@ -2530,5 +2530,213 @@
       }
     ],
     "location": "`src/app/components/contact/help.ts`, `src/app/app.ts`, `src/app/services/`"
+  },
+  {
+    "id": "task-75",
+    "title": "Migrate Components to Modern Angular APIs (Signals)",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace @Input/@Output decorators with input()/output() in contact-form.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace @Input/@Output decorators with input()/output() in contact-result.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace @Input/@Output decorators with input()/output() in content-card.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace @Input/@Output decorators with input()/output() in modal.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace constructor injection with inject() in employment-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace constructor injection with inject() in education-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace constructor injection with inject() in extracurriculars-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove explicit standalone: true from all 12 component decorators",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/`, `src/app/components/about/`, `src/app/shared/`"
+  },
+  {
+    "id": "task-76",
+    "title": "Convert Legacy Template Syntax to Modern Control Flow",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace *ngIf with @if in contact-form.ts (lines 36, 48)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf with @if in contact-result.ts (lines 17, 21-22, 25, 29-30)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf with @if in content-card.ts (lines 11-43)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf with @if in modal.ts (line 10)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngFor with @for in header.ts (line 19)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf/*ngFor with @if/@for in employment-section.ts (lines 17, 23, 30)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf with @if in education-section.ts (lines 21-24, 27-28)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf/*ngFor with @if/@for in extracurriculars-section.ts (lines 15, 18-21, 23, 25, 31-32)",
+        "completed": false
+      },
+      {
+        "description": "Replace *ngIf with @if in app.ts (lines 66-67)",
+        "completed": false
+      }
+    ],
+    "location": "All component template files with legacy directives"
+  },
+  {
+    "id": "task-77",
+    "title": "Add OnPush Change Detection and Remove Empty Styles",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to all 13 components missing it",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from extracurriculars-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from about.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from employment-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from education-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from contact-result.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from home.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove empty styles: [] from tasks-container.ts, tasks-toolbar.ts, task-card.ts",
+        "completed": false
+      }
+    ],
+    "location": "All component files"
+  },
+  {
+    "id": "task-78",
+    "title": "Convert Component Styles to Tailwind Utilities",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Convert .action-container and .divider styles to Tailwind in contact-form.ts",
+        "completed": false
+      },
+      {
+        "description": "Convert .tabs-container, .tabs-header, .tab-button styles to Tailwind in app.ts",
+        "completed": false
+      },
+      {
+        "description": "Convert .search-input styles to Tailwind in commits-grid.ts",
+        "completed": false
+      },
+      {
+        "description": "Convert .search-input styles to Tailwind in task-table.ts",
+        "completed": false
+      },
+      {
+        "description": "Remove duplicate CSS patterns between commits-grid and task-table",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts`, `src/app/app.ts`, `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`"
+  },
+  {
+    "id": "task-79",
+    "title": "Clean Up Backend Dead Code and Improve Patterns",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Remove unused getViewerByName() method from ViewersDAO.java",
+        "completed": false
+      },
+      {
+        "description": "Remove unused getViewerByReason() method from ViewersDAO.java",
+        "completed": false
+      },
+      {
+        "description": "Remove unused setViewerList() setter from Viewers.java",
+        "completed": false
+      },
+      {
+        "description": "Replace @Autowired field injection with constructor injection in ViewerController.java",
+        "completed": false
+      },
+      {
+        "description": "Fix redundant null assignment in ViewerController.java line 80",
+        "completed": false
+      },
+      {
+        "description": "Remove unused ContactResult import from modal.ts",
+        "completed": false
+      }
+    ],
+    "location": "`backend/src/main/java/com/example/demo/`, `src/app/shared/modal.ts`"
+  },
+  {
+    "id": "task-80",
+    "title": "Remove Debug Code and Production Cleanup",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Remove console.log statement from app.ts line 209",
+        "completed": false
+      },
+      {
+        "description": "Remove console.log statement from cookies.ts line 20",
+        "completed": false
+      },
+      {
+        "description": "Review codebase for any other console statements",
+        "completed": false
+      },
+      {
+        "description": "Verify no debugging code remains in production bundle",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/app.ts`, `src/app/utils/cookies.ts`"
   }
 ]
