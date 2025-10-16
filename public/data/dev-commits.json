@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "a430d8e7af4f74ad942a285c102510afaa687d87",
+    "hash": "a430d8e",
+    "subject": "Revert height/spacing changes, keep only width simplification",
+    "body": "Restored original heights and margins. Only width layout is simplified.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:51:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a430d8e7af4f74ad942a285c102510afaa687d87"
+  },
+  {
+    "fullHash": "e0a9e900a9bc9c584073f2a8b17fb16030e38af9",
+    "hash": "e0a9e90",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:50:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e0a9e900a9bc9c584073f2a8b17fb16030e38af9"
+  },
+  {
     "fullHash": "d5a8b385ab3d726b87d72f572cadc594ecfe6f57",
     "hash": "d5a8b38",
     "subject": "Simplify CSS layout structure",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:49:43-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/4e430fc3e9f88a4ec878c54b06d1031db1f52777"
-  },
-  {
-    "fullHash": "ba2fbea3a8a36609a1122237a6908c5f0af98e2a",
-    "hash": "ba2fbea",
-    "subject": "Task 35: Update Modal Greeting Text",
-    "body": "- [x] Change greeting from \"Hi <>\" to \"Hi there 👋\" (3 words with hand waving emoji)\n- [x] Update modal template to use new greeting format\n- [x] Ensure emoji displays correctly across browsers\n- Location: `src/app/components/contact/contact-result.ts` or modal component\n\n[Task-35]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:49:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ba2fbea3a8a36609a1122237a6908c5f0af98e2a"
-  },
-  {
-    "fullHash": "6e9f7472865629ba027b26879542fb33954c7a8a",
-    "hash": "6e9f747",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:48:59-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/6e9f7472865629ba027b26879542fb33954c7a8a"
   }
 ]
