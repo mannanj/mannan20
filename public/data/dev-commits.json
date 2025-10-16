@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "d86f02742960f9206249b7fb3f778750eaaf337b",
+    "hash": "d86f027",
+    "subject": "Move location directly below phone number with tight spacing",
+    "body": "Changed location from separate paragraph to inline span within contact info.\nNow appears immediately below phone number with no extra spacing.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:00:38-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d86f02742960f9206249b7fb3f778750eaaf337b"
+  },
+  {
+    "fullHash": "34c12da6c160745f927ad3fcdb094a08b393e587",
+    "hash": "34c12da",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:58:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/34c12da6c160745f927ad3fcdb094a08b393e587"
+  },
+  {
     "fullHash": "0526885e74f030e18d1a4b829c56f0c74537727a",
     "hash": "0526885",
     "subject": "Tighten spacing across all sections consistently",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:54:26-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/2e45818564e9ae815cdb1d3b462966a2c88278ae"
-  },
-  {
-    "fullHash": "84410ad23f7feb893ac77cce062dca438a61193f",
-    "hash": "84410ad",
-    "subject": "Task 53: Restore Default Modal Width for Non-Dev-Stats Modals",
-    "body": "- [x] Review modal width changes from commits 81cbcdb and 7c3b43f\n- [x] Restore original smaller modal width as default for all modals\n- [x] Create custom width override specifically for dev-stats modal\n- [x] Ensure dev-stats modal and children retain larger responsive widths\n- [x] Verify other modals (contact, etc.) use smaller default width\n- [x] Test all modals across different screen sizes\n- Location: `src/app/shared/modal.ts`, `src/app/shared/dev-stats.ts`\n\n[Task-53]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:54:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/84410ad23f7feb893ac77cce062dca438a61193f"
-  },
-  {
-    "fullHash": "bf27a63970993fcd9c73ff4cd808ba76002d3462",
-    "hash": "bf27a63",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:51:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/bf27a63970993fcd9c73ff4cd808ba76002d3462"
   }
 ]
