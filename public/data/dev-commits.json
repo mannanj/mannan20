@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "98bdb5254b1e2a29e8cc5eaa54b057d1ee5fd9a7",
+    "hash": "98bdb52",
+    "subject": "Move location outside grid to fix button spacing",
+    "body": "Location (Alexandria, Virginia) now sits below the grid as a sibling,\nso button's mt-[25px] is measured from location text, not from the 90px\nripple container height. This matches spacing in Home/About sections.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:06:50-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/98bdb5254b1e2a29e8cc5eaa54b057d1ee5fd9a7"
+  },
+  {
+    "fullHash": "3deac40c3c98d0fd21495a62e6dc2a78de26af89",
+    "hash": "3deac40",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:05:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3deac40c3c98d0fd21495a62e6dc2a78de26af89"
+  },
+  {
     "fullHash": "4274fcb89919d5da76e6d1540ca4294365201add",
     "hash": "4274fcb",
     "subject": "Fix Contact section spacing to match other sections",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T12:06:07-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/05f9909c87ee437946718351bfbc313ecb6a7577"
-  },
-  {
-    "fullHash": "5b52652657c494794f75719fd497a68c91bfed2f",
-    "hash": "5b52652",
-    "subject": "Task 55: Refine Contact Modal Typography for Elegant Appearance",
-    "body": "- [x] Make consent text more subtle using !important overrides\n- [x] Increase header font size from 2rem to 2.5rem\n- [x] Lighten header font weight to font-light for elegant look\n- [x] Reduce tagline prominence with more subtle gray color\n- [x] Remove caps from button text (Continue your request, Continue with Google)\n- [x] Add rounded container around action section (buttons and input)\n- [x] Change button to white background with black text and blue border animation\n- [x] Remove divider lines around OR text\n- [x] Move consent text inside action container\n- [x] Match styling to Anthropic's minimal aesthetic\n- Location: `src/app/components/contact/contact-form.ts`\n\n[Task-55]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:06:07-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5b52652657c494794f75719fd497a68c91bfed2f"
-  },
-  {
-    "fullHash": "a94a1d99e60b7d6f5f8707dcee2d52ef654c59bd",
-    "hash": "a94a1d9",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:59:55-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/a94a1d99e60b7d6f5f8707dcee2d52ef654c59bd"
   }
 ]
