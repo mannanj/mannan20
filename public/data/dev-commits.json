@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "65b1728b4fc2fcd3a283fa8e6ea3116b82dbdaa4",
+    "hash": "65b1728",
+    "subject": "Task 83: Remove horizontal padding for full width layout",
+    "body": "Removed px-5 to allow content to use full 100% width up to 321px max.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:49:03-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/65b1728b4fc2fcd3a283fa8e6ea3116b82dbdaa4"
+  },
+  {
+    "fullHash": "263faa87809322c867c2cd2d1f4e227ceff6edb9",
+    "hash": "263faa8",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:48:06-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/263faa87809322c867c2cd2d1f4e227ceff6edb9"
+  },
+  {
     "fullHash": "ee1abf96a7cc8c1c90bb8038baad55ecda2a769f",
     "hash": "ee1abf9",
     "subject": "Task 83: Update max width to 321px (correction)",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:41:26-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/770fed9ae1d64c217038c544f28ab8f7f34d45c0"
-  },
-  {
-    "fullHash": "5851b1f4118cfb23b4a7b10fba48dd927f4784e9",
-    "hash": "5851b1f",
-    "subject": "Task 51: Make Status Badge Text Smaller in Table View",
-    "body": "- [x] Reduce font size of status badge text in task-table component\n- [x] Adjust padding to maintain badge appearance with smaller text\n- [x] Ensure badge looks more compact and refined\n- [x] Keep card view status badge unchanged\n- Location: `src/app/shared/task-table.ts`\n\n[Task-51]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:41:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5851b1f4118cfb23b4a7b10fba48dd927f4784e9"
-  },
-  {
-    "fullHash": "2fe71af1988b6ce5ece7e68fe306451cfd86d248",
-    "hash": "2fe71af",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:41:01-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/2fe71af1988b6ce5ece7e68fe306451cfd86d248"
   }
 ]
