@@ -17,13 +17,13 @@ import { navigateTo } from '../../utils/help';
     <div>
       <h1 class="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">About</h1>
       <hr class="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5">
-      <p class="m-0 mt-[25px] text-sm leading-[1.6] text-white">
+      <p class="m-0 text-sm leading-[1.6] text-white">
         {{ (aboutIntro$ | async)?.primary }}
       </p>
 
       <div id="more-about-intro">
         <div *ngIf="aboutSection.display">
-          <p *ngFor="let paragraph of (aboutIntro$ | async)?.expanded || []" class="text-sm mt-3 leading-[1.6] text-white">
+          <p *ngFor="let paragraph of (aboutIntro$ | async)?.expanded || []" class="text-sm m-0 leading-[1.6] text-white">
             {{ paragraph }}
           </p>
         </div>

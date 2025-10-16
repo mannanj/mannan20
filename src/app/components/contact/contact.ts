@@ -13,17 +13,17 @@ import { openContactModal } from '../../store/app.actions';
     <div class="pb-[100px]">
       <h1 class="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">Contact</h1>
       <hr class="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5">
-      <div class="flex flex-col mt-[25px]">
+      <div class="flex flex-col">
         <div class="contact-grid">
           <div class="flex flex-col">
             <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" (click)="openModal()" title="Request contact info">*****&#64;mannan.is</a>
-            <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer mt-2 transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" (click)="openModal()" title="Request contact info">+1 (***) *** 8302</a>
+            <a class="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" (click)="openModal()" title="Request contact info">+1 (***) *** 8302</a>
           </div>
           <div class="ripple-container" (click)="openModal()" title="Request contact info">
             <div class="circle"></div>
           </div>
         </div>
-        <p class="m-0 mt-3 leading-[1.6] text-white">Alexandria, Virginia</p>
+        <p class="m-0 leading-[1.6] text-white">Alexandria, Virginia</p>
       </div>
       <button (click)="goToHome()" class="nav-button mt-[50px]">Back to Top</button>
     </div>
