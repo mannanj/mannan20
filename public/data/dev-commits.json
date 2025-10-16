@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "666583a1e08ace0115c04e6ee8d3b5327735f058",
+    "hash": "666583a",
+    "subject": "Task 81: Update Responsive Layout Widths",
+    "body": "- [x] Change tablet view width from 70% to 50%\n- [x] Add 50% width to desktop view while maintaining max-w-720px\n- Location: `src/app/app.ts:35`\n\n[Task-81]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T13:45:54-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/666583a1e08ace0115c04e6ee8d3b5327735f058"
+  },
+  {
+    "fullHash": "1a0b75429368b405ddf55e3eb90f93b946872a81",
+    "hash": "1a0b754",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:48:01-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1a0b75429368b405ddf55e3eb90f93b946872a81"
+  },
+  {
     "fullHash": "d203080c386aece9d7f81973cc23d133260baaca",
     "hash": "d203080",
     "subject": "Add code quality improvement tasks",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:37:06-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/593956a7ea81db65d1599ebebecc73d5d998fe14"
-  },
-  {
-    "fullHash": "016b1853af52d5c771d52c36d203325a75207f51",
-    "hash": "016b185",
-    "subject": "Task 46: Style AG Grid Tables with Dark Theme",
-    "body": "- [x] Change ag-grid background color to black\n- [x] Set text color to white or appropriate gray for visibility\n- [x] Keep link colors blue for commit hashes\n- [x] Make task status badge colors more gray while maintaining readability\n- [x] Prevent table from overflowing modal container\n- [x] Ensure vertical scrollbar appears when content exceeds container height\n- [x] Apply custom dark theme styling to both commits and tasks grids\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/styles.css`\n\n[Task-46]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:37:06-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/016b1853af52d5c771d52c36d203325a75207f51"
-  },
-  {
-    "fullHash": "5eb7d597c1bd032c82f7dc4a704f9b30f1dc96f2",
-    "hash": "5eb7d59",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:34:41-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5eb7d597c1bd032c82f7dc4a704f9b30f1dc96f2"
   }
 ]

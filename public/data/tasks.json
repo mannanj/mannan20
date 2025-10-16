@@ -2738,5 +2738,29 @@
       }
     ],
     "location": "`src/app/app.ts`, `src/app/utils/cookies.ts`"
+  },
+  {
+    "id": "task-81",
+    "title": "Update Responsive Layout Widths",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Change tablet view width from 70% to 50%",
+        "completed": true
+      },
+      {
+        "description": "Add 50% width to desktop view while maintaining max-w-720px",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/app.ts:35`",
+    "completedDate": "2025-10-16T13:45:54-04:00",
+    "completedCommit": {
+      "hash": "666583a",
+      "fullHash": "666583a1e08ace0115c04e6ee8d3b5327735f058",
+      "subject": "Task 81: Update Responsive Layout Widths",
+      "date": "2025-10-16T13:45:54-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/666583a1e08ace0115c04e6ee8d3b5327735f058"
+    }
   }
 ]
