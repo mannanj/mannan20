@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "0526885e74f030e18d1a4b829c56f0c74537727a",
+    "hash": "0526885",
+    "subject": "Tighten spacing across all sections consistently",
+    "body": "Contact section:\n- Removed mt-2 from phone link\n- Removed mt-3 from location paragraph\n- Removed mt-[25px] from flex container\n\nAbout section:\n- Removed mt-[25px] from first paragraph\n- Removed mt-3 from expanded paragraphs\n\nAll sections now follow consistent pattern:\n- h1 with m-0, leading-[1.2]\n- hr with my-5\n- Content after hr has no additional top margin\n- All text tightly spaced with m-0, leading-[1.6]\n- Buttons maintain separation spacing\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:58:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0526885e74f030e18d1a4b829c56f0c74537727a"
+  },
+  {
+    "fullHash": "3991667f3335224a1baba84d59f62f5c2beeb8ab",
+    "hash": "3991667",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T15:51:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/3991667f3335224a1baba84d59f62f5c2beeb8ab"
+  },
+  {
     "fullHash": "a430d8e7af4f74ad942a285c102510afaa687d87",
     "hash": "a430d8e",
     "subject": "Revert height/spacing changes, keep only width simplification",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:51:03-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/bf27a63970993fcd9c73ff4cd808ba76002d3462"
-  },
-  {
-    "fullHash": "f24d2774b7a3e5cdc36d348026ead97eeb7fe989",
-    "hash": "f24d277",
-    "subject": "Task 34: Add Consent Checkmark Icon",
-    "body": "- [x] Add green checkmark SVG icon next to consent text\n- [x] Position checkmark before \"I will never reach out to you without your consent\"\n- [x] Style checkmark with green color using Tailwind utilities\n- [x] Ensure checkmark aligns properly with text\n- Location: `src/app/components/contact/contact-form.ts`\n\n[Task-34]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:51:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f24d2774b7a3e5cdc36d348026ead97eeb7fe989"
-  },
-  {
-    "fullHash": "4e430fc3e9f88a4ec878c54b06d1031db1f52777",
-    "hash": "4e430fc",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:49:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/4e430fc3e9f88a4ec878c54b06d1031db1f52777"
   }
 ]
