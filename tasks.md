@@ -587,7 +587,9 @@
 - [ ] Add animation changes at different star thresholds (10 stars: faster glow, 25 stars: special effect)
 - [ ] Implement special code system for / chat menu command to award bonus stars
 - [ ] Add logic to award 15 stars for requesting contact info or entering special code
-- [ ] Persist star count across sessions using localStorage
+- [ ] Display unique gaming mode access code at 25-star tier
+- [ ] Allow user to enter code via / command to return to gaming mode
+- [ ] Persist star count and gaming mode status across sessions using localStorage
 - Location: `src/app/components/footer/`, `src/app/services/`, `src/app/components/home/`
 
 ### Task 73: Update Help Menu for / Command
@@ -597,3 +599,14 @@
 - [ ] Add visual feedback when special code is recognized (glow/loading effect)
 - [ ] Disable chat input while code is being processed
 - Location: `src/app/components/contact/help.ts`
+
+### Task 74: Persistent Help Menu with Connection Status
+- [ ] Move help menu to always display at bottom left corner
+- [ ] Display number of users online next to help icon
+- [ ] Add connection status indicator showing (connected) or (disconnected)
+- [ ] Monitor WebSocket connection state and internet connectivity
+- [ ] Update connection status in real-time when connection changes
+- [ ] Show (disconnected) when WebSocket disconnects or internet is lost
+- [ ] Style help menu and status indicators with Tailwind utilities
+- [ ] Ensure help menu remains accessible and visible on all pages
+- Location: `src/app/components/contact/help.ts`, `src/app/app.ts`, `src/app/services/`
