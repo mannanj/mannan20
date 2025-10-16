@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "f42b314c2a2de2ee9fcbbc9d4e01c6b224e5a0eb",
+    "hash": "f42b314",
+    "subject": "Revert \"Transform dots to shimmering stars in Snake Eyes\"",
+    "body": "This reverts commit 11f1e13bbcf0a5832963c9fe670552af94bb971f.",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:17:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/f42b314c2a2de2ee9fcbbc9d4e01c6b224e5a0eb"
+  },
+  {
+    "fullHash": "6494a6db07f34f9278a37ffd53fb6f98515da0b0",
+    "hash": "6494a6d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-15T20:15:34-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6494a6db07f34f9278a37ffd53fb6f98515da0b0"
+  },
+  {
     "fullHash": "11f1e13bbcf0a5832963c9fe670552af94bb971f",
     "hash": "11f1e13",
     "subject": "Transform dots to shimmering stars in Snake Eyes",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:26:44-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/2f9335d51ce68c5f5852f6698adc52d7f123cc2e"
-  },
-  {
-    "fullHash": "7ed99c9b1d04fb8cc70a72101c4b7bcc96986b80",
-    "hash": "7ed99c9",
-    "subject": "Fix DatePipe provider error",
-    "body": "Add DatePipe to providers array since it's injected in component class\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:26:44-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/7ed99c9b1d04fb8cc70a72101c4b7bcc96986b80"
-  },
-  {
-    "fullHash": "1ecf7fde175148c376f5537c0211ee652833a380",
-    "hash": "1ecf7fd",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:21:00-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/1ecf7fde175148c376f5537c0211ee652833a380"
   }
 ]
