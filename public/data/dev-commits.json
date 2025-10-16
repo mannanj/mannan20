@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "6b1f3f0f2b88a919770220051a5f815b2b24cbda",
+    "hash": "6b1f3f0",
+    "subject": "Task 83: Simplify Responsive Layout with Centered Fixed Width",
+    "body": "- [x] Remove responsive breakpoint classes (md:w-1/2, lg:max-w-720px)\n- [x] Set fixed minimum width of 400px for content container\n- [x] Center content using mx-auto (auto left/right margins)\n- [x] Keep 20px horizontal padding on very small screens\n- [x] Remove tablet/desktop specific width adjustments\n- [x] Test layout on various screen sizes to ensure proper centering\n- Location: \\`src/app/app.ts\\`\n\n[Task-83]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T14:13:14-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/6b1f3f0f2b88a919770220051a5f815b2b24cbda"
+  },
+  {
+    "fullHash": "608cb0e81a9b78e7095defba5c1cbcfee6e55290",
+    "hash": "608cb0e",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T13:59:45-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/608cb0e81a9b78e7095defba5c1cbcfee6e55290"
+  },
+  {
     "fullHash": "7fd2f072cfa9e209a183adca25eedc3b7ff9b423",
     "hash": "7fd2f07",
     "subject": "Task 82: Reduce Section Spacing for Visual Hierarchy and Grouping",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T11:40:33-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/d7e208cebcc79d3f68bd40c1fa9a68ef5f46faae"
-  },
-  {
-    "fullHash": "5a02e6ed1fd572f2ac3ac2c7c2fae61e047cbff7",
-    "hash": "5a02e6e",
-    "subject": "Task 50: Fix AG Grid Performance Issues",
-    "body": "- [x] Investigate slow AG Grid rendering and interaction\n- [x] Check for subscription leaks in dev-stats, task-table, and tasks-container\n- [x] Verify proper cleanup with OnDestroy lifecycle hook if needed\n- [x] Optimize grid configuration (disable unused features, row animations)\n- [x] Consider virtualizing rows if dataset is large\n- [x] Profile performance and verify improvements\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`, `src/app/shared/tasks-container.ts`\n\n[Task-50]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:40:33-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5a02e6ed1fd572f2ac3ac2c7c2fae61e047cbff7"
-  },
-  {
-    "fullHash": "b4f7307cc1b34826e8e5e67a525754d5613e0fb4",
-    "hash": "b4f7307",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T11:39:24-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/b4f7307cc1b34826e8e5e67a525754d5613e0fb4"
   }
 ]
