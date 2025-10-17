@@ -1,19 +1,8 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'viewer-stats-loading',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('fadeOut', [
-      transition(':leave', [
-        animate('1000ms ease-out', style({
-          filter: 'blur(0px)',
-          opacity: 0.8
-        }))
-      ])
-    ])
-  ],
   styles: [`
     @keyframes initial-blur {
       0% {
@@ -42,7 +31,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
     }
   `],
   template: `
-    <div [@fadeOut] class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80">
+    <div class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80">
       <div class="loading-content flex items-center gap-2.5 text-white text-xs font-light">
         <span class="text-[#039be5]">1 viewing</span>
         <span class="text-gray-400">•</span>
