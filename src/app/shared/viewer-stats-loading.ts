@@ -21,14 +21,11 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     }
   `],
   template: `
-    <div class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70">
+    <div class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80">
       <div class="loading-content flex items-center gap-2.5 text-white text-xs font-light">
-        <span class="flex items-center gap-1">
-          <span>1</span>
-          <span class="text-[#039be5]">viewing</span>
-        </span>
+        <span class="text-[#039be5]">1 viewing</span>
         <span class="text-gray-400">•</span>
-        <span>Open Commands H</span>
+        <span class="text-gray-300">Open Commands H</span>
       </div>
     </div>
   `
