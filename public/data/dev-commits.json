@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "a41b33048e6aca3fda9f26471c5e449faa5972e7",
+    "hash": "a41b330",
+    "subject": "Change to progressive blur reduction: 5px to 0px over 5s",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:05:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a41b33048e6aca3fda9f26471c5e449faa5972e7"
+  },
+  {
+    "fullHash": "33220be6a4d44f0e1865b844ad13ad5a338e670d",
+    "hash": "33220be",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:00:20-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/33220be6a4d44f0e1865b844ad13ad5a338e670d"
+  },
+  {
     "fullHash": "6604c95c984e075253b64a7a3709b39218d79069",
     "hash": "6604c95",
     "subject": "Increase blur to make text barely unreadable while teasing readability",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T18:10:53-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/911ec717271e6fd12a2b376b750f2cdbcbd84f80"
-  },
-  {
-    "fullHash": "78200fca24d745a5be31c0b70f2e5315d64fab4f",
-    "hash": "78200fc",
-    "subject": "Task 60: Convert Modal Component Styles to Tailwind Utilities",
-    "body": "- [x] Replace modal-backdrop CSS with Tailwind utility classes\n- [x] Replace modal-content CSS with Tailwind utility classes\n- [x] Replace modal-content-large CSS with Tailwind utility classes\n- [x] Replace close-btn CSS with Tailwind utility classes\n- [x] Replace modal-body CSS with Tailwind utility classes\n- [x] Remove styles array from component and apply all classes directly in template\n- [x] Ensure all visual appearance remains identical after conversion\n- Location: \\`src/app/shared/modal.ts\\`\n\n[Task-60]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:10:53-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/78200fca24d745a5be31c0b70f2e5315d64fab4f"
-  },
-  {
-    "fullHash": "0f2d6d188d159b8ff4e110d2a09f9b30a09f8ce0",
-    "hash": "0f2d6d1",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:09:09-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0f2d6d188d159b8ff4e110d2a09f9b30a09f8ce0"
   }
 ]
