@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "89af34536a51207b87632cb429e4d6ea54d93d48",
+    "hash": "89af345",
+    "subject": "Task 107: Redesign Viewer Stats Loading with Peripheral Vision Effect",
+    "body": "- [x] Replace shimmer animation with randomly colored circle (red, green, or blue)\n- [x] Add gray blur effect on the outside edges simulating human peripheral vision\n- [x] Set 50% opacity for all colors including the gray blur\n- [x] Create focused center area with vivid red/green/blue color\n- [x] Implement smooth animation that shifts focus across the loading area\n- [x] Use radial gradient for peripheral vision effect (vivid center, gray edges)\n- [x] Randomize color selection on component initialization\n- [x] Keep existing layout and positioning matching viewer-stats component\n- Location: \\`src/app/shared/viewer-stats-loading.ts\\`\n\n[Task-107]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:51:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/89af34536a51207b87632cb429e4d6ea54d93d48"
+  },
+  {
+    "fullHash": "560ab18dda462244dee08a994d972dcd97653e3d",
+    "hash": "560ab18",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:35:04-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/560ab18dda462244dee08a994d972dcd97653e3d"
+  },
+  {
     "fullHash": "8646565fa23053df58f8485cc860cf82ffa5073d",
     "hash": "8646565",
     "subject": "Update viewer-stats-loading with organic shimmer animation",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T17:31:19-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/e41d12d0e3d44e2b64d4dbcd4569f87fbce9e9da"
-  },
-  {
-    "fullHash": "f836f3321631b9dffb403c5f1e670e30e4dd6975",
-    "hash": "f836f33",
-    "subject": "Task 64: Remove Spacing Between Published Works Bullet Points",
-    "body": "- [x] Find published works section in About component\n- [x] Remove vertical spacing between bullet point items\n- [x] Ensure bullet points display tightly together with no gaps\n- Location: \\`src/app/components/about/extracurriculars-section.ts\\`\n\n[Task-64]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T17:31:19-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/f836f3321631b9dffb403c5f1e670e30e4dd6975"
-  },
-  {
-    "fullHash": "0f17d0da94b3f1c10827ad4afa21fd45e238e1bd",
-    "hash": "0f17d0d",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T17:28:03-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0f17d0da94b3f1c10827ad4afa21fd45e238e1bd"
   }
 ]

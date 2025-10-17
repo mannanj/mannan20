@@ -3622,5 +3622,53 @@
       }
     ],
     "location": "`src/styles.css`, component files that use these styles"
+  },
+  {
+    "id": "task-107",
+    "title": "Redesign Viewer Stats Loading with Peripheral Vision Effect",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Replace shimmer animation with randomly colored circle (red, green, or blue)",
+        "completed": true
+      },
+      {
+        "description": "Add gray blur effect on the outside edges simulating human peripheral vision",
+        "completed": true
+      },
+      {
+        "description": "Set 50% opacity for all colors including the gray blur",
+        "completed": true
+      },
+      {
+        "description": "Create focused center area with vivid red/green/blue color",
+        "completed": true
+      },
+      {
+        "description": "Implement smooth animation that shifts focus across the loading area",
+        "completed": true
+      },
+      {
+        "description": "Use radial gradient for peripheral vision effect (vivid center, gray edges)",
+        "completed": true
+      },
+      {
+        "description": "Randomize color selection on component initialization",
+        "completed": true
+      },
+      {
+        "description": "Keep existing layout and positioning matching viewer-stats component",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/viewer-stats-loading.ts`",
+    "completedDate": "2025-10-17T12:51:37-04:00",
+    "completedCommit": {
+      "hash": "89af345",
+      "fullHash": "89af34536a51207b87632cb429e4d6ea54d93d48",
+      "subject": "Task 107: Redesign Viewer Stats Loading with Peripheral Vision Effect",
+      "date": "2025-10-17T12:51:37-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/89af34536a51207b87632cb429e4d6ea54d93d48"
+    }
   }
 ]
