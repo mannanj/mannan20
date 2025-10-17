@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -8,7 +8,6 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
 
 @Component({
   selector: 'education-section',
-  standalone: true,
   imports: [CommonModule, ContentCard],
   template: `
     <h2 class="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Education</h2>
@@ -32,15 +31,12 @@ import { selectEducation, selectEducationProjects } from '../../store/app.select
   styles: []
 })
 export class EducationSection {
-  education$: Observable<EducationInfo | undefined>;
-  projects$: Observable<Record<string, ProfileItem> | undefined>;
+  private store = inject(Store);
+
+  education$: Observable<EducationInfo | undefined> = this.store.select(selectEducation);
+  projects$: Observable<Record<string, ProfileItem> | undefined> = this.store.select(selectEducationProjects);
 
   section: ExpandableSection = { display: false, count: 0 };
-
-  constructor(private store: Store) {
-    this.education$ = this.store.select(selectEducation);
-    this.projects$ = this.store.select(selectEducationProjects);
-  }
 
   toggle(expand: boolean): void {
     this.section.display = expand;

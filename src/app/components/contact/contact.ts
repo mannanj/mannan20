@@ -7,7 +7,6 @@ import { openContactModal } from '../../store/app.actions';
 
 @Component({
   selector: 'contact',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="pb-[100px]">

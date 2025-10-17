@@ -6,7 +6,6 @@ import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'home',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div>

@@ -5,7 +5,6 @@ import { selectLastUpdated } from '../store/app.selectors';
 
 @Component({
   selector: 'last-updated',
-  standalone: true,
   imports: [AsyncPipe, DatePipe],
   template: `
     @if (lastUpdated$ | async; as lastUpdated) {

@@ -612,14 +612,14 @@
 - Location: `src/app/components/contact/help.ts`, `src/app/app.ts`, `src/app/services/`
 
 ### Task 75: Migrate Components to Modern Angular APIs (Signals)
-- [ ] Replace @Input/@Output decorators with input()/output() in contact-form.ts
-- [ ] Replace @Input/@Output decorators with input()/output() in contact-result.ts
-- [ ] Replace @Input/@Output decorators with input()/output() in content-card.ts
-- [ ] Replace @Input/@Output decorators with input()/output() in modal.ts
-- [ ] Replace constructor injection with inject() in employment-section.ts
-- [ ] Replace constructor injection with inject() in education-section.ts
-- [ ] Replace constructor injection with inject() in extracurriculars-section.ts
-- [ ] Remove explicit standalone: true from all 12 component decorators
+- [x] Replace @Input/@Output decorators with input()/output() in contact-form.ts
+- [x] Replace @Input/@Output decorators with input()/output() in contact-result.ts
+- [x] Replace @Input/@Output decorators with input()/output() in content-card.ts
+- [x] Replace @Input/@Output decorators with input()/output() in modal.ts
+- [x] Replace constructor injection with inject() in employment-section.ts
+- [x] Replace constructor injection with inject() in education-section.ts
+- [x] Replace constructor injection with inject() in extracurriculars-section.ts
+- [x] Remove explicit standalone: true from all 12 component decorators
 - Location: `src/app/components/contact/`, `src/app/components/about/`, `src/app/shared/`
 
 ### Task 76: Convert Legacy Template Syntax to Modern Control Flow
@@ -700,3 +700,108 @@
 - [ ] Ensure navigation buttons work smoothly
 - [ ] Verify no performance issues when scrolling
 - Location: `src/app/store/app.effects.ts`, `src/app/components/header/header.ts`, `src/app/utils/help.ts`
+
+### Task 87
+- [ ] a way to enter codes in the / chat interface so that i can view the dev stats, and other features not usually accessible without having to enter cookies. it shoudl not be hackable and should be safe.
+
+## Code Quality Improvement Tasks (From Audit)
+
+### Task 88: Extract Shared Grid Logic into Composable
+- [ ] Create useGridState composable function for shared AG Grid initialization
+- [ ] Extract theme initialization logic (duplicated in commits-grid and task-table)
+- [ ] Extract state loading/saving logic for localStorage persistence
+- [ ] Extract search handling pattern
+- [ ] Update commits-grid.ts to use shared composable
+- [ ] Update task-table.ts to use shared composable
+- [ ] Remove ~80 lines of duplicated code between the two components
+- Location: `src/app/shared/commits-grid.ts:74-105`, `src/app/shared/task-table.ts:74-105`
+
+### Task 89: Improve Type Safety in Grid Components
+- [ ] Create AgGridParams interface for grid callback parameters
+- [ ] Replace any type in commits-grid.ts gridTheme signal with proper AG Grid theme type
+- [ ] Replace any type in task-table.ts gridTheme signal with proper AG Grid theme type
+- [ ] Replace any type in getTaskRowId callback with AgGridParams
+- [ ] Replace any type in getCommitRowId callback with AgGridParams
+- [ ] Add proper typing for all grid API callback parameters
+- Location: `src/app/shared/commits-grid.ts:72,106`, `src/app/shared/task-table.ts:66,72,106,169`
+
+### Task 90: Create Window Type Extensions for Cursor Properties
+- [ ] Create window.d.ts file with proper TypeScript declarations
+- [ ] Add cursorChatPlaceholder property to Window interface
+- [ ] Add cursorUsername property to Window interface
+- [ ] Replace (window as any) casts with typed window references
+- [ ] Update cursor.effects.ts to use typed window properties
+- Location: `src/app/store/cursor.effects.ts:45,54,72,81,118`, create `src/app/window.d.ts`
+
+### Task 91: Fix RxJS Subscription Pattern in Employment Section
+- [ ] Remove subscribe/unsubscribe pattern in showMore() method
+- [ ] Convert jobs$ observable to signal using toSignal()
+- [ ] Use computed() to derive jobsToShow and visibleJobs from jobs signal
+- [ ] Remove updateVisibleJobs() method if no longer needed
+- [ ] Test that Show More functionality still works correctly
+- Location: `src/app/components/about/employment-section.ts:59-63`
+
+### Task 92: Migrate Store Subscriptions to Signals in App Component
+- [ ] Replace isConnected store subscription with toSignal(selectIsCursorPartyConnected)
+- [ ] Replace hasDevCommits store subscription with computed() based on devCommits signal
+- [ ] Remove ngOnInit() method if no longer needed
+- [ ] Remove manual subscription management
+- [ ] Test that connection status and dev commits detection still works
+- Location: `src/app/app.ts:195-201`
+
+### Task 93: Extract Email Parsing Logic in Contact Form
+- [ ] Create private extractEmail() method to parse email from input string
+- [ ] Replace duplicated email parsing in isValid() method (line 145-150)
+- [ ] Replace duplicated email parsing in validateInput() method (line 127-131)
+- [ ] Use extracted method in both validation functions
+- [ ] Test that email validation still works correctly
+- Location: `src/app/components/contact/contact-form.ts:124-155`
+
+### Task 94: Convert Contact Component Grid CSS to Tailwind
+- [ ] Replace .contact-grid display/grid CSS with Tailwind grid utilities
+- [ ] Convert grid-template-columns: 2fr auto to Tailwind class grid-cols-[2fr_auto]
+- [ ] Replace align-items: start with items-start
+- [ ] Replace gap: 24px with gap-6
+- [ ] Keep ::before/::after pseudo-elements and @keyframes animations in styles
+- [ ] Test that Contact page layout remains identical
+- Location: `src/app/components/contact/contact.ts:30-35`
+
+### Task 95: Create Reusable Expand Toggle Button Component
+- [ ] Create expand-toggle-button.ts component in shared directory
+- [ ] Accept isExpanded signal input to determine button text (more/less)
+- [ ] Emit toggle event when button is clicked
+- [ ] Apply consistent button styling (bg-[#eee], text-[#444], etc.)
+- [ ] Replace 15+ instances of duplicated buttons with new component
+- [ ] Update about.ts, content-card.ts, education-section.ts, employment-section.ts, extracurriculars-section.ts
+- Location: Create `src/app/shared/expand-toggle-button.ts`, update `src/app/components/about/*.ts`
+
+### Task 96: Remove Redundant Null Assignment in ViewerController
+- [ ] Review ViewerController.java line 80 for redundant null assignment
+- [ ] Remove unnecessary null assignment if variable is immediately reassigned
+- [ ] Simplify variable initialization logic
+- [ ] Test that backend still compiles and works correctly
+- Location: `backend/src/main/java/com/example/demo/ViewerController.java:80`
+
+### Task 97: Extract Search Input Styling to Global Utility
+- [ ] Create .search-input utility class in styles.css with Tailwind @apply
+- [ ] Move duplicated search input styles from commits-grid.ts
+- [ ] Move duplicated search input styles from task-table.ts
+- [ ] Replace component styles arrays with global utility class
+- [ ] Ensure search inputs maintain identical appearance
+- Location: `src/app/shared/commits-grid.ts:40-58`, `src/app/shared/task-table.ts:40-58`, `src/styles.css`
+
+### Task 98: Add Missing OnPush Change Detection Strategy
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to contact-form.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to contact-result.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to content-card.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to employment-section.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to education-section.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to extracurriculars-section.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to about.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to home.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to modal.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to tasks-container.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to tasks-toolbar.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to task-card.ts
+- [ ] Test all components to ensure they still render and update correctly
+- Location: All component files listed above

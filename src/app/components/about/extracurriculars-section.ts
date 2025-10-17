@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -8,7 +8,6 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
 
 @Component({
   selector: 'extracurriculars-section',
-  standalone: true,
   imports: [CommonModule, ContentCard],
   template: `
     <h2 class="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">Extracurriculars</h2>
@@ -35,15 +34,12 @@ import { selectActivities, selectPublishedWorks } from '../../store/app.selector
   styles: []
 })
 export class ExtracurricularsSection {
-  activities$: Observable<Record<string, ProfileItem> | undefined>;
-  publishedWorks$: Observable<PublishedWork[] | undefined>;
+  private store = inject(Store);
+
+  activities$: Observable<Record<string, ProfileItem> | undefined> = this.store.select(selectActivities);
+  publishedWorks$: Observable<PublishedWork[] | undefined> = this.store.select(selectPublishedWorks);
 
   section: ExpandableSection = { display: false, count: 0 };
-
-  constructor(private store: Store) {
-    this.activities$ = this.store.select(selectActivities);
-    this.publishedWorks$ = this.store.select(selectPublishedWorks);
-  }
 
   toggle(expand: boolean): void {
     this.section.display = expand;

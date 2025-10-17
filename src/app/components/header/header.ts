@@ -8,7 +8,6 @@ import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'header',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99]">

@@ -11,7 +11,6 @@ import { navigateTo } from '../../utils/help';
 
 @Component({
   selector: 'about',
-  standalone: true,
   imports: [CommonModule, EmploymentSection, ExtracurricularsSection, EducationSection],
   template: `
     <div>

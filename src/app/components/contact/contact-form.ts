@@ -1,11 +1,10 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GoogleLogoIcon } from '../icons/google-logo-icon';
 
 @Component({
   selector: 'contact-form',
-  standalone: true,
   imports: [CommonModule, FormsModule, GoogleLogoIcon],
   template: `
     <div class="text-center mb-3">
@@ -103,7 +102,7 @@ import { GoogleLogoIcon } from '../icons/google-logo-icon';
   `]
 })
 export class ContactForm {
-  @Output() submitForm = new EventEmitter<string>();
+  submitForm = output<string>();
 
   userInput = '';
   isLoading = false;
