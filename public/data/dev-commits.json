@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "b8dc824d277742a93297c8366098852cfb8f6909",
+    "hash": "b8dc824",
+    "subject": "Task 100: Refactor Viewer Stats Component for Self-Contained State Management",
+    "body": "- [x] Move connection visibility logic from app.ts to viewer-stats component\n- [x] Replace app.ts isConnected() signal check with internal component logic\n- [x] Add selectIsCursorPartyConnected selector to viewer-stats component\n- [x] Use @if directive in viewer-stats template to conditionally render entire component\n- [x] Keep activeViewerCount selector in viewer-stats (already properly isolated)\n- [x] Remove viewer-stats conditional rendering from app.ts template\n- [x] Add viewer-stats component unconditionally to app.ts (component handles own visibility)\n- [x] Ensure component follows Angular best practices (signals, OnPush)\n- [x] Test that viewer count displays correctly when connected and hides when disconnected\n- Location: `src/app/shared/viewer-stats.ts`, `src/app/app.ts`\n\n[Task-100]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:12:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b8dc824d277742a93297c8366098852cfb8f6909"
+  },
+  {
+    "fullHash": "1f13866a3325542e7c326157e1879ea8048ae91f",
+    "hash": "1f13866",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:02:21-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1f13866a3325542e7c326157e1879ea8048ae91f"
+  },
+  {
     "fullHash": "95dc580090b956767deba42bd99e70e33b9bbb29",
     "hash": "95dc580",
     "subject": "Task 99: Refactor and Modularize App Component",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T15:54:26-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/e2366d2c922e4c90b4acb5d53d62b77acceebcb8"
-  },
-  {
-    "fullHash": "0db59d385716a18f256f1b75dd03e335d3735e7d",
-    "hash": "0db59d3",
-    "subject": "Task 47: Add Search Functionality to AG Grid Tables",
-    "body": "- [x] Research AG Grid official documentation for search/filter implementation\n- [x] Add search input field above git commits table\n- [x] Add search input field above tasks table\n- [x] Implement quick filter functionality using AG Grid API\n- [x] Style search inputs to match dark theme\n- [x] Ensure search works across all visible columns\n- Location: `src/app/shared/dev-stats.ts`, `src/app/shared/task-table.ts`\n\n[Task-47]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T15:54:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/0db59d385716a18f256f1b75dd03e335d3735e7d"
-  },
-  {
-    "fullHash": "9fe08bc63612d051f3a4b0d2e0b8b1dd92e8e92b",
-    "hash": "9fe08bc",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T13:59:51-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9fe08bc63612d051f3a4b0d2e0b8b1dd92e8e92b"
   }
 ]

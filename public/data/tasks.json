@@ -3286,5 +3286,233 @@
       "date": "2025-10-17T12:02:21-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/95dc580090b956767deba42bd99e70e33b9bbb29"
     }
+  },
+  {
+    "id": "task-100",
+    "title": "Refactor Viewer Stats Component for Self-Contained State Management",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Move connection visibility logic from app.ts to viewer-stats component",
+        "completed": true
+      },
+      {
+        "description": "Replace app.ts isConnected() signal check with internal component logic",
+        "completed": true
+      },
+      {
+        "description": "Add selectIsCursorPartyConnected selector to viewer-stats component",
+        "completed": true
+      },
+      {
+        "description": "Use @if directive in viewer-stats template to conditionally render entire component",
+        "completed": true
+      },
+      {
+        "description": "Keep activeViewerCount selector in viewer-stats (already properly isolated)",
+        "completed": true
+      },
+      {
+        "description": "Remove viewer-stats conditional rendering from app.ts template",
+        "completed": true
+      },
+      {
+        "description": "Add viewer-stats component unconditionally to app.ts (component handles own visibility)",
+        "completed": true
+      },
+      {
+        "description": "Ensure component follows Angular best practices (signals, OnPush)",
+        "completed": true
+      },
+      {
+        "description": "Test that viewer count displays correctly when connected and hides when disconnected",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/viewer-stats.ts`, `src/app/app.ts`",
+    "completedDate": "2025-10-17T12:12:31-04:00",
+    "completedCommit": {
+      "hash": "b8dc824",
+      "fullHash": "b8dc824d277742a93297c8366098852cfb8f6909",
+      "subject": "Task 100: Refactor Viewer Stats Component for Self-Contained State Management",
+      "date": "2025-10-17T12:12:31-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/b8dc824d277742a93297c8366098852cfb8f6909"
+    }
+  },
+  {
+    "id": "task-101",
+    "title": "Add Offline State Display to Viewer Stats Component",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Make viewer-stats component always visible (remove conditional rendering from app.ts)",
+        "completed": false
+      },
+      {
+        "description": "Add selectIsCursorPartyConnected selector to viewer-stats component",
+        "completed": false
+      },
+      {
+        "description": "Create computed signal for offline state display",
+        "completed": false
+      },
+      {
+        "description": "When disconnected: display \"1 viewing\" with \"offline\" text",
+        "completed": false
+      },
+      {
+        "description": "Add red circle indicator (●) next to \"offline\" text using text-red-500",
+        "completed": false
+      },
+      {
+        "description": "When connected: remove \"offline\" text and red circle indicator",
+        "completed": false
+      },
+      {
+        "description": "When connected: display actual viewer count from activeViewerCount selector",
+        "completed": false
+      },
+      {
+        "description": "Keep \"Open Commands\" functionality and keyboard shortcut display",
+        "completed": false
+      },
+      {
+        "description": "Use @if/@else directives to toggle between offline and connected states",
+        "completed": false
+      },
+      {
+        "description": "Ensure component remains clickable in both states",
+        "completed": false
+      },
+      {
+        "description": "Test offline state appears on initial load before WebSocket connects",
+        "completed": false
+      },
+      {
+        "description": "Test transition from offline to online updates viewer count correctly",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/viewer-stats.ts`, `src/app/app.ts`"
+  },
+  {
+    "id": "task-102",
+    "title": "Add Unit Tests to Angular Application",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Configure Jasmine and Karma testing framework (verify setup in angular.json)",
+        "completed": false
+      },
+      {
+        "description": "Create unit tests for all components in src/app/components/",
+        "completed": false
+      },
+      {
+        "description": "Create unit tests for all shared components in src/app/shared/",
+        "completed": false
+      },
+      {
+        "description": "Create unit tests for all services in src/app/services/",
+        "completed": false
+      },
+      {
+        "description": "Create unit tests for NgRx store (actions, reducers, selectors, effects)",
+        "completed": false
+      },
+      {
+        "description": "Test component inputs, outputs, and signal bindings",
+        "completed": false
+      },
+      {
+        "description": "Test service methods and HTTP calls with mocks",
+        "completed": false
+      },
+      {
+        "description": "Test store state transformations and side effects",
+        "completed": false
+      },
+      {
+        "description": "Achieve minimum 80% code coverage across the application",
+        "completed": false
+      },
+      {
+        "description": "Configure code coverage reporting in angular.json",
+        "completed": false
+      },
+      {
+        "description": "Add npm script for running tests with coverage (ng test --code-coverage)",
+        "completed": false
+      },
+      {
+        "description": "Document testing guidelines in README or separate testing guide",
+        "completed": false
+      }
+    ],
+    "location": "Create `*.spec.ts` files alongside all source files, update `angular.json`"
+  },
+  {
+    "id": "task-103",
+    "title": "Add End-to-End Tests with Playwright",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Install Playwright testing framework (npm install -D @playwright/test)",
+        "completed": false
+      },
+      {
+        "description": "Initialize Playwright configuration (npx playwright install)",
+        "completed": false
+      },
+      {
+        "description": "Create e2e test directory structure (e2e/ or tests/e2e/)",
+        "completed": false
+      },
+      {
+        "description": "Configure Playwright for Angular app (base URL, viewport, browser options)",
+        "completed": false
+      },
+      {
+        "description": "Create e2e tests for navigation between sections (Home, About, Contact)",
+        "completed": false
+      },
+      {
+        "description": "Create e2e tests for header navigation and scroll tracking",
+        "completed": false
+      },
+      {
+        "description": "Create e2e tests for contact form submission flow",
+        "completed": false
+      },
+      {
+        "description": "Create e2e tests for modal interactions (contact modal, dev stats modal, commands modal)",
+        "completed": false
+      },
+      {
+        "description": "Create e2e tests for viewer stats display and WebSocket connection",
+        "completed": false
+      },
+      {
+        "description": "Create e2e tests for keyboard shortcuts (H for commands, etc.)",
+        "completed": false
+      },
+      {
+        "description": "Add visual regression testing with Playwright screenshots",
+        "completed": false
+      },
+      {
+        "description": "Configure test scripts in package.json (test:e2e, test:e2e:ui, test:e2e:debug)",
+        "completed": false
+      },
+      {
+        "description": "Set up CI/CD integration for running e2e tests",
+        "completed": false
+      },
+      {
+        "description": "Document e2e testing setup and guidelines",
+        "completed": false
+      }
+    ],
+    "location": "Create `e2e/` directory, add `playwright.config.ts`, update `package.json`"
   }
 ]
