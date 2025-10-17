@@ -816,3 +816,62 @@
 - [x] Ensure all extracted components follow Angular best practices (standalone, signals, OnPush)
 - [x] Test that modals, tabs, and form submission work correctly after refactoring
 - Location: `src/app/app.ts`, `src/app/shared/dev-stats-modal.ts`, `src/app/components/contact/contact-modal.ts`
+
+### Task 100: Refactor Viewer Stats Component for Self-Contained State Management
+- [x] Move connection visibility logic from app.ts to viewer-stats component
+- [x] Replace app.ts isConnected() signal check with internal component logic
+- [x] Add selectIsCursorPartyConnected selector to viewer-stats component
+- [x] Use @if directive in viewer-stats template to conditionally render entire component
+- [x] Keep activeViewerCount selector in viewer-stats (already properly isolated)
+- [x] Remove viewer-stats conditional rendering from app.ts template
+- [x] Add viewer-stats component unconditionally to app.ts (component handles own visibility)
+- [x] Ensure component follows Angular best practices (signals, OnPush)
+- [x] Test that viewer count displays correctly when connected and hides when disconnected
+- Location: `src/app/shared/viewer-stats.ts`, `src/app/app.ts`
+
+### Task 101: Add Offline State Display to Viewer Stats Component
+- [ ] Make viewer-stats component always visible (remove conditional rendering from app.ts)
+- [ ] Add selectIsCursorPartyConnected selector to viewer-stats component
+- [ ] Create computed signal for offline state display
+- [ ] When disconnected: display "1 viewing" with "offline" text
+- [ ] Add red circle indicator (●) next to "offline" text using text-red-500
+- [ ] When connected: remove "offline" text and red circle indicator
+- [ ] When connected: display actual viewer count from activeViewerCount selector
+- [ ] Keep "Open Commands" functionality and keyboard shortcut display
+- [ ] Use @if/@else directives to toggle between offline and connected states
+- [ ] Ensure component remains clickable in both states
+- [ ] Test offline state appears on initial load before WebSocket connects
+- [ ] Test transition from offline to online updates viewer count correctly
+- Location: `src/app/shared/viewer-stats.ts`, `src/app/app.ts`
+
+### Task 102: Add Unit Tests to Angular Application
+- [ ] Configure Jasmine and Karma testing framework (verify setup in angular.json)
+- [ ] Create unit tests for all components in src/app/components/
+- [ ] Create unit tests for all shared components in src/app/shared/
+- [ ] Create unit tests for all services in src/app/services/
+- [ ] Create unit tests for NgRx store (actions, reducers, selectors, effects)
+- [ ] Test component inputs, outputs, and signal bindings
+- [ ] Test service methods and HTTP calls with mocks
+- [ ] Test store state transformations and side effects
+- [ ] Achieve minimum 80% code coverage across the application
+- [ ] Configure code coverage reporting in angular.json
+- [ ] Add npm script for running tests with coverage (ng test --code-coverage)
+- [ ] Document testing guidelines in README or separate testing guide
+- Location: Create `*.spec.ts` files alongside all source files, update `angular.json`
+
+### Task 103: Add End-to-End Tests with Playwright
+- [ ] Install Playwright testing framework (npm install -D @playwright/test)
+- [ ] Initialize Playwright configuration (npx playwright install)
+- [ ] Create e2e test directory structure (e2e/ or tests/e2e/)
+- [ ] Configure Playwright for Angular app (base URL, viewport, browser options)
+- [ ] Create e2e tests for navigation between sections (Home, About, Contact)
+- [ ] Create e2e tests for header navigation and scroll tracking
+- [ ] Create e2e tests for contact form submission flow
+- [ ] Create e2e tests for modal interactions (contact modal, dev stats modal, commands modal)
+- [ ] Create e2e tests for viewer stats display and WebSocket connection
+- [ ] Create e2e tests for keyboard shortcuts (H for commands, etc.)
+- [ ] Add visual regression testing with Playwright screenshots
+- [ ] Configure test scripts in package.json (test:e2e, test:e2e:ui, test:e2e:debug)
+- [ ] Set up CI/CD integration for running e2e tests
+- [ ] Document e2e testing setup and guidelines
+- Location: Create `e2e/` directory, add `playwright.config.ts`, update `package.json`

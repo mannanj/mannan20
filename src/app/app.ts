@@ -10,7 +10,6 @@ import { ViewerStats } from "./shared/viewer-stats";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
 import { DevStats } from "./shared/dev-stats";
 import { DevStatsModal } from "./shared/dev-stats-modal";
-import { selectIsCursorPartyConnected } from './store/cursor.selectors';
 import { selectDevCommits } from './store/app.selectors';
 
 @Component({
@@ -36,11 +35,7 @@ import { selectDevCommits } from './store/app.selectors';
         </div>
       </div>
 
-      @if (isConnected()) {
-        @defer (on immediate) {
-          <viewer-stats />
-        }
-      }
+      <viewer-stats />
       <div class="fixed bottom-0 right-0 flex items-end gap-2">
         @if (hasDevCommits()) {
           @defer (on immediate) {
@@ -60,14 +55,9 @@ import { selectDevCommits } from './store/app.selectors';
 export class App implements OnInit {
   title = 'mannan';
   private store = inject(Store);
-  protected isConnected = signal(false);
   protected hasDevCommits = signal(false);
 
   ngOnInit() {
-    this.store.select(selectIsCursorPartyConnected).subscribe(connected => {
-      this.isConnected.set(connected);
-    });
-
     this.store.select(selectDevCommits).subscribe(commits => {
       this.hasDevCommits.set(commits.length > 0);
     });
