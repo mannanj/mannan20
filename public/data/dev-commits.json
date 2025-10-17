@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "8f56aaeae254a4aca5517704520264f8f21f92e3",
+    "hash": "8f56aae",
+    "subject": "Add multi-stage animation: initial blur fade + heartbeat pulse + exit transition",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:11:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8f56aaeae254a4aca5517704520264f8f21f92e3"
+  },
+  {
+    "fullHash": "b086bed5e7f36ca53f4927295401eddf93587e1c",
+    "hash": "b086bed",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:07:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b086bed5e7f36ca53f4927295401eddf93587e1c"
+  },
+  {
     "fullHash": "41489bcb45adbeeb889cf92ec7a8ae345b3ee41e",
     "hash": "41489bc",
     "subject": "Match viewer-stats opacity: add opacity-80 and correct text colors",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T18:16:37-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/84b68fba0341b910a97ff14c5d58602f09022f26"
-  },
-  {
-    "fullHash": "8d2868307c0b6e21be1a8a346850135b9ef69e97",
-    "hash": "8d28683",
-    "subject": "Add Task 67: Fix AG Grid deprecated property warning",
-    "body": "Created task to replace suppressRowClickSelection with rowSelection.enableClickSelection\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:16:37-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8d2868307c0b6e21be1a8a346850135b9ef69e97"
-  },
-  {
-    "fullHash": "5868dcd1c4659ab3d35547fc578e8599a8981811",
-    "hash": "5868dcd",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:13:57-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5868dcd1c4659ab3d35547fc578e8599a8981811"
   }
 ]
