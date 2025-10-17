@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "394219e4bf005c6806e0b9fd44353d4a7a053b98",
+    "hash": "394219e",
+    "subject": "Add scale animation to viewer-stats on enter",
+    "body": "Added 3-second enter animation to viewer-stats component that plays after defer/placeholder transition:\n- 0-1.5s: Blur removal (continuing from placeholder)\n- 1.5-2.25s: Scale grows by 25%\n- 2.25-3s: Scale returns to original size\n\nSimplified viewer-stats-loading to use basic blur transitions with animate.enter/leave API.\n\nAlso updated cursor chat placeholder text to \"Send a chat\" for clarity.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:49:39-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/394219e4bf005c6806e0b9fd44353d4a7a053b98"
+  },
+  {
+    "fullHash": "b06808a91bd5a236402fb68f0ed80189d45031bb",
+    "hash": "b06808a",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:19:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b06808a91bd5a236402fb68f0ed80189d45031bb"
+  },
+  {
     "fullHash": "1cd409b3c86d8dd3e901ffa0a847c509e24eb750",
     "hash": "1cd409b",
     "subject": "Task 108: Simplify Loading Animation with Blurred Pulsing Text",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:20:05-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/d3f4c7135b23b776bdc30b4817e228653fdb305e"
-  },
-  {
-    "fullHash": "1a8b8f9239b276ef39eed1490a2c0bd46228cb4c",
-    "hash": "1a8b8f9",
-    "subject": "Task 67: Fix AG Grid Deprecated Property Warning",
-    "body": "- [x] Replace suppressRowClickSelection with rowSelection.enableClickSelection in commits-grid\n- [x] Replace suppressRowClickSelection with rowSelection.enableClickSelection in task-table\n- [x] Test both grids to ensure row click behavior remains unchanged\n- [x] Verify build completes without deprecation warnings\n- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`\n\n[Task-67]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:20:05-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/1a8b8f9239b276ef39eed1490a2c0bd46228cb4c"
-  },
-  {
-    "fullHash": "cb1c529d0dc2dcc75db0c34c246a0a5581e4adc3",
-    "hash": "cb1c529",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:18:32-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/cb1c529d0dc2dcc75db0c34c246a0a5581e4adc3"
   }
 ]
