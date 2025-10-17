@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "869a47a96c345f9a7d3a950ee0adcd51a5b99a37",
+    "hash": "869a47a",
+    "subject": "Remove deprecated animations API, add 1s fade-in to viewer-stats component",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:13:27-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/869a47a96c345f9a7d3a950ee0adcd51a5b99a37"
+  },
+  {
+    "fullHash": "95c09f80090b5a3997c23f4d5bf8479f3d71f032",
+    "hash": "95c09f8",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:11:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/95c09f80090b5a3997c23f4d5bf8479f3d71f032"
+  },
+  {
     "fullHash": "8f56aaeae254a4aca5517704520264f8f21f92e3",
     "hash": "8f56aae",
     "subject": "Add multi-stage animation: initial blur fade + heartbeat pulse + exit transition",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T18:18:12-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/09e1a923799c00c1a469d786bfdf3028d7760991"
-  },
-  {
-    "fullHash": "8e0ac75655c57681a9f9ce2c55ab0d83dbc13952",
-    "hash": "8e0ac75",
-    "subject": "Add Task 68: Fix AG Grid column menu not displaying",
-    "body": "Created task to fix missing column menu icons in grid headers\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:18:12-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/8e0ac75655c57681a9f9ce2c55ab0d83dbc13952"
-  },
-  {
-    "fullHash": "84b68fba0341b910a97ff14c5d58602f09022f26",
-    "hash": "84b68fb",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:16:37-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/84b68fba0341b910a97ff14c5d58602f09022f26"
   }
 ]
