@@ -6,9 +6,35 @@ import { toggleCommandsModal } from '../store/app.actions';
 @Component({
   selector: 'viewer-stats',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    @keyframes enter-animation {
+      0% {
+        filter: blur(5px);
+        transform: scale(1);
+      }
+      50% {
+        filter: blur(0px);
+        transform: scale(1);
+      }
+      75% {
+        filter: blur(0px);
+        transform: scale(1.25);
+      }
+      100% {
+        filter: blur(0px);
+        transform: scale(1);
+      }
+    }
+
+    .entering {
+      animation: enter-animation 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      transform-origin: center;
+      will-change: transform, filter;
+    }
+  `],
   template: `
       <div class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-           (click)="openCommands()">
+           (click)="openCommands()" animate.enter="entering">
         <div class="flex items-center gap-2.5 text-white text-xs font-light">
           <span class="text-[#039be5]">{{ viewerCount() }} viewing</span>
           <span class="text-gray-400">•</span>

@@ -3,7 +3,7 @@ import { CursorState } from '../models/models';
 import * as CursorActions from './cursor.actions';
 
 export const initialState: CursorState = {
-  cursorChatPlaceholder: 'say hello to your friend',
+  cursorChatPlaceholder: 'Send a chat',
   cursorUsername: 'happy possum',
   activeViewerCount: 0,
   cursorColors: [],
