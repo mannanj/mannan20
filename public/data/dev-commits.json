@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "285afe69fa78926c353cd826b3473d5dc0f12ef2",
+    "hash": "285afe6",
+    "subject": "Refine loading animation: less blur, more visible, slower heartbeat pulse",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:58:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/285afe69fa78926c353cd826b3473d5dc0f12ef2"
+  },
+  {
+    "fullHash": "8b5dd1ac3e6cef61a2c8dfa70c772ffc3cc603f7",
+    "hash": "8b5dd1a",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:57:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/8b5dd1ac3e6cef61a2c8dfa70c772ffc3cc603f7"
+  },
+  {
     "fullHash": "24d73d490155c23f95f908375d608e8aee3e1abf",
     "hash": "24d73d4",
     "subject": "Task 108: Simplify Loading Animation with Blurred Pulsing Text",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T18:02:22-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/eb0bfb9d53cd9c583226b2ed243f3ea49308d2e1"
-  },
-  {
-    "fullHash": "bcab63ef45d272b70d7b3f9fc9e1eaab4debdc93",
-    "hash": "bcab63e",
-    "subject": "Task 66: Replace Intersection Observer with NgRx Effect Scroll Listener",
-    "body": "- [x] Create NgRx effect with scroll event listener using fromEvent and throttleTime (100ms)\n- [x] Calculate which section (home, about, contact) has highest visible percentage using getBoundingClientRect\n- [x] Dispatch setSelectedLink action with most visible section to store from effect\n- [x] Remove BaseSection directive entirely from codebase\n- [x] Remove `extends BaseSection` from Home, About, and Contact components\n- [x] Remove `createIntersectionObserver` function from help.ts\n- [x] Test all sections to ensure header navigation highlights update correctly when scrolling\n- [x] Verify performance is smooth with throttled scroll events\n- Location: `src/app/store/app.effects.ts`, `src/app/shared/base-section.ts`, `src/app/components/home/home.ts`, `src/app/components/about/about.ts`, `src/app/components/contact/contact.ts`, `src/app/utils/help.ts`\n\n[Task-66]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:02:22-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/bcab63ef45d272b70d7b3f9fc9e1eaab4debdc93"
-  },
-  {
-    "fullHash": "9ae9f020497dc7df72756cd430bf990f79c24ce1",
-    "hash": "9ae9f02",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T17:42:51-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/9ae9f020497dc7df72756cd430bf990f79c24ce1"
   }
 ]
