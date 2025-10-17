@@ -1,5 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Component } from '@angular/core';
 import { Header } from "./components/header/header";
 import { Home } from "./components/home/home";
 import { About } from "./components/about/about";
@@ -7,14 +6,14 @@ import { Contact } from "./components/contact/contact";
 import { ContactModal } from "./components/contact/contact-modal";
 import { LastUpdated } from "./shared/last-updated";
 import { ViewerStats } from "./shared/viewer-stats";
+import { ViewerStatsLoading } from "./shared/viewer-stats-loading";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
 import { DevStats } from "./shared/dev-stats";
 import { DevStatsModal } from "./shared/dev-stats-modal";
-import { selectDevCommits } from './store/app.selectors';
 
 @Component({
   selector: 'app-root',
-  imports: [Header, Home, About, Contact, ContactModal, LastUpdated, ViewerStats, KeyboardCommandsModal, DevStats, DevStatsModal],
+  imports: [Header, Home, About, Contact, ContactModal, LastUpdated, ViewerStats, ViewerStatsLoading, KeyboardCommandsModal, DevStats, DevStatsModal],
   template: `
     <div class="font-[Lucida_Grande]">
       <div id="header">
@@ -35,31 +34,23 @@ import { selectDevCommits } from './store/app.selectors';
         </div>
       </div>
 
-      <viewer-stats />
-      <div class="fixed bottom-0 right-0 flex items-end gap-2">
-        @if (hasDevCommits()) {
-          @defer (on immediate) {
-            <dev-stats />
-          }
-        }
-        <last-updated />
-      </div>
       @defer (on immediate) {
-        <keyboard-commands-modal />
+        <viewer-stats />
+      } @placeholder (minimum 5500ms) {
+        <viewer-stats-loading />
       }
+       @defer (on immediate) {
+        <div class="fixed bottom-0 right-0 flex items-end gap-2">
+          <dev-stats />
+          <last-updated />
+        </div>
+      }
+      <keyboard-commands-modal />
       <contact-modal />
       <dev-stats-modal />
     </div>
   `
 })
-export class App implements OnInit {
+export class App {
   title = 'mannan';
-  private store = inject(Store);
-  protected hasDevCommits = signal(false);
-
-  ngOnInit() {
-    this.store.select(selectDevCommits).subscribe(commits => {
-      this.hasDevCommits.set(commits.length > 0);
-    });
-  }
 }
