@@ -6,16 +6,16 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   styles: [`
     @keyframes loading-pulse {
       0% {
-        opacity: 0.65;
-        filter: blur(1.5px);
+        opacity: 0.5;
+        filter: blur(4px);
       }
       50% {
-        opacity: 0.9;
-        filter: blur(0.8px);
+        opacity: 0.75;
+        filter: blur(2px);
       }
       100% {
-        opacity: 0.65;
-        filter: blur(1.5px);
+        opacity: 0.5;
+        filter: blur(4px);
       }
     }
 
