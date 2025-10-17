@@ -36,7 +36,7 @@ import { DevStatsModal } from "./shared/dev-stats-modal";
 
       @defer (on immediate) {
         <viewer-stats />
-      } @placeholder (minimum 5500ms) {
+      } @placeholder (minimum 500ms) {
         <viewer-stats-loading />
       }
        @defer (on immediate) {
