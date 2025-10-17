@@ -3670,5 +3670,45 @@
       "date": "2025-10-17T12:54:57-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/e876b8febc1f17de09d33b10e765ef4e1489f2bb"
     }
+  },
+  {
+    "id": "task-108",
+    "title": "Simplify Loading Animation with Blurred Pulsing Text",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Display actual text content (\"1 viewing • Open Commands H\") instead of placeholder boxes",
+        "completed": true
+      },
+      {
+        "description": "Apply blur filter to entire text section to obscure content while loading",
+        "completed": true
+      },
+      {
+        "description": "Add slow, steady pulsing animation to indicate loading state",
+        "completed": true
+      },
+      {
+        "description": "Use consistent pulse timing (2-3 seconds per cycle) for smooth effect",
+        "completed": true
+      },
+      {
+        "description": "Keep same positioning and layout as viewer-stats component",
+        "completed": true
+      },
+      {
+        "description": "Remove complex gradient and color randomization",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/shared/viewer-stats-loading.ts`",
+    "completedDate": "2025-10-17T12:57:22-04:00",
+    "completedCommit": {
+      "hash": "24d73d4",
+      "fullHash": "24d73d490155c23f95f908375d608e8aee3e1abf",
+      "subject": "Task 108: Simplify Loading Animation with Blurred Pulsing Text",
+      "date": "2025-10-17T12:57:22-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/24d73d490155c23f95f908375d608e8aee3e1abf"
+    }
   }
 ]

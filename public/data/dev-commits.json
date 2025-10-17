@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "24d73d490155c23f95f908375d608e8aee3e1abf",
+    "hash": "24d73d4",
+    "subject": "Task 108: Simplify Loading Animation with Blurred Pulsing Text",
+    "body": "- [x] Display actual text content (\"1 viewing • Open Commands H\") instead of placeholder boxes\n- [x] Apply blur filter to entire text section to obscure content while loading\n- [x] Add slow, steady pulsing animation to indicate loading state\n- [x] Use consistent pulse timing (2-3 seconds per cycle) for smooth effect\n- [x] Keep same positioning and layout as viewer-stats component\n- [x] Remove complex gradient and color randomization\n- Location: \\`src/app/shared/viewer-stats-loading.ts\\`\n\n[Task-108]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:57:22-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/24d73d490155c23f95f908375d608e8aee3e1abf"
+  },
+  {
+    "fullHash": "23a76108408056bb20cd2b348c9b49ef86fbb6d0",
+    "hash": "23a7610",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:54:57-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/23a76108408056bb20cd2b348c9b49ef86fbb6d0"
+  },
+  {
     "fullHash": "e876b8febc1f17de09d33b10e765ef4e1489f2bb",
     "hash": "e876b8f",
     "subject": "Task 107: Redesign Viewer Stats Loading with Peripheral Vision Effect",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T17:42:51-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/9ae9f020497dc7df72756cd430bf990f79c24ce1"
-  },
-  {
-    "fullHash": "c1e8563d39a744d88bba8f6c7561e9928d77a218",
-    "hash": "c1e8563",
-    "subject": "Fix spacing between header line and body text",
-    "body": "Remove mt-[60px] from home paragraph to match header spacing.\nNow both distances (header to line, line to body) are equal at 20px.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T17:42:51-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c1e8563d39a744d88bba8f6c7561e9928d77a218"
-  },
-  {
-    "fullHash": "72872c71404ce4083581ab2140aaa9b78f9d9c95",
-    "hash": "72872c7",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T17:41:06-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/72872c71404ce4083581ab2140aaa9b78f9d9c95"
   }
 ]
