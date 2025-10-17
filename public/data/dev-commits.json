@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "41489bcb45adbeeb889cf92ec7a8ae345b3ee41e",
+    "hash": "41489bc",
+    "subject": "Match viewer-stats opacity: add opacity-80 and correct text colors",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:07:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/41489bcb45adbeeb889cf92ec7a8ae345b3ee41e"
+  },
+  {
+    "fullHash": "e9e51d530cdf850cb42cd7b087be2f7359e2968a",
+    "hash": "e9e51d5",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:05:37-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e9e51d530cdf850cb42cd7b087be2f7359e2968a"
+  },
+  {
     "fullHash": "a41b33048e6aca3fda9f26471c5e449faa5972e7",
     "hash": "a41b330",
     "subject": "Change to progressive blur reduction: 5px to 0px over 5s",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T18:13:57-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/5868dcd1c4659ab3d35547fc578e8599a8981811"
-  },
-  {
-    "fullHash": "5303cd1dbee4765e3acc8ee19d54f212bb0a1cde",
-    "hash": "5303cd1",
-    "subject": "Task 52: Add Column Hiding Feature to AG Grid Tables",
-    "body": "- [x] Add column visibility controls to git commits table\n- [x] Add column visibility controls to tasks table\n- [x] Use AG Grid's built-in column menu for show/hide functionality\n- [x] Persist column visibility preferences in localStorage\n- [x] Ensure all columns can be toggled on/off\n- Location: \\`src/app/shared/dev-stats.ts\\`, \\`src/app/shared/task-table.ts\\`\n\n[Task-52]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:13:57-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/5303cd1dbee4765e3acc8ee19d54f212bb0a1cde"
-  },
-  {
-    "fullHash": "911ec717271e6fd12a2b376b750f2cdbcbd84f80",
-    "hash": "911ec71",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:10:53-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/911ec717271e6fd12a2b376b750f2cdbcbd84f80"
   }
 ]
