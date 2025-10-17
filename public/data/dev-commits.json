@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "b046104b40006a91313ecba45eac0b4d3656f013",
+    "hash": "b046104",
+    "subject": "Use modern Angular 20+ animate.enter API instead of deprecated animation triggers",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:14:47-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b046104b40006a91313ecba45eac0b4d3656f013"
+  },
+  {
+    "fullHash": "d1b23b2435b8a22131c1934081c65dbd583b4017",
+    "hash": "d1b23b2",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:13:27-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/d1b23b2435b8a22131c1934081c65dbd583b4017"
+  },
+  {
     "fullHash": "869a47a96c345f9a7d3a950ee0adcd51a5b99a37",
     "hash": "869a47a",
     "subject": "Remove deprecated animations API, add 1s fade-in to viewer-stats component",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T18:19:05-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/6d6bd40c253b3596561cd0488ba2d0d6e1c740dc"
-  },
-  {
-    "fullHash": "47fa88fa46e1b33c2545812b91d8c5a499efb89c",
-    "hash": "47fa88f",
-    "subject": "Add Task 69: Compress status badge and add white text stroke",
-    "body": "Created task to tighten badge padding and add text outline\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:19:05-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/47fa88fa46e1b33c2545812b91d8c5a499efb89c"
-  },
-  {
-    "fullHash": "09e1a923799c00c1a469d786bfdf3028d7760991",
-    "hash": "09e1a92",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:18:12-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/09e1a923799c00c1a469d786bfdf3028d7760991"
   }
 ]
