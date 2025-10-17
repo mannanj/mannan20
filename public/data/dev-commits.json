@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "5f18ee11af12d620679362786e291844c3533a8f",
+    "hash": "5f18ee1",
+    "subject": "Task 105: Extract Viewer Stats Placeholder to Component",
+    "body": "- [x] Create viewer-stats-loading component in src/app/shared/\n- [x] Move placeholder HTML from app.ts @placeholder block to new component\n- [x] Update app.ts to use viewer-stats-loading component in @placeholder block\n- [x] Ensure component follows Angular best practices (standalone, OnPush, Tailwind utilities)\n- Location: Create `src/app/shared/viewer-stats-loading.ts`, `src/app/app.ts:38-48`\n\n[Task-105]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:31:12-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/5f18ee11af12d620679362786e291844c3533a8f"
+  },
+  {
+    "fullHash": "02d15dd8bcfc385b51538e0e2d469f850672fbd4",
+    "hash": "02d15dd",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:12:31-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/02d15dd8bcfc385b51538e0e2d469f850672fbd4"
+  },
+  {
     "fullHash": "b8dc824d277742a93297c8366098852cfb8f6909",
     "hash": "b8dc824",
     "subject": "Task 100: Refactor Viewer Stats Component for Self-Contained State Management",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T17:23:25-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/78c6228b77b41166cacd1a4650d4ec348aa739d1"
-  },
-  {
-    "fullHash": "effa25252bc5e7e289637d178ac2b238de1a5249",
-    "hash": "effa252",
-    "subject": "remove resume",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T17:23:25-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/effa25252bc5e7e289637d178ac2b238de1a5249"
-  },
-  {
-    "fullHash": "e2366d2c922e4c90b4acb5d53d62b77acceebcb8",
-    "hash": "e2366d2",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T15:54:26-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e2366d2c922e4c90b4acb5d53d62b77acceebcb8"
   }
 ]
