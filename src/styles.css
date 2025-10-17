@@ -55,17 +55,3 @@ body {
   box-shadow: 0 0 20px rgba(79, 195, 247, 0.6);
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: 200px 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.1) 75%);
-  background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
-}
