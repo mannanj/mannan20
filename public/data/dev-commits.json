@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "1cd409b3c86d8dd3e901ffa0a847c509e24eb750",
+    "hash": "1cd409b",
+    "subject": "Task 108: Simplify Loading Animation with Blurred Pulsing Text",
+    "body": "- [x] Display actual text content (\"1 viewing • Open Commands H\") instead of placeholder boxes\n- [x] Apply blur filter to entire text section to obscure content while loading\n- [x] Add slow, steady pulsing animation to indicate loading state\n- [x] Use consistent pulse timing (2-3 seconds per cycle) for smooth effect\n- [x] Keep same positioning and layout as viewer-stats component\n- [x] Remove complex gradient and color randomization\n- Location: \\`src/app/shared/viewer-stats-loading.ts\\`\n\n[Task-108]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:19:44-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/1cd409b3c86d8dd3e901ffa0a847c509e24eb750"
+  },
+  {
+    "fullHash": "286deaccbd86e22fc7104c82b72dbaddae44f44e",
+    "hash": "286deac",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:14:47-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/286deaccbd86e22fc7104c82b72dbaddae44f44e"
+  },
+  {
     "fullHash": "b046104b40006a91313ecba45eac0b4d3656f013",
     "hash": "b046104",
     "subject": "Use modern Angular 20+ animate.enter API instead of deprecated animation triggers",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:18:32-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/cb1c529d0dc2dcc75db0c34c246a0a5581e4adc3"
-  },
-  {
-    "fullHash": "e5f9179c5c8f68c673666cd2f9b20b55e4084ae8",
-    "hash": "e5f9179",
-    "subject": "Task 68: Fix AG Grid Column Menu Not Displaying",
-    "body": "- [x] Investigate why column menu icons are not visible in column headers\n- [x] Check AG Grid documentation for proper column menu configuration\n- [x] Add suppressHeaderMenuButton: false to column definitions or grid options\n- [x] Enable menu icons in column headers\n- [x] Test right-click context menu functionality on column headers\n- [x] Verify column chooser opens and allows hiding/showing columns\n- [x] Ensure menu works in both commits-grid and task-table\n- Location: `src/app/shared/commits-grid.ts`, `src/app/shared/task-table.ts`\n\n[Task-68]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:18:32-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/e5f9179c5c8f68c673666cd2f9b20b55e4084ae8"
-  },
-  {
-    "fullHash": "6d6bd40c253b3596561cd0488ba2d0d6e1c740dc",
-    "hash": "6d6bd40",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T18:19:05-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/6d6bd40c253b3596561cd0488ba2d0d6e1c740dc"
   }
 ]
