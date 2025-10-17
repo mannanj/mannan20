@@ -2534,42 +2534,50 @@
   {
     "id": "task-75",
     "title": "Migrate Components to Modern Angular APIs (Signals)",
-    "status": "pending",
+    "status": "completed",
     "subtasks": [
       {
         "description": "Replace @Input/@Output decorators with input()/output() in contact-form.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace @Input/@Output decorators with input()/output() in contact-result.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace @Input/@Output decorators with input()/output() in content-card.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace @Input/@Output decorators with input()/output() in modal.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace constructor injection with inject() in employment-section.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace constructor injection with inject() in education-section.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Replace constructor injection with inject() in extracurriculars-section.ts",
-        "completed": false
+        "completed": true
       },
       {
         "description": "Remove explicit standalone: true from all 12 component decorators",
-        "completed": false
+        "completed": true
       }
     ],
-    "location": "`src/app/components/contact/`, `src/app/components/about/`, `src/app/shared/`"
+    "location": "`src/app/components/contact/`, `src/app/components/about/`, `src/app/shared/`",
+    "completedDate": "2025-10-17T11:52:30-04:00",
+    "completedCommit": {
+      "hash": "979cdd6",
+      "fullHash": "979cdd64bb9780ca2f68103b7a0d378c58dbe7b7",
+      "subject": "Task 75: Migrate Components to Modern Angular APIs (Signals)",
+      "date": "2025-10-17T11:52:30-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/979cdd64bb9780ca2f68103b7a0d378c58dbe7b7"
+    }
   },
   {
     "id": "task-76",
@@ -2874,5 +2882,361 @@
       }
     ],
     "location": "`src/app/store/app.effects.ts`, `src/app/components/header/header.ts`, `src/app/utils/help.ts`"
+  },
+  {
+    "id": "task-88",
+    "title": "Extract Shared Grid Logic into Composable",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create useGridState composable function for shared AG Grid initialization",
+        "completed": false
+      },
+      {
+        "description": "Extract theme initialization logic (duplicated in commits-grid and task-table)",
+        "completed": false
+      },
+      {
+        "description": "Extract state loading/saving logic for localStorage persistence",
+        "completed": false
+      },
+      {
+        "description": "Extract search handling pattern",
+        "completed": false
+      },
+      {
+        "description": "Update commits-grid.ts to use shared composable",
+        "completed": false
+      },
+      {
+        "description": "Update task-table.ts to use shared composable",
+        "completed": false
+      },
+      {
+        "description": "Remove ~80 lines of duplicated code between the two components",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts:74-105`, `src/app/shared/task-table.ts:74-105`"
+  },
+  {
+    "id": "task-89",
+    "title": "Improve Type Safety in Grid Components",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create AgGridParams interface for grid callback parameters",
+        "completed": false
+      },
+      {
+        "description": "Replace any type in commits-grid.ts gridTheme signal with proper AG Grid theme type",
+        "completed": false
+      },
+      {
+        "description": "Replace any type in task-table.ts gridTheme signal with proper AG Grid theme type",
+        "completed": false
+      },
+      {
+        "description": "Replace any type in getTaskRowId callback with AgGridParams",
+        "completed": false
+      },
+      {
+        "description": "Replace any type in getCommitRowId callback with AgGridParams",
+        "completed": false
+      },
+      {
+        "description": "Add proper typing for all grid API callback parameters",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts:72,106`, `src/app/shared/task-table.ts:66,72,106,169`"
+  },
+  {
+    "id": "task-90",
+    "title": "Create Window Type Extensions for Cursor Properties",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create window.d.ts file with proper TypeScript declarations",
+        "completed": false
+      },
+      {
+        "description": "Add cursorChatPlaceholder property to Window interface",
+        "completed": false
+      },
+      {
+        "description": "Add cursorUsername property to Window interface",
+        "completed": false
+      },
+      {
+        "description": "Replace (window as any) casts with typed window references",
+        "completed": false
+      },
+      {
+        "description": "Update cursor.effects.ts to use typed window properties",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/store/cursor.effects.ts:45,54,72,81,118`, create `src/app/window.d.ts`"
+  },
+  {
+    "id": "task-91",
+    "title": "Fix RxJS Subscription Pattern in Employment Section",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Remove subscribe/unsubscribe pattern in showMore() method",
+        "completed": false
+      },
+      {
+        "description": "Convert jobs$ observable to signal using toSignal()",
+        "completed": false
+      },
+      {
+        "description": "Use computed() to derive jobsToShow and visibleJobs from jobs signal",
+        "completed": false
+      },
+      {
+        "description": "Remove updateVisibleJobs() method if no longer needed",
+        "completed": false
+      },
+      {
+        "description": "Test that Show More functionality still works correctly",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/about/employment-section.ts:59-63`"
+  },
+  {
+    "id": "task-92",
+    "title": "Migrate Store Subscriptions to Signals in App Component",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace isConnected store subscription with toSignal(selectIsCursorPartyConnected)",
+        "completed": false
+      },
+      {
+        "description": "Replace hasDevCommits store subscription with computed() based on devCommits signal",
+        "completed": false
+      },
+      {
+        "description": "Remove ngOnInit() method if no longer needed",
+        "completed": false
+      },
+      {
+        "description": "Remove manual subscription management",
+        "completed": false
+      },
+      {
+        "description": "Test that connection status and dev commits detection still works",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/app.ts:195-201`"
+  },
+  {
+    "id": "task-93",
+    "title": "Extract Email Parsing Logic in Contact Form",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create private extractEmail() method to parse email from input string",
+        "completed": false
+      },
+      {
+        "description": "Replace duplicated email parsing in isValid() method (line 145-150)",
+        "completed": false
+      },
+      {
+        "description": "Replace duplicated email parsing in validateInput() method (line 127-131)",
+        "completed": false
+      },
+      {
+        "description": "Use extracted method in both validation functions",
+        "completed": false
+      },
+      {
+        "description": "Test that email validation still works correctly",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact-form.ts:124-155`"
+  },
+  {
+    "id": "task-94",
+    "title": "Convert Contact Component Grid CSS to Tailwind",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Replace .contact-grid display/grid CSS with Tailwind grid utilities",
+        "completed": false
+      },
+      {
+        "description": "Convert grid-template-columns: 2fr auto to Tailwind class grid-cols-[2fr_auto]",
+        "completed": false
+      },
+      {
+        "description": "Replace align-items: start with items-start",
+        "completed": false
+      },
+      {
+        "description": "Replace gap: 24px with gap-6",
+        "completed": false
+      },
+      {
+        "description": "Keep ::before/::after pseudo-elements and @keyframes animations in styles",
+        "completed": false
+      },
+      {
+        "description": "Test that Contact page layout remains identical",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/components/contact/contact.ts:30-35`"
+  },
+  {
+    "id": "task-95",
+    "title": "Create Reusable Expand Toggle Button Component",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create expand-toggle-button.ts component in shared directory",
+        "completed": false
+      },
+      {
+        "description": "Accept isExpanded signal input to determine button text (more/less)",
+        "completed": false
+      },
+      {
+        "description": "Emit toggle event when button is clicked",
+        "completed": false
+      },
+      {
+        "description": "Apply consistent button styling (bg-[#eee], text-[#444], etc.)",
+        "completed": false
+      },
+      {
+        "description": "Replace 15+ instances of duplicated buttons with new component",
+        "completed": false
+      },
+      {
+        "description": "Update about.ts, content-card.ts, education-section.ts, employment-section.ts, extracurriculars-section.ts",
+        "completed": false
+      }
+    ],
+    "location": "Create `src/app/shared/expand-toggle-button.ts`, update `src/app/components/about/*.ts`"
+  },
+  {
+    "id": "task-96",
+    "title": "Remove Redundant Null Assignment in ViewerController",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Review ViewerController.java line 80 for redundant null assignment",
+        "completed": false
+      },
+      {
+        "description": "Remove unnecessary null assignment if variable is immediately reassigned",
+        "completed": false
+      },
+      {
+        "description": "Simplify variable initialization logic",
+        "completed": false
+      },
+      {
+        "description": "Test that backend still compiles and works correctly",
+        "completed": false
+      }
+    ],
+    "location": "`backend/src/main/java/com/example/demo/ViewerController.java:80`"
+  },
+  {
+    "id": "task-97",
+    "title": "Extract Search Input Styling to Global Utility",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Create .search-input utility class in styles.css with Tailwind @apply",
+        "completed": false
+      },
+      {
+        "description": "Move duplicated search input styles from commits-grid.ts",
+        "completed": false
+      },
+      {
+        "description": "Move duplicated search input styles from task-table.ts",
+        "completed": false
+      },
+      {
+        "description": "Replace component styles arrays with global utility class",
+        "completed": false
+      },
+      {
+        "description": "Ensure search inputs maintain identical appearance",
+        "completed": false
+      }
+    ],
+    "location": "`src/app/shared/commits-grid.ts:40-58`, `src/app/shared/task-table.ts:40-58`, `src/styles.css`"
+  },
+  {
+    "id": "task-98",
+    "title": "Add Missing OnPush Change Detection Strategy",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to contact-form.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to contact-result.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to content-card.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to employment-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to education-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to extracurriculars-section.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to about.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to home.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to modal.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to tasks-container.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to tasks-toolbar.ts",
+        "completed": false
+      },
+      {
+        "description": "Add changeDetection: ChangeDetectionStrategy.OnPush to task-card.ts",
+        "completed": false
+      },
+      {
+        "description": "Test all components to ensure they still render and update correctly",
+        "completed": false
+      }
+    ],
+    "location": "All component files listed above"
   }
 ]

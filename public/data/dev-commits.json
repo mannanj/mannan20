@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "979cdd64bb9780ca2f68103b7a0d378c58dbe7b7",
+    "hash": "979cdd6",
+    "subject": "Task 75: Migrate Components to Modern Angular APIs (Signals)",
+    "body": "- [x] Replace @Input/@Output decorators with input()/output() in contact-form.ts\n- [x] Replace @Input/@Output decorators with input()/output() in contact-result.ts\n- [x] Replace @Input/@Output decorators with input()/output() in content-card.ts\n- [x] Replace @Input/@Output decorators with input()/output() in modal.ts\n- [x] Replace constructor injection with inject() in employment-section.ts\n- [x] Replace constructor injection with inject() in education-section.ts\n- [x] Replace constructor injection with inject() in extracurriculars-section.ts\n- [x] Remove explicit standalone: true from all 12 component decorators\n- Location: \\`src/app/components/contact/\\`, \\`src/app/components/about/\\`, \\`src/app/shared/\\`\n\n[Task-75]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T11:52:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/979cdd64bb9780ca2f68103b7a0d378c58dbe7b7"
+  },
+  {
+    "fullHash": "87da68c34c228e16fec00d79096070d5c19748ad",
+    "hash": "87da68c",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-16T16:38:33-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/87da68c34c228e16fec00d79096070d5c19748ad"
+  },
+  {
     "fullHash": "8dcc6734d60b77b0ac95b62877c10109eed344f8",
     "hash": "8dcc673",
     "subject": "Revert Task 84 and 85, add Task 86",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T12:40:38-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/146e9c1203d728cef0101f162d0b71c8e1a22a97"
-  },
-  {
-    "fullHash": "145eae8debdbd245f74899b52e04538831485085",
-    "hash": "145eae8",
-    "subject": "Convert global CSS classes to inline Tailwind utilities",
-    "body": "- Added unique IDs to divs for identification (not styling)\n- Converted .collapsible class to inline Tailwind (10 instances)\n- Converted .content class to inline Tailwind (2 instances)\n- Converted #body, #home, #about, #contact styles to inline Tailwind\n- Removed all component styles arrays (now empty)\n- Cleaned up styles.css (kept #body a pseudo-element styles)\n- Location: `src/app/app.ts`, `src/app/components/about/`, `src/styles.css`\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:40:38-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/145eae8debdbd245f74899b52e04538831485085"
-  },
-  {
-    "fullHash": "c726266a931f60ed9dad8ed125b76295a72daf81",
-    "hash": "c726266",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:32:34-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c726266a931f60ed9dad8ed125b76295a72daf81"
   }
 ]
