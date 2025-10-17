@@ -3590,5 +3590,37 @@
       "date": "2025-10-17T12:31:12-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/5f18ee11af12d620679362786e291844c3533a8f"
     }
+  },
+  {
+    "id": "task-106",
+    "title": "Migrate Global CSS to Component Styles or Inline Tailwind",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Review all remaining styles in src/styles.css",
+        "completed": false
+      },
+      {
+        "description": "Move .nav-button styles to component where used or convert to Tailwind utilities",
+        "completed": false
+      },
+      {
+        "description": "Move #body a pseudo-element styles to component or keep as global (links are global)",
+        "completed": false
+      },
+      {
+        "description": "Convert remaining global styles to inline Tailwind utilities where possible",
+        "completed": false
+      },
+      {
+        "description": "Keep only truly global styles in styles.css (body, scroll-behavior, essential pseudo-elements)",
+        "completed": false
+      },
+      {
+        "description": "Document which styles must remain global and why",
+        "completed": false
+      }
+    ],
+    "location": "`src/styles.css`, component files that use these styles"
   }
 ]
