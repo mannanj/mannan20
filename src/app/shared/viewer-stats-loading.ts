@@ -4,23 +4,20 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   selector: 'viewer-stats-loading',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
-    @keyframes loading-pulse {
+    @keyframes blur-fadeIn {
       0% {
-        opacity: 0.5;
-        filter: blur(4px);
+        filter: blur(5px);
       }
-      50% {
-        opacity: 0.75;
+      60% {
         filter: blur(2px);
       }
       100% {
-        opacity: 0.5;
-        filter: blur(4px);
+        filter: blur(0px);
       }
     }
 
     .loading-content {
-      animation: loading-pulse 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      animation: blur-fadeIn 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
   `],
   template: `
