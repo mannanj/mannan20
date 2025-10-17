@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "95dc580090b956767deba42bd99e70e33b9bbb29",
+    "hash": "95dc580",
+    "subject": "Task 99: Refactor and Modularize App Component",
+    "body": "- [x] Extract dev stats modal content into dedicated dev-stats-modal component\n- [x] Move tab UI and switching logic from app.ts to dev-stats component\n- [x] Move tab styles from app.ts to dev-stats component\n- [x] Extract contact form submission logic to contact service or contact-form component\n- [x] Remove modal templates from app.ts, use new modularized components\n- [x] Simplify app.ts to only handle top-level layout and component composition\n- [x] Ensure all extracted components follow Angular best practices (standalone, signals, OnPush)\n- [x] Test that modals, tabs, and form submission work correctly after refactoring\n- Location: \\`src/app/app.ts\\`, \\`src/app/shared/dev-stats-modal.ts\\`, \\`src/app/components/contact/contact-modal.ts\\`\n\n[Task-99]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T12:02:21-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/95dc580090b956767deba42bd99e70e33b9bbb29"
+  },
+  {
+    "fullHash": "e5cf37d2e2a5822f4c4238986f4e0531e9928a74",
+    "hash": "e5cf37d",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T11:52:30-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/e5cf37d2e2a5822f4c4238986f4e0531e9928a74"
+  },
+  {
     "fullHash": "979cdd64bb9780ca2f68103b7a0d378c58dbe7b7",
     "hash": "979cdd6",
     "subject": "Task 75: Migrate Components to Modern Angular APIs (Signals)",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T13:59:51-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/9fe08bc63612d051f3a4b0d2e0b8b1dd92e8e92b"
-  },
-  {
-    "fullHash": "fdce0aa3ea6ef9a0157ce3f3bb8c3d08489e8187",
-    "hash": "fdce0aa",
-    "subject": "Task 62: Comprehensive CSS Overhaul and Simplification",
-    "body": "- [x] Audit all CSS usage across codebase (global styles, component styles, inline classes)\n- [x] Create responsive layout system with consistent container padding/width:\n  - Mobile: 100% width with 20px padding on sides\n  - Tablet (md breakpoint 768px+): 70% content width (15% margin each side)\n  - Desktop (lg breakpoint 1024px+): max-width 720px, centered with auto margins\n- [x] Configure Tailwind to support responsive container system\n- [x] Remove all entry animations from components (fadeIn, slideInLeft, slideInRight, scaleIn, bounceIn)\n- [x] Remove animation imports from all components\n- [x] Simplify button interactions:\n  - Remove complex pseudo-element animations (::before ripple effects)\n  - Add simple scale transform on hover (scale-105)\n  - Add subtle shadow glow on active/click state using box-shadow\n  - Keep blue color scheme (#039be5, #4fc3f7)\n- [x] Create reusable button utility classes in Tailwind for consistent styling\n- [x] Consolidate extremely long inline Tailwind class strings into named CSS classes where appropriate\n- [x] Remove redundant custom CSS that can be replaced with Tailwind utilities\n- [x] Preserve all colors exactly: #039be5, #4fc3f7, #0b0b0b, #ffffff, #333, #666\n- [x] Keep essential custom CSS:\n  - Link underline animations (a::after with width transition)\n  - Expandable content (.content, .collapsible)\n  - Modal backdrop and animations\n  - Contact page ripple circles\n  - Any ::before/::after pseudo-elements with content\n- [x] Apply responsive container to all main page sections (Home, About, Contact)\n- [x] Test all pages at mobile, tablet, and desktop sizes\n- [x] Verify visual appearance matches screenshots in public/ui-screenshots\n- [x] Ensure no functionality is lost during CSS refactoring\n- Location: \\`src/styles.css\\`, \\`src/app/animations/animations.ts\\`, all component files\n\n[Task-62]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T13:59:51-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/fdce0aa3ea6ef9a0157ce3f3bb8c3d08489e8187"
-  },
-  {
-    "fullHash": "146e9c1203d728cef0101f162d0b71c8e1a22a97",
-    "hash": "146e9c1",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T12:40:38-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/146e9c1203d728cef0101f162d0b71c8e1a22a97"
   }
 ]

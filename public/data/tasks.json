@@ -3238,5 +3238,53 @@
       }
     ],
     "location": "All component files listed above"
+  },
+  {
+    "id": "task-99",
+    "title": "Refactor and Modularize App Component",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Extract dev stats modal content into dedicated dev-stats-modal component",
+        "completed": true
+      },
+      {
+        "description": "Move tab UI and switching logic from app.ts to dev-stats component",
+        "completed": true
+      },
+      {
+        "description": "Move tab styles from app.ts to dev-stats component",
+        "completed": true
+      },
+      {
+        "description": "Extract contact form submission logic to contact service or contact-form component",
+        "completed": true
+      },
+      {
+        "description": "Remove modal templates from app.ts, use new modularized components",
+        "completed": true
+      },
+      {
+        "description": "Simplify app.ts to only handle top-level layout and component composition",
+        "completed": true
+      },
+      {
+        "description": "Ensure all extracted components follow Angular best practices (standalone, signals, OnPush)",
+        "completed": true
+      },
+      {
+        "description": "Test that modals, tabs, and form submission work correctly after refactoring",
+        "completed": true
+      }
+    ],
+    "location": "`src/app/app.ts`, `src/app/shared/dev-stats-modal.ts`, `src/app/components/contact/contact-modal.ts`",
+    "completedDate": "2025-10-17T12:02:21-04:00",
+    "completedCommit": {
+      "hash": "95dc580",
+      "fullHash": "95dc580090b956767deba42bd99e70e33b9bbb29",
+      "subject": "Task 99: Refactor and Modularize App Component",
+      "date": "2025-10-17T12:02:21-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/95dc580090b956767deba42bd99e70e33b9bbb29"
+    }
   }
 ]
