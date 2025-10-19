@@ -1,6 +1,4 @@
-# Code Refactoring Tasks
-
-## AboutComponent Refactoring
+# Project Tasks
 
 ### Task 1: Refactor Toggle Logic Duplication
 - [x] Replace 5 pairs of toggle methods with a generic toggle system
