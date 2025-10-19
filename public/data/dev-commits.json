@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "b6a50cec100bbff51c8d6555d9921db0390ccc27",
+    "hash": "b6a50ce",
+    "subject": "Update tasks.md header structure",
+    "body": "Simplified header from \"Code Refactoring Tasks\" to \"Project Tasks\"\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-19T16:05:55-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b6a50cec100bbff51c8d6555d9921db0390ccc27"
+  },
+  {
+    "fullHash": "0d5377407050a3598006f20912a6f1a5fc81908c",
+    "hash": "0d53774",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-17T13:49:39-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/0d5377407050a3598006f20912a6f1a5fc81908c"
+  },
+  {
     "fullHash": "394219e4bf005c6806e0b9fd44353d4a7a053b98",
     "hash": "394219e",
     "subject": "Add scale animation to viewer-stats on enter",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:23:49-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/ec5f182234b35ccab3236cda5de13acde902e9b9"
-  },
-  {
-    "fullHash": "c384ab87141101902529ee4050991b4f5289abd9",
-    "hash": "c384ab8",
-    "subject": "Task 69: Compress Status Badge and Add White Text Stroke",
-    "body": "- [x] Reduce padding on COMPLETED status badge to only 2px around text\n- [x] Add white stroke/outline to COMPLETED text for better visibility\n- [x] Tighten background to fit snugly around text with minimal padding\n- [x] Update status badge styling in task-table cellRenderer\n- [x] Ensure text remains readable with new compact styling\n- [x] Test appearance in both table and card views\n- Location: `src/app/shared/task-table.ts`, `src/app/shared/task-card.ts`\n\n[Task-69]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:23:49-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c384ab87141101902529ee4050991b4f5289abd9"
-  },
-  {
-    "fullHash": "d3f4c7135b23b776bdc30b4817e228653fdb305e",
-    "hash": "d3f4c71",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:20:05-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/d3f4c7135b23b776bdc30b4817e228653fdb305e"
   }
 ]
