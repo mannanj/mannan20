@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "2a5f7e977f8aad83f38f22f0fc5807cf3d901eda",
+    "hash": "2a5f7e9",
+    "subject": "Task 111: Enable Angular Server-Side Rendering (SSR)",
+    "body": "- [x] Run ng add @angular/ssr to add SSR support\n- [x] Add platform checks for browser-only code\n- [x] Configure server config to avoid NgRx Effects issue\n- [x] Verify pre-rendered content in HTML source\n- Location: `angular.json`, `src/app/app.config.server.ts`, `src/main.server.ts`, `src/server.ts`, effects files\n\n[Task-111]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T16:58:12-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/2a5f7e977f8aad83f38f22f0fc5807cf3d901eda"
+  },
+  {
+    "fullHash": "a6916d81cdd9e6efd8055d577f238282e84dcffa",
+    "hash": "a6916d8",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T16:46:54-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a6916d81cdd9e6efd8055d577f238282e84dcffa"
+  },
+  {
     "fullHash": "053473c82e72a7f075a82139787f8930b015ee16",
     "hash": "053473c",
     "subject": "Task 110: Add SEO Meta Tags to Index.html",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:30:48-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/d14f69b2fac42191efa201318aadab995e74381c"
-  },
-  {
-    "fullHash": "849472e72870385fb2eb493d108cf111a7ea8c6d",
-    "hash": "849472e",
-    "subject": "Increase status badge height",
-    "body": "Increased vertical padding from 1px to 3px to make badge taller while keeping compact appearance.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:30:48-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/849472e72870385fb2eb493d108cf111a7ea8c6d"
-  },
-  {
-    "fullHash": "66e3b5904da7d63de4d32a8352e4f483f230fd7e",
-    "hash": "66e3b59",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:26:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/66e3b5904da7d63de4d32a8352e4f483f230fd7e"
   }
 ]
