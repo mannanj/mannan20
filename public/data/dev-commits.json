@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "a1420068ff338155300b28c90b4a3f964556fd7a",
+    "hash": "a142006",
+    "subject": "Add robots.txt with rate limiting",
+    "body": "Allow all robots with significant rate limiting:\n- General crawlers: 10 second delay\n- Google/Bing: 5 second delay\n- Sitemap reference included\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T17:13:10-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/a1420068ff338155300b28c90b4a3f964556fd7a"
+  },
+  {
+    "fullHash": "15178fa2398a0f3cde8ff277d0bbf62721e53e6d",
+    "hash": "15178fa",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T16:58:12-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/15178fa2398a0f3cde8ff277d0bbf62721e53e6d"
+  },
+  {
     "fullHash": "2a5f7e977f8aad83f38f22f0fc5807cf3d901eda",
     "hash": "2a5f7e9",
     "subject": "Task 111: Enable Angular Server-Side Rendering (SSR)",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:31:21-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/794066b01341cf0021edad14101e6fad5afc768c"
-  },
-  {
-    "fullHash": "c2b0acf2083e21aa9a2fcae51c514689ef5dcf8a",
-    "hash": "c2b0acf",
-    "subject": "Change badge text color back to green",
-    "body": "Changed COMPLETED badge text color from white to green (#4ade80) while keeping green background (#22c55e) and 3px vertical padding.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:31:21-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/c2b0acf2083e21aa9a2fcae51c514689ef5dcf8a"
-  },
-  {
-    "fullHash": "d14f69b2fac42191efa201318aadab995e74381c",
-    "hash": "d14f69b",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:30:48-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/d14f69b2fac42191efa201318aadab995e74381c"
   }
 ]
