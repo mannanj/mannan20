@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "45a9e4abb979437c0590f9ed76edf2ae920bcee8",
+    "hash": "45a9e4a",
+    "subject": "Task 110: Add SEO meta tags to index.html",
+    "body": "Added comprehensive SEO meta tags including:\n- Improved page title with full name and professional role\n- Meta description highlighting skills and portfolio focus\n- Keywords and author metadata for search optimization\n- Open Graph tags for social media sharing (Facebook, LinkedIn)\n- Twitter Card metadata for Twitter/X link previews\n- Updated all URLs to use correct domain (https://mannan.is)\n- Updated og:image and twitter:image to use existing mannan.jpg\n\nAlso created Task 110 for Angular SSR implementation\n\n[Task-110]\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T16:46:23-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/45a9e4abb979437c0590f9ed76edf2ae920bcee8"
+  },
+  {
+    "fullHash": "cbbe964c63cb658e094a54bbbaa02b83c24d05a1",
+    "hash": "cbbe964",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T16:45:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/cbbe964c63cb658e094a54bbbaa02b83c24d05a1"
+  },
+  {
     "fullHash": "b03a9995154240f8e71d22d4c4b13dfc5cbc4ce6",
     "hash": "b03a999",
     "subject": "Add SEO meta tags to index.html",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:26:43-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/66e3b5904da7d63de4d32a8352e4f483f230fd7e"
-  },
-  {
-    "fullHash": "715ddfa2c7f798a929e447947f3a4ea12819af7d",
-    "hash": "715ddfa",
-    "subject": "Fix Task 69: Change status badge to white text on green background",
-    "body": "Changed COMPLETED badge styling:\n- Text color: white (#fff) instead of green with white stroke\n- Background: bright green (#22c55e)\n- Padding: 2px vertical, 3px horizontal\n- Removed text-shadow stroke effect\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:26:43-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/715ddfa2c7f798a929e447947f3a4ea12819af7d"
-  },
-  {
-    "fullHash": "14dd48e7265a1cc92d2941d3734a430e79f3519a",
-    "hash": "14dd48e",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:25:13-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/14dd48e7265a1cc92d2941d3734a430e79f3519a"
   }
 ]

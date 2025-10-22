@@ -921,3 +921,42 @@
 - [x] Keep same positioning and layout as viewer-stats component
 - [x] Remove complex gradient and color randomization
 - Location: `src/app/shared/viewer-stats-loading.ts`
+
+### Task 109: Implement Visx Delaunay-Voronoi Knowledge Graph
+- [ ] Install Visx dependencies (@visx/delaunay, @visx/voronoi, @visx/group, @visx/responsive)
+- [ ] Create knowledge-graph component in src/app/components/knowledge-graph/
+- [ ] Create knowledge data model with node types (skill, project, article, hobby, etc.)
+- [ ] Generate sample knowledge data with positions and metadata
+- [ ] Implement Delaunay-Voronoi diagram visualization with Visx
+- [ ] Add interactive hover effects to highlight Voronoi cells and display node information
+- [ ] Add click handler to navigate into nodes with detailed information
+- [ ] Style Voronoi cells with different colors based on node type (skill, project, article, hobby)
+- [ ] Add smooth transitions and animations for cell interactions
+- [ ] Create navigation breadcrumbs to track which node you're exploring
+- [ ] Add back navigation to return to main Voronoi view
+- [ ] Integrate knowledge graph into About section or dedicated page
+- Location: Create `src/app/components/knowledge-graph/`, `src/app/models/knowledge.ts`
+
+### Task 110: Add SEO Meta Tags to Index.html
+- [x] Add improved page title with full name and professional role
+- [x] Add meta description highlighting skills and portfolio focus
+- [x] Add keywords and author metadata for search optimization
+- [x] Add Open Graph tags for social media sharing (Facebook, LinkedIn)
+- [x] Add Twitter Card metadata for Twitter/X link previews
+- [x] Update all URLs to use correct domain (https://mannan.is)
+- [x] Update og:image and twitter:image to use existing mannan.jpg
+- Location: `src/index.html`
+
+### Task 111: Enable Angular Server-Side Rendering (SSR)
+- [ ] Run `ng add @angular/ssr` to add SSR support to Angular 20 app
+- [ ] Configure SSR settings in angular.json
+- [ ] Test SSR build with `npm run build:ssr` or `ng build --configuration production`
+- [ ] Test SSR server with `npm run serve:ssr` or equivalent
+- [ ] Verify that content is pre-rendered and visible in HTML source (view page source)
+- [ ] Check for any client-only code that needs `isPlatformBrowser()` guards
+- [ ] Test WebSocket cursor tracking works correctly with SSR
+- [ ] Ensure localStorage/sessionStorage usage is SSR-safe with platform checks
+- [ ] Deploy SSR build to Vercel (automatic SSR support)
+- [ ] Verify SEO improvements with Google Search Console or testing tools
+- [ ] Test social media link previews work with pre-rendered meta tags
+- Location: `angular.json`, `src/main.server.ts` (created by ng add), `src/app/app.config.server.ts` (created by ng add)

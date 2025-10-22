@@ -3766,5 +3766,57 @@
       }
     ],
     "location": "Create `src/app/components/knowledge-graph/`, `src/app/models/knowledge.ts`"
+  },
+  {
+    "id": "task-110",
+    "title": "Enable Angular Server-Side Rendering (SSR)",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Run `ng add @angular/ssr` to add SSR support to Angular 20 app",
+        "completed": false
+      },
+      {
+        "description": "Configure SSR settings in angular.json",
+        "completed": false
+      },
+      {
+        "description": "Test SSR build with `npm run build:ssr` or `ng build --configuration production`",
+        "completed": false
+      },
+      {
+        "description": "Test SSR server with `npm run serve:ssr` or equivalent",
+        "completed": false
+      },
+      {
+        "description": "Verify that content is pre-rendered and visible in HTML source (view page source)",
+        "completed": false
+      },
+      {
+        "description": "Check for any client-only code that needs `isPlatformBrowser()` guards",
+        "completed": false
+      },
+      {
+        "description": "Test WebSocket cursor tracking works correctly with SSR",
+        "completed": false
+      },
+      {
+        "description": "Ensure localStorage/sessionStorage usage is SSR-safe with platform checks",
+        "completed": false
+      },
+      {
+        "description": "Deploy SSR build to Vercel (automatic SSR support)",
+        "completed": false
+      },
+      {
+        "description": "Verify SEO improvements with Google Search Console or testing tools",
+        "completed": false
+      },
+      {
+        "description": "Test social media link previews work with pre-rendered meta tags",
+        "completed": false
+      }
+    ],
+    "location": "`angular.json`, `src/main.server.ts` (created by ng add), `src/app/app.config.server.ts` (created by ng add)"
   }
 ]
