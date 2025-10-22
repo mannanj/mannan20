@@ -3710,5 +3710,61 @@
       "date": "2025-10-17T13:19:44-04:00",
       "url": "https://github.com/mannanj/mannan20/commit/1cd409b3c86d8dd3e901ffa0a847c509e24eb750"
     }
+  },
+  {
+    "id": "task-109",
+    "title": "Implement Visx Delaunay-Voronoi Knowledge Graph",
+    "status": "pending",
+    "subtasks": [
+      {
+        "description": "Install Visx dependencies (@visx/delaunay, @visx/voronoi, @visx/group, @visx/responsive)",
+        "completed": false
+      },
+      {
+        "description": "Create knowledge-graph component in src/app/components/knowledge-graph/",
+        "completed": false
+      },
+      {
+        "description": "Create knowledge data model with node types (skill, project, article, hobby, etc.)",
+        "completed": false
+      },
+      {
+        "description": "Generate sample knowledge data with positions and metadata",
+        "completed": false
+      },
+      {
+        "description": "Implement Delaunay-Voronoi diagram visualization with Visx",
+        "completed": false
+      },
+      {
+        "description": "Add interactive hover effects to highlight Voronoi cells and display node information",
+        "completed": false
+      },
+      {
+        "description": "Add click handler to navigate into nodes with detailed information",
+        "completed": false
+      },
+      {
+        "description": "Style Voronoi cells with different colors based on node type (skill, project, article, hobby)",
+        "completed": false
+      },
+      {
+        "description": "Add smooth transitions and animations for cell interactions",
+        "completed": false
+      },
+      {
+        "description": "Create navigation breadcrumbs to track which node you're exploring",
+        "completed": false
+      },
+      {
+        "description": "Add back navigation to return to main Voronoi view",
+        "completed": false
+      },
+      {
+        "description": "Integrate knowledge graph into About section or dedicated page",
+        "completed": false
+      }
+    ],
+    "location": "Create `src/app/components/knowledge-graph/`, `src/app/models/knowledge.ts`"
   }
 ]

@@ -1,5 +1,23 @@
 [
   {
+    "fullHash": "b03a9995154240f8e71d22d4c4b13dfc5cbc4ce6",
+    "hash": "b03a999",
+    "subject": "Add SEO meta tags to index.html",
+    "body": "Added comprehensive SEO meta tags including:\n- Descriptive title and meta description\n- Keywords and author metadata\n- Open Graph tags for social sharing\n- Twitter Card metadata\n- Updated URLs to use correct domain (https://mannan.is)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "author": "Mannan Javid",
+    "date": "2025-10-22T16:45:09-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/b03a9995154240f8e71d22d4c4b13dfc5cbc4ce6"
+  },
+  {
+    "fullHash": "352ec162abb3df517d7c0b19ae10d3064e046886",
+    "hash": "352ec16",
+    "subject": "Update dev data files",
+    "body": "",
+    "author": "Mannan Javid",
+    "date": "2025-10-19T16:05:55-04:00",
+    "url": "https://github.com/mannanj/mannan20/commit/352ec162abb3df517d7c0b19ae10d3064e046886"
+  },
+  {
     "fullHash": "b6a50cec100bbff51c8d6555d9921db0390ccc27",
     "hash": "b6a50ce",
     "subject": "Update tasks.md header structure",
@@ -880,23 +898,5 @@
     "author": "Mannan Javid",
     "date": "2025-10-15T19:25:13-04:00",
     "url": "https://github.com/mannanj/mannan20/commit/14dd48e7265a1cc92d2941d3734a430e79f3519a"
-  },
-  {
-    "fullHash": "791ae3375d5a662d3823ed2cb43399580353b3d9",
-    "hash": "791ae33",
-    "subject": "Add Task 71: Investigate and Configure AG Grid Row Selection",
-    "body": "🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:25:13-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/791ae3375d5a662d3823ed2cb43399580353b3d9"
-  },
-  {
-    "fullHash": "ec5f182234b35ccab3236cda5de13acde902e9b9",
-    "hash": "ec5f182",
-    "subject": "Update dev data files",
-    "body": "",
-    "author": "Mannan Javid",
-    "date": "2025-10-15T19:23:49-04:00",
-    "url": "https://github.com/mannanj/mannan20/commit/ec5f182234b35ccab3236cda5de13acde902e9b9"
   }
 ]
