@@ -3769,6 +3769,50 @@
   },
   {
     "id": "task-110",
+    "title": "Add SEO Meta Tags to Index.html",
+    "status": "completed",
+    "subtasks": [
+      {
+        "description": "Add improved page title with full name and professional role",
+        "completed": true
+      },
+      {
+        "description": "Add meta description highlighting skills and portfolio focus",
+        "completed": true
+      },
+      {
+        "description": "Add keywords and author metadata for search optimization",
+        "completed": true
+      },
+      {
+        "description": "Add Open Graph tags for social media sharing (Facebook, LinkedIn)",
+        "completed": true
+      },
+      {
+        "description": "Add Twitter Card metadata for Twitter/X link previews",
+        "completed": true
+      },
+      {
+        "description": "Update all URLs to use correct domain (https://mannan.is)",
+        "completed": true
+      },
+      {
+        "description": "Update og:image and twitter:image to use existing mannan.jpg",
+        "completed": true
+      }
+    ],
+    "location": "`src/index.html`",
+    "completedDate": "2025-10-22T16:46:54-04:00",
+    "completedCommit": {
+      "hash": "053473c",
+      "fullHash": "053473c82e72a7f075a82139787f8930b015ee16",
+      "subject": "Task 110: Add SEO Meta Tags to Index.html",
+      "date": "2025-10-22T16:46:54-04:00",
+      "url": "https://github.com/mannanj/mannan20/commit/053473c82e72a7f075a82139787f8930b015ee16"
+    }
+  },
+  {
+    "id": "task-111",
     "title": "Enable Angular Server-Side Rendering (SSR)",
     "status": "pending",
     "subtasks": [
