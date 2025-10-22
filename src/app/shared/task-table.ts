@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, input, signal, viewChild, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, viewChild, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Task } from '../models/models';
 import { formatCompletionDate } from '../utils/date';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -60,6 +61,8 @@ import type { ColDef, ICellRendererParams, GridState } from 'ag-grid-community';
 })
 export class TaskTable implements OnInit {
   private static readonly STORAGE_KEY = 'tasks-grid-state';
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
   tasks = input.required<Task[]>();
   protected searchText = signal('');
@@ -85,6 +88,10 @@ export class TaskTable implements OnInit {
   }
 
   private loadState() {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const savedState = localStorage.getItem(TaskTable.STORAGE_KEY);
     if (savedState) {
       try {
@@ -96,6 +103,10 @@ export class TaskTable implements OnInit {
   }
 
   protected onStateUpdated() {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const gridApi = this.tasksGrid()?.api;
     if (gridApi) {
       const state = gridApi.getState();

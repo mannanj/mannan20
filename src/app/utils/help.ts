@@ -8,6 +8,10 @@ const CONTACT_OFFSET_RATIO = 0.11;
 const DEFAULT_OFFSET_RATIO = 0.11;
 
 export function scrollToSection(section: Links): void {
+  if (typeof document === 'undefined' || typeof window === 'undefined') {
+    return;
+  }
+
   const elem: HTMLElement | null = document.getElementById(section);
   if (elem) {
     const offsetPx: number = determineOffsetPx(section);
@@ -16,6 +20,10 @@ export function scrollToSection(section: Links): void {
 }
 
 export function determineOffsetPx(link: Links): number {
+  if (typeof document === 'undefined') {
+    return 0;
+  }
+
   const offsetRatios: Record<Links, number> = {
     [Links.home]: HOME_OFFSET_RATIO,
     [Links.about]: ABOUT_OFFSET_RATIO,
@@ -36,5 +44,8 @@ export function getPhoneLink(phone: string): string {
 }
 
 export function copyToClipboard(text: string): Promise<void> {
+  if (typeof navigator === 'undefined' || !navigator.clipboard) {
+    return Promise.reject(new Error('Clipboard not available'));
+  }
   return navigator.clipboard.writeText(text);
 }

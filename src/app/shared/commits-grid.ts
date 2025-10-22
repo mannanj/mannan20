@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, input, inject, signal, viewChild, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, input, inject, signal, viewChild, OnInit, PLATFORM_ID } from '@angular/core';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams, GridState } from 'ag-grid-community';
 
@@ -68,6 +68,8 @@ interface Commit {
 })
 export class CommitsGrid implements OnInit {
   private static readonly STORAGE_KEY = 'commits-grid-state';
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
   commits = input.required<Commit[]>();
   protected searchText = signal('');
@@ -95,6 +97,10 @@ export class CommitsGrid implements OnInit {
   }
 
   private loadState() {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const savedState = localStorage.getItem(CommitsGrid.STORAGE_KEY);
     if (savedState) {
       try {
@@ -106,6 +112,10 @@ export class CommitsGrid implements OnInit {
   }
 
   protected onStateUpdated() {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const gridApi = this.commitsGrid()?.api;
     if (gridApi) {
       const state = gridApi.getState();

@@ -1,9 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Actions, createEffect, ofType, ROOT_EFFECTS_INIT } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError, mergeMap, withLatestFrom, filter, throttleTime } from 'rxjs/operators';
-import { of, fromEvent } from 'rxjs';
+import { of, fromEvent, EMPTY } from 'rxjs';
 import * as AppActions from './app.actions';
 import * as AppSelectors from './app.selectors';
 import { AboutData, Metadata, DevCommit, Task, Links } from '../models/models';
@@ -14,6 +15,8 @@ export class AppEffects {
   private actions$ = inject(Actions);
   private store = inject(Store);
   private http = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
   loadAboutData$ = createEffect(() =>
     this.actions$.pipe(
@@ -97,8 +100,12 @@ export class AppEffects {
     )
   );
 
-  trackNavigation$ = createEffect(() =>
-    fromEvent(window, 'scroll').pipe(
+  trackNavigation$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return fromEvent(window, 'scroll').pipe(
       throttleTime(100),
       map(() => {
         const sections: Links[] = [Links.home, Links.about, Links.contact];
@@ -125,6 +132,6 @@ export class AppEffects {
 
         return AppActions.setSelectedLink({ link: activeSection });
       })
-    )
-  );
+    );
+  });
 }
