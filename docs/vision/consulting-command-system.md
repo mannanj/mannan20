@@ -3,6 +3,16 @@
 ## Overview
 Interactive consulting command system accessible via `/consulting` in the command bar. Provides multiple consulting options with pricing, scheduling, and payment/deposit requirements for unknown users.
 
+### Origin & Vision
+This system emerged from a desire to offer consulting services beyond traditional software engineering, incorporating holistic life optimization services including environment engineering, circadian design, nutrition optimization, and personal reinvention for the AI age. The goal is to help people transform multiple aspects of their lives using proven systems and methodologies developed through personal experience and research.
+
+### Key Design Principles
+1. **Sub-task Command Structure:** `/consulting` kicks off multiple sub-task commands/options/dialogs for different consulting types
+2. **Deposit Gating:** Require deposits or voucher codes for unknown users to ensure serious inquiries
+3. **Free Resource Access:** All philosophies, systems, and documents available for free to educate before booking
+4. **Holistic Services:** Beyond just technical consulting - physical environment, nutrition, personal development
+5. **Proven Systems:** All services based on personal experience and systems (1-hour meal prep, sun app, AI reinvention)
+
 ## Core Features
 
 ### 1. Consulting Command Entry Point
@@ -98,10 +108,12 @@ Interactive consulting command system accessible via `/consulting` in the comman
 
 4. **Personal Brand & Site Launch**
    - Launch your own portfolio site like this one
-   - Technical setup and deployment
+   - Help you establish your own brand and online presence
+   - Technical setup and deployment (Angular, Spring Boot, hosting)
    - Content strategy and personal positioning
    - Design and user experience guidance
    - Maintenance and evolution planning
+   - Command bar and interactive features setup
 
 - **Packages:**
   - Single-session coaching: $350/session
@@ -126,8 +138,10 @@ Interactive consulting command system accessible via `/consulting` in the comman
 - **Content Categories:**
   - **Digital Habits & Notification Management:**
     - "No Notifications Diet" - Digital habit framework
-    - Inspired by world-leading digital habits coach (Spielberg executive assistant turned coach)
-    - Brick phone-free events philosophy
+    - Inspired by work with world-leading digital habits coach
+    - Coach background: Stephen Spielberg's executive assistant turned coach
+    - Throws brick phone-free events
+    - Complete notification elimination methodology
   - **Circadian & Sun-Based Living:**
     - Sun app documentation and philosophy
     - Circadian rhythm optimization guides
@@ -137,15 +151,21 @@ Interactive consulting command system accessible via `/consulting` in the comman
     - Noise minimization techniques
   - **Meal Prep & Nutrition:**
     - 1-hour weekly meal prep system documentation
+    - Complete system for cooking and preparing food for entire week
+    - Meeting all nutritional needs efficiently
     - Cost optimization strategies
+    - Batch cooking and storage techniques
   - **Personal Development:**
     - AI age reinvention journey and learnings
     - Skillset transformation methodologies
 - **Format:**
   - Direct links to published documents and writings
+  - Access to all documents and systems captured in files and writings
   - Embedded PDFs or markdown documents
   - Video content (if available)
+  - Links to related tools and apps (sun app, etc.)
 - **Access:** Free, no account required
+- **Philosophy:** Encourage people to read philosophies and systems before booking, make consultation more valuable
 - **UI Integration:**
   - Link from consulting dialog: "Read My Philosophies First"
   - Pre-booking suggestion: "Recommended reading before your consultation"
@@ -189,13 +209,17 @@ Interactive consulting command system accessible via `/consulting` in the comman
   - Friend/network discounts
 
 #### Account Requirement
-- **New Users:** Must create account or provide contact info
+- **New Users:** Must create account or provide contact info (requirement for unknown users to prevent spam and ensure serious inquiries)
 - **Required Info:**
   - Name
   - Email
   - Company/context (optional but helpful)
   - Brief description of consulting need
 - **Known Users:** Auto-populate from existing account
+- **Deposit Requirement Logic:**
+  - If user is unknown and no valid voucher code: require deposit
+  - If user has voucher code: validate and potentially waive deposit
+  - If user is returning/known: optional deposit waiver
 
 ### 5. User Interface Components
 
