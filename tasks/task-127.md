@@ -1,0 +1,36 @@
+### Task 127: Consulting Command System with Sub-options and Scheduling
+- [ ] Review raw feature document: docs/vision/consulting-command-system.md
+- [ ] Create consulting command entry point (`/consulting`)
+- [ ] Build consulting dialog component with all service categories
+- [ ] Implement "Free Agency Hour Mode" option ($350/hr)
+- [ ] Create technical project consulting option with examples
+- [ ] Add environment engineering option (physical & circadian)
+- [ ] Implement physical space engineering (plants, noise, beautification)
+- [ ] Add circadian environment design with blue light management
+- [ ] Link to sun app for circadian optimization
+- [ ] Create coaching & personal development section
+- [ ] Add sun & circadian scheduling coaching service
+- [ ] Implement food & diet optimization option
+- [ ] Add 1-hour-per-week meal prep efficiency system
+- [ ] Add AI age reinvention & skill development coaching
+- [ ] Create personal brand & site launch service
+- [ ] Build coaching package options (single, 4-week, 12-week)
+- [ ] Add scheduling interface for all consultation types
+- [ ] Implement deposit/voucher code validation system
+- [ ] Create account requirement check for unknown users
+- [ ] Add consulting rates and pricing display for all services
+- [ ] Build example projects display (technical, environment, coaching)
+- [ ] Add interior design referral system
+- [ ] Create philosophy & systems library section
+- [ ] Add "No Notifications Diet" document and digital habits resources
+- [ ] Include circadian & sun-based living guides
+- [ ] Add environment design case studies and guides
+- [ ] Include meal prep system documentation
+- [ ] Add personal development & AI age reinvention resources
+- [ ] Implement "Read My Philosophies First" link in dialog
+- [ ] Add pre-booking resource suggestions
+- [ ] Create resource library command bar access
+- [ ] Build voucher code management (admin panel optional)
+- [ ] Integrate with backend for scheduling and payment tracking
+- [ ] Add service-specific forms and questionnaires
+- Location: `docs/vision/consulting-command-system.md`, `src/app/components/command-bar/`, `src/app/components/consulting/`, `src/app/models/consulting.model.ts`, `src/app/services/consulting.service.ts`, `backend/src/main/java/com/mannan/portfolio/consulting/`
