@@ -1138,3 +1138,18 @@
 - [ ] Create network analytics (connections made, successful collaborations)
 - [ ] Add privacy controls for network member profiles
 - Location: `src/app/components/network/`, `backend/src/main/java/com/mannan/network/`, `src/app/services/network.service.ts`
+
+### Task 125: Human-Centered Social Platform Feature Planning
+- [ ] Review vision document: docs/vision/human-centered-social-platform.md
+- [ ] Plan live chat with follow-up system architecture
+- [ ] Design LLM-powered content filtering and parsing system
+- [ ] Design context-aware availability system (party analogy)
+- [ ] Plan sun scheduling integration from sun-taupe.vercel.app
+- [ ] Architect universal messaging platform (interest-based, not feed-based)
+- [ ] Design authentic self-presentation platform with AI bridge
+- [ ] Plan data ownership and reverse advertising model
+- [ ] Create technical specifications for private-social media features
+- [ ] Break down experimental features into actionable implementation tasks
+- [ ] Define API contracts for chat, scheduling, messaging, and data systems
+- [ ] Document core principles for feature development (radical vulnerability, honesty, alignment)
+- Location: `docs/vision/human-centered-social-platform.md`, create implementation tasks in tasks.md
