@@ -960,3 +960,181 @@
 - [ ] Verify SEO improvements with Google Search Console or testing tools
 - [ ] Test social media link previews work with pre-rendered meta tags
 - Location: `angular.json`, `src/main.server.ts` (created by ng add), `src/app/app.config.server.ts` (created by ng add)
+
+### Task 112: Universal Launcher with Animated App Transitions
+- [ ] Create command bar component triggered by "/" key
+- [ ] Implement natural language input field with auto-suggestion dropdown
+- [ ] Add pattern matching for app switching commands
+- [ ] Integrate LLM for processing natural language launcher queries
+- [ ] Display command legend/shortcuts below input field
+- [ ] Create placeholder for microphone transcription app
+- [ ] Implement sun-to-microphone morph animation using SVG path morphing or Canvas
+- [ ] Add background color transition animation between apps
+- [ ] Design transition orchestration (input → animation → app switch)
+- [ ] Research monorepo architecture for multi-app management
+- [ ] Plan for extending feature to personal website
+- Location: `src/app/components/launcher/`, `src/app/animations/`, placeholder app structure
+
+### Task 113: Public Contribution System with Contributor Recognition
+- [ ] Design contribution system architecture (authentication, permissions, moderation)
+- [ ] Create contributor model with name, avatar, contribution history
+- [ ] Implement authentication system for contributors (OAuth, email/password)
+- [ ] Create contribution submission interface (text editor, markdown support)
+- [ ] Add moderation queue for reviewing submitted contributions
+- [ ] Display contributors list/gallery on site with avatars and bios
+- [ ] Track contribution count per user for gamification
+- [ ] Create API endpoints for submission, approval, rejection of contributions
+- [ ] Add notification system for contribution status updates
+- [ ] Design contributors page showcasing all contributors and their contributions
+- Location: `backend/src/main/java/com/mannan/contributions/`, `src/app/components/contributors/`, `src/app/services/contribution.service.ts`
+
+### Task 114: Comments Mode System with Section Annotations
+- [ ] Create comments data model with section reference, author, timestamp, content
+- [ ] Design comment UI component (inline annotations, sidebar display)
+- [ ] Implement command bar toggle for enabling/disabling comments mode
+- [ ] Add visual indicators showing which sections have comments
+- [ ] Create comment creation interface with rich text editor
+- [ ] Implement comment threading for replies and discussions
+- [ ] Add ability to add details, notes, and questions to any section
+- [ ] Create comment storage system (database schema for comments)
+- [ ] Add API endpoints for CRUD operations on comments
+- [ ] Implement real-time comment updates using WebSocket
+- [ ] Add moderation tools for comment management
+- [ ] Create comment filtering by type (question, note, feedback, work quality assessment)
+- [ ] Design permission system for who can view/add comments
+- Location: `backend/src/main/java/com/mannan/comments/`, `src/app/components/comments/`, `src/app/services/comment.service.ts`
+
+### Task 115: Agentic Coding Mode with Feature Implementation System
+- [ ] Design agentic coding interface accessible from command bar
+- [ ] Create LLM integration for understanding feature requests in natural language
+- [ ] Implement code generation pipeline using LLM API (OpenAI Codex, Anthropic Claude)
+- [ ] Create agent orchestration system for multi-step feature implementation
+- [ ] Add code preview and approval interface before applying changes
+- [ ] Implement git integration for creating branches/commits from agent changes
+- [ ] Create agent task queue showing progress of feature implementation
+- [ ] Add ability to oversee and guide agent implementation step-by-step
+- [ ] Implement rollback mechanism for reverting agent-generated changes
+- [ ] Create feedback loop for improving agent code quality
+- [ ] Add security constraints to prevent destructive operations
+- [ ] Design permission system limiting agentic coding to authorized users
+- Location: `backend/src/main/java/com/mannan/agents/`, `src/app/components/agentic-coding/`, `src/app/services/agent.service.ts`
+
+### Task 116: Enhanced Command Bar Navigation System
+- [ ] Redesign command bar as primary navigation interface
+- [ ] Add mode switching commands (recruiter, coworker, friend, contributor modes)
+- [ ] Implement content filtering based on active mode
+- [ ] Create keyboard shortcut system for all command bar actions
+- [ ] Add search functionality for site content within command bar
+- [ ] Implement recent commands history
+- [ ] Add auto-completion for command inputs
+- [ ] Create command suggestions based on user role/mode
+- [ ] Design visual transitions when switching between modes
+- [ ] Add help system showing available commands for current mode
+- Location: `src/app/components/command-bar/`, `src/app/services/command.service.ts`
+
+### Task 117: Remove Top Navigation and Replace with Command Bar
+- [ ] Audit current header navigation component for features to preserve
+- [ ] Migrate navigation functionality to command bar
+- [ ] Remove header navigation UI elements
+- [ ] Add visual indicator for command bar access (subtle hint or icon)
+- [ ] Ensure all pages remain accessible via command bar
+- [ ] Test keyboard navigation flow without top navigation
+- [ ] Update user onboarding to explain command bar usage
+- [ ] Add fallback for users who don't discover command bar
+- Location: `src/app/components/header/`, `src/app/components/command-bar/`
+
+### Task 118: Role-Based Content Modes (Recruiter, Coworker, Friend)
+- [ ] Create mode configuration system with feature flags for each role
+- [ ] Implement recruiter mode highlighting skills, experience, and contact info
+- [ ] Implement coworker mode showing technical projects and collaboration interests
+- [ ] Implement friend mode displaying personal interests and hobbies
+- [ ] Add mode selector in command bar or settings
+- [ ] Store user's selected mode in localStorage
+- [ ] Create conditional rendering logic for mode-specific content
+- [ ] Design mode-specific themes or visual indicators
+- [ ] Add analytics to track which modes are most popular
+- Location: `src/app/services/mode.service.ts`, `src/app/models/mode.ts`, component files with conditional content
+
+### Task 119: Login and Permission System with Access Codes
+- [ ] Design authentication system with email/password and OAuth options
+- [ ] Create user account model with roles and permissions
+- [ ] Implement access code generation system for special permissions
+- [ ] Add login UI component accessible from command bar
+- [ ] Create access code redemption interface
+- [ ] Implement JWT token-based authentication
+- [ ] Add role-based access control (RBAC) middleware
+- [ ] Create permission validation on frontend and backend
+- [ ] Add session management and token refresh
+- [ ] Implement logout functionality
+- [ ] Create admin interface for managing users and access codes
+- Location: `backend/src/main/java/com/mannan/auth/`, `src/app/components/login/`, `src/app/services/auth.service.ts`
+
+### Task 120: Sponsor and Donor Mode with Special Privileges
+- [ ] Define sponsor/donor privilege tiers (bronze, silver, gold, platinum)
+- [ ] Create sponsorship model with tier, benefits, and user association
+- [ ] Implement payment integration (Stripe, PayPal) for donations
+- [ ] Add sponsor-only features (early access, exclusive content, priority support)
+- [ ] Create donor recognition section on site (optional public listing)
+- [ ] Implement special badges for sponsors in comments and contributions
+- [ ] Add donor dashboard showing contribution history and benefits
+- [ ] Create sponsor-only chat or community access
+- [ ] Design sponsor mode UI with exclusive content and features
+- [ ] Add analytics to track sponsorship conversion and retention
+- Location: `backend/src/main/java/com/mannan/sponsors/`, `src/app/components/sponsor/`, `src/app/services/payment.service.ts`
+
+### Task 121: Launch Your Own Website System with Open Source Code
+- [ ] Create comprehensive documentation for setting up personal site from codebase
+- [ ] Write installation guide covering prerequisites, dependencies, and setup steps
+- [ ] Create configuration templates for personalizing site content
+- [ ] Add deployment guides for Vercel, Netlify, AWS, and other platforms
+- [ ] Create video tutorials showing setup process step-by-step
+- [ ] Implement license restrictions for non-commercial use
+- [ ] Add commercial licensing option with consultation offering
+- [ ] Create consultation booking system for implementation support
+- [ ] Add donor/volunteering/low-income consultation options
+- [ ] Design showcase page displaying sites built using the codebase
+- Location: Create `/docs/launch-your-site/`, `LICENSE.md`, `src/app/components/launch-guide/`
+
+### Task 122: Collaborative Initiatives Hub (Conscious Objectors, Health, Business)
+- [ ] Create initiatives page showcasing collaborative efforts and seeking collaborators
+- [ ] Add conscious objectors initiative section with mission and involvement details
+- [ ] Create sun scheduling and health wellbeing initiative section
+- [ ] Add business validation section for testing concepts (water kefir, etc.)
+- [ ] Implement collaborator signup form for each initiative
+- [ ] Create initiative discussion forums or comment sections
+- [ ] Add progress tracking for each initiative with milestones
+- [ ] Implement newsletter signup for initiative updates
+- [ ] Create resource sharing system for initiative participants
+- [ ] Add calendar integration for initiative events and meetings
+- [ ] Design volunteer opportunity listings with skill matching
+- Location: `src/app/components/initiatives/`, `backend/src/main/java/com/mannan/initiatives/`, `src/app/services/initiative.service.ts`
+
+### Task 123: Consulting Services Offering with Tiered Pricing
+- [ ] Create consulting services page detailing offerings
+- [ ] Implement tiered pricing system (donor/volunteer/low-income options)
+- [ ] Add service booking interface with calendar integration
+- [ ] Create consultation request form with project details capture
+- [ ] Implement pricing calculator based on project complexity
+- [ ] Add payment processing for consultation fees
+- [ ] Create consultation scheduling system with availability management
+- [ ] Implement video call integration for remote consultations
+- [ ] Add consultation follow-up system with action items and documentation
+- [ ] Create testimonials section for consulting clients
+- Location: `src/app/components/consulting/`, `backend/src/main/java/com/mannan/consulting/`, `src/app/services/booking.service.ts`
+
+### Task 124: Internal Referral Network System
+- [ ] Create network member model (name, role, skills, bio, vision statement)
+- [ ] Design network directory UI viewable from command bar
+- [ ] Create dedicated network section on site with member profiles
+- [ ] Implement sharp vision statements for each member
+- [ ] Add connection guidance system for matching visitors with network members
+- [ ] Create referral request interface for contacting network members
+- [ ] Implement network member invitation system
+- [ ] Add skill/expertise tagging for network members
+- [ ] Create search and filter functionality for finding network members
+- [ ] Design network visualization showing connections and relationships
+- [ ] Add endorsement system for network members
+- [ ] Implement collaboration history tracking between network members
+- [ ] Create network analytics (connections made, successful collaborations)
+- [ ] Add privacy controls for network member profiles
+- Location: `src/app/components/network/`, `backend/src/main/java/com/mannan/network/`, `src/app/services/network.service.ts`
