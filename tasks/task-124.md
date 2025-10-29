@@ -1,0 +1,16 @@
+### Task 124: Internal Referral Network System
+- [ ] Create network member model (name, role, skills, bio, vision statement)
+- [ ] Design network directory UI viewable from command bar
+- [ ] Create dedicated network section on site with member profiles
+- [ ] Implement sharp vision statements for each member
+- [ ] Add connection guidance system for matching visitors with network members
+- [ ] Create referral request interface for contacting network members
+- [ ] Implement network member invitation system
+- [ ] Add skill/expertise tagging for network members
+- [ ] Create search and filter functionality for finding network members
+- [ ] Design network visualization showing connections and relationships
+- [ ] Add endorsement system for network members
+- [ ] Implement collaboration history tracking between network members
+- [ ] Create network analytics (connections made, successful collaborations)
+- [ ] Add privacy controls for network member profiles
+- Location: `src/app/components/network/`, `backend/src/main/java/com/mannan/network/`, `src/app/services/network.service.ts`

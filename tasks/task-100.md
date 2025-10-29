@@ -1,0 +1,11 @@
+### Task 100: Refactor Viewer Stats Component for Self-Contained State Management
+- [x] Move connection visibility logic from app.ts to viewer-stats component
+- [x] Replace app.ts isConnected() signal check with internal component logic
+- [x] Add selectIsCursorPartyConnected selector to viewer-stats component
+- [x] Use @if directive in viewer-stats template to conditionally render entire component
+- [x] Keep activeViewerCount selector in viewer-stats (already properly isolated)
+- [x] Remove viewer-stats conditional rendering from app.ts template
+- [x] Add viewer-stats component unconditionally to app.ts (component handles own visibility)
+- [x] Ensure component follows Angular best practices (signals, OnPush)
+- [x] Test that viewer count displays correctly when connected and hides when disconnected
+- Location: `src/app/shared/viewer-stats.ts`, `src/app/app.ts`

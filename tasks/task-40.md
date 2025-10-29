@@ -1,0 +1,11 @@
+### Task 40: Implement Video and Audio Calling
+- [ ] Research WebRTC library integration (e.g., PeerJS, Simple-Peer)
+- [ ] Create call invitation link generation system
+- [ ] Implement WebRTC peer connection setup
+- [ ] Add video/audio stream handling
+- [ ] Create call UI component with video display and controls
+- [ ] Add microphone and camera permission handling
+- [ ] Implement call status indicators (connecting, connected, ended)
+- [ ] Add mute/unmute and video on/off controls
+- [ ] Test browser compatibility for WebRTC features
+- Location: `src/app/components/call/`, `src/app/services/call.service.ts`, backend signaling server

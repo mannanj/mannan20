@@ -1,0 +1,14 @@
+### Task 115: Agentic Coding Mode with Feature Implementation System
+- [ ] Design agentic coding interface accessible from command bar
+- [ ] Create LLM integration for understanding feature requests in natural language
+- [ ] Implement code generation pipeline using LLM API (OpenAI Codex, Anthropic Claude)
+- [ ] Create agent orchestration system for multi-step feature implementation
+- [ ] Add code preview and approval interface before applying changes
+- [ ] Implement git integration for creating branches/commits from agent changes
+- [ ] Create agent task queue showing progress of feature implementation
+- [ ] Add ability to oversee and guide agent implementation step-by-step
+- [ ] Implement rollback mechanism for reverting agent-generated changes
+- [ ] Create feedback loop for improving agent code quality
+- [ ] Add security constraints to prevent destructive operations
+- [ ] Design permission system limiting agentic coding to authorized users
+- Location: `backend/src/main/java/com/mannan/agents/`, `src/app/components/agentic-coding/`, `src/app/services/agent.service.ts`

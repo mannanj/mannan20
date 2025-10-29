@@ -1,0 +1,12 @@
+### Task 120: Sponsor and Donor Mode with Special Privileges
+- [ ] Define sponsor/donor privilege tiers (bronze, silver, gold, platinum)
+- [ ] Create sponsorship model with tier, benefits, and user association
+- [ ] Implement payment integration (Stripe, PayPal) for donations
+- [ ] Add sponsor-only features (early access, exclusive content, priority support)
+- [ ] Create donor recognition section on site (optional public listing)
+- [ ] Implement special badges for sponsors in comments and contributions
+- [ ] Add donor dashboard showing contribution history and benefits
+- [ ] Create sponsor-only chat or community access
+- [ ] Design sponsor mode UI with exclusive content and features
+- [ ] Add analytics to track sponsorship conversion and retention
+- Location: `backend/src/main/java/com/mannan/sponsors/`, `src/app/components/sponsor/`, `src/app/services/payment.service.ts`

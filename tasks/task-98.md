@@ -1,0 +1,15 @@
+### Task 98: Add Missing OnPush Change Detection Strategy
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to contact-form.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to contact-result.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to content-card.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to employment-section.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to education-section.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to extracurriculars-section.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to about.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to home.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to modal.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to tasks-container.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to tasks-toolbar.ts
+- [ ] Add changeDetection: ChangeDetectionStrategy.OnPush to task-card.ts
+- [ ] Test all components to ensure they still render and update correctly
+- Location: All component files listed above

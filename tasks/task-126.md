@@ -1,0 +1,20 @@
+### Task 126: Personal Schedule and Activity Sharing System
+- [ ] Review raw feature document: docs/vision/raw-feature-ideas.md (Personal Schedule section)
+- [ ] Design schedule and availability display interface
+- [ ] Create activity preferences data model (nature, hiking, coffee, climbing, social)
+- [ ] Implement location sharing system with granular privacy controls
+- [ ] Add rough location (lat/lon) for public visibility
+- [ ] Add zipcode sharing for trusted contacts
+- [ ] Add proximity-based location description (e.g., "15+ mins from Alexandria, VA")
+- [ ] Create current activity and plans display component
+- [ ] Implement availability status (open for invitations vs busy)
+- [ ] Add places list (coffee shops, climbing gyms, hiking trails)
+- [ ] Create activity partner matching system (climbing, hiking partners)
+- [ ] Implement invitation request system for activities
+- [ ] Add social connection features (friend dates, getting to know each other)
+- [ ] Design visibility controls for different contact levels
+- [ ] Integrate with calendar or scheduling system
+- [ ] Add notification system for activity invitations
+- [ ] Create activity interest matching algorithm
+- [ ] Test privacy controls and location sharing granularity
+- Location: `docs/vision/raw-feature-ideas.md`, `src/app/components/schedule/`, `backend/src/main/java/com/mannan/schedule/`

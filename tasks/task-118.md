@@ -1,0 +1,11 @@
+### Task 118: Role-Based Content Modes (Recruiter, Coworker, Friend)
+- [ ] Create mode configuration system with feature flags for each role
+- [ ] Implement recruiter mode highlighting skills, experience, and contact info
+- [ ] Implement coworker mode showing technical projects and collaboration interests
+- [ ] Implement friend mode displaying personal interests and hobbies
+- [ ] Add mode selector in command bar or settings
+- [ ] Store user's selected mode in localStorage
+- [ ] Create conditional rendering logic for mode-specific content
+- [ ] Design mode-specific themes or visual indicators
+- [ ] Add analytics to track which modes are most popular
+- Location: `src/app/services/mode.service.ts`, `src/app/models/mode.ts`, component files with conditional content

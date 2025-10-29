@@ -1,0 +1,13 @@
+### Task 112: Universal Launcher with Animated App Transitions
+- [ ] Create command bar component triggered by "/" key
+- [ ] Implement natural language input field with auto-suggestion dropdown
+- [ ] Add pattern matching for app switching commands
+- [ ] Integrate LLM for processing natural language launcher queries
+- [ ] Display command legend/shortcuts below input field
+- [ ] Create placeholder for microphone transcription app
+- [ ] Implement sun-to-microphone morph animation using SVG path morphing or Canvas
+- [ ] Add background color transition animation between apps
+- [ ] Design transition orchestration (input → animation → app switch)
+- [ ] Research monorepo architecture for multi-app management
+- [ ] Plan for extending feature to personal website
+- Location: `src/app/components/launcher/`, `src/app/animations/`, placeholder app structure

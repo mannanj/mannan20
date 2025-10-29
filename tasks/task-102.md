@@ -1,0 +1,14 @@
+### Task 102: Add Unit Tests to Angular Application
+- [ ] Configure Jasmine and Karma testing framework (verify setup in angular.json)
+- [ ] Create unit tests for all components in src/app/components/
+- [ ] Create unit tests for all shared components in src/app/shared/
+- [ ] Create unit tests for all services in src/app/services/
+- [ ] Create unit tests for NgRx store (actions, reducers, selectors, effects)
+- [ ] Test component inputs, outputs, and signal bindings
+- [ ] Test service methods and HTTP calls with mocks
+- [ ] Test store state transformations and side effects
+- [ ] Achieve minimum 80% code coverage across the application
+- [ ] Configure code coverage reporting in angular.json
+- [ ] Add npm script for running tests with coverage (ng test --code-coverage)
+- [ ] Document testing guidelines in README or separate testing guide
+- Location: Create `*.spec.ts` files alongside all source files, update `angular.json`

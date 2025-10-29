@@ -1,0 +1,13 @@
+### Task 122: Collaborative Initiatives Hub (Conscious Objectors, Health, Business)
+- [ ] Create initiatives page showcasing collaborative efforts and seeking collaborators
+- [ ] Add conscious objectors initiative section with mission and involvement details
+- [ ] Create sun scheduling and health wellbeing initiative section
+- [ ] Add business validation section for testing concepts (water kefir, etc.)
+- [ ] Implement collaborator signup form for each initiative
+- [ ] Create initiative discussion forums or comment sections
+- [ ] Add progress tracking for each initiative with milestones
+- [ ] Implement newsletter signup for initiative updates
+- [ ] Create resource sharing system for initiative participants
+- [ ] Add calendar integration for initiative events and meetings
+- [ ] Design volunteer opportunity listings with skill matching
+- Location: `src/app/components/initiatives/`, `backend/src/main/java/com/mannan/initiatives/`, `src/app/services/initiative.service.ts`

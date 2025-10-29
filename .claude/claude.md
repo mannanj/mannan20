@@ -110,7 +110,7 @@ Base: `http://localhost:8080/viewers/`
 
 ### Task Workflow
 
-**1. Create task in `tasks.md`:**
+**1. Create task file `tasks/task-N.md`:**
 ```markdown
 ### Task N: Task Title
 - [ ] Subtask 1
@@ -122,11 +122,11 @@ Base: `http://localhost:8080/viewers/`
 - Check codebase for task's changes
 - Review files in Location field
 - If complete but unmarked:
-  - Mark subtasks `[x]` in tasks.md
+  - Mark subtasks `[x]` in tasks/task-N.md
   - Commit with `[Task-N]` tag
   - Push and skip to next task
 
-**3. Complete subtasks, mark `[x]` in tasks.md**
+**3. Complete subtasks, mark `[x]` in tasks/task-N.md**
 
 **4. Commit:**
 ```bash

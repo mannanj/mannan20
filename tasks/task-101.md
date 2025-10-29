@@ -1,0 +1,14 @@
+### Task 101: Add Offline State Display to Viewer Stats Component
+- [ ] Make viewer-stats component always visible (remove conditional rendering from app.ts)
+- [ ] Add selectIsCursorPartyConnected selector to viewer-stats component
+- [ ] Create computed signal for offline state display
+- [ ] When disconnected: display "1 viewing" with "offline" text
+- [ ] Add red circle indicator (●) next to "offline" text using text-red-500
+- [ ] When connected: remove "offline" text and red circle indicator
+- [ ] When connected: display actual viewer count from activeViewerCount selector
+- [ ] Keep "Open Commands" functionality and keyboard shortcut display
+- [ ] Use @if/@else directives to toggle between offline and connected states
+- [ ] Ensure component remains clickable in both states
+- [ ] Test offline state appears on initial load before WebSocket connects
+- [ ] Test transition from offline to online updates viewer count correctly
+- Location: `src/app/shared/viewer-stats.ts`, `src/app/app.ts`

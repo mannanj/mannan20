@@ -1,0 +1,15 @@
+### Task 114: Comments Mode System with Section Annotations
+- [ ] Create comments data model with section reference, author, timestamp, content
+- [ ] Design comment UI component (inline annotations, sidebar display)
+- [ ] Implement command bar toggle for enabling/disabling comments mode
+- [ ] Add visual indicators showing which sections have comments
+- [ ] Create comment creation interface with rich text editor
+- [ ] Implement comment threading for replies and discussions
+- [ ] Add ability to add details, notes, and questions to any section
+- [ ] Create comment storage system (database schema for comments)
+- [ ] Add API endpoints for CRUD operations on comments
+- [ ] Implement real-time comment updates using WebSocket
+- [ ] Add moderation tools for comment management
+- [ ] Create comment filtering by type (question, note, feedback, work quality assessment)
+- [ ] Design permission system for who can view/add comments
+- Location: `backend/src/main/java/com/mannan/comments/`, `src/app/components/comments/`, `src/app/services/comment.service.ts`

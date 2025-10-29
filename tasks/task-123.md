@@ -1,0 +1,12 @@
+### Task 123: Consulting Services Offering with Tiered Pricing
+- [ ] Create consulting services page detailing offerings
+- [ ] Implement tiered pricing system (donor/volunteer/low-income options)
+- [ ] Add service booking interface with calendar integration
+- [ ] Create consultation request form with project details capture
+- [ ] Implement pricing calculator based on project complexity
+- [ ] Add payment processing for consultation fees
+- [ ] Create consultation scheduling system with availability management
+- [ ] Implement video call integration for remote consultations
+- [ ] Add consultation follow-up system with action items and documentation
+- [ ] Create testimonials section for consulting clients
+- Location: `src/app/components/consulting/`, `backend/src/main/java/com/mannan/consulting/`, `src/app/services/booking.service.ts`

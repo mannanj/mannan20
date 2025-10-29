@@ -1,0 +1,13 @@
+### Task 119: Login and Permission System with Access Codes
+- [ ] Design authentication system with email/password and OAuth options
+- [ ] Create user account model with roles and permissions
+- [ ] Implement access code generation system for special permissions
+- [ ] Add login UI component accessible from command bar
+- [ ] Create access code redemption interface
+- [ ] Implement JWT token-based authentication
+- [ ] Add role-based access control (RBAC) middleware
+- [ ] Create permission validation on frontend and backend
+- [ ] Add session management and token refresh
+- [ ] Implement logout functionality
+- [ ] Create admin interface for managing users and access codes
+- Location: `backend/src/main/java/com/mannan/auth/`, `src/app/components/login/`, `src/app/services/auth.service.ts`

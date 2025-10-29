@@ -1,0 +1,11 @@
+### Task 76: Convert Legacy Template Syntax to Modern Control Flow
+- [ ] Replace *ngIf with @if in contact-form.ts (lines 36, 48)
+- [ ] Replace *ngIf with @if in contact-result.ts (lines 17, 21-22, 25, 29-30)
+- [ ] Replace *ngIf with @if in content-card.ts (lines 11-43)
+- [ ] Replace *ngIf with @if in modal.ts (line 10)
+- [ ] Replace *ngFor with @for in header.ts (line 19)
+- [ ] Replace *ngIf/*ngFor with @if/@for in employment-section.ts (lines 17, 23, 30)
+- [ ] Replace *ngIf with @if in education-section.ts (lines 21-24, 27-28)
+- [ ] Replace *ngIf/*ngFor with @if/@for in extracurriculars-section.ts (lines 15, 18-21, 23, 25, 31-32)
+- [ ] Replace *ngIf with @if in app.ts (lines 66-67)
+- Location: All component template files with legacy directives

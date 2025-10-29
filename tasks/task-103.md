@@ -1,0 +1,16 @@
+### Task 103: Add End-to-End Tests with Playwright
+- [ ] Install Playwright testing framework (npm install -D @playwright/test)
+- [ ] Initialize Playwright configuration (npx playwright install)
+- [ ] Create e2e test directory structure (e2e/ or tests/e2e/)
+- [ ] Configure Playwright for Angular app (base URL, viewport, browser options)
+- [ ] Create e2e tests for navigation between sections (Home, About, Contact)
+- [ ] Create e2e tests for header navigation and scroll tracking
+- [ ] Create e2e tests for contact form submission flow
+- [ ] Create e2e tests for modal interactions (contact modal, dev stats modal, commands modal)
+- [ ] Create e2e tests for viewer stats display and WebSocket connection
+- [ ] Create e2e tests for keyboard shortcuts (H for commands, etc.)
+- [ ] Add visual regression testing with Playwright screenshots
+- [ ] Configure test scripts in package.json (test:e2e, test:e2e:ui, test:e2e:debug)
+- [ ] Set up CI/CD integration for running e2e tests
+- [ ] Document e2e testing setup and guidelines
+- Location: Create `e2e/` directory, add `playwright.config.ts`, update `package.json`

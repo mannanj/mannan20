@@ -106,6 +106,40 @@ This document captures raw conversational input about feature ideas to preserve 
 - Balance between open access and sustainable business model
 - Technology as enabler for social initiatives
 
+## Date: 2025-10-29 (continued)
+
+### Additional Input - Personal Schedule and Location Sharing:
+
+"I want to have a way to indicate what im up to in my schedule, my locations, where im planning to go and what i want to do, and or if id ont have anything planned and invite invitations to be made with me. for edample im interested in nature activities, hikes, and coffee. im working at coffee shops this week and want to work at the ofllowing places, or am open to places 15 mins or farther fomr me at my address in alexandria, va (rough lat/lon povided or specific zipcode for those who know me). i want to climb and am seeking partners for that. so forth. i want some fun dates to have with friends and single partners where we can connect and get to to know one another."
+
+### 10. Personal Schedule and Activity Sharing System
+
+**Activity Preferences**:
+- Nature activities
+- Hiking
+- Coffee shop working
+- Climbing partnerships
+- Social connections (friends and dates)
+
+**Location Information**:
+- Current location: Alexandria, VA
+- Location sharing options:
+  - Rough lat/lon for privacy
+  - Specific zipcode for known contacts
+  - Proximity-based (e.g., "15+ mins from me")
+
+**Schedule Features**:
+- Show current activities and plans
+- Indicate availability for invitations
+- List places open to visiting (coffee shops, etc.)
+- Activity partner matching (climbing, hiking, etc.)
+- Date and friendship connection opportunities
+
+**Privacy Considerations**:
+- Granular location privacy controls
+- Different visibility levels for different contacts
+- Balance between openness and safety
+
 ## Related Tasks:
 
 See tasks.md for implementation tasks derived from these ideas:
@@ -120,4 +154,5 @@ See tasks.md for implementation tasks derived from these ideas:
 - Task 121: Launch Your Own Website System
 - Task 122: Collaborative Initiatives Hub
 - Task 123: Consulting Services Offering
-- Task 124: Internal Referral Network System (to be added)
+- Task 124: Internal Referral Network System
+- Task 126: Personal Schedule and Activity Sharing System

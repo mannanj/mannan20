@@ -1,0 +1,13 @@
+### Task 111: Enable Angular Server-Side Rendering (SSR)
+- [ ] Run `ng add @angular/ssr` to add SSR support to Angular 20 app
+- [ ] Configure SSR settings in angular.json
+- [ ] Test SSR build with `npm run build:ssr` or `ng build --configuration production`
+- [ ] Test SSR server with `npm run serve:ssr` or equivalent
+- [ ] Verify that content is pre-rendered and visible in HTML source (view page source)
+- [ ] Check for any client-only code that needs `isPlatformBrowser()` guards
+- [ ] Test WebSocket cursor tracking works correctly with SSR
+- [ ] Ensure localStorage/sessionStorage usage is SSR-safe with platform checks
+- [ ] Deploy SSR build to Vercel (automatic SSR support)
+- [ ] Verify SEO improvements with Google Search Console or testing tools
+- [ ] Test social media link previews work with pre-rendered meta tags
+- Location: `angular.json`, `src/main.server.ts` (created by ng add), `src/app/app.config.server.ts` (created by ng add)

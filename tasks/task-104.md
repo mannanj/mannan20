@@ -1,0 +1,11 @@
+### Task 104: Add Skeleton Shimmer Placeholder to Deferred Viewer Stats Component
+- [ ] Add @placeholder block to viewer-stats @defer directive in app.ts
+- [ ] Set minimum placeholder duration to 500ms to prevent flickering
+- [ ] Create shimmer effect for viewer count number (just the "0" before "viewing")
+- [ ] Create separate shimmer effect for "Open Commands H" area
+- [ ] Keep bullet point "•" always visible (non-shimmer, gray-400 color)
+- [ ] Match placeholder layout and positioning to actual viewer-stats component
+- [ ] Use Tailwind utilities for shimmer animation (@keyframes shimmer with bg-gradient)
+- [ ] Ensure placeholder matches fixed position, size, and backdrop styling of component
+- [ ] Test placeholder displays for 500ms minimum before component loads
+- Location: `src/app/app.ts:36-38`, may need `src/styles.css` for shimmer keyframes

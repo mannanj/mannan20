@@ -1,0 +1,14 @@
+### Task 109: Implement Visx Delaunay-Voronoi Knowledge Graph
+- [ ] Install Visx dependencies (@visx/delaunay, @visx/voronoi, @visx/group, @visx/responsive)
+- [ ] Create knowledge-graph component in src/app/components/knowledge-graph/
+- [ ] Create knowledge data model with node types (skill, project, article, hobby, etc.)
+- [ ] Generate sample knowledge data with positions and metadata
+- [ ] Implement Delaunay-Voronoi diagram visualization with Visx
+- [ ] Add interactive hover effects to highlight Voronoi cells and display node information
+- [ ] Add click handler to navigate into nodes with detailed information
+- [ ] Style Voronoi cells with different colors based on node type (skill, project, article, hobby)
+- [ ] Add smooth transitions and animations for cell interactions
+- [ ] Create navigation breadcrumbs to track which node you're exploring
+- [ ] Add back navigation to return to main Voronoi view
+- [ ] Integrate knowledge graph into About section or dedicated page
+- Location: Create `src/app/components/knowledge-graph/`, `src/app/models/knowledge.ts`

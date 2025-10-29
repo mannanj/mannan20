@@ -1,0 +1,12 @@
+### Task 113: Public Contribution System with Contributor Recognition
+- [ ] Design contribution system architecture (authentication, permissions, moderation)
+- [ ] Create contributor model with name, avatar, contribution history
+- [ ] Implement authentication system for contributors (OAuth, email/password)
+- [ ] Create contribution submission interface (text editor, markdown support)
+- [ ] Add moderation queue for reviewing submitted contributions
+- [ ] Display contributors list/gallery on site with avatars and bios
+- [ ] Track contribution count per user for gamification
+- [ ] Create API endpoints for submission, approval, rejection of contributions
+- [ ] Add notification system for contribution status updates
+- [ ] Design contributors page showcasing all contributors and their contributions
+- Location: `backend/src/main/java/com/mannan/contributions/`, `src/app/components/contributors/`, `src/app/services/contribution.service.ts`
