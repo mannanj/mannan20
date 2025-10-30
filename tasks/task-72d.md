@@ -1,0 +1,14 @@
+### Task 72d: Tooltip & Reward Messages - Dynamic User Feedback
+- [ ] Create tooltip component that appears on hover over star display
+- [ ] Implement dynamic tooltip messages based on star count milestones:
+  - 0-4 stars: "Keep exploring to earn stars!"
+  - 5 stars: "Nice! You're getting the hang of this."
+  - 10 stars: "Great job! Animations are getting faster!"
+  - 25 stars: "🎮 Gaming Mode Unlocked! You earned a special code."
+- [ ] Display special code in tooltip at 25-star tier (generate unique code)
+- [ ] Add congratulatory modal/notification when hitting milestones (5, 10, 25 stars)
+- [ ] Use Modal component pattern for milestone notifications
+- [ ] Add `bounceIn` or `scaleIn` animation for tooltip appearance
+- [ ] Style tooltip with dark theme colors (bg-[#1a1a1a], border-[#333])
+- [ ] Position tooltip above or to the left of star display
+- Location: `src/app/shared/star-display.ts`, `src/app/shared/star-tooltip.ts`

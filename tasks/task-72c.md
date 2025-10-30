@@ -1,0 +1,15 @@
+### Task 72c: Star Display Component - Mario-Style Visual Design
+- [ ] Create `/src/app/shared/star-display.ts` component with Mario-style star SVG/design
+- [ ] Position star display in bottom right corner above "last updated" component
+- [ ] Implement star count display showing current earned stars
+- [ ] Create star icon visual using CSS or SVG (yellow/gold color, sparkle effect like Mario stars)
+- [ ] Add hover effect to highlight and grow star group (scale transform + glow)
+- [ ] Implement `bounceIn` animation from animations.ts when new star is earned
+- [ ] Create star particle effect animation for earning stars (small stars floating up)
+- [ ] Add progressive animation changes at thresholds:
+  - 10 stars: faster glow/pulse animation
+  - 25 stars: special rainbow shimmer effect or enhanced glow
+- [ ] Integrate with store using `store.selectSignal()` to reactively display star count
+- [ ] Use OnPush change detection strategy
+- [ ] Style with Tailwind utilities (minimal custom CSS, only for animations)
+- Location: `src/app/shared/star-display.ts`, `src/app/app.ts` (add component to layout)

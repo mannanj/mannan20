@@ -1,0 +1,12 @@
+### Task 72f: LocalStorage Persistence - Save Progress Across Sessions
+- [ ] Create localStorage utility functions following existing patterns (check isPlatformBrowser)
+- [ ] Define storage key constant: `STAR_REWARDS_STORAGE_KEY = 'star-rewards-state'`
+- [ ] Implement `saveStarState()` function to persist: starCount, totalStarsEarned, gamingModeUnlocked, specialCode
+- [ ] Implement `loadStarState()` function with try-catch error handling for JSON parsing
+- [ ] Call `loadStarState()` on app initialization to restore saved progress
+- [ ] Subscribe to star state changes and automatically save to localStorage
+- [ ] Add SSR check using `isPlatformBrowser(this.platformId)` before accessing localStorage
+- [ ] Handle edge cases: corrupted localStorage data, missing keys, migration from old format
+- [ ] Test persistence: earn stars, refresh page, verify stars are restored
+- [ ] Ensure gaming mode and special code persist correctly across sessions
+- Location: `src/app/utils/star-storage.ts`, `src/app/app.ts` (initialization), `src/app/store/app.reducer.ts`

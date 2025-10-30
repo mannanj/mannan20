@@ -1,0 +1,11 @@
+### Task 72b: Interaction Tracking Service - User Action Detection
+- [ ] Create interaction tracking logic to detect user actions (clicks, scrolls, navigation, button interactions)
+- [ ] Add click event tracking using host listeners on key components (buttons, links, sections)
+- [ ] Implement scroll tracking to detect when user reaches different sections (About, Contact, etc.)
+- [ ] Add navigation tracking when user changes pages/routes
+- [ ] Create logic to award 1 star per meaningful interaction (with debouncing to prevent spam)
+- [ ] Implement special bonus star logic: 15 stars for requesting contact info
+- [ ] Add special code detection that awards bonus stars when user enters code via command
+- [ ] Dispatch `awardStar` action to store when interactions are detected
+- [ ] Add interaction cooldown/throttling to prevent earning stars too quickly (1 star per 2-3 seconds max)
+- Location: `src/app/components/home/home.ts`, `src/app/components/about/about.ts`, `src/app/components/contact/contact.ts`, `src/app/shared/header.ts`

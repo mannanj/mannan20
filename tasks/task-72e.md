@@ -1,0 +1,13 @@
+### Task 72e: Special Code System & Gaming Mode - Command Integration
+- [ ] Generate unique special code when user reaches 25 stars (store in state)
+- [ ] Display special code in tooltip and milestone notification at 25 stars
+- [ ] Create command detection system for "/" commands (similar to keyboard shortcuts)
+- [ ] Implement "/" command handler to detect when user types "/code [special-code]"
+- [ ] Add UI indicator showing "/" command is available (subtle hint in footer or help modal)
+- [ ] Validate entered code against stored special code in state
+- [ ] Award 15 bonus stars when correct code is entered
+- [ ] Set `gamingModeUnlocked` flag to true in state when code is validated
+- [ ] Display "Gaming Mode Active" indicator when mode is unlocked
+- [ ] Add logic to persist gaming mode status even after refresh (via localStorage)
+- [ ] Create visual feedback for successful code entry (bounceIn animation, success message)
+- Location: `src/app/shared/command-handler.ts`, `src/app/shared/star-display.ts`, `src/app/store/star.actions.ts`
