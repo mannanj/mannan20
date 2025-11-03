@@ -110,7 +110,10 @@ Base: `http://localhost:8080/viewers/`
 
 ### Task Workflow
 
-**1. Create task file `tasks/task-N.md`:**
+**1. Create task file in `tasks/` directory:**
+```bash
+# Create tasks/task-N.md
+```
 ```markdown
 ### Task N: Task Title
 - [ ] Subtask 1
@@ -145,11 +148,10 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 **Requirements:**
+- Each task gets its own file: `tasks/task-N.md`
 - Complete task entry in commit message
 - All subtasks with status
 - `[Task-N]` tag for tracking
 - One task per commit
 
 **5. Push:** `git push`
-
-Hook creates two commits: your task commit + auto "Update dev data files" commit.
