@@ -117,7 +117,7 @@ export class CursorEffects {
       take(1),
       tap(() => {
         const script = document.createElement('script');
-        script.src = 'cursors.js';
+        script.src = 'cursors-p2p.js';
         document.body.appendChild(script);
       })
     );
@@ -198,4 +198,78 @@ export class CursorEffects {
       map(([event, myId]) => CursorActions.updateCursorPosition({ id: myId!, x: event.detail.x, y: event.detail.y }))
     );
   });
+
+  listenToPeerConnecting$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return fromEvent<CustomEvent<{ peerId: string }>>(window, 'peerConnecting').pipe(
+      map(event => CursorActions.setPeerConnecting({ peerId: event.detail.peerId }))
+    );
+  });
+
+  listenToPeerConnected$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return fromEvent<CustomEvent<{ peerId: string }>>(window, 'peerConnected').pipe(
+      map(event => CursorActions.setPeerConnected({ peerId: event.detail.peerId }))
+    );
+  });
+
+  listenToPeerFailed$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return fromEvent<CustomEvent<{ peerId: string; error?: string }>>(window, 'peerFailed').pipe(
+      map(event => CursorActions.setPeerFailed({ peerId: event.detail.peerId, error: event.detail.error }))
+    );
+  });
+
+  listenToConnectionTimeout$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return fromEvent<CustomEvent<{ peerId: string }>>(window, 'connectionTimeout').pipe(
+      map(event => CursorActions.setConnectionTimeout({ peerId: event.detail.peerId }))
+    );
+  });
+
+  listenToFallbackMode$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return fromEvent(window, 'fallbackModeEnabled').pipe(
+      map(() => CursorActions.enableFallbackMode())
+    );
+  });
+
+  syncPeerStatesToWindow$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return this.store.select(CursorSelectors.selectPeerStates).pipe(
+      tap(peerStates => {
+        (window as any).peerStates = peerStates;
+      })
+    );
+  }, { dispatch: false });
+
+  syncFallbackModeToWindow$ = createEffect(() => {
+    if (!this.isBrowser) {
+      return EMPTY;
+    }
+
+    return this.store.select(CursorSelectors.selectUseFallbackMode).pipe(
+      tap(useFallbackMode => {
+        (window as any).useFallbackMode = useFallbackMode;
+      })
+    );
+  }, { dispatch: false });
 }

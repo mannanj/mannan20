@@ -53,3 +53,25 @@ export const receiveCursorDisconnect = createAction(
   '[Cursor] Receive Cursor Disconnect',
   props<{ id: string }>()
 );
+
+export const setPeerConnecting = createAction(
+  '[Cursor P2P] Set Peer Connecting',
+  props<{ peerId: string }>()
+);
+
+export const setPeerConnected = createAction(
+  '[Cursor P2P] Set Peer Connected',
+  props<{ peerId: string }>()
+);
+
+export const setPeerFailed = createAction(
+  '[Cursor P2P] Set Peer Failed',
+  props<{ peerId: string; error?: string }>()
+);
+
+export const setConnectionTimeout = createAction(
+  '[Cursor P2P] Set Connection Timeout',
+  props<{ peerId: string }>()
+);
+
+export const enableFallbackMode = createAction('[Cursor P2P] Enable Fallback Mode');

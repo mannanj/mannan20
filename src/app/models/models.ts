@@ -67,6 +67,13 @@ export interface Cursors {
   [id: string]: CursorData;
 }
 
+export interface PeerConnectionState {
+  peerId: string;
+  status: 'connecting' | 'connected' | 'failed' | 'timeout';
+  error?: string;
+  connectedAt?: number;
+}
+
 export interface CursorState {
   cursorChatPlaceholder: string;
   cursorUsername: string;
@@ -77,6 +84,8 @@ export interface CursorState {
   isCursorPartyConnected: boolean;
   cursors: Cursors;
   cursorOrder: string[];
+  peerStates: Record<string, PeerConnectionState>;
+  useFallbackMode: boolean;
 }
 
 export interface AppState {

@@ -11,7 +11,9 @@ export const initialState: CursorState = {
   cursorsVisible: true,
   isCursorPartyConnected: false,
   cursors: {},
-  cursorOrder: []
+  cursorOrder: [],
+  peerStates: {},
+  useFallbackMode: false
 };
 
 export const cursorReducer = createReducer(
@@ -115,10 +117,59 @@ export const cursorReducer = createReducer(
   }),
   on(CursorActions.receiveCursorDisconnect, (state, { id }) => {
     const { [id]: removed, ...remainingCursors } = state.cursors;
+    const { [id]: removedPeer, ...remainingPeerStates } = state.peerStates;
     return {
       ...state,
       cursors: remainingCursors,
+      peerStates: remainingPeerStates,
       activeViewerCount: Object.keys(remainingCursors).length
     };
-  })
+  }),
+  on(CursorActions.setPeerConnecting, (state, { peerId }) => ({
+    ...state,
+    peerStates: {
+      ...state.peerStates,
+      [peerId]: {
+        peerId,
+        status: 'connecting' as const
+      }
+    }
+  })),
+  on(CursorActions.setPeerConnected, (state, { peerId }) => ({
+    ...state,
+    peerStates: {
+      ...state.peerStates,
+      [peerId]: {
+        peerId,
+        status: 'connected' as const,
+        connectedAt: Date.now()
+      }
+    }
+  })),
+  on(CursorActions.setPeerFailed, (state, { peerId, error }) => ({
+    ...state,
+    peerStates: {
+      ...state.peerStates,
+      [peerId]: {
+        peerId,
+        status: 'failed' as const,
+        error
+      }
+    }
+  })),
+  on(CursorActions.setConnectionTimeout, (state, { peerId }) => ({
+    ...state,
+    peerStates: {
+      ...state.peerStates,
+      [peerId]: {
+        peerId,
+        status: 'timeout' as const
+      }
+    },
+    useFallbackMode: true
+  })),
+  on(CursorActions.enableFallbackMode, (state) => ({
+    ...state,
+    useFallbackMode: true
+  }))
 );

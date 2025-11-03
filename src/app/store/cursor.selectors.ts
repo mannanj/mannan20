@@ -47,3 +47,33 @@ export const selectCursorOrder = createSelector(
   selectCursorState,
   (state: CursorState) => state.cursorOrder
 );
+
+export const selectPeerStates = createSelector(
+  selectCursorState,
+  (state: CursorState) => state.peerStates
+);
+
+export const selectUseFallbackMode = createSelector(
+  selectCursorState,
+  (state: CursorState) => state.useFallbackMode
+);
+
+export const selectConnectedPeers = createSelector(
+  selectPeerStates,
+  (peerStates) => Object.values(peerStates).filter(peer => peer.status === 'connected')
+);
+
+export const selectFailedPeers = createSelector(
+  selectPeerStates,
+  (peerStates) => Object.values(peerStates).filter(peer => peer.status === 'failed' || peer.status === 'timeout')
+);
+
+export const selectConnectingPeers = createSelector(
+  selectPeerStates,
+  (peerStates) => Object.values(peerStates).filter(peer => peer.status === 'connecting')
+);
+
+export const selectPeerConnectionCount = createSelector(
+  selectConnectedPeers,
+  (connectedPeers) => connectedPeers.length
+);
