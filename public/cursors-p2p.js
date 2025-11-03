@@ -40,6 +40,7 @@
 
   async function joinPeerNetwork() {
     try {
+      console.log('[Vercel Blob] Joining peer network...', { peerId: myId });
       const response = await fetch(`${API_BASE}/peers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,14 +51,14 @@
         throw new Error(`Failed to join peer network: ${response.status}`);
       }
 
-      console.log('Joined P2P cursor network');
+      console.log('[Vercel Blob] Successfully joined P2P cursor network');
       window.dispatchEvent(new CustomEvent('cursorPartyConnected', { detail: true }));
       window.dispatchEvent(new CustomEvent('cursorPartyIdAssigned', { detail: myId }));
 
       startHeartbeat();
       startPolling();
     } catch (error) {
-      console.error('Error joining peer network:', error);
+      console.error('[Vercel Blob] Error joining peer network:', error);
       reconnect();
     }
   }
@@ -76,6 +77,7 @@
 
   async function sendSignal(to, signal) {
     try {
+      console.log('[Vercel Blob] Sending signal', { from: myId, to, signalType: signal.type });
       const response = await fetch(`${API_BASE}/signals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,8 +87,9 @@
       if (!response.ok) {
         throw new Error(`Failed to send signal: ${response.status}`);
       }
+      console.log('[Vercel Blob] Signal sent successfully');
     } catch (error) {
-      console.error('Error sending signal:', error);
+      console.error('[Vercel Blob] Error sending signal:', error);
     }
   }
 
@@ -100,11 +103,15 @@
 
       const data = await response.json();
 
+      if (data.signals && data.signals.length > 0) {
+        console.log(`[Vercel Blob] Received ${data.signals.length} signal(s)`);
+      }
+
       data.signals.forEach(signalData => {
         handleSignal(signalData);
       });
     } catch (error) {
-      console.error('Error polling signals:', error);
+      console.error('[Vercel Blob] Error polling signals:', error);
     }
   }
 
@@ -119,6 +126,10 @@
       const data = await response.json();
       const activePeerIds = new Set(data.peers.map(p => p.id).filter(id => id !== myId));
 
+      if (activePeerIds.size > 0 && activePeerIds.size !== peers.size) {
+        console.log(`[Vercel Blob] Found ${activePeerIds.size} active peer(s)`);
+      }
+
       activePeerIds.forEach(peerId => {
         if (!peers.has(peerId)) {
           connectToPeer(peerId);
@@ -131,7 +142,7 @@
         }
       });
     } catch (error) {
-      console.error('Error polling peers:', error);
+      console.error('[Vercel Blob] Error polling peers:', error);
     }
   }
 
@@ -163,10 +174,14 @@
 
     peers.set(peerId, peerData);
 
+    window.dispatchEvent(new CustomEvent('peerConnecting', { detail: { peerId } }));
+
     peerData.connectionTimeout = setTimeout(() => {
       if (!peerData.connected) {
         console.log(`Connection timeout for peer ${peerId}, using fallback`);
+        window.dispatchEvent(new CustomEvent('connectionTimeout', { detail: { peerId } }));
         useFallback = true;
+        window.dispatchEvent(new CustomEvent('fallbackModeEnabled'));
       }
     }, CONNECTION_TIMEOUT_MS);
 
@@ -178,6 +193,7 @@
       console.log(`Connected to peer ${peerId}`);
       peerData.connected = true;
       reconnectAttempts = 0;
+      window.dispatchEvent(new CustomEvent('peerConnected', { detail: { peerId } }));
 
       if (peerData.connectionTimeout) {
         clearTimeout(peerData.connectionTimeout);
@@ -201,6 +217,7 @@
 
     peer.on('error', error => {
       console.error(`Peer ${peerId} error:`, error);
+      window.dispatchEvent(new CustomEvent('peerFailed', { detail: { peerId, error: error.message } }));
 
       if (!peerData.connected && peerData.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         peerData.reconnectAttempts++;
@@ -212,6 +229,7 @@
         }, 1000);
       } else {
         useFallback = true;
+        window.dispatchEvent(new CustomEvent('fallbackModeEnabled'));
       }
     });
 
