@@ -1,31 +1,17 @@
 (function() {
-  const API_BASE = '/api';
-  const POLL_INTERVAL_MS = 500;
-  const HEARTBEAT_INTERVAL_MS = 5000;
-  const PEER_TIMEOUT_MS = 10000;
-  const CURSOR_SEND_THROTTLE = 50;
-  const CONNECTION_TIMEOUT_MS = 15000;
-  const MAX_RECONNECT_ATTEMPTS = 3;
-  const ENABLE_CHAT = true;
+  const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : '/api';
+  const POLL_INTERVAL_MS = 10000;
 
   const cursorElements = new Map();
-  const peers = new Map();
-  const cursors = new Map();
-
   let myId = null;
   let pollIntervalId = null;
-  let heartbeatIntervalId = null;
-  let lastCursorSendTime = 0;
-  let chatVisible = false;
-  let chatInput = null;
-  let lastMessageTime = 0;
-  const MESSAGE_COOLDOWN = 10000;
-  let myUsername = null;
-  let isInCooldown = false;
-  let reconnectAttempts = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let myUsername = 'happy possum';
+  let myColor = '#' + Math.floor(Math.random()*16777215).toString(16);
   let cursorsHidden = false;
-  let useFallback = false;
-  let fallbackCursors = new Map();
 
   function generatePeerId() {
     return `peer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -38,410 +24,96 @@
     }
   }
 
-  async function joinPeerNetwork() {
-    try {
-      console.log('[Vercel Blob] Joining peer network...', { peerId: myId });
-      const response = await fetch(`${API_BASE}/peers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ peerId: myId })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to join peer network: ${response.status}`);
-      }
-
-      console.log('[Vercel Blob] Successfully joined P2P cursor network');
-      window.dispatchEvent(new CustomEvent('cursorPartyConnected', { detail: true }));
-      window.dispatchEvent(new CustomEvent('cursorPartyIdAssigned', { detail: myId }));
-
-      startHeartbeat();
-      startPolling();
-    } catch (error) {
-      console.error('[Vercel Blob] Error joining peer network:', error);
-      reconnect();
-    }
-  }
-
-  async function leavePeerNetwork() {
-    try {
-      await fetch(`${API_BASE}/peers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ peerId: myId, action: 'leave' })
-      });
-    } catch (error) {
-      console.error('Error leaving peer network:', error);
-    }
-  }
-
-  async function sendSignal(to, signal) {
-    try {
-      console.log('[Vercel Blob] Sending signal', { from: myId, to, signalType: signal.type });
-      const response = await fetch(`${API_BASE}/signals`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: myId, to, signal })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to send signal: ${response.status}`);
-      }
-      console.log('[Vercel Blob] Signal sent successfully');
-    } catch (error) {
-      console.error('[Vercel Blob] Error sending signal:', error);
-    }
-  }
-
-  async function pollSignals() {
-    try {
-      const response = await fetch(`${API_BASE}/signals?peerId=${myId}`);
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.signals && data.signals.length > 0) {
-        console.log(`[Vercel Blob] Received ${data.signals.length} signal(s)`);
-      }
-
-      data.signals.forEach(signalData => {
-        handleSignal(signalData);
-      });
-    } catch (error) {
-      console.error('[Vercel Blob] Error polling signals:', error);
-    }
-  }
-
   async function pollPeers() {
     try {
-      const response = await fetch(`${API_BASE}/peers`);
+      updateUsername();
+
+      const params = new URLSearchParams({
+        peerId: myId,
+        x: currentX.toString(),
+        y: currentY.toString(),
+        username: myUsername,
+        color: myColor
+      });
+
+      const url = `${API_BASE}/peers?${params}`;
+      console.log('[Cursor Party] Polling:', url);
+
+      const response = await fetch(url);
 
       if (!response.ok) {
+        console.error('[Cursor Party] Failed to poll peers:', response.status, response.statusText);
         return;
       }
 
       const data = await response.json();
-      const activePeerIds = new Set(data.peers.map(p => p.id).filter(id => id !== myId));
+      console.log('[Cursor Party] Received peers:', data.peers?.length || 0, 'peers');
+      console.log('[Cursor Party] Your peer ID:', data.yourPeerId, 'IP:', data.yourIp);
 
-      if (activePeerIds.size > 0 && activePeerIds.size !== peers.size) {
-        console.log(`[Vercel Blob] Found ${activePeerIds.size} active peer(s)`);
-      }
-
-      activePeerIds.forEach(peerId => {
-        if (!peers.has(peerId)) {
-          connectToPeer(peerId);
-        }
-      });
-
-      peers.forEach((peerData, peerId) => {
-        if (!activePeerIds.has(peerId)) {
-          disconnectPeer(peerId);
-        }
-      });
+      renderCursors(data.peers || []);
     } catch (error) {
-      console.error('[Vercel Blob] Error polling peers:', error);
+      console.error('[Cursor Party] Error polling peers:', error.message || error);
+      console.error('[Cursor Party] Stack:', error.stack);
     }
   }
 
-  function connectToPeer(peerId) {
-    if (peers.has(peerId)) {
-      return;
-    }
+  const connectedPeers = new Set();
 
-    const initiator = myId < peerId;
+  function renderCursors(peers) {
+    console.log('[Cursor Party] Rendering', peers.length, 'peer cursors');
+    const currentIds = new Set(peers.map(p => p.id));
 
-    const peer = new SimplePeer({
-      initiator,
-      trickle: true,
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
-      }
-    });
-
-    const peerData = {
-      peer,
-      peerId,
-      connected: false,
-      connectionTimeout: null,
-      reconnectAttempts: 0
-    };
-
-    peers.set(peerId, peerData);
-
-    window.dispatchEvent(new CustomEvent('peerConnecting', { detail: { peerId } }));
-
-    peerData.connectionTimeout = setTimeout(() => {
-      if (!peerData.connected) {
-        console.log(`Connection timeout for peer ${peerId}, using fallback`);
-        window.dispatchEvent(new CustomEvent('connectionTimeout', { detail: { peerId } }));
-        useFallback = true;
-        window.dispatchEvent(new CustomEvent('fallbackModeEnabled'));
-      }
-    }, CONNECTION_TIMEOUT_MS);
-
-    peer.on('signal', signal => {
-      sendSignal(peerId, signal);
-    });
-
-    peer.on('connect', () => {
-      console.log(`Connected to peer ${peerId}`);
-      peerData.connected = true;
-      reconnectAttempts = 0;
-      window.dispatchEvent(new CustomEvent('peerConnected', { detail: { peerId } }));
-
-      if (peerData.connectionTimeout) {
-        clearTimeout(peerData.connectionTimeout);
-        peerData.connectionTimeout = null;
-      }
-    });
-
-    peer.on('data', data => {
-      try {
-        const message = JSON.parse(data.toString());
-
-        if (message.type === 'cursor') {
-          handleRemoteCursor(peerId, message.cursor);
-        } else if (message.type === 'chat' && ENABLE_CHAT) {
-          showChatMessage(peerId, message.message);
-        }
-      } catch (error) {
-        console.error('Error parsing peer data:', error);
-      }
-    });
-
-    peer.on('error', error => {
-      console.error(`Peer ${peerId} error:`, error);
-      window.dispatchEvent(new CustomEvent('peerFailed', { detail: { peerId, error: error.message } }));
-
-      if (!peerData.connected && peerData.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        peerData.reconnectAttempts++;
-        console.log(`Reconnecting to peer ${peerId} (attempt ${peerData.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
-
-        setTimeout(() => {
-          disconnectPeer(peerId);
-          connectToPeer(peerId);
-        }, 1000);
-      } else {
-        useFallback = true;
-        window.dispatchEvent(new CustomEvent('fallbackModeEnabled'));
-      }
-    });
-
-    peer.on('close', () => {
-      console.log(`Peer ${peerId} connection closed`);
-      disconnectPeer(peerId);
-    });
-  }
-
-  function handleSignal(signalData) {
-    const { from, signal } = signalData;
-
-    let peerData = peers.get(from);
-
-    if (!peerData) {
-      connectToPeer(from);
-      peerData = peers.get(from);
-    }
-
-    if (peerData && peerData.peer) {
-      try {
-        peerData.peer.signal(signal);
-      } catch (error) {
-        console.error(`Error signaling peer ${from}:`, error);
-      }
-    }
-  }
-
-  function disconnectPeer(peerId) {
-    const peerData = peers.get(peerId);
-
-    if (peerData) {
-      if (peerData.connectionTimeout) {
-        clearTimeout(peerData.connectionTimeout);
-      }
-
-      if (peerData.peer) {
-        peerData.peer.destroy();
-      }
-
-      peers.delete(peerId);
-    }
-
-    cursors.delete(peerId);
-    fallbackCursors.delete(peerId);
-    removeCursorElement(peerId);
-
-    window.dispatchEvent(new CustomEvent('cursorPartyDisconnect', {
-      detail: { id: peerId }
-    }));
-  }
-
-  function handleRemoteCursor(peerId, cursorData) {
-    cursors.set(peerId, {
-      id: peerId,
-      x: cursorData.x,
-      y: cursorData.y,
-      color: cursorData.color || '#' + Math.floor(Math.random()*16777215).toString(16),
-      username: cursorData.username,
-      country: cursorData.country,
-      isLocal: false
-    });
-
-    updateCursorDisplay();
-  }
-
-  function sendCursorUpdate(x, y) {
-    const cursorData = {
-      x,
-      y,
-      pointer: 'mouse',
-      username: myUsername,
-      color: '#' + Math.floor(Math.random()*16777215).toString(16)
-    };
-
-    let sentViaPeer = false;
-
-    peers.forEach((peerData, peerId) => {
-      if (peerData.connected && peerData.peer) {
-        try {
-          peerData.peer.send(JSON.stringify({
-            type: 'cursor',
-            cursor: cursorData
-          }));
-          sentViaPeer = true;
-        } catch (error) {
-          console.error(`Error sending cursor to peer ${peerId}:`, error);
-        }
-      }
-    });
-
-    if (!sentViaPeer || useFallback) {
-      sendCursorFallback(cursorData);
-    }
-  }
-
-  async function sendCursorFallback(cursorData) {
-    try {
-      await fetch(`${API_BASE}/cursors`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          peerId: myId,
-          cursor: cursorData,
-          timestamp: Date.now()
-        })
-      });
-    } catch (error) {
-    }
-  }
-
-  async function pollCursorsFallback() {
-    if (!useFallback) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/cursors`);
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.cursors) {
-        Object.entries(data.cursors).forEach(([peerId, cursorData]) => {
-          if (peerId !== myId && Date.now() - cursorData.timestamp < PEER_TIMEOUT_MS) {
-            handleRemoteCursor(peerId, cursorData.cursor);
-          }
-        });
-      }
-    } catch (error) {
-    }
-  }
-
-  function updateCursorDisplay() {
-    const allCursors = {};
-
-    cursors.forEach((cursor, id) => {
-      allCursors[id] = cursor;
-    });
-
-    window.dispatchEvent(new CustomEvent('cursorStateChanged', {
-      detail: allCursors
-    }));
-  }
-
-  function renderCursor(cursorData) {
-    let cursorEl = cursorElements.get(cursorData.id);
-
-    if (!cursorEl) {
-      cursorEl = document.createElement("div");
-      cursorEl.className = cursorData.isLocal ? "cursor-party-cursor local-cursor" : "cursor-party-cursor";
-      cursorEl.style.color = cursorData.color;
-
-      const flag = cursorData.country ? getFlagEmoji(cursorData.country) : '';
-      const username = cursorData.username || '';
-      const displayName = cursorData.isLocal && username ? `${username} (you)` : username;
-      const label = flag && displayName ? `${flag} ${displayName}` : flag || displayName;
-
-      cursorEl.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M5.65376 12.3673L5 5L12.3673 5.65376L18.2888 11.5753L12.9728 16.8913L11.5753 18.2888L5.65376 12.3673Z" fill="currentColor"/>
-        </svg>
-        ${label ? `<span class="cursor-label">${label}</span>` : ''}
-      `;
-      document.body.appendChild(cursorEl);
-      cursorElements.set(cursorData.id, cursorEl);
-    } else {
-      cursorEl.style.color = cursorData.color;
-
-      const flag = cursorData.country ? getFlagEmoji(cursorData.country) : '';
-      const username = cursorData.username || '';
-      const displayName = cursorData.isLocal && username ? `${username} (you)` : username;
-      const label = flag && displayName ? `${flag} ${displayName}` : flag || displayName;
-
-      const labelEl = cursorEl.querySelector('.cursor-label');
-      if (labelEl && label) {
-        labelEl.textContent = label;
-      }
-    }
-
-    cursorEl.style.left = cursorData.x + "px";
-    cursorEl.style.top = cursorData.y + "px";
-    cursorEl.style.display = cursorsHidden ? "none" : "block";
-  }
-
-  function removeCursorElement(id) {
-    const cursorEl = cursorElements.get(id);
-    if (cursorEl) {
-      cursorEl.remove();
-      cursorElements.delete(id);
-    }
-  }
-
-  window.addEventListener('cursorStateChanged', (event) => {
-    const cursors = event.detail;
-
-    const currentIds = new Set(Object.keys(cursors));
-    const renderedIds = new Set(cursorElements.keys());
-
-    renderedIds.forEach(id => {
+    cursorElements.forEach((cursorEl, id) => {
       if (!currentIds.has(id)) {
-        removeCursorElement(id);
+        console.log('[Cursor Party] Removing cursor for peer:', id);
+        cursorEl.remove();
+        cursorElements.delete(id);
+        if (connectedPeers.has(id)) {
+          connectedPeers.delete(id);
+          window.dispatchEvent(new CustomEvent('cursorPartyDisconnect', { detail: { id } }));
+        }
       }
     });
 
-    Object.values(cursors).forEach(cursorData => {
-      renderCursor(cursorData);
+    peers.forEach(peer => {
+      if (!peer.x || !peer.y) {
+        console.warn('[Cursor Party] Skipping peer with no position:', peer.id);
+        return;
+      }
+
+      let cursorEl = cursorElements.get(peer.id);
+
+      if (!cursorEl) {
+        console.log('[Cursor Party] Creating cursor for new peer:', peer.id, 'at', peer.x, peer.y);
+        cursorEl = document.createElement("div");
+        cursorEl.className = "cursor-party-cursor";
+        cursorEl.style.color = peer.color || myColor;
+
+        const username = peer.username || '';
+        cursorEl.innerHTML = `
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M5.65376 12.3673L5 5L12.3673 5.65376L18.2888 11.5753L12.9728 16.8913L11.5753 18.2888L5.65376 12.3673Z" fill="currentColor"/>
+          </svg>
+          ${username ? `<span class="cursor-label">${username}</span>` : ''}
+        `;
+        document.body.appendChild(cursorEl);
+        cursorElements.set(peer.id, cursorEl);
+
+        if (!connectedPeers.has(peer.id)) {
+          connectedPeers.add(peer.id);
+          window.dispatchEvent(new CustomEvent('peerConnected', { detail: { peerId: peer.id } }));
+        }
+      } else {
+        console.log('[Cursor Party] Updating cursor for peer:', peer.id, 'to', peer.x, peer.y);
+      }
+
+      cursorEl.style.left = peer.x + "px";
+      cursorEl.style.top = peer.y + "px";
+      cursorEl.style.display = cursorsHidden ? "none" : "block";
     });
-  });
+
+    console.log('[Cursor Party] Total cursors in DOM:', cursorElements.size);
+  }
 
   function setCursorsVisibility(visible) {
     cursorsHidden = !visible;
@@ -454,183 +126,40 @@
     setCursorsVisibility(event.detail);
   });
 
-  function getFlagEmoji(countryCode) {
-    const codePoints = countryCode
-      .toUpperCase()
-      .split('')
-      .map(char => 127397 + char.charCodeAt());
-    return String.fromCodePoint(...codePoints);
-  }
-
-  function showChatMessage(id, message) {
-    const cursorEl = cursorElements.get(id);
-    if (!cursorEl) return;
-
-    const chatBubble = document.createElement("div");
-    chatBubble.className = "cursor-chat-bubble";
-    chatBubble.textContent = message.text;
-    cursorEl.appendChild(chatBubble);
-
-    setTimeout(() => {
-      chatBubble.remove();
-    }, 12000);
-  }
-
-  function initChat() {
-    if (!ENABLE_CHAT) return;
-
-    let lastMouseEvent = null;
-
-    document.addEventListener("mousemove", (e) => {
-      lastMouseEvent = e;
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "/" && !chatVisible && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-        e.preventDefault();
-        showChatInput(lastMouseEvent);
-      } else if (e.key === "Escape") {
-        if (chatVisible) {
-          hideChatInput();
-        }
-      }
-    });
-  }
-
-  function showChatInput(e) {
-    chatVisible = true;
-    chatInput = document.createElement("input");
-    chatInput.className = "cursor-chat-input";
-
-    const now = Date.now();
-    const timeSinceLastMessage = now - lastMessageTime;
-
-    if (lastMessageTime > 0 && timeSinceLastMessage < MESSAGE_COOLDOWN) {
-      isInCooldown = true;
-      chatInput.disabled = true;
-      chatInput.placeholder = `must wait 10s before sending another message`;
-      const remainingTime = MESSAGE_COOLDOWN - timeSinceLastMessage;
-      setTimeout(() => {
-        if (chatInput) {
-          chatInput.disabled = false;
-          chatInput.placeholder = window.cursorChatPlaceholder || "send a message to your friend";
-          isInCooldown = false;
-          chatInput.focus();
-        }
-      }, remainingTime);
-    } else {
-      chatInput.placeholder = window.cursorChatPlaceholder || "send a message to your friend";
-    }
-
-    chatInput.style.left = (e ? e.clientX : window.innerWidth / 2) + 'px';
-    chatInput.style.top = (e ? e.clientY + 20 : window.innerHeight / 2) + 'px';
-    document.body.appendChild(chatInput);
-    if (!chatInput.disabled) {
-      chatInput.focus();
-    }
-
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        if (chatInput.disabled) {
-          return;
-        }
-        const text = chatInput.value.trim();
-        if (text) {
-          const message = { text, timestamp: Date.now() };
-
-          peers.forEach((peerData, peerId) => {
-            if (peerData.connected && peerData.peer) {
-              try {
-                peerData.peer.send(JSON.stringify({
-                  type: 'chat',
-                  message
-                }));
-              } catch (error) {
-                console.error(`Error sending chat to peer ${peerId}:`, error);
-              }
-            }
-          });
-
-          showChatMessage(myId, message);
-          lastMessageTime = Date.now();
-        }
-        hideChatInput();
-      } else if (e.key === "Escape") {
-        hideChatInput();
-      }
-    });
-
-    chatInput.addEventListener("blur", () => {
-      if (!isInCooldown) {
-        setTimeout(hideChatInput, 100);
-      }
-    });
-  }
-
-  function hideChatInput() {
-    if (chatInput) {
-      chatInput.remove();
-      chatInput = null;
-    }
-    chatVisible = false;
-    isInCooldown = false;
-  }
-
+  let moveCount = 0;
   document.addEventListener("mousemove", (e) => {
-    window.dispatchEvent(new CustomEvent('localCursorMove', {
-      detail: { x: e.clientX, y: e.clientY }
-    }));
+    currentX = e.clientX;
+    currentY = e.clientY;
 
-    const now = Date.now();
-    if (now - lastCursorSendTime >= CURSOR_SEND_THROTTLE) {
-      lastCursorSendTime = now;
-      updateUsername();
-      sendCursorUpdate(e.clientX, e.clientY);
+    if (moveCount === 0) {
+      console.log('[Cursor Party] First mouse move detected:', currentX, currentY);
     }
+    moveCount++;
+
+    window.dispatchEvent(new CustomEvent('localCursorMove', {
+      detail: { x: currentX, y: currentY }
+    }));
   });
 
   document.addEventListener("touchmove", (e) => {
     const touch = e.touches[0];
+    currentX = touch.clientX;
+    currentY = touch.clientY;
+
     window.dispatchEvent(new CustomEvent('localCursorMove', {
-      detail: { x: touch.clientX, y: touch.clientY }
+      detail: { x: currentX, y: currentY }
     }));
-
-    const now = Date.now();
-    if (now - lastCursorSendTime >= CURSOR_SEND_THROTTLE) {
-      lastCursorSendTime = now;
-      updateUsername();
-      sendCursorUpdate(touch.clientX, touch.clientY);
-    }
   });
-
-  function startHeartbeat() {
-    if (heartbeatIntervalId) {
-      return;
-    }
-
-    heartbeatIntervalId = setInterval(async () => {
-      try {
-        await fetch(`${API_BASE}/peers`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ peerId: myId })
-        });
-      } catch (error) {
-        console.error('Heartbeat failed:', error);
-      }
-    }, HEARTBEAT_INTERVAL_MS);
-  }
 
   function startPolling() {
     if (pollIntervalId) {
+      console.log('[Cursor Party] Polling already started');
       return;
     }
 
-    pollIntervalId = setInterval(async () => {
-      await pollSignals();
-      await pollPeers();
-      await pollCursorsFallback();
-    }, POLL_INTERVAL_MS);
+    console.log('[Cursor Party] Starting polling every', POLL_INTERVAL_MS, 'ms');
+    pollPeers();
+    pollIntervalId = setInterval(pollPeers, POLL_INTERVAL_MS);
   }
 
   function stopPolling() {
@@ -638,39 +167,15 @@
       clearInterval(pollIntervalId);
       pollIntervalId = null;
     }
-
-    if (heartbeatIntervalId) {
-      clearInterval(heartbeatIntervalId);
-      heartbeatIntervalId = null;
-    }
-  }
-
-  function reconnect() {
-    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-      reconnectAttempts++;
-      console.log(`Reconnecting to P2P network... (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
-      setTimeout(() => {
-        joinPeerNetwork();
-      }, 3000);
-    } else {
-      console.log("Max reconnection attempts reached. P2P cursor party disabled.");
-      window.dispatchEvent(new CustomEvent('cursorPartyConnected', { detail: false }));
-    }
   }
 
   function cleanup() {
     stopPolling();
-
-    peers.forEach((peerData, peerId) => {
-      disconnectPeer(peerId);
-    });
-
-    leavePeerNetwork();
+    cursorElements.forEach(el => el.remove());
+    cursorElements.clear();
   }
 
-  window.addEventListener('beforeunload', () => {
-    cleanup();
-  });
+  window.addEventListener('beforeunload', cleanup);
 
   const style = document.createElement("style");
   style.textContent = `
@@ -678,12 +183,8 @@
       position: fixed;
       pointer-events: none;
       z-index: 10000;
-      transition: left 0.1s ease-out, top 0.1s ease-out;
+      transition: left 0.3s ease-out, top 0.3s ease-out;
       display: block;
-    }
-
-    .cursor-party-cursor.local-cursor {
-      transition: none;
     }
 
     .cursor-label {
@@ -698,58 +199,21 @@
       white-space: nowrap;
       font-family: Lucida Grande, sans-serif;
     }
-
-    .cursor-chat-bubble {
-      position: absolute;
-      left: 24px;
-      top: 18px;
-      background: rgba(255, 255, 255, 0.9);
-      color: black;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      white-space: nowrap;
-      animation: fadeIn 0.2s ease-in;
-    }
-
-    .cursor-chat-input {
-      position: fixed;
-      z-index: 10001;
-      padding: 8px 16px;
-      border: 2px solid #ff6b6b;
-      border-radius: 8px;
-      background: white;
-      color: black;
-      font-size: 14px;
-      outline: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      caret-color: #ff6b6b;
-    }
-
-    .cursor-chat-input::placeholder {
-      color: rgba(0, 0, 0, 0.5);
-    }
-
-    .cursor-chat-input:disabled {
-      background: #f5f5f5;
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
-    .cursor-chat-input:disabled::placeholder {
-      color: black;
-      opacity: 1;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
   `;
   document.head.appendChild(style);
 
   myId = generatePeerId();
   updateUsername();
-  joinPeerNetwork();
-  initChat();
+
+  console.log('[Cursor Party] Initializing...');
+  console.log('[Cursor Party] API Base:', API_BASE);
+  console.log('[Cursor Party] My ID:', myId);
+  console.log('[Cursor Party] My Username:', myUsername);
+  console.log('[Cursor Party] My Color:', myColor);
+  console.log('[Cursor Party] Poll Interval:', POLL_INTERVAL_MS, 'ms');
+
+  window.dispatchEvent(new CustomEvent('cursorPartyConnected', { detail: true }));
+  window.dispatchEvent(new CustomEvent('cursorPartyIdAssigned', { detail: myId }));
+
+  startPolling();
 })();
