@@ -18,7 +18,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     <div class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80 flex items-center gap-2.5 text-white text-xs font-light" animate.enter="entering" animate.leave="leaving">
       <span class="text-[#039be5]">1 viewing</span>
       <span class="text-gray-400">•</span>
-      <span class="text-gray-300">Open Commands H</span>
+      <span class="text-gray-300">Launch Commandbar /</span>
     </div>
   `
 })

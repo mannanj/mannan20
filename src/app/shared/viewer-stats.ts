@@ -2,9 +2,11 @@ import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/c
 import { Store } from '@ngrx/store';
 import { selectActiveViewerCount, selectIsCursorPartyConnected } from '../store/cursor.selectors';
 import { toggleCommandsModal } from '../store/app.actions';
+import { CursorStatus } from '../components/cursor-status/cursor-status';
 
 @Component({
   selector: 'viewer-stats',
+  imports: [CursorStatus],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     @keyframes enter-animation {
@@ -33,13 +35,16 @@ import { toggleCommandsModal } from '../store/app.actions';
     }
   `],
   template: `
-      <div class="fixed bottom-1 left-2 z-50 px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
-           (click)="openCommands()" animate.enter="entering">
-        <div class="flex items-center gap-2.5 text-white text-xs font-light">
-          <span class="text-[#039be5]">{{ viewerCount() }} viewing</span>
-          <span class="text-gray-400">•</span>
-          <span class="text-gray-300">Open Commands <kbd class="px-1 py-0.5 bg-white/10 rounded text-[10px]">H</kbd></span>
+      <div class="fixed bottom-1 left-2 z-50 flex items-center gap-2">
+        <div class="px-3 py-1.5 rounded backdrop-blur-md bg-black/70 opacity-80 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+             (click)="openCommands()" animate.enter="entering">
+          <div class="flex items-center gap-2.5 text-white text-xs font-light">
+            <span class="text-[#039be5]">{{ viewerCount() }} viewing</span>
+            <span class="text-gray-400">•</span>
+            <span class="text-gray-300">Launch Commandbar <kbd class="px-1 py-0.5 bg-white/10 rounded text-[10px]">/</kbd></span>
+          </div>
         </div>
+        <cursor-status></cursor-status>
       </div>
   `
 })
