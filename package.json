@@ -4,6 +4,7 @@
   "trustedDependencies": ["@swc/core", "esbuild", "unrs-resolver", "lmdb", "@parcel/watcher", "msgpackr-extract"],
   "scripts": {
     "ng": "ng",
+    "dev": "ng serve",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
