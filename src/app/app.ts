@@ -5,15 +5,13 @@ import { About } from "./components/about/about";
 import { Contact } from "./components/contact/contact";
 import { ContactModal } from "./components/contact/contact-modal";
 import { LastUpdated } from "./shared/last-updated";
-import { ViewerStats } from "./shared/viewer-stats";
-import { ViewerStatsLoading } from "./shared/viewer-stats-loading";
 import { KeyboardCommandsModal } from "./shared/keyboard-commands-modal";
 import { DevStats } from "./shared/dev-stats";
 import { DevStatsModal } from "./shared/dev-stats-modal";
 
 @Component({
   selector: 'app-root',
-  imports: [Header, Home, About, Contact, ContactModal, LastUpdated, ViewerStats, ViewerStatsLoading, KeyboardCommandsModal, DevStats, DevStatsModal],
+  imports: [Header, Home, About, Contact, ContactModal, LastUpdated, KeyboardCommandsModal, DevStats, DevStatsModal],
   template: `
     <div class="font-[Lucida_Grande]">
       <div id="header">
@@ -35,11 +33,6 @@ import { DevStatsModal } from "./shared/dev-stats-modal";
       </div>
 
       @defer (on immediate) {
-        <viewer-stats />
-      } @placeholder (minimum 500ms) {
-        <viewer-stats-loading />
-      }
-       @defer (on immediate) {
         <div class="fixed bottom-0 right-0 flex items-end gap-2">
           <dev-stats />
           <last-updated />
