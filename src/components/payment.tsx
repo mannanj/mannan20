@@ -3,6 +3,11 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CopyIcon } from './icons/copy-icon';
+import { CheckIcon } from './icons/check-icon';
+
+const SUPPORT_EMAIL = 'hello@mannan.is';
+const COPY_FEEDBACK_DURATION_MS = 2000;
 
 interface PaymentDetails {
   amount: string;
@@ -19,6 +24,14 @@ export function Payment({ status, details }: PaymentProps) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(SUPPORT_EMAIL);
+    setCopied(true);
+    setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION_MS);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,12 +101,40 @@ export function Payment({ status, details }: PaymentProps) {
               </div>
             </div>
           )}
-          <Link
-            href="/payment"
-            className="text-[#039be5] text-sm hover:underline"
-          >
-            Make another payment
-          </Link>
+          <div className="flex items-center justify-center gap-4 text-sm">
+            <Link
+              href="/payment"
+              className="text-[#039be5] hover:underline"
+            >
+              Make another payment
+            </Link>
+            <span className="text-[#333]">|</span>
+            <button
+              onClick={() => setSupportOpen(!supportOpen)}
+              className="bg-transparent !border-0 !shadow-none !p-0 !m-0 text-[#039be5] hover:underline cursor-pointer focus:outline-none inline-flex items-center gap-1"
+            >
+              {supportOpen ? (
+                <>
+                  <span>{SUPPORT_EMAIL}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCopyEmail(); }}
+                    className="bg-transparent !border-0 !shadow-none !p-0 !m-0 cursor-pointer text-[#555] hover:text-white transition-colors duration-200 focus:outline-none"
+                  >
+                    {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
+                  </button>
+                </>
+              ) : (
+                'Get support'
+              )}
+            </button>
+          </div>
+          {supportOpen && (
+            <div className="mt-4 pt-4 border-t border-[#333] text-left">
+              <p className="text-[#888] text-xs leading-relaxed">
+                Need help with your payment? Feel free to reach out and I'll get back to you as soon as possible. Include your payment details for faster resolution.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
