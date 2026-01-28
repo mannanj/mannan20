@@ -115,7 +115,9 @@ export function Payment({ status, details }: PaymentProps) {
             >
               Get support
               <svg
-                className={`w-3 h-3 transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`}
+                width={12}
+                height={12}
+                className={`shrink-0 transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -136,7 +138,9 @@ export function Payment({ status, details }: PaymentProps) {
                     className="inline-flex items-center gap-1.5 text-[#039be5] bg-transparent border-0 p-0 cursor-pointer hover:text-white transition-colors duration-200 focus:outline-none text-sm"
                   >
                     {SUPPORT_EMAIL}
-                    {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
+                    <span className="inline-flex shrink-0" style={{ width: 14, height: 14 }}>
+                      {copied ? <CheckIcon /> : <CopyIcon />}
+                    </span>
                   </button>
                 </div>
                 <p className="text-[#888] text-xs leading-relaxed text-center">
