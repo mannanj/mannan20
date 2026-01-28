@@ -5,7 +5,7 @@ import { useApp } from "@/context/app-context";
 
 const EMAIL_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-const PLACEHOLDER = "Your name, email, or why you're reaching out";
+const PLACEHOLDER = "Share your name, email, and/or why you're here";
 
 interface ContactFormProps {
   onSubmit: (userInput: string) => void;
@@ -71,7 +71,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         <div className="text-red-500 text-sm mt-2 ml-1">{emailError}</div>
       )}
 
-      <div className="mt-2 relative">
+      <div className="mt-1.5 relative">
         <button
           type="submit"
           className="w-full py-2 px-4 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 !border !border-[#333] hover:!border-[#039be5] !bg-white !text-black hover:!bg-[#f0f0f0] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed !shadow-none !normal-case !mt-0 focus:outline-none focus:!border-[#039be5]"
@@ -85,8 +85,8 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         )}
       </div>
 
-      <p className="m-0 mt-2 p-0 !text-[0.625rem] leading-normal !text-[#444] !font-light text-center">
-        No unsolicited outreach — ever.
+      <p className="m-0 mt-1.5 mb-0 p-0 !text-[0.625rem] leading-tight !text-[#444] !font-light text-center">
+        I will never send you unsolicited communication.
       </p>
     </form>
   );

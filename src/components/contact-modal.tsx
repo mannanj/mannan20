@@ -77,7 +77,7 @@ export function ContactModal() {
     <div className="fixed inset-0 z-[1000]" onClick={closeContactModal}>
       <div
         ref={popoutRef}
-        className="fixed bg-[#141414] border border-[#222] rounded-xl p-4 shadow-[0_8px_30px_rgba(0,0,0,0.6)] cursor-grab active:cursor-grabbing select-none"
+        className="fixed bg-[#141414] border border-[#222] rounded-xl px-4 pt-4 pb-2 shadow-[0_8px_30px_rgba(0,0,0,0.6)] cursor-grab active:cursor-grabbing select-none"
         style={{ left: position.x, top: position.y, width: POPOUT_WIDTH }}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
