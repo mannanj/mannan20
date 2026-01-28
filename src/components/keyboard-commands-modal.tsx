@@ -27,7 +27,7 @@ export function KeyboardCommandsModal() {
   }, [toggleCommandsModal]);
 
   const handleOpenContact = useCallback(() => {
-    openContactModal();
+    openContactModal(window.innerWidth / 2, window.innerHeight / 3);
     toggleCommandsModal();
     setSearchQuery('');
     setSelectedIndex(0);
@@ -132,7 +132,7 @@ export function KeyboardCommandsModal() {
     <div className="fixed inset-0 z-[1000] flex items-start justify-center pt-[20vh] px-4">
       <div className="absolute inset-0 bg-black/75" onClick={close} />
 
-      <div className="relative w-full max-w-2xl bg-[#1a1a1a] border border-[#333] rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full max-w-2xl bg-[#141414] border border-[#222] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
         <input
           ref={inputRef}
           type="text"
@@ -142,7 +142,7 @@ export function KeyboardCommandsModal() {
             setSelectedIndex(0);
           }}
           placeholder="Search commands..."
-          className="w-full px-6 py-4 text-lg border-b border-[#333] focus:outline-none bg-transparent text-gray-100 placeholder-gray-500"
+          className="w-full px-6 py-4 text-lg border-b border-[#222] focus:outline-none bg-transparent text-gray-100 placeholder-gray-500"
           onKeyDown={handleInputKeydown}
         />
 
@@ -167,7 +167,7 @@ export function KeyboardCommandsModal() {
           )}
         </div>
 
-        <div className="px-6 py-3 border-t border-[#333] text-xs text-gray-500 flex items-center justify-between">
+        <div className="px-6 py-3 border-t border-[#222] text-xs text-gray-500 flex items-center justify-between">
           <div className="flex gap-3">
             <div>
               <kbd className="px-2 py-1 bg-[#039be5]/20 border border-[#039be5]/40 rounded text-[#4fc3f7]">↑↓</kbd>

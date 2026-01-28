@@ -160,9 +160,7 @@ body {
 }
 
 .action-container {
-  padding: 20px;
-  border: 1px solid #404040;
-  border-radius: 16px;
+  padding: 0;
 }
 
 .divider {

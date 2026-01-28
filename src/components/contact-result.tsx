@@ -29,32 +29,30 @@ export function ContactResult({ result }: ContactResultProps) {
   };
 
   return (
-    <>
-      <h3 className="m-0 mb-6 text-xl text-white text-center">Contact Info</h3>
-      <div className="bg-[#2a2a2a] border border-[#404040] p-5 rounded-lg mb-5">
-        <div className="text-[0.95rem] text-white flex items-center gap-3">
-          <strong className="inline-block w-[70px] text-[#999] shrink-0">Email:</strong>
-          <a className="text-white no-underline hover:underline flex-1" href={`mailto:${result.email}`}>{result.email}</a>
-          <button
-            className="bg-transparent !border !border-[#404040] rounded-md p-1.5 cursor-pointer text-[#999] transition-all duration-200 flex items-center justify-center shrink-0 hover:bg-[#2a2a2a] hover:text-white hover:border-[#555] !shadow-none !normal-case !mt-0 focus:outline-none"
-            onClick={handleCopyEmail}
-            title={copiedEmail ? 'Copied!' : 'Copy'}
-          >
-            {copiedEmail ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-          </button>
-        </div>
-        <div className="text-[0.95rem] text-white flex items-center gap-3">
-          <strong className="inline-block w-[70px] text-[#999] shrink-0">Phone:</strong>
-          <a className="text-white no-underline hover:underline flex-1" href={getPhoneLink(result.phone)}>{result.phone}</a>
-          <button
-            className="bg-transparent !border !border-[#404040] rounded-md p-1.5 cursor-pointer text-[#999] transition-all duration-200 flex items-center justify-center shrink-0 hover:bg-[#2a2a2a] hover:text-white hover:border-[#555] !shadow-none !normal-case !mt-0 focus:outline-none"
-            onClick={handleCopyPhone}
-            title={copiedPhone ? 'Copied!' : 'Copy'}
-          >
-            {copiedPhone ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-          </button>
-        </div>
+    <div className="flex flex-col gap-3">
+      <h3 className="m-0 text-base text-white">Contact Info</h3>
+      <div className="flex items-center gap-3 text-[0.9375rem]">
+        <span className="text-[#555] w-[50px] shrink-0">Email</span>
+        <a className="text-[#039be5] no-underline hover:underline flex-1" href={`mailto:${result.email}`}>{result.email}</a>
+        <button
+          className="bg-transparent !border-0 !shadow-none p-1 cursor-pointer text-[#555] hover:text-white transition-colors duration-200 !mt-0 focus:outline-none"
+          onClick={handleCopyEmail}
+          title={copiedEmail ? 'Copied!' : 'Copy'}
+        >
+          {copiedEmail ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
+        </button>
       </div>
-    </>
+      <div className="flex items-center gap-3 text-[0.9375rem]">
+        <span className="text-[#555] w-[50px] shrink-0">Phone</span>
+        <a className="text-[#039be5] no-underline hover:underline flex-1" href={getPhoneLink(result.phone)}>{result.phone}</a>
+        <button
+          className="bg-transparent !border-0 !shadow-none p-1 cursor-pointer text-[#555] hover:text-white transition-colors duration-200 !mt-0 focus:outline-none"
+          onClick={handleCopyPhone}
+          title={copiedPhone ? 'Copied!' : 'Copy'}
+        >
+          {copiedPhone ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
   );
 }

@@ -31,6 +31,10 @@ export function Contact() {
     setTimeout(() => setCopiedPhone(false), COPY_FEEDBACK_DURATION_MS);
   };
 
+  const handleOpenContact = (e: React.MouseEvent) => {
+    openContactModal(e.clientX, e.clientY);
+  };
+
   return (
     <div className="pb-[100px]">
       <h1 className="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">
@@ -68,10 +72,10 @@ export function Contact() {
             </>
           ) : (
             <>
-              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={openContactModal} title="Request contact info">
+              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
                 *****&#64;mannan.is
               </a>
-              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={openContactModal} title="Request contact info">
+              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
                 +1 (***) *** 8302
               </a>
             </>
@@ -81,7 +85,7 @@ export function Contact() {
             Back to Top
           </button>
         </div>
-        <div className="ripple-container" onClick={openContactModal} title="Request contact info">
+        <div className="ripple-container" onClick={handleOpenContact} title="Request contact info">
           <div className="circle" />
         </div>
       </div>
