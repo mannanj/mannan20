@@ -14,12 +14,19 @@ export function Contact() {
   const { state, openContactModal } = useApp();
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), COPY_FEEDBACK_DURATION_MS);
+  };
 
   const handleCopyEmail = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     copyToClipboard(EMAIL);
     setCopiedEmail(true);
+    showToast('Email copied');
     setTimeout(() => setCopiedEmail(false), COPY_FEEDBACK_DURATION_MS);
   };
 
@@ -28,6 +35,7 @@ export function Contact() {
     e.stopPropagation();
     copyToClipboard(PHONE);
     setCopiedPhone(true);
+    showToast('Phone copied');
     setTimeout(() => setCopiedPhone(false), COPY_FEEDBACK_DURATION_MS);
   };
 
@@ -36,7 +44,7 @@ export function Contact() {
   };
 
   return (
-    <div className="pb-[100px]">
+    <div className="pb-[100px] relative">
       <h1 className="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">
         Contact
       </h1>
@@ -89,6 +97,11 @@ export function Contact() {
           <div className="circle" />
         </div>
       </div>
+      {toast && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1100] bg-[#222] border border-[#333] text-white text-xs px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.4)] animate-[fadeIn_0.2s_ease]">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

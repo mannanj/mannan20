@@ -66,6 +66,7 @@ export function ContactModal() {
 
     setTimeout(() => {
       setContactResult(CONTACT_DATA);
+      closeContactModal();
     }, FORM_SUBMIT_DELAY_MS);
   };
 

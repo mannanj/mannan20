@@ -15,7 +15,6 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
   const { state, setContactUserInput } = useApp();
   const userInput = state.contactUserInput;
   const [isLoading, setIsLoading] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
   const [emailError, setEmailError] = useState("");
 
   const hasEmailInInput = () => userInput.trim().includes("@");
@@ -71,17 +70,15 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         <div className="text-red-500 text-sm mt-2 ml-1">{emailError}</div>
       )}
 
-      <div className="mt-1.5 relative">
+      <div className="mt-1 relative group">
         <button
           type="submit"
-          className="w-full py-2 px-4 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 !border !border-[#333] hover:!border-[#039be5] !bg-white !text-black hover:!bg-[#f0f0f0] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed !shadow-none !normal-case !mt-0 focus:outline-none focus:!border-[#039be5]"
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
+          className={`${isValid() && !isLoading ? 'shimmer-btn' : ''} w-full py-2 px-4 rounded-lg text-xs font-medium transition-all duration-200 !border !border-[#333] !bg-white !text-black !shadow-none !normal-case !mt-0 focus:outline-none ${isValid() && !isLoading ? 'cursor-pointer hover:!border-[#4fc3f7] hover:!bg-gradient-to-r hover:!from-[#025f8a] hover:!via-[#039be5] hover:!to-[#025f8a] hover:!text-white active:scale-[0.98] active:!bg-gradient-to-r active:!from-[#025f8a] active:!via-[#039be5] active:!to-[#025f8a] active:!text-white focus:!border-[#4fc3f7]' : '!opacity-50 cursor-not-allowed'}${isLoading ? ' shimmer-loading' : ''}`}
         >
           {isLoading ? "Loading..." : "Continue"}
         </button>
-        {showTooltip && !isValid() && (
-          <div className="tooltip">Include a name, email, or reason</div>
+        {!isValid() && !isLoading && (
+          <div className="tooltip hidden group-hover:block">Include a name, email, or reason</div>
         )}
       </div>
 
