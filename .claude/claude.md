@@ -2,61 +2,57 @@
 
 ## Project Overview
 
-Full-stack portfolio with real-time cursor tracking.
+Portfolio site built with Next.js (App Router).
 
-**Stack:** Angular 20, NgRx, Signals, Tailwind CSS 4 | Spring Boot 3.5.6, Java 25 | Node.js WebSocket
+**Stack:** Next.js 15, React 19, Tailwind CSS 4, TypeScript
 
 ## Critical Rules
 
 **NEVER add comments to code**
 
-## Angular Best Practices
+## React Best Practices
 
 ### Components
-- Standalone components (default, don't set `standalone: true`)
-- Use `input()`, `output()`, `computed()` functions (not decorators)
-- `changeDetection: ChangeDetectionStrategy.OnPush`
-- Inline templates for small components
-- Reactive forms only
-
-### Templates
-- Control flow: `@if`, `@for`, `@switch` (never `*ngIf`, `*ngFor`, `*ngSwitch`)
-- Direct bindings: `[class]`, `[style]` (never `ngClass`, `ngStyle`)
-- Keep logic minimal
+- Functional components only
+- `'use client'` directive only where needed (state, effects, event handlers)
+- Server components by default
+- Props via destructuring, typed with interfaces
 
 ### State Management
-- Signals for local state, `computed()` for derived state
-- NgRx for global state (`/src/app/store`)
-- Use `update()` or `set()` on signals (never `mutate()`)
+- `useState` for local state
+- `useReducer` + Context for global state (`src/context/app-context.tsx`)
+- No Redux/Zustand — state is minimal (5 fields)
 
-### Services
-- Use `inject()` (not constructor injection)
-- Single responsibility
-- `providedIn: 'root'` for singletons
+### Hooks
+- Custom hooks in `src/hooks/`
+- `useApp()` for global state access
+- `useScrollSpy()` for Intersection Observer-based nav tracking
 
-### Decorators
-- Never use `@HostBinding` or `@HostListener`
-- Use `host` object in `@Component`/`@Directive`
+### Patterns
+- `useMemo`/`useCallback` where referential stability matters
+- Avoid prop drilling — use context for cross-cutting state
+- `dangerouslySetInnerHTML` only for static, author-controlled data (about.json)
 
 ## Tailwind CSS Styling
 
-**Always prefer Tailwind utilities over component `styles` arrays.**
+**Always prefer Tailwind utilities over separate CSS.**
 
-Apply classes directly in templates. Use arbitrary values: `text-[#039be5]`, `w-[400px]`
+Apply classes directly in JSX. Use arbitrary values: `text-[#039be5]`, `w-[400px]`
 
-### When Custom CSS is Required
+### When Custom CSS is Required (`src/app/globals.css`)
 - `::before`/`::after` with `content` property
-- Angular selectors: `:host`, `:host-context()`
 - `@keyframes` animations
 - Complex nested selectors dependent on parent state
 
-### Global Utilities (`src/styles.css`)
-- `.collapsible` - More/less buttons
-- `.content` - Expandable containers
-- `.margin-top*` - Spacing utilities
+### Global Utilities (`src/app/globals.css`)
+- `.nav-button` - Navigation action buttons
+- `.header-link` / `.header-link-selected` - Nav link underline
+- `.contact-grid` / `.ripple-container` / `.circle` - Contact section layout
+- `.action-container` / `.divider` / `.tooltip` - Contact form
+- `.content` - Nested content card styling
 
-**Good:** `<button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">`
-**Avoid:** Component `styles` arrays with CSS that Tailwind can handle
+**Good:** `<button className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">`
+**Avoid:** Inline `style` objects or CSS modules when Tailwind can handle it
 
 ## TypeScript Standards
 
@@ -69,29 +65,47 @@ Apply classes directly in templates. Use arbitrary values: `text-[#039be5]`, `w-
 ## Project Structure
 
 ```
-/src/app/components     Home, About, Contact, Header
-/src/app/store          NgRx state (actions, reducers, selectors)
-/src/app/services       Data, navigation
-/src/app/models         Types
-/src/app/animations     Animation utilities
-/backend                Spring Boot REST API
-/server                 WebSocket cursor tracking
+src/
+  app/
+    layout.tsx          Root layout: metadata, analytics
+    page.tsx            Server component: imports about.json, renders <Portfolio>
+    globals.css         Global styles + keyframe animations
+  components/
+    portfolio.tsx       'use client' wrapper: AppProvider + all sections
+    header.tsx          Fixed navbar, scroll-based active link
+    hero.tsx            Hero section
+    about.tsx           About section with sub-sections
+    about/
+      employment-section.tsx
+      extracurriculars-section.tsx
+      education-section.tsx
+      content-card.tsx
+    contact.tsx         Contact section
+    contact-modal.tsx   Modal wrapper: form -> result
+    contact-form.tsx    Textarea + validation + submit
+    contact-result.tsx  Email/phone reveal + copy
+    keyboard-commands-modal.tsx  "/" command palette
+    modal.tsx           Generic modal shell
+    icons/
+      copy-icon.tsx
+      check-icon.tsx
+      google-logo-icon.tsx
+  hooks/
+    use-scroll-spy.ts   Intersection Observer for active nav
+  lib/
+    types.ts            TypeScript interfaces
+    utils.ts            scrollToSection, getPhoneLink, copyToClipboard
+  context/
+    app-context.tsx     useReducer + Context for modal/section state
+public/
+  data/about.json       Portfolio content data
 ```
 
 ## Development
 
-**Frontend:** `npm start` (localhost:4200)
-**Backend:** `cd backend && ./mvnw spring-boot:run` (localhost:8080)
-**WebSocket:** `npm run ws-server`
-
-## API Endpoints
-
-Base: `http://localhost:8080/viewers/`
-
-- `GET /` - List all
-- `GET /{identifier}` - Get by id/email/name/reason
-- `POST /` - Create (requires ≥1 field)
-- `PUT /{identifier}` - Update
+**Dev:** `bun run dev` (localhost:3000)
+**Build:** `bun run build`
+**Start:** `bun run start`
 
 ## Code Quality
 
@@ -104,9 +118,7 @@ Base: `http://localhost:8080/viewers/`
 
 ### Post-Commit Hook
 
-`.githooks/post-commit` auto-generates:
-- `public/data/dev-commits.json` - Recent commits
-- `public/data/tasks.json` - Task tracking with completion dates/commits
+`.githooks/post-commit` auto-generates task tracking data.
 
 ### Task Workflow
 
@@ -141,8 +153,6 @@ git commit -m "Task N: Task Title
 - Location: \`path/to/files\`
 
 [Task-N]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```

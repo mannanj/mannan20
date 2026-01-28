@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: #ffffff;
+  background-color: #0b0b0b;
+  margin: 0;
+  padding: 0;
+}
+
+#body a {
+  position: relative;
+}
+
+#body a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #4fc3f7;
+  transition: width 0.3s ease;
+}
+
+#body a:hover {
+  transform: translateX(3px);
+}
+
+#body a:hover::after {
+  width: 100%;
+}
+
+.nav-button {
+  text-transform: uppercase;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid #039be5;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  transform: scale(1.05);
+  border-color: #4fc3f7;
+  box-shadow: 0 4px 15px rgba(3, 155, 229, 0.3);
+}
+
+.nav-button:active {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(79, 195, 247, 0.6);
+}
+
+.header-link {
+  cursor: pointer;
+  position: relative;
+  color: white;
+}
+
+.header-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -25px;
+  left: 0;
+  background-color: #4fc3f7;
+  transition: width 0.3s ease;
+}
+
+.header-link:hover::after {
+  width: 100%;
+}
+
+.header-link-selected::after {
+  width: 100%;
+  background-color: #039be5;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: 2fr auto;
+  align-items: start;
+  gap: 24px;
+}
+
+.ripple-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  justify-self: center;
+  position: relative;
+  width: 90px;
+  height: 90px;
+}
+
+.circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(77, 184, 255, 1);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.circle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  border: 2px solid rgba(77, 184, 255, 0.75);
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+.circle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  border-radius: 50%;
+  border: 2px solid rgba(77, 184, 255, 0.45);
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+.ripple-container:hover .circle {
+  border-color: rgba(3, 155, 229, 1);
+}
+
+.ripple-container:hover .circle::before {
+  border-color: rgba(3, 155, 229, 0.9);
+  animation: pulse 1.5s ease-out infinite;
+}
+
+.ripple-container:hover .circle::after {
+  border-color: rgba(3, 155, 229, 0.6);
+  animation: pulse 1.5s ease-out infinite 0.3s;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+}
+
+.action-container {
+  padding: 20px;
+  border: 1px solid #404040;
+  border-radius: 16px;
+}
+
+.divider {
+  text-align: center;
+  margin: 14px 0;
+  color: #666;
+  font-size: 0.6875rem;
+}
+
+.divider span {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #333;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #333;
+}
+
+.content {
+  color: black;
+  font-size: 80%;
+}
+
+.content p {
+  color: black !important;
+}
+
+.content b {
+  color: black;
+}
+
+.content a {
+  color: #039be5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
