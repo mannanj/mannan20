@@ -30,7 +30,7 @@ export function ContactResult({ result }: ContactResultProps) {
 
   return (
     <>
-      <h3 className="m-0 mb-6 text-xl text-white text-center">Hi there 👋</h3>
+      <h3 className="m-0 mb-6 text-xl text-white text-center">Contact Info</h3>
       <div className="bg-[#2a2a2a] border border-[#404040] p-5 rounded-lg mb-5">
         <div className="text-[0.95rem] text-white flex items-center gap-3">
           <strong className="inline-block w-[70px] text-[#999] shrink-0">Email:</strong>

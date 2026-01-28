@@ -1,13 +1,17 @@
 'use client';
 
-import { createContext, useContext, useReducer, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 import type { Section, ContactResultData } from '@/lib/types';
+
+const COOKIE_NAME = 'contact_revealed';
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 interface AppState {
   activeSection: Section;
   contactModalOpen: boolean;
   contactShowResult: boolean;
   contactResult: ContactResultData | null;
+  contactRevealed: boolean;
   commandsModalOpen: boolean;
 }
 
@@ -16,6 +20,7 @@ type AppAction =
   | { type: 'OPEN_CONTACT_MODAL' }
   | { type: 'CLOSE_CONTACT_MODAL' }
   | { type: 'SET_CONTACT_RESULT'; result: ContactResultData }
+  | { type: 'REVEAL_CONTACT' }
   | { type: 'TOGGLE_COMMANDS_MODAL' };
 
 const initialState: AppState = {
@@ -23,6 +28,7 @@ const initialState: AppState = {
   contactModalOpen: false,
   contactShowResult: false,
   contactResult: null,
+  contactRevealed: false,
   commandsModalOpen: false,
 };
 
@@ -35,7 +41,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'CLOSE_CONTACT_MODAL':
       return { ...state, contactModalOpen: false, contactShowResult: false, contactResult: null };
     case 'SET_CONTACT_RESULT':
-      return { ...state, contactShowResult: true, contactResult: action.result };
+      return { ...state, contactShowResult: true, contactResult: action.result, contactRevealed: true };
+    case 'REVEAL_CONTACT':
+      return { ...state, contactRevealed: true };
     case 'TOGGLE_COMMANDS_MODAL':
       return { ...state, commandsModalOpen: !state.commandsModalOpen };
     default:
@@ -57,12 +65,21 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
+  useEffect(() => {
+    if (document.cookie.split(';').some(c => c.trim().startsWith(`${COOKIE_NAME}=`))) {
+      dispatch({ type: 'REVEAL_CONTACT' });
+    }
+  }, []);
+
   const value: AppContextValue = {
     state,
     setActiveSection: (section) => dispatch({ type: 'SET_ACTIVE_SECTION', section }),
     openContactModal: () => dispatch({ type: 'OPEN_CONTACT_MODAL' }),
     closeContactModal: () => dispatch({ type: 'CLOSE_CONTACT_MODAL' }),
-    setContactResult: (result) => dispatch({ type: 'SET_CONTACT_RESULT', result }),
+    setContactResult: (result) => {
+      document.cookie = `${COOKIE_NAME}=1;path=/;max-age=${COOKIE_MAX_AGE_SECONDS};SameSite=Lax`;
+      dispatch({ type: 'SET_CONTACT_RESULT', result });
+    },
     toggleCommandsModal: () => dispatch({ type: 'TOGGLE_COMMANDS_MODAL' }),
   };
 

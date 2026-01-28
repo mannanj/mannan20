@@ -8,6 +8,11 @@ import type { ContactResultData } from '@/lib/types';
 
 const FORM_SUBMIT_DELAY_MS = 2000;
 
+const CONTACT_DATA: ContactResultData = {
+  email: 'hello@mannan.is',
+  phone: '+1 (571) 228-8302',
+};
+
 export function ContactModal() {
   const { state, closeContactModal, setContactResult } = useApp();
 
@@ -15,21 +20,19 @@ export function ContactModal() {
     console.log('Contact request submitted:', userInput);
 
     setTimeout(() => {
-      const result: ContactResultData = {
-        email: 'hello@mannan.is',
-        phone: '+1 (571) 228-8302',
-      };
-      setContactResult(result);
+      setContactResult(CONTACT_DATA);
     }, FORM_SUBMIT_DELAY_MS);
   };
 
+  const showResult = state.contactRevealed || state.contactShowResult;
+
   return (
     <Modal isOpen={state.contactModalOpen} onClose={closeContactModal}>
-      {!state.contactShowResult ? (
+      {!showResult ? (
         <ContactForm onSubmit={handleFormSubmit} />
-      ) : state.contactResult ? (
-        <ContactResult result={state.contactResult} />
-      ) : null}
+      ) : (
+        <ContactResult result={state.contactResult ?? CONTACT_DATA} />
+      )}
     </Modal>
   );
 }
