@@ -101,24 +101,24 @@ export function Payment({ status, details }: PaymentProps) {
               </div>
             </div>
           )}
-          <div className="flex items-center justify-center gap-4 text-sm">
+          <div className="flex items-center justify-center gap-3 text-sm">
             <Link
               href="/payment"
-              className="text-[#039be5] hover:underline"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#333] text-white hover:border-[#555] transition-colors duration-200 no-underline"
             >
               Make another payment
             </Link>
 
             <button
               onClick={() => setSupportOpen(!supportOpen)}
-              className="bg-transparent !border-0 !shadow-none !p-0 !m-0 text-[#039be5] hover:underline cursor-pointer focus:outline-none inline-flex items-center gap-1"
+              className={`!m-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full border cursor-pointer transition-all duration-200 focus:outline-none ${supportOpen ? '!border-[#039be5] !bg-[#039be5]/10 text-[#039be5]' : '!border-[#333] !bg-transparent text-white hover:!border-[#555]'}`}
             >
               {supportOpen ? (
                 <>
                   <span>{SUPPORT_EMAIL}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCopyEmail(); }}
-                    className="bg-transparent !border-0 !shadow-none !p-0 !m-0 cursor-pointer text-[#555] hover:text-white transition-colors duration-200 focus:outline-none"
+                    className="bg-transparent !border-0 !shadow-none !p-0 !m-0 cursor-pointer text-[#039be5] hover:text-white transition-colors duration-200 focus:outline-none"
                   >
                     {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
                   </button>
@@ -126,15 +126,28 @@ export function Payment({ status, details }: PaymentProps) {
               ) : (
                 'Get support'
               )}
+              <svg
+                className={`w-3 h-3 transition-transform duration-200 ${supportOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
           </div>
-          {supportOpen && (
-            <div className="mt-4 pt-4 border-t border-[#333] text-left">
-              <p className="text-[#888] text-xs leading-relaxed">
-                Need help with your payment? Feel free to reach out and I'll get back to you as soon as possible. Include your payment details for faster resolution.
-              </p>
+          <div
+            className={`grid transition-all duration-200 ease-in-out ${supportOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+          >
+            <div className="overflow-hidden">
+              <div className="mt-4 pt-4 border-t border-[#333] text-left">
+                <p className="text-[#888] text-xs leading-relaxed">
+                  Need help with your payment? Feel free to reach out and I'll get back to you as soon as possible. Include your payment details for faster resolution.
+                </p>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     );
