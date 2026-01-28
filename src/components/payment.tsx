@@ -108,7 +108,7 @@ export function Payment({ status, details }: PaymentProps) {
             >
               Make another payment
             </Link>
-            <span className="text-[#333]">|</span>
+
             <button
               onClick={() => setSupportOpen(!supportOpen)}
               className="bg-transparent !border-0 !shadow-none !p-0 !m-0 text-[#039be5] hover:underline cursor-pointer focus:outline-none inline-flex items-center gap-1"
