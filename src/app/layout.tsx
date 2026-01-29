@@ -4,21 +4,21 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Mannan Javid - Full-Stack Software Engineer',
-  description: 'Mannan Javid - Full-Stack Software Engineer specializing in modern web development. Portfolio showcasing real-time applications and innovative solutions.',
-  keywords: 'Mannan Javid, Full Stack Developer, Software Engineer, TypeScript, Web Development Portfolio',
+  title: 'Mannan Javid',
+  description: 'Mannan Javid — builder, thinker, maker.',
+  keywords: 'Mannan Javid, Software Engineer, Portfolio',
   authors: [{ name: 'Mannan Javid' }],
   openGraph: {
-    title: 'Mannan Javid - Full-Stack Software Engineer',
-    description: 'Portfolio showcasing full-stack development expertise and real-time web applications',
+    title: 'Mannan Javid',
+    description: 'Mannan Javid — builder, thinker, maker.',
     type: 'website',
     url: 'https://mannan.is',
     images: [{ url: 'https://mannan.is/mannan.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Mannan Javid - Full-Stack Software Engineer',
-    description: 'Portfolio showcasing full-stack development expertise',
+    title: 'Mannan Javid',
+    description: 'Mannan Javid — builder, thinker, maker.',
     images: ['https://mannan.is/mannan.jpg'],
   },
   icons: {
