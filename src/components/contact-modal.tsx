@@ -6,7 +6,6 @@ import { ContactForm } from './contact-form';
 import { ContactResult } from './contact-result';
 import type { ContactResultData } from '@/lib/types';
 
-const FORM_SUBMIT_DELAY_MS = 2000;
 const POPOUT_WIDTH = 300;
 
 const CONTACT_DATA: ContactResultData = {
@@ -61,13 +60,9 @@ export function ContactModal() {
     };
   }, [dragOffset]);
 
-  const handleFormSubmit = (userInput: string) => {
-    console.log('Contact request submitted:', userInput);
-
-    setTimeout(() => {
-      setContactResult(CONTACT_DATA);
-      closeContactModal();
-    }, FORM_SUBMIT_DELAY_MS);
+  const handleFormSubmit = () => {
+    setContactResult(CONTACT_DATA);
+    closeContactModal();
   };
 
   if (!state.contactModalOpen) return null;

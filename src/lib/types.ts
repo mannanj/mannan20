@@ -44,3 +44,14 @@ export interface ContactResultData {
   email: string;
   phone: string;
 }
+
+export interface LLMFieldResult {
+  found: boolean;
+  value: string;
+}
+
+export interface LLMValidationResult {
+  name: LLMFieldResult;
+  email: LLMFieldResult;
+  reason: LLMFieldResult;
+}
