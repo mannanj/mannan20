@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CopyIcon } from './icons/copy-icon';
-import { CheckIcon } from './icons/check-icon';
 
 const SUPPORT_EMAIL = 'hello@mannan.is';
 const COPY_FEEDBACK_DURATION_MS = 2000;
@@ -77,7 +75,7 @@ export function Payment({ status, details }: PaymentProps) {
             className="rounded-full mx-auto mb-6"
           />
           <div className="flex items-center justify-center gap-2 mb-2">
-            <svg className="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg width={20} height={20} className="text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
             <h2 className="text-white text-lg font-medium">Payment Successful</h2>
@@ -138,9 +136,16 @@ export function Payment({ status, details }: PaymentProps) {
                     className="inline-flex items-center gap-1.5 text-[#039be5] bg-transparent border-0 p-0 cursor-pointer hover:text-white transition-colors duration-200 focus:outline-none text-sm"
                   >
                     {SUPPORT_EMAIL}
-                    <span className="inline-flex shrink-0" style={{ width: 14, height: 14 }}>
-                      {copied ? <CheckIcon /> : <CopyIcon />}
-                    </span>
+                    {copied ? (
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="shrink-0">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : (
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="shrink-0">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                    )}
                   </button>
                 </div>
                 <p className="text-[#888] text-xs leading-relaxed text-center">
@@ -171,7 +176,7 @@ export function Payment({ status, details }: PaymentProps) {
             className="rounded-full mx-auto mb-6"
           />
           <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg width={24} height={24} className="text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
