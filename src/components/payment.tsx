@@ -59,7 +59,7 @@ function PaymentHeader() {
   return (
     <div className="flex items-center fixed top-0 w-screen bg-[#0b0b0b]/80 backdrop-blur-md h-[66px] z-[99] px-6">
       <Link href="/" className="text-white/70 hover:text-white transition-colors duration-200">
-        Home
+        Back to Home
       </Link>
     </div>
   );
