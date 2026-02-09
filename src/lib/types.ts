@@ -16,7 +16,6 @@ export interface ProfileItem {
 
 export interface AboutIntro {
   primary: string;
-  expanded: string[];
 }
 
 export interface PublishedWork {
