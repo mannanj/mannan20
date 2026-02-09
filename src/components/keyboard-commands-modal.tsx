@@ -62,7 +62,22 @@ export function KeyboardCommandsModal() {
       action: handleOpenContact,
       keywords: ['contact', 'collaborate', 'reach out', 'email', 'form'],
     },
-  ], [navigateToSection, handleOpenContact]);
+    {
+      id: 'download-resume',
+      label: 'Download Resume',
+      description: 'Download resume as PDF',
+      action: () => {
+        const link = document.createElement('a');
+        link.href = '/data/documents/mannan-javid-resume.pdf';
+        link.download = 'mannan-javid-resume.pdf';
+        link.click();
+        toggleCommandsModal();
+        setSearchQuery('');
+        setSelectedIndex(0);
+      },
+      keywords: ['resume', 'cv', 'download', 'pdf'],
+    },
+  ], [navigateToSection, handleOpenContact, toggleCommandsModal]);
 
   const filteredOptions = useMemo(() => {
     const query = searchQuery.toLowerCase();

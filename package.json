@@ -8,6 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@tailwindcss/postcss": "^4.1.14",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
@@ -16,12 +18,14 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^20.3.0",
-    "tailwindcss": "^4.1.14"
+    "tailwindcss": "^4.1.14",
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.19",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.182.0",
     "typescript": "~5.8.3"
   }
 }

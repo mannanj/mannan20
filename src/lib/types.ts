@@ -30,6 +30,24 @@ export interface EducationInfo {
   degree: string;
 }
 
+export interface NarrativeChapter {
+  id: string;
+  title: string;
+  content: string;
+  highlight?: string;
+}
+
+export interface Certification {
+  name: string;
+  year: string;
+}
+
+export interface DownloadLink {
+  label: string;
+  path: string;
+  filename: string;
+}
+
 export interface AboutData {
   aboutIntro: AboutIntro;
   jobs: ProfileItem[];
@@ -37,6 +55,9 @@ export interface AboutData {
   educationProjects: Record<string, ProfileItem>;
   publishedWorks: PublishedWork[];
   education: EducationInfo;
+  narrative: NarrativeChapter[];
+  certifications: Certification[];
+  downloads: DownloadLink[];
 }
 
 export interface ContactResultData {

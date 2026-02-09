@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import type { EducationInfo, ProfileItem } from '@/lib/types';
+import type { Certification, EducationInfo, ProfileItem } from '@/lib/types';
 import { ContentCard } from './content-card';
 
 interface EducationSectionProps {
   education: EducationInfo;
   projects: Record<string, ProfileItem>;
+  certifications: Certification[];
 }
 
-export function EducationSection({ education, projects }: EducationSectionProps) {
+export function EducationSection({ education, projects, certifications }: EducationSectionProps) {
   const [count, setCount] = useState(0);
   const display = count > 0;
 
@@ -30,6 +31,16 @@ export function EducationSection({ education, projects }: EducationSectionProps)
         <b>{education.institution}</b>
         <p className="leading-[1.6] m-0 text-white">{education.dates}</p>
         <p className="leading-[1.6] m-0 text-white">{education.degree}</p>
+
+        {display && certifications.length > 0 && (
+          <div className="mt-2">
+            {certifications.map((cert) => (
+              <p key={cert.name} className="leading-[1.6] m-0 text-white text-xs">
+                {cert.name} ({cert.year})
+              </p>
+            ))}
+          </div>
+        )}
 
         <div id="more-education" className="mt-1.5">
           {display && (
