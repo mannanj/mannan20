@@ -1,0 +1,10 @@
+{
+  "companies": [
+    {
+      "slug": "replit",
+      "name": "Replit",
+      "description": "Cloud development platform — IDE, hosting, and AI agent.",
+      "articleCount": 1
+    }
+  ]
+}

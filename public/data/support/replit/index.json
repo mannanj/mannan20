@@ -1,0 +1,14 @@
+{
+  "company": "Replit",
+  "articles": [
+    {
+      "slug": "ticket-83298",
+      "title": "Agent and Git Stuck in Unusable State",
+      "status": "auto-closed",
+      "ticketNumber": "83298",
+      "dateOpened": "2025-05-22",
+      "dateClosed": "2025-06-20",
+      "summary": "Git rebase stuck, agent errors, .git/index.lock blocking all operations, security restrictions preventing manual recovery. Auto-closed without resolution after 25 days of silence."
+    }
+  ]
+}
