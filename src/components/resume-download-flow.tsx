@@ -174,7 +174,7 @@ export function ResumeDownloadFlow() {
           setTimeout(beginScroll, SCROLL_MOVE_DURATION);
         }
       }, CURSOR_APPEAR_PAUSE);
-    }, INITIAL_DELAY);
+    }, isMobile ? 999 : INITIAL_DELAY);
   }, [injectCursorHide, removeCursorHide]);
 
   const openModal = useCallback((e: Event) => {
