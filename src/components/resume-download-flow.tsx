@@ -90,6 +90,7 @@ export function ResumeDownloadFlow() {
     const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 768;
     isMobileRef.current = isMobile;
 
+    window.scrollTo(0, 0);
     setPhase('waiting');
     if (!isMobile) injectCursorHide();
 
