@@ -8,6 +8,15 @@ const PLACEHOLDER = "Share your name, email, and/or why you're here";
 const DEBOUNCE_MS = 2000;
 const AUTO_CLOSE_MS = 5000;
 
+type FormStatus = "idle" | "validating" | "success" | "error";
+
+const STATUS_TEXT: Record<FormStatus, string> = {
+  idle: "Waiting for response...",
+  validating: "Checking response...",
+  success: "Received response...",
+  error: "Something went wrong. Please try again.",
+};
+
 interface ContactFormProps {
   onSubmit: () => void;
 }
@@ -15,18 +24,10 @@ interface ContactFormProps {
 export function ContactForm({ onSubmit }: ContactFormProps) {
   const { state, setContactUserInput } = useApp();
   const userInput = state.contactUserInput;
-  const [validating, setValidating] = useState(false);
-  const [validationResult, setValidationResult] =
-    useState<LLMValidationResult | null>(null);
+  const [status, setStatus] = useState<FormStatus>("idle");
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const hasFoundFields =
-    validationResult &&
-    (validationResult.name.found ||
-      validationResult.email.found ||
-      validationResult.reason.found);
 
   const cancelDebounce = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -65,7 +66,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
   const validate = useCallback(
     async (text: string) => {
       cancelRequest();
-      setValidating(true);
+      setStatus("validating");
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -79,28 +80,29 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         });
 
         if (!res.ok) {
-          setValidating(false);
+          setStatus("error");
           return;
         }
 
         const result: LLMValidationResult = await res.json();
 
         if (result.name || result.email || result.reason) {
-          setValidationResult(result);
           if (
             result.name.found ||
             result.email.found ||
             result.reason.found
           ) {
+            setStatus("success");
             startCloseTimer();
+          } else {
+            setStatus("idle");
           }
+        } else {
+          setStatus("idle");
         }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
-      } finally {
-        if (!controller.signal.aborted) {
-          setValidating(false);
-        }
+        setStatus("error");
       }
     },
     [cancelRequest, startCloseTimer]
@@ -113,8 +115,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       cancelDebounce();
       cancelRequest();
       cancelCloseTimer();
-      setValidating(false);
-      setValidationResult(null);
+      setStatus("idle");
 
       if (!value.trim()) return;
 
@@ -152,31 +153,62 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       onMouseDown={handleInteraction}
       onSelect={handleInteraction}
     >
-      {validating && (
-        <p className="text-[0.625rem] text-[#888] mb-1.5 text-center">
-          We are checking your response
-          <span className="inline-block w-4 text-left after:animate-[ellipsis_1.5s_steps(4,end)_infinite] after:content-['']" />
-        </p>
-      )}
+      <textarea
+        value={userInput}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        rows={6}
+        style={{
+          width: '100%',
+          padding: '12px 14px',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '10px',
+          fontSize: '14px',
+          color: 'white',
+          background: 'rgba(0,0,0,0.3)',
+          resize: 'vertical',
+          fontFamily: 'inherit',
+          lineHeight: 1.5,
+          boxSizing: 'border-box',
+          outline: 'none',
+          transition: 'border-color 0.2s',
+        }}
+        placeholder={PLACEHOLDER}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = 'rgba(3,155,229,0.5)';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+        }}
+      />
 
-      <div className="relative">
-        <textarea
-          value={userInput}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          rows={5}
-          className="w-full py-2 px-3 border border-[#333] rounded-lg text-xs text-white bg-[#111] transition-all duration-200 box-border resize-y font-[inherit] leading-normal placeholder:text-[#555] focus:outline-none focus:border-[#039be5]"
-          placeholder={PLACEHOLDER}
-        />
+      <p style={{
+        margin: '2px 0 0',
+        padding: '0 4px',
+        fontSize: '10px',
+        lineHeight: 1.3,
+        color: 'rgba(255,255,255,0.25)',
+        fontWeight: 300,
+        textAlign: 'center',
+      }}>
+        I will never send you unsolicited communication.
+      </p>
 
-        {validating && (
+      <div style={{
+        marginTop: '2px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '0 4px',
+      }}>
+        {status === "validating" && (
           <svg
-            className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin h-4 w-4 text-[#039be5]"
+            style={{ animation: 'spin 1s linear infinite', width: '12px', height: '12px', color: 'rgba(255,255,255,0.5)' }}
             viewBox="0 0 24 24"
             fill="none"
           >
             <circle
-              className="opacity-25"
+              style={{ opacity: 0.25 }}
               cx="12"
               cy="12"
               r="10"
@@ -184,70 +216,20 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
               strokeWidth="4"
             />
             <path
-              className="opacity-75"
+              style={{ opacity: 0.75 }}
               fill="currentColor"
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
         )}
+        <span style={{
+          fontSize: '12px',
+          fontStyle: 'italic',
+          color: status === 'error' ? 'rgba(239,68,68,0.7)' : 'rgba(255,255,255,0.4)',
+        }}>
+          {STATUS_TEXT[status]}
+        </span>
       </div>
-
-      {hasFoundFields && (
-        <div className="mt-1.5 space-y-1">
-          {validationResult.name.found && (
-            <div className="flex items-center gap-1.5 text-[0.625rem] text-green-400">
-              <svg
-                className="h-3 w-3 flex-shrink-0"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Name received
-            </div>
-          )}
-          {validationResult.email.found && (
-            <div className="flex items-center gap-1.5 text-[0.625rem] text-green-400">
-              <svg
-                className="h-3 w-3 flex-shrink-0"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Email received
-            </div>
-          )}
-          {validationResult.reason.found && (
-            <div className="flex items-center gap-1.5 text-[0.625rem] text-green-400">
-              <svg
-                className="h-3 w-3 flex-shrink-0"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Thanks for your reason
-            </div>
-          )}
-        </div>
-      )}
-
-      <p className="m-0 mt-1.5 mb-0 p-0 !text-[0.625rem] leading-tight !text-[#444] !font-light text-center">
-        I will never send you unsolicited communication.
-      </p>
     </div>
   );
 }

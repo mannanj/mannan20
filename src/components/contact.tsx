@@ -93,9 +93,7 @@ export function Contact() {
             Back to Top
           </button>
         </div>
-        <div className="ripple-container" onClick={handleOpenContact} title="Request contact info">
-          <div className="circle" />
-        </div>
+        <div className="ripple-container" onClick={handleOpenContact} title="Request contact info" />
       </div>
       {toast && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1100] bg-[#222] border border-[#333] text-white text-xs px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.4)] animate-[fadeIn_0.2s_ease]">

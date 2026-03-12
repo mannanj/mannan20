@@ -76,7 +76,7 @@ export function Header() {
           <LinkedInIcon />
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
             <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-            <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
+            <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
               View my LinkedIn
             </div>
           </div>
@@ -90,7 +90,7 @@ export function Header() {
           <GitHubIcon />
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
             <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-            <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
+            <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
               View my GitHub
             </div>
           </div>

@@ -6,7 +6,7 @@ import { ContactForm } from './contact-form';
 import { ContactResult } from './contact-result';
 import type { ContactResultData } from '@/lib/types';
 
-const POPOUT_WIDTH = 300;
+const POPOUT_WIDTH = 380;
 
 const CONTACT_DATA: ContactResultData = {
   email: 'hello@mannan.is',
@@ -17,6 +17,7 @@ export function ContactModal() {
   const { state, closeContactModal, setContactResult } = useApp();
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [closeHover, setCloseHover] = useState(false);
   const popoutRef = useRef<HTMLDivElement>(null);
   const positionInitialized = useRef(false);
 
@@ -28,7 +29,7 @@ export function ContactModal() {
       let y = state.contactPopoutPosition.y;
 
       x = Math.max(12, Math.min(x, vw - POPOUT_WIDTH - 12));
-      y = Math.max(12, Math.min(y, vh - 250));
+      y = Math.max(12, Math.min(y, vh - 300));
 
       setPosition({ x, y });
       positionInitialized.current = true;
@@ -70,19 +71,54 @@ export function ContactModal() {
   const showResult = state.contactRevealed || state.contactShowResult;
 
   return (
-    <div className="fixed inset-0 z-[1000]" onClick={closeContactModal}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+      }}
+      onClick={closeContactModal}
+    >
       <div
         ref={popoutRef}
-        className="fixed bg-[#141414] border border-[#222] rounded-xl px-4 pt-4 pb-2 shadow-[0_8px_30px_rgba(0,0,0,0.6)] cursor-grab active:cursor-grabbing select-none"
-        style={{ left: position.x, top: position.y, width: POPOUT_WIDTH }}
+        style={{
+          position: 'fixed',
+          left: position.x,
+          top: position.y,
+          width: POPOUT_WIDTH,
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: '20px',
+          padding: '10px',
+          fontFamily: 'var(--font-geist-sans), system-ui, -apple-system, sans-serif',
+          cursor: dragOffset ? 'grabbing' : 'grab',
+          userSelect: 'none',
+        }}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
       >
         <button
-          className="absolute -top-2.5 -right-2.5 bg-[#222] border border-[#333] rounded-full text-xs cursor-pointer text-[#888] leading-none p-0 w-5 h-5 flex items-center justify-center transition-colors duration-200 hover:text-white hover:bg-[#333] outline-none shadow-none z-10"
+          type="button"
           onClick={closeContactModal}
+          onMouseEnter={() => setCloseHover(true)}
+          onMouseLeave={() => setCloseHover(false)}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '18px',
+            zIndex: 1,
+            background: 'none',
+            border: 'none',
+            color: closeHover ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)',
+            fontSize: '18px',
+            cursor: 'pointer',
+            padding: '0 4px',
+            lineHeight: 1,
+          }}
         >
-          &times;
+          ×
         </button>
         {!showResult ? (
           <ContactForm onSubmit={handleFormSubmit} />
