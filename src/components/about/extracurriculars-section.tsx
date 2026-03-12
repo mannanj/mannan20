@@ -1,14 +1,12 @@
-import type { ProfileItem, PublishedWork } from '@/lib/types';
+import type { ProfileItem } from '@/lib/types';
 import { ContentCard } from './content-card';
-import { downloadFile } from '@/lib/utils';
 
 interface ExtracurricularsSectionProps {
   activities: Record<string, ProfileItem>;
-  publishedWorks: PublishedWork[];
   count: number;
 }
 
-export function ExtracurricularsSection({ activities, publishedWorks, count }: ExtracurricularsSectionProps) {
+export function ExtracurricularsSection({ activities, count }: ExtracurricularsSectionProps) {
   const display = count > 0;
 
   return (
@@ -24,20 +22,6 @@ export function ExtracurricularsSection({ activities, publishedWorks, count }: E
             {count >= 1 && <ContentCard data={activities['volunteering']} applyMarginTop />}
             {count >= 1 && <ContentCard data={activities['travel']} applyMarginTop />}
             {count === 2 && <ContentCard data={activities['jung']} applyMarginTop />}
-
-            {count === 2 && (
-              <div className="p-0 m-0 text-inherit mt-[10px]">
-                <b>Published Works</b>
-                {publishedWorks.map((work, i) => (
-                  <p key={i} className="text-sm leading-[1.6] m-0 text-white">
-                    &#x2022;{' '}
-                    <button type="button" onClick={() => downloadFile(work.downloadPath, work.downloadFilename)} className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7] bg-transparent border-none cursor-pointer p-0 text-sm font-inherit">
-                      {work.title}
-                    </button>
-                  </p>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>

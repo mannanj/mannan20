@@ -108,11 +108,13 @@
   "publishedWorks": [
     {
       "title": "Apparatus for Remote Control of Humanoid Robots",
+      "description": "An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge.",
       "downloadPath": "/data/documents/GMU-ARCHR.pdf",
       "downloadFilename": "ARCHR-Apparatus-for-Remote-Control of-Humanoid-Robot"
     },
     {
       "title": "Open Modeling Framework Demand Response",
+      "description": "Cost-benefit analysis model for demand response programs built for rural electric cooperatives using NRECA's Open Modeling Framework, simulating TOU, CPP, PTR, and DLC programs.",
       "downloadPath": "/data/documents/OMF-DR.pdf",
       "downloadFilename": "OMF-Energy-Demand-Response"
     }
@@ -149,12 +151,12 @@
   ],
   "certifications": [
     {
-      "name": "AWS Cloud Practitioner",
-      "year": "2021"
+      "name": "Johns Hopkins Agentic AI Training",
+      "year": "2026"
     },
     {
-      "name": "CompTIA Security+",
-      "year": "2017"
+      "name": "AWS Certified Solutions Architect",
+      "year": "2025"
     }
   ],
   "downloads": [

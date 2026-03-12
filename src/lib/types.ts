@@ -20,6 +20,7 @@ export interface AboutIntro {
 
 export interface PublishedWork {
   title: string;
+  description: string;
   downloadPath: string;
   downloadFilename: string;
 }

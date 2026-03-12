@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { AboutData } from '@/lib/types';
 import { scrollToSection } from '@/lib/utils';
 import { EmploymentSection } from './about/employment-section';
+import { PublishedWorksSection } from './about/published-works-section';
 import { ExtracurricularsSection } from './about/extracurriculars-section';
 import { EducationSection } from './about/education-section';
 
@@ -17,43 +18,20 @@ interface AboutProps {
 }
 
 export function About({ data }: AboutProps) {
-  const [step, setStep] = useState(0);
+  const [employmentStep, setEmploymentStep] = useState(0);
+  const [extracurricularsStep, setExtracurricularsStep] = useState(0);
+  const [educationStep, setEducationStep] = useState(0);
 
   const totalJobs = data.jobs.length;
   const employmentSteps = Math.ceil(Math.max(0, totalJobs - EMPLOYMENT_DEFAULT) / EMPLOYMENT_INCREMENT);
-  const totalSteps = employmentSteps + EXTRACURRICULARS_MAX + EDUCATION_MAX;
-  const isFullyExpanded = step >= totalSteps;
 
   const jobsToShow = Math.min(
-    EMPLOYMENT_DEFAULT + Math.min(step, employmentSteps) * EMPLOYMENT_INCREMENT,
+    EMPLOYMENT_DEFAULT + Math.min(employmentStep, employmentSteps) * EMPLOYMENT_INCREMENT,
     totalJobs
   );
-  const extracurricularsCount = Math.max(0, Math.min(step - employmentSteps, EXTRACURRICULARS_MAX));
-  const educationCount = Math.max(0, Math.min(step - employmentSteps - EXTRACURRICULARS_MAX, EDUCATION_MAX));
 
-  const activeSection = step < employmentSteps ? 'employment'
-    : step < employmentSteps + EXTRACURRICULARS_MAX ? 'extracurriculars'
-    : 'education';
-
-  const moreButton = (
-    <button
-      type="button"
-      className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-      onClick={() => setStep((prev) => prev + 1)}
-    >
-      more
-    </button>
-  );
-
-  const lessButton = (
-    <button
-      type="button"
-      className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-      onClick={() => setStep(0)}
-    >
-      less
-    </button>
-  );
+  const moreClass = "flex items-center justify-center w-7 h-7 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
+  const lessClass = "flex items-center justify-center w-7 h-7 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
 
   return (
     <div>
@@ -65,16 +43,38 @@ export function About({ data }: AboutProps) {
         {data.aboutIntro.primary}
       </p>
 
-      <EmploymentSection jobs={data.jobs} jobsToShow={jobsToShow} />
-      {activeSection === 'employment' && moreButton}
+      <div>
+        <EmploymentSection jobs={data.jobs} jobsToShow={jobsToShow} />
+        {employmentStep < employmentSteps ? (
+          <button type="button" className={moreClass} onClick={() => setEmploymentStep((prev) => prev + 1)}>+</button>
+        ) : employmentStep > 0 ? (
+          <button type="button" className={lessClass} onClick={() => setEmploymentStep(0)}>&minus;</button>
+        ) : null}
+      </div>
 
-      <ExtracurricularsSection activities={data.activities} publishedWorks={data.publishedWorks} count={extracurricularsCount} />
-      {activeSection === 'extracurriculars' && (isFullyExpanded ? lessButton : moreButton)}
+      <div>
+        <PublishedWorksSection publishedWorks={data.publishedWorks} />
+      </div>
 
-      <EducationSection education={data.education} projects={data.educationProjects} certifications={data.certifications} count={educationCount} />
-      {activeSection === 'education' && (isFullyExpanded ? lessButton : moreButton)}
+      <div>
+        <ExtracurricularsSection activities={data.activities} count={extracurricularsStep} />
+        {extracurricularsStep < EXTRACURRICULARS_MAX ? (
+          <button type="button" className={moreClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)}>+</button>
+        ) : (
+          <button type="button" className={lessClass} onClick={() => setExtracurricularsStep(0)}>&minus;</button>
+        )}
+      </div>
 
-      <button onClick={() => scrollToSection('contact')} className="nav-button mt-[25px]">
+      <div>
+        <EducationSection education={data.education} projects={data.educationProjects} certifications={data.certifications} count={educationStep} />
+        {educationStep < EDUCATION_MAX ? (
+          <button type="button" className={moreClass} onClick={() => setEducationStep((prev) => prev + 1)}>+</button>
+        ) : (
+          <button type="button" className={lessClass} onClick={() => setEducationStep(0)}>&minus;</button>
+        )}
+      </div>
+
+      <button onClick={() => scrollToSection('contact')} className="nav-button mt-[30px]">
         Get In Touch
       </button>
     </div>

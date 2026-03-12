@@ -6,6 +6,13 @@ import { GlassModal } from '@/components/glass-modal';
 
 const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
+const DEFAULT_BODY = 'Would you like to download this resume?';
+
+interface ModalConfig {
+  body: string;
+  path: string;
+  filename: string;
+}
 
 const INITIAL_DELAY = 777;
 const CURSOR_APPEAR_PAUSE = 300;
@@ -30,6 +37,7 @@ export function ResumeDownloadFlow() {
   const [spotlight, setSpotlight] = useState<SpotlightRect | null>(null);
   const [arrowPos, setArrowPos] = useState<{ x: number; y: number } | null>(null);
   const [arrowTarget, setArrowTarget] = useState<{ x: number; y: number } | null>(null);
+  const [modalConfig, setModalConfig] = useState<ModalConfig>({ body: DEFAULT_BODY, path: RESUME_PATH, filename: RESUME_FILENAME });
   const btnRef = useRef<HTMLElement | null>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
 
@@ -60,8 +68,8 @@ export function ResumeDownloadFlow() {
 
   const handleDownload = useCallback(() => {
     cleanup();
-    downloadFile(RESUME_PATH, RESUME_FILENAME);
-  }, [cleanup]);
+    downloadFile(modalConfig.path, modalConfig.filename);
+  }, [cleanup, modalConfig]);
 
   const modalButtons = useMemo(() => [
     { label: 'Cancel', onClick: cleanup },
@@ -89,7 +97,7 @@ export function ResumeDownloadFlow() {
 
       setTimeout(() => {
         const scrollbarX = window.innerWidth - 20;
-        const scrollbarY = window.innerHeight / 2;
+        const scrollbarY = window.innerHeight / 2 - 55;
         setArrowTarget({ x: scrollbarX, y: scrollbarY });
         setArrowPos({ x: scrollbarX, y: scrollbarY });
         setPhase('scroll-move');
@@ -159,7 +167,13 @@ export function ResumeDownloadFlow() {
     }, INITIAL_DELAY);
   }, [injectCursorHide, removeCursorHide]);
 
-  const openModal = useCallback(() => {
+  const openModal = useCallback((e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    if (detail?.body) {
+      setModalConfig({ body: detail.body, path: detail.path, filename: detail.filename });
+    } else {
+      setModalConfig({ body: DEFAULT_BODY, path: RESUME_PATH, filename: RESUME_FILENAME });
+    }
     setPhase('modal');
   }, []);
 
@@ -274,7 +288,7 @@ export function ResumeDownloadFlow() {
             ...arrowTransition,
           }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+          <svg width="72" height="72" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
             <path d="M5 3L19 12L12 13L9 20L5 3Z" fill="white" stroke="#333" strokeWidth="1" />
           </svg>
@@ -284,7 +298,7 @@ export function ResumeDownloadFlow() {
       <GlassModal
         isOpen={phase === 'modal'}
         onClose={cleanup}
-        body="Would you like to download this resume?"
+        body={modalConfig.body}
         buttons={modalButtons}
         defaultSize="medium"
         showSizeToggle={false}

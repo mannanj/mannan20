@@ -1,3 +1,5 @@
+'use client';
+
 import type { ProfileItem } from '@/lib/types';
 import { downloadFile } from '@/lib/utils';
 
@@ -8,8 +10,9 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) {
+
   return (
-    <div className={`p-0 m-0 ${nested ? 'text-black text-[80%]' : 'text-inherit'} ${applyMarginTop ? 'mt-[10px]' : ''}`}>
+    <div className={`p-0 m-0 ${nested ? 'text-black text-[80%]' : 'text-inherit'} ${applyMarginTop ? 'mt-[15px]' : ''}`}>
       {data.link && data.title ? (
         <a href={data.link} target="_blank" rel="noopener noreferrer" className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
           <b>{data.title}</b>
@@ -43,7 +46,7 @@ export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) 
       )}
 
       {data.expandedContent && (
-        <div className="content bg-[#f1f1f1] text-black p-1.5 rounded-md">
+        <div className="content bg-[#f1f1f1] text-black p-1.5 rounded-md mt-[5px]">
           <p className="text-xs mt-0" dangerouslySetInnerHTML={{ __html: data.expandedContent }} />
         </div>
       )}
