@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { downloadFile } from '@/lib/utils';
 
 const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
@@ -10,10 +10,18 @@ const SCROLL_DELAY = 400;
 const CURSOR_APPEAR_DELAY = 600;
 const CURSOR_MOVE_DURATION = 800;
 const CLICK_DELAY = 400;
+const SPOTLIGHT_DURATION = 1800;
 
 interface CursorPosition {
   x: number;
   y: number;
+}
+
+interface SpotlightRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
 }
 
 export function ResumeDownloadFlow() {
@@ -22,7 +30,9 @@ export function ResumeDownloadFlow() {
   const [cursorPos, setCursorPos] = useState<CursorPosition>({ x: 0, y: 0 });
   const [cursorTarget, setCursorTarget] = useState<CursorPosition | null>(null);
   const [clicking, setClicking] = useState(false);
+  const [spotlight, setSpotlight] = useState<SpotlightRect | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const btnRef = useRef<HTMLElement | null>(null);
 
   const startFlow = useCallback(() => {
     const el = document.getElementById('employment-history');
@@ -34,8 +44,19 @@ export function ResumeDownloadFlow() {
     setTimeout(() => {
       const btn = document.querySelector<HTMLElement>('[aria-label="Download Resume"]');
       if (!btn) return;
+      btnRef.current = btn;
+
+      btn.style.pointerEvents = 'none';
 
       const rect = btn.getBoundingClientRect();
+      const pad = 12;
+      setSpotlight({
+        top: rect.top - pad,
+        left: rect.left - pad,
+        width: rect.width + pad * 2,
+        height: rect.height + pad * 2,
+      });
+
       const targetX = rect.left + rect.width / 2;
       const targetY = rect.top + rect.height / 2;
 
@@ -55,7 +76,9 @@ export function ResumeDownloadFlow() {
         setTimeout(() => {
           setClicking(false);
           setCursorVisible(false);
+          setSpotlight(null);
           setModalOpen(true);
+          if (btnRef.current) btnRef.current.style.pointerEvents = '';
         }, 300);
       }, CURSOR_APPEAR_DELAY + CURSOR_MOVE_DURATION + CLICK_DELAY);
     }, SCROLL_DELAY);
@@ -70,23 +93,53 @@ export function ResumeDownloadFlow() {
     }
   }, [startFlow]);
 
-  const handleYes = () => {
+  const cleanup = useCallback(() => {
     setModalOpen(false);
+    setSpotlight(null);
     setActive(false);
-    downloadFile(RESUME_PATH, RESUME_FILENAME);
+    if (btnRef.current) btnRef.current.style.pointerEvents = '';
     history.replaceState(null, '', window.location.pathname);
+  }, []);
+
+  const handleYes = () => {
+    cleanup();
+    downloadFile(RESUME_PATH, RESUME_FILENAME);
   };
 
   const handleNo = () => {
-    setModalOpen(false);
-    setActive(false);
-    history.replaceState(null, '', window.location.pathname);
+    cleanup();
   };
 
   if (!active) return null;
 
   return (
     <>
+      {spotlight && (
+        <>
+          <div className="fixed inset-0 z-[999] cursor-none" style={{ backdropFilter: 'blur(3px)' }}>
+            <div
+              className="absolute bg-black/60"
+              style={{
+                inset: 0,
+                maskImage: `radial-gradient(ellipse ${spotlight.width * 1.2}px ${spotlight.height * 2.5}px at ${spotlight.left + spotlight.width / 2}px ${spotlight.top + spotlight.height / 2}px, transparent 40%, black 100%)`,
+                WebkitMaskImage: `radial-gradient(ellipse ${spotlight.width * 1.2}px ${spotlight.height * 2.5}px at ${spotlight.left + spotlight.width / 2}px ${spotlight.top + spotlight.height / 2}px, transparent 40%, black 100%)`,
+              }}
+            />
+            <div
+              className="absolute rounded-lg pointer-events-none"
+              style={{
+                top: spotlight.top,
+                left: spotlight.left,
+                width: spotlight.width,
+                height: spotlight.height,
+                boxShadow: '0 0 30px 10px rgba(255, 230, 140, 0.15), 0 0 60px 20px rgba(255, 230, 140, 0.08)',
+              }}
+            />
+          </div>
+          <style>{`* { cursor: none !important; }`}</style>
+        </>
+      )}
+
       {cursorVisible && (
         <div
           className="fixed z-[2000] pointer-events-none"
@@ -105,28 +158,31 @@ export function ResumeDownloadFlow() {
 
       {modalOpen && (
         <div
-          className="fixed inset-0 bg-black/40 flex justify-center items-center z-[1000] p-5"
+          className="fixed inset-0 bg-black/30 flex justify-center items-center z-[1000] p-5"
           onClick={handleNo}
         >
           <div
-            className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-2xl px-10 py-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-sm w-full"
+            className="bg-[#d1d1d6]/90 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] max-w-[280px] w-full overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-white/90 text-base text-center mb-6 font-light tracking-wide">Would you like to download this resume?</p>
-            <div className="flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={handleYes}
-                className="px-8 py-2.5 bg-white/15 hover:bg-white/25 text-white text-sm rounded-xl border border-white/20 cursor-pointer transition-all duration-200 backdrop-blur-sm font-light tracking-wide"
-              >
-                Yes
-              </button>
+            <div className="px-6 pt-6 pb-4">
+              <p className="text-[#1c1c1e] text-[15px] text-center font-semibold mb-1">Download Resume</p>
+              <p className="text-[#3a3a3c] text-[13px] text-center leading-snug">Would you like to download this resume?</p>
+            </div>
+            <div className="border-t border-[#b0b0b4]/60 flex">
               <button
                 type="button"
                 onClick={handleNo}
-                className="px-8 py-2.5 bg-white/5 hover:bg-white/15 text-white/60 hover:text-white/90 text-sm rounded-xl border border-white/10 cursor-pointer transition-all duration-200 font-light tracking-wide"
+                className="flex-1 py-3 text-[#007aff] text-[15px] bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-black/5 border-r border-[#b0b0b4]/60"
               >
-                No
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleYes}
+                className="flex-1 py-3 text-[#007aff] text-[15px] font-semibold bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-black/5"
+              >
+                Download
               </button>
             </div>
           </div>
