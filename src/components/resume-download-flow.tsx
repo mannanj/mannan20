@@ -40,6 +40,7 @@ export function ResumeDownloadFlow() {
   const [modalConfig, setModalConfig] = useState<ModalConfig>({ body: DEFAULT_BODY, path: RESUME_PATH, filename: RESUME_FILENAME });
   const btnRef = useRef<HTMLElement | null>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
+  const isMobileRef = useRef(false);
 
   const injectCursorHide = useCallback(() => {
     if (styleRef.current) return;
@@ -86,8 +87,11 @@ export function ResumeDownloadFlow() {
       btnRef.current = btn;
     }
 
+    const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 768;
+    isMobileRef.current = isMobile;
+
     setPhase('waiting');
-    injectCursorHide();
+    if (!isMobile) injectCursorHide();
 
     setTimeout(() => {
       const cx = window.innerWidth / 2;
@@ -96,17 +100,11 @@ export function ResumeDownloadFlow() {
       setPhase('cursor-appear');
 
       setTimeout(() => {
-        const scrollbarX = window.innerWidth - 20;
-        const scrollbarY = window.innerHeight / 2 - 279;
-        setArrowTarget({ x: scrollbarX, y: scrollbarY });
-        setArrowPos({ x: scrollbarX, y: scrollbarY });
-        setPhase('scroll-move');
-
-        setTimeout(() => {
+        const beginScroll = () => {
           setPhase('scrolling');
           setArrowTarget(null);
 
-          const y = el.getBoundingClientRect().top + window.scrollY - 75;
+          const y = el.getBoundingClientRect().top + window.scrollY - 222;
           const scrollStart = window.scrollY;
           const scrollDelta = y - scrollStart;
           const scrollStartTime = performance.now();
@@ -162,7 +160,18 @@ export function ResumeDownloadFlow() {
               }, ARROW_MOVE_DURATION + 100);
             }, PAUSE_DURATION);
           }, SCROLL_DURATION + SCROLL_SETTLE_DELAY);
-        }, SCROLL_MOVE_DURATION);
+        };
+
+        if (isMobile) {
+          beginScroll();
+        } else {
+          const scrollbarX = window.innerWidth - 20;
+          const scrollbarY = window.innerHeight / 2 - 279;
+          setArrowTarget({ x: scrollbarX, y: scrollbarY });
+          setArrowPos({ x: scrollbarX, y: scrollbarY });
+          setPhase('scroll-move');
+          setTimeout(beginScroll, SCROLL_MOVE_DURATION);
+        }
       }, CURSOR_APPEAR_PAUSE);
     }, INITIAL_DELAY);
   }, [injectCursorHide, removeCursorHide]);
@@ -194,7 +203,7 @@ export function ResumeDownloadFlow() {
     : undefined;
 
   const showSpotlight = phase === 'scrolling' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
-  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
+  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking' || (isMobileRef.current && phase === 'scrolling');
 
   const arrowTransition = (() => {
     if (phase === 'scroll-move') {
@@ -284,14 +293,29 @@ export function ResumeDownloadFlow() {
             pointerEvents: 'none',
             left: arrowPos.x,
             top: arrowPos.y,
-            transform: `scale(${phase === 'clicking' ? 0.8 : 1})`,
+            transform: isMobileRef.current
+              ? `translate(-50%, -50%) scale(${phase === 'clicking' ? 0.7 : 1})`
+              : `scale(${phase === 'clicking' ? 0.8 : 1})`,
             ...arrowTransition,
           }}
         >
-          <svg width="72" height="72" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-            style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
-            <path d="M5 3L19 12L12 13L9 20L5 3Z" fill="white" stroke="#333" strokeWidth="1" />
-          </svg>
+          {isMobileRef.current ? (
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '2px solid rgba(255, 255, 255, 0.5)',
+                boxShadow: '0 0 12px rgba(255, 255, 255, 0.15)',
+              }}
+            />
+          ) : (
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+              style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+              <path d="M5 3L19 12L12 13L9 20L5 3Z" fill="white" stroke="#333" strokeWidth="1" />
+            </svg>
+          )}
         </div>
       )}
 
