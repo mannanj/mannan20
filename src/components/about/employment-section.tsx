@@ -21,20 +21,15 @@ export function EmploymentSection({ jobs }: EmploymentSectionProps) {
     <>
       <h2 id="employment-history" className="scroll-mt-[75px] text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
         Employment History
-        <button
-          type="button"
-          onClick={() => downloadFile('/data/documents/Mannan_Javid_Resume.pdf', 'Mannan_Javid_Resume.pdf')}
-          className="inline-block ml-2 align-middle text-white/40 hover:text-white/80 transition-colors duration-200 bg-transparent border-none cursor-pointer p-0"
-          aria-label="Download Resume"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="12" y1="18" x2="12" y2="12" />
-            <polyline points="9 15 12 18 15 15" />
-          </svg>
-        </button>
       </h2>
+      <button
+        type="button"
+        onClick={() => downloadFile('/data/documents/Mannan_Javid_Resume.pdf', 'Mannan_Javid_Resume.pdf')}
+        className="text-[#039be5] hover:text-[#4fc3f7] text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap mt-1"
+        aria-label="Download Resume"
+      >
+        Download Resume <span className="inline-block ml-0.5 text-[20px] rotate-180 scale-x-[-1] relative top-[3px] -left-[4px]">&#10555;</span>
+      </button>
       {visibleJobs.map((job, i) => (
         <ContentCard key={i} data={job} applyMarginTop />
       ))}

@@ -19,7 +19,7 @@
       "position": "Senior Software Engineer",
       "skills": "Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership",
       "description": "Led implementation and oversight of developers to deliver features ahead of schedule and improve company-wide velocity. Initiated and introduced major feature rewrites.",
-      "expandedContent": "▸ Built interactive healthcare facility mapping using ArcGIS and Angular, enabling patients to locate providers within proximity — increasing healthcare access by 20% across underserved regions.<br>\n▸ Led code review standardization and mentorship programs, reducing defect rates by 33% and establishing quality benchmarks adopted company-wide.<br>\n▸ Designed and implemented Angular Material UI component library for consistent cross-team design patterns, accelerating feature delivery timelines."
+      "expandedContent": "▸ Built interactive healthcare facility mapping using ArcGIS and Angular, enabling healthcare officials to map out providers across regions — increasing healthcare access by 20% across underserved regions.<br>\n▸ Led code review standardization and mentorship programs, reducing defect rates by 33% and establishing quality benchmarks adopted company-wide.<br>\n▸ Designed and implemented Angular Material UI component library for consistent cross-team design patterns, accelerating feature delivery timelines."
     },
     {
       "title": "Radiant (now Maxar)",
