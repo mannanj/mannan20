@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Modal } from './modal';
 import { downloadFile } from '@/lib/utils';
 
 const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
@@ -104,27 +103,35 @@ export function ResumeDownloadFlow() {
         </div>
       )}
 
-      <Modal isOpen={modalOpen} onClose={handleNo}>
-        <div className="text-center px-4 py-2">
-          <p className="text-white text-base mb-6">Would you like to download this resume?</p>
-          <div className="flex justify-center gap-4">
-            <button
-              type="button"
-              onClick={handleYes}
-              className="shimmer-btn px-6 py-2 bg-[#039be5] hover:bg-[#0288d1] text-white text-sm rounded border-none cursor-pointer transition-colors duration-200"
-            >
-              Yes
-            </button>
-            <button
-              type="button"
-              onClick={handleNo}
-              className="px-6 py-2 bg-transparent hover:bg-white/10 text-white/70 hover:text-white text-sm rounded border border-white/20 cursor-pointer transition-all duration-200"
-            >
-              No
-            </button>
+      {modalOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 flex justify-center items-center z-[1000] p-5"
+          onClick={handleNo}
+        >
+          <div
+            className="backdrop-blur-2xl bg-white/10 border border-white/20 rounded-2xl px-10 py-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-white/90 text-base text-center mb-6 font-light tracking-wide">Would you like to download this resume?</p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleYes}
+                className="px-8 py-2.5 bg-white/15 hover:bg-white/25 text-white text-sm rounded-xl border border-white/20 cursor-pointer transition-all duration-200 backdrop-blur-sm font-light tracking-wide"
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={handleNo}
+                className="px-8 py-2.5 bg-white/5 hover:bg-white/15 text-white/60 hover:text-white/90 text-sm rounded-xl border border-white/10 cursor-pointer transition-all duration-200 font-light tracking-wide"
+              >
+                No
+              </button>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
     </>
   );
 }
