@@ -41,7 +41,7 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
       </div>
 
       <div id="body" className="my-[20vh] md:my-[10vh] w-full max-w-[321px] mx-auto px-5">
-        <div id="home" className="mt-[33vh]">
+        <div id="home" className="mt-[10vh]">
           <Hero />
         </div>
 
