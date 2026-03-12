@@ -68,7 +68,7 @@ export default function TwitterImage() {
               textTransform: 'uppercase',
             }}
           >
-            Wellbeing, Health and Happiness
+            Health & Wellbeing — Engineer
           </div>
           <div
             style={{

@@ -11,19 +11,19 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: 'Mannan Javid',
-  description: 'Mannan Javid — builder, thinker, maker.',
+  description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
   keywords: 'Mannan Javid, Software Engineer, Portfolio',
   authors: [{ name: 'Mannan Javid' }],
   openGraph: {
     title: 'Mannan Javid',
-    description: 'Mannan Javid — builder, thinker, maker.',
+    description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
     type: 'website',
     url: 'https://mannan.is',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Mannan Javid',
-    description: 'Mannan Javid — builder, thinker, maker.',
+    description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
   },
   icons: {
     icon: [

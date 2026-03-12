@@ -10,7 +10,7 @@ export function Hero() {
       </h1>
       <hr className="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5" />
       <p className="m-0 leading-[1.6] text-white">
-        Multi-disciplinary engineer specializing in advancing people through technology.
+        Health & Wellbeing - Engineer
       </p>
       <button onClick={() => scrollToSection('about')} className="nav-button mt-[25px]">
         About me
