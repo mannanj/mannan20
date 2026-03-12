@@ -7,7 +7,12 @@ import { GlassModal } from '@/components/glass-modal';
 const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
 
+const INITIAL_DELAY = 777;
+const CURSOR_APPEAR_PAUSE = 300;
+const SCROLL_MOVE_DURATION = 600;
+const SCROLL_DURATION = 1200;
 const SCROLL_SETTLE_DELAY = 400;
+const PAUSE_DURATION = 400;
 const ARROW_MOVE_DURATION = 800;
 const CLICK_SCALE_DURATION = 300;
 
@@ -18,7 +23,7 @@ interface SpotlightRect {
   height: number;
 }
 
-type Phase = 'idle' | 'spinner' | 'spotlight' | 'arrow-move' | 'clicking' | 'modal';
+type Phase = 'idle' | 'waiting' | 'cursor-appear' | 'scroll-move' | 'scrolling' | 'pause' | 'arrow-move' | 'clicking' | 'modal';
 
 export function ResumeDownloadFlow() {
   const [phase, setPhase] = useState<Phase>('idle');
@@ -26,7 +31,6 @@ export function ResumeDownloadFlow() {
   const [arrowPos, setArrowPos] = useState<{ x: number; y: number } | null>(null);
   const [arrowTarget, setArrowTarget] = useState<{ x: number; y: number } | null>(null);
   const btnRef = useRef<HTMLElement | null>(null);
-  const spinnerRef = useRef<HTMLDivElement | null>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
 
   const injectCursorHide = useCallback(() => {
@@ -68,98 +72,91 @@ export function ResumeDownloadFlow() {
     const el = document.getElementById('employment-history');
     if (!el) return;
 
-    setPhase('spinner');
-    injectCursorHide();
-
-    const spinnerEl = document.createElement('div');
-    spinnerEl.style.cssText = `
-      position: fixed;
-      z-index: 10000;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      animation: spin 0.8s linear infinite;
-      pointer-events: none;
-      top: -50px;
-      left: -50px;
-    `;
-    document.body.appendChild(spinnerEl);
-    spinnerRef.current = spinnerEl;
-
-    const onMouseMove = (e: MouseEvent) => {
-      if (spinnerRef.current) {
-        spinnerRef.current.style.top = `${e.clientY - 10}px`;
-        spinnerRef.current.style.left = `${e.clientX - 10}px`;
-      }
-    };
-    window.addEventListener('mousemove', onMouseMove);
-
-    const y = el.getBoundingClientRect().top + window.scrollY - 75;
-
     const btn = document.querySelector<HTMLElement>('[aria-label="Download Resume"]');
     if (btn) {
       btn.style.pointerEvents = 'none';
       btnRef.current = btn;
     }
 
-    setPhase('spotlight');
-    const computeSpotlight = () => {
-      if (!btn) return;
-      const rect = btn.getBoundingClientRect();
-      const pad = 12;
-      setSpotlight({
-        top: rect.top - pad,
-        left: rect.left - pad,
-        width: rect.width + pad * 2,
-        height: rect.height + pad * 2,
-      });
-    };
-    computeSpotlight();
-
-    window.scrollTo({ top: y, behavior: 'smooth' });
-
-    const scrollInterval = setInterval(computeSpotlight, 16);
+    setPhase('waiting');
+    injectCursorHide();
 
     setTimeout(() => {
-      clearInterval(scrollInterval);
-      computeSpotlight();
-
-      window.removeEventListener('mousemove', onMouseMove);
-      if (spinnerRef.current) {
-        spinnerRef.current.remove();
-        spinnerRef.current = null;
-      }
-
-      if (!btn) return;
-      const rect = btn.getBoundingClientRect();
-      const targetX = rect.left + rect.width / 2;
-      const targetY = rect.top + rect.height / 2;
-
-      setArrowPos({ x: window.innerWidth * 0.7, y: window.innerHeight * 0.3 });
-      setPhase('arrow-move');
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setArrowTarget({ x: targetX, y: targetY });
-          setArrowPos({ x: targetX, y: targetY });
-        });
-      });
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      setArrowPos({ x: cx, y: cy });
+      setPhase('cursor-appear');
 
       setTimeout(() => {
-        setPhase('clicking');
+        const scrollbarX = window.innerWidth - 20;
+        const scrollbarY = window.innerHeight / 2;
+        setArrowTarget({ x: scrollbarX, y: scrollbarY });
+        setArrowPos({ x: scrollbarX, y: scrollbarY });
+        setPhase('scroll-move');
 
         setTimeout(() => {
-          setPhase('modal');
-          setSpotlight(null);
-          setArrowPos(null);
+          setPhase('scrolling');
           setArrowTarget(null);
-          removeCursorHide();
-          if (btnRef.current) btnRef.current.style.pointerEvents = '';
-        }, CLICK_SCALE_DURATION);
-      }, ARROW_MOVE_DURATION + 100);
-    }, SCROLL_SETTLE_DELAY + 500);
+
+          const y = el.getBoundingClientRect().top + window.scrollY - 75;
+          const scrollStart = window.scrollY;
+          const scrollDelta = y - scrollStart;
+          const scrollStartTime = performance.now();
+          const animateScroll = (now: number) => {
+            const elapsed = now - scrollStartTime;
+            const t = Math.min(elapsed / SCROLL_DURATION, 1);
+            const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            window.scrollTo(0, scrollStart + scrollDelta * ease);
+            if (t < 1) requestAnimationFrame(animateScroll);
+          };
+          requestAnimationFrame(animateScroll);
+
+          const computeSpotlight = () => {
+            if (!btn) return;
+            const rect = btn.getBoundingClientRect();
+            const pad = 12;
+            setSpotlight({
+              top: rect.top - pad,
+              left: rect.left - pad,
+              width: rect.width + pad * 2,
+              height: rect.height + pad * 2,
+            });
+          };
+          computeSpotlight();
+          const scrollInterval = setInterval(computeSpotlight, 16);
+
+          setTimeout(() => {
+            clearInterval(scrollInterval);
+            computeSpotlight();
+            setPhase('pause');
+
+            setTimeout(() => {
+              if (!btn) return;
+              const rect = btn.getBoundingClientRect();
+              const targetX = rect.left + rect.width / 2;
+              const targetY = rect.top + rect.height / 2;
+
+              setArrowTarget({ x: targetX, y: targetY });
+              setArrowPos({ x: targetX, y: targetY });
+              setPhase('arrow-move');
+
+              setTimeout(() => {
+                setPhase('clicking');
+
+                setTimeout(() => {
+                  setPhase('modal');
+                  setSpotlight(null);
+                  setArrowPos(null);
+                  setArrowTarget(null);
+                  removeCursorHide();
+                  if (btnRef.current) btnRef.current.style.pointerEvents = '';
+                }, CLICK_SCALE_DURATION);
+              }, ARROW_MOVE_DURATION + 100);
+            }, PAUSE_DURATION);
+          }, SCROLL_DURATION + SCROLL_SETTLE_DELAY);
+        }, SCROLL_MOVE_DURATION);
+      }, CURSOR_APPEAR_PAUSE);
+    }, INITIAL_DELAY);
   }, [injectCursorHide, removeCursorHide]);
 
   const openModal = useCallback(() => {
@@ -169,8 +166,7 @@ export function ResumeDownloadFlow() {
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (hash === 'download-resume') {
-      const timer = setTimeout(startFlow, 100);
-      return () => clearTimeout(timer);
+      startFlow();
     }
   }, [startFlow]);
 
@@ -180,16 +176,55 @@ export function ResumeDownloadFlow() {
   }, [openModal]);
 
   const maskGradient = spotlight
-    ? `radial-gradient(ellipse ${spotlight.width * 1.2}px ${spotlight.height * 2.5}px at ${spotlight.left + spotlight.width / 2}px ${spotlight.top + spotlight.height / 2}px, transparent 40%, black 100%)`
+    ? `radial-gradient(ellipse ${spotlight.width * 1.2}px ${spotlight.height * 2.2}px at ${spotlight.left + spotlight.width / 2}px ${spotlight.top + spotlight.height / 2}px, transparent 40%, black 100%)`
     : undefined;
 
-  const showSpotlight = phase === 'spotlight' || phase === 'arrow-move' || phase === 'clicking';
-  const showArrow = phase === 'arrow-move' || phase === 'clicking';
+  const showSpotlight = phase === 'scrolling' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
+  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'scrolling' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
+
+  const arrowTransition = (() => {
+    if (phase === 'scroll-move') {
+      return {
+        transition: `left ${SCROLL_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), top ${SCROLL_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+      };
+    }
+    if (phase === 'arrow-move' || phase === 'clicking') {
+      return {
+        transition: `left ${ARROW_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), top ${ARROW_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), transform ${CLICK_SCALE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+      };
+    }
+    return { transition: 'none' };
+  })();
 
   if (phase === 'idle') return null;
 
   return (
     <>
+      {phase === 'waiting' && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            cursor: 'none',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              border: '2.5px solid rgba(255,255,255,0.15)',
+              borderTopColor: 'white',
+              animation: 'spin 0.8s linear infinite',
+            }}
+          />
+        </div>
+      )}
+
       {showSpotlight && spotlight && (
         <div
           style={{
@@ -205,8 +240,8 @@ export function ResumeDownloadFlow() {
             style={{
               position: 'absolute',
               inset: 0,
-              backdropFilter: 'blur(3px)',
-              WebkitBackdropFilter: 'blur(3px)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               maskImage: maskGradient,
               WebkitMaskImage: maskGradient,
             }}
@@ -223,8 +258,8 @@ export function ResumeDownloadFlow() {
         </div>
       )}
 
-      {phase === 'spinner' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 999, cursor: 'none' }} />
+      {(phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'scrolling' || phase === 'pause') && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 998, cursor: 'none' }} />
       )}
 
       {showArrow && arrowPos && (
@@ -235,15 +270,8 @@ export function ResumeDownloadFlow() {
             pointerEvents: 'none',
             left: arrowPos.x,
             top: arrowPos.y,
-            transition: arrowTarget
-              ? `left ${ARROW_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), top ${ARROW_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`
-              : 'none',
             transform: `scale(${phase === 'clicking' ? 0.8 : 1})`,
-            transitionProperty: arrowTarget ? 'left, top, transform' : 'transform',
-            transitionDuration: arrowTarget
-              ? `${ARROW_MOVE_DURATION}ms, ${ARROW_MOVE_DURATION}ms, ${CLICK_SCALE_DURATION}ms`
-              : `${CLICK_SCALE_DURATION}ms`,
-            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+            ...arrowTransition,
           }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
