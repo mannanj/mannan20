@@ -19,13 +19,11 @@ export const metadata: Metadata = {
     description: 'Mannan Javid — builder, thinker, maker.',
     type: 'website',
     url: 'https://mannan.is',
-    images: [{ url: 'https://mannan.is/mannan.jpg' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Mannan Javid',
     description: 'Mannan Javid — builder, thinker, maker.',
-    images: ['https://mannan.is/mannan.jpg'],
   },
   icons: {
     icon: [
