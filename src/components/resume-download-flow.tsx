@@ -97,7 +97,7 @@ export function ResumeDownloadFlow() {
 
       setTimeout(() => {
         const scrollbarX = window.innerWidth - 20;
-        const scrollbarY = window.innerHeight / 2 - 55;
+        const scrollbarY = window.innerHeight / 2 - 279;
         setArrowTarget({ x: scrollbarX, y: scrollbarY });
         setArrowPos({ x: scrollbarX, y: scrollbarY });
         setPhase('scroll-move');
@@ -194,7 +194,7 @@ export function ResumeDownloadFlow() {
     : undefined;
 
   const showSpotlight = phase === 'scrolling' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
-  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'scrolling' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
+  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
 
   const arrowTransition = (() => {
     if (phase === 'scroll-move') {
