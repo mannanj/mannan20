@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ProfileItem } from '@/lib/types';
 import { ContentCard } from './content-card';
+import { downloadFile } from '@/lib/utils';
 
 const DEFAULT_JOBS_TO_SHOW = 3;
 const JOBS_INCREMENT = 2;
@@ -20,10 +21,10 @@ export function EmploymentSection({ jobs }: EmploymentSectionProps) {
     <>
       <h2 className="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
         Employment History
-        <a
-          href="/data/documents/Mannan_Javid_Resume.pdf"
-          download="Mannan_Javid_Resume.pdf"
-          className="inline-block ml-2 align-middle text-white/40 hover:text-white/80 transition-colors duration-200"
+        <button
+          type="button"
+          onClick={() => downloadFile('/data/documents/Mannan_Javid_Resume.pdf', 'Mannan_Javid_Resume.pdf')}
+          className="inline-block ml-2 align-middle text-white/40 hover:text-white/80 transition-colors duration-200 bg-transparent border-none cursor-pointer p-0"
           aria-label="Download Resume"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -32,7 +33,7 @@ export function EmploymentSection({ jobs }: EmploymentSectionProps) {
             <line x1="12" y1="18" x2="12" y2="12" />
             <polyline points="9 15 12 18 15 15" />
           </svg>
-        </a>
+        </button>
       </h2>
       {visibleJobs.map((job, i) => (
         <ContentCard key={i} data={job} applyMarginTop />

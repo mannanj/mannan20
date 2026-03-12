@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Text, Float } from '@react-three/drei';
 import * as THREE from 'three';
 import type { NarrativeChapter, DownloadLink } from '@/lib/types';
-import { scrollToSection } from '@/lib/utils';
+import { scrollToSection, downloadFile } from '@/lib/utils';
 
 interface NarrativeDeepDiveProps {
   chapters: NarrativeChapter[];
@@ -255,14 +255,14 @@ export default function NarrativeDeepDive({ chapters, downloads, onClose }: Narr
             <div className="mt-8 flex flex-col items-center gap-3">
               <div className="flex gap-4">
                 {downloads.map((dl) => (
-                  <a
+                  <button
                     key={dl.filename}
-                    href={dl.path}
-                    download={dl.filename}
-                    className="text-[#039be5] hover:text-[#4fc3f7] text-sm border border-[#039be5]/40 hover:border-[#4fc3f7]/60 px-4 py-2 rounded transition-all duration-200 no-underline"
+                    type="button"
+                    onClick={() => downloadFile(dl.path, dl.filename)}
+                    className="text-[#039be5] hover:text-[#4fc3f7] text-sm border border-[#039be5]/40 hover:border-[#4fc3f7]/60 px-4 py-2 rounded transition-all duration-200 no-underline bg-transparent cursor-pointer"
                   >
                     {dl.label}
-                  </a>
+                  </button>
                 ))}
               </div>
               <button

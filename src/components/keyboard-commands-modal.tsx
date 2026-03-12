@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useApp } from '@/context/app-context';
-import { scrollToSection } from '@/lib/utils';
+import { scrollToSection, downloadFile } from '@/lib/utils';
 import type { Section } from '@/lib/types';
 
 interface CommandOption {
@@ -67,10 +67,7 @@ export function KeyboardCommandsModal() {
       label: 'Download Resume',
       description: 'Download resume as PDF',
       action: () => {
-        const link = document.createElement('a');
-        link.href = '/data/documents/Mannan_Javid_Resume.pdf';
-        link.download = 'Mannan_Javid_Resume.pdf';
-        link.click();
+        downloadFile('/data/documents/Mannan_Javid_Resume.pdf', 'Mannan_Javid_Resume.pdf');
         toggleCommandsModal();
         setSearchQuery('');
         setSelectedIndex(0);

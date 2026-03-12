@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { ProfileItem } from '@/lib/types';
+import { downloadFile } from '@/lib/utils';
 
 interface ContentCardProps {
   data: ProfileItem;
@@ -41,9 +42,9 @@ export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) 
       )}
 
       {data.downloadLink && (
-        <a href={data.downloadLink} download={data.downloadFilename} className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
+        <button type="button" onClick={() => downloadFile(data.downloadLink!, data.downloadFilename!)} className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7] bg-transparent border-none cursor-pointer p-0 text-sm font-inherit">
           {data.downloadLabel}
-        </a>
+        </button>
       )}
 
       {data.expandedContent && (
