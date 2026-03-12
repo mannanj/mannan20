@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { AppProvider, useApp } from '@/context/app-context';
 import { useScrollSpy } from '@/hooks/use-scroll-spy';
 import type { AboutData } from '@/lib/types';
@@ -17,6 +18,17 @@ interface PortfolioInnerProps {
 function PortfolioInner({ data }: PortfolioInnerProps) {
   const { setActiveSection } = useApp();
   useScrollSpy(setActiveSection);
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const scroll = () => {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+    const timer = setTimeout(scroll, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="font-[Lucida_Grande]">

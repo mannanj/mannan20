@@ -24,7 +24,7 @@ export function ExtracurricularsSection({ activities, publishedWorks }: Extracur
 
   return (
     <>
-      <h2 className="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
+      <h2 id="extracurriculars" className="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
         Extracurriculars
       </h2>
       <ContentCard data={activities['teaching']} applyMarginTop />
