@@ -1,7 +1,13 @@
 import type { Metadata } from 'next';
+import { Geist } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
+
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
+});
 
 export const metadata: Metadata = {
   title: 'Mannan Javid',
@@ -32,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={geistSans.variable}>
       <body>
         {children}
         <Analytics />

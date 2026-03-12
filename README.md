@@ -19,7 +19,7 @@ Or run services individually:
 
 Frontend (http://localhost:4200):
 ```bash
-npm start
+bun start
 ```
 
 Backend (http://localhost:8080):
@@ -29,7 +29,7 @@ cd backend && ./mvnw spring-boot:run
 
 WebSocket Server:
 ```bash
-npm run ws-server
+bun run ws-server
 ```
 
 ## Setup
@@ -56,9 +56,9 @@ This enables the pre-commit hook that auto-generates the dev stats commit histor
 ## Available Commands
 
 ```bash
-npm run build    Production build
-npm run watch    Dev build with auto-reload
-npm test         Run tests
+bun run build    Production build
+bun run watch    Dev build with auto-reload
+bun test         Run tests
 ```
 
 ## Development Features

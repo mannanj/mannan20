@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import type { ProfileItem } from '@/lib/types';
 import { downloadFile } from '@/lib/utils';
 
@@ -11,8 +8,6 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   return (
     <div className={`p-0 m-0 ${nested ? 'text-black text-[80%]' : 'text-inherit'} ${applyMarginTop ? 'mt-[10px]' : ''}`}>
       {data.link && data.title ? (
@@ -48,19 +43,8 @@ export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) 
       )}
 
       {data.expandedContent && (
-        <div>
-          {isExpanded && (
-            <div className="content bg-[#f1f1f1] text-black p-1.5 rounded-md">
-              <p className="text-xs mt-0" dangerouslySetInnerHTML={{ __html: data.expandedContent }} />
-            </div>
-          )}
-          <button
-            type="button"
-            className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? 'less' : 'more'}
-          </button>
+        <div className="content bg-[#f1f1f1] text-black p-1.5 rounded-md">
+          <p className="text-xs mt-0" dangerouslySetInnerHTML={{ __html: data.expandedContent }} />
         </div>
       )}
     </div>

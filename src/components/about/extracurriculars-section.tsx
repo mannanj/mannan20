@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import type { ProfileItem, PublishedWork } from '@/lib/types';
 import { ContentCard } from './content-card';
 import { downloadFile } from '@/lib/utils';
@@ -8,19 +5,11 @@ import { downloadFile } from '@/lib/utils';
 interface ExtracurricularsSectionProps {
   activities: Record<string, ProfileItem>;
   publishedWorks: PublishedWork[];
+  count: number;
 }
 
-export function ExtracurricularsSection({ activities, publishedWorks }: ExtracurricularsSectionProps) {
-  const [count, setCount] = useState(0);
+export function ExtracurricularsSection({ activities, publishedWorks, count }: ExtracurricularsSectionProps) {
   const display = count > 0;
-
-  const toggle = (expand: boolean) => {
-    if (expand) {
-      setCount((prev) => prev + 1);
-    } else {
-      setCount(0);
-    }
-  };
 
   return (
     <>
@@ -50,24 +39,6 @@ export function ExtracurricularsSection({ activities, publishedWorks }: Extracur
               </div>
             )}
           </div>
-        )}
-
-        {count < 2 ? (
-          <button
-            type="button"
-            className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-            onClick={() => toggle(true)}
-          >
-            more
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-            onClick={() => toggle(false)}
-          >
-            less
-          </button>
         )}
       </div>
     </>

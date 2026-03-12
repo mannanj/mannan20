@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import type { Certification, EducationInfo, ProfileItem } from '@/lib/types';
 import { ContentCard } from './content-card';
 
@@ -8,19 +5,11 @@ interface EducationSectionProps {
   education: EducationInfo;
   projects: Record<string, ProfileItem>;
   certifications: Certification[];
+  count: number;
 }
 
-export function EducationSection({ education, projects, certifications }: EducationSectionProps) {
-  const [count, setCount] = useState(0);
+export function EducationSection({ education, projects, certifications, count }: EducationSectionProps) {
   const display = count > 0;
-
-  const toggle = (expand: boolean) => {
-    if (expand) {
-      setCount((prev) => prev + 1);
-    } else {
-      setCount(0);
-    }
-  };
 
   return (
     <>
@@ -49,24 +38,6 @@ export function EducationSection({ education, projects, certifications }: Educat
               {count >= 1 && <ContentCard data={projects['solar']} applyMarginTop nested />}
               {count === 2 && <ContentCard data={projects['dome']} applyMarginTop nested />}
             </div>
-          )}
-
-          {count < 2 ? (
-            <button
-              type="button"
-              className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-              onClick={() => toggle(true)}
-            >
-              more
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="bg-[#eee] text-[#444] cursor-pointer border border-white text-left text-[9px] rounded-[5px] lowercase py-px px-1.5 mt-[5px] hover:bg-[#ccc]"
-              onClick={() => toggle(false)}
-            >
-              less
-            </button>
           )}
         </div>
       </div>
