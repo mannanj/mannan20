@@ -235,7 +235,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       </div>
 
       <p style={{
-        margin: '-2px 0 -4px',
+        margin: '-4px 0 -2px',
         padding: '0 4px',
         fontSize: '10px',
         lineHeight: 1.3,
