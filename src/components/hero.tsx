@@ -7,7 +7,9 @@ export function Hero() {
         Mannan
       </h1>
       <div className="my-5 flex justify-center">
-        <Image src="/mannan.jpg" width={200} height={200} alt="Mannan" className="rounded-full" priority />
+        <div className="w-[200px] h-[200px] rounded-full overflow-hidden">
+          <Image src="/mannan-profile.png" width={400} height={400} alt="Mannan" className="w-full h-auto scale-[1.4] -translate-y-[12%]" priority />
+        </div>
       </div>
       <p className="m-0 leading-[1.6] text-white">
         Multi-disciplinary engineer specializing in advancing people through technology.
