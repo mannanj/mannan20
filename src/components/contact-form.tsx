@@ -11,9 +11,9 @@ const AUTO_CLOSE_MS = 5000;
 type FormStatus = "idle" | "validating" | "success" | "error";
 
 const STATUS_TEXT: Record<FormStatus, string> = {
-  idle: "Waiting for response...",
-  validating: "Checking response...",
-  success: "Received response...",
+  idle: "Waiting for response",
+  validating: "Checking response",
+  success: "Received response",
   error: "Something went wrong. Please try again.",
 };
 
@@ -153,37 +153,89 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       onMouseDown={handleInteraction}
       onSelect={handleInteraction}
     >
-      <textarea
-        value={userInput}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        rows={6}
-        style={{
-          width: '100%',
-          padding: '12px 14px',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '10px',
-          fontSize: '14px',
-          color: 'white',
-          background: 'rgba(0,0,0,0.3)',
-          resize: 'vertical',
-          fontFamily: 'inherit',
-          lineHeight: 1.5,
-          boxSizing: 'border-box',
-          outline: 'none',
-          transition: 'border-color 0.2s',
-        }}
-        placeholder={PLACEHOLDER}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = 'rgba(3,155,229,0.5)';
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-        }}
-      />
+      <div style={{ position: 'relative' }}>
+        <textarea
+          value={userInput}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          rows={6}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            paddingBottom: '28px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '10px',
+            fontSize: '14px',
+            color: 'white',
+            background: 'rgba(0,0,0,0.3)',
+            resize: 'vertical',
+            fontFamily: 'inherit',
+            lineHeight: 1.5,
+            boxSizing: 'border-box',
+            outline: 'none',
+            transition: 'border-color 0.2s',
+          }}
+          placeholder={PLACEHOLDER}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(3,155,229,0.5)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+          }}
+        />
+
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          right: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          pointerEvents: 'none',
+        }}>
+          {status === "validating" && (
+            <svg
+              style={{ animation: 'spin 1s linear infinite', width: '11px', height: '11px', color: 'rgba(255,255,255,0.5)' }}
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                style={{ opacity: 0.25 }}
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                style={{ opacity: 0.75 }}
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          )}
+          <span style={{ fontSize: '11px', color: '#ef4444' }}>
+            {status === 'error' ? (
+              <span style={{ color: 'rgba(239,68,68,0.7)' }}>{STATUS_TEXT[status]}</span>
+            ) : (
+              (STATUS_TEXT[status] + '...').split('').map((char, i) => (
+                <span
+                  key={i}
+                  style={{
+                    animation: 'dotColor 1.5s infinite',
+                    animationDelay: `${i * 0.04}s`,
+                  }}
+                >
+                  {char}
+                </span>
+              ))
+            )}
+          </span>
+        </div>
+      </div>
 
       <p style={{
-        margin: '2px 0 0',
+        margin: '-2px 0 -4px',
         padding: '0 4px',
         fontSize: '10px',
         lineHeight: 1.3,
@@ -193,43 +245,6 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       }}>
         I will never send you unsolicited communication.
       </p>
-
-      <div style={{
-        marginTop: '2px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '0 4px',
-      }}>
-        {status === "validating" && (
-          <svg
-            style={{ animation: 'spin 1s linear infinite', width: '12px', height: '12px', color: 'rgba(255,255,255,0.5)' }}
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle
-              style={{ opacity: 0.25 }}
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              style={{ opacity: 0.75 }}
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-        )}
-        <span style={{
-          fontSize: '12px',
-          fontStyle: 'italic',
-          color: status === 'error' ? 'rgba(239,68,68,0.7)' : 'rgba(255,255,255,0.4)',
-        }}>
-          {STATUS_TEXT[status]}
-        </span>
-      </div>
     </div>
   );
 }
