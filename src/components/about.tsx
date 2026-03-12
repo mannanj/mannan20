@@ -30,8 +30,8 @@ export function About({ data }: AboutProps) {
     totalJobs
   );
 
-  const moreClass = "flex items-center justify-center w-7 h-7 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
-  const lessClass = "flex items-center justify-center w-7 h-7 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
+  const moreClass = "flex items-center justify-center w-7 h-7 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
+  const lessClass = "flex items-center justify-center w-7 h-7 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
 
   return (
     <div>

@@ -324,7 +324,7 @@ export function ResumeDownloadFlow() {
         onClose={cleanup}
         body={modalConfig.body}
         buttons={modalButtons}
-        defaultSize="medium"
+        defaultSize={isMobileRef.current ? 'small' : 'medium'}
         showSizeToggle={false}
       />
     </>
