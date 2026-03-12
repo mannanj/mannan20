@@ -25,7 +25,7 @@ export function EmploymentSection({ jobs }: EmploymentSectionProps) {
       <button
         type="button"
         onClick={() => downloadFile('/data/documents/Mannan_Javid_Resume.pdf', 'Mannan_Javid_Resume.pdf')}
-        className="text-[#039be5] hover:text-[#4fc3f7] text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap mt-1"
+        className="text-[#039be5] hover:text-[#4fc3f7] text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap -mt-[5px] block"
         aria-label="Download Resume"
       >
         Download Resume <span className="inline-block ml-0.5 text-[20px] rotate-180 scale-x-[-1] relative top-[3px] -left-[4px]">&#10555;</span>

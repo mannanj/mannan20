@@ -10,6 +10,7 @@ import { About } from './about';
 import { Contact } from './contact';
 import { ContactModal } from './contact-modal';
 import { KeyboardCommandsModal } from './keyboard-commands-modal';
+import { ResumeDownloadFlow } from './resume-download-flow';
 
 interface PortfolioInnerProps {
   data: AboutData;
@@ -21,7 +22,7 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
-    if (!hash) return;
+    if (!hash || hash === 'download-resume') return;
     const scroll = () => {
       const el = document.getElementById(hash);
       if (el) {
@@ -55,6 +56,7 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
 
       <KeyboardCommandsModal />
       <ContactModal />
+      <ResumeDownloadFlow />
     </div>
   );
 }
