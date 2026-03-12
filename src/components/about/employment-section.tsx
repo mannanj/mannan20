@@ -21,8 +21,8 @@ export function EmploymentSection({ jobs }: EmploymentSectionProps) {
       <h2 className="text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
         Employment History
         <a
-          href="/data/documents/mannan-javid-resume.pdf"
-          download="mannan-javid-resume.pdf"
+          href="/data/documents/Mannan_Javid_Resume.pdf"
+          download="Mannan_Javid_Resume.pdf"
           className="inline-block ml-2 align-middle text-white/40 hover:text-white/80 transition-colors duration-200"
           aria-label="Download Resume"
         >

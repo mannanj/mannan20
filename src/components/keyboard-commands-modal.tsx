@@ -68,8 +68,8 @@ export function KeyboardCommandsModal() {
       description: 'Download resume as PDF',
       action: () => {
         const link = document.createElement('a');
-        link.href = '/data/documents/mannan-javid-resume.pdf';
-        link.download = 'mannan-javid-resume.pdf';
+        link.href = '/data/documents/Mannan_Javid_Resume.pdf';
+        link.download = 'Mannan_Javid_Resume.pdf';
         link.click();
         toggleCommandsModal();
         setSearchQuery('');
