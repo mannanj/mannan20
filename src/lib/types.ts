@@ -75,3 +75,21 @@ export interface LLMValidationResult {
   email: LLMFieldResult;
   reason: LLMFieldResult;
 }
+
+export type GlassModalSize = 'small' | 'medium' | 'large';
+
+export interface GlassModalButton {
+  label: string;
+  onClick: () => void;
+  primary?: boolean;
+}
+
+export interface GlassModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  body: string;
+  buttons: GlassModalButton[];
+  defaultSize?: GlassModalSize;
+  showSizeToggle?: boolean;
+}
