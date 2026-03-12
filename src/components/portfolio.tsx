@@ -24,7 +24,10 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
     if (!hash) return;
     const scroll = () => {
       const el = document.getElementById(hash);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 75;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     };
     const timer = setTimeout(scroll, 300);
     return () => clearTimeout(timer);
