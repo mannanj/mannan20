@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useApp } from '@/context/app-context';
 import { scrollToSection } from '@/lib/utils';
@@ -42,14 +42,41 @@ function GitHubIcon() {
 export function Header() {
   const { state } = useApp();
   const [expanded, setExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [expanded]);
 
   const goTo = (link: Section) => {
     scrollToSection(link);
   };
 
+  const isTouchDevice = () => window.matchMedia('(hover: none)').matches;
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isTouchDevice() && !expanded) {
+      e.preventDefault();
+      e.stopPropagation();
+      setExpanded(true);
+    }
+  };
+
   return (
     <div className="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99] px-4">
       <div
+        ref={containerRef}
         className="relative flex items-center pr-[60px]"
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
@@ -71,7 +98,8 @@ export function Header() {
           href="https://www.linkedin.com/in/mannanjavid/"
           target="_blank"
           rel="noopener noreferrer"
-          className={`group absolute z-20 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[56px]' : 'left-[44px]'}`}
+          onClick={handleLinkClick}
+          className={`group absolute z-20 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[56px] max-md:left-[60px] max-md:scale-[1.3]' : 'left-[44px]'}`}
         >
           <LinkedInIcon />
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -85,7 +113,8 @@ export function Header() {
           href="https://github.com/mannanj"
           target="_blank"
           rel="noopener noreferrer"
-          className={`group absolute z-10 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[80px]' : 'left-[57px]'}`}
+          onClick={handleLinkClick}
+          className={`group absolute z-10 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[80px] max-md:left-[90px] max-md:scale-[1.3]' : 'left-[57px]'}`}
         >
           <GitHubIcon />
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
