@@ -21,11 +21,25 @@ interface PopperParticle {
   rounded: boolean;
 }
 
+interface AmbientParticle {
+  id: number;
+  dx: number;
+  dy: number;
+  rot: number;
+  color: string;
+  size: number;
+  duration: number;
+  delay: number;
+  rounded: boolean;
+}
+
 interface Popper {
   id: number;
   x: number;
   y: number;
+  scale: number;
   particles: PopperParticle[];
+  ambient: AmbientParticle[];
 }
 
 function generateParticles(count: number): PopperParticle[] {
@@ -45,13 +59,32 @@ function generateParticles(count: number): PopperParticle[] {
   });
 }
 
+function generateAmbient(count: number): AmbientParticle[] {
+  const totalDuration = 7.5;
+  return Array.from({ length: count }, (_, i) => {
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
+    const dist = 25 + Math.random() * 20;
+    return {
+      id: i,
+      dx: Math.cos(angle) * dist,
+      dy: Math.sin(angle) * dist,
+      rot: Math.random() * 180 - 90,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      size: 2 + Math.random() * 2,
+      duration: totalDuration + Math.random() * 0.5,
+      delay: (totalDuration / count) * i,
+      rounded: Math.random() > 0.5,
+    };
+  });
+}
+
 function createPoppers(): Popper[] {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   return [
-    { id: 0, x: vw * 0.12, y: vh * 0.2, particles: generateParticles(10) },
-    { id: 1, x: vw * 0.88, y: vh * 0.15, particles: generateParticles(10) },
-    { id: 2, x: vw * 0.15, y: vh * 0.8, particles: generateParticles(10) },
+    { id: 0, x: vw * 0.12, y: vh * 0.2, scale: 0.67, particles: generateParticles(10), ambient: generateAmbient(8) },
+    { id: 1, x: vw * 0.88, y: vh * 0.15, scale: 1.5, particles: generateParticles(10), ambient: generateAmbient(8) },
+    { id: 2, x: vw * 0.33, y: vh * 0.8, scale: 1, particles: generateParticles(10), ambient: generateAmbient(8) },
   ];
 }
 
@@ -521,7 +554,7 @@ export function ResumeDownloadFlow() {
               }}
             >
               <div style={{
-                fontSize: 32,
+                fontSize: 32 * popper.scale,
                 animation: 'popper-appear 0.4s ease forwards',
                 transformOrigin: 'center',
               }}>
@@ -532,16 +565,34 @@ export function ResumeDownloadFlow() {
                   key={p.id}
                   style={{
                     position: 'absolute',
-                    left: 16,
-                    top: 16,
-                    width: p.size,
-                    height: p.size,
+                    left: 16 * popper.scale,
+                    top: 16 * popper.scale,
+                    width: p.size * popper.scale,
+                    height: p.size * popper.scale,
                     background: p.color,
                     borderRadius: p.rounded ? '50%' : '2px',
-                    '--cb-dx': `${p.dx}px`,
-                    '--cb-dy': `${p.dy}px`,
+                    '--cb-dx': `${p.dx * popper.scale}px`,
+                    '--cb-dy': `${p.dy * popper.scale}px`,
                     '--cb-rot': `${p.rot}deg`,
                     animation: `confetti-burst 1.5s ease-out ${p.delay}ms both`,
+                  } as React.CSSProperties}
+                />
+              ))}
+              {popper.ambient.map(a => (
+                <div
+                  key={`a-${a.id}`}
+                  style={{
+                    position: 'absolute',
+                    left: 16 * popper.scale,
+                    top: 16 * popper.scale,
+                    width: a.size * popper.scale,
+                    height: a.size * popper.scale,
+                    background: a.color,
+                    borderRadius: a.rounded ? '50%' : '2px',
+                    '--ce-dx': `${a.dx * popper.scale}px`,
+                    '--ce-dy': `${a.dy * popper.scale}px`,
+                    '--ce-rot': `${a.rot}deg`,
+                    animation: `confetti-emanate ${a.duration}s ease-out ${a.delay}s infinite`,
                   } as React.CSSProperties}
                 />
               ))}
