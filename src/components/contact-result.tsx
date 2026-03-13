@@ -29,7 +29,7 @@ export function ContactResult({ result }: ContactResultProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3">
+    <div data-testid="contact-result" className="flex flex-col gap-3">
       <h3 className="m-0 text-base text-white">Contact Info</h3>
       <div className="flex items-center gap-3 text-[0.9375rem]">
         <span className="text-[#555] w-[50px] shrink-0">Email</span>

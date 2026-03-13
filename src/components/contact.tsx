@@ -80,7 +80,7 @@ export function Contact() {
             </>
           ) : (
             <>
-              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
+              <a data-testid="contact-email-masked" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
                 *****&#64;mannan.is
               </a>
               <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
@@ -93,7 +93,7 @@ export function Contact() {
             Back to Top
           </button>
         </div>
-        <div className="ripple-container" onClick={handleOpenContact} title="Request contact info" />
+        <div data-testid="contact-ripple" className="ripple-container" onClick={handleOpenContact} title="Request contact info" />
       </div>
       {toast && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1100] bg-[#222] border border-[#333] text-white text-xs px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.4)] animate-[fadeIn_0.2s_ease]">

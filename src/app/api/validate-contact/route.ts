@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 import type { LLMValidationResult } from '@/lib/types';
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(3, '1 h'),
+  prefix: 'contact-validate',
+});
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'deepseek/deepseek-v3.2';
@@ -55,8 +63,45 @@ const EMPTY_RESULT: LLMValidationResult = {
   reason: { found: false, value: '' },
 };
 
+function isValidField(field: unknown): field is { found: boolean; value: string } {
+  return (
+    typeof field === 'object' &&
+    field !== null &&
+    'found' in field &&
+    'value' in field &&
+    typeof (field as Record<string, unknown>).found === 'boolean' &&
+    typeof (field as Record<string, unknown>).value === 'string'
+  );
+}
+
+function parseContentFallback(content: string | null | undefined): LLMValidationResult | null {
+  if (!content) return null;
+  try {
+    const stripped = content.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
+    const parsed = JSON.parse(stripped);
+    if (isValidField(parsed.name) && isValidField(parsed.email) && isValidField(parsed.reason)) {
+      return parsed as LLMValidationResult;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      ?? request.headers.get('x-real-ip')
+      ?? '127.0.0.1';
+
+    const { success, remaining, reset } = await ratelimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.', remaining, reset },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil((reset - Date.now()) / 1000)) } }
+      );
+    }
+
     const { message } = await request.json();
 
     if (!message || typeof message !== 'string' || !message.trim()) {
@@ -99,12 +144,20 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
 
-    if (!toolCall?.function?.arguments) {
-      return NextResponse.json(EMPTY_RESULT);
+    if (toolCall?.function?.arguments) {
+      try {
+        const parsed: LLMValidationResult = JSON.parse(toolCall.function.arguments);
+        return NextResponse.json(parsed);
+      } catch {}
     }
 
-    const parsed: LLMValidationResult = JSON.parse(toolCall.function.arguments);
-    return NextResponse.json(parsed);
+    const messageContent = data.choices?.[0]?.message?.content;
+    const fallback = parseContentFallback(messageContent);
+    if (fallback) {
+      return NextResponse.json(fallback);
+    }
+
+    return NextResponse.json(EMPTY_RESULT);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });

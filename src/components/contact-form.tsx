@@ -2,19 +2,21 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useApp } from "@/context/app-context";
-import type { LLMValidationResult } from "@/lib/types";
+
 
 const PLACEHOLDER = "Share your name, email, and/or why you're here";
 const DEBOUNCE_MS = 2000;
 const AUTO_CLOSE_MS = 5000;
 
-type FormStatus = "idle" | "validating" | "success" | "error";
+type FormStatus = "idle" | "pending" | "validating" | "success" | "error" | "rate-limited";
 
 const STATUS_TEXT: Record<FormStatus, string> = {
-  idle: "Waiting for response",
+  idle: "",
+  pending: "Waiting for typing to finish",
   validating: "Checking response",
   success: "Received response",
   error: "Something went wrong. Please try again.",
+  "rate-limited": "Too many attempts. Please try again later.",
 };
 
 interface ContactFormProps {
@@ -79,24 +81,30 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
           signal: controller.signal,
         });
 
+        if (res.status === 429) {
+          setStatus("rate-limited");
+          return;
+        }
+
         if (!res.ok) {
           setStatus("error");
           return;
         }
 
-        const result: LLMValidationResult = await res.json();
+        const result = await res.json();
 
-        if (result.name || result.email || result.reason) {
-          if (
-            result.name.found ||
-            result.email.found ||
-            result.reason.found
-          ) {
-            setStatus("success");
-            startCloseTimer();
-          } else {
-            setStatus("idle");
-          }
+        if (result.error) {
+          setStatus("error");
+          return;
+        }
+
+        if (
+          result.name?.found ||
+          result.email?.found ||
+          result.reason?.found
+        ) {
+          setStatus("success");
+          startCloseTimer();
         } else {
           setStatus("idle");
         }
@@ -119,6 +127,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
 
       if (!value.trim()) return;
 
+      setStatus("pending");
       debounceTimerRef.current = setTimeout(() => {
         validate(value);
       }, DEBOUNCE_MS);
@@ -155,6 +164,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     >
       <div style={{ position: 'relative' }}>
         <textarea
+          data-testid="contact-textarea"
           value={userInput}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -193,44 +203,49 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
           gap: '6px',
           pointerEvents: 'none',
         }}>
-          {status === "validating" && (
-            <svg
-              style={{ animation: 'spin 1s linear infinite', width: '11px', height: '11px', color: 'rgba(255,255,255,0.5)' }}
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                style={{ opacity: 0.25 }}
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                style={{ opacity: 0.75 }}
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
-            </svg>
-          )}
-          <span style={{ fontSize: '11px', color: '#ef4444' }}>
-            {status === 'error' ? (
-              <span style={{ color: 'rgba(239,68,68,0.7)' }}>{STATUS_TEXT[status]}</span>
-            ) : (
-              (STATUS_TEXT[status] + '...').split('').map((char, i) => (
-                <span
-                  key={i}
-                  style={{
-                    animation: 'dotColor 1.5s infinite',
-                    animationDelay: `${i * 0.04}s`,
-                  }}
+          <span data-testid="contact-status" data-status={status} />
+          {status !== "idle" && (
+            <>
+              {status === "validating" && (
+                <svg
+                  style={{ animation: 'spin 1s linear infinite', width: '11px', height: '11px', color: 'rgba(255,255,255,0.5)' }}
+                  viewBox="0 0 24 24"
+                  fill="none"
                 >
-                  {char}
-                </span>
-              ))
-            )}
-          </span>
+                  <circle
+                    style={{ opacity: 0.25 }}
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    style={{ opacity: 0.75 }}
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              )}
+              <span style={{ fontSize: '11px' }}>
+                {status === 'error' || status === 'rate-limited' ? (
+                  <span style={{ color: 'rgba(239,68,68,0.7)' }}>{STATUS_TEXT[status]}</span>
+                ) : (
+                  (STATUS_TEXT[status] + '...').split('').map((char, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        animation: 'dotColor 1.5s infinite',
+                        animationDelay: `${i * 0.04}s`,
+                      }}
+                    >
+                      {char}
+                    </span>
+                  ))
+                )}
+              </span>
+            </>
+          )}
         </div>
       </div>
 

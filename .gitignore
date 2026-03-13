@@ -48,6 +48,11 @@ Thumbs.db
 .env.local
 .env*.local
 
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
 # Lock files (using bun.lockb)
 package-lock.json
 pnpm-lock.yaml

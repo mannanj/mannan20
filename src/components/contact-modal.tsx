@@ -78,9 +78,11 @@ export function ContactModal() {
         zIndex: 1000,
       }}
       onClick={closeContactModal}
+      data-testid="contact-modal-backdrop"
     >
       <div
         ref={popoutRef}
+        data-testid="contact-modal"
         style={{
           position: 'fixed',
           left: position.x,
@@ -117,6 +119,7 @@ export function ContactModal() {
             padding: '0 4px',
             lineHeight: 1,
           }}
+          data-testid="contact-modal-close"
         >
           ×
         </button>
