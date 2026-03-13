@@ -5,7 +5,7 @@ import type { LLMValidationResult } from '@/lib/types';
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(3, '1 h'),
+  limiter: Ratelimit.slidingWindow(10, '1 h'),
   prefix: 'contact-validate',
 });
 
