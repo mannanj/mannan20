@@ -60,7 +60,7 @@ function generateParticles(count: number): PopperParticle[] {
 }
 
 function generateAmbient(count: number): AmbientParticle[] {
-  const totalDuration = 7.5;
+  const totalDuration = 5.5;
   return Array.from({ length: count }, (_, i) => {
     const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
     const dist = 25 + Math.random() * 20;
