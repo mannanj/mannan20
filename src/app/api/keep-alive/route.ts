@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_KV_REST_API_URL!,
+  token: process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN!,
+});
 
 export async function GET() {
   try {
-    await kv.set('keep-alive', Date.now());
+    await redis.set('keep-alive', Date.now());
     return NextResponse.json({ status: 'ok' });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Redis keep-alive failed';
