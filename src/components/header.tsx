@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useApp } from '@/context/app-context';
 import { scrollToSection } from '@/lib/utils';
@@ -42,7 +42,24 @@ function GitHubIcon() {
 export function Header() {
   const { state } = useApp();
   const [expanded, setExpanded] = useState(false);
+  const [clicksAllowed, setClicksAllowed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const gateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const CLICK_GATE_MS = 1000;
+
+  useEffect(() => {
+    if (expanded) {
+      setClicksAllowed(false);
+      gateTimerRef.current = setTimeout(() => setClicksAllowed(true), CLICK_GATE_MS);
+    } else {
+      setClicksAllowed(false);
+      if (gateTimerRef.current) clearTimeout(gateTimerRef.current);
+    }
+    return () => {
+      if (gateTimerRef.current) clearTimeout(gateTimerRef.current);
+    };
+  }, [expanded]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -63,6 +80,14 @@ export function Header() {
     scrollToSection(link);
   };
 
+  const gatedClick = useCallback((e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
+    if (!clicksAllowed) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!expanded) setExpanded(true);
+    }
+  }, [clicksAllowed, expanded]);
+
   return (
     <div className="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99] px-4">
       <div
@@ -71,19 +96,12 @@ export function Header() {
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
-        {!expanded && (
-          <div
-            className="absolute inset-0 z-40 md:hidden"
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setExpanded(true);
-            }}
-          />
-        )}
         <button
           type="button"
-          onClick={() => setExpanded((prev) => !prev)}
+          onClick={(e) => {
+            gatedClick(e);
+            if (clicksAllowed) setExpanded((prev) => !prev);
+          }}
           className="group relative z-30 bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
         >
           <Image src="/mannan.jpg" width={48} height={48} alt="Mannan" className="rounded-full" />
@@ -98,6 +116,7 @@ export function Header() {
           href="https://www.linkedin.com/in/mannanjavid/"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={gatedClick}
           className={`group absolute z-20 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[56px] max-md:left-[60px] max-md:scale-[1.3]' : 'left-[44px]'}`}
         >
           <LinkedInIcon />
@@ -112,6 +131,7 @@ export function Header() {
           href="https://github.com/mannanj"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={gatedClick}
           className={`group absolute z-10 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[80px] max-md:left-[90px] max-md:scale-[1.3]' : 'left-[57px]'}`}
         >
           <GitHubIcon />
