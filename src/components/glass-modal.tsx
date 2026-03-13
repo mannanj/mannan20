@@ -112,6 +112,7 @@ export function GlassModal({
               key={button.label}
               type="button"
               onClick={button.onClick}
+              data-modal-primary={button.primary || undefined}
               onMouseEnter={() => setButtonHoverIndex(index)}
               onMouseLeave={() => setButtonHoverIndex(null)}
               style={{

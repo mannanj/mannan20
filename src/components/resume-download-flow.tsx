@@ -8,6 +8,53 @@ const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
 const DEFAULT_BODY = 'Would you like to download this resume?';
 
+const CONFETTI_COLORS = ['#ff6b8a', '#ffd166', '#06d6a0', '#118ab2', '#ef476f', '#fca311', '#7b2ff7', '#00f5d4'];
+
+interface PopperParticle {
+  id: number;
+  dx: number;
+  dy: number;
+  rot: number;
+  color: string;
+  size: number;
+  delay: number;
+  rounded: boolean;
+}
+
+interface Popper {
+  id: number;
+  x: number;
+  y: number;
+  particles: PopperParticle[];
+}
+
+function generateParticles(count: number): PopperParticle[] {
+  return Array.from({ length: count }, (_, i) => {
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.8;
+    const dist = 50 + Math.random() * 100;
+    return {
+      id: i,
+      dx: Math.cos(angle) * dist,
+      dy: Math.sin(angle) * dist * 0.7 - 20,
+      rot: Math.random() * 720 - 360,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      size: 4 + Math.random() * 5,
+      delay: Math.random() * 300,
+      rounded: Math.random() > 0.5,
+    };
+  });
+}
+
+function createPoppers(): Popper[] {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  return [
+    { id: 0, x: vw * 0.12, y: vh * 0.2, particles: generateParticles(10) },
+    { id: 1, x: vw * 0.88, y: vh * 0.15, particles: generateParticles(10) },
+    { id: 2, x: vw * 0.15, y: vh * 0.8, particles: generateParticles(10) },
+  ];
+}
+
 interface ModalConfig {
   body: string;
   path: string;
@@ -41,6 +88,9 @@ export function ResumeDownloadFlow() {
   const btnRef = useRef<HTMLElement | null>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   const isMobileRef = useRef(false);
+  const [celebrations, setCelebrations] = useState({ squiggly: false, arrow: false, confetti: false });
+  const [dlBtnRect, setDlBtnRect] = useState<DOMRect | null>(null);
+  const poppersRef = useRef<Popper[]>([]);
 
   const injectCursorHide = useCallback(() => {
     if (styleRef.current) return;
@@ -199,6 +249,34 @@ export function ResumeDownloadFlow() {
     return () => window.removeEventListener('open-resume-modal', openModal);
   }, [openModal]);
 
+  useEffect(() => {
+    if (phase !== 'modal') {
+      setCelebrations({ squiggly: false, arrow: false, confetti: false });
+      setDlBtnRect(null);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>('[data-modal-primary]');
+      if (el) setDlBtnRect(el.getBoundingClientRect());
+      poppersRef.current = createPoppers();
+    });
+
+    const squigglyDelay = 1000 + Math.random() * 2000;
+    const arrowDelay = squigglyDelay + 3300;
+    const confettiDelay = arrowDelay + 3300;
+    const t1 = setTimeout(() => setCelebrations(prev => ({ ...prev, squiggly: true })), squigglyDelay);
+    const t2 = setTimeout(() => setCelebrations(prev => ({ ...prev, arrow: true })), arrowDelay);
+    const t3 = setTimeout(() => setCelebrations(prev => ({ ...prev, confetti: true })), confettiDelay);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [phase]);
+
   const maskGradient = spotlight
     ? `radial-gradient(ellipse ${spotlight.width * 1.2}px ${spotlight.height * 2.2}px at ${spotlight.left + spotlight.width / 2}px ${spotlight.top + spotlight.height / 2}px, transparent 40%, black 100%)`
     : undefined;
@@ -328,6 +406,149 @@ export function ResumeDownloadFlow() {
         defaultSize={isMobileRef.current ? 'small' : 'medium'}
         showSizeToggle={false}
       />
+
+      {phase === 'modal' && dlBtnRect && (
+        <>
+          {celebrations.squiggly && (
+            <svg
+              style={{
+                position: 'fixed',
+                zIndex: 1001,
+                pointerEvents: 'none',
+                left: dlBtnRect.left + dlBtnRect.width * 0.15,
+                top: dlBtnRect.bottom - 3,
+                width: dlBtnRect.width * 0.7,
+                height: 8,
+                overflow: 'visible',
+              }}
+              viewBox="0 0 100 8"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M 0 4 Q 8 0, 16 4 T 32 4 T 48 4 T 64 4 T 80 4 T 100 4"
+                fill="none"
+                stroke="#ffd166"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray="120"
+                strokeDashoffset="120"
+                style={{ animation: 'squiggly-draw 0.6s ease forwards' }}
+              />
+            </svg>
+          )}
+
+          {celebrations.arrow && (
+            <svg
+              style={{
+                position: 'fixed',
+                zIndex: 1001,
+                pointerEvents: 'none',
+                left: dlBtnRect.right + 15,
+                top: dlBtnRect.top + dlBtnRect.height / 2 - 40,
+                width: 90,
+                height: 80,
+                overflow: 'visible',
+              }}
+              viewBox="0 0 90 80"
+              fill="none"
+            >
+              <path
+                d="M 85 10 C 60 8, 30 16, 8 27"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="95"
+                strokeDashoffset="95"
+                style={{ animation: 'arrow-draw 0.7s ease forwards' }}
+              />
+              <path
+                d="M 8 27 L 14 20 M 8 27 L 15 32"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="20"
+                strokeDashoffset="20"
+                style={{ animation: 'arrow-draw 0.3s ease 0.6s forwards' }}
+              />
+              <path
+                d="M 85 40 C 60 40, 30 40, 8 40"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="80"
+                strokeDashoffset="80"
+                style={{ animation: 'arrow-draw 0.7s ease 0.4s forwards' }}
+              />
+              <path
+                d="M 8 40 L 15 34 M 8 40 L 15 46"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="20"
+                strokeDashoffset="20"
+                style={{ animation: 'arrow-draw 0.3s ease 1s forwards' }}
+              />
+              <path
+                d="M 85 56 C 60 58, 30 56, 8 50.2"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="95"
+                strokeDashoffset="95"
+                style={{ animation: 'arrow-draw 0.7s ease 0.8s forwards' }}
+              />
+              <path
+                d="M 8 50.2 L 15 44.2 M 8 50.2 L 14 57.2"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray="20"
+                strokeDashoffset="20"
+                style={{ animation: 'arrow-draw 0.3s ease 1.4s forwards' }}
+              />
+            </svg>
+          )}
+
+          {celebrations.confetti && poppersRef.current.map(popper => (
+            <div
+              key={popper.id}
+              style={{
+                position: 'fixed',
+                zIndex: 1002,
+                left: popper.x,
+                top: popper.y,
+                pointerEvents: 'none',
+              }}
+            >
+              <div style={{
+                fontSize: 32,
+                animation: 'popper-appear 0.4s ease forwards',
+                transformOrigin: 'center',
+              }}>
+                🎉
+              </div>
+              {popper.particles.map(p => (
+                <div
+                  key={p.id}
+                  style={{
+                    position: 'absolute',
+                    left: 16,
+                    top: 16,
+                    width: p.size,
+                    height: p.size,
+                    background: p.color,
+                    borderRadius: p.rounded ? '50%' : '2px',
+                    '--cb-dx': `${p.dx}px`,
+                    '--cb-dy': `${p.dy}px`,
+                    '--cb-rot': `${p.rot}deg`,
+                    animation: `confetti-burst 1.5s ease-out ${p.delay}ms both`,
+                  } as React.CSSProperties}
+                />
+              ))}
+            </div>
+          ))}
+        </>
+      )}
     </>
   );
 }
