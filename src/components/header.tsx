@@ -63,16 +63,6 @@ export function Header() {
     scrollToSection(link);
   };
 
-  const isTouchDevice = () => window.matchMedia('(hover: none)').matches;
-
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (isTouchDevice() && !expanded) {
-      e.preventDefault();
-      e.stopPropagation();
-      setExpanded(true);
-    }
-  };
-
   return (
     <div className="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99] px-4">
       <div
@@ -81,6 +71,16 @@ export function Header() {
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
+        {!expanded && (
+          <div
+            className="absolute inset-0 z-40 md:hidden"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setExpanded(true);
+            }}
+          />
+        )}
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
@@ -98,7 +98,6 @@ export function Header() {
           href="https://www.linkedin.com/in/mannanjavid/"
           target="_blank"
           rel="noopener noreferrer"
-          onClick={handleLinkClick}
           className={`group absolute z-20 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[56px] max-md:left-[60px] max-md:scale-[1.3]' : 'left-[44px]'}`}
         >
           <LinkedInIcon />
@@ -113,7 +112,6 @@ export function Header() {
           href="https://github.com/mannanj"
           target="_blank"
           rel="noopener noreferrer"
-          onClick={handleLinkClick}
           className={`group absolute z-10 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[80px] max-md:left-[90px] max-md:scale-[1.3]' : 'left-[57px]'}`}
         >
           <GitHubIcon />
