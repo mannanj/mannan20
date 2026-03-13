@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { kv } from '@vercel/kv';
 import type { LLMValidationResult } from '@/lib/types';
 
 const ratelimit = new Ratelimit({
-  redis: new Redis({
-    url: process.env.UPSTASH_REDIS_REST_KV_REST_API_URL!,
-    token: process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN!,
-  }),
+  redis: kv,
   limiter: Ratelimit.slidingWindow(10, '1 h'),
   prefix: 'contact-validate',
 });
