@@ -4,7 +4,10 @@ import { Redis } from '@upstash/redis';
 import type { LLMValidationResult } from '@/lib/types';
 
 const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
+  redis: new Redis({
+    url: process.env.UPSTASH_REDIS_REST_KV_REST_API_URL!,
+    token: process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN!,
+  }),
   limiter: Ratelimit.slidingWindow(10, '1 h'),
   prefix: 'contact-validate',
 });
