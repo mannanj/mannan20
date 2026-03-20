@@ -54,7 +54,7 @@ export function Contact() {
           {state.contactRevealed ? (
             <>
               <div className="group flex items-center gap-2">
-                <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" href={`mailto:${EMAIL}`}>
+                <a data-testid="contact-email-revealed" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" href={`mailto:${EMAIL}`}>
                   {EMAIL}
                 </a>
                 <button

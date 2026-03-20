@@ -8,8 +8,6 @@ import type { LLMValidationResult } from "@/lib/types";
 const PLACEHOLDER = "Share your name, email, and/or why you're here";
 const CHALLENGE_PLACEHOLDER = "Mention something from my portfolio...";
 const DEBOUNCE_MS = 2000;
-const FEEDBACK_DELAY_MS = 2000;
-const COUNTDOWN_SECONDS = 3;
 const MAX_INPUT_LENGTH = 1000;
 const MAX_NAME_DISPLAY = 30;
 const BOT_CHARS_PER_SEC = 15;
@@ -22,7 +20,6 @@ type FormStatus = "idle" | "pending" | "validating" | "success" | "error" | "net
 type DisplayPhase =
   | { kind: 'none' }
   | { kind: 'feedback'; text: string }
-  | { kind: 'countdown'; seconds: number }
   | { kind: 'challenge' };
 
 const FALLBACK_TEXT: Record<FormStatus, string> = {
@@ -86,19 +83,16 @@ function buildFeedback(result: LLMValidationResult): { text: string; isSuccess: 
 }
 
 interface ContactFormProps {
-  onSubmit: () => void;
+  onReveal: () => void;
 }
 
-export function ContactForm({ onSubmit }: ContactFormProps) {
+export function ContactForm({ onReveal }: ContactFormProps) {
   const { state, setContactUserInput } = useApp();
   const userInput = state.contactUserInput;
   const [status, setStatus] = useState<FormStatus>("idle");
   const [displayPhase, setDisplayPhase] = useState<DisplayPhase>({ kind: 'none' });
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const phaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const feedbackTextRef = useRef("");
   const firstInputTimeRef = useRef<number | null>(null);
   const pasteDetectedRef = useRef(false);
   const challengeModeRef = useRef(false);
@@ -117,57 +111,10 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     }
   }, []);
 
-  const clearTimers = useCallback(() => {
-    if (phaseTimerRef.current) {
-      clearTimeout(phaseTimerRef.current);
-      phaseTimerRef.current = null;
-    }
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
-  }, []);
-
-  const startCountdownSequence = useCallback(() => {
-    clearTimers();
-    setDisplayPhase({ kind: 'feedback', text: feedbackTextRef.current });
-    phaseTimerRef.current = setTimeout(() => {
-      let seconds = COUNTDOWN_SECONDS;
-      setDisplayPhase({ kind: 'countdown', seconds });
-      countdownIntervalRef.current = setInterval(() => {
-        seconds -= 1;
-        if (seconds <= 0) {
-          if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-          countdownIntervalRef.current = null;
-          onSubmit();
-        } else {
-          setDisplayPhase({ kind: 'countdown', seconds });
-        }
-      }, 1000);
-    }, FEEDBACK_DELAY_MS);
-  }, [onSubmit, clearTimers]);
-
-  const resetPhase = useCallback(() => {
-    if (challengeModeRef.current) return;
-    if (phaseTimerRef.current || countdownIntervalRef.current) {
-      clearTimers();
-      setDisplayPhase({ kind: 'feedback', text: feedbackTextRef.current });
-      phaseTimerRef.current = setTimeout(() => {
-        let seconds = COUNTDOWN_SECONDS;
-        setDisplayPhase({ kind: 'countdown', seconds });
-        countdownIntervalRef.current = setInterval(() => {
-          seconds -= 1;
-          if (seconds <= 0) {
-            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-            countdownIntervalRef.current = null;
-            onSubmit();
-          } else {
-            setDisplayPhase({ kind: 'countdown', seconds });
-          }
-        }, 1000);
-      }, FEEDBACK_DELAY_MS);
-    }
-  }, [onSubmit, clearTimers]);
+  const triggerSuccess = useCallback((feedbackText: string) => {
+    setDisplayPhase({ kind: 'feedback', text: feedbackText });
+    onReveal();
+  }, [onReveal]);
 
   const isSuspiciousBehavior = useCallback((textLength: number) => {
     if (!firstInputTimeRef.current) return false;
@@ -188,11 +135,9 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
   const passChallengeMode = useCallback(() => {
     challengeModeRef.current = false;
     const text = "Nice, thanks for that!";
-    feedbackTextRef.current = text;
     setStatus("success");
-    setDisplayPhase({ kind: 'feedback', text });
-    startCountdownSequence();
-  }, [startCountdownSequence]);
+    triggerSuccess(text);
+  }, [triggerSuccess]);
 
   const validate = useCallback(
     async (text: string) => {
@@ -228,7 +173,6 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         }
 
         const { text: feedbackText, isSuccess } = buildFeedback(result);
-        feedbackTextRef.current = feedbackText;
 
         if (isSuccess) {
           if (isSuspiciousBehavior(text.length)) {
@@ -236,8 +180,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
             return;
           }
           setStatus("success");
-          setDisplayPhase({ kind: 'feedback', text: feedbackText });
-          startCountdownSequence();
+          triggerSuccess(feedbackText);
         } else {
           setStatus("insufficient");
           setDisplayPhase({ kind: 'feedback', text: feedbackText });
@@ -251,7 +194,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
         }
       }
     },
-    [cancelRequest, startCountdownSequence, isSuspiciousBehavior, enterChallengeMode]
+    [cancelRequest, triggerSuccess, isSuspiciousBehavior, enterChallengeMode]
   );
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -276,10 +219,8 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
 
       cancelDebounce();
       cancelRequest();
-      clearTimers();
       setStatus("idle");
       setDisplayPhase({ kind: 'none' });
-      feedbackTextRef.current = "";
 
       if (!value.trim()) {
         firstInputTimeRef.current = null;
@@ -300,50 +241,34 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       setContactUserInput,
       cancelDebounce,
       cancelRequest,
-      clearTimers,
       validate,
       passChallengeMode,
     ]
   );
 
-  const handleInteraction = useCallback(() => {
-    resetPhase();
-  }, [resetPhase]);
-
-  const handleKeyDown = useCallback(() => {
-    resetPhase();
-  }, [resetPhase]);
-
   useEffect(() => {
     return () => {
       cancelDebounce();
       cancelRequest();
-      clearTimers();
     };
-  }, [cancelDebounce, cancelRequest, clearTimers]);
+  }, [cancelDebounce, cancelRequest]);
 
   const isChallenge = displayPhase.kind === 'challenge';
   const displayText = (() => {
-    if (displayPhase.kind === 'countdown') return `Closing in ${displayPhase.seconds}...`;
     if (displayPhase.kind === 'challenge') return CHALLENGE_QUESTION;
     if (displayPhase.kind === 'feedback') return displayPhase.text;
     return FALLBACK_TEXT[status];
   })();
 
-  const isCountdown = displayPhase.kind === 'countdown';
   const isAmber = status === 'insufficient' || status === 'challenge';
 
   return (
-    <div
-      onMouseDown={handleInteraction}
-      onSelect={handleInteraction}
-    >
+    <div>
       <div style={{ position: 'relative' }}>
         <textarea
           data-testid="contact-textarea"
           value={userInput}
           onChange={handleChange}
-          onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           maxLength={MAX_INPUT_LENGTH}
           rows={6}
@@ -406,9 +331,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
                 </svg>
               )}
               <span data-testid="contact-feedback" style={{ fontSize: '11px' }}>
-                {isCountdown ? (
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>{displayText}</span>
-                ) : status === 'error' || status === 'network-error' || status === 'rate-limited' ? (
+                {status === 'error' || status === 'network-error' || status === 'rate-limited' ? (
                   <span style={{ color: 'rgba(239,68,68,0.7)' }}>{displayText}</span>
                 ) : isAmber ? (
                   <span style={{ color: 'rgba(251,191,36,0.8)' }}>{displayText}</span>

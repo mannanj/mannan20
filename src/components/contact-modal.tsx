@@ -61,9 +61,8 @@ export function ContactModal() {
     };
   }, [dragOffset]);
 
-  const handleFormSubmit = () => {
+  const handleReveal = () => {
     setContactResult(CONTACT_DATA);
-    closeContactModal();
   };
 
   if (!state.contactModalOpen) return null;
@@ -124,7 +123,7 @@ export function ContactModal() {
           ×
         </button>
         {!showResult ? (
-          <ContactForm onSubmit={handleFormSubmit} />
+          <ContactForm onReveal={handleReveal} />
         ) : (
           <ContactResult result={state.contactResult ?? CONTACT_DATA} />
         )}

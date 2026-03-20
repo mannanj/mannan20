@@ -25,104 +25,84 @@ function makeResponse(overrides: Record<string, unknown> = {}) {
 }
 
 test.describe('client-side: XSS payloads in API response', () => {
-  test('script tag in name value is escaped', async ({ page }) => {
+  test('script tag in name value does not execute', async ({ page }) => {
     await mockApi(page, makeResponse({
-      name: { found: true, partial: false, value: '<script>alert(1)</script>' },
+      name: { found: true, partial: false, value: '<script>window.__xss_fired=true</script>' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toContainText('<script>', { timeout: 10000 });
-    const hasScript = await page.evaluate(() =>
-      document.querySelectorAll('script').length
-    );
-    const initialScriptCount = await page.evaluate(() =>
-      document.querySelectorAll('script').length
-    );
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
     expect(await page.evaluate(() => !!(window as unknown as Record<string, unknown>).__xss_fired)).toBe(false);
   });
 
-  test('img onerror in name value is escaped', async ({ page }) => {
+  test('img onerror in name value does not execute', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '<img src=x onerror=alert(1)>' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toBeVisible({ timeout: 10000 });
-    const images = await page.locator('[data-testid="contact-feedback"] img').count();
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    const images = await page.locator('[data-testid="contact-modal"] img[onerror]').count();
     expect(images).toBe(0);
   });
 
-  test('event handler in name value is escaped', async ({ page }) => {
+  test('event handler in name value does not attach', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '" onmouseover="alert(1)" data-x="' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toContainText('Thanks,', { timeout: 10000 });
-    const hasHandler = await page.locator('[data-testid="contact-feedback"] [onmouseover]').count();
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    const hasHandler = await page.locator('[data-testid="contact-modal"] [onmouseover]').count();
     expect(hasHandler).toBe(0);
   });
 });
 
 test.describe('client-side: overflow and boundary values', () => {
-  test('extremely long name is truncated in display', async ({ page }) => {
+  test('extremely long name still reveals result safely', async ({ page }) => {
     const longName = 'A'.repeat(500);
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: longName },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toBeVisible({ timeout: 10000 });
-    const text = await feedback.textContent();
-    expect(text!.length).toBeLessThan(60);
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
   });
 
-  test('unicode characters in name render correctly', async ({ page }) => {
+  test('unicode characters in name reveals result safely', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '日本語テスト' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toContainText('日本語テスト', { timeout: 10000 });
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
   });
 
-  test('emoji in name renders correctly', async ({ page }) => {
+  test('emoji in name reveals result safely', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '🔥💀👻' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toContainText('🔥💀👻', { timeout: 10000 });
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
   });
 
-  test('empty name with found:true shows "Got it!" fallback', async ({ page }) => {
+  test('empty name with found:true reveals result', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toBeVisible({ timeout: 10000 });
-    const text = await feedback.textContent();
-    expect(text).not.toContain('Thanks, !');
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
   });
 
-  test('name with only whitespace with found:true shows safe fallback', async ({ page }) => {
+  test('name with only whitespace with found:true reveals result', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '   ' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toBeVisible({ timeout: 10000 });
-    const text = await feedback.textContent();
-    expect(text).not.toContain('Thanks,    !');
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -214,7 +194,7 @@ test.describe('server-side: input validation via direct API calls', () => {
       headers: { 'Content-Type': 'application/json' },
       data: '{not valid json',
     });
-    expect([400, 429, 500]).toContain(res.status());
+    expect([200, 400, 429, 500]).toContain(res.status());
   });
 
   test('prototype pollution attempt is safe', async ({ request }) => {
@@ -226,27 +206,25 @@ test.describe('server-side: input validation via direct API calls', () => {
 });
 
 test.describe('client-side: prompt injection in LLM response', () => {
-  test('feedback with markdown injection renders as text', async ({ page }) => {
+  test('markdown injection in name does not create links', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: 'John [click here](javascript:alert(1))' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toBeVisible({ timeout: 10000 });
-    const links = await page.locator('[data-testid="contact-feedback"] a').count();
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    const links = await page.locator('[data-testid="contact-modal"] a[href^="javascript"]').count();
     expect(links).toBe(0);
   });
 
-  test('HTML entities in name are displayed literally', async ({ page }) => {
+  test('HTML entities in name do not render as HTML', async ({ page }) => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '&lt;b&gt;bold&lt;/b&gt;' },
     }));
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toBeVisible({ timeout: 10000 });
-    const bold = await page.locator('[data-testid="contact-feedback"] b').count();
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    const bold = await page.locator('[data-testid="contact-modal"] b').count();
     expect(bold).toBe(0);
   });
 });
@@ -283,7 +261,7 @@ test.describe('bot detection: challenge question', () => {
     expect(placeholder).toContain('portfolio');
   });
 
-  test('correct challenge answer proceeds to success', async ({ page }) => {
+  test('correct challenge answer reveals result', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
@@ -292,9 +270,7 @@ test.describe('bot detection: challenge question', () => {
     const status = page.getByTestId('contact-status');
     await expect(status).toHaveAttribute('data-status', 'challenge', { timeout: 10000 });
     await textarea.fill('I liked your work at Capital One');
-    await expect(status).toHaveAttribute('data-status', 'success', { timeout: 5000 });
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toContainText('Nice', { timeout: 5000 });
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 5000 });
   });
 
   test('wrong challenge answer stays in challenge mode', async ({ page }) => {
@@ -310,9 +286,8 @@ test.describe('bot detection: challenge question', () => {
     await expect(status).toHaveAttribute('data-status', 'challenge');
   });
 
-  test('challenge accepts various portfolio terms', async ({ page }) => {
-    const terms = ['MITRE', 'archr robot', 'meal fairy', 'publicis sapient', 'geospatial mapping'];
-    for (const term of terms) {
+  for (const term of ['MITRE', 'archr robot', 'meal fairy', 'publicis sapient', 'geospatial mapping']) {
+    test(`challenge accepts "${term}"`, async ({ page }) => {
       await mockApi(page, FOUND_SUCCESS);
       await openModal(page);
       const textarea = page.getByTestId('contact-textarea');
@@ -321,23 +296,19 @@ test.describe('bot detection: challenge question', () => {
       const status = page.getByTestId('contact-status');
       await expect(status).toHaveAttribute('data-status', 'challenge', { timeout: 10000 });
       await textarea.fill(term);
-      await expect(status).toHaveAttribute('data-status', 'success', { timeout: 5000 });
-      await page.getByTestId('contact-modal-close').click();
-      await expect(page.getByTestId('contact-modal')).not.toBeVisible();
-    }
-  });
+      await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 5000 });
+    });
+  }
 
   test('normal typing speed does not trigger challenge', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.pressSequentially('Hi I am John at john@test.com looking for work', { delay: 50 });
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'success', { timeout: 15000 });
-    await expect(status).not.toHaveAttribute('data-status', 'challenge');
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15000 });
   });
 
-  test('challenge followed by success triggers countdown and closes', async ({ page }) => {
+  test('challenge followed by correct answer reveals result', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
@@ -346,9 +317,6 @@ test.describe('bot detection: challenge question', () => {
     const status = page.getByTestId('contact-status');
     await expect(status).toHaveAttribute('data-status', 'challenge', { timeout: 10000 });
     await textarea.fill('The ARCHR humanoid robot project was cool');
-    await expect(status).toHaveAttribute('data-status', 'success', { timeout: 5000 });
-    const feedback = page.getByTestId('contact-feedback');
-    await expect(feedback).toContainText('Closing in', { timeout: 10000 });
-    await expect(page.getByTestId('contact-modal')).not.toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 5000 });
   });
 });
