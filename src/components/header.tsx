@@ -92,15 +92,17 @@ export function Header() {
     <div className="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99] px-4">
       <div
         ref={containerRef}
+        data-testid="header-controls"
         className="relative flex items-center pr-[60px]"
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
       >
         <button
           type="button"
-          onClick={(e) => {
-            gatedClick(e);
-            if (clicksAllowed) setExpanded((prev) => !prev);
+          data-testid="header-home-button"
+          onClick={() => {
+            setExpanded((prev) => !prev);
+            scrollToSection('home');
           }}
           className="group relative z-30 bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
         >
@@ -116,6 +118,7 @@ export function Header() {
           href="https://www.linkedin.com/in/mannanjavid/"
           target="_blank"
           rel="noopener noreferrer"
+          data-testid="header-linkedin-link"
           onClick={gatedClick}
           className={`group absolute z-20 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[56px] max-md:left-[60px] max-md:scale-[1.3]' : 'left-[44px]'}`}
         >
@@ -131,6 +134,7 @@ export function Header() {
           href="https://github.com/mannanj"
           target="_blank"
           rel="noopener noreferrer"
+          data-testid="header-github-link"
           onClick={gatedClick}
           className={`group absolute z-10 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? 'left-[80px] max-md:left-[90px] max-md:scale-[1.3]' : 'left-[57px]'}`}
         >

@@ -2,22 +2,88 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useApp } from "@/context/app-context";
+import type { LLMValidationResult } from "@/lib/types";
 
 
 const PLACEHOLDER = "Share your name, email, and/or why you're here";
+const CHALLENGE_PLACEHOLDER = "Mention something from my portfolio...";
 const DEBOUNCE_MS = 2000;
-const AUTO_CLOSE_MS = 5000;
+const FEEDBACK_DELAY_MS = 2000;
+const COUNTDOWN_SECONDS = 3;
+const MAX_INPUT_LENGTH = 1000;
+const MAX_NAME_DISPLAY = 30;
+const BOT_CHARS_PER_SEC = 15;
+const BOT_PASTE_MIN_CHARS = 20;
+const BOT_PASTE_MAX_ELAPSED = 3;
+const CHALLENGE_QUESTION = "What's one project of mine that caught your eye?";
 
-type FormStatus = "idle" | "pending" | "validating" | "success" | "error" | "rate-limited";
+type FormStatus = "idle" | "pending" | "validating" | "success" | "error" | "network-error" | "insufficient" | "rate-limited" | "challenge";
 
-const STATUS_TEXT: Record<FormStatus, string> = {
+type DisplayPhase =
+  | { kind: 'none' }
+  | { kind: 'feedback'; text: string }
+  | { kind: 'countdown'; seconds: number }
+  | { kind: 'challenge' };
+
+const FALLBACK_TEXT: Record<FormStatus, string> = {
   idle: "",
   pending: "Waiting for typing to finish",
   validating: "Checking response",
   success: "Received response",
-  error: "Something went wrong. Please try again.",
+  error: "Server error. Please try again.",
+  "network-error": "Network error. Check your connection.",
+  insufficient: "Include your name, email, or why you're here.",
   "rate-limited": "Too many attempts. Please try again later.",
+  challenge: CHALLENGE_QUESTION,
 };
+
+const KNOWN_TERMS = [
+  'capital one', 'capitalone',
+  'publicis', 'sapient',
+  'radiant', 'maxar',
+  'mitre',
+  'meal fairy', 'mealfairy', 'food delivery',
+  'electric cooperative', 'electric coop', 'nreca',
+  'archr', 'humanoid robot', 'darpa',
+  'solar collaborative',
+  'dome light',
+  'applied jung', 'being man', 'beingman', 'masculinity',
+  'substitute teach',
+  'volunteering', 'volunteer',
+  'portfolio', 'this site', 'your site', 'your website', 'your portfolio',
+  'geospatial', 'cesium', 'leaflet', 'arcgis',
+  'demand response', 'open modeling',
+  'healthcare', 'mapping',
+  'hackathon',
+  'ecovillage', 'nomadic',
+  'agentic ai', 'johns hopkins',
+  'aws certified', 'solutions architect',
+  'george mason',
+  'security', 'splunk',
+  'robot',
+];
+
+function matchesPortfolio(input: string): boolean {
+  const lower = input.toLowerCase();
+  return KNOWN_TERMS.some(term => lower.includes(term));
+}
+
+function buildFeedback(result: LLMValidationResult): { text: string; isSuccess: boolean } {
+  const hasName = result.name?.found;
+  const hasEmail = result.email?.found;
+  const hasReason = result.reason?.found;
+  const hasPartial = result.name?.partial || result.email?.partial || result.reason?.partial;
+
+  if (hasName) {
+    const name = result.name.value?.trim();
+    if (!name) return { text: "Got it!", isSuccess: true };
+    const display = name.length > MAX_NAME_DISPLAY ? name.slice(0, MAX_NAME_DISPLAY) + '…' : name;
+    return { text: `Thanks, ${display}!`, isSuccess: true };
+  }
+  if (hasEmail || hasReason) return { text: "Got it!", isSuccess: true };
+  if (hasPartial) return { text: "Keep going...", isSuccess: false };
+  return { text: "Include your name, email, or why you're here.", isSuccess: false };
+}
 
 interface ContactFormProps {
   onSubmit: () => void;
@@ -27,9 +93,15 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
   const { state, setContactUserInput } = useApp();
   const userInput = state.contactUserInput;
   const [status, setStatus] = useState<FormStatus>("idle");
+  const [displayPhase, setDisplayPhase] = useState<DisplayPhase>({ kind: 'none' });
   const abortControllerRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const phaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const feedbackTextRef = useRef("");
+  const firstInputTimeRef = useRef<number | null>(null);
+  const pasteDetectedRef = useRef(false);
+  const challengeModeRef = useRef(false);
 
   const cancelDebounce = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -45,25 +117,82 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     }
   }, []);
 
-  const cancelCloseTimer = useCallback(() => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
+  const clearTimers = useCallback(() => {
+    if (phaseTimerRef.current) {
+      clearTimeout(phaseTimerRef.current);
+      phaseTimerRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
     }
   }, []);
 
-  const startCloseTimer = useCallback(() => {
-    cancelCloseTimer();
-    closeTimerRef.current = setTimeout(() => {
-      onSubmit();
-    }, AUTO_CLOSE_MS);
-  }, [onSubmit, cancelCloseTimer]);
+  const startCountdownSequence = useCallback(() => {
+    clearTimers();
+    setDisplayPhase({ kind: 'feedback', text: feedbackTextRef.current });
+    phaseTimerRef.current = setTimeout(() => {
+      let seconds = COUNTDOWN_SECONDS;
+      setDisplayPhase({ kind: 'countdown', seconds });
+      countdownIntervalRef.current = setInterval(() => {
+        seconds -= 1;
+        if (seconds <= 0) {
+          if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+          onSubmit();
+        } else {
+          setDisplayPhase({ kind: 'countdown', seconds });
+        }
+      }, 1000);
+    }, FEEDBACK_DELAY_MS);
+  }, [onSubmit, clearTimers]);
 
-  const resetCloseTimer = useCallback(() => {
-    if (closeTimerRef.current) {
-      startCloseTimer();
+  const resetPhase = useCallback(() => {
+    if (challengeModeRef.current) return;
+    if (phaseTimerRef.current || countdownIntervalRef.current) {
+      clearTimers();
+      setDisplayPhase({ kind: 'feedback', text: feedbackTextRef.current });
+      phaseTimerRef.current = setTimeout(() => {
+        let seconds = COUNTDOWN_SECONDS;
+        setDisplayPhase({ kind: 'countdown', seconds });
+        countdownIntervalRef.current = setInterval(() => {
+          seconds -= 1;
+          if (seconds <= 0) {
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+            onSubmit();
+          } else {
+            setDisplayPhase({ kind: 'countdown', seconds });
+          }
+        }, 1000);
+      }, FEEDBACK_DELAY_MS);
     }
-  }, [closeTimerRef, startCloseTimer]);
+  }, [onSubmit, clearTimers]);
+
+  const isSuspiciousBehavior = useCallback((textLength: number) => {
+    if (!firstInputTimeRef.current) return false;
+    const elapsed = (Date.now() - firstInputTimeRef.current) / 1000;
+    const charsPerSec = elapsed > 0 ? textLength / elapsed : Infinity;
+    const speedBot = charsPerSec > BOT_CHARS_PER_SEC;
+    const pasteBot = pasteDetectedRef.current && elapsed < BOT_PASTE_MAX_ELAPSED;
+    return speedBot || pasteBot;
+  }, []);
+
+  const enterChallengeMode = useCallback(() => {
+    challengeModeRef.current = true;
+    setStatus("challenge");
+    setDisplayPhase({ kind: 'challenge' });
+    setContactUserInput("");
+  }, [setContactUserInput]);
+
+  const passChallengeMode = useCallback(() => {
+    challengeModeRef.current = false;
+    const text = "Nice, thanks for that!";
+    feedbackTextRef.current = text;
+    setStatus("success");
+    setDisplayPhase({ kind: 'feedback', text });
+    startCountdownSequence();
+  }, [startCountdownSequence]);
 
   const validate = useCallback(
     async (text: string) => {
@@ -91,41 +220,76 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
           return;
         }
 
-        const result = await res.json();
+        const result: LLMValidationResult = await res.json();
 
-        if (result.error) {
+        if (result && (result as unknown as Record<string, unknown>).error) {
           setStatus("error");
           return;
         }
 
-        if (
-          result.name?.found ||
-          result.email?.found ||
-          result.reason?.found
-        ) {
+        const { text: feedbackText, isSuccess } = buildFeedback(result);
+        feedbackTextRef.current = feedbackText;
+
+        if (isSuccess) {
+          if (isSuspiciousBehavior(text.length)) {
+            enterChallengeMode();
+            return;
+          }
           setStatus("success");
-          startCloseTimer();
+          setDisplayPhase({ kind: 'feedback', text: feedbackText });
+          startCountdownSequence();
         } else {
-          setStatus("idle");
+          setStatus("insufficient");
+          setDisplayPhase({ kind: 'feedback', text: feedbackText });
         }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setStatus("error");
+        if (err instanceof TypeError) {
+          setStatus("network-error");
+        } else {
+          setStatus("error");
+        }
       }
     },
-    [cancelRequest, startCloseTimer]
+    [cancelRequest, startCountdownSequence, isSuspiciousBehavior, enterChallengeMode]
   );
+
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = e.clipboardData?.getData('text') || '';
+    if (pasted.length >= BOT_PASTE_MIN_CHARS) {
+      pasteDetectedRef.current = true;
+    }
+  }, []);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
       setContactUserInput(value);
+
+      if (challengeModeRef.current) {
+        if (!value.trim()) return;
+        if (matchesPortfolio(value)) {
+          passChallengeMode();
+        }
+        return;
+      }
+
       cancelDebounce();
       cancelRequest();
-      cancelCloseTimer();
+      clearTimers();
       setStatus("idle");
+      setDisplayPhase({ kind: 'none' });
+      feedbackTextRef.current = "";
 
-      if (!value.trim()) return;
+      if (!value.trim()) {
+        firstInputTimeRef.current = null;
+        pasteDetectedRef.current = false;
+        return;
+      }
+
+      if (!firstInputTimeRef.current) {
+        firstInputTimeRef.current = Date.now();
+      }
 
       setStatus("pending");
       debounceTimerRef.current = setTimeout(() => {
@@ -136,26 +300,38 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
       setContactUserInput,
       cancelDebounce,
       cancelRequest,
-      cancelCloseTimer,
+      clearTimers,
       validate,
+      passChallengeMode,
     ]
   );
 
   const handleInteraction = useCallback(() => {
-    resetCloseTimer();
-  }, [resetCloseTimer]);
+    resetPhase();
+  }, [resetPhase]);
 
   const handleKeyDown = useCallback(() => {
-    cancelCloseTimer();
-  }, [cancelCloseTimer]);
+    resetPhase();
+  }, [resetPhase]);
 
   useEffect(() => {
     return () => {
       cancelDebounce();
       cancelRequest();
-      cancelCloseTimer();
+      clearTimers();
     };
-  }, [cancelDebounce, cancelRequest, cancelCloseTimer]);
+  }, [cancelDebounce, cancelRequest, clearTimers]);
+
+  const isChallenge = displayPhase.kind === 'challenge';
+  const displayText = (() => {
+    if (displayPhase.kind === 'countdown') return `Closing in ${displayPhase.seconds}...`;
+    if (displayPhase.kind === 'challenge') return CHALLENGE_QUESTION;
+    if (displayPhase.kind === 'feedback') return displayPhase.text;
+    return FALLBACK_TEXT[status];
+  })();
+
+  const isCountdown = displayPhase.kind === 'countdown';
+  const isAmber = status === 'insufficient' || status === 'challenge';
 
   return (
     <div
@@ -168,6 +344,8 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
           value={userInput}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          maxLength={MAX_INPUT_LENGTH}
           rows={6}
           style={{
             width: '100%',
@@ -185,7 +363,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
             outline: 'none',
             transition: 'border-color 0.2s',
           }}
-          placeholder={PLACEHOLDER}
+          placeholder={isChallenge ? CHALLENGE_PLACEHOLDER : PLACEHOLDER}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = 'rgba(3,155,229,0.5)';
           }}
@@ -227,11 +405,17 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
                   />
                 </svg>
               )}
-              <span style={{ fontSize: '11px' }}>
-                {status === 'error' || status === 'rate-limited' ? (
-                  <span style={{ color: 'rgba(239,68,68,0.7)' }}>{STATUS_TEXT[status]}</span>
+              <span data-testid="contact-feedback" style={{ fontSize: '11px' }}>
+                {isCountdown ? (
+                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>{displayText}</span>
+                ) : status === 'error' || status === 'network-error' || status === 'rate-limited' ? (
+                  <span style={{ color: 'rgba(239,68,68,0.7)' }}>{displayText}</span>
+                ) : isAmber ? (
+                  <span style={{ color: 'rgba(251,191,36,0.8)' }}>{displayText}</span>
+                ) : status === 'success' ? (
+                  <span style={{ color: 'rgba(74,222,128,0.8)' }}>{displayText}</span>
                 ) : (
-                  (STATUS_TEXT[status] + '...').split('').map((char, i) => (
+                  (displayText + '...').split('').map((char, i) => (
                     <span
                       key={i}
                       style={{

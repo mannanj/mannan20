@@ -68,6 +68,7 @@ export interface ContactResultData {
 
 export interface LLMFieldResult {
   found: boolean;
+  partial: boolean;
   value: string;
 }
 
@@ -75,6 +76,7 @@ export interface LLMValidationResult {
   name: LLMFieldResult;
   email: LLMFieldResult;
   reason: LLMFieldResult;
+  feedback: string;
 }
 
 export type GlassModalSize = 'small' | 'medium' | 'large';
