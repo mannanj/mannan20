@@ -87,6 +87,7 @@ export function ContactModal() {
           left: position.x,
           top: position.y,
           width: POPOUT_WIDTH,
+          maxWidth: 'calc(100vw - 24px)',
           background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
