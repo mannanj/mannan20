@@ -605,8 +605,8 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
           const isBurst = frame < INITIAL_BURST_FRAMES;
           const speed = isBurst ? 3 + Math.random() * 5 : 1 + Math.random() * 2;
           fallingRef.current.push({
-            x: src.x + EMANATION_OFFSET_X,
-            y: src.y + EMANATION_OFFSET_Y,
+            x: src.x + EMANATION_OFFSET_X * src.scale,
+            y: src.y + EMANATION_OFFSET_Y * src.scale,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed - (isBurst ? 3 : 1),
             targetX: target.x,
@@ -623,8 +623,8 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 1 + Math.random() * 3;
         fallingRef.current.push({
-          x: src.x + EMANATION_OFFSET_X,
-          y: src.y + EMANATION_OFFSET_Y,
+          x: src.x + EMANATION_OFFSET_X * src.scale,
+          y: src.y + EMANATION_OFFSET_Y * src.scale,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed - 2,
           targetX: Math.random() * w,
