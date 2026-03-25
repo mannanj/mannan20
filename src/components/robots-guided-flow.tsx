@@ -41,6 +41,10 @@ type Phase =
   | 'move-to-demo'
   | 'clicking'
   | 'video-open'
+  | 'edu-scrolling'
+  | 'edu-move-to-plus'
+  | 'edu-clicking'
+  | 'edu-done'
   | 'done';
 
 export function RobotsGuidedFlow() {
@@ -57,6 +61,10 @@ export function RobotsGuidedFlow() {
   const [navTextActive, setNavTextActive] = useState(false);
   const [videoClosed, setVideoClosed] = useState(false);
   const [videoEverDismissed, setVideoEverDismissed] = useState(false);
+  const [eduCompleted, setEduCompleted] = useState(false);
+  const eduFlowStartedRef = useRef(false);
+  const [autoQuitCountdown, setAutoQuitCountdown] = useState<number | null>(null);
+  const [autoQuitCancelled, setAutoQuitCancelled] = useState(false);
 
   const sequence = useStepSequence();
   const scroll = useAnimatedScroll();
@@ -73,6 +81,10 @@ export function RobotsGuidedFlow() {
     setArrowPos(null);
     setCursorHideActive(false);
     setTransitionDuration(0);
+    setEduCompleted(false);
+    setAutoQuitCountdown(null);
+    setAutoQuitCancelled(false);
+    eduFlowStartedRef.current = false;
     history.replaceState(null, '', window.location.pathname);
   }, [sequence, scroll]);
 
@@ -198,6 +210,69 @@ export function RobotsGuidedFlow() {
     sequence.run(steps);
   }, [sequence, scroll]);
 
+  const startEduFlow = useCallback(() => {
+    const eduHeading = document.getElementById('education');
+    if (!eduHeading) return;
+
+    const eduMoreBtn = document.querySelector<HTMLElement>('[data-education-more]');
+    if (!eduMoreBtn) return;
+
+    const isMobile = isMobileRef.current;
+    const scrollTargetY = eduHeading.getBoundingClientRect().top + window.scrollY - 177;
+
+    const btnCenter = (btn: HTMLElement) => {
+      const r = btn.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    };
+
+    const eduSteps = [
+      {
+        duration: CURSOR_APPEAR_PAUSE,
+        action: () => {
+          setPhase('edu-scrolling');
+          if (!isMobile) setCursorHideActive(true);
+          setTransitionDuration(0);
+          setArrowPos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+        },
+      },
+      {
+        duration: SCROLL_DURATION + SCROLL_SETTLE_DELAY,
+        action: () => {
+          scroll.scrollTo(scrollTargetY, SCROLL_DURATION);
+        },
+      },
+      {
+        duration: ARROW_MOVE_DURATION,
+        action: () => {
+          setNavTextActive(false);
+          setPhase('edu-move-to-plus');
+          const pos = btnCenter(eduMoreBtn);
+          setTransitionDuration(ARROW_MOVE_DURATION);
+          setArrowPos({ x: pos.x - 3, y: pos.y - 3 });
+        },
+      },
+      {
+        duration: CLICK_SCALE_DURATION,
+        action: () => {
+          setPhase('edu-clicking');
+        },
+      },
+      {
+        duration: 0,
+        action: () => {
+          eduMoreBtn.click();
+          setEduCompleted(true);
+          setPhase('edu-done');
+          setArrowPos(null);
+          setCursorHideActive(false);
+          setTransitionDuration(0);
+        },
+      },
+    ];
+
+    sequence.run(eduSteps);
+  }, [sequence, scroll]);
+
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (hash === 'robots-flow') {
@@ -206,7 +281,7 @@ export function RobotsGuidedFlow() {
   }, [startFlow]);
 
   useEffect(() => {
-    if (phase === 'scrolling' || phase === 'spotlight') {
+    if (phase === 'scrolling' || phase === 'spotlight' || phase === 'edu-scrolling') {
       setNavTextActive(true);
       return;
     }
@@ -317,14 +392,33 @@ export function RobotsGuidedFlow() {
     setVideoSessionWatched(false);
   }, []);
 
-  const actionPhasesReached = phase === 'hover-download' || phase === 'move-to-demo' || phase === 'clicking' || phase === 'video-open' || phase === 'done';
-  const videoActive = actionPhasesReached && !videoClosed;
-  const showHeader = !videoActive || navTextActive;
-  const showActions = !navTextActive && actionPhasesReached;
+  useEffect(() => {
+    if (phase !== 'edu-done' || !eduCompleted || autoQuitCancelled) return;
+    if (autoQuitCountdown !== null) return;
+    const timer = setTimeout(() => setAutoQuitCountdown(5), 5000);
+    return () => clearTimeout(timer);
+  }, [phase, eduCompleted, autoQuitCancelled, autoQuitCountdown]);
+
+  useEffect(() => {
+    if (autoQuitCountdown === null || autoQuitCancelled) return;
+    if (autoQuitCountdown <= 0) {
+      cleanup();
+      return;
+    }
+    const timer = setTimeout(() => setAutoQuitCountdown(autoQuitCountdown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [autoQuitCountdown, autoQuitCancelled, cleanup]);
+
+  const videoActionPhases = phase === 'hover-download' || phase === 'move-to-demo' || phase === 'clicking' || phase === 'video-open' || phase === 'done';
+  const eduActionPhases = phase === 'edu-move-to-plus' || phase === 'edu-clicking' || phase === 'edu-done';
+  const videoActive = videoActionPhases && !videoClosed;
+  const eduActive = phase === 'edu-move-to-plus' || phase === 'edu-clicking';
+  const showActions = !navTextActive && (videoActionPhases || eduActionPhases);
+  const showHeader = (!videoActive && !eduActive) || navTextActive;
   const videoIndicator = videoEverWatched ? 'green' as const : (videoActive && !videoEverDismissed) ? 'dismiss' as const : 'gray' as const;
 
   const showSpotlight = phase === 'scrolling' || phase === 'spotlight' || phase === 'hover-download' || phase === 'move-to-demo' || phase === 'clicking';
-  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'spotlight' || phase === 'hover-download' || phase === 'move-to-demo' || phase === 'clicking' || (isMobileRef.current && phase === 'scrolling');
+  const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'spotlight' || phase === 'hover-download' || phase === 'move-to-demo' || phase === 'clicking' || phase === 'edu-scrolling' || phase === 'edu-move-to-plus' || phase === 'edu-clicking' || (isMobileRef.current && phase === 'scrolling');
 
   if (phase === 'idle') return null;
 
@@ -349,6 +443,29 @@ export function RobotsGuidedFlow() {
         }}
         data-testid="guided-flow-banner"
       >
+        {autoQuitCancelled && (
+          <button
+            type="button"
+            onClick={cleanup}
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              background: 'none',
+              border: 'none',
+              color: 'rgba(255, 255, 255, 0.4)',
+              fontSize: 14,
+              lineHeight: 1,
+              cursor: 'pointer',
+              padding: '2px 4px',
+              transition: 'color 0.15s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)'; }}
+          >
+            ✕
+          </button>
+        )}
         {showHeader && (
           <span
             data-testid="guided-flow-header"
@@ -357,27 +474,72 @@ export function RobotsGuidedFlow() {
               fontSize: 15,
               letterSpacing: '0.02em',
               whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}
           >
-            {phase === 'waiting' || phase === 'cursor-appear' || phase === 'scroll-move'
-              ? <AnimatedText text="Entering guided flow..." />
-              : navTextActive
-                ? <AnimatedText text="Navigating to section..." />
-                : <AnimatedText text="In guided flow..." />}
+            {autoQuitCancelled
+              ? <span style={{ color: 'white' }}>Guided flow complete</span>
+              : autoQuitCountdown !== null
+                ? <>
+                    <span>Closing in {autoQuitCountdown}s</span>
+                    <button
+                      type="button"
+                      onClick={() => setAutoQuitCancelled(true)}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        borderRadius: 6,
+                        color: 'rgba(255, 255, 255, 0.45)',
+                        fontSize: 13,
+                        lineHeight: 1,
+                        padding: '4px 8px',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        transition: 'color 0.15s ease, background 0.15s ease',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+                    >
+                      ✕
+                    </button>
+                  </>
+                : phase === 'edu-done' && eduCompleted
+                  ? <AnimatedText text="Guided flow complete" />
+                  : phase === 'waiting' || phase === 'cursor-appear' || phase === 'scroll-move'
+                    ? <AnimatedText text="Entering guided flow..." />
+                    : navTextActive
+                      ? <AnimatedText text="Navigating to section..." />
+                      : <AnimatedText text="In guided flow..." />}
           </span>
         )}
 
         {showActions && (
-          <FlowActionItem
-            active={videoActive}
-            completed={videoSessionWatched}
-            indicator={videoIndicator}
-            activeText={videoEverDismissed ? "Watching robot video..." : "Showing robot video..."}
-            completedText="Watched robot video"
-            idleText="Watch robot video"
-            onDismiss={closeVideo}
-            onActivate={openVideo}
-          />
+          <>
+            <FlowActionItem
+              active={videoActive}
+              completed={videoSessionWatched}
+              indicator={videoIndicator}
+              activeText={videoEverDismissed ? "Watching robot video..." : "Showing robot video..."}
+              completedText="Watched robot video"
+              idleText="Watch robot video"
+              onDismiss={closeVideo}
+              onActivate={openVideo}
+            />
+            {(videoClosed || eduActionPhases) && (
+              <FlowActionItem
+                active={eduActive}
+                completed={eduCompleted}
+                indicator={eduCompleted ? 'green' as const : eduActive ? 'gray' as const : 'cursor' as const}
+                activeText="Showing experience..."
+                completedText="Showed experience"
+                idleText="Go to Experience"
+                onDismiss={() => {}}
+                onActivate={startEduFlow}
+              />
+            )}
+          </>
         )}
       </div>
 
@@ -408,14 +570,14 @@ export function RobotsGuidedFlow() {
 
       <Spotlight targetRect={spotlight} active={showSpotlight} />
 
-      {(phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'scrolling' || phase === 'spotlight') && (
+      {(phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'scrolling' || phase === 'spotlight' || phase === 'edu-scrolling' || phase === 'edu-move-to-plus' || phase === 'edu-clicking') && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 998, cursor: 'none' }} />
       )}
 
       <GuidedCursor
         position={arrowPos ?? { x: 0, y: 0 }}
         visible={showArrow && arrowPos !== null}
-        clicking={phase === 'clicking'}
+        clicking={phase === 'clicking' || phase === 'edu-clicking'}
         mobile={isMobileRef.current}
         transitionDuration={transitionDuration}
       />

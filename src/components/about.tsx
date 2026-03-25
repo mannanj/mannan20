@@ -84,7 +84,7 @@ export function About({ data }: AboutProps) {
       <div>
         <EducationSection education={data.education} projects={data.educationProjects} certifications={data.certifications} count={educationStep} />
         {educationStep < EDUCATION_MAX ? (
-          <button type="button" className={moreClass} onClick={() => setEducationStep((prev) => prev + 1)}>+</button>
+          <button type="button" className={moreClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)}>+</button>
         ) : (
           <button type="button" className={lessClass} onClick={() => setEducationStep(0)}>&minus;</button>
         )}

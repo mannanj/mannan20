@@ -6,6 +6,7 @@ import { GlassModal } from '@/components/glass-modal';
 import { GemRain } from '@/components/gem-rain';
 import { useStepSequence } from '@/hooks/use-step-sequence';
 import { useAnimatedScroll } from '@/hooks/use-animated-scroll';
+import { FEATURES } from '@/lib/feature-flags';
 import { GuidedCursor } from '@/components/guided-flow/guided-cursor';
 import { Spotlight } from '@/components/guided-flow/spotlight';
 import { CursorHide } from '@/components/guided-flow/cursor-hide';
@@ -287,8 +288,10 @@ export function ResumeDownloadFlow() {
     const t2 = setTimeout(() => setCelebrations(prev => ({ ...prev, arrow: true })), arrowDelay);
     const t3 = setTimeout(() => {
       setCelebrations(prev => ({ ...prev, confetti: true }));
-      setGemSources(createGemSources());
-      setGemActive(true);
+      if (FEATURES.GEM_RAIN) {
+        setGemSources(createGemSources());
+        setGemActive(true);
+      }
     }, confettiDelay);
 
     return () => {

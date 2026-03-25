@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useApp } from "@/context/app-context";
 import type { LLMValidationResult } from "@/lib/types";
+import { FEATURES } from "@/lib/feature-flags";
 
 
 const PLACEHOLDER = "Share your name, email, and/or why you're here";
@@ -175,7 +176,7 @@ export function ContactForm({ onReveal }: ContactFormProps) {
         const { text: feedbackText, isSuccess } = buildFeedback(result);
 
         if (isSuccess) {
-          if (isSuspiciousBehavior(text.length)) {
+          if (FEATURES.CONTACT_CHALLENGE && isSuspiciousBehavior(text.length)) {
             enterChallengeMode();
             return;
           }
