@@ -83,27 +83,19 @@
   },
   "educationProjects": {
     "archr": {
-      "title": "ARCHR Humanoid Robot",
-      "link": "https://www.youtube.com/watch?v=GSx22ggePHw",
-      "dates": "2013-2014",
-      "position": "Lead Developer",
-      "skills": "Javascript, Typescript, Angular, AWS, Java, innovation",
-      "description": "Humanoid robot <span><a href=\"/data/documents/GMU-ARCHR.pdf\" download=\"ARCHR - Apparatus for Remote Control of Humanoid Robot\" style=\"color: #039be5;\">published</a></span>, taken to DARPA robotics challenge, and designed to address Daiichi Nuclear disaster response. Simplistic one-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.",
+      "title": "Apparatus for Remote Control of Humanoid Robots",
+      "description": "Lead developer for an intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Published and submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. One-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.",
+      "downloadLink": "/data/documents/GMU-ARCHR.pdf",
+      "downloadFilename": "ARCHR-Apparatus-for-Remote-Control-of-Humanoid-Robot",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
     "solar": {
-      "title": "Solar Collaborative Workspace",
-      "dates": "2013-2014",
-      "position": "Lead Developer",
-      "skills": "Solidworks, wiring schematics, sustainability and clean energy",
-      "description": "Contributor who designed mechanics in solidworks 3D and wire drawings."
+      "title": "Solar Workspace",
+      "description": "Lead CAD designer for wiring schematics and 3D mechanical designs in Solidworks for a solar-powered outdoor collaborative study hub. The university's first multi-disciplinary engineering project, bringing together electrical, mechanical, and civil engineering students to deliver a sustainable campus installation."
     },
     "dome": {
-      "title": "DC Dome Light (family)",
-      "dates": "2014",
-      "position": "CAD Designer",
-      "skills": "Solidworks, wiring schematics, sustainability and clean energy",
-      "description": "Designed dome light in 3D for use for external vendors outsourcing. Design was too complex to be used."
+      "title": "DC Dome Light",
+      "description": "Extracurricular research project designing a portable dome light in Solidworks 3D with wiring schematics for the travel industry."
     }
   },
   "publishedWorks": [
@@ -125,7 +117,7 @@
     "institution": "George Mason University",
     "dates": "2009-2015",
     "degree": "Electrical Engineering, B.S.",
-    "description": "Hands-on engineering with an innovation role in the university. Published robotics research, won pitch competitions, and led the department's first multi-disciplinary build."
+    "description": "Hands-on engineer leading innovation in the university. Published robotics research, won pitch competitions, and delivered the university's first multi-disciplinary engineering project."
   },
   "narrative": [
     {

@@ -27,16 +27,19 @@ export function EducationSection({ education, projects, certifications, count }:
         </div>
       )}
 
-      <div className="p-0 mt-5 text-inherit">
-        <b>{education.institution}</b>
-        <p className="leading-[1.6] m-0 text-white">{education.degree}</p>
-        {education.description && (
-          <p className="text-xs mt-1 leading-[1.6] m-0 text-white">{education.description}</p>
-        )}
+      <ContentCard
+        data={{
+          title: education.institution,
+          position: education.degree,
+          description: education.description,
+        }}
+        applyMarginTop
+      />
 
+      <div>
         <div id="more-education">
           {display && (
-            <div className="content bg-[#f1f1f1] text-black p-1.5 rounded-md mt-1.5">
+            <div className="bg-[#f1f1f1] text-black p-1.5 rounded-md mt-1.5">
               {count >= 1 && <ContentCard data={projects['archr']} nested />}
               {count >= 1 && <ContentCard data={projects['solar']} applyMarginTop nested />}
               {count === 2 && <ContentCard data={projects['dome']} applyMarginTop nested />}
@@ -47,3 +50,4 @@ export function EducationSection({ education, projects, certifications, count }:
     </>
   );
 }
+
