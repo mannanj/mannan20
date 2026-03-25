@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { GemGuessInput } from './gem-guess-input';
+import { FEATURES } from '@/lib/feature-flags';
 
 const SETTLED_SIZE = 8;
 const FALLING_SIZE = 3;
@@ -15,6 +16,8 @@ const BURST_DELAY_MS = 500;
 const INITIAL_BURST_PER_SOURCE = 40;
 const INITIAL_BURST_FRAMES = 30;
 const DECOR_PER_FRAME = 8;
+const EMANATION_OFFSET_X = 18;
+const EMANATION_OFFSET_Y = 3;
 const NUM_SHAPES = 6;
 
 const GEM_HUES: { h: number; s: number; l: number }[] = [
@@ -561,53 +564,58 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      if (elapsed >= GUESS_APPEAR_S && !showGuessRef.current) {
-        showGuessRef.current = true;
-        setShowGuessInput(true);
-      }
+      if (FEATURES.GEM_RAIN) {
+        if (elapsed >= GUESS_APPEAR_S && !showGuessRef.current) {
+          showGuessRef.current = true;
+          setShowGuessInput(true);
+        }
 
-      if (elapsed >= LOCK_TIME_S && !lockedRef.current) {
-        lockedRef.current = true;
-        setLocked(true);
-        onLockChange(true);
+        if (elapsed >= LOCK_TIME_S && !lockedRef.current) {
+          lockedRef.current = true;
+          setLocked(true);
+          onLockChange(true);
+        }
       }
 
       if (elapsed >= TOTAL_DURATION_S) {
         setAnimationComplete(true);
         setGemCount(gemCountRef.current);
         ctx.clearRect(0, 0, w, h);
-        ctx.drawImage(offscreenRef.current!, 0, 0);
+        if (FEATURES.GEM_RAIN) ctx.drawImage(offscreenRef.current!, 0, 0);
         return;
       }
 
       const frame = frameCountRef.current;
-      let settleSpawn = gemsPerFrameRef.current;
-      if (frame < INITIAL_BURST_FRAMES) {
-        settleSpawn += (INITIAL_BURST_PER_SOURCE * sources.length) / INITIAL_BURST_FRAMES;
-      }
 
-      const settleInt = Math.floor(settleSpawn);
-      const settleFrac = settleSpawn - settleInt;
-      const actualSettle = settleInt + (Math.random() < settleFrac ? 1 : 0);
+      if (FEATURES.GEM_RAIN) {
+        let settleSpawn = gemsPerFrameRef.current;
+        if (frame < INITIAL_BURST_FRAMES) {
+          settleSpawn += (INITIAL_BURST_PER_SOURCE * sources.length) / INITIAL_BURST_FRAMES;
+        }
 
-      for (let i = 0; i < actualSettle; i++) {
-        const target = getNextTarget();
-        if (!target) break;
-        const src = sources[Math.floor(Math.random() * sources.length)];
-        const angle = Math.random() * Math.PI * 2;
-        const isBurst = frame < INITIAL_BURST_FRAMES;
-        const speed = isBurst ? 3 + Math.random() * 5 : 1 + Math.random() * 2;
-        fallingRef.current.push({
-          x: src.x,
-          y: src.y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - (isBurst ? 3 : 1),
-          targetX: target.x,
-          targetY: target.y,
-          spriteIdx: Math.floor(Math.random() * sprites.length),
-          isDecor: false,
-          alpha: 1,
-        });
+        const settleInt = Math.floor(settleSpawn);
+        const settleFrac = settleSpawn - settleInt;
+        const actualSettle = settleInt + (Math.random() < settleFrac ? 1 : 0);
+
+        for (let i = 0; i < actualSettle; i++) {
+          const target = getNextTarget();
+          if (!target) break;
+          const src = sources[Math.floor(Math.random() * sources.length)];
+          const angle = Math.random() * Math.PI * 2;
+          const isBurst = frame < INITIAL_BURST_FRAMES;
+          const speed = isBurst ? 3 + Math.random() * 5 : 1 + Math.random() * 2;
+          fallingRef.current.push({
+            x: src.x + EMANATION_OFFSET_X,
+            y: src.y + EMANATION_OFFSET_Y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - (isBurst ? 3 : 1),
+            targetX: target.x,
+            targetY: target.y,
+            spriteIdx: Math.floor(Math.random() * sprites.length),
+            isDecor: false,
+            alpha: 1,
+          });
+        }
       }
 
       for (let i = 0; i < DECOR_PER_FRAME; i++) {
@@ -615,8 +623,8 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 1 + Math.random() * 3;
         fallingRef.current.push({
-          x: src.x,
-          y: src.y,
+          x: src.x + EMANATION_OFFSET_X,
+          y: src.y + EMANATION_OFFSET_Y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed - 2,
           targetX: Math.random() * w,
@@ -663,7 +671,7 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
       fallingRef.current = remaining;
 
       ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(offscreenRef.current!, 0, 0);
+      if (FEATURES.GEM_RAIN) ctx.drawImage(offscreenRef.current!, 0, 0);
 
       for (const gem of remaining) {
         if (gem.isDecor) {
@@ -737,7 +745,7 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
         </div>
       ))}
 
-      {showGuessInput && (
+      {FEATURES.GEM_RAIN && showGuessInput && (
         <GemGuessInput
           gemCount={gemCount}
           complete={animationComplete}
