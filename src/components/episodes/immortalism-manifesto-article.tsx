@@ -1,5 +1,9 @@
 'use client';
 
+import { useState, useCallback, lazy, Suspense } from 'react';
+
+const AudioPlayer = lazy(() => import('./audio-player'));
+
 const X_ICON = (
   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -7,6 +11,12 @@ const X_ICON = (
 );
 
 export default function ImmortalismManifestoArticle() {
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [playerStatus, setPlayerStatus] = useState<'loading' | 'playing' | 'paused'>('loading');
+  const handleStatusChange = useCallback((status: 'loading' | 'playing' | 'paused') => {
+    setPlayerStatus(status);
+  }, []);
+
   return (
     <>
       <header className="mb-16">
@@ -32,6 +42,37 @@ export default function ImmortalismManifestoArticle() {
           >
             Download PDF <span className="inline-block ml-0.5 text-[20px] rotate-180 scale-x-[-1]">&#10555;</span>
           </a>
+          {showPlayer && playerStatus === 'loading' ? (
+            <span className="relative inline-flex items-center h-[18px] w-[90px] rounded-sm overflow-hidden bg-white/10">
+              <span className="absolute inset-0 bg-white/10 animate-[fillBar_2s_ease-in-out_infinite]" />
+              <span className="relative z-10 flex items-center gap-1 mx-auto text-white text-[10px]" style={{ textShadow: '0 0 3px #000, 0 0 6px #000' }}>
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                Downloading
+              </span>
+            </span>
+          ) : showPlayer && playerStatus === 'playing' ? (
+            <span className="inline-flex items-center gap-1.5 text-white text-[11px] font-normal whitespace-nowrap">
+              Playing
+              <svg className="w-3 h-3" viewBox="0 0 20 16" fill="currentColor">
+                <rect className="animate-[waveform_2.4s_ease-in-out_infinite]" x="0" y="6" width="2" rx="1" height="4" />
+                <rect className="animate-[waveform_1.8s_ease-in-out_infinite_0.3s]" x="4" y="3" width="2" rx="1" height="10" />
+                <rect className="animate-[waveform_2.1s_ease-in-out_infinite_0.6s]" x="8" y="1" width="2" rx="1" height="14" />
+                <rect className="animate-[waveform_1.5s_ease-in-out_infinite_0.45s]" x="12" y="4" width="2" rx="1" height="8" />
+                <rect className="animate-[waveform_2.7s_ease-in-out_infinite_0.15s]" x="16" y="5" width="2" rx="1" height="6" />
+              </svg>
+            </span>
+          ) : (
+            <button
+              onClick={() => setShowPlayer(true)}
+              className="inline-flex items-center gap-1 text-[#039be5] hover:text-[#4fc3f7] text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap"
+            >
+              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              Listen
+            </button>
+          )}
         </div>
       </header>
 
@@ -117,6 +158,12 @@ export default function ImmortalismManifestoArticle() {
           Read original post on X
         </a>
       </footer>
+
+      {showPlayer && (
+        <Suspense fallback={null}>
+          <AudioPlayer onClose={() => { setShowPlayer(false); setPlayerStatus('loading'); }} onStatusChange={handleStatusChange} />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -300,6 +300,18 @@ body {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
+@keyframes cursorClick {
+  0% { transform: scale(1); }
+  33% { transform: scale(2.2); }
+  67% { transform: scale(1); }
+  67.01%, 100% { transform: scale(1); }
+}
+
+@keyframes cursorClickHover {
+  0% { transform: scale(1); }
+  100% { transform: scale(2.2); }
+}
+
 body.gem-rain-active #header > div:first-child {
   z-index: 1010 !important;
 }
@@ -316,4 +328,14 @@ body.gem-rain-active #header > div:first-child {
 
 .timeline-container .timeline-entry:last-child::before {
   display: none;
+}
+
+@keyframes waveform {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+@keyframes fillBar {
+  0% { width: 0%; }
+  100% { width: 100%; }
 }
