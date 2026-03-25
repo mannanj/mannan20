@@ -12,6 +12,7 @@ export interface ProfileItem {
   downloadLink?: string;
   downloadLabel?: string;
   downloadFilename?: string;
+  demoUrl?: string;
 }
 
 export interface AboutIntro {
@@ -23,12 +24,14 @@ export interface PublishedWork {
   description: string;
   downloadPath: string;
   downloadFilename: string;
+  demoUrl?: string;
 }
 
 export interface EducationInfo {
   institution: string;
   dates: string;
   degree: string;
+  description?: string;
 }
 
 export interface NarrativeChapter {

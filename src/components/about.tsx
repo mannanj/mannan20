@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AboutData } from '@/lib/types';
 import { scrollToSection } from '@/lib/utils';
 import { EmploymentSection } from './about/employment-section';
 import { PublishedWorksSection } from './about/published-works-section';
 import { ExtracurricularsSection } from './about/extracurriculars-section';
 import { EducationSection } from './about/education-section';
+import { VideoPopout } from './video-popout';
 
 const EMPLOYMENT_DEFAULT = 3;
 const EMPLOYMENT_INCREMENT = 2;
@@ -21,6 +22,16 @@ export function About({ data }: AboutProps) {
   const [employmentStep, setEmploymentStep] = useState(0);
   const [extracurricularsStep, setExtracurricularsStep] = useState(0);
   const [educationStep, setEducationStep] = useState(0);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const url = (e as CustomEvent).detail as string;
+      setVideoUrl((prev) => (prev === url ? null : url));
+    };
+    window.addEventListener('open-video-popout', handler);
+    return () => window.removeEventListener('open-video-popout', handler);
+  }, []);
 
   const totalJobs = data.jobs.length;
   const employmentSteps = Math.ceil(Math.max(0, totalJobs - EMPLOYMENT_DEFAULT) / EMPLOYMENT_INCREMENT);
@@ -77,6 +88,10 @@ export function About({ data }: AboutProps) {
       <button onClick={() => scrollToSection('contact')} className="nav-button mt-[30px]">
         Get In Touch
       </button>
+
+      {videoUrl && (
+        <VideoPopout url={videoUrl} onClose={() => setVideoUrl(null)} />
+      )}
     </div>
   );
 }

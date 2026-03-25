@@ -30,6 +30,9 @@ export function EducationSection({ education, projects, certifications, count }:
       <div className="p-0 mt-5 text-inherit">
         <b>{education.institution}</b>
         <p className="leading-[1.6] m-0 text-white">{education.degree}</p>
+        {education.description && (
+          <p className="text-xs mt-1 leading-[1.6] m-0 text-white">{education.description}</p>
+        )}
 
         <div id="more-education">
           {display && (

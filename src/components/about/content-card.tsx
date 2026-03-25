@@ -37,6 +37,21 @@ export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) 
         <p className={`text-xs mt-0 leading-[1.6] m-0 ${nested ? '!text-black' : 'text-white'}`} dangerouslySetInnerHTML={{ __html: data.description }} />
       )}
 
+      {data.demoUrl && (
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-video-popout', { detail: data.demoUrl }))}
+          style={{ fontSize: 11 }}
+          className="text-[#039be5] hover:text-[#4fc3f7] leading-[20px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap flex items-center gap-1 -mt-[2px]"
+        >
+          Watch demo
+          <svg width="10" height="10" viewBox="0 0 10 10" className="relative top-[0.5px]">
+            <polygon points="1,0 10,5 1,10" fill="black" />
+            <polygon points="2,1.5 8.5,5 2,8.5" fill="#039be5" />
+          </svg>
+        </button>
+      )}
+
       {data.additionalContent && (
         <p className={`text-xs mt-0 leading-[1.6] m-0 ${nested ? '!text-black' : 'text-white'}`} dangerouslySetInnerHTML={{ __html: data.additionalContent }} />
       )}

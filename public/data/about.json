@@ -88,7 +88,8 @@
       "dates": "2013-2014",
       "position": "Lead Developer",
       "skills": "Javascript, Typescript, Angular, AWS, Java, innovation",
-      "description": "Humanoid robot <span><a href=\"/data/documents/GMU-ARCHR.pdf\" download=\"ARCHR - Apparatus for Remote Control of Humanoid Robot\" style=\"color: #039be5;\">published</a></span>, taken to DARPA robotics challenge, and designed to address Daiichi Nuclear disaster response. Simplistic one-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots."
+      "description": "Humanoid robot <span><a href=\"/data/documents/GMU-ARCHR.pdf\" download=\"ARCHR - Apparatus for Remote Control of Humanoid Robot\" style=\"color: #039be5;\">published</a></span>, taken to DARPA robotics challenge, and designed to address Daiichi Nuclear disaster response. Simplistic one-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.",
+      "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
     "solar": {
       "title": "Solar Collaborative Workspace",
@@ -110,7 +111,8 @@
       "title": "Apparatus for Remote Control of Humanoid Robots",
       "description": "An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge.",
       "downloadPath": "/data/documents/GMU-ARCHR.pdf",
-      "downloadFilename": "ARCHR-Apparatus-for-Remote-Control of-Humanoid-Robot"
+      "downloadFilename": "ARCHR-Apparatus-for-Remote-Control of-Humanoid-Robot",
+      "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
     {
       "title": "Open Modeling Framework Demand Response",
@@ -122,7 +124,8 @@
   "education": {
     "institution": "George Mason University",
     "dates": "2009-2015",
-    "degree": "Electrical Engineering, B.S."
+    "degree": "Electrical Engineering, B.S.",
+    "description": "Hands-on engineering with an innovation role in the university. Published robotics research, won pitch competitions, and led the department's first multi-disciplinary build."
   },
   "narrative": [
     {
