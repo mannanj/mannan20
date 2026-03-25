@@ -3,88 +3,30 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { downloadFile } from '@/lib/utils';
 import { GlassModal } from '@/components/glass-modal';
+import { GemRain } from '@/components/gem-rain';
+import { useStepSequence } from '@/hooks/use-step-sequence';
+import { useAnimatedScroll } from '@/hooks/use-animated-scroll';
+import { GuidedCursor } from '@/components/guided-flow/guided-cursor';
+import { Spotlight } from '@/components/guided-flow/spotlight';
+import { CursorHide } from '@/components/guided-flow/cursor-hide';
 
 const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
 const DEFAULT_BODY = 'Would you like to download this resume?';
 
-const CONFETTI_COLORS = ['#ff6b8a', '#ffd166', '#06d6a0', '#118ab2', '#ef476f', '#fca311', '#7b2ff7', '#00f5d4'];
-
-interface PopperParticle {
-  id: number;
-  dx: number;
-  dy: number;
-  rot: number;
-  color: string;
-  size: number;
-  delay: number;
-  rounded: boolean;
-}
-
-interface AmbientParticle {
-  id: number;
-  dx: number;
-  dy: number;
-  rot: number;
-  color: string;
-  size: number;
-  duration: number;
-  delay: number;
-  rounded: boolean;
-}
-
-interface Popper {
-  id: number;
+interface GemSource {
   x: number;
   y: number;
   scale: number;
-  particles: PopperParticle[];
-  ambient: AmbientParticle[];
 }
 
-function generateParticles(count: number): PopperParticle[] {
-  return Array.from({ length: count }, (_, i) => {
-    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.8;
-    const dist = 50 + Math.random() * 100;
-    return {
-      id: i,
-      dx: Math.cos(angle) * dist,
-      dy: Math.sin(angle) * dist * 0.7 - 20,
-      rot: Math.random() * 720 - 360,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      size: 4 + Math.random() * 5,
-      delay: Math.random() * 300,
-      rounded: Math.random() > 0.5,
-    };
-  });
-}
-
-function generateAmbient(count: number): AmbientParticle[] {
-  const totalDuration = 5.5;
-  return Array.from({ length: count }, (_, i) => {
-    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.6;
-    const dist = 25 + Math.random() * 20;
-    return {
-      id: i,
-      dx: Math.cos(angle) * dist,
-      dy: Math.sin(angle) * dist,
-      rot: Math.random() * 180 - 90,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      size: 2 + Math.random() * 2,
-      duration: totalDuration + Math.random() * 0.5,
-      delay: (totalDuration / count) * i,
-      rounded: Math.random() > 0.5,
-    };
-  });
-}
-
-function createPoppers(): Popper[] {
+function createGemSources(): GemSource[] {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   return [
-    { id: 0, x: vw * 0.12, y: vh * 0.2, scale: 0.67, particles: generateParticles(10), ambient: generateAmbient(8) },
-    { id: 1, x: vw * 0.88, y: vh * 0.15, scale: 1.5, particles: generateParticles(10), ambient: generateAmbient(8) },
-    { id: 2, x: vw * 0.33, y: vh * 0.8, scale: 1, particles: generateParticles(10), ambient: generateAmbient(8) },
+    { x: vw * 0.12, y: vh * 0.2, scale: 0.67 },
+    { x: vw * 0.88, y: vh * 0.15, scale: 1.5 },
+    { x: vw * 0.33, y: vh * 0.8, scale: 1 },
   ];
 }
 
@@ -116,49 +58,90 @@ export function ResumeDownloadFlow() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [spotlight, setSpotlight] = useState<SpotlightRect | null>(null);
   const [arrowPos, setArrowPos] = useState<{ x: number; y: number } | null>(null);
-  const [arrowTarget, setArrowTarget] = useState<{ x: number; y: number } | null>(null);
   const [modalConfig, setModalConfig] = useState<ModalConfig>({ body: DEFAULT_BODY, path: RESUME_PATH, filename: RESUME_FILENAME });
   const btnRef = useRef<HTMLElement | null>(null);
-  const styleRef = useRef<HTMLStyleElement | null>(null);
   const isMobileRef = useRef(false);
   const [celebrations, setCelebrations] = useState({ squiggly: false, arrow: false, confetti: false });
   const [dlBtnRect, setDlBtnRect] = useState<DOMRect | null>(null);
-  const poppersRef = useRef<Popper[]>([]);
+  const [gemActive, setGemActive] = useState(false);
+  const [gemSources, setGemSources] = useState<GemSource[]>([]);
+  const gemLockedRef = useRef(false);
+  const scrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const injectCursorHide = useCallback(() => {
-    if (styleRef.current) return;
-    const style = document.createElement('style');
-    style.textContent = '* { cursor: none !important; }';
-    document.head.appendChild(style);
-    styleRef.current = style;
-  }, []);
+  const sequence = useStepSequence();
+  const scroll = useAnimatedScroll();
 
-  const removeCursorHide = useCallback(() => {
-    if (styleRef.current) {
-      styleRef.current.remove();
-      styleRef.current = null;
+  const [cursorHideActive, setCursorHideActive] = useState(false);
+  const [transitionDuration, setTransitionDuration] = useState(0);
+
+  const fullCleanup = useCallback(() => {
+    sequence.cancel();
+    scroll.cancel();
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
     }
-  }, []);
-
-  const cleanup = useCallback(() => {
     setPhase('idle');
     setSpotlight(null);
     setArrowPos(null);
-    setArrowTarget(null);
-    removeCursorHide();
+    setCursorHideActive(false);
+    setTransitionDuration(0);
+    setGemActive(false);
+    gemLockedRef.current = false;
     if (btnRef.current) btnRef.current.style.pointerEvents = '';
     history.replaceState(null, '', window.location.pathname);
-  }, [removeCursorHide]);
+  }, [sequence, scroll]);
+
+  const handleClose = useCallback(() => {
+    if (gemLockedRef.current) {
+      sequence.cancel();
+      scroll.cancel();
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current);
+        scrollIntervalRef.current = null;
+      }
+      setPhase('idle');
+      setSpotlight(null);
+      setArrowPos(null);
+      setCelebrations({ squiggly: false, arrow: false, confetti: false });
+      setDlBtnRect(null);
+      setCursorHideActive(false);
+      setTransitionDuration(0);
+      if (btnRef.current) btnRef.current.style.pointerEvents = '';
+      history.replaceState(null, '', window.location.pathname);
+    } else {
+      fullCleanup();
+    }
+  }, [fullCleanup, sequence, scroll]);
 
   const handleDownload = useCallback(() => {
-    cleanup();
-    downloadFile(modalConfig.path, modalConfig.filename);
-  }, [cleanup, modalConfig]);
+    if (gemLockedRef.current) {
+      downloadFile(modalConfig.path, modalConfig.filename);
+      setPhase('idle');
+      setCelebrations({ squiggly: false, arrow: false, confetti: false });
+      setDlBtnRect(null);
+      setCursorHideActive(false);
+      setTransitionDuration(0);
+      if (btnRef.current) btnRef.current.style.pointerEvents = '';
+      history.replaceState(null, '', window.location.pathname);
+    } else {
+      fullCleanup();
+      downloadFile(modalConfig.path, modalConfig.filename);
+    }
+  }, [fullCleanup, modalConfig]);
+
+  const handleGemLockChange = useCallback((locked: boolean) => {
+    gemLockedRef.current = locked;
+  }, []);
+
+  const handleGemStop = useCallback(() => {
+    fullCleanup();
+  }, [fullCleanup]);
 
   const modalButtons = useMemo(() => [
-    { label: 'Cancel', onClick: cleanup },
+    { label: 'Cancel', onClick: handleClose },
     { label: 'Download', onClick: handleDownload, primary: true },
-  ], [cleanup, handleDownload]);
+  ], [handleClose, handleDownload]);
 
   const startFlow = useCallback(() => {
     const el = document.getElementById('employment-history');
@@ -174,91 +157,94 @@ export function ResumeDownloadFlow() {
     isMobileRef.current = isMobile;
 
     window.scrollTo(0, 0);
-    setPhase('waiting');
-    if (!isMobile) injectCursorHide();
 
-    setTimeout(() => {
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      setArrowPos({ x: cx, y: cy });
-      setPhase('cursor-appear');
+    const scrollTargetY = el.getBoundingClientRect().top + window.scrollY - 222;
 
-      setTimeout(() => {
-        const beginScroll = () => {
-          setPhase('scrolling');
-          setArrowTarget(null);
+    const computeSpotlight = () => {
+      if (!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const pad = 12;
+      setSpotlight({
+        top: rect.top - pad,
+        left: rect.left - pad,
+        width: rect.width + pad * 2,
+        height: rect.height + pad * 2,
+      });
+    };
 
-          const y = el.getBoundingClientRect().top + window.scrollY - 222;
-          const scrollStart = window.scrollY;
-          const scrollDelta = y - scrollStart;
-          const scrollStartTime = performance.now();
-          const animateScroll = (now: number) => {
-            const elapsed = now - scrollStartTime;
-            const t = Math.min(elapsed / SCROLL_DURATION, 1);
-            const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-            window.scrollTo(0, scrollStart + scrollDelta * ease);
-            if (t < 1) requestAnimationFrame(animateScroll);
-          };
-          requestAnimationFrame(animateScroll);
-
-          const computeSpotlight = () => {
-            if (!btn) return;
-            const rect = btn.getBoundingClientRect();
-            const pad = 12;
-            setSpotlight({
-              top: rect.top - pad,
-              left: rect.left - pad,
-              width: rect.width + pad * 2,
-              height: rect.height + pad * 2,
-            });
-          };
-          computeSpotlight();
-          const scrollInterval = setInterval(computeSpotlight, 16);
-
-          setTimeout(() => {
-            clearInterval(scrollInterval);
-            computeSpotlight();
-            setPhase('pause');
-
-            setTimeout(() => {
-              if (!btn) return;
-              const rect = btn.getBoundingClientRect();
-              const targetX = rect.left + rect.width / 2;
-              const targetY = rect.top + rect.height / 2;
-
-              setArrowTarget({ x: targetX, y: targetY });
-              setArrowPos({ x: targetX, y: targetY });
-              setPhase('arrow-move');
-
-              setTimeout(() => {
-                setPhase('clicking');
-
-                setTimeout(() => {
-                  setPhase('modal');
-                  setSpotlight(null);
-                  setArrowPos(null);
-                  setArrowTarget(null);
-                  removeCursorHide();
-                  if (btnRef.current) btnRef.current.style.pointerEvents = '';
-                }, CLICK_SCALE_DURATION);
-              }, ARROW_MOVE_DURATION + 100);
-            }, PAUSE_DURATION);
-          }, SCROLL_DURATION + SCROLL_SETTLE_DELAY);
-        };
-
-        if (isMobile) {
-          beginScroll();
-        } else {
-          const scrollbarX = window.innerWidth - 20;
-          const scrollbarY = window.innerHeight / 2 - 279;
-          setArrowTarget({ x: scrollbarX, y: scrollbarY });
-          setArrowPos({ x: scrollbarX, y: scrollbarY });
+    const steps = [
+      {
+        duration: isMobile ? 999 : INITIAL_DELAY,
+        action: () => {
+          setPhase('waiting');
+          if (!isMobile) setCursorHideActive(true);
+        },
+      },
+      {
+        duration: CURSOR_APPEAR_PAUSE,
+        action: () => {
+          setTransitionDuration(0);
+          setArrowPos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+          setPhase('cursor-appear');
+        },
+      },
+      ...(isMobile ? [] : [{
+        duration: SCROLL_MOVE_DURATION,
+        action: () => {
+          setTransitionDuration(SCROLL_MOVE_DURATION);
+          setArrowPos({ x: window.innerWidth - 20, y: window.innerHeight / 2 - 279 });
           setPhase('scroll-move');
-          setTimeout(beginScroll, SCROLL_MOVE_DURATION);
-        }
-      }, CURSOR_APPEAR_PAUSE);
-    }, isMobile ? 999 : INITIAL_DELAY);
-  }, [injectCursorHide, removeCursorHide]);
+        },
+      }]),
+      {
+        duration: SCROLL_DURATION + SCROLL_SETTLE_DELAY,
+        action: () => {
+          setPhase('scrolling');
+          scroll.scrollTo(scrollTargetY, SCROLL_DURATION);
+          computeSpotlight();
+          scrollIntervalRef.current = setInterval(computeSpotlight, 16);
+        },
+      },
+      {
+        duration: PAUSE_DURATION,
+        action: () => {
+          if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = null;
+          }
+          computeSpotlight();
+          setPhase('pause');
+        },
+      },
+      {
+        duration: ARROW_MOVE_DURATION + 100,
+        action: () => {
+          if (!btn) return;
+          const rect = btn.getBoundingClientRect();
+          setTransitionDuration(ARROW_MOVE_DURATION);
+          setArrowPos({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+          setPhase('arrow-move');
+        },
+      },
+      {
+        duration: CLICK_SCALE_DURATION,
+        action: () => setPhase('clicking'),
+      },
+      {
+        duration: 0,
+        action: () => {
+          setPhase('modal');
+          setSpotlight(null);
+          setArrowPos(null);
+          setCursorHideActive(false);
+          setTransitionDuration(0);
+          if (btnRef.current) btnRef.current.style.pointerEvents = '';
+        },
+      },
+    ];
+
+    sequence.run(steps);
+  }, [sequence, scroll]);
 
   const openModal = useCallback((e: Event) => {
     const detail = (e as CustomEvent).detail;
@@ -292,7 +278,6 @@ export function ResumeDownloadFlow() {
     const frame = requestAnimationFrame(() => {
       const el = document.querySelector<HTMLElement>('[data-modal-primary]');
       if (el) setDlBtnRect(el.getBoundingClientRect());
-      poppersRef.current = createPoppers();
     });
 
     const squigglyDelay = 1000 + Math.random() * 2000;
@@ -300,7 +285,11 @@ export function ResumeDownloadFlow() {
     const confettiDelay = arrowDelay + 3300;
     const t1 = setTimeout(() => setCelebrations(prev => ({ ...prev, squiggly: true })), squigglyDelay);
     const t2 = setTimeout(() => setCelebrations(prev => ({ ...prev, arrow: true })), arrowDelay);
-    const t3 = setTimeout(() => setCelebrations(prev => ({ ...prev, confetti: true })), confettiDelay);
+    const t3 = setTimeout(() => {
+      setCelebrations(prev => ({ ...prev, confetti: true }));
+      setGemSources(createGemSources());
+      setGemActive(true);
+    }, confettiDelay);
 
     return () => {
       cancelAnimationFrame(frame);
@@ -310,31 +299,29 @@ export function ResumeDownloadFlow() {
     };
   }, [phase]);
 
-  const maskGradient = spotlight
-    ? `radial-gradient(ellipse ${spotlight.width * 1.2}px ${spotlight.height * 2.2}px at ${spotlight.left + spotlight.width / 2}px ${spotlight.top + spotlight.height / 2}px, transparent 40%, black 100%)`
-    : undefined;
+  useEffect(() => {
+    if (phase === 'idle' && !gemActive) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [phase, gemActive, handleClose]);
 
   const showSpotlight = phase === 'scrolling' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking';
   const showArrow = phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'pause' || phase === 'arrow-move' || phase === 'clicking' || (isMobileRef.current && phase === 'scrolling');
 
-  const arrowTransition = (() => {
-    if (phase === 'scroll-move') {
-      return {
-        transition: `left ${SCROLL_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), top ${SCROLL_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-      };
-    }
-    if (phase === 'arrow-move' || phase === 'clicking') {
-      return {
-        transition: `left ${ARROW_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), top ${ARROW_MOVE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), transform ${CLICK_SCALE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-      };
-    }
-    return { transition: 'none' };
-  })();
-
-  if (phase === 'idle') return null;
+  if (phase === 'idle' && !gemActive) return null;
 
   return (
     <>
+      <CursorHide active={cursorHideActive} />
+
       {phase === 'waiting' && (
         <div
           style={{
@@ -360,80 +347,23 @@ export function ResumeDownloadFlow() {
         </div>
       )}
 
-      {showSpotlight && spotlight && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 999,
-            cursor: 'none',
-            opacity: 1,
-            transition: 'opacity 0.3s ease',
-          }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              maskImage: maskGradient,
-              WebkitMaskImage: maskGradient,
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(0,0,0,0.6)',
-              maskImage: maskGradient,
-              WebkitMaskImage: maskGradient,
-            }}
-          />
-        </div>
-      )}
+      <Spotlight targetRect={spotlight} active={showSpotlight} />
 
       {(phase === 'cursor-appear' || phase === 'scroll-move' || phase === 'scrolling' || phase === 'pause') && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 998, cursor: 'none' }} />
       )}
 
-      {showArrow && arrowPos && (
-        <div
-          style={{
-            position: 'fixed',
-            zIndex: 2000,
-            pointerEvents: 'none',
-            left: arrowPos.x,
-            top: arrowPos.y,
-            transform: isMobileRef.current
-              ? `translate(-50%, -50%) scale(${phase === 'clicking' ? 0.7 : 1})`
-              : `scale(${phase === 'clicking' ? 0.8 : 1})`,
-            ...arrowTransition,
-          }}
-        >
-          {isMobileRef.current ? (
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: '2px solid rgba(255, 255, 255, 0.5)',
-                boxShadow: '0 0 12px rgba(255, 255, 255, 0.15)',
-              }}
-            />
-          ) : (
-            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-              style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
-              <path d="M5 3L19 12L12 13L9 20L5 3Z" fill="white" stroke="#333" strokeWidth="1" />
-            </svg>
-          )}
-        </div>
-      )}
+      <GuidedCursor
+        position={arrowPos ?? { x: 0, y: 0 }}
+        visible={showArrow && arrowPos !== null}
+        clicking={phase === 'clicking'}
+        mobile={isMobileRef.current}
+        transitionDuration={transitionDuration}
+      />
 
       <GlassModal
         isOpen={phase === 'modal'}
-        onClose={cleanup}
+        onClose={handleClose}
         body={modalConfig.body}
         buttons={modalButtons}
         defaultSize={isMobileRef.current ? 'small' : 'medium'}
@@ -541,64 +471,15 @@ export function ResumeDownloadFlow() {
               />
             </svg>
           )}
-
-          {celebrations.confetti && poppersRef.current.map(popper => (
-            <div
-              key={popper.id}
-              style={{
-                position: 'fixed',
-                zIndex: 1002,
-                left: popper.x,
-                top: popper.y,
-                pointerEvents: 'none',
-              }}
-            >
-              <div style={{
-                fontSize: 32 * popper.scale,
-                animation: 'popper-appear 0.4s ease forwards',
-                transformOrigin: 'center',
-              }}>
-                🎉
-              </div>
-              {popper.particles.map(p => (
-                <div
-                  key={p.id}
-                  style={{
-                    position: 'absolute',
-                    left: 16 * popper.scale,
-                    top: 16 * popper.scale,
-                    width: p.size * popper.scale,
-                    height: p.size * popper.scale,
-                    background: p.color,
-                    borderRadius: p.rounded ? '50%' : '2px',
-                    '--cb-dx': `${p.dx * popper.scale}px`,
-                    '--cb-dy': `${p.dy * popper.scale}px`,
-                    '--cb-rot': `${p.rot}deg`,
-                    animation: `confetti-burst 1.5s ease-out ${p.delay}ms both`,
-                  } as React.CSSProperties}
-                />
-              ))}
-              {popper.ambient.map(a => (
-                <div
-                  key={`a-${a.id}`}
-                  style={{
-                    position: 'absolute',
-                    left: 16 * popper.scale,
-                    top: 16 * popper.scale,
-                    width: a.size * popper.scale,
-                    height: a.size * popper.scale,
-                    background: a.color,
-                    borderRadius: a.rounded ? '50%' : '2px',
-                    '--ce-dx': `${a.dx * popper.scale}px`,
-                    '--ce-dy': `${a.dy * popper.scale}px`,
-                    '--ce-rot': `${a.rot}deg`,
-                    animation: `confetti-emanate ${a.duration}s ease-out ${a.delay}s infinite`,
-                  } as React.CSSProperties}
-                />
-              ))}
-            </div>
-          ))}
         </>
+      )}
+
+      {gemActive && gemSources.length > 0 && (
+        <GemRain
+          sources={gemSources}
+          onLockChange={handleGemLockChange}
+          onStop={handleGemStop}
+        />
       )}
     </>
   );
