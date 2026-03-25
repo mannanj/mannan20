@@ -217,6 +217,13 @@ export function RobotsGuidedFlow() {
     const eduMoreBtn = document.querySelector<HTMLElement>('[data-education-more]');
     if (!eduMoreBtn) return;
 
+    if (eduCompleted) {
+      const scrollTargetY = eduHeading.getBoundingClientRect().top + window.scrollY - 177;
+      eduMoreBtn.click();
+      scroll.scrollTo(scrollTargetY, SCROLL_DURATION);
+      return;
+    }
+
     const isMobile = isMobileRef.current;
     const scrollTargetY = eduHeading.getBoundingClientRect().top + window.scrollY - 177;
 
@@ -271,7 +278,7 @@ export function RobotsGuidedFlow() {
     ];
 
     sequence.run(eduSteps);
-  }, [sequence, scroll]);
+  }, [sequence, scroll, eduCompleted]);
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
