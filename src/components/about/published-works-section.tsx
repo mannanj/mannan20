@@ -13,7 +13,7 @@ export function PublishedWorksSection({ publishedWorks }: PublishedWorksSectionP
         Published Works
       </h2>
       {publishedWorks.map((work, i) => (
-        <div key={i} className="p-0 m-0 text-inherit mt-[15px]">
+        <div key={i} data-published-work={i === 0 ? 'archr' : undefined} className="p-0 m-0 text-inherit mt-[15px]">
           <b>{work.title}</b>
           <div className="flex items-center gap-3">
             <DownloadPaperLink title={work.title} path={work.downloadPath} filename={work.downloadFilename} />

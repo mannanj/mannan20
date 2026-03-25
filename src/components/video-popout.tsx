@@ -78,6 +78,7 @@ export function VideoPopout({ url, onClose }: VideoPopoutProps) {
         />
       ))}
       <iframe
+        id="yt-player"
         src={url}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen

@@ -11,6 +11,7 @@ import { Contact } from './contact';
 import { ContactModal } from './contact-modal';
 import { KeyboardCommandsModal } from './keyboard-commands-modal';
 import { ResumeDownloadFlow } from './resume-download-flow';
+import { RobotsGuidedFlow } from './robots-guided-flow';
 
 interface PortfolioInnerProps {
   data: AboutData;
@@ -22,7 +23,7 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
-    if (!hash || hash === 'download-resume') return;
+    if (!hash || hash === 'download-resume' || hash === 'robots-flow') return;
     const scroll = () => {
       const el = document.getElementById(hash);
       if (el) {
@@ -57,6 +58,7 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
       <KeyboardCommandsModal />
       <ContactModal />
       <ResumeDownloadFlow />
+      <RobotsGuidedFlow />
     </div>
   );
 }

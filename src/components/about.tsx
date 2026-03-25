@@ -29,8 +29,13 @@ export function About({ data }: AboutProps) {
       const url = (e as CustomEvent).detail as string;
       setVideoUrl((prev) => (prev === url ? null : url));
     };
+    const closeHandler = () => setVideoUrl(null);
     window.addEventListener('open-video-popout', handler);
-    return () => window.removeEventListener('open-video-popout', handler);
+    window.addEventListener('close-video-popout', closeHandler);
+    return () => {
+      window.removeEventListener('open-video-popout', handler);
+      window.removeEventListener('close-video-popout', closeHandler);
+    };
   }, []);
 
   const totalJobs = data.jobs.length;
@@ -90,7 +95,7 @@ export function About({ data }: AboutProps) {
       </button>
 
       {videoUrl && (
-        <VideoPopout url={videoUrl} onClose={() => setVideoUrl(null)} />
+        <VideoPopout url={videoUrl} onClose={() => { setVideoUrl(null); window.dispatchEvent(new CustomEvent('close-video-popout')); }} />
       )}
     </div>
   );

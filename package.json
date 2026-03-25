@@ -30,6 +30,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.182.0",
+    "@types/youtube": "^0.1.2",
     "typescript": "~5.8.3"
   }
 }
