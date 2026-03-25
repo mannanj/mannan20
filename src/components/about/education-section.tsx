@@ -21,7 +21,7 @@ export function EducationSection({ education, projects, certifications, count }:
         <div className="mt-2">
           {certifications.map((cert) => (
             <p key={cert.name} className="leading-[1.6] m-0 text-white text-sm">
-              {cert.name} ({cert.year})
+              {cert.name}
             </p>
           ))}
         </div>
