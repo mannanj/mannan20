@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function BeCourageouslyYouArticle() {
+  const router = useRouter();
   const [authenticated, setAuthenticated] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -24,7 +26,7 @@ export default function BeCourageouslyYouArticle() {
         if (data.success) {
           setAuthenticated(true);
         } else {
-          setError('Invalid access code');
+          router.push('/episodes');
         }
       } catch {
         setError('Connection failed');
@@ -32,7 +34,7 @@ export default function BeCourageouslyYouArticle() {
         setLoading(false);
       }
     },
-    [code]
+    [code, router]
   );
 
   if (!authenticated) {
