@@ -8,6 +8,12 @@ export const metadata: Metadata = {
 
 const EPISODES = [
   {
+    title: 'Be Courageously You',
+    author: 'Faizan Ishaq',
+    date: 'March 28, 2026',
+    href: '/episodes/be-courageously-you',
+  },
+  {
     title: 'Immortalism Manifesto',
     author: 'Bryan Johnson',
     date: 'March 20, 2026',
