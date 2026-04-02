@@ -217,6 +217,15 @@ export function Header() {
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 3.3s ease-in-out 0.3s infinite' }} />
           </div>
           <svg
+            viewBox="0 0 20 7"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={`absolute top-full left-1/2 -translate-x-1/2 w-5 h-[7px] pointer-events-none transition-all duration-300 z-10 ${gardenExpanded ? 'opacity-0' : 'opacity-50'}`}
+            style={{ transformOrigin: 'top center' }}
+          >
+            <path d="M10 0C10 1.5 10.5 3 10 5C9.8 6 10 6.5 10 7" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" fill="none" />
+          </svg>
+          <svg
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
