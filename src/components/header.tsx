@@ -195,6 +195,18 @@ export function Header() {
     ? 1 + 1.5 * Math.min((gardenRootScale - STAGE3_THRESHOLD - 1.5) / 1.5, 1)
     : 1;
 
+  const STAGE4_THRESHOLD = 2.0;
+  const showStage4 = gardenRootScale >= STAGE4_THRESHOLD;
+  const stage4BranchProgress = showStage4
+    ? Math.min((gardenRootScale - STAGE4_THRESHOLD) * 0.6, 1)
+    : 0;
+  const stage4FlowerScale = showStage4
+    ? Math.min((gardenRootScale - STAGE4_THRESHOLD) / 1.5, 1)
+    : 0;
+  const stage4IridescentScale = showStage4
+    ? Math.min((gardenRootScale - STAGE4_THRESHOLD - 0.8) / 1.5, 1)
+    : 0;
+
   const PARTICLE_COLORS = ['#ff2222', '#22dd22', '#2266ff'];
   const gardenLightOpacity = gardenExpanded ? Math.min(0.161 + gardenLevel * 0.04, 0.5) : 0.084;
 
@@ -360,8 +372,22 @@ export function Header() {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
-            style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease' }}
+            style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease', overflow: 'visible' }}
           >
+            <defs>
+              <radialGradient id="hibiscusCenter" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#ffee55" />
+                <stop offset="30%" stopColor="#cc1144" />
+                <stop offset="70%" stopColor="#990033" />
+                <stop offset="100%" stopColor="transparent" />
+              </radialGradient>
+              <radialGradient id="iridescentCenter" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#ffee55" />
+                <stop offset="30%" stopColor="#dd3388" />
+                <stop offset="70%" stopColor="#8833aa" />
+                <stop offset="100%" stopColor="transparent" />
+              </radialGradient>
+            </defs>
             <path d="M10 0C10 5 13 8 11 14C9 20 14 24 12 30C10 36 13 40 11 46C9.5 50 10 53 10 55" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" fill="none" />
             <path d="M10 10C7 12 5 11 4 13" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
             <path d="M11 22C14 24 16 23 17 25" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
@@ -432,6 +458,78 @@ export function Header() {
                       <ellipse cx={2.5} cy={49.5} rx={0.7 * stage3LeafScale} ry={1.2 * stage3LeafScale} fill="#45a035" opacity={stage3LeafOpacity} transform="rotate(-25, 2.5, 49.5)" />
                     </g>
                   </>
+                )}
+              </>
+            )}
+            {showStage4 && (
+              <>
+                <path d="M10 4C13 2.5 16 3 19 6" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress, 0)} />
+                <path d="M10 13C7.5 11.5 5 12 3 15" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.9, 0)} />
+                <path d="M10.5 25C14 23.5 17 24 20 27" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.85, 0)} />
+                <path d="M10 44C6.5 43 3.5 43.5 0.5 46" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.8, 0)} />
+                <path d="M11 50C13.5 48.5 15 49 17.5 52" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.75, 0)} />
+                {stage4FlowerScale > 0 && (
+                  <>
+                    <g transform={`translate(19, 6) scale(1, ${1 / gardenRootScale}) translate(-19, -6)`}>
+                      <g transform={`translate(19, 6) scale(${stage4FlowerScale * 2}) translate(-19, -6)`}>
+                        <ellipse cx={17} cy={1} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform="rotate(0, 17, 5.5)" />
+                        <ellipse cx={21.3} cy={3.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(72, 17, 5.5)" />
+                        <ellipse cx={19.7} cy={8.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform="rotate(144, 17, 5.5)" />
+                        <ellipse cx={14.3} cy={8.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform="rotate(216, 17, 5.5)" />
+                        <ellipse cx={12.7} cy={3.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(288, 17, 5.5)" />
+                        <circle cx={17} cy={5.5} r={2.2} fill="url(#hibiscusCenter)" />
+                        <circle cx={17} cy={5.5} r={0.7} fill="#ffee55" opacity={0.9} />
+                        <circle cx={16.5} cy={4.8} r={0.2} fill="#cc4400" />
+                        <circle cx={17.2} cy={4.6} r={0.2} fill="#cc4400" />
+                        <circle cx={17.7} cy={5.1} r={0.2} fill="#cc4400" />
+                      </g>
+                    </g>
+                    <g transform={`translate(3, 15) scale(1, ${1 / gardenRootScale}) translate(-3, -15)`}>
+                      <g transform={`translate(3, 15) scale(${stage4FlowerScale * 2}) translate(-3, -15)`}>
+                        <ellipse cx={1.5} cy={10} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform="rotate(15, 1.5, 14.5)" />
+                        <ellipse cx={5.8} cy={12.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(87, 1.5, 14.5)" />
+                        <ellipse cx={4.2} cy={17.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform="rotate(159, 1.5, 14.5)" />
+                        <ellipse cx={-1.2} cy={17.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform="rotate(231, 1.5, 14.5)" />
+                        <ellipse cx={-2.8} cy={12.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(303, 1.5, 14.5)" />
+                        <circle cx={1.5} cy={14.5} r={2.2} fill="url(#hibiscusCenter)" />
+                        <circle cx={1.5} cy={14.5} r={0.7} fill="#ffee55" opacity={0.9} />
+                        <circle cx={1} cy={13.8} r={0.2} fill="#cc4400" />
+                        <circle cx={1.7} cy={13.6} r={0.2} fill="#cc4400" />
+                        <circle cx={2.2} cy={14.1} r={0.2} fill="#cc4400" />
+                      </g>
+                    </g>
+                    <g transform={`translate(20, 27) scale(1, ${1 / gardenRootScale}) translate(-20, -27)`}>
+                      <g transform={`translate(20, 27) scale(${stage4FlowerScale * 2}) translate(-20, -27)`}>
+                        <ellipse cx={18.5} cy={22} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform="rotate(-10, 18.5, 26.5)" />
+                        <ellipse cx={22.8} cy={24.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(62, 18.5, 26.5)" />
+                        <ellipse cx={21.2} cy={29.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform="rotate(134, 18.5, 26.5)" />
+                        <ellipse cx={15.8} cy={29.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform="rotate(206, 18.5, 26.5)" />
+                        <ellipse cx={14.2} cy={24.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(278, 18.5, 26.5)" />
+                        <circle cx={18.5} cy={26.5} r={2.2} fill="url(#hibiscusCenter)" />
+                        <circle cx={18.5} cy={26.5} r={0.7} fill="#ffee55" opacity={0.9} />
+                        <circle cx={18} cy={25.8} r={0.2} fill="#cc4400" />
+                        <circle cx={18.7} cy={25.6} r={0.2} fill="#cc4400" />
+                        <circle cx={19.2} cy={26.1} r={0.2} fill="#cc4400" />
+                      </g>
+                    </g>
+                  </>
+                )}
+                {stage4IridescentScale > 0 && (
+                  <g transform={`translate(0.5, 46) scale(1, ${1 / gardenRootScale}) translate(-0.5, -46)`}>
+                    <g transform={`translate(0.5, 46) scale(${stage4IridescentScale * 2.25}) translate(-0.5, -46)`}>
+                      <ellipse cx={1.5} cy={41} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform="rotate(5, 1.5, 45.5)" />
+                      <ellipse cx={6} cy={43.5} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform="rotate(77, 1.5, 45.5)" />
+                      <ellipse cx={4.4} cy={48.5} rx={2.8} ry={4.3} fill="#ff88cc" opacity={0.8} transform="rotate(149, 1.5, 45.5)" />
+                      <ellipse cx={-1.4} cy={48.5} rx={2.8} ry={4.3} fill="#77ccff" opacity={0.85} transform="rotate(221, 1.5, 45.5)" />
+                      <ellipse cx={-3} cy={43.5} rx={2.8} ry={4.3} fill="#88ddee" opacity={0.8} transform="rotate(293, 1.5, 45.5)" />
+                      <circle cx={1.5} cy={45.5} r={2.5} fill="url(#iridescentCenter)" />
+                      <circle cx={1.5} cy={45.5} r={0.8} fill="#ffee55" opacity={0.9} />
+                      <circle cx={1} cy={44.7} r={0.25} fill="#ee4400" />
+                      <circle cx={1.6} cy={44.5} r={0.25} fill="#ee4400" />
+                      <circle cx={2.2} cy={44.9} r={0.25} fill="#ee4400" />
+                      <circle cx={0.8} cy={45.1} r={0.25} fill="#ee4400" />
+                    </g>
+                  </g>
                 )}
               </>
             )}
