@@ -206,6 +206,7 @@ export function Header() {
             <path d="M19 25C20 27 20.5 29 21 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
           </svg>
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="absolute left-[5px] -top-[30px] w-[26px] h-[35px] opacity-[0.05]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #e8d44d 30%, #e8d44d 70%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
             <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]" style={{ animation: 'gardenParticleFall1 10.8s linear infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]" style={{ animation: 'gardenParticleFall2 10.8s linear 1.8s infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 10.8s linear 3.6s infinite' }} />
@@ -215,7 +216,7 @@ export function Header() {
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 10s ease-in-out 1s infinite' }} />
           </div>
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="absolute left-[1px] -top-[30px] w-[34px] h-[35px] opacity-[0.08]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #e8d44d 30%, #e8d44d 70%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
+            <div className="absolute left-[5px] -top-[30px] w-[26px] h-[35px] opacity-[0.18]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #f5e642 25%, #f5e642 75%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
             <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]" style={{ animation: 'gardenParticleFall1 3.6s linear infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]" style={{ animation: 'gardenParticleFall2 3.6s linear 0.6s infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 3.6s linear 1.2s infinite' }} />
