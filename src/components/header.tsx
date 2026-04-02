@@ -166,7 +166,7 @@ export function Header() {
           </div>
         </a>
       </div>
-      <div className={`relative flex items-center gap-4 md:pr-[15px] md:pl-[15px] transition-all duration-300 ease-out ${gardenExpanded ? 'mr-[56px]' : 'mr-[15px]'}`}>
+      <div className={`relative flex items-center gap-4 md:pr-[15px] md:pl-[15px] transition-all duration-300 ease-out ${gardenExpanded ? 'mr-[63px]' : 'mr-[22px]'}`}>
         {LINKS.map((link) => (
           <div key={link} className="pl-[15px] md:pl-[15px]">
             <a
@@ -183,7 +183,7 @@ export function Header() {
       <div
         ref={gardenRef}
         data-testid="garden-wrapper"
-        className={`absolute top-1/2 -translate-y-[calc(50%-3px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[23px]' : 'right-[1px]'}`}
+        className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
         onMouseEnter={() => setGardenExpanded(true)}
         onMouseLeave={() => setGardenExpanded(false)}
       >
@@ -197,7 +197,7 @@ export function Header() {
             centerRootClassName={`transition-all duration-300 delay-100 ${gardenExpanded ? 'opacity-0' : 'opacity-70'}`}
           />
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-0' : 'opacity-100'}`}>
-            <div className="absolute left-[5px] -top-[30px] w-[26px] h-[35px] opacity-[0.12]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #f5e642 25%, #f5e642 75%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
+            <div className="absolute left-[5px] -top-[25px] w-[26px] h-[30px] opacity-[0.084]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #f5e642 25%, #f5e642 75%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
             <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]" style={{ animation: 'gardenParticleFall1 10.8s linear infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]" style={{ animation: 'gardenParticleFall2 10.8s linear 1.8s infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 10.8s linear 3.6s infinite' }} />
@@ -207,7 +207,7 @@ export function Header() {
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 10s ease-in-out 1s infinite' }} />
           </div>
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="absolute left-[5px] -top-[30px] w-[26px] h-[35px] opacity-[0.23]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #ffe033 20%, #ffe033 80%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
+            <div className="absolute left-[5px] -top-[25px] w-[26px] h-[30px] opacity-[0.161]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #ffe033 20%, #ffe033 80%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
             <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]" style={{ animation: 'gardenParticleFall1 3.6s linear infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]" style={{ animation: 'gardenParticleFall2 3.6s linear 0.6s infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 3.6s linear 1.2s infinite' }} />
