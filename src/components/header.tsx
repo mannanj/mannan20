@@ -33,8 +33,8 @@ const P1_LEAF_CAP_TIME = 0.79;
 const P1_BRANCHES_TIME = 0.34;
 const P1_STAGE3_TIME = P1_END + 0.24;
 const P2_FLOWERS_TIME = P1_LEAVES_TIME;
-const P2_FLOWERS_FULL_TIME = 2.98;
-const P2_IRIDESCENT_FULL_TIME = 3.23;
+const P2_FLOWERS_FULL_TIME = 3.86;
+const P2_IRIDESCENT_FULL_TIME = 4.11;
 const P2_DECOR_TIME = 1.1;
 const P2_DECOR2_TIME = 2.2;
 const P3_START_TIME = P2_END + 1.0;
@@ -331,20 +331,22 @@ export function Header() {
     let key = 0;
     for (let b = 0; b < batches; b++) {
       const batchThreshold = scaleAtTime(P3_START_TIME) + b * 3;
-      const count = 2 + Math.floor(Math.random() * 2);
-      for (let i = 0; i < count; i++) {
+      const count = 6 + Math.floor(Math.random() * 4);
+      const extraLeaves = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < count + extraLeaves; i++) {
         const y = 3 + Math.random() * 49;
         const side = Math.random() < 0.5 ? 'left' : 'right';
         const tipX = side === 'left' ? 0.5 + Math.random() * 3 : 17 + Math.random() * 3.5;
-        const roll = Math.random();
-        const type = roll < 0.5
-          ? (Math.random() < 0.75 ? 'white' : 'iridescent')
-          : 'leaf';
+        const type = i >= count
+          ? 'leaf'
+          : Math.random() < 0.5
+            ? (Math.random() < 0.75 ? 'white' : 'iridescent')
+            : 'leaf';
         const rotation = Math.random() * 30 - 15;
         const branchStartY = y - 1 + Math.random() * 2;
         const midX = side === 'left' ? 10 - (10 - tipX) * 0.5 : 10 + (tipX - 10) * 0.5;
         const midY = (branchStartY + y) / 2 + (Math.random() - 0.5) * 2;
-        slots.push({ x: tipX, y, side, type, rotation, sizeScale: 0.5, key: key++, show: Math.random() < 0.85, branchStartY, midX, midY, batchThreshold });
+        slots.push({ x: tipX, y, side, type, rotation, sizeScale: 0.65 + Math.random() * 0.25, key: key++, show: Math.random() < 0.85, branchStartY, midX, midY, batchThreshold });
       }
     }
     return slots;
@@ -799,11 +801,11 @@ export function Header() {
             {phase3Slots.map(slot => {
               if (!slot.show || gardenRootScale < slot.batchThreshold) return null;
               const elapsed = gardenRootScale - slot.batchThreshold;
-              const bProg = Math.min(elapsed * 0.04 * (0.7 + (slot.key % 3) * 0.1), 1);
+              const bProg = Math.min(elapsed * 0.12 * (0.7 + (slot.key % 3) * 0.1), 1);
               const mainX = 10 + (slot.side === 'left' ? -1 : 1) * 0.5;
               const dScale = slot.type === 'iridescent'
-                ? Math.min(Math.max(elapsed - 6, 0) / 18, 1)
-                : Math.min(elapsed / 18, 1);
+                ? Math.min(Math.max(elapsed - 2, 0) / 6, 1)
+                : Math.min(elapsed / 6, 1);
               const cx = slot.x; const cy = slot.y; const r = slot.rotation;
               return (
                 <g key={`p3-${slot.key}`}>
@@ -824,8 +826,8 @@ export function Header() {
               if (!slot.show || gardenRootScale < slot.batchThreshold || slot.type === 'leaf') return null;
               const elapsed = gardenRootScale - slot.batchThreshold;
               const dScale = slot.type === 'iridescent'
-                ? Math.min(Math.max(elapsed - 6, 0) / 18, 1)
-                : Math.min(elapsed / 18, 1);
+                ? Math.min(Math.max(elapsed - 2, 0) / 6, 1)
+                : Math.min(elapsed / 6, 1);
               if (dScale <= 0) return null;
               const cx = slot.x; const cy = slot.y; const r = slot.rotation;
               const s = dScale * (slot.type === 'white' ? 2 : 2.25) * slot.sizeScale;
