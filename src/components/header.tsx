@@ -195,6 +195,7 @@ export function Header() {
           <PlantIcon
             className={`w-9 h-9 transition-all duration-300 ease-out ${gardenExpanded ? 'scale-110 group-hover:scale-[1.25]' : 'opacity-80'}`}
             centerRootClassName={`transition-all duration-300 delay-100 ${gardenExpanded ? 'opacity-0' : 'opacity-70'}`}
+            potClassName={`transition-transform duration-300 ease-out ${gardenExpanded ? 'scale-x-[1.38] translate-x-[0.5px]' : ''}`}
           />
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-0' : 'opacity-100'}`}>
             <div className="absolute left-[5px] -top-[25px] w-[26px] h-[30px] opacity-[0.084]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #f5e642 25%, #f5e642 75%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
@@ -229,7 +230,7 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 -translate-x-1/2 w-5 h-[55px] pointer-events-none transition-all duration-[1500ms] delay-150 z-10 ${gardenExpanded ? 'opacity-60 scale-y-100' : 'opacity-0 scale-y-0'}`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-[4px] w-5 h-[55px] pointer-events-none transition-all duration-[1500ms] delay-150 z-10 ${gardenExpanded ? 'opacity-60 scale-y-100' : 'opacity-0 scale-y-0'}`}
             style={{ transformOrigin: 'top center' }}
           >
             <path d="M10 0C10 5 13 8 11 14C9 20 14 24 12 30C10 36 13 40 11 46C9.5 50 10 53 10 55" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" fill="none" />
@@ -248,8 +249,8 @@ export function Header() {
             <path d="M8 11C6 9.5 4 7.5 5.5 5C7 2.5 8 6 8 8" stroke="#4a7c3f" strokeWidth="1" strokeLinecap="round" fill="#4a7c3f" />
             <path d="M8 10C10 8.5 12 6.5 10.5 4C9 1.5 8 5 8 7" stroke="#2d5a27" strokeWidth="1" strokeLinecap="round" fill="#2d5a27" />
             <ellipse cx="8" cy="14.5" rx="3" ry="0.8" fill="#6b4423" />
-            <path d="M6.5 14.5C6 15.5 5.5 16 5.5 16" stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" />
-            <path d="M9.5 14.5C10 15.5 10.5 16 10.5 16" stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" />
+            <polygon points="5.5,14.5 6.5,18 9.5,18 10.5,14.5" fill="#6b4423" />
+            <polygon points="5.8,14.5 6.7,17.8 9.3,17.8 10.2,14.5" fill="#5a3a1a" />
           </svg>
           <svg
             viewBox="0 0 16 16"
@@ -261,8 +262,8 @@ export function Header() {
             <path d="M8 12C6.5 10.5 5 8.5 6.5 6.5C8 4.5 8 7.5 8 9" stroke="#5a9c4f" strokeWidth="1" strokeLinecap="round" fill="#5a9c4f" />
             <path d="M8 11C9.5 9.5 11 7.5 9.5 5.5C8 3.5 8 6.5 8 8" stroke="#3d7a32" strokeWidth="1" strokeLinecap="round" fill="#3d7a32" />
             <ellipse cx="8" cy="14.5" rx="2.5" ry="0.7" fill="#6b4423" />
-            <path d="M6.5 14.5C6 15.5 5.8 16 5.8 16" stroke="#8B6914" strokeWidth="0.6" strokeLinecap="round" />
-            <path d="M9.5 14.5C10 15.5 10.2 16 10.2 16" stroke="#8B6914" strokeWidth="0.6" strokeLinecap="round" />
+            <polygon points="6,14.5 7,17.5 9,17.5 10,14.5" fill="#6b4423" />
+            <polygon points="6.3,14.5 7.2,17.3 8.8,17.3 9.7,14.5" fill="#5a3a1a" />
           </svg>
           <div className={`absolute top-full right-0 mt-3 transition-opacity duration-200 pointer-events-none ${gardenExpanded ? 'opacity-100' : 'opacity-0'}`}>
             <div className="absolute -top-[6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
