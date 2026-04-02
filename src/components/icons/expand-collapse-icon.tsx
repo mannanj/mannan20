@@ -12,7 +12,7 @@ const SIZES = {
 export function ExpandCollapseIcon({ expanded, size = 'default', className = '' }: ExpandCollapseIconProps) {
   return (
     <span
-      className={`flex items-center justify-center rounded-full bg-transparent border border-white/30 text-white/50 leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200 ${SIZES[size]} ${className}`}
+      className={`flex items-center justify-center text-white/50 leading-none hover:text-white/80 transition-all duration-200 ${SIZES[size]} ${className}`}
     >
       {expanded ? (
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
