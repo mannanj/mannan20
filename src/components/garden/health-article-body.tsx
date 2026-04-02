@@ -108,7 +108,7 @@ export function HealthArticleBody() {
             <p className="text-xs text-white/40">Companies I like</p>
           </button>
 
-          <div className="rounded-lg border border-dashed border-white/30 p-4 opacity-50 flex items-center justify-center min-h-[80px]">
+          <div className="rounded-lg border border-white/10 p-4 flex items-center justify-center min-h-[80px]">
             <div className="relative opacity-50" style={{ filter: 'grayscale(1)' }}>
               <PlantIcon className="w-9 h-9 opacity-75" />
               <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute left-[0px] bottom-[2px] w-5 h-5 opacity-80">
@@ -130,7 +130,7 @@ export function HealthArticleBody() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-dashed border-white/30 p-4 opacity-50 flex items-center justify-center min-h-[80px]">
+          <div className="rounded-lg border border-white/10 p-4 flex items-center justify-center min-h-[80px]">
             <div className="relative opacity-50" style={{ filter: 'grayscale(1)' }}>
               <PlantIcon className="w-9 h-9 opacity-75" />
               <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute left-[0px] bottom-[2px] w-5 h-5 opacity-80">
