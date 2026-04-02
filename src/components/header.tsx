@@ -156,7 +156,7 @@ export function Header() {
         cancelAnimationFrame(rootAnimRef.current);
         rootAnimRef.current = 0;
       }
-      const RETRACT_DURATION = 1.5;
+      const RETRACT_DURATION = 0.77;
       const scaleAtLeave = gardenRootScale;
       if (scaleAtLeave > 0) {
         setGardenRetracting(true);
@@ -331,10 +331,10 @@ export function Header() {
     let key = 0;
     for (let b = 0; b < batches; b++) {
       const batchThreshold = scaleAtTime(P3_START_TIME) + b * 3;
-      const count = 6 + Math.floor(Math.random() * 4);
-      const extraLeaves = 3 + Math.floor(Math.random() * 3);
+      const count = 12 + Math.floor(Math.random() * 8);
+      const extraLeaves = 6 + Math.floor(Math.random() * 6);
       for (let i = 0; i < count + extraLeaves; i++) {
-        const y = 3 + Math.random() * 49;
+        const y = 2 + Math.random() * 18;
         const side = Math.random() < 0.5 ? 'left' : 'right';
         const tipX = side === 'left' ? 0.5 + Math.random() * 3 : 17 + Math.random() * 3.5;
         const type = i >= count
@@ -809,7 +809,7 @@ export function Header() {
               const cx = slot.x; const cy = slot.y; const r = slot.rotation;
               return (
                 <g key={`p3-${slot.key}`}>
-                  <path d={`M${mainX} ${slot.branchStartY}C${slot.midX} ${slot.midY} ${slot.midX} ${slot.midY} ${cx} ${cy}`} stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - bProg, 0)} />
+                  <path d={`M${mainX} ${slot.branchStartY}C${slot.midX} ${slot.midY} ${slot.midX} ${slot.midY} ${cx} ${cy}`} stroke="#8B6914" strokeWidth={0.7 * Math.max(gardenRootScale / 5, 1)} strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - bProg, 0)} />
                   {dScale > 0 && slot.type === 'leaf' && (
                     <g transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
                       <g transform={`translate(${cx}, ${cy}) scale(${dScale * 2.4 * slot.sizeScale}) rotate(${r}) translate(${-cx}, ${-cy})`}>
