@@ -47,6 +47,7 @@ export function Header() {
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
   const [gardenLevel, setGardenLevel] = useState(0);
+  const [gardenRetracting, setGardenRetracting] = useState(false);
   const gardenIntervalRef = useRef<ReturnType<typeof setInterval>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const gardenRef = useRef<HTMLDivElement>(null);
@@ -103,29 +104,21 @@ export function Header() {
 
   useEffect(() => {
     if (gardenExpanded) {
+      setGardenRetracting(false);
       setGardenLevel(0);
       setGardenStartTime(Date.now());
       gardenIntervalRef.current = setInterval(() => {
         setGardenLevel(prev => Math.min(prev + 1, 3));
       }, 2000);
       const startTime = Date.now();
-      const INTRO_DURATION = 1.5;
-      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
       const animateRoot = () => {
         const elapsed = (Date.now() - startTime) / 1000;
-        let scale;
-        if (elapsed < INTRO_DURATION) {
-          scale = easeOutCubic(elapsed / INTRO_DURATION);
-        } else {
-          scale = 1 + (elapsed - INTRO_DURATION) * 0.2;
-        }
-        setGardenRootScale(Math.min(scale, 9));
+        setGardenRootScale(Math.min(elapsed * 0.675, 9));
         rootAnimRef.current = requestAnimationFrame(animateRoot);
       };
       rootAnimRef.current = requestAnimationFrame(animateRoot);
     } else {
       setGardenLevel(0);
-      setGardenRootScale(0);
       if (gardenIntervalRef.current) {
         clearInterval(gardenIntervalRef.current);
         gardenIntervalRef.current = null;
@@ -133,6 +126,28 @@ export function Header() {
       if (rootAnimRef.current) {
         cancelAnimationFrame(rootAnimRef.current);
         rootAnimRef.current = 0;
+      }
+      const RETRACT_DURATION = 1.5;
+      const scaleAtLeave = gardenRootScale;
+      if (scaleAtLeave > 0) {
+        setGardenRetracting(true);
+        const retractStart = Date.now();
+        const easeInCubic = (t: number) => t * t * t;
+        const animateRetract = () => {
+          const elapsed = (Date.now() - retractStart) / 1000;
+          const progress = Math.min(elapsed / RETRACT_DURATION, 1);
+          setGardenRootScale(scaleAtLeave * (1 - easeInCubic(progress)));
+          if (progress < 1) {
+            rootAnimRef.current = requestAnimationFrame(animateRetract);
+          } else {
+            setGardenRootScale(0);
+            setGardenRetracting(false);
+            rootAnimRef.current = 0;
+          }
+        };
+        rootAnimRef.current = requestAnimationFrame(animateRetract);
+      } else {
+        setGardenRootScale(0);
       }
     }
     return () => {
@@ -146,6 +161,39 @@ export function Header() {
       }
     };
   }, [gardenExpanded]);
+
+  const LEAF_THRESHOLD = 1.5;
+  const LEAF_CAP_THRESHOLD = 3.5;
+  const BRANCH_THRESHOLD = 1.5;
+  const BRANCH_LEAF_GROW_THRESHOLD = LEAF_CAP_THRESHOLD;
+  const STAGE3_THRESHOLD = 5.5;
+
+  const showLeaves = gardenRootScale >= LEAF_THRESHOLD;
+  const showBranches = gardenRootScale >= BRANCH_THRESHOLD;
+  const showStage3 = gardenRootScale >= STAGE3_THRESHOLD;
+
+  const stage1LeafScale = showLeaves
+    ? 1 + 2.5 * Math.min((gardenRootScale - LEAF_THRESHOLD) / (LEAF_CAP_THRESHOLD - LEAF_THRESHOLD), 1)
+    : 1;
+  const stage1LeafOpacity = Math.min((gardenRootScale - LEAF_THRESHOLD) * 2.5, 0.85);
+  const stage2BranchProgress = showBranches
+    ? Math.min((gardenRootScale - BRANCH_THRESHOLD) * 0.45, 1)
+    : 0;
+  const stage2LeafOpacity = showBranches
+    ? Math.min((gardenRootScale - BRANCH_THRESHOLD - 0.3) * 2.5, 0.75)
+    : 0;
+  const stage2LeafScale = gardenRootScale >= BRANCH_LEAF_GROW_THRESHOLD
+    ? 1 + 2.0 * Math.min((gardenRootScale - BRANCH_LEAF_GROW_THRESHOLD) / 1.3, 1)
+    : 1;
+  const stage3BranchProgress = showStage3
+    ? Math.min((gardenRootScale - STAGE3_THRESHOLD) * 0.4, 1)
+    : 0;
+  const stage3LeafOpacity = showStage3
+    ? Math.min((gardenRootScale - STAGE3_THRESHOLD - 0.3) * 2.5, 0.75)
+    : 0;
+  const stage3LeafScale = gardenRootScale >= STAGE3_THRESHOLD + 1.5
+    ? 1 + 1.5 * Math.min((gardenRootScale - STAGE3_THRESHOLD - 1.5) / 1.5, 1)
+    : 1;
 
   const PARTICLE_COLORS = ['#ff2222', '#22dd22', '#2266ff'];
   const gardenLightOpacity = gardenExpanded ? Math.min(0.161 + gardenLevel * 0.04, 0.5) : 0.084;
@@ -311,7 +359,7 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded ? 'opacity-60' : 'opacity-0'}`}
+            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
             style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease' }}
           >
             <path d="M10 0C10 5 13 8 11 14C9 20 14 24 12 30C10 36 13 40 11 46C9.5 50 10 53 10 55" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" fill="none" />
@@ -319,6 +367,74 @@ export function Header() {
             <path d="M11 22C14 24 16 23 17 25" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
             <path d="M10 35C7 37 5 36 4 38" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
             <path d="M11 46C14 48 15 47 16 49" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
+            {showLeaves && (
+              <>
+                <g transform={`translate(4, 13) scale(1, ${1 / gardenRootScale}) translate(-4, -13)`}>
+                  <ellipse cx={4} cy={13} rx={1.2 * stage1LeafScale} ry={2 * stage1LeafScale} fill="#3a8a2e" opacity={stage1LeafOpacity} transform="rotate(-30, 4, 13)" />
+                </g>
+                <g transform={`translate(17, 25) scale(1, ${1 / gardenRootScale}) translate(-17, -25)`}>
+                  <ellipse cx={17} cy={25} rx={1.2 * stage1LeafScale} ry={2 * stage1LeafScale} fill="#2d7a22" opacity={stage1LeafOpacity} transform="rotate(30, 17, 25)" />
+                </g>
+                <g transform={`translate(4, 38) scale(1, ${1 / gardenRootScale}) translate(-4, -38)`}>
+                  <ellipse cx={4} cy={38} rx={1.2 * stage1LeafScale} ry={2 * stage1LeafScale} fill="#3a8a2e" opacity={stage1LeafOpacity} transform="rotate(-25, 4, 38)" />
+                </g>
+                <g transform={`translate(16, 49) scale(1, ${1 / gardenRootScale}) translate(-16, -49)`}>
+                  <ellipse cx={16} cy={49} rx={1.2 * stage1LeafScale} ry={2 * stage1LeafScale} fill="#2d7a22" opacity={stage1LeafOpacity} transform="rotate(35, 16, 49)" />
+                </g>
+              </>
+            )}
+            {showBranches && (
+              <>
+                <path d="M10.5 16C13 17 15.5 16.5 18 18.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage2BranchProgress, 0)} />
+                <path d="M10 28C7 29 4.5 28 2 30.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage2BranchProgress * 0.85, 0)} />
+                <path d="M11 41C14 42 16.5 41.5 19 43.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage2BranchProgress * 0.9, 0)} />
+                <path d="M10 52C7 53 4 52 1 54" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage2BranchProgress * 0.75, 0)} />
+                {stage2LeafOpacity > 0 && (
+                  <>
+                    <g transform={`translate(18, 18.5) scale(1, ${1 / gardenRootScale}) translate(-18, -18.5)`}>
+                      <ellipse cx={18} cy={18.5} rx={0.8 * stage2LeafScale} ry={1.4 * stage2LeafScale} fill="#45a035" opacity={stage2LeafOpacity} transform="rotate(25, 18, 18.5)" />
+                    </g>
+                    <g transform={`translate(2, 30.5) scale(1, ${1 / gardenRootScale}) translate(-2, -30.5)`}>
+                      <ellipse cx={2} cy={30.5} rx={0.8 * stage2LeafScale} ry={1.4 * stage2LeafScale} fill="#3a8a2e" opacity={stage2LeafOpacity} transform="rotate(-35, 2, 30.5)" />
+                    </g>
+                    <g transform={`translate(19, 43.5) scale(1, ${1 / gardenRootScale}) translate(-19, -43.5)`}>
+                      <ellipse cx={19} cy={43.5} rx={0.8 * stage2LeafScale} ry={1.4 * stage2LeafScale} fill="#45a035" opacity={stage2LeafOpacity} transform="rotate(20, 19, 43.5)" />
+                    </g>
+                    <g transform={`translate(1, 54) scale(1, ${1 / gardenRootScale}) translate(-1, -54)`}>
+                      <ellipse cx={1} cy={54} rx={0.8 * stage2LeafScale} ry={1.4 * stage2LeafScale} fill="#3a8a2e" opacity={stage2LeafOpacity} transform="rotate(-30, 1, 54)" />
+                    </g>
+                  </>
+                )}
+              </>
+            )}
+            {showStage3 && (
+              <>
+                <path d="M10 7C7.5 6 5 6.5 3 8" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage3BranchProgress, 0)} />
+                <path d="M10.5 19C13.5 18 16 18.5 18 20.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage3BranchProgress * 0.9, 0)} />
+                <path d="M10 32C7 31 4 31.5 2 33.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage3BranchProgress * 0.85, 0)} />
+                <path d="M11 38C14 37 16.5 37.5 19 39.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage3BranchProgress * 0.8, 0)} />
+                <path d="M10 48C7 47 4.5 47.5 2.5 49.5" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage3BranchProgress * 0.75, 0)} />
+                {stage3LeafOpacity > 0 && (
+                  <>
+                    <g transform={`translate(3, 8) scale(1, ${1 / gardenRootScale}) translate(-3, -8)`}>
+                      <ellipse cx={3} cy={8} rx={0.7 * stage3LeafScale} ry={1.2 * stage3LeafScale} fill="#45a035" opacity={stage3LeafOpacity} transform="rotate(-20, 3, 8)" />
+                    </g>
+                    <g transform={`translate(18, 20.5) scale(1, ${1 / gardenRootScale}) translate(-18, -20.5)`}>
+                      <ellipse cx={18} cy={20.5} rx={0.7 * stage3LeafScale} ry={1.2 * stage3LeafScale} fill="#3a8a2e" opacity={stage3LeafOpacity} transform="rotate(25, 18, 20.5)" />
+                    </g>
+                    <g transform={`translate(2, 33.5) scale(1, ${1 / gardenRootScale}) translate(-2, -33.5)`}>
+                      <ellipse cx={2} cy={33.5} rx={0.7 * stage3LeafScale} ry={1.2 * stage3LeafScale} fill="#45a035" opacity={stage3LeafOpacity} transform="rotate(-30, 2, 33.5)" />
+                    </g>
+                    <g transform={`translate(19, 39.5) scale(1, ${1 / gardenRootScale}) translate(-19, -39.5)`}>
+                      <ellipse cx={19} cy={39.5} rx={0.7 * stage3LeafScale} ry={1.2 * stage3LeafScale} fill="#3a8a2e" opacity={stage3LeafOpacity} transform="rotate(20, 19, 39.5)" />
+                    </g>
+                    <g transform={`translate(2.5, 49.5) scale(1, ${1 / gardenRootScale}) translate(-2.5, -49.5)`}>
+                      <ellipse cx={2.5} cy={49.5} rx={0.7 * stage3LeafScale} ry={1.2 * stage3LeafScale} fill="#45a035" opacity={stage3LeafOpacity} transform="rotate(-25, 2.5, 49.5)" />
+                    </g>
+                  </>
+                )}
+              </>
+            )}
           </svg>
           <svg
             viewBox="0 0 16 16"
