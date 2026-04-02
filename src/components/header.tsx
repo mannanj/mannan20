@@ -205,6 +205,12 @@ export function Header() {
             <path d="M16 25.5C16 27.5 16 29 16 31" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" className={`transition-all duration-300 delay-100 ${gardenExpanded ? 'opacity-0' : 'opacity-70'}`} />
             <path d="M19 25C20 27 20.5 29 21 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
           </svg>
+          <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[10px] -top-[13px]" style={{ animation: 'gardenParticleFall1 5s ease-in infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[20px] -top-[17px]" style={{ animation: 'gardenParticleFall2 7.5s ease-in 1.5s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[15px] -top-[11px]" style={{ animation: 'gardenParticleFall3 10s ease-in 3.5s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[10px]" style={{ animation: 'gardenParticleTravel1 10s ease-in-out 1s infinite' }} />
+          </div>
           <svg
             viewBox="0 0 20 55"
             fill="none"
