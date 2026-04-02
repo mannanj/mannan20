@@ -61,6 +61,15 @@ export function ContactModal() {
     };
   }, [dragOffset]);
 
+  useEffect(() => {
+    if (!state.contactModalOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeContactModal();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [state.contactModalOpen, closeContactModal]);
+
   const handleReveal = () => {
     setContactResult(CONTACT_DATA);
   };

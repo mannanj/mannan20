@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useApp } from '@/context/app-context';
 import { scrollToSection } from '@/lib/utils';
 import type { Section } from '@/lib/types';
@@ -147,11 +148,12 @@ export function Header() {
           </div>
         </a>
       </div>
-      <div className="flex items-center gap-4 md:pr-[50px] md:pl-[15px]">
+      <div className="relative flex items-center gap-4 md:pr-[15px] md:pl-[15px]">
         {LINKS.map((link) => (
           <div key={link} className="pl-[15px] md:pl-[15px]">
             <a
               id={`${link}-link`}
+              data-testid={`header-nav-${link}`}
               className={`header-link ${state.activeSection === link ? 'header-link-selected' : ''}`}
               onClick={() => goTo(link)}
             >
@@ -160,6 +162,28 @@ export function Header() {
           </div>
         ))}
       </div>
+      <Link
+        href="/garden"
+        data-testid="header-garden-link"
+        className="group absolute right-4 top-1/2 -translate-y-1/2"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110"
+        >
+          <path d="M12 22V12" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M12 15C8 12 4 8 7 4C10 0 12 6 12 10" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          <path d="M12 12C16 9 20 5 17 1C14 -3 12 3 12 7" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        </svg>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
+          <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
+            Garden
+          </div>
+        </div>
+      </Link>
     </div>
   );
 }

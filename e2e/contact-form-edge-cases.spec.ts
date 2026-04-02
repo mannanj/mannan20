@@ -44,6 +44,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
     await masked.click();
     await expect(page.getByTestId('contact-modal')).toBeVisible();
     await expect(status).toHaveAttribute('data-status', 'idle');
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-challenge-resets.png' });
   });
 
   test('input persists but debounce resets after close/reopen', async ({ page }) => {
@@ -69,6 +70,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
     const savedCount = callCount;
     await page.waitForTimeout(3000);
     expect(callCount).toBe(savedCount);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-input-persists-debounce-resets.png' });
   });
 
   test('close during validating, reopen shows idle', async ({ page }) => {
@@ -88,6 +90,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
     await masked.click();
     await expect(page.getByTestId('contact-modal')).toBeVisible();
     await expect(status).toHaveAttribute('data-status', 'idle');
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-close-during-validating.png' });
   });
 
   test('rapid open/close/open is stable', async ({ page }) => {
@@ -102,6 +105,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
     const textarea = page.getByTestId('contact-textarea');
     await expect(textarea).toBeVisible();
     await expect(textarea).toBeEnabled();
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-open-close.png' });
   });
 });
 
@@ -115,6 +119,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
     const delayPerChar = Math.floor(1000 / targetSpeed);
     await textarea.pressSequentially(message, { delay: delayPerChar });
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-15-chars-sec.png' });
   });
 
   test('paste 19 chars does not trigger challenge', async ({ page }) => {
@@ -123,6 +128,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
     const textarea = page.getByTestId('contact-textarea');
     await textarea.fill('John at john@t.com');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-paste-19-chars.png' });
   });
 
   test('slow type then fast paste bypasses detection', async ({ page }) => {
@@ -133,6 +139,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
     await page.waitForTimeout(500);
     await textarea.fill('Hi my name is John and my email is john@test.com');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-slow-type-fast-paste.png' });
   });
 
   test('challenge mode: empty then valid answer', async ({ page }) => {
@@ -146,6 +153,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
     await expect(status).toHaveAttribute('data-status', 'challenge');
     await textarea.fill('MITRE');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 5000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-challenge-empty-then-valid.png' });
   });
 });
 
@@ -163,6 +171,7 @@ test.describe('Group C: API Response Edge Cases', () => {
     await page.getByTestId('contact-textarea').fill('test input');
     const status = page.getByTestId('contact-status');
     await expect(status).toHaveAttribute('data-status', 'error', { timeout: 10000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-error-with-data.png' });
   });
 
   test('API returns response missing feedback field', async ({ page }) => {
@@ -175,6 +184,7 @@ test.describe('Group C: API Response Edge Cases', () => {
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-missing-feedback.png' });
   });
 
   test('re-typing while validating cancels previous request', async ({ page }) => {
@@ -195,6 +205,7 @@ test.describe('Group C: API Response Edge Cases', () => {
     await expect(status).toHaveAttribute('data-status', 'validating', { timeout: 10000 });
     await textarea.fill('second attempt with John john@test.com');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-retype-cancels-request.png' });
   });
 
   test('API returns empty choices array', async ({ page }) => {
@@ -209,6 +220,7 @@ test.describe('Group C: API Response Edge Cases', () => {
     await page.getByTestId('contact-textarea').fill('test input');
     const status = page.getByTestId('contact-status');
     await expect(status).toHaveAttribute('data-status', 'insufficient', { timeout: 10000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-empty-choices.png' });
   });
 });
 
@@ -221,6 +233,7 @@ test.describe('Group D: Viewport & Layout', () => {
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);
     expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-320px-viewport.png' });
   });
 
   test('modal position clamped near bottom of viewport', async ({ page }) => {
@@ -234,6 +247,7 @@ test.describe('Group D: Viewport & Layout', () => {
     const box = await modal.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.y).toBeLessThanOrEqual(400 - 300 + 50);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-bottom-viewport.png' });
   });
 
   test('open modal via ripple container', async ({ page }) => {
@@ -242,6 +256,7 @@ test.describe('Group D: Viewport & Layout', () => {
     await ripple.scrollIntoViewIfNeeded();
     await ripple.click();
     await expect(page.getByTestId('contact-modal')).toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-ripple-open.png' });
   });
 });
 
@@ -249,12 +264,8 @@ test.describe('Group E: Keyboard & Interaction', () => {
   test('escape key closes modal', async ({ page }) => {
     await openModal(page);
     await page.keyboard.press('Escape');
-    const modal = page.getByTestId('contact-modal');
-    const isVisible = await modal.isVisible();
-    if (isVisible) {
-      test.info().annotations.push({ type: 'note', description: 'Escape key does not close contact modal — no keydown handler' });
-    }
-    expect(true).toBe(true);
+    await expect(page.getByTestId('contact-modal')).not.toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-escape-key.png' });
   });
 
   test('spam-click masked email is stable', async ({ page }) => {
@@ -272,6 +283,7 @@ test.describe('Group E: Keyboard & Interaction', () => {
     const modalVisible = await page.getByTestId('contact-modal').isVisible();
     const maskedVisible = await masked.isVisible();
     expect(modalVisible || maskedVisible).toBe(true);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-spam-click.png' });
   });
 
   test('input with only newlines stays idle', async ({ page }) => {
@@ -287,5 +299,6 @@ test.describe('Group E: Keyboard & Interaction', () => {
     const status = page.getByTestId('contact-status');
     await expect(status).toHaveAttribute('data-status', 'idle');
     expect(apiCalled).toBe(false);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-newlines-idle.png' });
   });
 });

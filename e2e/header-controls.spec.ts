@@ -8,6 +8,7 @@ test.describe('header controls', () => {
   test('home button is visible in header', async ({ page }) => {
     const homeBtn = page.getByTestId('header-home-button');
     await expect(homeBtn).toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/header-initial.png' });
   });
 
   test('clicking home button scrolls to top of page', async ({ page }) => {
@@ -19,10 +20,11 @@ test.describe('header controls', () => {
 
     const homeBtn = page.getByTestId('header-home-button');
     await homeBtn.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800);
 
     const finalY = await page.evaluate(() => window.scrollY);
-    expect(finalY).toBeLessThan(500);
+    expect(finalY).toBeLessThan(50);
+    await page.screenshot({ path: 'e2e/screenshots/header-scrolled-to-top.png' });
   });
 
   test('home button scrolls on first click without delay', async ({ page }) => {
@@ -31,16 +33,17 @@ test.describe('header controls', () => {
 
     const homeBtn = page.getByTestId('header-home-button');
     await homeBtn.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800);
 
     const finalY = await page.evaluate(() => window.scrollY);
-    expect(finalY).toBeLessThan(500);
+    expect(finalY).toBeLessThan(50);
   });
 
   test('home button shows "Return to Home" tooltip on hover', async ({ page }) => {
     const homeBtn = page.getByTestId('header-home-button');
     await homeBtn.hover();
     await expect(page.getByText('Return to Home')).toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/header-home-tooltip.png' });
   });
 
   test('hovering header controls expands social links', async ({ page }) => {
@@ -57,6 +60,7 @@ test.describe('header controls', () => {
     const afterLinkedin = await linkedin.boundingBox();
 
     expect(afterLinkedin!.x).toBeGreaterThan(beforeLinkedin!.x);
+    await page.screenshot({ path: 'e2e/screenshots/header-expanded.png' });
   });
 
   test('linkedin link has correct href', async ({ page }) => {
@@ -72,32 +76,33 @@ test.describe('header controls', () => {
   });
 
   test('nav links scroll to sections', async ({ page }) => {
-    const aboutLink = page.locator('#about-link');
+    const aboutLink = page.getByTestId('header-nav-about');
     await aboutLink.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800);
     const aboutY = await page.evaluate(() => window.scrollY);
     expect(aboutY).toBeGreaterThan(100);
 
-    const homeLink = page.locator('#home-link');
+    const homeLink = page.getByTestId('header-nav-home');
     await homeLink.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800);
     const homeY = await page.evaluate(() => window.scrollY);
     expect(homeY).toBeLessThan(aboutY);
+    await page.screenshot({ path: 'e2e/screenshots/header-nav-scroll.png' });
   });
 
   test('clicking home button from contact section returns to top', async ({ page }) => {
-    const contactLink = page.locator('#contact-link');
+    const contactLink = page.getByTestId('header-nav-contact');
     await contactLink.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800);
     const contactY = await page.evaluate(() => window.scrollY);
     expect(contactY).toBeGreaterThan(200);
 
     const homeBtn = page.getByTestId('header-home-button');
     await homeBtn.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800);
 
     const finalY = await page.evaluate(() => window.scrollY);
-    expect(finalY).toBeLessThan(500);
+    expect(finalY).toBeLessThan(50);
   });
 
   test('social links show tooltips on hover after expand', async ({ page }) => {
@@ -112,5 +117,13 @@ test.describe('header controls', () => {
     const github = page.getByTestId('header-github-link');
     await github.hover();
     await expect(page.getByText('View my GitHub')).toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/header-tooltips.png' });
+  });
+
+  test('header is usable at mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+    await expect(page.getByTestId('header-home-button')).toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/header-mobile.png' });
   });
 });

@@ -103,6 +103,7 @@ test.describe('Gem Rain Easter Egg', () => {
       expect(popperZ).toBeGreaterThanOrEqual(style.zIndex);
 
       expect(await page.evaluate(() => document.body.classList.contains('gem-rain-active'))).toBe(true);
+      await page.screenshot({ path: 'e2e/screenshots/gem-rain-active.png' });
     });
 
     test('#44 no external SVG files fetched for gems', async ({ page }) => {
@@ -185,6 +186,7 @@ test.describe('Gem Rain Easter Egg', () => {
       await openModal(page);
       await waitForGems(page);
       await expect(page.getByTestId('gem-guess-card')).toBeVisible({ timeout: 45000 });
+      await page.screenshot({ path: 'e2e/screenshots/gem-rain-guess-input.png' });
     });
 
     test('#18 gems lock after 71s (real timer)', async ({ page }) => {
@@ -196,13 +198,13 @@ test.describe('Gem Rain Easter Egg', () => {
         () => document.querySelector('[data-testid="gem-state"]')?.getAttribute('data-locked') === 'true',
         { timeout: 85000 }
       );
+      await page.screenshot({ path: 'e2e/screenshots/gem-rain-locked.png' });
     });
   });
 
   test.describe('Dismissal after lock-in (#22)', () => {
-    test.setTimeout(120000);
-
     test('#22 escape closes modal but gems continue after lock-in', async ({ page }) => {
+      test.setTimeout(120000);
       await page.goto('/');
       await openModal(page);
       await waitForGems(page);
@@ -213,6 +215,7 @@ test.describe('Gem Rain Easter Egg', () => {
       await page.keyboard.press('Escape');
       await expect(page.locator('text=Would you like to download')).not.toBeVisible();
       await expect(page.getByTestId('gem-canvas')).toBeVisible();
+      await page.screenshot({ path: 'e2e/screenshots/gem-rain-locked-dismissed.png' });
     });
   });
 

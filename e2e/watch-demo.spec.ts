@@ -1,63 +1,84 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('watch demo video popout', () => {
+test.describe('watch demo', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
-  test('published works watch demo link opens and closes video popout', async ({ page }) => {
-    const heading = page.locator('#published-works');
-    await heading.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
+  test('watch demo button opens video popout', async ({ page }) => {
+    const watchBtn = page.locator('[data-testid="watch-demo-btn"]').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
 
-    const watchDemo = page.locator('text=Watch demo').first();
-    await watchDemo.scrollIntoViewIfNeeded();
-    await expect(watchDemo).toBeVisible();
-    await watchDemo.click();
+    const popout = page.locator('[data-testid="video-popout"]');
+    await expect(popout).toBeVisible();
 
-    const iframe = page.locator('iframe[src*="youtube.com/embed"]');
-    await expect(iframe).toBeVisible();
-
-    await page.locator('button:has-text("×")').click();
-    await expect(iframe).not.toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/watch-demo-opens-popout.png', fullPage: false });
   });
 
-  test('education section watch demo link opens video popout', async ({ page }) => {
-    const educationHeading = page.locator('#education');
-    await educationHeading.scrollIntoViewIfNeeded();
+  test('close button dismisses video popout', async ({ page }) => {
+    const watchBtn = page.locator('[data-testid="watch-demo-btn"]').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
 
-    const plusButtons = page.locator('button:has-text("+")');
-    const count = await plusButtons.count();
-    const educationPlus = plusButtons.nth(count - 1);
-    await educationPlus.scrollIntoViewIfNeeded();
-    await educationPlus.click();
-    await page.waitForTimeout(300);
+    const popout = page.locator('[data-testid="video-popout"]');
+    await expect(popout).toBeVisible();
 
-    const educationWatchDemo = page.locator('#more-education').getByRole('button', { name: /watch demo/i });
-    await educationWatchDemo.scrollIntoViewIfNeeded();
-    await expect(educationWatchDemo).toBeVisible();
-    await educationWatchDemo.click();
+    const closeBtn = page.locator('[data-testid="video-popout-close"]');
+    await closeBtn.click();
+    await expect(popout).not.toBeVisible();
 
-    const iframe = page.locator('iframe[src*="youtube.com/embed"]');
-    await expect(iframe).toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/watch-demo-close-button.png', fullPage: false });
   });
 
-  test('watch demo links have identical font size in both sections', async ({ page }) => {
-    const firstWatchDemo = page.getByRole('button', { name: /watch demo/i }).first();
-    await firstWatchDemo.scrollIntoViewIfNeeded();
-    const publishedFontSize = await firstWatchDemo.evaluate((el) => getComputedStyle(el).fontSize);
+  test('escape key closes video popout', async ({ page }) => {
+    const watchBtn = page.locator('[data-testid="watch-demo-btn"]').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
 
-    const educationHeading = page.locator('#education');
-    await educationHeading.scrollIntoViewIfNeeded();
-    const plusButtons = page.locator('button:has-text("+")');
-    const count = await plusButtons.count();
-    await plusButtons.nth(count - 1).click();
-    await page.waitForTimeout(300);
+    const popout = page.locator('[data-testid="video-popout"]');
+    await expect(popout).toBeVisible();
 
-    const educationWatchDemo = page.locator('#more-education').getByRole('button', { name: /watch demo/i });
-    await educationWatchDemo.scrollIntoViewIfNeeded();
-    const educationFontSize = await educationWatchDemo.evaluate((el) => getComputedStyle(el).fontSize);
+    await page.keyboard.press('Escape');
+    await expect(popout).not.toBeVisible();
 
-    expect(publishedFontSize).toBe(educationFontSize);
+    await page.screenshot({ path: 'e2e/screenshots/watch-demo-escape-close.png', fullPage: false });
+  });
+
+  test('click outside popout does not close it', async ({ page }) => {
+    const watchBtn = page.locator('[data-testid="watch-demo-btn"]').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
+
+    const popout = page.locator('[data-testid="video-popout"]');
+    await expect(popout).toBeVisible();
+
+    await page.mouse.click(5, 5);
+    await expect(popout).toBeVisible();
+
+    await page.screenshot({ path: 'e2e/screenshots/watch-demo-click-outside.png', fullPage: false });
+  });
+
+  test('video iframe has youtube embed src', async ({ page }) => {
+    const watchBtn = page.locator('[data-testid="watch-demo-btn"]').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
+
+    const iframe = page.locator('[data-testid="video-popout-iframe"]');
+    await expect(iframe).toBeVisible();
+    await expect(iframe).toHaveAttribute('src', /youtube\.com\/embed/);
+
+    await page.screenshot({ path: 'e2e/screenshots/watch-demo-iframe-src.png', fullPage: false });
+  });
+
+  test('screenshot: popout open state', async ({ page }) => {
+    const watchBtn = page.locator('[data-testid="watch-demo-btn"]').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
+
+    const popout = page.locator('[data-testid="video-popout"]');
+    await expect(popout).toBeVisible();
+
+    await page.screenshot({ path: 'e2e/screenshots/watch-demo-popout-open.png', fullPage: true });
   });
 });

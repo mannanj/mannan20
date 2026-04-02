@@ -5,6 +5,7 @@ interface WatchDemoLinkProps {
 export function WatchDemoLink({ url }: WatchDemoLinkProps) {
   return (
     <button
+      data-testid="watch-demo-btn"
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent('open-video-popout', { detail: url }))}
       style={{ fontSize: 11 }}

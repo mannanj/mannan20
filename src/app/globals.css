@@ -4,6 +4,180 @@
   scroll-behavior: smooth;
 }
 
+.popout-scroll::-webkit-scrollbar {
+  width: 14px;
+}
+.popout-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.popout-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  border: 5px solid transparent;
+  background-clip: padding-box;
+}
+.popout-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border: 5px solid transparent;
+  background-clip: padding-box;
+}
+.popout-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.jordan-md-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.jordan-md-editor .w-md-editor {
+  background-color: #000 !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  flex: 1 !important;
+  height: 100% !important;
+}
+.jordan-md-editor .w-md-editor-toolbar {
+  background-color: #000 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.jordan-md-editor .w-md-editor-toolbar li > button {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+.jordan-md-editor .w-md-editor-toolbar li > button:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+.jordan-md-editor .w-md-editor-toolbar li.active > button {
+  color: #fff !important;
+}
+.jordan-md-editor .w-md-editor-content {
+  background-color: #000 !important;
+}
+.jordan-md-editor .w-md-editor-text-pre,
+.jordan-md-editor .w-md-editor-text-input,
+.jordan-md-editor .w-md-editor-text {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 13px !important;
+}
+.jordan-md-editor .w-md-editor-preview {
+  background-color: #000 !important;
+}
+.jordan-md-editor .wmde-markdown {
+  background-color: #000 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.jordan-md-editor .w-md-editor-bar {
+  display: none !important;
+}
+.jordan-md-editor .wmde-markdown hr {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.jordan-md-editor .wmde-markdown table th,
+.jordan-md-editor .wmde-markdown table td {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.react-flow__node {
+  cursor: grab;
+}
+.react-flow__node:active {
+  cursor: grabbing;
+}
+.react-flow__handle {
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.react-flow__handle:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+.react-flow__edge-path {
+  stroke: rgba(255, 255, 255, 0.3);
+}
+.react-flow__minimap {
+  background: rgba(0, 0, 0, 0.8);
+}
+.react-flow__selection {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.prose-jordan {
+  color: rgba(255, 255, 255, 0.85);
+}
+.prose-jordan h1,
+.prose-jordan h2,
+.prose-jordan h3 {
+  color: #ffffff;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+.prose-jordan h1 { font-size: 1.5rem; }
+.prose-jordan h2 { font-size: 1.2rem; }
+.prose-jordan h3 { font-size: 1.05rem; }
+.prose-jordan p { margin: 0.6em 0; }
+.prose-jordan ul,
+.prose-jordan ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+.prose-jordan li { margin: 0.25em 0; }
+.prose-jordan strong { color: #ffffff; }
+.prose-jordan em { color: rgba(255, 255, 255, 0.7); }
+.prose-jordan a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-jordan hr {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 1.5em 0;
+}
+.prose-jordan table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.85em;
+}
+.prose-jordan th,
+.prose-jordan td {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.4em 0.8em;
+  text-align: left;
+}
+.prose-jordan th {
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+}
+.prose-jordan code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+.prose-jordan pre {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+.prose-jordan pre code {
+  background: none;
+  padding: 0;
+}
+.prose-jordan blockquote {
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  padding-left: 1em;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 1em 0;
+}
+
 body {
   color: #ffffff;
   background-color: #0b0b0b;

@@ -20,6 +20,22 @@ export function VideoPopout({ url, onClose }: VideoPopoutProps) {
     setPosition({ x: (vw - w) / 2, y: (vh - h) / 2 });
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const blockScroll = (e: WheelEvent) => e.preventDefault();
+    el.addEventListener('wheel', blockScroll, { passive: false });
+    return () => el.removeEventListener('wheel', blockScroll);
+  }, []);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if (!containerRef.current || !position) return;
     dragRef.current = {
@@ -50,10 +66,12 @@ export function VideoPopout({ url, onClose }: VideoPopoutProps) {
   return (
     <div
       ref={containerRef}
+      data-testid="video-popout"
       style={{ left: position.x, top: position.y, width: '80vw', height: '66vh' }}
       className="fixed z-[9999] rounded-lg overflow-hidden shadow-2xl shadow-black/60 border border-white/10 bg-black"
     >
       <button
+        data-testid="video-popout-close"
         type="button"
         onClick={onClose}
         className="absolute top-2 right-2 z-[2] flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full bg-black/60 hover:bg-black/80 text-white/70 hover:text-white border-none cursor-pointer text-lg leading-none transition-colors duration-150"
@@ -78,6 +96,7 @@ export function VideoPopout({ url, onClose }: VideoPopoutProps) {
         />
       ))}
       <iframe
+        data-testid="video-popout-iframe"
         id="yt-player"
         src={url}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

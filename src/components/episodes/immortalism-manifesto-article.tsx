@@ -38,6 +38,7 @@ export default function ImmortalismManifestoArticle() {
             href="/data/documents/immortalism-manifesto.pdf"
             target="_blank"
             rel="noopener noreferrer"
+            data-testid="audio-download-pdf"
             className="inline-flex items-center text-[#039be5] hover:text-[#4fc3f7] text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap"
           >
             Download PDF <span className="inline-block ml-0.5 text-[20px] rotate-180 scale-x-[-1]">&#10555;</span>
@@ -67,6 +68,7 @@ export default function ImmortalismManifestoArticle() {
           ) : (
             <button
               onClick={() => setShowPlayer(true)}
+              data-testid="audio-listen-btn"
               className="inline-flex items-center gap-1 text-[#039be5] hover:text-[#4fc3f7] text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap"
             >
               <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>

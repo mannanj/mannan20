@@ -54,6 +54,10 @@ Thumbs.db
 /test-results/
 /playwright-report/
 /playwright/.cache/
+e2e/screenshots/
+
+# Audio source files (production serves from Vercel Blob)
+public/data/audio/
 
 # Lock files (using bun.lockb)
 package-lock.json

@@ -8,6 +8,7 @@ import { PublishedWorksSection } from './about/published-works-section';
 import { ExtracurricularsSection } from './about/extracurriculars-section';
 import { EducationSection } from './about/education-section';
 import { VideoPopout } from './video-popout';
+import { ExpandCollapseIcon } from './icons/expand-collapse-icon';
 
 const EMPLOYMENT_DEFAULT = 3;
 const EMPLOYMENT_INCREMENT = 2;
@@ -46,8 +47,7 @@ export function About({ data }: AboutProps) {
     totalJobs
   );
 
-  const moreClass = "flex items-center justify-center w-7 h-7 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
-  const lessClass = "flex items-center justify-center w-7 h-7 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 rounded-full bg-transparent border border-white/30 text-white/50 cursor-pointer mt-5 text-lg leading-none hover:border-white/60 hover:text-white/80 transition-all duration-200";
+  const buttonClass = "cursor-pointer mt-[25px] ml-2 bg-transparent border-none p-0";
 
   return (
     <div>
@@ -62,9 +62,9 @@ export function About({ data }: AboutProps) {
       <div>
         <EmploymentSection jobs={data.jobs} jobsToShow={jobsToShow} />
         {employmentStep < employmentSteps ? (
-          <button type="button" className={moreClass} onClick={() => setEmploymentStep((prev) => prev + 1)}>+</button>
+          <button type="button" className={buttonClass} onClick={() => setEmploymentStep((prev) => prev + 1)}><ExpandCollapseIcon expanded={false} /></button>
         ) : employmentStep > 0 ? (
-          <button type="button" className={lessClass} onClick={() => setEmploymentStep(0)}>&minus;</button>
+          <button type="button" className={buttonClass} onClick={() => setEmploymentStep(0)}><ExpandCollapseIcon expanded /></button>
         ) : null}
       </div>
 
@@ -75,18 +75,18 @@ export function About({ data }: AboutProps) {
       <div>
         <ExtracurricularsSection activities={data.activities} count={extracurricularsStep} />
         {extracurricularsStep < EXTRACURRICULARS_MAX ? (
-          <button type="button" className={moreClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)}>+</button>
+          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)}><ExpandCollapseIcon expanded={false} /></button>
         ) : (
-          <button type="button" className={lessClass} onClick={() => setExtracurricularsStep(0)}>&minus;</button>
+          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep(0)}><ExpandCollapseIcon expanded /></button>
         )}
       </div>
 
       <div>
         <EducationSection education={data.education} projects={data.educationProjects} certifications={data.certifications} count={educationStep} />
         {educationStep < EDUCATION_MAX ? (
-          <button type="button" className={moreClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)}>+</button>
+          <button type="button" className={buttonClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)}><ExpandCollapseIcon expanded={false} /></button>
         ) : (
-          <button type="button" className={lessClass} onClick={() => setEducationStep(0)}>&minus;</button>
+          <button type="button" className={buttonClass} onClick={() => setEducationStep(0)}><ExpandCollapseIcon expanded /></button>
         )}
       </div>
 

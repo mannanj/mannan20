@@ -9,7 +9,7 @@ async function navigateToArticle(page: Page) {
 }
 
 async function openPlayerAndWaitForPlayback(page: Page) {
-  await page.click('button:has-text("Listen")');
+  await page.getByTestId('audio-listen-btn').click();
   await expect(page.locator('button[aria-label="Pause"]')).toBeVisible({ timeout: 60000 });
 }
 
@@ -18,13 +18,14 @@ test.describe('Episodes Audio Player', () => {
     test('shows article with header links', async ({ page }) => {
       await navigateToArticle(page);
       await expect(page.locator('text=Bryan Johnson')).toBeVisible();
-      await expect(page.locator('text=Download PDF')).toBeVisible();
-      await expect(page.locator('text=Listen')).toBeVisible();
+      await expect(page.getByTestId('audio-download-pdf')).toBeVisible();
+      await expect(page.getByTestId('audio-listen-btn')).toBeVisible();
+      await page.screenshot({ path: 'e2e/screenshots/audio-article-header.png' });
     });
 
     test('Listen button has correct styling', async ({ page }) => {
       await navigateToArticle(page);
-      const listenBtn = page.locator('button', { hasText: 'Listen' });
+      const listenBtn = page.getByTestId('audio-listen-btn');
       await expect(listenBtn).toBeVisible();
       await expect(listenBtn).toHaveCSS('cursor', 'pointer');
     });
@@ -43,13 +44,14 @@ test.describe('Episodes Audio Player', () => {
       await navigateToArticle(page);
       await expect(page.getByTestId('audio-player-bar')).not.toBeVisible();
 
-      await page.click('button:has-text("Listen")');
+      await page.getByTestId('audio-listen-btn').click();
       await expect(page.getByTestId('audio-player-bar')).toBeVisible({ timeout: 10000 });
+      await page.screenshot({ path: 'e2e/screenshots/audio-player-open.png' });
     });
 
     test('Listen text changes to Downloading then Playing', async ({ page }) => {
       await navigateToArticle(page);
-      await page.click('button:has-text("Listen")');
+      await page.getByTestId('audio-listen-btn').click();
 
       const downloading = page.locator('text=Downloading');
       const playing = page.locator('text=Playing');
@@ -66,7 +68,7 @@ test.describe('Episodes Audio Player', () => {
       await closeBtn.click();
 
       await expect(page.getByTestId('audio-player-bar')).not.toBeVisible({ timeout: 5000 });
-      await expect(page.locator('button:has-text("Listen")')).toBeVisible();
+      await expect(page.getByTestId('audio-listen-btn')).toBeVisible();
     });
 
     test('after close, Listen button is clickable again', async ({ page }) => {
@@ -74,9 +76,9 @@ test.describe('Episodes Audio Player', () => {
       await openPlayerAndWaitForPlayback(page);
 
       await page.locator('button[aria-label="Close player"]').click();
-      await expect(page.locator('button:has-text("Listen")')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('audio-listen-btn')).toBeVisible({ timeout: 5000 });
 
-      await page.click('button:has-text("Listen")');
+      await page.getByTestId('audio-listen-btn').click();
       await expect(page.getByTestId('audio-player-bar')).toBeVisible({ timeout: 10000 });
     });
   });
@@ -103,8 +105,13 @@ test.describe('Episodes Audio Player', () => {
       const box = await progressBar.boundingBox();
       expect(box).not.toBeNull();
       if (box) {
+        const timeBefore = await page.getByTestId('audio-time-display').textContent();
         await page.mouse.click(box.x + box.width * 0.5, box.y + box.height / 2);
+        await page.waitForTimeout(500);
+        const timeAfter = await page.getByTestId('audio-time-display').textContent();
+        expect(timeAfter).not.toBe(timeBefore);
       }
+      await page.screenshot({ path: 'e2e/screenshots/audio-progress-seek.png' });
     });
 
     test('time display shows valid format', async ({ page }) => {
@@ -189,7 +196,7 @@ test.describe('Episodes Audio Player', () => {
       await page.waitForTimeout(2000);
 
       await page.locator('button[aria-label="Close player"]').click();
-      await expect(page.locator('button:has-text("Listen")')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('audio-listen-btn')).toBeVisible({ timeout: 5000 });
 
       expect(firstFetchCount).toBeGreaterThan(0);
 
@@ -200,7 +207,7 @@ test.describe('Episodes Audio Player', () => {
         route.continue();
       });
 
-      await page.click('button:has-text("Listen")');
+      await page.getByTestId('audio-listen-btn').click();
       await expect(page.locator('button[aria-label="Pause"]')).toBeVisible({ timeout: 60000 });
       await page.waitForTimeout(2000);
 
@@ -211,7 +218,7 @@ test.describe('Episodes Audio Player', () => {
   test.describe('Static content', () => {
     test('Download PDF link works', async ({ page }) => {
       await navigateToArticle(page);
-      const pdfLink = page.locator('a:has-text("Download PDF")');
+      const pdfLink = page.getByTestId('audio-download-pdf');
       await expect(pdfLink).toHaveAttribute('href', '/data/documents/immortalism-manifesto.pdf');
       await expect(pdfLink).toHaveAttribute('target', '_blank');
     });
