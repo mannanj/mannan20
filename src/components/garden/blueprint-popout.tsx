@@ -147,8 +147,7 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 1000 }}
-      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none' }}
     >
       <div
         ref={popoutRef}
@@ -171,9 +170,9 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
           cursor: dragOffset ? 'grabbing' : 'grab',
           userSelect: 'none',
           transition: 'width 300ms ease, padding 300ms ease, max-height 300ms ease, border-radius 300ms ease',
+          pointerEvents: 'auto',
         }}
         data-testid="blueprint-popout"
-        onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
       >
         <button
