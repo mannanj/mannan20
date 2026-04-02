@@ -15,33 +15,33 @@ interface AlignmentFact {
 
 const ALIGNMENT_FACTS: AlignmentFact[] = [
   {
-    text: 'Bryan grew out of Mormonism, I grew out of Islam. Both ended up obsessed with health after ',
+    text: 'Bryan grew out of Mormonism, I grew out of Islam \u2014 both obsessed with health after ',
     articleId: 'origin',
     articleLinkText: 'growing up on fast food',
   },
   {
-    text: 'Blueprint starts from the actual problem \u2014 daily complexity defeats people, not cost. The interface is the product',
+    text: 'Blueprint solves the real problem \u2014 daily complexity defeats people, not cost. The interface is the product',
   },
   {
     text: '10+ years of biohacking since 2015, just like me',
   },
   {
-    text: 'Is building a holistic system around health: meal delivery, sleep and circadian scheduling, AI guide and digital wellbeing',
+    text: 'Building a holistic health system: meal delivery, sleep and circadian scheduling, AI guide, digital wellbeing',
   },
   {
-    text: 'The Don\u2019t Die framework provides a genuine answer to how humanity can align its interests as technology accelerates',
+    text: 'Don\u2019t Die answers a real question \u2014 how humanity aligns its interests as technology accelerates',
   },
   {
-    text: 'The business operated off of friends and family turning to them for health guidance, this turned into a product',
+    text: 'Friends and family turned to them for health guidance \u2014 that became the product',
   },
   {
-    text: 'Founders Bryan Johnson and Kate Tolo demonstrate publicly real empathy and care, devotion to the cause and living it brought in A-Star investors like Hormozi, Naval and Balaji',
+    text: 'Bryan Johnson and Kate Tolo lead with real empathy and devotion \u2014 that drew A-star investors like Hormozi, Naval, and Balaji',
   },
   {
-    text: 'Blueprint believes health is the unifying framework for a revolutionary period. I learned this the hard way when I found ',
+    text: 'Blueprint sees health as the unifying framework for a revolutionary period. I learned this firsthand \u2014 ',
     articleId: 'adjacent-projects',
     articleLinkText: 'my own health was the most reliable anchor',
-    articleLabel: ' I could find through living it for a decade and accelerating this during a global pandemic',
+    articleLabel: ' through a decade of practice accelerated by a global pandemic',
   },
 ];
 
