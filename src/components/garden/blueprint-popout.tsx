@@ -1,57 +1,47 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { ExpandCollapseIcon } from '@/components/icons/expand-collapse-icon';
 
-const POPOUT_WIDTH = 400;
+const FULL_WIDTH = 400;
+const MINI_WIDTH = 240;
 
 interface AlignmentFact {
   text: string;
   articleId?: string;
   articleLabel?: string;
+  articleLinkText?: string;
 }
 
 const ALIGNMENT_FACTS: AlignmentFact[] = [
   {
-    text: 'Grew up eating fast food, grew out of birth religion, ended up obsessed with health \u2014 a strikingly parallel arc',
+    text: 'Bryan grew out of Mormonism, I grew out of Islam. Both ended up obsessed with health after ',
     articleId: 'origin',
-    articleLabel: 'read more in the article',
+    articleLinkText: 'growing up on fast food',
   },
   {
-    text: 'Most health companies start from the product. Blueprint starts from the actual problem: daily complexity is what defeats people, not cost. The interface is the product',
-    articleId: 'interface-insight',
-    articleLabel: 'where I discuss this',
+    text: 'Blueprint starts from the actual problem \u2014 daily complexity defeats people, not cost. The interface is the product',
   },
   {
-    text: 'Joining Blueprint feels like the convergence of a decade of life experience and the most important mission of a lifetime',
+    text: '10+ years of biohacking since 2015, just like me',
   },
   {
-    text: 'Reversed my own prediabetes through systems, not just interventions \u2014 the body responds when you restructure everything',
-    articleId: 'prediabetes',
-    articleLabel: 'the full story',
+    text: 'Is building a holistic system around health: meal delivery, sleep and circadian scheduling, AI guide and digital wellbeing',
   },
   {
-    text: 'Health can be a unifying framework during a revolutionary period. When I needed an anchor, improving my own health was the most reliable thing I found',
-    articleId: 'unifying-framework',
-    articleLabel: 'more on this',
+    text: 'The Don\u2019t Die framework provides a genuine answer to how humanity can align its interests as technology accelerates',
   },
   {
-    text: 'Was already building adjacent things \u2014 a meal delivery startup, a circadian scheduling system, digital wellbeing coaching \u2014 before Blueprint existed',
+    text: 'The business operated off of friends and family turning to them for health guidance, this turned into a product',
+  },
+  {
+    text: 'Founders Bryan Johnson and Kate Tolo demonstrate publicly real empathy and care, devotion to the cause and living it brought in A-Star investors like Hormozi, Naval and Balaji',
+  },
+  {
+    text: 'Blueprint believes health is the unifying framework for a revolutionary period. I learned this the hard way when I found ',
     articleId: 'adjacent-projects',
-    articleLabel: 'these projects',
-  },
-  {
-    text: 'The Don\u2019t Die framework resonates as a genuine answer to some of the hardest questions ahead \u2014 how humanity aligns its interests as technology accelerates',
-  },
-  {
-    text: 'Became the person friends and family turn to for health guidance. Not credentials \u2014 years of living the work',
-    articleId: 'lived-authority',
-    articleLabel: 'that journey',
-  },
-  {
-    text: 'Drawn to the honesty and care seen from Bryan Johnson and Kate Tolo. Investors like Alex Hormozi, Naval Ravikant, and Balaji signal the caliber of what\u2019s being built',
-  },
-  {
-    text: 'Health optimization is a calling I\u2019ve been living for a decade. This last year I finally admitted it needed to be the center of everything',
+    articleLinkText: 'my own health was the most reliable anchor',
+    articleLabel: ' I could find through living it for a decade and accelerating this during a global pandemic',
   },
 ];
 
@@ -66,8 +56,11 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [closeHover, setCloseHover] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const popoutRef = useRef<HTMLDivElement>(null);
   const positionInitialized = useRef(false);
+
+  const currentWidth = minimized ? MINI_WIDTH : FULL_WIDTH;
 
   useEffect(() => {
     if (open && anchorPosition) {
@@ -76,13 +69,33 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
       let x = anchorPosition.x;
       let y = anchorPosition.y - 40;
 
-      x = Math.max(12, Math.min(x, vw - POPOUT_WIDTH - 12));
+      x = Math.max(12, Math.min(x, vw - FULL_WIDTH - 12));
       y = Math.max(12, Math.min(y, vh - 500));
 
       setPosition({ x, y });
+      setMinimized(false);
       positionInitialized.current = true;
     }
   }, [open, anchorPosition]);
+
+  const handleArticleLinkClick = useCallback((articleId: string) => {
+    setMinimized(true);
+
+    const target = document.getElementById(articleId);
+    if (target) {
+      const targetRect = target.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const targetCenter = targetRect.left + targetRect.width / 2;
+
+      const newX = targetCenter < vw / 2
+        ? vw - MINI_WIDTH - 16
+        : 16;
+
+      setPosition({ x: newX, y: 16 });
+    }
+
+    onScrollToArticle?.(articleId);
+  }, [onScrollToArticle]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button, a')) return;
@@ -143,25 +156,43 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
           position: 'fixed',
           left: position.x,
           top: position.y,
-          width: POPOUT_WIDTH,
+          width: currentWidth,
           maxWidth: 'calc(100vw - 24px)',
-          maxHeight: 'calc(100vh - 48px)',
+          maxHeight: minimized ? '36vh' : 'calc(100vh - 48px)',
           overflowY: 'auto',
           overscrollBehavior: 'contain',
           background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: '20px',
-          padding: '24px',
+          borderRadius: minimized ? '14px' : '20px',
+          padding: minimized ? '16px' : '24px',
           fontFamily: 'var(--font-geist-sans), system-ui, -apple-system, sans-serif',
           cursor: dragOffset ? 'grabbing' : 'grab',
           userSelect: 'none',
+          transition: 'width 300ms ease, padding 300ms ease, max-height 300ms ease, border-radius 300ms ease',
         }}
         data-testid="blueprint-popout"
         onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
       >
+        <button
+          type="button"
+          onClick={() => setMinimized(!minimized)}
+          style={{
+            position: 'absolute',
+            top: '16px',
+            right: '44px',
+            zIndex: 1,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+          }}
+        >
+          <ExpandCollapseIcon expanded={!minimized} size="sm" />
+        </button>
+
         <button
           type="button"
           data-testid="blueprint-popout-close"
@@ -185,8 +216,14 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
           &times;
         </button>
 
-        <h3 className="text-base font-medium text-white mb-1 pr-6">Interesting Companies</h3>
-        <div className="max-h-[50vh] overflow-y-auto overscroll-contain popout-scroll -mr-[21px] pr-[21px]">
+        <h3 className="text-base font-medium text-white mb-1 pr-16">Interesting Companies</h3>
+        <div
+          className="overflow-y-auto overscroll-contain popout-scroll -mr-[21px] pr-[21px]"
+          style={{
+            maxHeight: minimized ? '28vh' : '50vh',
+            transition: 'max-height 300ms ease',
+          }}
+        >
           <div className="flex items-baseline gap-2 mb-1.5 mt-2.5">
             <span className="text-xs text-white/50">Blueprint</span>
             <a
@@ -205,12 +242,23 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
                 <span className="text-[#4a7c3f] mt-0.5 shrink-0">&#8226;</span>
                 <span>
                   {fact.text}
-                  {fact.articleId && onScrollToArticle && (
+                  {fact.articleId && onScrollToArticle && fact.articleLinkText ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleArticleLinkClick(fact.articleId!)}
+                        className="text-[#039be5] hover:text-[#4fc3f7] transition-colors duration-200 cursor-pointer underline underline-offset-2 decoration-[#039be5]/40 hover:decoration-[#4fc3f7]/60"
+                      >
+                        {fact.articleLinkText}
+                      </button>
+                      {fact.articleLabel}
+                    </>
+                  ) : fact.articleId && onScrollToArticle && (
                     <>
                       {' \u2014 '}
                       <button
                         type="button"
-                        onClick={() => onScrollToArticle(fact.articleId!)}
+                        onClick={() => handleArticleLinkClick(fact.articleId!)}
                         className="text-[#039be5] hover:text-[#4fc3f7] transition-colors duration-200 cursor-pointer underline underline-offset-2 decoration-[#039be5]/40 hover:decoration-[#4fc3f7]/60"
                       >
                         {fact.articleLabel}
