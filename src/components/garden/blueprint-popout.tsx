@@ -131,18 +131,6 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
     return () => window.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
-  useEffect(() => {
-    if (!open) return;
-    const blockBgScroll = (e: WheelEvent) => {
-      const popout = popoutRef.current;
-      if (popout && !popout.contains(e.target as Node)) {
-        e.preventDefault();
-      }
-    };
-    document.addEventListener('wheel', blockBgScroll, { passive: false });
-    return () => document.removeEventListener('wheel', blockBgScroll);
-  }, [open]);
-
   if (!open) return null;
 
   return (
