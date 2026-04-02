@@ -207,6 +207,25 @@ export function Header() {
     ? Math.min((gardenRootScale - STAGE4_THRESHOLD - 0.8) / 1.5, 1)
     : 0;
 
+  const flowerSlots = useMemo(() => {
+    const tips = [
+      { x: 19, y: 6, side: 'right' },
+      { x: 3, y: 15, side: 'left' },
+      { x: 20, y: 27, side: 'right' },
+      { x: 0.5, y: 46, side: 'left' },
+      { x: 17.5, y: 52, side: 'right' },
+    ];
+    return tips.map((tip, i) => {
+      const show = Math.random() < 0.85;
+      const type = Math.random() < 0.75 ? 'white' : 'iridescent';
+      const offsetX = (Math.random() - 0.5) * 2;
+      const offsetY = (Math.random() - 0.5) * 1.5;
+      const rotation = Math.random() * 30 - 15;
+      const sizeScale = 0.65 + Math.random() * 0.25;
+      return { ...tip, x: tip.x + offsetX, y: tip.y + offsetY, show, type, rotation, sizeScale, key: i };
+    });
+  }, [gardenStartTime]);
+
   const PARTICLE_COLORS = ['#ff2222', '#22dd22', '#2266ff'];
   const gardenLightOpacity = gardenExpanded ? Math.min(0.161 + gardenLevel * 0.04, 0.5) : 0.084;
 
@@ -468,69 +487,50 @@ export function Header() {
                 <path d="M10.5 25C14 23.5 17 24 20 27" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.85, 0)} />
                 <path d="M10 44C6.5 43 3.5 43.5 0.5 46" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.8, 0)} />
                 <path d="M11 50C13.5 48.5 15 49 17.5 52" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" fill="none" pathLength={1} strokeDasharray={1} strokeDashoffset={Math.max(1 - stage4BranchProgress * 0.75, 0)} />
-                {stage4FlowerScale > 0 && (
-                  <>
-                    <g transform={`translate(19, 6) scale(1, ${1 / gardenRootScale}) translate(-19, -6)`}>
-                      <g transform={`translate(19, 6) scale(${stage4FlowerScale * 2}) translate(-19, -6)`}>
-                        <ellipse cx={17} cy={1} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform="rotate(0, 17, 5.5)" />
-                        <ellipse cx={21.3} cy={3.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(72, 17, 5.5)" />
-                        <ellipse cx={19.7} cy={8.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform="rotate(144, 17, 5.5)" />
-                        <ellipse cx={14.3} cy={8.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform="rotate(216, 17, 5.5)" />
-                        <ellipse cx={12.7} cy={3.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(288, 17, 5.5)" />
-                        <circle cx={17} cy={5.5} r={2.2} fill="url(#hibiscusCenter)" />
-                        <circle cx={17} cy={5.5} r={0.7} fill="#ffee55" opacity={0.9} />
-                        <circle cx={16.5} cy={4.8} r={0.2} fill="#cc4400" />
-                        <circle cx={17.2} cy={4.6} r={0.2} fill="#cc4400" />
-                        <circle cx={17.7} cy={5.1} r={0.2} fill="#cc4400" />
+                {flowerSlots.map(slot => {
+                  if (!slot.show) return null;
+                  const scale = slot.type === 'white' ? stage4FlowerScale : stage4IridescentScale;
+                  if (scale <= 0) return null;
+                  const cx = slot.x;
+                  const cy = slot.y;
+                  const s = scale * (slot.type === 'white' ? 2 : 2.25) * slot.sizeScale;
+                  const r = slot.rotation;
+                  if (slot.type === 'white') {
+                    return (
+                      <g key={slot.key} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                        <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
+                          <ellipse cx={cx} cy={cy - 4.5} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform={`rotate(0, ${cx}, ${cy})`} />
+                          <ellipse cx={cx + 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(72, ${cx}, ${cy})`} />
+                          <ellipse cx={cx + 2.7} cy={cy + 3} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform={`rotate(144, ${cx}, ${cy})`} />
+                          <ellipse cx={cx - 2.7} cy={cy + 3} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform={`rotate(216, ${cx}, ${cy})`} />
+                          <ellipse cx={cx - 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(288, ${cx}, ${cy})`} />
+                          <circle cx={cx} cy={cy} r={2.2} fill="url(#hibiscusCenter)" />
+                          <circle cx={cx} cy={cy} r={0.7} fill="#ffee55" opacity={0.9} />
+                          <circle cx={cx - 0.5} cy={cy - 0.7} r={0.2} fill="#cc4400" />
+                          <circle cx={cx + 0.2} cy={cy - 0.9} r={0.2} fill="#cc4400" />
+                          <circle cx={cx + 0.7} cy={cy - 0.4} r={0.2} fill="#cc4400" />
+                        </g>
+                      </g>
+                    );
+                  }
+                  return (
+                    <g key={slot.key} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                      <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
+                        <ellipse cx={cx} cy={cy - 4.5} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform={`rotate(5, ${cx}, ${cy})`} />
+                        <ellipse cx={cx + 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform={`rotate(77, ${cx}, ${cy})`} />
+                        <ellipse cx={cx + 2.9} cy={cy + 3} rx={2.8} ry={4.3} fill="#ff88cc" opacity={0.8} transform={`rotate(149, ${cx}, ${cy})`} />
+                        <ellipse cx={cx - 2.9} cy={cy + 3} rx={2.8} ry={4.3} fill="#77ccff" opacity={0.85} transform={`rotate(221, ${cx}, ${cy})`} />
+                        <ellipse cx={cx - 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#88ddee" opacity={0.8} transform={`rotate(293, ${cx}, ${cy})`} />
+                        <circle cx={cx} cy={cy} r={2.5} fill="url(#iridescentCenter)" />
+                        <circle cx={cx} cy={cy} r={0.8} fill="#ffee55" opacity={0.9} />
+                        <circle cx={cx - 0.5} cy={cy - 0.8} r={0.25} fill="#ee4400" />
+                        <circle cx={cx + 0.1} cy={cy - 1} r={0.25} fill="#ee4400" />
+                        <circle cx={cx + 0.7} cy={cy - 0.6} r={0.25} fill="#ee4400" />
+                        <circle cx={cx - 0.7} cy={cy - 0.4} r={0.25} fill="#ee4400" />
                       </g>
                     </g>
-                    <g transform={`translate(3, 15) scale(1, ${1 / gardenRootScale}) translate(-3, -15)`}>
-                      <g transform={`translate(3, 15) scale(${stage4FlowerScale * 2}) translate(-3, -15)`}>
-                        <ellipse cx={1.5} cy={10} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform="rotate(15, 1.5, 14.5)" />
-                        <ellipse cx={5.8} cy={12.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(87, 1.5, 14.5)" />
-                        <ellipse cx={4.2} cy={17.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform="rotate(159, 1.5, 14.5)" />
-                        <ellipse cx={-1.2} cy={17.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform="rotate(231, 1.5, 14.5)" />
-                        <ellipse cx={-2.8} cy={12.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(303, 1.5, 14.5)" />
-                        <circle cx={1.5} cy={14.5} r={2.2} fill="url(#hibiscusCenter)" />
-                        <circle cx={1.5} cy={14.5} r={0.7} fill="#ffee55" opacity={0.9} />
-                        <circle cx={1} cy={13.8} r={0.2} fill="#cc4400" />
-                        <circle cx={1.7} cy={13.6} r={0.2} fill="#cc4400" />
-                        <circle cx={2.2} cy={14.1} r={0.2} fill="#cc4400" />
-                      </g>
-                    </g>
-                    <g transform={`translate(20, 27) scale(1, ${1 / gardenRootScale}) translate(-20, -27)`}>
-                      <g transform={`translate(20, 27) scale(${stage4FlowerScale * 2}) translate(-20, -27)`}>
-                        <ellipse cx={18.5} cy={22} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform="rotate(-10, 18.5, 26.5)" />
-                        <ellipse cx={22.8} cy={24.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(62, 18.5, 26.5)" />
-                        <ellipse cx={21.2} cy={29.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform="rotate(134, 18.5, 26.5)" />
-                        <ellipse cx={15.8} cy={29.5} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform="rotate(206, 18.5, 26.5)" />
-                        <ellipse cx={14.2} cy={24.5} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform="rotate(278, 18.5, 26.5)" />
-                        <circle cx={18.5} cy={26.5} r={2.2} fill="url(#hibiscusCenter)" />
-                        <circle cx={18.5} cy={26.5} r={0.7} fill="#ffee55" opacity={0.9} />
-                        <circle cx={18} cy={25.8} r={0.2} fill="#cc4400" />
-                        <circle cx={18.7} cy={25.6} r={0.2} fill="#cc4400" />
-                        <circle cx={19.2} cy={26.1} r={0.2} fill="#cc4400" />
-                      </g>
-                    </g>
-                  </>
-                )}
-                {stage4IridescentScale > 0 && (
-                  <g transform={`translate(0.5, 46) scale(1, ${1 / gardenRootScale}) translate(-0.5, -46)`}>
-                    <g transform={`translate(0.5, 46) scale(${stage4IridescentScale * 2.25}) translate(-0.5, -46)`}>
-                      <ellipse cx={1.5} cy={41} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform="rotate(5, 1.5, 45.5)" />
-                      <ellipse cx={6} cy={43.5} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform="rotate(77, 1.5, 45.5)" />
-                      <ellipse cx={4.4} cy={48.5} rx={2.8} ry={4.3} fill="#ff88cc" opacity={0.8} transform="rotate(149, 1.5, 45.5)" />
-                      <ellipse cx={-1.4} cy={48.5} rx={2.8} ry={4.3} fill="#77ccff" opacity={0.85} transform="rotate(221, 1.5, 45.5)" />
-                      <ellipse cx={-3} cy={43.5} rx={2.8} ry={4.3} fill="#88ddee" opacity={0.8} transform="rotate(293, 1.5, 45.5)" />
-                      <circle cx={1.5} cy={45.5} r={2.5} fill="url(#iridescentCenter)" />
-                      <circle cx={1.5} cy={45.5} r={0.8} fill="#ffee55" opacity={0.9} />
-                      <circle cx={1} cy={44.7} r={0.25} fill="#ee4400" />
-                      <circle cx={1.6} cy={44.5} r={0.25} fill="#ee4400" />
-                      <circle cx={2.2} cy={44.9} r={0.25} fill="#ee4400" />
-                      <circle cx={0.8} cy={45.1} r={0.25} fill="#ee4400" />
-                    </g>
-                  </g>
-                )}
+                  );
+                })}
               </>
             )}
           </svg>
