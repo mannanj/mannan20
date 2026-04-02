@@ -111,15 +111,14 @@ export function Header() {
         setGardenLevel(prev => Math.min(prev + 1, 3));
       }, 2000);
       const startTime = Date.now();
-      const FAST = 1.8;
-      const CRAWL = 0.08;
-      const P1_DUR = 2.2;
-      const P2_DUR = 3.3;
+      const FAST = 2.2;
+      const CRAWL = 0.11;
+      const P1_DUR = 1.1;
+      const P2_DUR = 9.9;
       const P1_END = P1_DUR;
       const P2_END = P1_END + P2_DUR;
       const P1_DIST = P1_DUR * FAST;
       const P2_DIST = (FAST + CRAWL) / 2 * P2_DUR;
-      const easeOutQuad = (t: number) => t * (2 - t);
       const animateRoot = () => {
         const elapsed = (Date.now() - startTime) / 1000;
         let scale;
@@ -127,7 +126,8 @@ export function Header() {
           scale = elapsed * FAST;
         } else if (elapsed < P2_END) {
           const t = (elapsed - P1_END) / P2_DUR;
-          scale = P1_DIST + easeOutQuad(t) * P2_DIST;
+          const eased = 1 - Math.pow(1 - t, 3);
+          scale = P1_DIST + eased * P2_DIST;
         } else {
           scale = P1_DIST + P2_DIST + (elapsed - P2_END) * CRAWL;
         }
@@ -225,6 +225,18 @@ export function Header() {
     ? Math.min((gardenRootScale - STAGE4_THRESHOLD - 0.8) / 1.5, 1)
     : 0;
 
+  const PHASE2_DECOR_THRESHOLD = 3.5;
+  const showPhase2Decor = gardenRootScale >= PHASE2_DECOR_THRESHOLD;
+  const phase2BranchProgress = showPhase2Decor
+    ? Math.min((gardenRootScale - PHASE2_DECOR_THRESHOLD) * 0.12, 1)
+    : 0;
+  const phase2DecorScale = showPhase2Decor
+    ? Math.min((gardenRootScale - PHASE2_DECOR_THRESHOLD) / 6, 1)
+    : 0;
+  const phase2IridescentScale = showPhase2Decor
+    ? Math.min((gardenRootScale - PHASE2_DECOR_THRESHOLD - 2) / 6, 1)
+    : 0;
+
   const flowerSlots = useMemo(() => {
     const tips = [
       { x: 19, y: 6, side: 'right' },
@@ -242,6 +254,26 @@ export function Header() {
       const sizeScale = 0.65 + Math.random() * 0.25;
       return { ...tip, x: tip.x + offsetX, y: tip.y + offsetY, show, type, rotation, sizeScale, key: i };
     });
+  }, [gardenStartTime]);
+
+  const phase2Slots = useMemo(() => {
+    const count = 7 + Math.floor(Math.random() * 4);
+    const slots = [];
+    for (let i = 0; i < count; i++) {
+      const y = 3 + Math.random() * 49;
+      const side = Math.random() < 0.5 ? 'left' : 'right';
+      const tipX = side === 'left' ? 0.5 + Math.random() * 3 : 17 + Math.random() * 3.5;
+      const roll = Math.random();
+      const type = roll < 0.5
+        ? (Math.random() < 0.75 ? 'white' : 'iridescent')
+        : 'leaf';
+      const rotation = Math.random() * 30 - 15;
+      const branchStartY = y - 1 + Math.random() * 2;
+      const midX = side === 'left' ? 10 - (10 - tipX) * 0.5 : 10 + (tipX - 10) * 0.5;
+      const midY = (branchStartY + y) / 2 + (Math.random() - 0.5) * 2;
+      slots.push({ x: tipX, y, side, type, rotation, sizeScale: 0.5, key: i, show: Math.random() < 0.85, branchStartY, midX, midY });
+    }
+    return slots;
   }, [gardenStartTime]);
 
   const PARTICLE_COLORS = ['#ff2222', '#22dd22', '#2266ff'];
@@ -408,8 +440,9 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
-            style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease', overflow: 'visible' }}
+            preserveAspectRatio="none"
+            className={`absolute top-full left-1/2 mt-[4px] w-5 pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
+            style={{ transformOrigin: 'top center', transform: 'translateX(-50%)', height: `${55 * Math.max(gardenRootScale, 0.001)}px`, transition: 'opacity 0.3s ease', overflow: 'visible' }}
           >
             <defs>
               <radialGradient id="hibiscusCenter" cx="50%" cy="50%" r="50%">
@@ -515,7 +548,7 @@ export function Header() {
                   const r = slot.rotation;
                   if (slot.type === 'white') {
                     return (
-                      <g key={slot.key} style={{ transform: `translate(${cx}px, ${cy}px) scaleY(${1 / gardenRootScale}) translate(${-cx}px, ${-cy}px)`, willChange: 'transform' }}>
+                      <g key={slot.key} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
                         <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
                           <ellipse cx={cx} cy={cy - 4.5} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform={`rotate(0, ${cx}, ${cy})`} />
                           <ellipse cx={cx + 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(72, ${cx}, ${cy})`} />
@@ -532,7 +565,86 @@ export function Header() {
                     );
                   }
                   return (
-                    <g key={slot.key} style={{ transform: `translate(${cx}px, ${cy}px) scaleY(${1 / gardenRootScale}) translate(${-cx}px, ${-cy}px)`, willChange: 'transform' }}>
+                    <g key={slot.key} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                      <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
+                        <ellipse cx={cx} cy={cy - 4.5} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform={`rotate(5, ${cx}, ${cy})`} />
+                        <ellipse cx={cx + 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform={`rotate(77, ${cx}, ${cy})`} />
+                        <ellipse cx={cx + 2.9} cy={cy + 3} rx={2.8} ry={4.3} fill="#ff88cc" opacity={0.8} transform={`rotate(149, ${cx}, ${cy})`} />
+                        <ellipse cx={cx - 2.9} cy={cy + 3} rx={2.8} ry={4.3} fill="#77ccff" opacity={0.85} transform={`rotate(221, ${cx}, ${cy})`} />
+                        <ellipse cx={cx - 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#88ddee" opacity={0.8} transform={`rotate(293, ${cx}, ${cy})`} />
+                        <circle cx={cx} cy={cy} r={2.5} fill="url(#iridescentCenter)" />
+                        <circle cx={cx} cy={cy} r={0.8} fill="#ffee55" opacity={0.9} />
+                        <circle cx={cx - 0.5} cy={cy - 0.8} r={0.25} fill="#ee4400" />
+                        <circle cx={cx + 0.1} cy={cy - 1} r={0.25} fill="#ee4400" />
+                        <circle cx={cx + 0.7} cy={cy - 0.6} r={0.25} fill="#ee4400" />
+                        <circle cx={cx - 0.7} cy={cy - 0.4} r={0.25} fill="#ee4400" />
+                      </g>
+                    </g>
+                  );
+                })}
+              </>
+            )}
+            {showPhase2Decor && (
+              <>
+                {phase2Slots.map(slot => {
+                  if (!slot.show) return null;
+                  const bProg = Math.min(phase2BranchProgress * (0.7 + slot.key * 0.03), 1);
+                  const mainX = 10 + (slot.side === 'left' ? -1 : 1) * 0.5;
+                  return (
+                    <g key={`p2-branch-${slot.key}`}>
+                      <path
+                        d={`M${mainX} ${slot.branchStartY}C${slot.midX} ${slot.midY} ${slot.midX} ${slot.midY} ${slot.x} ${slot.y}`}
+                        stroke="#8B6914"
+                        strokeWidth="0.7"
+                        strokeLinecap="round"
+                        fill="none"
+                        pathLength={1}
+                        strokeDasharray={1}
+                        strokeDashoffset={Math.max(1 - bProg, 0)}
+                      />
+                    </g>
+                  );
+                })}
+                {phase2Slots.map(slot => {
+                  if (!slot.show) return null;
+                  const scale = slot.type === 'iridescent' ? phase2IridescentScale : phase2DecorScale;
+                  if (scale <= 0) return null;
+                  const cx = slot.x;
+                  const cy = slot.y;
+                  const r = slot.rotation;
+                  if (slot.type === 'leaf') {
+                    const ls = scale * 1.8 * slot.sizeScale;
+                    return (
+                      <g key={`p2-decor-${slot.key}`} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                        <g transform={`translate(${cx}, ${cy}) scale(${ls}) rotate(${r}) translate(${-cx}, ${-cy})`}>
+                          <ellipse cx={cx} cy={cy - 2} rx={1.5} ry={3} fill="#3a8a2e" opacity={0.8} transform={`rotate(-15, ${cx}, ${cy})`} />
+                          <ellipse cx={cx + 1.5} cy={cy} rx={1.3} ry={2.5} fill="#45a035" opacity={0.75} transform={`rotate(25, ${cx}, ${cy})`} />
+                          <ellipse cx={cx - 1.5} cy={cy + 1} rx={1.2} ry={2.2} fill="#2d7a22" opacity={0.75} transform={`rotate(-35, ${cx}, ${cy})`} />
+                        </g>
+                      </g>
+                    );
+                  }
+                  const s = scale * (slot.type === 'white' ? 2 : 2.25) * slot.sizeScale;
+                  if (slot.type === 'white') {
+                    return (
+                      <g key={`p2-decor-${slot.key}`} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                        <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
+                          <ellipse cx={cx} cy={cy - 4.5} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform={`rotate(0, ${cx}, ${cy})`} />
+                          <ellipse cx={cx + 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(72, ${cx}, ${cy})`} />
+                          <ellipse cx={cx + 2.7} cy={cy + 3} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform={`rotate(144, ${cx}, ${cy})`} />
+                          <ellipse cx={cx - 2.7} cy={cy + 3} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform={`rotate(216, ${cx}, ${cy})`} />
+                          <ellipse cx={cx - 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(288, ${cx}, ${cy})`} />
+                          <circle cx={cx} cy={cy} r={2.2} fill="url(#hibiscusCenter)" />
+                          <circle cx={cx} cy={cy} r={0.7} fill="#ffee55" opacity={0.9} />
+                          <circle cx={cx - 0.5} cy={cy - 0.7} r={0.2} fill="#cc4400" />
+                          <circle cx={cx + 0.2} cy={cy - 0.9} r={0.2} fill="#cc4400" />
+                          <circle cx={cx + 0.7} cy={cy - 0.4} r={0.2} fill="#cc4400" />
+                        </g>
+                      </g>
+                    );
+                  }
+                  return (
+                    <g key={`p2-decor-${slot.key}`} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
                       <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
                         <ellipse cx={cx} cy={cy - 4.5} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform={`rotate(5, ${cx}, ${cy})`} />
                         <ellipse cx={cx + 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform={`rotate(77, ${cx}, ${cy})`} />
