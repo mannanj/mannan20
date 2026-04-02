@@ -214,6 +214,15 @@ export function Header() {
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[17px] -top-[24px]" style={{ animation: 'gardenParticleFall3 10.8s linear 9.0s infinite' }} />
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 10s ease-in-out 1s infinite' }} />
           </div>
+          <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]" style={{ animation: 'gardenParticleFall1 3.6s linear infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]" style={{ animation: 'gardenParticleFall2 3.6s linear 0.6s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 3.6s linear 1.2s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[19px] -top-[25px]" style={{ animation: 'gardenParticleFall1 3.6s linear 1.8s infinite' }} />
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[14px] -top-[20px]" style={{ animation: 'gardenParticleFall2 3.6s linear 2.4s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[17px] -top-[24px]" style={{ animation: 'gardenParticleFall3 3.6s linear 3.0s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 3.3s ease-in-out 0.3s infinite' }} />
+          </div>
           <svg
             viewBox="0 0 20 55"
             fill="none"
