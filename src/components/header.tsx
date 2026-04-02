@@ -48,6 +48,8 @@ export function Header() {
   const [gardenExpanded, setGardenExpanded] = useState(false);
   const [gardenLevel, setGardenLevel] = useState(0);
   const [gardenRetracting, setGardenRetracting] = useState(false);
+  const [rootHovered, setRootHovered] = useState(false);
+  const rootHoveredRef = useRef(false);
   const gardenIntervalRef = useRef<ReturnType<typeof setInterval>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const gardenRef = useRef<HTMLDivElement>(null);
@@ -111,9 +113,46 @@ export function Header() {
         setGardenLevel(prev => Math.min(prev + 1, 3));
       }, 2000);
       const startTime = Date.now();
+      const FAST = 1.8;
+      const CRAWL = 0.08;
+      const P1_DUR = 2.2;
+      const P2_DUR = 3.3;
+      const P1_END = P1_DUR;
+      const P2_END = P1_END + P2_DUR;
+      const P1_DIST = P1_DUR * FAST;
+      const P2_DIST = (FAST + CRAWL) / 2 * P2_DUR;
+      const easeOutQuad = (t: number) => t * (2 - t);
+      let rootBoostStart = 0;
+      let rootBoostBase = 0;
       const animateRoot = () => {
         const elapsed = (Date.now() - startTime) / 1000;
-        setGardenRootScale(Math.min(elapsed * 0.675, 9));
+        let scale;
+        if (rootHoveredRef.current) {
+          if (rootBoostStart === 0) {
+            rootBoostStart = elapsed;
+            if (elapsed < P1_END) {
+              rootBoostBase = elapsed * FAST;
+            } else if (elapsed < P2_END) {
+              rootBoostBase = P1_DIST + easeOutQuad((elapsed - P1_END) / P2_DUR) * P2_DIST;
+            } else {
+              rootBoostBase = P1_DIST + P2_DIST + (elapsed - P2_END) * CRAWL;
+            }
+          }
+          scale = rootBoostBase + (elapsed - rootBoostStart) * FAST;
+        } else {
+          if (rootBoostStart > 0) {
+            rootBoostStart = 0;
+          }
+          if (elapsed < P1_END) {
+            scale = elapsed * FAST;
+          } else if (elapsed < P2_END) {
+            const t = (elapsed - P1_END) / P2_DUR;
+            scale = P1_DIST + easeOutQuad(t) * P2_DIST;
+          } else {
+            scale = P1_DIST + P2_DIST + (elapsed - P2_END) * CRAWL;
+          }
+        }
+        setGardenRootScale(scale);
         rootAnimRef.current = requestAnimationFrame(animateRoot);
       };
       rootAnimRef.current = requestAnimationFrame(animateRoot);
@@ -390,7 +429,9 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
+            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0 pointer-events-none'}`}
+            onMouseEnter={() => { setRootHovered(true); rootHoveredRef.current = true; }}
+            onMouseLeave={() => { setRootHovered(false); rootHoveredRef.current = false; }}
             style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease', overflow: 'visible' }}
           >
             <defs>
@@ -497,7 +538,7 @@ export function Header() {
                   const r = slot.rotation;
                   if (slot.type === 'white') {
                     return (
-                      <g key={slot.key} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                      <g key={slot.key} style={{ transform: `translate(${cx}px, ${cy}px) scaleY(${1 / gardenRootScale}) translate(${-cx}px, ${-cy}px)`, willChange: 'transform' }}>
                         <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
                           <ellipse cx={cx} cy={cy - 4.5} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform={`rotate(0, ${cx}, ${cy})`} />
                           <ellipse cx={cx + 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(72, ${cx}, ${cy})`} />
@@ -514,7 +555,7 @@ export function Header() {
                     );
                   }
                   return (
-                    <g key={slot.key} transform={`translate(${cx}, ${cy}) scale(1, ${1 / gardenRootScale}) translate(${-cx}, ${-cy})`}>
+                    <g key={slot.key} style={{ transform: `translate(${cx}px, ${cy}px) scaleY(${1 / gardenRootScale}) translate(${-cx}px, ${-cy}px)`, willChange: 'transform' }}>
                       <g transform={`translate(${cx}, ${cy}) scale(${s}) rotate(${r}) translate(${-cx}, ${-cy})`}>
                         <ellipse cx={cx} cy={cy - 4.5} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform={`rotate(5, ${cx}, ${cy})`} />
                         <ellipse cx={cx + 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform={`rotate(77, ${cx}, ${cy})`} />
