@@ -48,8 +48,6 @@ export function Header() {
   const [gardenExpanded, setGardenExpanded] = useState(false);
   const [gardenLevel, setGardenLevel] = useState(0);
   const [gardenRetracting, setGardenRetracting] = useState(false);
-  const [rootHovered, setRootHovered] = useState(false);
-  const rootHoveredRef = useRef(false);
   const gardenIntervalRef = useRef<ReturnType<typeof setInterval>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const gardenRef = useRef<HTMLDivElement>(null);
@@ -122,35 +120,16 @@ export function Header() {
       const P1_DIST = P1_DUR * FAST;
       const P2_DIST = (FAST + CRAWL) / 2 * P2_DUR;
       const easeOutQuad = (t: number) => t * (2 - t);
-      let rootBoostStart = 0;
-      let rootBoostBase = 0;
       const animateRoot = () => {
         const elapsed = (Date.now() - startTime) / 1000;
         let scale;
-        if (rootHoveredRef.current) {
-          if (rootBoostStart === 0) {
-            rootBoostStart = elapsed;
-            if (elapsed < P1_END) {
-              rootBoostBase = elapsed * FAST;
-            } else if (elapsed < P2_END) {
-              rootBoostBase = P1_DIST + easeOutQuad((elapsed - P1_END) / P2_DUR) * P2_DIST;
-            } else {
-              rootBoostBase = P1_DIST + P2_DIST + (elapsed - P2_END) * CRAWL;
-            }
-          }
-          scale = rootBoostBase + (elapsed - rootBoostStart) * FAST;
+        if (elapsed < P1_END) {
+          scale = elapsed * FAST;
+        } else if (elapsed < P2_END) {
+          const t = (elapsed - P1_END) / P2_DUR;
+          scale = P1_DIST + easeOutQuad(t) * P2_DIST;
         } else {
-          if (rootBoostStart > 0) {
-            rootBoostStart = 0;
-          }
-          if (elapsed < P1_END) {
-            scale = elapsed * FAST;
-          } else if (elapsed < P2_END) {
-            const t = (elapsed - P1_END) / P2_DUR;
-            scale = P1_DIST + easeOutQuad(t) * P2_DIST;
-          } else {
-            scale = P1_DIST + P2_DIST + (elapsed - P2_END) * CRAWL;
-          }
+          scale = P1_DIST + P2_DIST + (elapsed - P2_END) * CRAWL;
         }
         setGardenRootScale(scale);
         rootAnimRef.current = requestAnimationFrame(animateRoot);
@@ -429,9 +408,7 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0 pointer-events-none'}`}
-            onMouseEnter={() => { setRootHovered(true); rootHoveredRef.current = true; }}
-            onMouseLeave={() => { setRootHovered(false); rootHoveredRef.current = false; }}
+            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
             style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease', overflow: 'visible' }}
           >
             <defs>
