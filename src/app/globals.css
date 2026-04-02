@@ -26,6 +26,16 @@
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
+@keyframes articleHighlight {
+  0% { background-color: rgba(79, 195, 247, 0.15); }
+  100% { background-color: transparent; }
+}
+
+.article-highlight {
+  animation: articleHighlight 1.5s ease-out;
+  border-radius: 6px;
+}
+
 .jordan-md-editor {
   display: flex;
   flex-direction: column;

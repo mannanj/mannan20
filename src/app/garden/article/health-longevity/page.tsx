@@ -22,8 +22,8 @@ export default function HealthLongevityArticle() {
         <Image
           src="/mannan-profile.png"
           alt="Mannan Javid"
-          width={64}
-          height={64}
+          width={44}
+          height={44}
           className="rounded-full mb-4"
         />
 

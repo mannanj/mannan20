@@ -4,26 +4,65 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 const POPOUT_WIDTH = 400;
 
-const ALIGNMENT_FACTS = [
-  'Grew up eating fast food, grew out of birth religion, ended up obsessed with health — a parallel journey discussed in the article above',
-  '10+ years of health optimization and biohacker interventions since 2015 (Tim Ferriss, Dave Asprey)',
-  'Reversed own prediabetes through lifestyle restructuring — proving the body responds to systems, not just interventions',
-  'The person friends and family turn to for health guidance — spent 5\u201310 years remedying conditions said to be incurable',
-  'Built adjacent projects: Meal Fairy (meal delivery startup), Sun Signal (circadian-aligned scheduling), digital wellbeing coaching',
-  'Vision for integrated circadian hardware/software systems — breaking the industrial clock-based schedule',
-  'Hardware + software experience from college robotics to full-stack web development',
-  'Frontend engineering expertise with a bias toward beautiful aesthetics (React, TypeScript, Next.js)',
-  'Drawn to the team\u2019s honesty, care, and track record of execution',
-  '\u201CHealth optimization isn\u2019t a career move — it\u2019s a calling I\u2019ve been living for a decade.\u201D',
+interface AlignmentFact {
+  text: string;
+  articleId?: string;
+  articleLabel?: string;
+}
+
+const ALIGNMENT_FACTS: AlignmentFact[] = [
+  {
+    text: 'Grew up eating fast food, grew out of birth religion, ended up obsessed with health \u2014 a strikingly parallel arc',
+    articleId: 'origin',
+    articleLabel: 'read more in the article',
+  },
+  {
+    text: 'Most health companies start from the product. Blueprint starts from the actual problem: daily complexity is what defeats people, not cost. The interface is the product',
+    articleId: 'interface-insight',
+    articleLabel: 'where I discuss this',
+  },
+  {
+    text: 'Joining Blueprint feels like the convergence of a decade of life experience and the most important mission of a lifetime',
+  },
+  {
+    text: 'Reversed my own prediabetes through systems, not just interventions \u2014 the body responds when you restructure everything',
+    articleId: 'prediabetes',
+    articleLabel: 'the full story',
+  },
+  {
+    text: 'Health can be a unifying framework during a revolutionary period. When I needed an anchor, improving my own health was the most reliable thing I found',
+    articleId: 'unifying-framework',
+    articleLabel: 'more on this',
+  },
+  {
+    text: 'Was already building adjacent things \u2014 a meal delivery startup, a circadian scheduling system, digital wellbeing coaching \u2014 before Blueprint existed',
+    articleId: 'adjacent-projects',
+    articleLabel: 'these projects',
+  },
+  {
+    text: 'The Don\u2019t Die framework resonates as a genuine answer to some of the hardest questions ahead \u2014 how humanity aligns its interests as technology accelerates',
+  },
+  {
+    text: 'Became the person friends and family turn to for health guidance. Not credentials \u2014 years of living the work',
+    articleId: 'lived-authority',
+    articleLabel: 'that journey',
+  },
+  {
+    text: 'Drawn to the honesty and care seen from Bryan Johnson and Kate Tolo. Investors like Alex Hormozi, Naval Ravikant, and Balaji signal the caliber of what\u2019s being built',
+  },
+  {
+    text: 'Health optimization is a calling I\u2019ve been living for a decade. This last year I finally admitted it needed to be the center of everything',
+  },
 ];
 
 interface BlueprintPopoutProps {
   open: boolean;
   onClose: () => void;
   anchorPosition?: { x: number; y: number };
+  onScrollToArticle?: (id: string) => void;
 }
 
-export function BlueprintPopout({ open, onClose, anchorPosition }: BlueprintPopoutProps) {
+export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArticle }: BlueprintPopoutProps) {
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [closeHover, setCloseHover] = useState(false);
@@ -164,7 +203,21 @@ export function BlueprintPopout({ open, onClose, anchorPosition }: BlueprintPopo
             {ALIGNMENT_FACTS.map((fact, i) => (
               <li key={i} className="flex gap-2.5 text-xs text-white/60 leading-relaxed">
                 <span className="text-[#4a7c3f] mt-0.5 shrink-0">&#8226;</span>
-                <span>{fact}</span>
+                <span>
+                  {fact.text}
+                  {fact.articleId && onScrollToArticle && (
+                    <>
+                      {' \u2014 '}
+                      <button
+                        type="button"
+                        onClick={() => onScrollToArticle(fact.articleId!)}
+                        className="text-[#039be5] hover:text-[#4fc3f7] transition-colors duration-200 cursor-pointer underline underline-offset-2 decoration-[#039be5]/40 hover:decoration-[#4fc3f7]/60"
+                      >
+                        {fact.articleLabel}
+                      </button>
+                    </>
+                  )}
+                </span>
               </li>
             ))}
           </ul>
