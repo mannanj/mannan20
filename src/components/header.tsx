@@ -44,7 +44,9 @@ export function Header() {
   const { state } = useApp();
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
+  const [gardenExpanded, setGardenExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const gardenRef = useRef<HTMLDivElement>(null);
   const gateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const CLICK_GATE_MS = 1000;
@@ -76,6 +78,21 @@ export function Header() {
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [expanded]);
+
+  useEffect(() => {
+    if (!gardenExpanded) return;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (gardenRef.current && !gardenRef.current.contains(e.target as Node)) {
+        setGardenExpanded(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [gardenExpanded]);
 
   const goTo = (link: Section) => {
     scrollToSection(link);
@@ -148,7 +165,7 @@ export function Header() {
           </div>
         </a>
       </div>
-      <div className="relative flex items-center gap-4 md:pr-[15px] md:pl-[15px]">
+      <div className={`relative flex items-center gap-4 md:pr-[15px] md:pl-[15px] transition-all duration-300 ease-out ${gardenExpanded ? 'mr-[56px]' : 'mr-[15px]'}`}>
         {LINKS.map((link) => (
           <div key={link} className="pl-[15px] md:pl-[15px]">
             <a
@@ -162,28 +179,40 @@ export function Header() {
           </div>
         ))}
       </div>
-      <Link
-        href="/garden"
-        data-testid="header-garden-link"
-        className="group absolute right-4 top-1/2 -translate-y-1/2"
+      <div
+        ref={gardenRef}
+        data-testid="garden-wrapper"
+        className={`absolute top-1/2 -translate-y-1/2 z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[23px]' : 'right-[1px]'}`}
+        onMouseEnter={() => setGardenExpanded(true)}
+        onMouseLeave={() => setGardenExpanded(false)}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110"
+        <Link
+          href="/garden"
+          data-testid="header-garden-link"
+          className="group relative block"
         >
-          <path d="M12 22V12" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M12 15C8 12 4 8 7 4C10 0 12 6 12 10" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          <path d="M12 12C16 9 20 5 17 1C14 -3 12 3 12 7" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-        </svg>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-          <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-          <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
-            Garden
+          <svg
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={`w-8 h-8 transition-all duration-300 ease-out ${gardenExpanded ? 'scale-110' : 'opacity-80'}`}
+          >
+            <path d="M16 24V14" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M16 18C12 15 8 11 11 7C14 3 16 9 16 13" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="#4a7c3f" />
+            <path d="M16 15C20 12 24 8 21 4C18 0 16 6 16 10" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="#2d5a27" />
+            <ellipse cx="16" cy="25" rx="5" ry="1.5" fill="#6b4423" className={`transition-all duration-300 ${gardenExpanded ? 'opacity-100' : 'opacity-0 translate-y-1'}`} />
+            <path d="M13 25C12 27 11.5 29 11 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" className={`transition-all duration-300 delay-75 ${gardenExpanded ? 'opacity-70' : 'opacity-0 translate-y-1'}`} />
+            <path d="M16 25.5C16 27.5 16 29 16 31" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" className={`transition-all duration-300 delay-100 ${gardenExpanded ? 'opacity-70' : 'opacity-0 translate-y-1'}`} />
+            <path d="M19 25C20 27 20.5 29 21 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" className={`transition-all duration-300 delay-75 ${gardenExpanded ? 'opacity-70' : 'opacity-0 translate-y-1'}`} />
+          </svg>
+          <div className={`absolute top-full right-0 mt-3 transition-opacity duration-200 pointer-events-none ${gardenExpanded ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="absolute -top-[6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
+            <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
+              View my Garden
+            </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </div>
     </div>
   );
 }
