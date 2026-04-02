@@ -229,7 +229,7 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 -translate-x-1/2 w-5 h-[55px] pointer-events-none transition-all duration-500 delay-150 z-10 ${gardenExpanded ? 'opacity-60 scale-y-100' : 'opacity-0 scale-y-0'}`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 w-5 h-[55px] pointer-events-none transition-all duration-[1500ms] delay-150 z-10 ${gardenExpanded ? 'opacity-60 scale-y-100' : 'opacity-0 scale-y-0'}`}
             style={{ transformOrigin: 'top center' }}
           >
             <path d="M10 0C10 5 13 8 11 14C9 20 14 24 12 30C10 36 13 40 11 46C9.5 50 10 53 10 55" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" fill="none" />
