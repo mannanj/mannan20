@@ -527,31 +527,31 @@ body.gem-rain-active #header > div:first-child {
 @keyframes gardenParticleFall1 {
   0% { transform: translate(0, 0); opacity: 0.8; }
   85% { opacity: 0.4; }
-  100% { transform: translate(1px, 40px); opacity: 0; }
+  100% { transform: translate(1px, 35px); opacity: 0; }
 }
 
 @keyframes gardenParticleFall2 {
   0% { transform: translate(0, 0); opacity: 0.7; }
   85% { opacity: 0.35; }
-  100% { transform: translate(-1px, 39px); opacity: 0; }
+  100% { transform: translate(-1px, 34px); opacity: 0; }
 }
 
 @keyframes gardenParticleFall3 {
   0% { transform: translate(0, 0); opacity: 0.9; }
   85% { opacity: 0.4; }
-  100% { transform: translate(0.5px, 38px); opacity: 0; }
+  100% { transform: translate(0.5px, 33px); opacity: 0; }
 }
 
 @keyframes gardenParticleTravel1 {
   0% { transform: translateY(0); opacity: 0; }
   8% { opacity: 0.6; }
   50% { opacity: 0.4; }
-  100% { transform: translateY(13px); opacity: 0; }
+  100% { transform: translateY(8px); opacity: 0; }
 }
 
 @keyframes gardenParticleTravel2 {
   0% { transform: translateY(0); opacity: 0; }
   10% { opacity: 0.5; }
   55% { opacity: 0.3; }
-  100% { transform: translateY(19px); opacity: 0; }
+  100% { transform: translateY(14px); opacity: 0; }
 }
