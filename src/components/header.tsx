@@ -156,7 +156,7 @@ export function Header() {
         cancelAnimationFrame(rootAnimRef.current);
         rootAnimRef.current = 0;
       }
-      const RETRACT_DURATION = 0.77;
+      const RETRACT_DURATION = 0.55;
       const scaleAtLeave = gardenRootScale;
       if (scaleAtLeave > 0) {
         setGardenRetracting(true);
