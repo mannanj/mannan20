@@ -2,26 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { BlueprintPopout } from './blueprint-popout';
-
-function PlaceholderPlantIcon() {
-  return (
-    <svg
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-8 h-8"
-      style={{ filter: 'grayscale(1)' }}
-    >
-      <path d="M16 24V14" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M16 18C12 15 8 11 11 7C14 3 16 9 16 13" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="#4a7c3f" />
-      <path d="M16 15C20 12 24 8 21 4C18 0 16 6 16 10" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="#2d5a27" />
-      <ellipse cx="16" cy="25" rx="5" ry="1.5" fill="#6b4423" />
-      <path d="M13 25C12 27 11.5 29 11 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
-      <path d="M16 25.5C16 27.5 16 29 16 31" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
-      <path d="M19 25C20 27 20.5 29 21 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
-    </svg>
-  );
-}
+import { PlantIcon } from '@/components/icons/plant-icon';
 
 export function HealthArticleBody() {
   const [popoutOpen, setPopoutOpen] = useState(false);
@@ -127,12 +108,48 @@ export function HealthArticleBody() {
             <p className="text-xs text-white/40">Companies I like</p>
           </button>
 
-          <div className="rounded-lg border border-dashed border-white/15 p-4 opacity-30 flex items-center justify-center min-h-[80px]">
-            <PlaceholderPlantIcon />
+          <div className="rounded-lg border border-dashed border-white/30 p-4 opacity-50 flex items-center justify-center min-h-[80px]">
+            <div className="relative opacity-50" style={{ filter: 'grayscale(1)' }}>
+              <PlantIcon className="w-9 h-9 opacity-75" />
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute left-[0px] bottom-[2px] w-5 h-5 opacity-80">
+                <path d="M8 14V9" stroke="#4a7c3f" strokeWidth="1" strokeLinecap="round" />
+                <path d="M8 11C6 9.5 4 7.5 5.5 5C7 2.5 8 6 8 8" stroke="#4a7c3f" strokeWidth="1" strokeLinecap="round" fill="#4a7c3f" />
+                <path d="M8 10C10 8.5 12 6.5 10.5 4C9 1.5 8 5 8 7" stroke="#2d5a27" strokeWidth="1" strokeLinecap="round" fill="#2d5a27" />
+                <ellipse cx="8" cy="14.5" rx="3" ry="0.8" fill="#6b4423" />
+                <path d="M6.5 14.5C6 15.5 5.5 16 5.5 16" stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" />
+                <path d="M9.5 14.5C10 15.5 10.5 16 10.5 16" stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" />
+              </svg>
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-[4px] bottom-[5px] w-3 h-3 opacity-70">
+                <path d="M8 14V10" stroke="#5a9c4f" strokeWidth="1.2" strokeLinecap="round" />
+                <path d="M8 12C6.5 10.5 5 8.5 6.5 6.5C8 4.5 8 7.5 8 9" stroke="#5a9c4f" strokeWidth="1" strokeLinecap="round" fill="#5a9c4f" />
+                <path d="M8 11C9.5 9.5 11 7.5 9.5 5.5C8 3.5 8 6.5 8 8" stroke="#3d7a32" strokeWidth="1" strokeLinecap="round" fill="#3d7a32" />
+                <ellipse cx="8" cy="14.5" rx="2.5" ry="0.7" fill="#6b4423" />
+                <path d="M6.5 14.5C6 15.5 5.8 16 5.8 16" stroke="#8B6914" strokeWidth="0.6" strokeLinecap="round" />
+                <path d="M9.5 14.5C10 15.5 10.2 16 10.2 16" stroke="#8B6914" strokeWidth="0.6" strokeLinecap="round" />
+              </svg>
+            </div>
           </div>
 
-          <div className="rounded-lg border border-dashed border-white/15 p-4 opacity-30 flex items-center justify-center min-h-[80px]">
-            <PlaceholderPlantIcon />
+          <div className="rounded-lg border border-dashed border-white/30 p-4 opacity-50 flex items-center justify-center min-h-[80px]">
+            <div className="relative opacity-50" style={{ filter: 'grayscale(1)' }}>
+              <PlantIcon className="w-9 h-9 opacity-75" />
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute left-[0px] bottom-[2px] w-5 h-5 opacity-80">
+                <path d="M8 14V9" stroke="#4a7c3f" strokeWidth="1" strokeLinecap="round" />
+                <path d="M8 11C6 9.5 4 7.5 5.5 5C7 2.5 8 6 8 8" stroke="#4a7c3f" strokeWidth="1" strokeLinecap="round" fill="#4a7c3f" />
+                <path d="M8 10C10 8.5 12 6.5 10.5 4C9 1.5 8 5 8 7" stroke="#2d5a27" strokeWidth="1" strokeLinecap="round" fill="#2d5a27" />
+                <ellipse cx="8" cy="14.5" rx="3" ry="0.8" fill="#6b4423" />
+                <path d="M6.5 14.5C6 15.5 5.5 16 5.5 16" stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" />
+                <path d="M9.5 14.5C10 15.5 10.5 16 10.5 16" stroke="#8B6914" strokeWidth="0.7" strokeLinecap="round" />
+              </svg>
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute right-[4px] bottom-[5px] w-3 h-3 opacity-70">
+                <path d="M8 14V10" stroke="#5a9c4f" strokeWidth="1.2" strokeLinecap="round" />
+                <path d="M8 12C6.5 10.5 5 8.5 6.5 6.5C8 4.5 8 7.5 8 9" stroke="#5a9c4f" strokeWidth="1" strokeLinecap="round" fill="#5a9c4f" />
+                <path d="M8 11C9.5 9.5 11 7.5 9.5 5.5C8 3.5 8 6.5 8 8" stroke="#3d7a32" strokeWidth="1" strokeLinecap="round" fill="#3d7a32" />
+                <ellipse cx="8" cy="14.5" rx="2.5" ry="0.7" fill="#6b4423" />
+                <path d="M6.5 14.5C6 15.5 5.8 16 5.8 16" stroke="#8B6914" strokeWidth="0.6" strokeLinecap="round" />
+                <path d="M9.5 14.5C10 15.5 10.2 16 10.2 16" stroke="#8B6914" strokeWidth="0.6" strokeLinecap="round" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
