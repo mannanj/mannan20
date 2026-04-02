@@ -546,7 +546,7 @@ body.gem-rain-active #header > div:first-child {
   0% { transform: translateY(0); opacity: 0; }
   8% { opacity: 0.6; }
   50% { opacity: 0.4; }
-  100% { transform: translateY(28px); opacity: 0; }
+  100% { transform: translateY(18px); opacity: 0; }
 }
 
 @keyframes gardenParticleTravel2 {
