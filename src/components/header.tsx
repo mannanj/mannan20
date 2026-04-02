@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useApp } from '@/context/app-context';
@@ -46,6 +46,8 @@ export function Header() {
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
+  const [gardenLevel, setGardenLevel] = useState(0);
+  const gardenIntervalRef = useRef<ReturnType<typeof setInterval>>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const gardenRef = useRef<HTMLDivElement>(null);
   const gateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -94,6 +96,76 @@ export function Header() {
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [gardenExpanded]);
+
+  const [gardenStartTime, setGardenStartTime] = useState(0);
+  const [gardenRootScale, setGardenRootScale] = useState(0);
+  const rootAnimRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (gardenExpanded) {
+      setGardenLevel(0);
+      setGardenStartTime(Date.now());
+      gardenIntervalRef.current = setInterval(() => {
+        setGardenLevel(prev => Math.min(prev + 1, 3));
+      }, 2000);
+      const startTime = Date.now();
+      const INTRO_DURATION = 1.5;
+      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+      const animateRoot = () => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        let scale;
+        if (elapsed < INTRO_DURATION) {
+          scale = easeOutCubic(elapsed / INTRO_DURATION);
+        } else {
+          scale = 1 + (elapsed - INTRO_DURATION) * 0.2;
+        }
+        setGardenRootScale(Math.min(scale, 9));
+        rootAnimRef.current = requestAnimationFrame(animateRoot);
+      };
+      rootAnimRef.current = requestAnimationFrame(animateRoot);
+    } else {
+      setGardenLevel(0);
+      setGardenRootScale(0);
+      if (gardenIntervalRef.current) {
+        clearInterval(gardenIntervalRef.current);
+        gardenIntervalRef.current = null;
+      }
+      if (rootAnimRef.current) {
+        cancelAnimationFrame(rootAnimRef.current);
+        rootAnimRef.current = 0;
+      }
+    }
+    return () => {
+      if (gardenIntervalRef.current) {
+        clearInterval(gardenIntervalRef.current);
+        gardenIntervalRef.current = null;
+      }
+      if (rootAnimRef.current) {
+        cancelAnimationFrame(rootAnimRef.current);
+        rootAnimRef.current = 0;
+      }
+    };
+  }, [gardenExpanded]);
+
+  const PARTICLE_COLORS = ['#ff2222', '#22dd22', '#2266ff'];
+  const gardenLightOpacity = gardenExpanded ? Math.min(0.161 + gardenLevel * 0.04, 0.5) : 0.084;
+
+  const extraParticles = useMemo(() => {
+    if (!gardenExpanded) return [];
+    const count = (Math.min(gardenLevel, 3) + 2) * 3;
+    const particles = [];
+    for (let i = 0; i < count; i++) {
+      const color = PARTICLE_COLORS[i % 3];
+      const left = 14 + Math.sin(i * 2.1) * 4;
+      const top = -18 - Math.cos(i * 1.7) * 5;
+      const size = 1.5 + (i % 2) * 0.5;
+      const duration = 1.5;
+      const delay = (i * (duration / count)) % duration;
+      const anim = `gardenParticleFall${(i % 3) + 1} ${duration}s linear ${delay}s infinite`;
+      particles.push({ color, left, top, size, anim, key: i });
+    }
+    return particles;
+  }, [gardenExpanded, gardenLevel]);
 
   const goTo = (link: Section) => {
     scrollToSection(link);
@@ -208,14 +280,23 @@ export function Header() {
             <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 10s ease-in-out 1s infinite' }} />
           </div>
           <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${gardenExpanded ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="absolute left-[5px] -top-[25px] w-[26px] h-[30px] opacity-[0.161]" style={{ background: 'linear-gradient(to bottom, transparent 0%, #ffe033 20%, #ffe033 80%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
-            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]" style={{ animation: 'gardenParticleFall1 3.6s linear infinite' }} />
-            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]" style={{ animation: 'gardenParticleFall2 3.6s linear 0.6s infinite' }} />
-            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 3.6s linear 1.2s infinite' }} />
-            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[19px] -top-[25px]" style={{ animation: 'gardenParticleFall1 3.6s linear 1.8s infinite' }} />
-            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[14px] -top-[20px]" style={{ animation: 'gardenParticleFall2 3.6s linear 2.4s infinite' }} />
-            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[17px] -top-[24px]" style={{ animation: 'gardenParticleFall3 3.6s linear 3.0s infinite' }} />
-            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]" style={{ animation: 'gardenParticleTravel1 3.3s ease-in-out 0.3s infinite' }} />
+            <div className="absolute left-[5px] -top-[25px] w-[26px] h-[30px] transition-opacity duration-500" style={{ opacity: gardenLightOpacity, background: 'linear-gradient(to bottom, transparent 0%, #ffe033 20%, #ffe033 80%, transparent 100%)', clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)' }} />
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#ff2222] left-[15px] -top-[22px]" style={{ animation: 'gardenParticleFall1 1.5s linear 0s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#22dd22] left-[17px] -top-[23px]" style={{ animation: 'gardenParticleFall2 1.5s linear 0.125s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[16px] -top-[21px]" style={{ animation: 'gardenParticleFall3 1.5s linear 0.25s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#ff2222] left-[18px] -top-[24px]" style={{ animation: 'gardenParticleFall1 1.5s linear 0.375s infinite' }} />
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#22dd22] left-[14px] -top-[22px]" style={{ animation: 'gardenParticleFall2 1.5s linear 0.5s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[16px] -top-[23px]" style={{ animation: 'gardenParticleFall3 1.5s linear 0.625s infinite' }} />
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#ff2222] left-[15px] -top-[21px]" style={{ animation: 'gardenParticleFall1 1.5s linear 0.75s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#22dd22] left-[17px] -top-[24px]" style={{ animation: 'gardenParticleFall2 1.5s linear 0.875s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[18px] -top-[22px]" style={{ animation: 'gardenParticleFall3 1.5s linear 1.0s infinite' }} />
+            <div className="absolute w-[2px] h-[2px] rounded-full bg-[#ff2222] left-[16px] -top-[23px]" style={{ animation: 'gardenParticleFall1 1.5s linear 1.125s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#22dd22] left-[15px] -top-[21px]" style={{ animation: 'gardenParticleFall2 1.5s linear 1.25s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[17px] -top-[24px]" style={{ animation: 'gardenParticleFall3 1.5s linear 1.375s infinite' }} />
+            <div className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#ff2222] left-[16px] top-[20px]" style={{ animation: 'gardenParticleTravel1 1.5s ease-in-out 0s infinite' }} />
+            {extraParticles.map(p => (
+              <div key={p.key} className="absolute rounded-full" style={{ width: p.size, height: p.size, backgroundColor: p.color, left: p.left, top: p.top, animation: p.anim }} />
+            ))}
           </div>
           <svg
             viewBox="0 0 20 7"
@@ -230,8 +311,8 @@ export function Header() {
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-[4px] w-5 h-[55px] pointer-events-none transition-all duration-[1500ms] delay-150 z-10 ${gardenExpanded ? 'opacity-60 scale-y-100' : 'opacity-0 scale-y-0'}`}
-            style={{ transformOrigin: 'top center' }}
+            className={`absolute top-full left-1/2 mt-[4px] w-5 h-[55px] pointer-events-none z-10 ${gardenExpanded ? 'opacity-60' : 'opacity-0'}`}
+            style={{ transformOrigin: 'top center', transform: `translateX(-50%) scaleY(${gardenRootScale})`, transition: 'opacity 0.3s ease' }}
           >
             <path d="M10 0C10 5 13 8 11 14C9 20 14 24 12 30C10 36 13 40 11 46C9.5 50 10 53 10 55" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" fill="none" />
             <path d="M10 10C7 12 5 11 4 13" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
