@@ -3,6 +3,26 @@
 import { useState, useCallback, useRef } from 'react';
 import { BlueprintPopout } from './blueprint-popout';
 
+function PlaceholderPlantIcon() {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-8 h-8"
+      style={{ filter: 'grayscale(1)' }}
+    >
+      <path d="M16 24V14" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 18C12 15 8 11 11 7C14 3 16 9 16 13" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="#4a7c3f" />
+      <path d="M16 15C20 12 24 8 21 4C18 0 16 6 16 10" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="#2d5a27" />
+      <ellipse cx="16" cy="25" rx="5" ry="1.5" fill="#6b4423" />
+      <path d="M13 25C12 27 11.5 29 11 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
+      <path d="M16 25.5C16 27.5 16 29 16 31" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
+      <path d="M19 25C20 27 20.5 29 21 30" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
+    </svg>
+  );
+}
+
 export function HealthArticleBody() {
   const [popoutOpen, setPopoutOpen] = useState(false);
   const [anchorPos, setAnchorPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -107,21 +127,12 @@ export function HealthArticleBody() {
             <p className="text-xs text-white/40">Companies I like</p>
           </button>
 
-          <div className="rounded-lg border border-dashed border-white/15 p-4 opacity-30 flex flex-col items-center justify-center gap-2">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-            <span className="text-[10px] text-white/30">Coming soon</span>
+          <div className="rounded-lg border border-dashed border-white/15 p-4 opacity-30 flex items-center justify-center min-h-[80px]">
+            <PlaceholderPlantIcon />
           </div>
 
-          <div className="rounded-lg border border-dashed border-white/15 p-4 opacity-30 flex flex-col items-center justify-center gap-2">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-white/40">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-            <span className="text-[10px] text-white/30">Coming soon</span>
+          <div className="rounded-lg border border-dashed border-white/15 p-4 opacity-30 flex items-center justify-center min-h-[80px]">
+            <PlaceholderPlantIcon />
           </div>
         </div>
       </div>

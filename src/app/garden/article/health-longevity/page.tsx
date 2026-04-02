@@ -24,7 +24,7 @@ export default function HealthLongevityArticle() {
           alt="Mannan Javid"
           width={44}
           height={44}
-          className="rounded-full mb-4"
+          className="rounded-full mb-4 mt-[3px]"
         />
 
         <h1 className="text-2xl font-semibold tracking-tight mb-2">

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Garden | Mannan Javid',
-  description: 'Writings, thoughts, projects, and interests.',
+  description: 'Thoughts, projects, and interests — at various stages of growth.',
 };
 
 const ARTICLES = [
@@ -72,8 +72,7 @@ export default function GardenPage() {
         <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
 
         <p className="text-sm text-white/50 leading-relaxed mb-12">
-          Things I&apos;ve processed deeply or lightly, my thoughts, projects I&apos;m working
-          on, projects I want to work on, things I want, and my interests.
+          Welcome to my garden. Here live my thoughts, projects, and interests at various stages of growth.
         </p>
 
         <div className="space-y-1">
