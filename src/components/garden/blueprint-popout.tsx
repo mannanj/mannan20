@@ -58,6 +58,7 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
   const [closeHover, setCloseHover] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const popoutRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const positionInitialized = useRef(false);
 
   const currentWidth = minimized ? MINI_WIDTH : FULL_WIDTH;
@@ -131,6 +132,23 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
     return () => window.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+    const popout = popoutRef.current;
+    if (!popout) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const scroller = scrollRef.current;
+      if (scroller) {
+        scroller.scrollTop += e.deltaY;
+      }
+    };
+
+    popout.addEventListener('wheel', handleWheel, { passive: false });
+    return () => popout.removeEventListener('wheel', handleWheel);
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -146,8 +164,7 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
           width: currentWidth,
           maxWidth: 'calc(100vw - 24px)',
           maxHeight: minimized ? '36vh' : 'calc(100vh - 48px)',
-          overflowY: 'auto',
-          overscrollBehavior: 'contain',
+          overflow: 'hidden',
           background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -205,7 +222,8 @@ export function BlueprintPopout({ open, onClose, anchorPosition, onScrollToArtic
 
         <h3 className="text-base font-medium text-white mb-1 pr-16">Interesting Companies</h3>
         <div
-          className="overflow-y-auto overscroll-contain popout-scroll -mr-[21px] pr-[21px]"
+          ref={scrollRef}
+          className="overflow-y-auto popout-scroll -mr-[21px] pr-[21px]"
           style={{
             maxHeight: minimized ? '28vh' : '50vh',
             transition: 'max-height 300ms ease',
