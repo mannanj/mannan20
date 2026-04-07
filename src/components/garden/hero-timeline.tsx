@@ -16,6 +16,10 @@ interface HeroTimelineProps {
   heroRef: RefObject<HTMLDivElement | null>;
 }
 
+const LEFT_MAX_W = 83;
+const GAP = 16;
+const CENTER = LEFT_MAX_W + GAP;
+
 export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -36,10 +40,13 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
 
   return (
     <div ref={heroRef} className="relative pb-4">
-      <div className="hidden md:block relative mx-auto overflow-visible" style={{ maxWidth: '420px' }}>
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/[0.12]" />
+      <div className="hidden md:block relative">
+        <div
+          className="absolute top-0 bottom-0 w-px bg-white/[0.12]"
+          style={{ left: CENTER }}
+        />
 
-        <div className="flex flex-col overflow-visible">
+        <div className="flex flex-col">
           {datedEras.map((era) => {
             const isExpanded = expandedId === era.id;
             const isLeft = era.side === 'left';
@@ -53,49 +60,68 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
                 onMouseLeave={() => setExpandedId(null)}
               >
                 <div
-                  className={`absolute left-1/2 -translate-x-1/2 z-10 rounded-full transition-all duration-300 ${
+                  className={`absolute -translate-x-1/2 z-10 rounded-full transition-all duration-300 ${
                     isExpanded
                       ? 'w-[7px] h-[7px] bg-white'
                       : 'w-[5px] h-[5px] bg-white/50'
                   }`}
+                  style={{ left: CENTER }}
                 />
 
                 {isLeft ? (
                   <>
-                    <div className="absolute right-[calc(50%+16px)] top-1/2 -translate-y-1/2 text-right">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 text-right"
+                      style={{ left: 0, width: LEFT_MAX_W }}
+                    >
                       <span className={`font-light tracking-wide transition-colors duration-300 ${
                         isExpanded ? 'text-[13px] text-white' : 'text-[12px] text-white/60'
                       }`}>
                         {era.title}
                       </span>
                     </div>
-                    <div className="absolute left-[calc(50%+16px)] top-1/2 -translate-y-1/2">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2"
+                      style={{ left: CENTER + GAP }}
+                    >
                       <span className="text-[11px] font-mono text-white/35">{era.year}</span>
                     </div>
                     {era.preview && (
-                      <div className={`absolute right-[calc(50%+16px)] top-[calc(50%+3px)] text-right transition-opacity duration-300 pointer-events-none ${
-                        isExpanded ? 'opacity-100' : 'opacity-0'
-                      }`}>
+                      <div
+                        className={`absolute top-[calc(50%+3px)] transition-opacity duration-300 pointer-events-none ${
+                          isExpanded ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        style={{ left: CENTER + GAP }}
+                      >
                         <span className="text-[11px] text-white/30 whitespace-nowrap">{era.preview}</span>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
-                    <div className="absolute left-[calc(50%+16px)] top-1/2 -translate-y-1/2">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2"
+                      style={{ left: CENTER + GAP }}
+                    >
                       <span className={`font-light tracking-wide transition-colors duration-300 ${
                         isExpanded ? 'text-[13px] text-white' : 'text-[12px] text-white/60'
                       }`}>
                         {era.title}
                       </span>
                     </div>
-                    <div className="absolute right-[calc(50%+16px)] top-1/2 -translate-y-1/2 text-right">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 text-right"
+                      style={{ left: 0, width: LEFT_MAX_W }}
+                    >
                       <span className="text-[11px] font-mono text-white/35">{era.year}</span>
                     </div>
                     {era.preview && (
-                      <div className={`absolute left-[calc(50%+16px)] top-[calc(50%+3px)] transition-opacity duration-300 pointer-events-none ${
-                        isExpanded ? 'opacity-100' : 'opacity-0'
-                      }`}>
+                      <div
+                        className={`absolute top-[calc(50%+3px)] transition-opacity duration-300 pointer-events-none ${
+                          isExpanded ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        style={{ left: CENTER + GAP }}
+                      >
                         <span className="text-[11px] text-white/30 whitespace-nowrap">{era.preview}</span>
                       </div>
                     )}
