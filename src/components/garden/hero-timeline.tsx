@@ -54,7 +54,7 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
             return (
               <div
                 key={era.id}
-                className={`relative h-[52px] flex items-center cursor-pointer ${isExpanded ? 'z-20' : 'z-0'}`}
+                className={`relative h-[32px] flex items-center cursor-pointer ${isExpanded ? 'z-20' : 'z-0'}`}
                 onClick={() => handleClick(era.id)}
                 onMouseEnter={() => setExpandedId(era.id)}
                 onMouseLeave={() => setExpandedId(null)}
@@ -74,10 +74,19 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
                       className="absolute top-1/2 -translate-y-1/2 text-right"
                       style={{ left: 0, width: LEFT_MAX_W }}
                     >
-                      <span className={`font-light tracking-wide transition-colors duration-300 ${
+                      <span className={`relative inline-block whitespace-nowrap font-light tracking-wide transition-colors duration-300 ${
                         isExpanded ? 'text-[13px] text-white' : 'text-[12px] text-white/60'
                       }`}>
                         {era.title}
+                        {era.preview && (
+                          <span
+                            className={`absolute left-0 top-full -mt-0.5 text-[11px] text-white/30 whitespace-nowrap pointer-events-none transition-opacity duration-300 ${
+                              isExpanded ? 'opacity-100' : 'opacity-0'
+                            }`}
+                          >
+                            {era.preview}
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div
@@ -86,16 +95,6 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
                     >
                       <span className="text-[11px] font-mono text-white/35">{era.year}</span>
                     </div>
-                    {era.preview && (
-                      <div
-                        className={`absolute top-[calc(50%+3px)] transition-opacity duration-300 pointer-events-none ${
-                          isExpanded ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        style={{ left: CENTER + GAP }}
-                      >
-                        <span className="text-[11px] text-white/30 whitespace-nowrap">{era.preview}</span>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <>
@@ -103,10 +102,19 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
                       className="absolute top-1/2 -translate-y-1/2"
                       style={{ left: CENTER + GAP }}
                     >
-                      <span className={`font-light tracking-wide transition-colors duration-300 ${
+                      <span className={`relative inline-block whitespace-nowrap font-light tracking-wide transition-colors duration-300 ${
                         isExpanded ? 'text-[13px] text-white' : 'text-[12px] text-white/60'
                       }`}>
                         {era.title}
+                        {era.preview && (
+                          <span
+                            className={`absolute left-0 top-full -mt-0.5 text-[11px] text-white/30 whitespace-nowrap pointer-events-none transition-opacity duration-300 ${
+                              isExpanded ? 'opacity-100' : 'opacity-0'
+                            }`}
+                          >
+                            {era.preview}
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div
@@ -115,16 +123,6 @@ export function HeroTimeline({ eras, heroRef }: HeroTimelineProps) {
                     >
                       <span className="text-[11px] font-mono text-white/35">{era.year}</span>
                     </div>
-                    {era.preview && (
-                      <div
-                        className={`absolute top-[calc(50%+3px)] transition-opacity duration-300 pointer-events-none ${
-                          isExpanded ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        style={{ left: CENTER + GAP }}
-                      >
-                        <span className="text-[11px] text-white/30 whitespace-nowrap">{era.preview}</span>
-                      </div>
-                    )}
                   </>
                 )}
               </div>

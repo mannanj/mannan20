@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { HeroTimeline } from "./hero-timeline";
 import { SideMarginTimeline } from "./side-margin-timeline";
@@ -76,41 +76,35 @@ function Divider() {
   return <div className="w-12 h-px bg-white/[0.08] mx-auto" />;
 }
 
+const SCROLL_THRESHOLD = 300;
+const VIEWPORT_OFFSET_RATIO = 0.3;
+
 export function SeekingCommunityBody() {
   const [activeEra, setActiveEra] = useState(ERAS[0].id);
-  const [heroVisible, setHeroVisible] = useState(true);
+  const [showSideTimeline, setShowSideTimeline] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const sectionObserverRef = useRef<IntersectionObserver | null>(null);
-  const heroObserverRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    sectionObserverRef.current = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveEra(entry.target.id);
-          }
+    const handleScroll = () => {
+      setShowSideTimeline(window.scrollY > SCROLL_THRESHOLD);
+
+      const offset = window.innerHeight * VIEWPORT_OFFSET_RATIO;
+      let current = ERAS[0].id;
+      for (const era of ERAS) {
+        const el = document.getElementById(era.id);
+        if (el && el.getBoundingClientRect().top <= offset) {
+          current = era.id;
         }
-      },
-      { rootMargin: "-30% 0px -50% 0px", threshold: 0 },
-    );
+      }
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 100) {
+        current = ERAS[ERAS.length - 1].id;
+      }
+      setActiveEra(current);
+    };
 
-    for (const era of ERAS) {
-      const el = document.getElementById(era.id);
-      if (el) sectionObserverRef.current.observe(el);
-    }
-
-    return () => sectionObserverRef.current?.disconnect();
-  }, []);
-
-  useEffect(() => {
-    heroObserverRef.current = new IntersectionObserver(
-      ([entry]) => setHeroVisible(entry.isIntersecting),
-      { threshold: 0 },
-    );
-
-    if (heroRef.current) heroObserverRef.current.observe(heroRef.current);
-    return () => heroObserverRef.current?.disconnect();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -132,7 +126,7 @@ export function SeekingCommunityBody() {
       <SideMarginTimeline
         eras={ERAS}
         activeEra={activeEra}
-        heroVisible={heroVisible}
+        visible={showSideTimeline}
       />
 
       <div className="space-y-20 text-sm text-white/70 leading-relaxed">
