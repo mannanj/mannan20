@@ -135,7 +135,7 @@ export function Timeline({
                           {era.title}
                           {era.preview && (
                             <span
-                              className={`absolute left-0 top-full -mt-0.5 block text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
+                              className={`absolute left-0 top-full -mt-0.5 block leading-none text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                                 isHovered ? 'opacity-100' : 'opacity-0'
                               }`}
                               style={{ fontSize: previewSize, width: previewMaxWidth, textAlign: 'left' }}
@@ -167,7 +167,7 @@ export function Timeline({
                           {era.title}
                           {era.preview && (
                             <span
-                              className={`absolute left-0 top-full -mt-0.5 block text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
+                              className={`absolute left-0 top-full -mt-0.5 block leading-none text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                                 isHovered ? 'opacity-100' : 'opacity-0'
                               }`}
                               style={{ fontSize: previewSize, width: previewMaxWidth, textAlign: 'left' }}
@@ -284,7 +284,7 @@ export function Timeline({
                       {era.title}
                       {era.preview && (
                         <span
-                          className={`absolute left-0 top-full -mt-0.5 block text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
+                          className={`absolute left-0 top-full -mt-0.5 block leading-none text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                             isHovered ? 'opacity-100' : 'opacity-0'
                           }`}
                           style={{ fontSize: previewSize, width: previewMaxWidth, textAlign: 'left' }}

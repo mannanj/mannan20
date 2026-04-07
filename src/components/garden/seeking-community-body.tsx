@@ -111,7 +111,7 @@ export function SeekingCommunityBody() {
       const el = document.getElementById(hash);
       if (el) {
         const y = el.getBoundingClientRect().top + window.scrollY - 82;
-        window.scrollTo({ top: y, behavior: 'smooth' });
+        window.scrollTo({ top: y, behavior: "smooth" });
         setActiveEra(hash);
       }
     }
@@ -151,7 +151,7 @@ export function SeekingCommunityBody() {
         size="md"
         activeEra={activeEra}
         visible={showSideTimeline}
-        previewMaxWidth={200}
+        previewMaxWidth={150}
       />
 
       <div className="space-y-8 text-sm text-white/70 leading-relaxed">
