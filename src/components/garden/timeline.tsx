@@ -219,6 +219,14 @@ export function Timeline({
   const dotInactive = isLg ? 'w-[7px] h-[7px]' : 'w-[5px] h-[5px]';
   const dotActive = isLg ? RED_DOT_LG : RED_DOT;
 
+  const hoveredIdx = hoveredId ? filteredEras.findIndex(e => e.id === hoveredId) : -1;
+  const pushAfterIdx = hoveredIdx >= 0
+    && filteredEras[hoveredIdx].type === 'dated'
+    && filteredEras[hoveredIdx].preview
+    && filteredEras[hoveredIdx + 1]?.type === 'thematic'
+    ? hoveredIdx
+    : -1;
+
   return (
     <>
       <nav
@@ -240,6 +248,8 @@ export function Timeline({
                 key={era.id}
                 onMouseEnter={() => setHoveredId(era.id)}
                 onMouseLeave={() => setHoveredId(null)}
+                className="transition-transform duration-300"
+                style={pushAfterIdx >= 0 && i > pushAfterIdx ? { transform: 'translateY(22px)' } : undefined}
               >
                 {i > 0 && (
                   <div className="flex">

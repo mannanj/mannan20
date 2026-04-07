@@ -80,7 +80,7 @@ const ERAS = [
 ];
 
 function Divider() {
-  return <div className="w-1/3 h-[0.25px] bg-white/[0.33]" />;
+  return <div className="w-1/3 h-px bg-white/[0.12]" />;
 }
 
 const TIMELINE_DROP = 100;
@@ -174,23 +174,22 @@ export function SeekingCommunityBody() {
           <div className="space-y-4">
             <p className="text-white/80">
               I was in college when <em>Cosmos: A Spacetime Odyssey</em> came
-              out. Neil deGrasse Tyson walked my friends and me through the
+              out. Neil deGrasse Tyson walked my friends and I through the
               vastness of space and something clicked &mdash; the sheer scale,
-              the power, the beauty. It was the most fascinating, engrossing
+              the power, and the beauty. It was the most fascinating, engrossing
               thing I&apos;d ever witnessed.
             </p>
             <p>
-              I grew up intellectually in an open-minded, liberal
-              environment. My public school system was ranked top ten in the
-              country, and I had access to the resources I needed to satisfy my
-              curiosity. I could be curious, I could ask questions, and I was
-              lucky enough to have the latest computers and internet at an early
-              age. From 2002, I learned how to browse the web and search for
-              answers to my questions.
+              I grew up intellectually in an open-minded, liberal environment.
+              My public school system was ranked top ten in the country, and I
+              had access to the resources I needed to satisfy my curiosity. I
+              could think of questions, and I was lucky enough to have the
+              latest computers and internet at an early age to answer them. From
+              2002, I learned how to browse the web and search for my answers.
             </p>
             <p>
-              I learned to extend that same open-mindedness to religion and
-              spirituality later.
+              I later learned to extend that same open-mindedness to religion
+              and spirituality.
             </p>
           </div>
         </section>
@@ -201,12 +200,11 @@ export function SeekingCommunityBody() {
           <div className="space-y-4">
             <p className="text-white/80">
               Four years later I learned to meditate. The thoughts I got swept
-              up in and thought were me suddenly became another thing that
-              just happens in me. Am I my heart? My breath? What I see? The
-              answers to those questions led me to realize &mdash; not just
-              intellectually but experientially and with embodiment &mdash; that I am
-              more than what any one person or any thought tells me. I can make up
-              whatever identity I want about who I am.
+              up in and thought were me suddenly became another thing that just
+              happens within me. Am I my heart? My breath? What I see? The
+              answers to those questions led me to realize I am more than my
+              thoughts. I am not what any person or thought tells me. In fact,
+              reality says I can be whatever identity I want to be.
             </p>
           </div>
         </section>
@@ -219,8 +217,9 @@ export function SeekingCommunityBody() {
           </div>
           <div className="space-y-4">
             <p className="text-white/80">
-              <em>Cosmos</em> also helped plant a growing curiosity for answers to
-              questions that the religion I grew up with couldn&apos;t provide.
+              <em>Cosmos</em> also helped plant a growing curiosity for answers
+              to questions that the religion I grew up with couldn&apos;t
+              provide.
             </p>
             <p>
               I remember one evening, coming home after a Landmark
@@ -298,15 +297,15 @@ export function SeekingCommunityBody() {
             <p className="text-white/80">
               A global pandemic and lucky, healthy circumstances took me to Los
               Angeles. I found new friends and a new kind of community &mdash;
-              one that moved differently than any I'd known.
+              this one moved differently than any I'd known.
             </p>
             <p>
-              I was initiated into manhood with a community through a system of
+              I was shortly initiated into manhood and studied a system of
               philosophy and embodiment based on Carl Jung&apos;s work and the
-              hermetic principles. It gave structure to the spiritual
+              hermetic principles. It gave me structure for the spiritual
               framework that had been forming in me for years. This unique
               combination of Jungian shadow work and ancient wisdom traditions
-              became the foundation of how I relate to myself and others today.
+              forms now the foundation of who I am and how I relate to others.
             </p>
           </div>
         </section>
@@ -316,45 +315,39 @@ export function SeekingCommunityBody() {
         <section id="era-north">
           <div className="space-y-4">
             <p className="text-white/80">
-              I dropped my apartment and said goodbye to my close roommate and
-              friend, Jonnie. I sold most of my things, packed what remained in
-              a car, and drove north &mdash; from LA toward southern Oregon and
+              I dropped my apartment and said goodbye to my roommates and
+              friends. I sold most of my things, packed what remained in a car,
+              and drove north &mdash; from LA toward southern Oregon and
               northern California.
             </p>
             <p>
-              My dream was to create intentional, conscious community and apply
-              my engineering and analytical mindset to live out a more efficient
-              and effective system of living &mdash; one that combined modern
-              technologies and advancements with how our ancestors lived. Think
-              returning to a tighter social fabric to meet our social needs and
-              combat isolation and disconnection, with food and space
-              efficiencies through things like bulk purchasing to realize cost
-              savings, and shared labor to tend the land and handle other tasks
-              like eventual child-rearing. A new spiritual framework built on
-              releasing identity and labels, and acceptance over otherness,
-              would power this. The goal was a model that could be tested and
-              scaled for anyone. Lots of communities and ecovillages are already
-              doing this &mdash; they just haven&apos;t captured it into a simple,
-              replicable, documented, easy-to-follow system for everyone else.
+              My dream was to create intentional, conscious communities and
+              apply my engineering and analytical mindset to understanding and
+              scaling them for others. I believed I could live out a more
+              efficient and effective system of harmony within society than the
+              divisive hatred-filled one I was seeing on social media. Combined
+              with modern technologies and advancements which are only now being
+              adopted for communities like this 3 years later (www.flow.life) I
+              think I was ahead of my time. In this AI age it is said one path
+              of humanity is to return to in-person communities and the tighter
+              social fabrics we once had with our ancestors. It is a convenient
+              way to meet our social needs, optimize resources and cost, and
+              especially child-raising. Underneath it all I could see a strong
+              philosophy or brief framework, one like the spiritual framework
+              I'd adopted built on releasing identity and labels and accepting
+              others not by their shared identities.
             </p>
             <p>
-              I arrived at a small ecovillage in the mountains. I lasted two
-              weeks. The reality was: I could not sustain a one-hour drive each
-              way into town just to get internet for my tech job and still
-              contribute meaningfully to the local community. Unfortunately, the
-              Starlink arrived the day I left.
+              I arrived at an ecovillage in the mountains. My stay was two
+              weeks. Logistical practaclitie smeant I could not contribute
+              meaningfully to the local community while internet was not yet
+              there. Starlink had just been created and with divine timing
+              arrived in my box in town the day I was leaving.
             </p>
             <p>
-              I left and went car camping across the national forests, working
-              with my newly exciting Starlink connection while I figured out my
-              next steps. It was exciting to wake up to the most beautiful
-              views, practice the minimalism and asceticism I&apos;d always wanted
-              to try, and live out of a car without noise or light pollution and
-              sit by a campfire almost every day. My coworkers never knew I was
-              working remotely from trailheads and clearings in some of the most
-              beautiful parks. It was the most stripped-down version of life
-              I&apos;ve ever experienced. It taught me how little I needed to
-              survive.
+              I next went car camping across the national forests, continuing to
+              work in Tech with Starlink and just experienced the most
+              stripped-down version of life I&apos;ve ever had.
             </p>
           </div>
         </section>
@@ -364,33 +357,20 @@ export function SeekingCommunityBody() {
         <section id="era-hawaii">
           <div className="space-y-4">
             <p className="text-white/80">
-              There was one dream community I&apos;d had my eye on. I was
-              accepted &mdash; a community based at the southern tip of the Big
-              Island of Hawaii.
+              There was a dream community I&apos;d had my eye on. I was accepted
+              and hurriedly joined&mdash; a community based at the southern tip
+              of the Big Island of Hawaii.
             </p>
             <p>
-              My time there was enlightening, and I enjoyed learning from those
-              on the land and finally leaning into my dream of living in a
-              highly social and collaborative environment. I learned a lot about
-              myself: a bias and character flaw I carry is being overly trusting
-              and naive. I learned to practice discernment in social
-              networks and friendships by sharpening my rules for making and keeping
-              friends. I wanted to be around people who were more committed and
-              devoted to the cause of building replicable systems for
-              community around the world.
-            </p>
-            <p>
-              I also learned to better articulate what I wanted from community:
-              clear, aligned structure; principles and frameworks for
-              sustainability that were actually followed; and less free-flowing
-              social time without intention. I wish I&apos;d learned this sooner,
-              and I&apos;ll be sure to interview my next community closely on
-              value alignment.
+              Time there was enlightening and moved at its own pace. I enjoyed
+              learning from those on the land and leaning into my dream of
+              building community. I learned a lot about myself: I carried a flaw
+              of being overly trusting and naive. As I practiced discernment, I
+              sharpened my rules for friend making and keeping community, and
+              learned better to articulate what I need when I join the next one.
             </p>
           </div>
         </section>
-
-        <Divider />
 
         <section id="era-values" className="-mt-4">
           <div className="mb-3">
@@ -403,32 +383,9 @@ export function SeekingCommunityBody() {
               <span className="text-white/90 text-sm font-medium">Love</span>
               <p className="mt-1">
                 My first tattoo was <em>Love over Fear</em>. I got it after
-                running on the beach with Jonnie for a movement we were both
-                part of called Seek Discomfort. Love has been the through-line
-                of every decision that has mattered.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium">
-                Generosity
-              </span>
-              <p className="mt-1">
-                My name from birth, Mannan, translates to Generous. And it feels
-                true to who I am. One of my lived values has been to give,
-                and I know firsthand how virtues can become corrupted in
-                excess.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium">
-                Devotion
-              </span>
-              <p className="mt-1">
-                I hold a devotional personality. My nature is to cultivate
-                interests into obsessions, and I have no issue making strong
-                commitments. One of the things I enjoy most is finding what I
-                have in common with friends and making challenges we undergo
-                together to grow.
+                running on the beach with my roommate in LA Jonnie for a
+                movement we were both part of called Seek Discomfort. Love is
+                the through-line of every decision that has mattered.
               </p>
             </div>
             <div>
@@ -437,9 +394,27 @@ export function SeekingCommunityBody() {
               </span>
               <p className="mt-1">
                 My capacity for seeking discomfort makes me ruthless at growing.
-                It was a unifying interest between me and a community in LA
-                oriented around it, and it has brought me community. All growth
-                happens right outside the comfort zone.
+                It was a unifying interest between me and my roommate Jonnie,
+                and we loved to challenge each other to grow in positive ways.
+              </p>
+            </div>
+            <div>
+              <span className="text-white/90 text-sm font-medium">
+                Generosity
+              </span>
+              <p className="mt-1">
+                My name from birth, Mannan, translates to Generous. It feels
+                true to who I am. One of my lived values is to give, and I know
+                very well how this can go in excess.
+              </p>
+            </div>
+            <div>
+              <span className="text-white/90 text-sm font-medium">
+                Devotion
+              </span>
+              <p className="mt-1">
+                I hold a devotional character. By nature I love to cultivate my
+                interests into obsessions. I love a powerful commitment.
               </p>
             </div>
             <div>
@@ -447,18 +422,15 @@ export function SeekingCommunityBody() {
                 &ldquo;What if everything goes right?&rdquo;
               </span>
               <p className="mt-1">
-                This represents a perspective I&apos;ve noticed immediately
-                changes experience: if I&apos;m looking for the good things
-                around me, I see things in a positive light &mdash; and the
-                experience that life presents shifts. This isn&apos;t just
-                woo-woo hopefulness. It&apos;s an immediate change to the
-                receptive system &mdash; noticing, and then acting on, the
-                opportunities around us rather than being run by fear and
-                scanning for what might go wrong. This particular phrase comes
-                from a movement I&apos;ve discovered called flow, from
-                www.flow.life. I like this system because it leads me to
-                discover the good &mdash; and bring more of what I want,
-                because I&apos;m focusing on it.
+                This represents a perspective I&apos;ve noticed drastically
+                changes experience: once I&apos;m looking for things to go
+                right, opportunity for it to occur actually gets noticed and
+                happens around me. It doesn't mean it happens for free without
+                offering anything in return, but there is a very powerful sense
+                of control behind this that everyone can access if they only
+                learn to discern what they want and focus on that. I want things
+                to go right and so I'm very impressed by a company I've noticed
+                called flow that is powered through this mantra.
               </p>
             </div>
           </div>
@@ -469,16 +441,9 @@ export function SeekingCommunityBody() {
         <section id="era-return">
           <div className="space-y-4">
             <p className="text-white/80">
-              When I left community life and returned to share space with my
-              family in Northern Virginia, the dream never died. I realized I
-              had work to do &mdash; becoming clear on who I am and what I
-              want from others.
-            </p>
-            <p>
-              Choosing the right community and staying in positive energy is
-              essential. The dream of conscious, intentional community remains a
-              north star. The difference now is I&apos;m looking for what will
-              go right, and I&apos;m much clearer on what I want.
+              My dream for community life has never died. I realized recently
+              when stumbling upon a company as large as Flow doing work on it,
+              that the time is never better than now.
             </p>
           </div>
         </section>
