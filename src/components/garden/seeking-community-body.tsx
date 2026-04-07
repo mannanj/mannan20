@@ -19,7 +19,15 @@ const ERAS = [
     title: "The Break",
     side: "right" as const,
     type: "dated" as const,
-    preview: "Meditation, Landmark, and letting go",
+    preview: "Meditation changed everything",
+  },
+  {
+    id: "era-letting-go",
+    year: "",
+    title: "Letting Go",
+    side: "left" as const,
+    type: "thematic" as const,
+    preview: "",
   },
   {
     id: "era-beliefs",
@@ -200,7 +208,17 @@ export function SeekingCommunityBody() {
               more than what any one person or any thought tells me. I can make up
               whatever identity I want about who I am.
             </p>
-            <p>
+          </div>
+        </section>
+
+        <section id="era-letting-go" className="-mt-4">
+          <div className="mb-3">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
+              Letting Go
+            </span>
+          </div>
+          <div className="space-y-4">
+            <p className="text-white/80">
               <em>Cosmos</em> also helped plant a growing curiosity for answers to
               questions that the religion I grew up with couldn&apos;t provide.
             </p>
@@ -219,10 +237,8 @@ export function SeekingCommunityBody() {
           </div>
         </section>
 
-        <Divider />
-
-        <section id="era-beliefs">
-          <div className="mb-6">
+        <section id="era-beliefs" className="-mt-4">
+          <div className="mb-3">
             <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
               North Stars
             </span>
@@ -376,8 +392,8 @@ export function SeekingCommunityBody() {
 
         <Divider />
 
-        <section id="era-values">
-          <div className="mb-6">
+        <section id="era-values" className="-mt-4">
+          <div className="mb-3">
             <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
               Guiding Values
             </span>

@@ -215,7 +215,7 @@ export function Timeline({
   const yearSize = isLg ? 13 : 11;
   const previewSize = isLg ? 12 : 11;
   const yearMinW = isLg ? 32 : 28;
-  const connectorH = isLg ? 'h-9' : 'h-7';
+  const connectorH = isLg ? 'h-6' : 'h-5';
   const dotInactive = isLg ? 'w-[7px] h-[7px]' : 'w-[5px] h-[5px]';
   const dotActive = isLg ? RED_DOT_LG : RED_DOT;
 
@@ -244,7 +244,7 @@ export function Timeline({
                 {i > 0 && (
                   <div className="flex">
                     <div className="w-[7px] flex justify-center">
-                      <div className={`w-px ${connectorH} bg-white/[0.08]`} />
+                      <div className={`w-px ${isThematic ? 'h-2' : connectorH} bg-white/[0.08]`} />
                     </div>
                   </div>
                 )}
