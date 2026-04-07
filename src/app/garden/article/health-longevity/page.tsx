@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import { HealthArticleBody } from '@/components/garden/health-article-body';
 
 export const metadata: Metadata = {
@@ -12,13 +11,6 @@ export default function HealthLongevityArticle() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-2xl mx-auto px-6 pt-28 pb-16">
-        <Link
-          href="/garden"
-          className="text-sm text-white/40 hover:text-white/70 transition-colors duration-200 mb-10 inline-block"
-        >
-          &larr; Garden
-        </Link>
-
         <Image
           src="/mannan-profile.png"
           alt="Mannan Javid"

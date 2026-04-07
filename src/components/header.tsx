@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/app-context';
 import { scrollToSection } from '@/lib/utils';
 import type { Section } from '@/lib/types';
@@ -73,6 +74,9 @@ function GitHubIcon() {
 
 export function Header() {
   const { state } = useApp();
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+  const isGarden = pathname.startsWith('/garden');
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
@@ -376,7 +380,11 @@ export function Header() {
   }, [gardenExpanded, gardenLevel]);
 
   const goTo = (link: Section) => {
-    scrollToSection(link);
+    if (isHome) {
+      scrollToSection(link);
+    } else {
+      window.location.href = `/#${link}`;
+    }
   };
 
   const gatedClick = useCallback((e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
@@ -401,7 +409,8 @@ export function Header() {
           data-testid="header-home-button"
           onClick={() => {
             setExpanded((prev) => !prev);
-            scrollToSection('home');
+            if (isHome) scrollToSection('home');
+            else window.location.href = '/';
           }}
           className="group relative z-30 bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
         >
@@ -460,7 +469,7 @@ export function Header() {
           </div>
         ))}
       </div>
-      <div
+      {!isGarden && <div
         ref={gardenRef}
         data-testid="garden-wrapper"
         className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
@@ -912,8 +921,8 @@ export function Header() {
             </div>
           </div>
         </Link>
-      </div>
-      {rootHovered && (
+      </div>}
+      {rootHovered && !isGarden && (
         <div
           className="fixed pointer-events-none z-[200]"
           style={{ left: rootCursorPos.x + 20, top: rootCursorPos.y + 20 }}

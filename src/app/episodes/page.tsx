@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Episodes | Mannan Javid',
@@ -25,12 +25,6 @@ export default function EpisodesPage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="mx-auto max-w-2xl px-6 py-24">
-        <Link
-          href="/"
-          className="mb-16 inline-block text-sm tracking-wide text-neutral-500 transition-colors hover:text-white"
-        >
-          &larr; Back
-        </Link>
         <h1 className="mb-2 text-3xl font-light tracking-tight">Episodes</h1>
         <p className="mb-16 text-sm text-neutral-500">Curated readings and writings.</p>
         <div className="space-y-0">

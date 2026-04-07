@@ -98,7 +98,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
 export function useApp(): AppContextValue {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within AppProvider');
+    return {
+      state: { ...initialState },
+      setActiveSection: () => {},
+      openContactModal: () => {},
+      closeContactModal: () => {},
+      setContactResult: () => {},
+      setContactUserInput: () => {},
+      toggleCommandsModal: () => {},
+    };
   }
   return context;
 }

@@ -70,13 +70,6 @@ export default function GardenPage() {
       </div>
 
       <div className="relative max-w-2xl mx-auto px-6 pt-28 pb-16">
-        <Link
-          href="/"
-          className="text-sm text-white/40 hover:text-white/70 transition-colors duration-200 mb-10 inline-block"
-        >
-          &larr; Back
-        </Link>
-
         <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
 
         <p className="text-sm text-white/50 leading-relaxed mb-12">
@@ -90,7 +83,7 @@ export default function GardenPage() {
               href={article.href}
               className="group -mx-4 flex flex-col rounded-lg px-4 py-5 hover:bg-white/[0.03] transition-colors duration-200"
             >
-              <span className="text-base font-medium text-white group-hover:text-[#4fc3f7] transition-colors duration-200">
+              <span className="text-base font-medium text-white group-hover:text-[#4a7c3f] transition-colors duration-200">
                 {article.title}
               </span>
               <span className="text-sm text-white/40 mt-1">
