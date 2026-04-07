@@ -138,7 +138,7 @@ export function Timeline({
                               className={`absolute left-0 top-full -mt-0.5 block text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                                 isHovered ? 'opacity-100' : 'opacity-0'
                               }`}
-                              style={{ fontSize: previewSize, maxWidth: previewMaxWidth }}
+                              style={{ fontSize: previewSize, width: previewMaxWidth, textAlign: 'left' }}
                             >
                               {era.preview}
                             </span>
@@ -170,7 +170,7 @@ export function Timeline({
                               className={`absolute left-0 top-full -mt-0.5 block text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                                 isHovered ? 'opacity-100' : 'opacity-0'
                               }`}
-                              style={{ fontSize: previewSize, maxWidth: previewMaxWidth }}
+                              style={{ fontSize: previewSize, width: previewMaxWidth, textAlign: 'left' }}
                             >
                               {era.preview}
                             </span>
@@ -287,7 +287,7 @@ export function Timeline({
                           className={`absolute left-0 top-full -mt-0.5 block text-white/30 ${previewMaxWidth ? 'whitespace-normal' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                             isHovered ? 'opacity-100' : 'opacity-0'
                           }`}
-                          style={{ fontSize: previewSize, maxWidth: previewMaxWidth }}
+                          style={{ fontSize: previewSize, width: previewMaxWidth, textAlign: 'left' }}
                         >
                           {era.preview}
                         </span>
