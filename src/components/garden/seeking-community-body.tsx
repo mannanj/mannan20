@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { HeroTimeline } from "./hero-timeline";
-import { SideMarginTimeline } from "./side-margin-timeline";
+import { Timeline } from "./timeline";
 
 const ERAS = [
   {
@@ -122,12 +121,8 @@ export function SeekingCommunityBody() {
       <p className="text-xs text-white/30 mb-6">
         April 7, 2026 &middot; 8 min read &middot; 1,800 words
       </p>
-      <HeroTimeline eras={ERAS} heroRef={heroRef} />
-      <SideMarginTimeline
-        eras={ERAS}
-        activeEra={activeEra}
-        visible={showSideTimeline}
-      />
+      <Timeline eras={ERAS} view="staggered" hideThematic heroRef={heroRef} />
+      <Timeline eras={ERAS} view="linear" activeEra={activeEra} visible={showSideTimeline} />
 
       <div className="space-y-20 text-sm text-white/70 leading-relaxed">
         <section id="era-cosmos">
