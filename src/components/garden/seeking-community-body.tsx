@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Timeline } from "./timeline";
 
@@ -80,7 +80,6 @@ const SCROLL_THRESHOLD = 300;
 export function SeekingCommunityBody() {
   const [activeEra, setActiveEra] = useState(ERAS[0].id);
   const [showSideTimeline, setShowSideTimeline] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const entryMap = new Map<string, boolean>();
@@ -138,7 +137,6 @@ export function SeekingCommunityBody() {
       <p className="text-xs text-white/30 mb-6">
         April 7, 2026 &middot; 8 min read &middot; 1,800 words
       </p>
-      <Timeline eras={ERAS} view="staggered" hideThematic heroRef={heroRef} />
       <Timeline
         eras={ERAS}
         view="linear"
