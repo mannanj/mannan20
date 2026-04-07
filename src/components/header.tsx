@@ -7,6 +7,7 @@ import { useApp } from '@/context/app-context';
 import { scrollToSection } from '@/lib/utils';
 import type { Section } from '@/lib/types';
 import { PlantIcon } from '@/components/icons/plant-icon';
+import { AnimatedText } from '@/components/animated-text';
 
 const LINKS: Section[] = ['home', 'about', 'contact'];
 
@@ -75,6 +76,8 @@ export function Header() {
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
+  const [rootHovered, setRootHovered] = useState(false);
+  const [rootCursorPos, setRootCursorPos] = useState({ x: 0, y: 0 });
   const [gardenLevel, setGardenLevel] = useState(0);
   const [gardenRetracting, setGardenRetracting] = useState(false);
   const gardenIntervalRef = useRef<ReturnType<typeof setInterval>>(null);
@@ -462,7 +465,7 @@ export function Header() {
         data-testid="garden-wrapper"
         className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
         onMouseEnter={() => setGardenExpanded(true)}
-        onMouseLeave={() => setGardenExpanded(false)}
+        onMouseLeave={() => { if (!rootHovered) setGardenExpanded(false); }}
       >
         <Link
           href="/garden"
@@ -512,13 +515,20 @@ export function Header() {
           >
             <path d="M10 0C10 1.5 10.5 3 10 5C9.8 6 10 6.5 10 7" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" fill="none" />
           </svg>
+          <div
+            className={`absolute top-full left-1/2 mt-[4px] z-10 ${gardenExpanded ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            style={{ transform: 'translateX(-50%)', width: '60px', height: `${55 * Math.max(gardenRootScale, 0.001)}px`, marginLeft: '0px', cursor: gardenExpanded ? `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🪴</text></svg>") 16 16, auto` : 'default' }}
+            onMouseEnter={() => { setRootHovered(true); setGardenExpanded(true); }}
+            onMouseLeave={() => { setRootHovered(false); setGardenExpanded(false); }}
+            onMouseMove={(e) => setRootCursorPos({ x: e.clientX, y: e.clientY })}
+          >
           <svg
             viewBox="0 0 20 55"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             preserveAspectRatio="none"
-            className={`absolute top-full left-1/2 mt-[4px] w-5 pointer-events-none z-10 ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
-            style={{ transformOrigin: 'top center', transform: 'translateX(-50%)', height: `${55 * Math.max(gardenRootScale, 0.001)}px`, transition: 'opacity 0.3s ease', overflow: 'visible' }}
+            className={`absolute top-0 left-1/2 w-5 pointer-events-none ${gardenExpanded || gardenRetracting ? 'opacity-60' : 'opacity-0'}`}
+            style={{ transformOrigin: 'top center', transform: 'translateX(-50%)', height: '100%', transition: 'opacity 0.3s ease', overflow: 'visible' }}
           >
             <defs>
               <radialGradient id="hibiscusCenter" cx="50%" cy="50%" r="50%">
@@ -868,6 +878,7 @@ export function Header() {
               );
             })}
           </svg>
+          </div>
           <svg
             viewBox="0 0 16 16"
             fill="none"
@@ -902,6 +913,16 @@ export function Header() {
           </div>
         </Link>
       </div>
+      {rootHovered && (
+        <div
+          className="fixed pointer-events-none z-[200]"
+          style={{ left: rootCursorPos.x + 20, top: rootCursorPos.y + 20 }}
+        >
+          <div className="text-[10px] font-medium whitespace-nowrap">
+            <AnimatedText text="The plants growing" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

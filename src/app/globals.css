@@ -188,6 +188,14 @@
   margin: 1em 0;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 body {
   color: #ffffff;
   background-color: #0b0b0b;
