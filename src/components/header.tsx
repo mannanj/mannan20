@@ -76,7 +76,6 @@ export function Header() {
   const { state } = useApp();
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const isGarden = pathname.startsWith('/garden');
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
@@ -469,7 +468,7 @@ export function Header() {
           </div>
         ))}
       </div>
-      {!isGarden && <div
+      <div
         ref={gardenRef}
         data-testid="garden-wrapper"
         className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
@@ -921,8 +920,8 @@ export function Header() {
             </div>
           </div>
         </Link>
-      </div>}
-      {rootHovered && !isGarden && (
+      </div>
+      {rootHovered && (
         <div
           className="fixed pointer-events-none z-[200]"
           style={{ left: rootCursorPos.x + 20, top: rootCursorPos.y + 20 }}

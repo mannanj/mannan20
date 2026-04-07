@@ -69,7 +69,7 @@ export default function GardenPage() {
         <PlantThree />
       </div>
 
-      <div className="relative max-w-2xl mx-auto px-6 pt-28 pb-16">
+      <div className="relative max-w-2xl mx-auto px-6 pt-40 pb-16">
         <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
 
         <p className="text-sm text-white/50 leading-relaxed mb-12">

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function HealthLongevityArticle() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <div className="max-w-2xl mx-auto px-6 pt-28 pb-16">
+      <div className="max-w-2xl mx-auto px-6 pt-40 pb-16">
         <Image
           src="/mannan-profile.png"
           alt="Mannan Javid"

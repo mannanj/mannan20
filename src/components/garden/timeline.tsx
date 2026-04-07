@@ -19,6 +19,7 @@ interface TimelineProps {
   activeEra?: string;
   visible?: boolean;
   heroRef?: RefObject<HTMLDivElement | null>;
+  previewMaxWidth?: number;
 }
 
 const STAGGERED_LEFT_MAX_W = 83;
@@ -28,6 +29,8 @@ const STAGGERED_CENTER = STAGGERED_LEFT_MAX_W + STAGGERED_GAP;
 const THEMATIC_LINE_INACTIVE = 8;
 const THEMATIC_LINE_ACTIVE = 52;
 const DOT_CONTAINER = 7;
+
+const HEADER_HEIGHT = 66;
 
 const RED_DOT = 'w-[7px] h-[7px] bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]';
 const RED_DOT_LG = 'w-[9px] h-[9px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]';
@@ -40,6 +43,7 @@ export function Timeline({
   activeEra,
   visible = true,
   heroRef,
+  previewMaxWidth,
 }: TimelineProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -51,7 +55,10 @@ export function Timeline({
 
   const scrollToEra = useCallback((id: string) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT - 16;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
     history.replaceState(null, '', `#${id}`);
   }, []);
 
@@ -128,10 +135,10 @@ export function Timeline({
                           {era.title}
                           {era.preview && (
                             <span
-                              className={`absolute left-0 top-full -mt-0.5 text-white/30 whitespace-nowrap pointer-events-none transition-opacity duration-300 ${
+                              className={`absolute left-0 top-full -mt-0.5 text-white/30 ${previewMaxWidth ? '' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                                 isHovered ? 'opacity-100' : 'opacity-0'
                               }`}
-                              style={{ fontSize: previewSize }}
+                              style={{ fontSize: previewSize, maxWidth: previewMaxWidth }}
                             >
                               {era.preview}
                             </span>
@@ -160,10 +167,10 @@ export function Timeline({
                           {era.title}
                           {era.preview && (
                             <span
-                              className={`absolute left-0 top-full -mt-0.5 text-white/30 whitespace-nowrap pointer-events-none transition-opacity duration-300 ${
+                              className={`absolute left-0 top-full -mt-0.5 text-white/30 ${previewMaxWidth ? '' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                                 isHovered ? 'opacity-100' : 'opacity-0'
                               }`}
-                              style={{ fontSize: previewSize }}
+                              style={{ fontSize: previewSize, maxWidth: previewMaxWidth }}
                             >
                               {era.preview}
                             </span>
@@ -277,10 +284,10 @@ export function Timeline({
                       {era.title}
                       {era.preview && (
                         <span
-                          className={`absolute left-0 top-full -mt-0.5 text-white/30 whitespace-nowrap pointer-events-none transition-opacity duration-300 ${
+                          className={`absolute left-0 top-full -mt-0.5 text-white/30 ${previewMaxWidth ? '' : 'whitespace-nowrap'} pointer-events-none transition-opacity duration-300 ${
                             isHovered ? 'opacity-100' : 'opacity-0'
                           }`}
-                          style={{ fontSize: previewSize }}
+                          style={{ fontSize: previewSize, maxWidth: previewMaxWidth }}
                         >
                           {era.preview}
                         </span>

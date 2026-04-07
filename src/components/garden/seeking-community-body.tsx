@@ -110,7 +110,8 @@ export function SeekingCommunityBody() {
     if (hash) {
       const el = document.getElementById(hash);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const y = el.getBoundingClientRect().top + window.scrollY - 82;
+        window.scrollTo({ top: y, behavior: 'smooth' });
         setActiveEra(hash);
       }
     }
@@ -149,9 +150,10 @@ export function SeekingCommunityBody() {
         view="linear"
         activeEra={activeEra}
         visible={showSideTimeline}
+        previewMaxWidth={200}
       />
 
-      <div className="space-y-12 text-sm text-white/70 leading-relaxed">
+      <div className="space-y-8 text-sm text-white/70 leading-relaxed">
         <section id="era-cosmos">
           <div className="space-y-4">
             <p className="text-white/80">
