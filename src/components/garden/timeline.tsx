@@ -52,6 +52,7 @@ export function Timeline({
   const scrollToEra = useCallback((id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', `#${id}`);
   }, []);
 
   const handleClick = useCallback(
@@ -212,7 +213,7 @@ export function Timeline({
   return (
     <>
       <nav
-        className={`hidden lg:flex fixed left-[max(1rem,calc(50vw-400px-140px))] top-1/2 -translate-y-1/2 flex-col z-10 transition-opacity duration-500 ${
+        className={`hidden lg:flex fixed left-[max(1rem,calc(50vw-400px-140px))] top-[calc(50%+33px)] -translate-y-1/2 flex-col z-10 transition-opacity duration-500 ${
           visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >

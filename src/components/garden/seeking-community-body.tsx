@@ -75,11 +75,9 @@ function Divider() {
   return <div className="w-12 h-px bg-white/[0.08] mx-auto" />;
 }
 
-const SCROLL_THRESHOLD = 300;
-
 export function SeekingCommunityBody() {
   const [activeEra, setActiveEra] = useState(ERAS[0].id);
-  const [showSideTimeline, setShowSideTimeline] = useState(false);
+  const [showSideTimeline, setShowSideTimeline] = useState(true);
 
   useEffect(() => {
     const entryMap = new Map<string, boolean>();
@@ -108,8 +106,18 @@ export function SeekingCommunityBody() {
   }, []);
 
   useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const el = document.getElementById(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setActiveEra(hash);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => {
-      setShowSideTimeline(window.scrollY > SCROLL_THRESHOLD);
       if (
         window.innerHeight + window.scrollY >=
         document.body.scrollHeight - 200
@@ -118,7 +126,6 @@ export function SeekingCommunityBody() {
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -144,7 +151,7 @@ export function SeekingCommunityBody() {
         visible={showSideTimeline}
       />
 
-      <div className="space-y-20 text-sm text-white/70 leading-relaxed">
+      <div className="space-y-12 text-sm text-white/70 leading-relaxed">
         <section id="era-cosmos">
           <div className="space-y-4">
             <p className="text-white/80">
