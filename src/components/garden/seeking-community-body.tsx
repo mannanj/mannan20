@@ -148,6 +148,7 @@ export function SeekingCommunityBody() {
       <Timeline
         eras={ERAS}
         view="linear"
+        size="lg"
         activeEra={activeEra}
         visible={showSideTimeline}
         previewMaxWidth={200}
