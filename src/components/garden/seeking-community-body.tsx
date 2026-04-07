@@ -72,12 +72,15 @@ const ERAS = [
 ];
 
 function Divider() {
-  return <div className="w-12 h-px bg-white/[0.08] mx-auto" />;
+  return <div className="w-1/3 h-[0.25px] bg-white/[0.33]" />;
 }
+
+const TIMELINE_DROP = 100;
 
 export function SeekingCommunityBody() {
   const [activeEra, setActiveEra] = useState(ERAS[0].id);
   const [showSideTimeline, setShowSideTimeline] = useState(true);
+  const [timelineOffset, setTimelineOffset] = useState(TIMELINE_DROP);
 
   useEffect(() => {
     const entryMap = new Map<string, boolean>();
@@ -125,6 +128,9 @@ export function SeekingCommunityBody() {
       ) {
         setActiveEra(ERAS[ERAS.length - 1].id);
       }
+      const scrollY = window.scrollY;
+      const offset = Math.max(0, TIMELINE_DROP - scrollY);
+      setTimelineOffset(offset);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -152,6 +158,7 @@ export function SeekingCommunityBody() {
         activeEra={activeEra}
         visible={showSideTimeline}
         previewMaxWidth={150}
+        topOffset={timelineOffset}
       />
 
       <div className="space-y-8 text-sm text-white/70 leading-relaxed">
@@ -159,18 +166,18 @@ export function SeekingCommunityBody() {
           <div className="space-y-4">
             <p className="text-white/80">
               I was in college when <em>Cosmos: A Spacetime Odyssey</em> came
-              out. Neil deGrasse Tyson walked my friends and I through the
+              out. Neil deGrasse Tyson walked my friends and me through the
               vastness of space and something clicked &mdash; the sheer scale,
               the power, the beauty. It was the most fascinating, engrossing
               thing I&apos;d ever witnessed.
             </p>
             <p>
-              I&apos;ve grown up intellectually in an open-minded, liberal
+              I grew up intellectually in an open-minded, liberal
               environment. My public school system was ranked top ten in the
               country, and I had access to the resources I needed to satisfy my
               curiosity. I could be curious, I could ask questions, and I was
               lucky enough to have the latest computers and internet at an early
-              age. From 2002 I learned how to browse the web and search to find
+              age. From 2002, I learned how to browse the web and search for
               answers to my questions.
             </p>
             <p>
@@ -186,15 +193,15 @@ export function SeekingCommunityBody() {
           <div className="space-y-4">
             <p className="text-white/80">
               Four years later I learned to meditate. The thoughts I got swept
-              up with and thought were me, suddenly became another thing that
+              up in and thought were me suddenly became another thing that
               just happens in me. Am I my heart? My breath? What I see? The
-              answers to those questions led me to realize, not just
-              intellectually but experientially and with embodiment, that I am
-              more than what any one or any thought tells me. I can make up
+              answers to those questions led me to realize &mdash; not just
+              intellectually but experientially and with embodiment &mdash; that I am
+              more than what any one person or any thought tells me. I can make up
               whatever identity I want about who I am.
             </p>
             <p>
-              Cosmos also helped to plant a growing curiosity for answers to
+              <em>Cosmos</em> also helped plant a growing curiosity for answers to
               questions that the religion I grew up with couldn&apos;t provide.
             </p>
             <p>
@@ -205,7 +212,7 @@ export function SeekingCommunityBody() {
               that night.
             </p>
             <p>
-              I found new space to find and embrace answers to life&apos;s
+              I found new space to seek and embrace answers to life&apos;s
               deepest questions outside of any particular authority figure. The
               authority was now within me.
             </p>
@@ -280,7 +287,7 @@ export function SeekingCommunityBody() {
             <p>
               I was initiated into manhood with a community through a system of
               philosophy and embodiment based on Carl Jung&apos;s work and the
-              hermetic principles. It gave me structure to the spiritual
+              hermetic principles. It gave structure to the spiritual
               framework that had been forming in me for years. This unique
               combination of Jungian shadow work and ancient wisdom traditions
               became the foundation of how I relate to myself and others today.
@@ -295,47 +302,43 @@ export function SeekingCommunityBody() {
             <p className="text-white/80">
               I dropped my apartment and said goodbye to my close roommate and
               friend, Jonnie. I sold most of my things, packed what remained in
-              a car, and drove north. I traveled from LA toward south Oregon and
+              a car, and drove north &mdash; from LA toward southern Oregon and
               northern California.
             </p>
             <p>
-              My dream was to create intentional, conscious community &mdash;
-              and apply my engineering and analytical mindset to live out this
-              more efficient and effective system of living based on combining
-              our modern technologies and advancements with how our ancestors
-              lived. Think returning to a tighter social fabric to get our
-              social needs met and combat isolation and disconnection, with food
-              and space efficiencies through systems like bulk food and
-              materials purcahses to realize cost efficiencies, and utilize team
-              labor to tend for the land and take care of other errands like my
-              eventual child rearing. The new spiritual framework based on
-              breaking identity and labels, and acceptance and tolerance over
-              otherness (a model of acceptance and non-judgement for all
-              identities and beliefs) would power this. The goal was a model
-              that could be tested out here and scaled for anyone. Lots of
-              communities and ecovillages exist and are doing this already, they
-              just haven't captured this into a simple, replicable, documented
-              and easy to understand and follow system for everyone else I was
-              thinking.
+              My dream was to create intentional, conscious community and apply
+              my engineering and analytical mindset to live out a more efficient
+              and effective system of living &mdash; one that combined modern
+              technologies and advancements with how our ancestors lived. Think
+              returning to a tighter social fabric to meet our social needs and
+              combat isolation and disconnection, with food and space
+              efficiencies through things like bulk purchasing to realize cost
+              savings, and shared labor to tend the land and handle other tasks
+              like eventual child-rearing. A new spiritual framework built on
+              releasing identity and labels, and acceptance over otherness,
+              would power this. The goal was a model that could be tested and
+              scaled for anyone. Lots of communities and ecovillages are already
+              doing this &mdash; they just haven&apos;t captured it into a simple,
+              replicable, documented, easy-to-follow system for everyone else.
             </p>
             <p>
               I arrived at a small ecovillage in the mountains. I lasted two
               weeks. The reality was: I could not sustain a one-hour drive each
-              way into town just to get internet to sustain my tech job, and
-              still contribute to the local community who was not in that
-              arrangement. Unfortunately, the Starlink arrived the day I left.
+              way into town just to get internet for my tech job and still
+              contribute meaningfully to the local community. Unfortunately, the
+              Starlink arrived the day I left.
             </p>
             <p>
-              I left and went car camping across the national forests working
-              with my newly exciting starlink while I figured out my next steps.
-              It was exciting to wake up to the most beautiful views, practice
-              the minimalism and ascetism I'd always wanted to try, and live out
-              of a car without any noise or light pollution and get to be by a
-              camp fire almost every day. My coworkers never knew I was working
-              remotely from trailheads and clearings of some of the most
-              beautiful parks, it was the most stripped-down version of life
-              I've ever experienced. It taught me how little I could survive off
-              of.
+              I left and went car camping across the national forests, working
+              with my newly exciting Starlink connection while I figured out my
+              next steps. It was exciting to wake up to the most beautiful
+              views, practice the minimalism and asceticism I&apos;d always wanted
+              to try, and live out of a car without noise or light pollution and
+              sit by a campfire almost every day. My coworkers never knew I was
+              working remotely from trailheads and clearings in some of the most
+              beautiful parks. It was the most stripped-down version of life
+              I&apos;ve ever experienced. It taught me how little I needed to
+              survive.
             </p>
           </div>
         </section>
@@ -353,19 +356,19 @@ export function SeekingCommunityBody() {
               My time there was enlightening, and I enjoyed learning from those
               on the land and finally leaning into my dream of living in a
               highly social and collaborative environment. I learned a lot about
-              myself: a bias and character flaw I carry is to overly trusting
-              and naive. I learned to practice the discernment of social
-              networks and friendships by tuning my rules for making and keeping
-              friends. I wanted to be around people who were more commited and
-              devoted to the cause of formulating replicable systems for
+              myself: a bias and character flaw I carry is being overly trusting
+              and naive. I learned to practice discernment in social
+              networks and friendships by sharpening my rules for making and keeping
+              friends. I wanted to be around people who were more committed and
+              devoted to the cause of building replicable systems for
               community around the world.
             </p>
             <p>
               I also learned to better articulate what I wanted from community:
-              clear, aligned structure, principles and frameworks for
-              sustainability that were followed more often, and less free
-              flowing social time and connection. I wish I'd learned this sooner
-              and would be sure to interview my next community very closely on
+              clear, aligned structure; principles and frameworks for
+              sustainability that were actually followed; and less free-flowing
+              social time without intention. I wish I&apos;d learned this sooner,
+              and I&apos;ll be sure to interview my next community closely on
               value alignment.
             </p>
           </div>
@@ -394,9 +397,9 @@ export function SeekingCommunityBody() {
                 Generosity
               </span>
               <p className="mt-1">
-                My name from birth Mannan translates to Generous. And it feels
-                true to who I am. One of my lived values has been to be giving,
-                and I know first hand how virtues can become corrupted in
+                My name from birth, Mannan, translates to Generous. And it feels
+                true to who I am. One of my lived values has been to give,
+                and I know firsthand how virtues can become corrupted in
                 excess.
               </p>
             </div>
@@ -408,8 +411,8 @@ export function SeekingCommunityBody() {
                 I hold a devotional personality. My nature is to cultivate
                 interests into obsessions, and I have no issue making strong
                 commitments. One of the things I enjoy most is finding what I
-                have in common with friends and making challenges that we
-                undergo together to grow.
+                have in common with friends and making challenges we undergo
+                together to grow.
               </p>
             </div>
             <div>
@@ -418,8 +421,8 @@ export function SeekingCommunityBody() {
               </span>
               <p className="mt-1">
                 My capacity for seeking discomfort makes me ruthless at growing.
-                It was a unifying interest between me and a community oriented
-                around it in LA and it has brought me community. All growth
+                It was a unifying interest between me and a community in LA
+                oriented around it, and it has brought me community. All growth
                 happens right outside the comfort zone.
               </p>
             </div>
@@ -430,16 +433,16 @@ export function SeekingCommunityBody() {
               <p className="mt-1">
                 This represents a perspective I&apos;ve noticed immediately
                 changes experience: if I&apos;m looking for the good things
-                around me, I am seeing things in a positive light, the
-                experience that life presents is different and this isn't just
-                woo-woo and hopeful. It's an immediate change to the receptive
-                system and the noticing and subsequent acting on of
-                opportunities around us, to look for good things than to be run
-                by fear and look for what might go wrong. This particular phrase
-                comes from a movement I&apos;ve discovered called flow, from
-                www.flow.life. I like this system as it leads my system to
-                discover the good &mdash; and bring more of what I want because
-                I&apos;m focusing on it.
+                around me, I see things in a positive light &mdash; and the
+                experience that life presents shifts. This isn&apos;t just
+                woo-woo hopefulness. It&apos;s an immediate change to the
+                receptive system &mdash; noticing, and then acting on, the
+                opportunities around us rather than being run by fear and
+                scanning for what might go wrong. This particular phrase comes
+                from a movement I&apos;ve discovered called flow, from
+                www.flow.life. I like this system because it leads me to
+                discover the good &mdash; and bring more of what I want,
+                because I&apos;m focusing on it.
               </p>
             </div>
           </div>
@@ -452,14 +455,14 @@ export function SeekingCommunityBody() {
             <p className="text-white/80">
               When I left community life and returned to share space with my
               family in Northern Virginia, the dream never died. I realized I
-              had some work to do &mdash; becoming clear on who I am and what I
+              had work to do &mdash; becoming clear on who I am and what I
               want from others.
             </p>
             <p>
               Choosing the right community and staying in positive energy is
               essential. The dream of conscious, intentional community remains a
-              north star, the difference now is I'm looking for the things that
-              will go right and am much clearer on what I want.
+              north star. The difference now is I&apos;m looking for what will
+              go right, and I&apos;m much clearer on what I want.
             </p>
           </div>
         </section>

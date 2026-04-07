@@ -20,6 +20,7 @@ interface TimelineProps {
   visible?: boolean;
   heroRef?: RefObject<HTMLDivElement | null>;
   previewMaxWidth?: number;
+  topOffset?: number;
 }
 
 const STAGGERED_LEFT_MAX_W = 83;
@@ -44,6 +45,7 @@ export function Timeline({
   visible = true,
   heroRef,
   previewMaxWidth,
+  topOffset = 0,
 }: TimelineProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -220,9 +222,10 @@ export function Timeline({
   return (
     <>
       <nav
-        className={`hidden lg:flex fixed left-[max(1rem,calc(50vw-400px-140px))] top-[calc(50%+33px)] -translate-y-1/2 flex-col z-10 transition-opacity duration-500 ${
+        className={`hidden lg:flex fixed left-[max(1rem,calc(50vw-400px-140px))] -translate-y-1/2 flex-col z-10 transition-opacity duration-500 ${
           visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
+        style={{ top: `calc(50% + 33px + ${topOffset}px)` }}
       >
         <div className="relative flex flex-col">
           {filteredEras.map((era, i) => {
