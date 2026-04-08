@@ -6,7 +6,16 @@ export const metadata: Metadata = {
   description: 'Thoughts, projects, and interests — at various stages of growth.',
 };
 
-const ARTICLES = [
+interface GardenArticle {
+  title: string;
+  description: string;
+  href: string;
+  date?: string;
+  readingTime?: string;
+  wordCount?: number;
+}
+
+const ARTICLES: GardenArticle[] = [
   {
     title: 'Seeking Community',
     description: 'From Cosmos to car camping to Hawaii — a journey through spirituality, community, and finding guiding principles.',
@@ -14,6 +23,11 @@ const ARTICLES = [
     readingTime: '8 min read',
     wordCount: 1800,
     href: '/garden/article/seeking-community',
+  },
+  {
+    title: 'Funny Frustrations',
+    description: 'The lighter side of working with AI.',
+    href: '/garden/article/funny-frustrations',
   },
   {
     title: "Health is an Artform",
@@ -76,12 +90,12 @@ export default function GardenPage() {
           Welcome to my garden. Here live my thoughts, projects, and interests at various stages of growth.
         </p>
 
-        <div className="space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {ARTICLES.map((article) => (
             <Link
               key={article.href}
               href={article.href}
-              className="group -mx-4 flex flex-col rounded-lg px-4 py-5 hover:bg-white/[0.03] transition-colors duration-200"
+              className="group flex flex-col rounded-lg px-4 py-5 hover:bg-white/[0.03] transition-colors duration-200"
             >
               <span className="text-base font-medium text-white group-hover:text-[#4a7c3f] transition-colors duration-200">
                 {article.title}
@@ -89,10 +103,13 @@ export default function GardenPage() {
               <span className="text-sm text-white/40 mt-1">
                 {article.description}
               </span>
-              <span className="text-xs text-white/30 mt-2">
-                {new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                {' '}&middot;{' '}{article.readingTime}{' '}&middot;{' '}{article.wordCount.toLocaleString()} words
-              </span>
+              {article.date && (
+                <span className="text-xs text-white/30 mt-2">
+                  {new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  {article.readingTime && <>{' '}&middot;{' '}{article.readingTime}</>}
+                  {article.wordCount && <>{' '}&middot;{' '}{article.wordCount.toLocaleString()} words</>}
+                </span>
+              )}
             </Link>
           ))}
         </div>

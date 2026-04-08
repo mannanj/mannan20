@@ -21,6 +21,7 @@ interface TimelineProps {
   heroRef?: RefObject<HTMLDivElement | null>;
   previewMaxWidth?: number;
   topOffset?: number;
+  onHoverChange?: (eraId: string | null, position?: { x: number; y: number }) => void;
 }
 
 const STAGGERED_LEFT_MAX_W = 83;
@@ -46,6 +47,7 @@ export function Timeline({
   heroRef,
   previewMaxWidth,
   topOffset = 0,
+  onHoverChange,
 }: TimelineProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -110,8 +112,17 @@ export function Timeline({
                   className={`relative flex items-center cursor-pointer ${isHovered ? 'z-20' : 'z-0'}`}
                   style={{ height: rowH }}
                   onClick={() => handleClick(era.id)}
-                  onMouseEnter={() => setHoveredId(era.id)}
-                  onMouseLeave={() => setHoveredId(null)}
+                  onMouseEnter={(e) => {
+                    setHoveredId(era.id);
+                    if (onHoverChange) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      onHoverChange(era.id, { x: rect.right + 16, y: rect.top });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredId(null);
+                    onHoverChange?.(null);
+                  }}
                 >
                   <div
                     className={`absolute -translate-x-1/2 z-10 rounded-full transition-all duration-300 ${
@@ -246,8 +257,17 @@ export function Timeline({
             return (
               <div
                 key={era.id}
-                onMouseEnter={() => setHoveredId(era.id)}
-                onMouseLeave={() => setHoveredId(null)}
+                onMouseEnter={(e) => {
+                  setHoveredId(era.id);
+                  if (onHoverChange) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    onHoverChange(era.id, { x: rect.right + 16, y: rect.top });
+                  }
+                }}
+                onMouseLeave={() => {
+                  setHoveredId(null);
+                  onHoverChange?.(null);
+                }}
                 className="transition-transform duration-300"
                 style={pushAfterIdx >= 0 && i > pushAfterIdx ? { transform: 'translateY(22px)' } : undefined}
               >
