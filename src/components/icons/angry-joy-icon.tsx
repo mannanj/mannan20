@@ -21,34 +21,48 @@ export function AngryJoyIcon({ size = 44 }: { size?: number }) {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <radialGradient id="face-grad" cx="50%" cy="40%" r="50%">
-            <stop offset="0%" stopColor="#ff6b6b" />
-            <stop offset="100%" stopColor="#c0392b" />
+          <radialGradient id="face-grad" cx="50%" cy="30%" r="55%">
+            <stop offset="0%" stopColor="#ffaa33" />
+            <stop offset="40%" stopColor="#ff6622" />
+            <stop offset="100%" stopColor="#cc2200" />
           </radialGradient>
+          <radialGradient id="face-highlight" cx="50%" cy="25%" r="40%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="tear-grad" cx="50%" cy="30%" r="50%">
+            <stop offset="0%" stopColor="#b8e4ff" />
+            <stop offset="100%" stopColor="#5bbfef" />
+          </radialGradient>
+          <filter id="tear-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#3a8abf" floodOpacity="0.3" />
+          </filter>
         </defs>
 
         <circle cx="50" cy="50" r="46" fill="url(#face-grad)" />
+        <circle cx="50" cy="50" r="46" fill="url(#face-highlight)" />
 
-        <g>
-          <line x1="22" y1="28" x2="38" y2="35" stroke="#4a1a1a" strokeWidth="3.5" strokeLinecap="round" />
-          <line x1="62" y1="35" x2="78" y2="28" stroke="#4a1a1a" strokeWidth="3.5" strokeLinecap="round" />
-        </g>
+        <path d="M 24 32 Q 31 28 38 34" fill="#6b2a1a" stroke="none" />
+        <path d="M 62 34 Q 69 28 76 32" fill="#6b2a1a" stroke="none" />
 
-        <circle cx="34" cy="42" r="4.5" fill="#4a1a1a" />
-        <circle cx="66" cy="42" r="4.5" fill="#4a1a1a" />
+        <path d="M 28 44 Q 33 40 38 44 Q 33 48 28 44 Z" fill="#6b2a1a" />
+        <path d="M 62 44 Q 67 40 72 44 Q 67 48 62 44 Z" fill="#6b2a1a" />
 
-        <circle cx="35.5" cy="41" r="1.5" fill="white" opacity="0.6" />
-        <circle cx="67.5" cy="41" r="1.5" fill="white" opacity="0.6" />
+        <path d="M 34 60 Q 50 54 66 60" fill="none" stroke="#6b2a1a" strokeWidth="2.5" strokeLinecap="round" />
 
         <path
-          d="M 30 68 Q 50 80 70 68"
-          fill="none"
-          stroke="#4a1a1a"
-          strokeWidth="3"
-          strokeLinecap="round"
+          d="M 10 46 Q 14 36 22 44 Q 16 52 10 46 Z"
+          fill="url(#tear-grad)"
+          filter="url(#tear-shadow)"
         />
+        <ellipse cx="15" cy="43" rx="2.5" ry="1.5" fill="white" opacity="0.5" />
 
-        <rect x="38" y="65" width="24" height="10" rx="2" fill="white" opacity="0.9" />
+        <path
+          d="M 90 46 Q 86 36 78 44 Q 84 52 90 46 Z"
+          fill="url(#tear-grad)"
+          filter="url(#tear-shadow)"
+        />
+        <ellipse cx="85" cy="43" rx="2.5" ry="1.5" fill="white" opacity="0.5" />
       </svg>
 
       <svg
@@ -58,35 +72,41 @@ export function AngryJoyIcon({ size = 44 }: { size?: number }) {
         height={size}
         xmlns="http://www.w3.org/2000/svg"
       >
+        <defs>
+          <radialGradient id="small-tear-grad" cx="50%" cy="30%" r="50%">
+            <stop offset="0%" stopColor="#b8e4ff" />
+            <stop offset="100%" stopColor="#5bbfef" />
+          </radialGradient>
+        </defs>
         <style>{`
-          .tear-left-1, .tear-left-2, .tear-left-3,
-          .tear-right-1, .tear-right-2, .tear-right-3 {
+          .tear-l1, .tear-l2, .tear-l3,
+          .tear-r1, .tear-r2, .tear-r3 {
             opacity: 0;
           }
-          .tear-left-1.active, .tear-right-1.active {
+          .tear-l1.active, .tear-r1.active {
             animation: tearfall 1.5s ease-in forwards;
           }
-          .tear-left-2.active, .tear-right-2.active {
+          .tear-l2.active, .tear-r2.active {
             animation: tearfall 1.5s ease-in 0.25s forwards;
           }
-          .tear-left-3.active, .tear-right-3.active {
+          .tear-l3.active, .tear-r3.active {
             animation: tearfall 1.5s ease-in 0.5s forwards;
           }
           @keyframes tearfall {
-            0% { opacity: 0.9; transform: translateY(0); }
-            80% { opacity: 0.6; }
-            100% { opacity: 0; transform: translateY(40px); }
+            0% { opacity: 0.8; transform: translateY(0); }
+            80% { opacity: 0.4; }
+            100% { opacity: 0; transform: translateY(35px); }
           }
         `}</style>
 
         <g key={tearCycle ? 'a' : 'b'}>
-          <circle className={`tear-left-1 active`} cx="28" cy="50" r="3" fill="#5bcefa" />
-          <circle className={`tear-left-2 active`} cx="32" cy="52" r="2.5" fill="#5bcefa" />
-          <circle className={`tear-left-3 active`} cx="25" cy="53" r="2" fill="#5bcefa" />
+          <circle className="tear-l1 active" cx="12" cy="52" r="2.5" fill="url(#small-tear-grad)" />
+          <circle className="tear-l2 active" cx="16" cy="54" r="2" fill="url(#small-tear-grad)" />
+          <circle className="tear-l3 active" cx="10" cy="55" r="1.5" fill="url(#small-tear-grad)" />
 
-          <circle className={`tear-right-1 active`} cx="72" cy="50" r="3" fill="#5bcefa" />
-          <circle className={`tear-right-2 active`} cx="68" cy="52" r="2.5" fill="#5bcefa" />
-          <circle className={`tear-right-3 active`} cx="75" cy="53" r="2" fill="#5bcefa" />
+          <circle className="tear-r1 active" cx="88" cy="52" r="2.5" fill="url(#small-tear-grad)" />
+          <circle className="tear-r2 active" cx="84" cy="54" r="2" fill="url(#small-tear-grad)" />
+          <circle className="tear-r3 active" cx="90" cy="55" r="1.5" fill="url(#small-tear-grad)" />
         </g>
       </svg>
     </div>

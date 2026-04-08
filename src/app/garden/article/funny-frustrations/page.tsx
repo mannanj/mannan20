@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { AngryJoyIcon } from '@/components/icons/angry-joy-icon';
 import { FunnyFrustrationsBody } from '@/components/garden/funny-frustrations-body';
+import { JOYFUL_FRUSTRATIONS } from '@/lib/garden-articles';
 
 export const metadata: Metadata = {
-  title: 'Funny Frustrations | Garden',
-  description: 'Funny moments of frustration captured on Web',
+  title: `${JOYFUL_FRUSTRATIONS.title} | Garden`,
+  description: JOYFUL_FRUSTRATIONS.description,
 };
 
 export default function FunnyFrustrationsArticle() {
@@ -16,10 +17,10 @@ export default function FunnyFrustrationsArticle() {
         </div>
 
         <h1 className="text-2xl font-semibold tracking-tight mb-2">
-          Funny Frustrations
+          {JOYFUL_FRUSTRATIONS.title}
         </h1>
         <p className="text-xs text-white/30 mb-10">
-          Funny moments of frustration captured on Web
+          {JOYFUL_FRUSTRATIONS.description}
         </p>
 
         <FunnyFrustrationsBody />

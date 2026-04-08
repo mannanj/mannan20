@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Timeline } from './timeline';
 import type { TimelineEra } from './timeline';
 import { DraggablePopout } from './draggable-popout';
+
+const TIMELINE_DROP = 100;
 
 const FRUSTRATIONS: TimelineEra[] = [
   {
@@ -38,7 +40,7 @@ const FRUSTRATION_CONTENT: Record<string, ChatMsg[]> = {
     { role: 'assistant', content: 'No, that wasn\'t abusive \u2014 it was just a frustrating interaction. You asked a reasonable question about your own project, and the previous session was overly cautious by refusing to look up a value you set yourself in your own codebase. Your reaction ("{{blur}}. this is mine.") was fair frustration at an unhelpful response. It course-corrected and got you the answer.' },
     { role: 'user', content: 'im sorry' },
     { role: 'assistant', content: 'No need to apologize \u2014 you didn\'t do anything wrong. What do you need help with today?' },
-    { role: 'user', content: 'Be a part of my site memes' },
+    { role: 'user', content: 'I love you be a part of my site memes' },
   ],
 };
 
@@ -77,6 +79,7 @@ function renderBlurred(text: string) {
     </span>
   ));
 }
+
 
 function ChatBubble({ msg }: { msg: ChatMsg }) {
   if (msg.role === 'divider') {
@@ -128,47 +131,124 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
 }
 
 export function FunnyFrustrationsBody() {
-  const [activePopout, setActivePopout] = useState<string | null>(null);
+  const [activeEra, setActiveEra] = useState(FRUSTRATIONS[0].id);
+  const [timelineOffset, setTimelineOffset] = useState(TIMELINE_DROP);
+  const [popoutOpen, setPopoutOpen] = useState(false);
+  const [popoutEraId, setPopoutEraId] = useState<string | null>(null);
   const [popoutPos, setPopoutPos] = useState({ x: 0, y: 0 });
 
-  const handleItemClick = useCallback((eraId: string, position: { x: number; y: number }) => {
-    setActivePopout(eraId);
-    setPopoutPos(position);
+  useEffect(() => {
+    const entryMap = new Map<string, boolean>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          entryMap.set(entry.target.id, entry.isIntersecting);
+        }
+        let current: string | null = null;
+        for (const era of FRUSTRATIONS) {
+          if (entryMap.get(era.id)) current = era.id;
+        }
+        if (current) setActiveEra(current);
+      },
+      { rootMargin: '-15% 0px -35% 0px', threshold: 0 },
+    );
+    for (const era of FRUSTRATIONS) {
+      const el = document.getElementById(era.id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
   }, []);
 
-  const handlePopoutClose = useCallback(() => {
-    setActivePopout(null);
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const el = document.getElementById(hash);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 82;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        setActiveEra(hash);
+      }
+    }
   }, []);
 
-  const messages = activePopout ? FRUSTRATION_CONTENT[activePopout] : null;
-  const frustration = activePopout ? FRUSTRATIONS.find(f => f.id === activePopout) : null;
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 200) {
+        setActiveEra(FRUSTRATIONS[FRUSTRATIONS.length - 1].id);
+      }
+      setTimelineOffset(Math.max(0, TIMELINE_DROP - window.scrollY));
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const openPopout = useCallback((eraId: string, x: number, y: number) => {
+    setPopoutEraId(eraId);
+    setPopoutPos({ x, y });
+    setPopoutOpen(true);
+  }, []);
+
+  const closePopout = useCallback(() => {
+    setPopoutOpen(false);
+    setPopoutEraId(null);
+  }, []);
+
+  const popoutFrustration = popoutEraId ? FRUSTRATIONS.find(f => f.id === popoutEraId) : null;
+  const popoutMessages = popoutEraId ? FRUSTRATION_CONTENT[popoutEraId] : null;
 
   return (
     <>
       <Timeline
         eras={FRUSTRATIONS}
-        view="staggered"
+        view="linear"
         size="lg"
-        onItemClick={handleItemClick}
+        activeEra={activeEra}
+        visible
+        topOffset={timelineOffset}
+        previewMaxWidth={150}
       />
 
+      <div className="space-y-16">
+        {FRUSTRATIONS.map((f) => (
+          <section key={f.id} id={f.id}>
+            <div className="flex items-baseline gap-3 mb-6">
+              <h2 className="text-base font-medium text-white">{f.title}</h2>
+              <button
+                type="button"
+                onClick={(e) => openPopout(f.id, e.clientX, e.clientY)}
+                className="text-white/25 hover:text-white/60 transition-colors cursor-pointer"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </button>
+            </div>
+            {FRUSTRATION_CONTENT[f.id]?.map((msg, i) => (
+              <ChatBubble key={i} msg={msg} />
+            ))}
+          </section>
+        ))}
+      </div>
+
       <DraggablePopout
-        open={!!activePopout}
-        onClose={handlePopoutClose}
+        open={popoutOpen}
+        onClose={closePopout}
         anchorPosition={popoutPos}
         width={420}
         header={
-          frustration ? (
+          popoutFrustration ? (
             <>
               <h3 className="text-sm font-medium text-white mb-0.5">
-                {frustration.title}
+                {popoutFrustration.title}
               </h3>
-              <p className="text-[11px] text-white/35 mb-4">{frustration.preview}</p>
+              <p className="text-[11px] text-white/35 mb-4">{popoutFrustration.preview}</p>
             </>
           ) : undefined
         }
       >
-        {messages?.map((msg, i) => (
+        {popoutMessages?.map((msg, i) => (
           <ChatBubble key={i} msg={msg} />
         ))}
       </DraggablePopout>

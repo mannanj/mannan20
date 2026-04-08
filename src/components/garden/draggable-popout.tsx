@@ -26,6 +26,7 @@ interface DraggablePopoutProps {
   onClose: () => void;
   anchorPosition?: { x: number; y: number };
   header?: ReactNode;
+  description?: ReactNode;
   children: ReactNode;
   width?: number;
   miniWidth?: number;
@@ -38,6 +39,7 @@ export function DraggablePopout({
   onClose,
   anchorPosition,
   header,
+  description,
   children,
   width = DEFAULT_WIDTH,
   miniWidth = DEFAULT_MINI_WIDTH,
@@ -47,6 +49,7 @@ export function DraggablePopout({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [closeHover, setCloseHover] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [headerExpanded, setHeaderExpanded] = useState(false);
   const popoutRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -66,6 +69,7 @@ export function DraggablePopout({
       const y = Math.max(12, Math.min(anchorPosition.y - 40, vh - 500));
       setPosition({ x, y });
       setMinimized(false);
+      setHeaderExpanded(false);
     }
   }, [open, anchorPosition, width]);
 
@@ -193,6 +197,37 @@ export function DraggablePopout({
             transition: 'max-height 300ms ease',
           }}
         >
+          {description && (
+            <div className="relative">
+              <div className={minimized && !headerExpanded ? 'line-clamp-2' : ''}>
+                {description}
+              </div>
+              {minimized && !headerExpanded && (
+                <button
+                  type="button"
+                  onClick={() => setHeaderExpanded(true)}
+                  className="inline-flex items-center gap-0.5 mt-1 text-white/25 hover:text-white/50 transition-colors duration-200 cursor-pointer"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="3" cy="7" r="1.2" fill="currentColor" />
+                    <circle cx="7" cy="7" r="1.2" fill="currentColor" />
+                    <circle cx="11" cy="7" r="1.2" fill="currentColor" />
+                  </svg>
+                </button>
+              )}
+              {minimized && headerExpanded && (
+                <button
+                  type="button"
+                  onClick={() => setHeaderExpanded(false)}
+                  className="inline-flex items-center mt-1 text-white/25 hover:text-white/50 transition-colors duration-200 cursor-pointer"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9L7 5L11 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
           {children}
         </div>
       </div>
