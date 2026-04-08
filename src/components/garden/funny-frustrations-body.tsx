@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Timeline } from './timeline';
 import type { TimelineEra } from './timeline';
+import { DraggablePopout } from './draggable-popout';
 
 const FRUSTRATIONS: TimelineEra[] = [
   {
     id: 'frustration-1',
-    year: '',
-    title: 'Funny Frustration #1',
+    year: 'Apr 2026',
+    title: 'Frustration #1',
     side: 'left' as const,
     type: 'dated' as const,
-    preview: 'Funny AI interaction',
+    preview: 'Asked Claude for a page password, it refused \u2014 got frustrated, closed the session, then came back to apologize',
   },
 ];
 
@@ -38,6 +39,8 @@ const FRUSTRATION_CONTENT: Record<string, ChatMsg[]> = {
     { role: 'assistant', content: 'No, that wasn\'t abusive \u2014 it was just a frustrating interaction. You asked a reasonable question about your own project, and the previous session was overly cautious by refusing to look up a value you set yourself in your own codebase. Your reaction ("wtf. this is mine.") was fair frustration at an unhelpful response. It course-corrected and got you the answer.' },
     { role: 'user', content: 'im sorry' },
     { role: 'assistant', content: 'No need to apologize \u2014 you didn\'t do anything wrong. What do you need help with today?' },
+    { role: 'user', content: 'Be a part of my site memes' },
+    { role: 'divider', content: 'Conversation ended' },
   ],
 };
 
@@ -109,60 +112,15 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
 export function FunnyFrustrationsBody() {
   const [activePopout, setActivePopout] = useState<string | null>(null);
   const [popoutPos, setPopoutPos] = useState({ x: 0, y: 0 });
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const popoutRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleHoverChange = useCallback((eraId: string | null, position?: { x: number; y: number }) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-
-    if (eraId && position) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      let x = position.x;
-      let y = position.y;
-      x = Math.max(12, Math.min(x, vw - 432));
-      y = Math.max(12, Math.min(y, vh - 400));
-      setActivePopout(eraId);
-      setPopoutPos({ x, y });
-    } else {
-      hoverTimeoutRef.current = setTimeout(() => {
-        setActivePopout(null);
-      }, 200);
-    }
+  const handleItemClick = useCallback((eraId: string, position: { x: number; y: number }) => {
+    setActivePopout(eraId);
+    setPopoutPos(position);
   }, []);
 
-  const handlePopoutMouseEnter = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
+  const handlePopoutClose = useCallback(() => {
+    setActivePopout(null);
   }, []);
-
-  const handlePopoutMouseLeave = useCallback(() => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setActivePopout(null);
-    }, 200);
-  }, []);
-
-  useEffect(() => {
-    if (!activePopout) return;
-    const popout = popoutRef.current;
-    if (!popout) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop += e.deltaY;
-      }
-    };
-
-    popout.addEventListener('wheel', handleWheel, { passive: false });
-    return () => popout.removeEventListener('wheel', handleWheel);
-  }, [activePopout]);
 
   const messages = activePopout ? FRUSTRATION_CONTENT[activePopout] : null;
   const frustration = activePopout ? FRUSTRATIONS.find(f => f.id === activePopout) : null;
@@ -173,49 +131,29 @@ export function FunnyFrustrationsBody() {
         eras={FRUSTRATIONS}
         view="staggered"
         size="lg"
-        onHoverChange={handleHoverChange}
+        onItemClick={handleItemClick}
       />
 
-      {activePopout && messages && frustration && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, pointerEvents: 'none' }}>
-          <div
-            ref={popoutRef}
-            onMouseEnter={handlePopoutMouseEnter}
-            onMouseLeave={handlePopoutMouseLeave}
-            style={{
-              position: 'fixed',
-              left: popoutPos.x,
-              top: popoutPos.y,
-              width: 420,
-              maxWidth: 'calc(100vw - 24px)',
-              maxHeight: 'calc(100vh - 48px)',
-              overflow: 'hidden',
-              background: 'rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '20px',
-              padding: '24px',
-              pointerEvents: 'auto',
-            }}
-          >
-            <h3 className="text-sm font-medium text-white mb-0.5">
-              {frustration.title}
-            </h3>
-            <p className="text-[11px] text-white/35 mb-4">{frustration.preview}</p>
-
-            <div
-              ref={scrollRef}
-              className="overflow-y-auto -mr-[21px] pr-[21px]"
-              style={{ maxHeight: '50vh' }}
-            >
-              {messages.map((msg, i) => (
-                <ChatBubble key={i} msg={msg} />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <DraggablePopout
+        open={!!activePopout}
+        onClose={handlePopoutClose}
+        anchorPosition={popoutPos}
+        width={420}
+        header={
+          frustration ? (
+            <>
+              <h3 className="text-sm font-medium text-white mb-0.5">
+                {frustration.title}
+              </h3>
+              <p className="text-[11px] text-white/35 mb-4">{frustration.preview}</p>
+            </>
+          ) : undefined
+        }
+      >
+        {messages?.map((msg, i) => (
+          <ChatBubble key={i} msg={msg} />
+        ))}
+      </DraggablePopout>
     </>
   );
 }

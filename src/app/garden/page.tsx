@@ -26,7 +26,7 @@ const ARTICLES: GardenArticle[] = [
   },
   {
     title: 'Funny Frustrations',
-    description: 'The lighter side of working with AI.',
+    description: 'Funny moments of frustration captured on Web',
     href: '/garden/article/funny-frustrations',
   },
   {

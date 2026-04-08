@@ -22,6 +22,7 @@ interface TimelineProps {
   previewMaxWidth?: number;
   topOffset?: number;
   onHoverChange?: (eraId: string | null, position?: { x: number; y: number }) => void;
+  onItemClick?: (eraId: string, position: { x: number; y: number }) => void;
 }
 
 const STAGGERED_LEFT_MAX_W = 83;
@@ -48,6 +49,7 @@ export function Timeline({
   previewMaxWidth,
   topOffset = 0,
   onHoverChange,
+  onItemClick,
 }: TimelineProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -67,13 +69,17 @@ export function Timeline({
   }, []);
 
   const handleClick = useCallback(
-    (id: string) => {
+    (id: string, rect?: DOMRect) => {
+      if (view === 'staggered' && onItemClick && rect) {
+        onItemClick(id, { x: rect.right + 16, y: rect.top });
+        return;
+      }
       if (view === 'staggered') {
         setHoveredId((prev) => (prev === id ? null : id));
       }
       scrollToEra(id);
     },
-    [view, scrollToEra],
+    [view, scrollToEra, onItemClick],
   );
 
   const precedingDatedId = (() => {
@@ -111,7 +117,7 @@ export function Timeline({
                   key={era.id}
                   className={`relative flex items-center cursor-pointer ${isHovered ? 'z-20' : 'z-0'}`}
                   style={{ height: rowH }}
-                  onClick={() => handleClick(era.id)}
+                  onClick={(e) => handleClick(era.id, e.currentTarget.getBoundingClientRect())}
                   onMouseEnter={(e) => {
                     setHoveredId(era.id);
                     if (onHoverChange) {

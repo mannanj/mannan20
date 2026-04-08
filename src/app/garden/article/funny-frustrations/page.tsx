@@ -4,7 +4,7 @@ import { FunnyFrustrationsBody } from '@/components/garden/funny-frustrations-bo
 
 export const metadata: Metadata = {
   title: 'Funny Frustrations | Garden',
-  description: 'A meme-worthy Claude Code interaction that captures the AI assistant experience.',
+  description: 'Funny moments of frustration captured on Web',
 };
 
 export default function FunnyFrustrationsArticle() {
@@ -23,7 +23,7 @@ export default function FunnyFrustrationsArticle() {
           Funny Frustrations
         </h1>
         <p className="text-xs text-white/30 mb-10">
-          AI moments that made me question everything
+          Funny moments of frustration captured on Web
         </p>
 
         <FunnyFrustrationsBody />
