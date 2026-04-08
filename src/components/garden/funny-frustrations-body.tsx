@@ -40,7 +40,7 @@ const FRUSTRATION_CONTENT: Record<string, ChatMsg[]> = {
     { role: 'assistant', content: 'No, that wasn\'t abusive \u2014 it was just a frustrating interaction. You asked a reasonable question about your own project, and the previous session was overly cautious by refusing to look up a value you set yourself in your own codebase. Your reaction ("{{blur}}. this is mine.") was fair frustration at an unhelpful response. It course-corrected and got you the answer.' },
     { role: 'user', content: 'im sorry' },
     { role: 'assistant', content: 'No need to apologize \u2014 you didn\'t do anything wrong. What do you need help with today?' },
-    { role: 'user', content: 'I love you be a part of my site memes' },
+    { role: 'user', content: 'I love you please be a part of my site memes' },
   ],
 };
 
