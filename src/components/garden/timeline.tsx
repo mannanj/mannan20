@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, type RefObject } from 'react';
+import { useState, useCallback, type RefObject, type ReactNode } from 'react';
 
 export interface TimelineEra {
   id: string;
@@ -23,6 +23,7 @@ interface TimelineProps {
   topOffset?: number;
   onHoverChange?: (eraId: string | null, position?: { x: number; y: number }) => void;
   onItemClick?: (eraId: string, position: { x: number; y: number }) => void;
+  hoverActions?: (eraId: string) => ReactNode;
 }
 
 const STAGGERED_LEFT_MAX_W = 83;
@@ -50,6 +51,7 @@ export function Timeline({
   topOffset = 0,
   onHoverChange,
   onItemClick,
+  hoverActions,
 }: TimelineProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -332,6 +334,13 @@ export function Timeline({
                         </span>
                       )}
                     </span>
+                    {hoverActions && (
+                      <span className={`inline-flex items-center gap-1.5 ml-1.5 transition-opacity duration-300 ${
+                        isHovered ? 'opacity-70' : 'opacity-0'
+                      }`}>
+                        {hoverActions(era.id)}
+                      </span>
+                    )}
                   </div>
                 </button>
               </div>
