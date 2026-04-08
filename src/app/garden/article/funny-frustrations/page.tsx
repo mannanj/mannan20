@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { AngryJoyIcon } from '@/components/icons/angry-joy-icon';
 import { FunnyFrustrationsBody } from '@/components/garden/funny-frustrations-body';
 
 export const metadata: Metadata = {
@@ -11,13 +11,9 @@ export default function FunnyFrustrationsArticle() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-2xl mx-auto px-6 pt-40 pb-16">
-        <Image
-          src="/mannan-profile.png"
-          alt="Mannan Javid"
-          width={44}
-          height={44}
-          className="rounded-full mb-4 mt-[3px]"
-        />
+        <div className="mb-4 mt-[3px]">
+          <AngryJoyIcon size={44} />
+        </div>
 
         <h1 className="text-2xl font-semibold tracking-tight mb-2">
           Funny Frustrations
