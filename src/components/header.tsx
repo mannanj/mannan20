@@ -12,10 +12,10 @@ import { AnimatedText } from '@/components/animated-text';
 
 const LINKS: Section[] = ['home', 'about', 'contact'];
 
-const FAST = 4.44;
+const FAST = 1.48;
 const CRAWL = 0.44;
-const P1_DUR = 0.44;
-const P2_DUR = 5.5;
+const P1_DUR = 1.32;
+const P2_DUR = 16.5;
 const P1_END = P1_DUR;
 const P2_END = P1_END + P2_DUR;
 const P1_DIST = P1_DUR * FAST;
@@ -79,7 +79,9 @@ export function Header() {
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
+  const gardenExpandedRef = useRef(false);
   const [rootHovered, setRootHovered] = useState(false);
+  const rootHoveredRef = useRef(false);
   const [rootCursorPos, setRootCursorPos] = useState({ x: 0, y: 0 });
   const [gardenLevel, setGardenLevel] = useState(0);
   const [gardenRetracting, setGardenRetracting] = useState(false);
@@ -135,46 +137,57 @@ export function Header() {
 
   const [gardenStartTime, setGardenStartTime] = useState(0);
   const [gardenRootScale, setGardenRootScale] = useState(0);
+  const gardenRootScaleRef = useRef(0);
   const rootAnimRef = useRef<number>(0);
 
   useEffect(() => {
+    gardenExpandedRef.current = gardenExpanded;
+
+    if (rootAnimRef.current) {
+      cancelAnimationFrame(rootAnimRef.current);
+      rootAnimRef.current = 0;
+    }
+    if (gardenIntervalRef.current) {
+      clearInterval(gardenIntervalRef.current);
+      gardenIntervalRef.current = null;
+    }
+
     if (gardenExpanded) {
       setGardenRetracting(false);
       setGardenLevel(0);
       setGardenStartTime(Date.now());
       gardenIntervalRef.current = setInterval(() => {
         setGardenLevel(prev => Math.min(prev + 1, 3));
-      }, 2000);
+      }, 6000);
       const startTime = Date.now();
       const animateRoot = () => {
+        if (!gardenExpandedRef.current) return;
         const elapsed = (Date.now() - startTime) / 1000;
-        setGardenRootScale(scaleAtTime(elapsed));
+        const val = scaleAtTime(elapsed);
+        gardenRootScaleRef.current = val;
+        setGardenRootScale(val);
         rootAnimRef.current = requestAnimationFrame(animateRoot);
       };
       rootAnimRef.current = requestAnimationFrame(animateRoot);
     } else {
       setGardenLevel(0);
-      if (gardenIntervalRef.current) {
-        clearInterval(gardenIntervalRef.current);
-        gardenIntervalRef.current = null;
-      }
-      if (rootAnimRef.current) {
-        cancelAnimationFrame(rootAnimRef.current);
-        rootAnimRef.current = 0;
-      }
       const RETRACT_DURATION = 0.55;
-      const scaleAtLeave = gardenRootScale;
+      const scaleAtLeave = gardenRootScaleRef.current;
       if (scaleAtLeave > 0) {
         setGardenRetracting(true);
         const retractStart = Date.now();
         const easeInCubic = (t: number) => t * t * t;
         const animateRetract = () => {
+          if (gardenExpandedRef.current) return;
           const elapsed = (Date.now() - retractStart) / 1000;
           const progress = Math.min(elapsed / RETRACT_DURATION, 1);
-          setGardenRootScale(scaleAtLeave * (1 - easeInCubic(progress)));
+          const val = scaleAtLeave * (1 - easeInCubic(progress));
+          gardenRootScaleRef.current = val;
+          setGardenRootScale(val);
           if (progress < 1) {
             rootAnimRef.current = requestAnimationFrame(animateRetract);
           } else {
+            gardenRootScaleRef.current = 0;
             setGardenRootScale(0);
             setGardenRetracting(false);
             rootAnimRef.current = 0;
@@ -182,6 +195,7 @@ export function Header() {
         };
         rootAnimRef.current = requestAnimationFrame(animateRetract);
       } else {
+        gardenRootScaleRef.current = 0;
         setGardenRootScale(0);
       }
     }
@@ -473,7 +487,7 @@ export function Header() {
         data-testid="garden-wrapper"
         className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
         onMouseEnter={() => setGardenExpanded(true)}
-        onMouseLeave={() => { if (!rootHovered) setGardenExpanded(false); }}
+        onMouseLeave={() => { if (!rootHoveredRef.current) setGardenExpanded(false); }}
       >
         <Link
           href="/garden"
@@ -526,8 +540,8 @@ export function Header() {
           <div
             className={`absolute top-full left-1/2 mt-[4px] z-10 ${gardenExpanded ? 'pointer-events-auto' : 'pointer-events-none'}`}
             style={{ transform: 'translateX(-50%)', width: '60px', height: `${55 * Math.max(gardenRootScale, 0.001)}px`, marginLeft: '0px', cursor: gardenExpanded ? `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🪴</text></svg>") 16 16, auto` : 'default' }}
-            onMouseEnter={() => { setRootHovered(true); setGardenExpanded(true); }}
-            onMouseLeave={() => { setRootHovered(false); setGardenExpanded(false); }}
+            onMouseEnter={() => { rootHoveredRef.current = true; setRootHovered(true); setGardenExpanded(true); }}
+            onMouseLeave={() => { rootHoveredRef.current = false; setRootHovered(false); setGardenExpanded(false); }}
             onMouseMove={(e) => setRootCursorPos({ x: e.clientX, y: e.clientY })}
           >
           <svg
