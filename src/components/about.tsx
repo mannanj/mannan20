@@ -8,7 +8,7 @@ import { PublishedWorksSection } from './about/published-works-section';
 import { ExtracurricularsSection } from './about/extracurriculars-section';
 import { EducationSection } from './about/education-section';
 import { VideoPopout } from './video-popout';
-import { ExpandCollapseIcon } from './icons/expand-collapse-icon';
+import { PlusMinusIcon } from './icons/plus-minus-icon';
 
 const EMPLOYMENT_DEFAULT = 3;
 const EMPLOYMENT_INCREMENT = 2;
@@ -47,7 +47,7 @@ export function About({ data }: AboutProps) {
     totalJobs
   );
 
-  const buttonClass = "cursor-pointer mt-[25px] ml-2 bg-transparent border-none p-0";
+  const buttonClass = "group cursor-pointer mt-[25px] ml-0 bg-transparent border-none pl-0 pr-3 py-3 -ml-px";
 
   return (
     <div>
@@ -62,9 +62,9 @@ export function About({ data }: AboutProps) {
       <div>
         <EmploymentSection jobs={data.jobs} jobsToShow={jobsToShow} />
         {employmentStep < employmentSteps ? (
-          <button type="button" className={buttonClass} onClick={() => setEmploymentStep((prev) => prev + 1)}><ExpandCollapseIcon expanded={false} /></button>
+          <button type="button" className={buttonClass} onClick={() => setEmploymentStep((prev) => prev + 1)}><PlusMinusIcon expanded={false} border size="lg" /></button>
         ) : employmentStep > 0 ? (
-          <button type="button" className={buttonClass} onClick={() => setEmploymentStep(0)}><ExpandCollapseIcon expanded /></button>
+          <button type="button" className={buttonClass} onClick={() => setEmploymentStep(0)}><PlusMinusIcon expanded border size="lg" /></button>
         ) : null}
       </div>
 
@@ -75,18 +75,18 @@ export function About({ data }: AboutProps) {
       <div>
         <ExtracurricularsSection activities={data.activities} count={extracurricularsStep} />
         {extracurricularsStep < EXTRACURRICULARS_MAX ? (
-          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)}><ExpandCollapseIcon expanded={false} /></button>
+          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)}><PlusMinusIcon expanded={false} border size="lg" /></button>
         ) : (
-          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep(0)}><ExpandCollapseIcon expanded /></button>
+          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep(0)}><PlusMinusIcon expanded border size="lg" /></button>
         )}
       </div>
 
       <div>
         <EducationSection education={data.education} projects={data.educationProjects} certifications={data.certifications} count={educationStep} />
         {educationStep < EDUCATION_MAX ? (
-          <button type="button" className={buttonClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)}><ExpandCollapseIcon expanded={false} /></button>
+          <button type="button" className={buttonClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)}><PlusMinusIcon expanded={false} border size="lg" /></button>
         ) : (
-          <button type="button" className={buttonClass} onClick={() => setEducationStep(0)}><ExpandCollapseIcon expanded /></button>
+          <button type="button" className={buttonClass} onClick={() => setEducationStep(0)}><PlusMinusIcon expanded border size="lg" /></button>
         )}
       </div>
 

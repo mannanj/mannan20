@@ -327,7 +327,7 @@ export function SeekingCommunityBody() {
               efficient and effective system of harmony within society than the
               divisive hatred-filled one I was seeing on social media. Combined
               with modern technologies and advancements which are only now being
-              adopted for communities like this 3 years later (www.flow.life) I
+              adopted for communities like this 3 years later (<a href="https://www.flow.life" target="_blank" rel="noopener noreferrer" className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">flow ↗</a>) I
               think I was ahead of my time. In this AI age it is said one path
               of humanity is to return to in-person communities and the tighter
               social fabrics we once had with our ancestors. It is a convenient
@@ -383,9 +383,10 @@ export function SeekingCommunityBody() {
               <span className="text-white/90 text-sm font-medium">Love</span>
               <p className="mt-1">
                 My first tattoo was <em>Love over Fear</em>. I got it after
-                running on the beach with my roommate in LA Jonnie for a
-                movement we were both part of called Seek Discomfort. Love is
-                the through-line of every decision that has mattered.
+                running on the beach in LA with my close friend and roomate
+                Jonnie for a movement we were both part of called Seek
+                Discomfort. Love is the through-line of every decision that has
+                mattered.
               </p>
             </div>
             <div>
@@ -394,8 +395,8 @@ export function SeekingCommunityBody() {
               </span>
               <p className="mt-1">
                 My capacity for seeking discomfort makes me ruthless at growing.
-                It was a unifying interest between me and my roommate Jonnie,
-                and we loved to challenge each other to grow in positive ways.
+                It was a unifying interest between my roomate and I, and we
+                loved to challenge each other to grow in positive ways.
               </p>
             </div>
             <div>
@@ -418,19 +419,17 @@ export function SeekingCommunityBody() {
               </p>
             </div>
             <div>
-              <span className="text-white/90 text-sm font-medium">
+              <span className="text-white/90 text-sm font-medium italic">
                 &ldquo;What if everything goes right?&rdquo;
               </span>
               <p className="mt-1">
-                This represents a perspective I&apos;ve noticed drastically
-                changes experience: once I&apos;m looking for things to go
-                right, opportunity for it to occur actually gets noticed and
-                happens around me. It doesn't mean it happens for free without
-                offering anything in return, but there is a very powerful sense
-                of control behind this that everyone can access if they only
-                learn to discern what they want and focus on that. I want things
-                to go right and so I'm very impressed by a company I've noticed
-                called flow that is powered through this mantra.
+                This represents a perspective I've noticed drastically changes
+                experience: once I'm looking for things to go right, opportunity
+                for it to occur actually gets noticed and happens around me. It
+                doesn't mean it happens for free without offering anything in
+                return, but there is a very powerful sense of control behind
+                this that everyone can access if they only learn to discern what
+                they want and focus on that.
               </p>
             </div>
           </div>
@@ -441,9 +440,8 @@ export function SeekingCommunityBody() {
         <section id="era-return">
           <div className="space-y-4">
             <p className="text-white/80">
-              My dream for community life has never died. I realized recently
-              when stumbling upon a company as large as Flow doing work on it,
-              that the time is never better than now.
+              My dream for community life has never died. And the moment for its
+              mainstream adoption is coming soon. The time is never better than now.
             </p>
           </div>
         </section>
