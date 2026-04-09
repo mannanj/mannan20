@@ -64,7 +64,7 @@ export function Timeline({
   const scrollToEra = useCallback((id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT - 16;
+      const y = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT - 48;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
     history.replaceState(null, '', `#${id}`);
