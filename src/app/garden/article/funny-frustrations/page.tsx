@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import { FunnyFrustrationsBody } from '@/components/garden/funny-frustrations-body';
 import { JOYFUL_FRUSTRATIONS } from '@/lib/garden-articles';
+
+const DISABLED = true;
 
 export const metadata: Metadata = {
   title: `${JOYFUL_FRUSTRATIONS.title} | Garden`,
@@ -9,6 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default function FunnyFrustrationsArticle() {
+  if (DISABLED) notFound();
+
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="max-w-2xl mx-auto px-6 pt-40 pb-16">
