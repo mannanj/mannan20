@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { EventEntry } from '@/lib/jordan/types';
+import type { EventEntry } from '../lib/types';
+import { useCanvasConfig } from '../canvas-context';
 
 const POLL_INTERVAL_MS = 30000;
 
@@ -15,18 +16,19 @@ function formatEventTime(dateStr: string): string {
 }
 
 export default function EventHistoryPanel() {
+  const config = useCanvasConfig();
   const [events, setEvents] = useState<EventEntry[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchEvents = useCallback(() => {
-    fetch('/api/jordan/events')
+    fetch(`${config.apiBasePath}/events`)
       .then((r) => r.json())
       .then((data) => {
         if (data.events) setEvents(data.events);
       })
       .catch(() => {});
-  }, []);
+  }, [config.apiBasePath]);
 
   useEffect(() => {
     fetchEvents();
@@ -40,7 +42,7 @@ export default function EventHistoryPanel() {
     return (
       <button
         onClick={() => setCollapsed(false)}
-        data-testid="jordan-activity-expand"
+        data-testid={`${config.testIdPrefix}-activity-expand`}
         className="fixed right-4 top-4 z-40 border border-white/10 bg-black/90 px-3 py-1.5 text-xs text-white/40 transition-colors hover:text-white/60"
       >
         Activity
@@ -49,12 +51,12 @@ export default function EventHistoryPanel() {
   }
 
   return (
-    <div className="fixed right-4 top-4 z-40 flex h-[250px] w-[250px] flex-col border border-white/10 bg-black/95" data-testid="jordan-activity-panel">
+    <div className="fixed right-4 top-4 z-40 flex h-[250px] w-[250px] flex-col border border-white/10 bg-black/95" data-testid={`${config.testIdPrefix}-activity-panel`}>
       <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
         <span className="text-xs font-medium text-white/50">Activity</span>
         <button
           onClick={() => setCollapsed(true)}
-          data-testid="jordan-activity-collapse"
+          data-testid={`${config.testIdPrefix}-activity-collapse`}
           className="text-xs text-white/30 transition-colors hover:text-white/60"
         >
           -

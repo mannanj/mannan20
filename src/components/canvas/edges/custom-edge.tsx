@@ -6,7 +6,7 @@ import {
   getStraightPath,
   type EdgeProps,
 } from '@xyflow/react';
-import type { CustomEdgeData } from '@/lib/jordan/types';
+import type { CustomEdgeData } from '../lib/types';
 
 function CustomEdge({
   id,

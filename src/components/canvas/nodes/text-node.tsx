@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
 import { type NodeProps } from '@xyflow/react';
-import { useJordanStore } from '@/lib/jordan/store';
+import { useCanvasStoreApi, useCanvasConfig } from '../canvas-context';
 import NodeHandles from './node-handles';
 
 function TextNode({ id, data }: NodeProps) {
@@ -13,6 +13,8 @@ function TextNode({ id, data }: NodeProps) {
   const [editing, setEditing] = useState(!content);
   const [text, setText] = useState(content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const store = useCanvasStoreApi();
+  const config = useCanvasConfig();
 
   useEffect(() => {
     if (editing) textareaRef.current?.focus();
@@ -20,13 +22,13 @@ function TextNode({ id, data }: NodeProps) {
 
   const handleBlur = useCallback(() => {
     setEditing(false);
-    useJordanStore.getState().updateNodeData(id, { content: text });
-  }, [id, text]);
+    store.getState().updateNodeData(id, { content: text });
+  }, [id, text, store]);
 
   return (
     <div
       className="relative min-w-[120px] max-w-[300px] border border-white/10 bg-black/90 p-2"
-      data-testid="jordan-text-node"
+      data-testid={`${config.testIdPrefix}-text-node`}
       onDoubleClick={() => setEditing(true)}
     >
       <NodeHandles />
@@ -41,14 +43,14 @@ function TextNode({ id, data }: NodeProps) {
             e.stopPropagation();
             if (e.key === 'Escape') handleBlur();
           }}
-          data-testid="jordan-text-node-editor"
+          data-testid={`${config.testIdPrefix}-text-node-editor`}
           className="w-full resize-none bg-transparent text-xs leading-relaxed text-white/80 outline-none"
           rows={3}
         />
       ) : (
         <p
           className="whitespace-pre-wrap text-xs leading-relaxed text-white/80"
-          data-testid="jordan-text-node-content"
+          data-testid={`${config.testIdPrefix}-text-node-content`}
         >
           {text || 'Double-click to edit'}
         </p>

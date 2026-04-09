@@ -2,7 +2,7 @@
 
 import { useReducer, useRef, useCallback, useEffect } from 'react';
 import { Howl } from 'howler';
-import { MANIFESTO_CHUNKS } from '@/lib/audio-config';
+import type { AudioChunk } from '@/lib/audio-config';
 import { getAudioChunk, storeAudioChunk } from '@/lib/audio-storage';
 
 interface State {
@@ -21,8 +21,6 @@ type Action =
   | { type: 'SET_DURATION'; payload: number }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_VISIBLE'; payload: boolean };
-
-const CHUNK_DURATIONS: number[] = [];
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -45,13 +43,14 @@ const initialState: State = {
   isVisible: false,
 };
 
-export function useAudioPlayer() {
+export function useAudioPlayer(chunks: AudioChunk[]) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const howlRef = useRef<Howl | null>(null);
   const rafRef = useRef<number>(0);
   const objectUrlRef = useRef<string | null>(null);
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadIdRef = useRef(0);
+  const chunkDurationsRef = useRef<number[]>([]);
 
   const destroyHowl = useCallback(() => {
     if (rafRef.current) {
@@ -92,7 +91,7 @@ export function useAudioPlayer() {
     dispatch({ type: 'SET_TIME', payload: 0 });
     dispatch({ type: 'SET_PLAYING', payload: false });
 
-    const chunk = MANIFESTO_CHUNKS[chunkIndex];
+    const chunk = chunks[chunkIndex];
     let src = chunk.url;
 
     const cached = await getAudioChunk(chunk.key);
@@ -113,7 +112,7 @@ export function useAudioPlayer() {
         if (loadIdRef.current !== thisLoadId) return;
         const dur = howl.duration();
         dispatch({ type: 'SET_DURATION', payload: dur });
-        CHUNK_DURATIONS[chunkIndex] = dur;
+        chunkDurationsRef.current[chunkIndex] = dur;
         dispatch({ type: 'SET_LOADING', payload: false });
       },
       onplay: () => {
@@ -135,7 +134,7 @@ export function useAudioPlayer() {
         if (loadIdRef.current !== thisLoadId) return;
         dispatch({ type: 'SET_PLAYING', payload: false });
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        if (chunkIndex < MANIFESTO_CHUNKS.length - 1) {
+        if (chunkIndex < chunks.length - 1) {
           advanceTimerRef.current = setTimeout(() => {
             if (loadIdRef.current !== thisLoadId) return;
             loadAndPlay(chunkIndex + 1);
@@ -157,7 +156,7 @@ export function useAudioPlayer() {
         .then((blob) => storeAudioChunk(chunk.key, blob))
         .catch(() => {});
     }
-  }, [destroyHowl, updateProgress]);
+  }, [destroyHowl, updateProgress, chunks]);
 
   const toggle = useCallback(() => {
     const howl = howlRef.current;
@@ -204,8 +203,8 @@ export function useAudioPlayer() {
     };
   }, [destroyHowl]);
 
-  const totalDuration = CHUNK_DURATIONS.reduce((a, b) => a + (b || 0), 0) || state.duration * MANIFESTO_CHUNKS.length;
-  const elapsedBefore = CHUNK_DURATIONS.slice(0, state.currentChunk).reduce((a, b) => a + (b || 0), 0);
+  const totalDuration = chunkDurationsRef.current.reduce((a, b) => a + (b || 0), 0) || state.duration * chunks.length;
+  const elapsedBefore = chunkDurationsRef.current.slice(0, state.currentChunk).reduce((a, b) => a + (b || 0), 0);
   const totalElapsed = elapsedBefore + state.currentTime;
 
   return {

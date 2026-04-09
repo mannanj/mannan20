@@ -1,7 +1,17 @@
-const BLOB_BASE = 'https://hq19kliyhzkpvads.public.blob.vercel-storage.com/audio/manifesto';
+export interface AudioChunk {
+  url: string;
+  key: string;
+  label: string;
+}
 
-export const MANIFESTO_CHUNKS = [
-  { url: `${BLOB_BASE}/chunk-1.wav`, key: 'manifesto/chunk-1', label: 'Part 1' },
-  { url: `${BLOB_BASE}/chunk-2.wav`, key: 'manifesto/chunk-2', label: 'Part 2' },
-  { url: `${BLOB_BASE}/chunk-3.wav`, key: 'manifesto/chunk-3', label: 'Part 3' },
+const BLOB_BASE = 'https://hq19kliyhzkpvads.public.blob.vercel-storage.com/audio';
+
+export const MANIFESTO_CHUNKS: AudioChunk[] = [
+  { url: `${BLOB_BASE}/manifesto/chunk-1.wav`, key: 'manifesto/chunk-1', label: 'Part 1' },
+  { url: `${BLOB_BASE}/manifesto/chunk-2.wav`, key: 'manifesto/chunk-2', label: 'Part 2' },
+  { url: `${BLOB_BASE}/manifesto/chunk-3.wav`, key: 'manifesto/chunk-3', label: 'Part 3' },
+];
+
+export const NEW_RICH_CHUNKS: AudioChunk[] = [
+  { url: `${BLOB_BASE}/new-rich/chunk-1.wav`, key: 'new-rich/chunk-1', label: 'Full' },
 ];

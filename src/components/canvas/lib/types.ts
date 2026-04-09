@@ -1,6 +1,6 @@
 import type { Node, Edge, Viewport } from '@xyflow/react';
 
-export interface JordanSession {
+export interface CanvasSession {
   name: string;
   device: string;
   createdAt: string;
@@ -39,7 +39,7 @@ export interface TextNodeData {
   createdBy: string;
 }
 
-export type JordanNodeType =
+export type CanvasNodeType =
   | 'markdownDocument'
   | 'image'
   | 'pdf'

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, lazy, Suspense } from 'react';
+import { MANIFESTO_CHUNKS } from '@/lib/audio-config';
 
 const AudioPlayer = lazy(() => import('./audio-player'));
 
@@ -163,7 +164,7 @@ export default function ImmortalismManifestoArticle() {
 
       {showPlayer && (
         <Suspense fallback={null}>
-          <AudioPlayer onClose={() => { setShowPlayer(false); setPlayerStatus('loading'); }} onStatusChange={handleStatusChange} />
+          <AudioPlayer chunks={MANIFESTO_CHUNKS} onClose={() => { setShowPlayer(false); setPlayerStatus('loading'); }} onStatusChange={handleStatusChange} />
         </Suspense>
       )}
     </>

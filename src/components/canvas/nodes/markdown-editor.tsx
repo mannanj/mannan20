@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useCanvasConfig } from '../canvas-context';
 
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), {
   ssr: false,
@@ -25,6 +26,8 @@ export default function MarkdownEditor({
   onChange,
   onSaveAndClose,
 }: MarkdownEditorProps) {
+  const config = useCanvasConfig();
+
   const handleChange = useCallback(
     (val?: string) => {
       onChange(val ?? '');
@@ -44,12 +47,12 @@ export default function MarkdownEditor({
   );
 
   return (
-    <div className="flex h-full min-h-[500px] flex-col" data-testid="jordan-doc-editor">
+    <div className="flex h-full min-h-[500px] flex-col" data-testid={`${config.testIdPrefix}-doc-editor`}>
       <div className="flex items-center justify-end border-b border-white/10 px-3 py-1.5">
         <button
           onClick={onSaveAndClose}
           onMouseDown={(e) => e.stopPropagation()}
-          data-testid="jordan-doc-done-btn"
+          data-testid={`${config.testIdPrefix}-doc-done-btn`}
           className="border border-white/20 px-3 py-1 text-xs text-white/50 transition-colors hover:bg-white/5 hover:text-white"
         >
           Done
@@ -57,7 +60,7 @@ export default function MarkdownEditor({
       </div>
       <div className="flex flex-1 gap-0">
         <div
-          className="jordan-md-editor flex-1 border-r border-white/10"
+          className="canvas-md-editor flex-1 border-r border-white/10"
           data-color-mode="dark"
           onMouseDown={(e) => e.stopPropagation()}
           onKeyDown={handleKeyDown}
@@ -71,7 +74,7 @@ export default function MarkdownEditor({
           />
         </div>
         <div className="flex-1 overflow-auto p-4">
-          <div className="prose-jordan text-sm leading-relaxed">
+          <div className="prose-canvas text-sm leading-relaxed">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
           </div>
         </div>

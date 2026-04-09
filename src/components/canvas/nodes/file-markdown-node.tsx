@@ -42,7 +42,7 @@ function FileMarkdownNode({ data, selected }: NodeProps) {
           {loading ? (
             <span className="text-xs text-white/30">Loading...</span>
           ) : (
-            <div className="prose-jordan text-sm leading-relaxed">
+            <div className="prose-canvas text-sm leading-relaxed">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {content}
               </ReactMarkdown>

@@ -416,7 +416,7 @@ export function SeekingCommunityBody() {
               share your own.
             </p>
             <p>
-              <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4">
+              <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 ml-auto">
                 <Image
                   src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains.png"
                   alt="Illustrated scene of car camping in the mountains"

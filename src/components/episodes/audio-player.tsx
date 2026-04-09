@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
-import { MANIFESTO_CHUNKS } from '@/lib/audio-config';
+import type { AudioChunk } from '@/lib/audio-config';
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -12,12 +12,13 @@ function formatTime(seconds: number): string {
 }
 
 interface AudioPlayerProps {
+  chunks: AudioChunk[];
   onClose: () => void;
   onStatusChange?: (status: 'loading' | 'playing' | 'paused') => void;
 }
 
-export default function AudioPlayer({ onClose, onStatusChange }: AudioPlayerProps) {
-  const player = useAudioPlayer();
+export default function AudioPlayer({ chunks, onClose, onStatusChange }: AudioPlayerProps) {
+  const player = useAudioPlayer(chunks);
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -114,7 +115,7 @@ export default function AudioPlayer({ onClose, onStatusChange }: AudioPlayerProp
           </span>
 
           <div className="flex items-center gap-1 shrink-0">
-            {MANIFESTO_CHUNKS.map((chunk, i) => (
+            {chunks.map((chunk, i) => (
               <button
                 key={chunk.key}
                 data-testid={`audio-chunk-${i}`}

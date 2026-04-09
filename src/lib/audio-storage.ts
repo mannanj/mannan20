@@ -1,4 +1,4 @@
-const DB_NAME = 'manifesto-audio';
+const DB_NAME = 'episodes-audio';
 const STORE_NAME = 'chunks';
 const DB_VERSION = 1;
 

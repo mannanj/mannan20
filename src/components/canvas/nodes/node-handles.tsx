@@ -1,12 +1,12 @@
 'use client';
 
 import { Handle, Position } from '@xyflow/react';
-import { useJordanStore } from '@/lib/jordan/store';
+import { useCanvasStore } from '../canvas-context';
 
 const POSITIONS = [Position.Top, Position.Right, Position.Bottom, Position.Left];
 
 export default function NodeHandles() {
-  const drawingTool = useJordanStore((s) => s.drawingTool);
+  const drawingTool = useCanvasStore((s) => s.drawingTool);
   const active = drawingTool !== null;
 
   return (

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { MarkdownVersion } from '@/lib/jordan/types';
+import type { MarkdownVersion } from '../lib/types';
 import { copyToClipboard } from '@/lib/utils';
+import { useCanvasConfig } from '../canvas-context';
 
 interface VersionHistoryPanelProps {
   onClose: () => void;
@@ -22,18 +23,19 @@ function timeAgo(dateStr: string): string {
 export default function VersionHistoryPanel({
   onClose,
 }: VersionHistoryPanelProps) {
+  const config = useCanvasConfig();
   const [versions, setVersions] = useState<MarkdownVersion[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch('/api/jordan/versions?offset=0&limit=50')
+    fetch(`${config.apiBasePath}/versions?offset=0&limit=50`)
       .then((r) => r.json())
       .then((data) => setVersions(data.versions ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [config.apiBasePath]);
 
   const handleCopy = useCallback((content: string, index: number) => {
     copyToClipboard(content).then(() => {
@@ -45,7 +47,7 @@ export default function VersionHistoryPanel({
   return (
     <div
       className="absolute inset-0 z-20 flex flex-col bg-black/95"
-      data-testid="jordan-version-history"
+      data-testid={`${config.testIdPrefix}-version-history`}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
@@ -54,7 +56,7 @@ export default function VersionHistoryPanel({
         </span>
         <button
           onClick={onClose}
-          data-testid="jordan-version-close"
+          data-testid={`${config.testIdPrefix}-version-close`}
           className="text-xs text-white/40 transition-colors hover:text-white"
         >
           Close

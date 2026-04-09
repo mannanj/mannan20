@@ -8,8 +8,9 @@ import {
   Controls,
   type OnConnect,
 } from '@xyflow/react';
-import { useJordanStore } from '@/lib/jordan/store';
-import { useAutoSave } from '@/lib/jordan/use-auto-save';
+import { useCanvasStore, useCanvasStoreApi, useCanvasConfig } from './canvas-context';
+import { useAutoSave } from './lib/use-auto-save';
+import { uploadFiles } from './lib/upload-utils';
 import MarkdownDocumentNode from './nodes/markdown-document-node';
 import ImageNode from './nodes/image-node';
 import PdfNode from './nodes/pdf-node';
@@ -20,26 +21,7 @@ import CustomEdge from './edges/custom-edge';
 import Toolbar from './panels/toolbar';
 import EventHistoryPanel from './panels/event-history-panel';
 
-const INITIAL_MARKDOWN_NODE = {
-  id: 'doc-main',
-  type: 'markdownDocument',
-  position: { x: 100, y: 50 },
-  data: { label: 'SacredTreeKeepers.md' },
-  draggable: true,
-};
-
-function getNodeTypeForFile(
-  type: string,
-  name: string
-): 'image' | 'pdf' | 'audio' | 'fileMarkdown' {
-  if (type.startsWith('image/')) return 'image';
-  if (type === 'application/pdf') return 'pdf';
-  if (type.startsWith('audio/')) return 'audio';
-  if (type === 'text/markdown' || name.endsWith('.md')) return 'fileMarkdown';
-  return 'image';
-}
-
-export default function Canvas() {
+export default function CanvasShell() {
   const nodeTypes = useMemo(
     () => ({
       markdownDocument: MarkdownDocumentNode,
@@ -54,26 +36,24 @@ export default function Canvas() {
 
   const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
 
-  const {
-    nodes,
-    edges,
-    viewport,
-    onNodesChange,
-    onEdgesChange,
-    setViewport,
-    isLoading,
-    setIsLoading,
-    loadState,
-    drawingTool,
-  } = useJordanStore();
+  const nodes = useCanvasStore((s) => s.nodes);
+  const edges = useCanvasStore((s) => s.edges);
+  const viewport = useCanvasStore((s) => s.viewport);
+  const onNodesChange = useCanvasStore((s) => s.onNodesChange);
+  const onEdgesChange = useCanvasStore((s) => s.onEdgesChange);
+  const setViewport = useCanvasStore((s) => s.setViewport);
+  const isLoading = useCanvasStore((s) => s.isLoading);
+  const drawingTool = useCanvasStore((s) => s.drawingTool);
 
+  const store = useCanvasStoreApi();
+  const config = useCanvasConfig();
   const reactFlowRef = useRef<HTMLDivElement>(null);
   const { markInitialized } = useAutoSave();
 
   useEffect(() => {
     const flushEvents = () => {
-      const store = useJordanStore.getState();
-      const pending = store.pendingEvents;
+      const state = store.getState();
+      const pending = state.pendingEvents;
       if (!pending.length) return;
 
       const batched = new Map<string, { count: number; detail: string }>();
@@ -90,149 +70,116 @@ export default function Canvas() {
       for (const [key, { count, detail }] of batched) {
         const user = key.split('::')[0];
         const message = count > 1 ? `${detail} (${count}x)` : detail;
-        fetch('/api/jordan/events', {
+        fetch(`${config.apiBasePath}/events`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message, user }),
         }).catch(() => {});
       }
 
-      useJordanStore.setState({ pendingEvents: [] });
+      store.setState({ pendingEvents: [] });
     };
 
     const eventInterval = setInterval(flushEvents, 30000);
     return () => clearInterval(eventInterval);
-  }, []);
+  }, [store, config.apiBasePath]);
 
   useEffect(() => {
-    fetch('/api/jordan/state')
+    const { loadState, setIsLoading, addNode } = store.getState();
+    fetch(`${config.apiBasePath}/state`)
       .then((res) => res.json())
       .then((data) => {
         if (data.nodes?.length || data.edges?.length) {
           loadState(data);
         } else {
-          const { addNode } = useJordanStore.getState();
-          addNode(INITIAL_MARKDOWN_NODE);
+          addNode({
+            id: config.initialNode.id,
+            type: 'markdownDocument',
+            position: config.initialNode.position,
+            data: config.initialNode.data,
+            draggable: true,
+          });
         }
       })
       .catch(() => {
-        const { addNode } = useJordanStore.getState();
-        addNode(INITIAL_MARKDOWN_NODE);
+        addNode({
+          id: config.initialNode.id,
+          type: 'markdownDocument',
+          position: config.initialNode.position,
+          data: config.initialNode.data,
+          draggable: true,
+        });
       })
       .finally(() => {
         setIsLoading(false);
         markInitialized();
       });
-  }, [loadState, setIsLoading, markInitialized]);
+  }, [store, config, markInitialized]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        useJordanStore.getState().setDrawingTool(null);
+        store.getState().setDrawingTool(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [store]);
 
-  const handleConnect: OnConnect = useCallback((params) => {
-    const { addEdge, drawingTool, setDrawingTool } = useJordanStore.getState();
-    const lineStyle =
-      drawingTool === 'arrow'
-        ? 'arrow'
-        : drawingTool === 'dashed'
-          ? 'dashed'
-          : 'solid';
-    addEdge({
-      ...params,
-      id: `e-${Date.now()}`,
-      type: 'custom',
-      data: { lineStyle },
-    });
-    setDrawingTool(null);
-  }, []);
+  const handleConnect: OnConnect = useCallback(
+    (params) => {
+      const { addEdge, drawingTool: tool, setDrawingTool } = store.getState();
+      const lineStyle =
+        tool === 'arrow'
+          ? 'arrow'
+          : tool === 'dashed'
+            ? 'dashed'
+            : 'solid';
+      addEdge({
+        ...params,
+        id: `e-${Date.now()}`,
+        type: 'custom',
+        data: { lineStyle },
+      });
+      setDrawingTool(null);
+    },
+    [store]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
   }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (!files.length) return;
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+      if (!files.length) return;
 
-    const { addNode, queueEvent, session } = useJordanStore.getState();
-    let uploadCount = 0;
-
-    for (const file of Array.from(files)) {
-      const form = new FormData();
-      form.append('file', file);
-
-      try {
-        const res = await fetch('/api/jordan/upload', {
-          method: 'POST',
-          body: form,
-        });
-        if (!res.ok) continue;
-
-        const data = await res.json();
-        const nodeType = getNodeTypeForFile(file.type, file.name);
-
-        const nodeData: Record<string, unknown> = {
-          url: data.url,
-          filename: file.name,
-        };
-
-        if (nodeType === 'image') {
-          nodeData.width = 400;
-          nodeData.height = 300;
-        }
-
-        if (nodeType === 'fileMarkdown') {
-          const text = await fetch(data.url).then((r) => r.text());
-          nodeData.content = text;
-        }
-
-        const rect = reactFlowRef.current?.getBoundingClientRect();
-        const { viewport: v } = useJordanStore.getState();
-        const x = rect
-          ? (e.clientX - rect.left - v.x) / v.zoom + uploadCount * 30
-          : 200 + uploadCount * 30;
-        const y = rect
-          ? (e.clientY - rect.top - v.y) / v.zoom + uploadCount * 30
-          : 200 + uploadCount * 30;
-
-        addNode({
-          id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          type: nodeType,
-          position: { x, y },
-          data: nodeData,
-          style:
-            nodeType === 'image'
-              ? { width: 400, height: 300 }
-              : nodeType === 'pdf'
-                ? { width: 500, height: 600 }
-                : undefined,
-        });
-        uploadCount++;
-      } catch {
-        continue;
-      }
-    }
-
-    if (uploadCount > 0) {
-      const user = session
+      const { addNode, queueEvent, session } = store.getState();
+      const sessionUser = session
         ? `${session.name} ${session.device}`
         : 'Unknown';
-      queueEvent(
-        'upload',
-        uploadCount === 1
-          ? `${user} uploaded a file`
-          : `${user} uploaded ${uploadCount} files`
+
+      await uploadFiles(
+        files,
+        { apiBasePath: config.apiBasePath, addNode, queueEvent, sessionUser },
+        (i) => {
+          const rect = reactFlowRef.current?.getBoundingClientRect();
+          const { viewport: v } = store.getState();
+          const x = rect
+            ? (e.clientX - rect.left - v.x) / v.zoom + i * 30
+            : 200 + i * 30;
+          const y = rect
+            ? (e.clientY - rect.top - v.y) / v.zoom + i * 30
+            : 200 + i * 30;
+          return { x, y };
+        }
       );
-    }
-  }, []);
+    },
+    [store, config.apiBasePath]
+  );
 
   if (isLoading) {
     return (
@@ -246,7 +193,7 @@ export default function Canvas() {
     <div
       ref={reactFlowRef}
       className={`h-full w-full ${drawingTool ? 'cursor-crosshair' : ''}`}
-      data-testid="jordan-canvas"
+      data-testid={`${config.testIdPrefix}-canvas`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >

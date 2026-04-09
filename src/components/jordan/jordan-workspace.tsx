@@ -1,42 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import type { JordanSession } from '@/lib/jordan/types';
-import { useJordanStore } from '@/lib/jordan/store';
-import AccessGate from './access-gate';
-import Canvas from './canvas';
+import { useMemo } from 'react';
+import { createCanvasStore } from '@/components/canvas/lib/create-canvas-store';
+import { CanvasProvider, type CanvasConfig } from '@/components/canvas/canvas-context';
+import CanvasWorkspace from '@/components/canvas/canvas-workspace';
 
-function parseSession(): JordanSession | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie
-    .split('; ')
-    .find((c) => c.startsWith('jordan_session='));
-  if (!match) return null;
-  try {
-    return JSON.parse(atob(match.split('=')[1]));
-  } catch {
-    return null;
-  }
-}
+const JORDAN_CONFIG: CanvasConfig = {
+  apiBasePath: '/api/jordan',
+  sessionCookieName: 'jordan_session',
+  cookiePath: '/jordan',
+  testIdPrefix: 'jordan',
+  documentLabel: 'SacredTreeKeepers.md',
+  initialNode: {
+    id: 'doc-main',
+    position: { x: 100, y: 50 },
+    data: { label: 'SacredTreeKeepers.md' },
+  },
+};
 
 export default function JordanWorkspace() {
-  const [ready, setReady] = useState(false);
-  const session = useJordanStore((s) => s.session);
-  const setSession = useJordanStore((s) => s.setSession);
+  const store = useMemo(() => createCanvasStore(), []);
 
-  useEffect(() => {
-    const existing = parseSession();
-    if (existing) {
-      setSession(existing);
-    }
-    setReady(true);
-  }, [setSession]);
-
-  if (!ready) return null;
-
-  if (!session) {
-    return <AccessGate onAuthenticated={setSession} />;
-  }
-
-  return <Canvas />;
+  return (
+    <CanvasProvider store={store} config={JORDAN_CONFIG}>
+      <CanvasWorkspace />
+    </CanvasProvider>
+  );
 }
