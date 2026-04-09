@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Timeline } from "./timeline";
 import { DraggablePopout } from "./draggable-popout";
+import { CommunityNodes } from "./community-nodes";
 
 const ERAS = [
   {
@@ -226,9 +227,10 @@ export function SeekingCommunityBody() {
       <h1 className="text-2xl font-semibold tracking-tight mb-2">
         On Seeking Community
       </h1>
-      <p className="text-xs text-white/30 mb-6">
+      <p className="text-xs text-white/30 mb-4">
         April 7, 2026 &middot; 8 min read &middot; 1,800 words
       </p>
+      <CommunityNodes />
       <Timeline
         eras={ERAS}
         view="linear"
@@ -414,13 +416,15 @@ export function SeekingCommunityBody() {
               share your own.
             </p>
             <p>
-              <Image
-                src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains.png"
-                alt="Illustrated scene of car camping in the mountains"
-                width={480}
-                height={150}
-                className="rounded-lg max-w-[55%] h-auto mt-20 mb-4"
-              />
+              <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4">
+                <Image
+                  src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains.png"
+                  alt="Illustrated scene of car camping in the mountains"
+                  width={480}
+                  height={300}
+                  className="w-full h-auto -translate-y-[40%]"
+                />
+              </span>
               I arrived at an ecovillage in the mountains. My stay was two
               weeks. Work practicalities meant I traveled an hour to town twice daily
               and could not contribute
