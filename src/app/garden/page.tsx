@@ -90,9 +90,9 @@ export default function GardenPage() {
             <Link
               key={article.href}
               href={article.href}
-              className="group flex flex-col rounded-lg px-4 py-5 hover:bg-white/[0.03] transition-colors duration-200"
+              className="group flex flex-col rounded-lg px-4 py-5 hover:scale-[1.05] hover:bg-white/[0.03] transition-all duration-200"
             >
-              <span className="text-base font-medium text-white group-hover:text-[#4a7c3f] transition-colors duration-200">
+              <span className="text-base font-medium text-white">
                 {article.title}
               </span>
               <span className="text-sm text-white/40 mt-1">
