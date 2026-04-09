@@ -13,6 +13,10 @@ const NODE_RADIUS_MAX = 2.2;
 const PARTICLE_RADIUS = 0.8;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
+const BOUNCE_CHANCE = 0.33;
+const BOUNCE_SPEED = 40;
+const BOUNCE_DELAY_MIN = 1100;
+const BOUNCE_DELAY_MAX = 3300;
 const NODE_COLORS: [number, number, number][] = [
   [255, 255, 255],
   [248, 113, 113],
@@ -37,6 +41,14 @@ interface Particle {
   elapsed: number;
   hitFired: boolean;
   color: [number, number, number];
+  bounceGen: number;
+}
+
+interface PendingBounce {
+  edgeIndex: number;
+  color: [number, number, number];
+  spawnAt: number;
+  bounceGen: number;
 }
 
 
@@ -213,6 +225,7 @@ export function CommunityNodes() {
     const edges = generateTreeEdges(nodes);
     const particles: Particle[] = [];
     const nodeHits: { time: number }[][] = nodes.map(() => []);
+    const pendingBounces: PendingBounce[] = [];
     let lastTime = 0;
     let nextSpawn = 0;
     let spawnTimer = 0;
@@ -243,7 +256,30 @@ export function CommunityNodes() {
             elapsed: 0,
             hitFired: false,
             color: nodes[sourceNode].color,
+            bounceGen: 0,
           });
+        }
+      }
+
+      for (let i = pendingBounces.length - 1; i >= 0; i--) {
+        if (timestamp >= pendingBounces[i].spawnAt) {
+          const pb = pendingBounces[i];
+          const rawIdx = pb.edgeIndex;
+          const rev = rawIdx < 0;
+          const ei = rev ? -(rawIdx + 1) : rawIdx;
+          const [a, b] = edges[ei];
+          const dist = Math.hypot(nodes[a].x - nodes[b].x, nodes[a].y - nodes[b].y);
+          particles.push({
+            edgeIndex: pb.edgeIndex,
+            progress: 0,
+            prevProgress: 0,
+            duration: dist * (BOUNCE_SPEED / 60),
+            elapsed: 0,
+            hitFired: false,
+            color: pb.color,
+            bounceGen: pb.bounceGen,
+          });
+          pendingBounces.splice(i, 1);
         }
       }
 
@@ -260,8 +296,35 @@ export function CommunityNodes() {
           const reversed = rawIdx < 0;
           const edgeIdx = reversed ? -(rawIdx + 1) : rawIdx;
           const [a, b] = edges[edgeIdx];
+          const sourceNode = reversed ? b : a;
           const destNode = reversed ? a : b;
           nodeHits[destNode].push({ time: timestamp });
+
+          const pColor = particles[i].color;
+          const dColor = nodes[destNode].color;
+          const blended: [number, number, number] = [
+            Math.round((pColor[0] + dColor[0]) / 2),
+            Math.round((pColor[1] + dColor[1]) / 2),
+            Math.round((pColor[2] + dColor[2]) / 2),
+          ];
+
+          if (particles[i].bounceGen === 0 && Math.random() < 0.66) {
+            const flipped = reversed ? edgeIdx : -(edgeIdx + 1);
+            pendingBounces.push({
+              edgeIndex: flipped,
+              color: blended,
+              spawnAt: timestamp + BOUNCE_DELAY_MIN + Math.random() * (BOUNCE_DELAY_MAX - BOUNCE_DELAY_MIN),
+              bounceGen: 1,
+            });
+          } else if (particles[i].bounceGen === 1 && Math.random() < BOUNCE_CHANCE) {
+            const flipped = reversed ? edgeIdx : -(edgeIdx + 1);
+            pendingBounces.push({
+              edgeIndex: flipped,
+              color: blended,
+              spawnAt: timestamp + BOUNCE_DELAY_MIN + Math.random() * (BOUNCE_DELAY_MAX - BOUNCE_DELAY_MIN),
+              bounceGen: 2,
+            });
+          }
         }
         if (particles[i].elapsed > particles[i].duration * 5.5) {
           particles.splice(i, 1);
