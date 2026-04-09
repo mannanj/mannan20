@@ -526,7 +526,7 @@ export function SeekingCommunityBody() {
         <section id="era-return">
           <div className="space-y-4">
             <p className="text-white/80">
-              My dream for community creation is strong. The moment for its
+              My dream for community evolution is strong. The moment for its
               mainstream adoption is never better than now.
             </p>
           </div>
