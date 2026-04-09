@@ -2,15 +2,15 @@
 
 import { useEffect, useRef } from "react";
 
-const HEIGHT = 120;
-const SPAWN_MIN_MS = 150;
-const SPAWN_MAX_MS = 350;
+const HEIGHT = 60;
+const SPAWN_MIN_MS = 450;
+const SPAWN_MAX_MS = 1050;
 const PARTICLE_DURATION_MIN = 200;
 const PARTICLE_DURATION_MAX = 1100;
 const MAX_DT = 32;
-const NODE_RADIUS = 1.4;
+const NODE_RADIUS = 2.1;
 const PARTICLE_RADIUS = 0.8;
-const HIT_GLOW_RADIUS = 18;
+const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
 
 interface Node {
@@ -34,9 +34,9 @@ function easeInOutQuad(t: number): number {
 function generateTreeNodes(width: number): Node[] {
   const nodes: Node[] = [];
   const rows = [
-    { count: 5, y: 22 },
-    { count: 7, y: 58 },
-    { count: 5, y: 94 },
+    { count: 5, y: 11 },
+    { count: 7, y: 29 },
+    { count: 5, y: 47 },
   ];
 
   let seed = 73;
@@ -53,7 +53,7 @@ function generateTreeNodes(width: number): Node[] {
 
     for (let i = 0; i < count; i++) {
       const jitterX = (rand() - 0.5) * spacing * 0.4;
-      const jitterY = (rand() - 0.5) * 10;
+      const jitterY = (rand() - 0.5) * 5;
       nodes.push({
         x: startX + i * spacing + jitterX,
         y: y + jitterY,
@@ -213,17 +213,18 @@ export function CommunityNodes() {
         const sourceNode = Math.floor(Math.random() * nodes.length);
         const neighborEdges = getNeighborEdges(sourceNode, edges);
         const baseHue = Math.random() * 360;
-        const edgeIdx = neighborEdges[Math.floor(Math.random() * neighborEdges.length)];
-        const needsFlip = edges[edgeIdx][0] !== sourceNode;
-        particles.push({
-          edgeIndex: needsFlip ? -(edgeIdx + 1) : edgeIdx,
-          progress: 0,
-          duration:
-            PARTICLE_DURATION_MIN +
-            Math.random() * (PARTICLE_DURATION_MAX - PARTICLE_DURATION_MIN),
-          elapsed: 0,
-          baseHue,
-        });
+        for (const edgeIdx of neighborEdges) {
+          const needsFlip = edges[edgeIdx][0] !== sourceNode;
+          particles.push({
+            edgeIndex: needsFlip ? -(edgeIdx + 1) : edgeIdx,
+            progress: 0,
+            duration:
+              PARTICLE_DURATION_MIN +
+              Math.random() * (PARTICLE_DURATION_MAX - PARTICLE_DURATION_MIN),
+            elapsed: 0,
+            baseHue,
+          });
+        }
       }
 
       for (let i = particles.length - 1; i >= 0; i--) {
@@ -281,16 +282,15 @@ export function CommunityNodes() {
         }
 
         if (hitAlpha > 0.01) {
-          const r = HIT_GLOW_RADIUS * (0.7 + hitAlpha * 0.3);
-          const outer = ctx.createRadialGradient(
+          const r = HIT_GLOW_RADIUS * (0.8 + hitAlpha * 0.2);
+          const fog = ctx.createRadialGradient(
             nodes[i].x, nodes[i].y, 0,
             nodes[i].x, nodes[i].y, r
           );
-          outer.addColorStop(0, `hsla(${hitHue}, 60%, 72%, ${hitAlpha * 0.14})`);
-          outer.addColorStop(0.3, `hsla(${hitHue}, 60%, 72%, ${hitAlpha * 0.08})`);
-          outer.addColorStop(0.7, `hsla(${hitHue}, 60%, 72%, ${hitAlpha * 0.03})`);
-          outer.addColorStop(1, "hsla(0, 0%, 0%, 0)");
-          ctx.fillStyle = outer;
+          fog.addColorStop(0, `hsla(${hitHue}, 40%, 75%, ${hitAlpha * 0.15})`);
+          fog.addColorStop(0.5, `hsla(${hitHue}, 40%, 75%, ${hitAlpha * 0.08})`);
+          fog.addColorStop(1, "hsla(0, 0%, 0%, 0)");
+          ctx.fillStyle = fog;
           ctx.beginPath();
           ctx.arc(nodes[i].x, nodes[i].y, r, 0, Math.PI * 2);
           ctx.fill();
@@ -305,7 +305,7 @@ export function CommunityNodes() {
           const a = 1 - age;
           if (a > hitAlpha) hitAlpha = a;
         }
-        const alpha = 0.4 + hitAlpha * 0.4;
+        const alpha = 0.4 + hitAlpha * 0.15;
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.beginPath();
         ctx.arc(nodes[i].x, nodes[i].y, NODE_RADIUS, 0, Math.PI * 2);
