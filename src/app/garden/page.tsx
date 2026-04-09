@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { JOYFUL_FRUSTRATIONS } from '@/lib/garden-articles';
 
 export const metadata: Metadata = {
   title: 'Garden | Mannan Javid',
@@ -25,12 +24,7 @@ const ARTICLES: GardenArticle[] = [
     wordCount: 1800,
     href: '/garden/article/seeking-community',
   },
-  {
-    title: JOYFUL_FRUSTRATIONS.title,
-    description: JOYFUL_FRUSTRATIONS.description,
-    href: JOYFUL_FRUSTRATIONS.href,
-  },
-  {
+{
     title: "Health is an Artform",
     description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
     date: '2026-03-15',
