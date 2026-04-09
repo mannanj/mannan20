@@ -13,6 +13,12 @@ const NODE_RADIUS_MAX = 1.4;
 const PARTICLE_RADIUS = 0.8;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
+const NODE_COLORS: [number, number, number][] = [
+  [255, 255, 255],
+  [248, 113, 113],
+  [74, 222, 128],
+  [3, 155, 229],
+];
 
 interface Node {
   x: number;
@@ -20,6 +26,7 @@ interface Node {
   row: number;
   baseAlpha: number;
   radius: number;
+  color: [number, number, number];
 }
 
 interface Particle {
@@ -28,8 +35,8 @@ interface Particle {
   prevProgress: number;
   duration: number;
   elapsed: number;
-  baseHue: number;
   hitFired: boolean;
+  color: [number, number, number];
 }
 
 
@@ -67,6 +74,7 @@ function generateTreeNodes(width: number): Node[] {
         row: r,
         baseAlpha: 0.2 + rand() * 0.2,
         radius: NODE_RADIUS_MIN + Math.random() * (NODE_RADIUS_MAX - NODE_RADIUS_MIN),
+        color: Math.random() < 2 / 3 ? NODE_COLORS[0] : NODE_COLORS[1 + Math.floor(Math.random() * 3)],
       });
     }
   }
@@ -204,7 +212,7 @@ export function CommunityNodes() {
     const nodes = generateTreeNodes(width);
     const edges = generateTreeEdges(nodes);
     const particles: Particle[] = [];
-    const nodeHits: { hue: number; time: number }[][] = nodes.map(() => []);
+    const nodeHits: { time: number }[][] = nodes.map(() => []);
     let lastTime = 0;
     let nextSpawn = 0;
     let spawnTimer = 0;
@@ -221,7 +229,6 @@ export function CommunityNodes() {
         nextSpawn = SPAWN_MIN_MS + Math.random() * (SPAWN_MAX_MS - SPAWN_MIN_MS);
         const sourceNode = Math.floor(Math.random() * nodes.length);
         const neighborEdges = getNeighborEdges(sourceNode, edges);
-        const baseHue = Math.random() * 360;
         const speed = PARTICLE_DURATION_MIN +
           Math.random() * (PARTICLE_DURATION_MAX - PARTICLE_DURATION_MIN);
         for (const edgeIdx of neighborEdges) {
@@ -234,8 +241,8 @@ export function CommunityNodes() {
             prevProgress: 0,
             duration: dist * (speed / 60),
             elapsed: 0,
-            baseHue,
             hitFired: false,
+            color: nodes[sourceNode].color,
           });
         }
       }
@@ -254,8 +261,7 @@ export function CommunityNodes() {
           const edgeIdx = reversed ? -(rawIdx + 1) : rawIdx;
           const [a, b] = edges[edgeIdx];
           const destNode = reversed ? a : b;
-          const hue = (particles[i].baseHue + 40) % 360;
-          nodeHits[destNode].push({ hue, time: timestamp });
+          nodeHits[destNode].push({ time: timestamp });
         }
         if (particles[i].elapsed > particles[i].duration * 5.5) {
           particles.splice(i, 1);
@@ -289,14 +295,10 @@ export function CommunityNodes() {
         }
 
         let hitAlpha = 0;
-        let hitHue = 0;
         for (const hit of hits) {
           const age = (timestamp - hit.time) / HIT_GLOW_DECAY;
           const a = 1 - age;
-          if (a > hitAlpha) {
-            hitAlpha = a;
-            hitHue = hit.hue;
-          }
+          if (a > hitAlpha) hitAlpha = a;
         }
 
         if (hitAlpha > 0.01) {
@@ -305,9 +307,10 @@ export function CommunityNodes() {
             nodes[i].x, nodes[i].y, 0,
             nodes[i].x, nodes[i].y, r
           );
-          fog.addColorStop(0, `hsla(${hitHue}, 40%, 75%, ${hitAlpha * 0.15})`);
-          fog.addColorStop(0.5, `hsla(${hitHue}, 40%, 75%, ${hitAlpha * 0.08})`);
-          fog.addColorStop(1, "hsla(0, 0%, 0%, 0)");
+          const [cr, cg, cb] = nodes[i].color;
+          fog.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${hitAlpha * 0.15})`);
+          fog.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, ${hitAlpha * 0.08})`);
+          fog.addColorStop(1, "rgba(0, 0, 0, 0)");
           ctx.fillStyle = fog;
           ctx.beginPath();
           ctx.arc(nodes[i].x, nodes[i].y, r, 0, Math.PI * 2);
@@ -324,7 +327,8 @@ export function CommunityNodes() {
           if (a > hitAlpha) hitAlpha = a;
         }
         const alpha = nodes[i].baseAlpha + hitAlpha * 0.08;
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        const [nr, ng, nb] = nodes[i].color;
+        ctx.fillStyle = `rgba(${nr}, ${ng}, ${nb}, ${alpha})`;
         ctx.beginPath();
         ctx.arc(nodes[i].x, nodes[i].y, nodes[i].radius, 0, Math.PI * 2);
         ctx.fill();
@@ -351,9 +355,10 @@ export function CommunityNodes() {
         const tx = fromNode.x + (toNode.x - fromNode.x) * tTrail;
         const ty = fromNode.y + (toNode.y - fromNode.y) * tTrail;
         const trailAlpha = (p.hitFired ? 0.18 : 0.25) * ghostFade;
+        const [pr, pg, pb] = p.color;
         const grad = ctx.createLinearGradient(tx, ty, x, y);
-        grad.addColorStop(0, "rgba(255, 255, 255, 0)");
-        grad.addColorStop(1, `rgba(255, 255, 255, ${trailAlpha})`);
+        grad.addColorStop(0, `rgba(${pr}, ${pg}, ${pb}, 0)`);
+        grad.addColorStop(1, `rgba(${pr}, ${pg}, ${pb}, ${trailAlpha})`);
         ctx.strokeStyle = grad;
         ctx.lineWidth = 0.8;
         ctx.beginPath();
@@ -365,7 +370,7 @@ export function CommunityNodes() {
           const fadeIn = Math.min(p.progress * 4, 1);
           const fadeOut = Math.min((1 - p.progress) * 4, 1);
           const opacity = fadeIn * fadeOut * 0.55;
-          ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+          ctx.fillStyle = `rgba(${pr}, ${pg}, ${pb}, ${opacity})`;
           ctx.beginPath();
           ctx.arc(x, y, PARTICLE_RADIUS, 0, Math.PI * 2);
           ctx.fill();
