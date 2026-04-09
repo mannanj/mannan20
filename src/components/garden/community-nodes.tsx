@@ -2,10 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-const WIDTH = 280;
 const HEIGHT = 120;
-const DPR = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 2;
-
 const SPAWN_MIN_MS = 150;
 const SPAWN_MAX_MS = 350;
 const PARTICLE_DURATION_MIN = 200;
@@ -13,9 +10,8 @@ const PARTICLE_DURATION_MAX = 1100;
 const MAX_DT = 32;
 const NODE_RADIUS = 1.4;
 const PARTICLE_RADIUS = 0.8;
-const GLOW_RADIUS = 4;
-const HIT_GLOW_RADIUS = 10;
-const HIT_GLOW_DECAY = 500;
+const HIT_GLOW_RADIUS = 18;
+const HIT_GLOW_DECAY = 600;
 
 interface Node {
   x: number;
@@ -35,7 +31,7 @@ function easeInOutQuad(t: number): number {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
-function generateTreeNodes(): Node[] {
+function generateTreeNodes(width: number): Node[] {
   const nodes: Node[] = [];
   const rows = [
     { count: 5, y: 22 },
@@ -51,9 +47,9 @@ function generateTreeNodes(): Node[] {
 
   for (let r = 0; r < rows.length; r++) {
     const { count, y } = rows[r];
-    const totalSpread = WIDTH - 16;
-    const spacing = totalSpread / (count + 1);
-    const startX = 4 + spacing;
+    const totalSpread = width - 8;
+    const spacing = totalSpread / (count - 1 || 1);
+    const startX = 4;
 
     for (let i = 0; i < count; i++) {
       const jitterX = (rand() - 0.5) * spacing * 0.4;
@@ -176,21 +172,27 @@ function getNeighborEdges(
 }
 
 export function CommunityNodes() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!container || !canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = DPR;
-    canvas.width = WIDTH * dpr;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = container.clientWidth;
+
+    canvas.width = width * dpr;
     canvas.height = HEIGHT * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${HEIGHT}px`;
     ctx.scale(dpr, dpr);
 
-    const nodes = generateTreeNodes();
+    const nodes = generateTreeNodes(width);
     const edges = generateTreeEdges(nodes);
     const particles: Particle[] = [];
     const nodeHits: { hue: number; time: number }[][] = nodes.map(() => []);
@@ -208,23 +210,20 @@ export function CommunityNodes() {
       if (spawnTimer >= nextSpawn) {
         spawnTimer = 0;
         nextSpawn = SPAWN_MIN_MS + Math.random() * (SPAWN_MAX_MS - SPAWN_MIN_MS);
-        const emitCount = 2 + Math.floor(Math.random() * 2);
-        for (let e = 0; e < emitCount; e++) {
-          const sourceNode = Math.floor(Math.random() * nodes.length);
-          const neighborEdges = getNeighborEdges(sourceNode, edges);
-          const baseHue = Math.random() * 360;
-          const edgeIdx = neighborEdges[Math.floor(Math.random() * neighborEdges.length)];
-          const needsFlip = edges[edgeIdx][0] !== sourceNode;
-          particles.push({
-            edgeIndex: needsFlip ? -(edgeIdx + 1) : edgeIdx,
-            progress: 0,
-            duration:
-              PARTICLE_DURATION_MIN +
-              Math.random() * (PARTICLE_DURATION_MAX - PARTICLE_DURATION_MIN),
-            elapsed: 0,
-            baseHue,
-          });
-        }
+        const sourceNode = Math.floor(Math.random() * nodes.length);
+        const neighborEdges = getNeighborEdges(sourceNode, edges);
+        const baseHue = Math.random() * 360;
+        const edgeIdx = neighborEdges[Math.floor(Math.random() * neighborEdges.length)];
+        const needsFlip = edges[edgeIdx][0] !== sourceNode;
+        particles.push({
+          edgeIndex: needsFlip ? -(edgeIdx + 1) : edgeIdx,
+          progress: 0,
+          duration:
+            PARTICLE_DURATION_MIN +
+            Math.random() * (PARTICLE_DURATION_MAX - PARTICLE_DURATION_MIN),
+          elapsed: 0,
+          baseHue,
+        });
       }
 
       for (let i = particles.length - 1; i >= 0; i--) {
@@ -245,7 +244,7 @@ export function CommunityNodes() {
         }
       }
 
-      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      ctx.clearRect(0, 0, width, HEIGHT);
 
       ctx.save();
       ctx.lineWidth = 0.4;
@@ -282,40 +281,20 @@ export function CommunityNodes() {
         }
 
         if (hitAlpha > 0.01) {
-          const gradient = ctx.createRadialGradient(
-            nodes[i].x,
-            nodes[i].y,
-            0,
-            nodes[i].x,
-            nodes[i].y,
-            HIT_GLOW_RADIUS * (0.6 + hitAlpha * 0.4)
+          const r = HIT_GLOW_RADIUS * (0.7 + hitAlpha * 0.3);
+          const outer = ctx.createRadialGradient(
+            nodes[i].x, nodes[i].y, 0,
+            nodes[i].x, nodes[i].y, r
           );
-          gradient.addColorStop(0, `hsla(${hitHue}, 75%, 70%, ${hitAlpha * 0.25})`);
-          gradient.addColorStop(0.5, `hsla(${hitHue}, 75%, 70%, ${hitAlpha * 0.08})`);
-          gradient.addColorStop(1, "hsla(0, 0%, 0%, 0)");
-          ctx.fillStyle = gradient;
+          outer.addColorStop(0, `hsla(${hitHue}, 60%, 72%, ${hitAlpha * 0.14})`);
+          outer.addColorStop(0.3, `hsla(${hitHue}, 60%, 72%, ${hitAlpha * 0.08})`);
+          outer.addColorStop(0.7, `hsla(${hitHue}, 60%, 72%, ${hitAlpha * 0.03})`);
+          outer.addColorStop(1, "hsla(0, 0%, 0%, 0)");
+          ctx.fillStyle = outer;
           ctx.beginPath();
-          ctx.arc(nodes[i].x, nodes[i].y, HIT_GLOW_RADIUS, 0, Math.PI * 2);
+          ctx.arc(nodes[i].x, nodes[i].y, r, 0, Math.PI * 2);
           ctx.fill();
         }
-
-        const baseAlpha = 0.04 + hitAlpha * 0.06;
-        const time = timestamp * 0.001;
-        const hue = (time * 12 + i * 35) % 360;
-        const gradient = ctx.createRadialGradient(
-          nodes[i].x,
-          nodes[i].y,
-          0,
-          nodes[i].x,
-          nodes[i].y,
-          GLOW_RADIUS
-        );
-        gradient.addColorStop(0, `hsla(${hue}, 70%, 75%, ${baseAlpha})`);
-        gradient.addColorStop(1, "hsla(0, 0%, 0%, 0)");
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(nodes[i].x, nodes[i].y, GLOW_RADIUS, 0, Math.PI * 2);
-        ctx.fill();
       }
 
       for (let i = 0; i < nodes.length; i++) {
@@ -344,19 +323,15 @@ export function CommunityNodes() {
         const t = easeInOutQuad(p.progress);
         const x = fromNode.x + (toNode.x - fromNode.x) * t;
         const y = fromNode.y + (toNode.y - fromNode.y) * t;
-        const hue = (p.baseHue + p.progress * 40) % 360;
         const fadeIn = Math.min(p.progress * 4, 1);
         const fadeOut = Math.min((1 - p.progress) * 4, 1);
-        const opacity = fadeIn * fadeOut * 0.35;
+        const opacity = fadeIn * fadeOut * 0.55;
 
-        ctx.shadowBlur = 2;
-        ctx.shadowColor = `hsla(${hue}, 80%, 70%, ${opacity * 0.4})`;
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.beginPath();
         ctx.arc(x, y, PARTICLE_RADIUS, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.shadowBlur = 0;
       ctx.restore();
 
       rafRef.current = requestAnimationFrame(animate);
@@ -368,12 +343,8 @@ export function CommunityNodes() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={WIDTH * DPR}
-      height={HEIGHT * DPR}
-      style={{ width: WIDTH, height: HEIGHT }}
-      className="mb-6"
-    />
+    <div ref={containerRef} className="w-full mb-6">
+      <canvas ref={canvasRef} />
+    </div>
   );
 }
