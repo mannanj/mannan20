@@ -8,7 +8,8 @@ const SPAWN_MAX_MS = 8400;
 const PARTICLE_DURATION_MIN = 200;
 const PARTICLE_DURATION_MAX = 1100;
 const MAX_DT = 32;
-const NODE_RADIUS = 1.4;
+const NODE_RADIUS_MIN = 0.84;
+const NODE_RADIUS_MAX = 1.4;
 const PARTICLE_RADIUS = 0.8;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
@@ -18,6 +19,7 @@ interface Node {
   y: number;
   row: number;
   baseAlpha: number;
+  radius: number;
 }
 
 interface Particle {
@@ -64,6 +66,7 @@ function generateTreeNodes(width: number): Node[] {
         y: y + jitterY,
         row: r,
         baseAlpha: 0.2 + rand() * 0.2,
+        radius: NODE_RADIUS_MIN + Math.random() * (NODE_RADIUS_MAX - NODE_RADIUS_MIN),
       });
     }
   }
@@ -323,7 +326,7 @@ export function CommunityNodes() {
         const alpha = nodes[i].baseAlpha + hitAlpha * 0.08;
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.beginPath();
-        ctx.arc(nodes[i].x, nodes[i].y, NODE_RADIUS, 0, Math.PI * 2);
+        ctx.arc(nodes[i].x, nodes[i].y, nodes[i].radius, 0, Math.PI * 2);
         ctx.fill();
       }
 
