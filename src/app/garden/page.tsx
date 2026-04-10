@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GARDEN_ARTICLES } from '@/lib/garden-articles';
+import { GardenPlantDecoration } from '@/components/garden/garden-plant-decoration';
 
 export const metadata: Metadata = {
   title: 'Garden',
@@ -51,8 +52,14 @@ export default function GardenPage() {
         <PlantThree />
       </div>
 
+      <div className="hidden lg:block absolute left-[calc(50%-480px)] top-40">
+        <GardenPlantDecoration />
+      </div>
+
       <div className="relative max-w-2xl mx-auto px-6 pt-40 pb-16">
-        <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
+        <Link href="/garden" className="block w-fit">
+          <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
+        </Link>
 
         <p className="text-sm text-white/50 leading-relaxed mb-12">
           Here live my thoughts, projects, and interests at various stages of growth
