@@ -89,6 +89,23 @@ export function Header() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gardenRef = useRef<HTMLDivElement>(null);
   const gateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const gardenCloseTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const openGarden = useCallback(() => {
+    if (gardenCloseTimerRef.current) {
+      clearTimeout(gardenCloseTimerRef.current);
+      gardenCloseTimerRef.current = null;
+    }
+    setGardenExpanded(true);
+  }, []);
+
+  const closeGarden = useCallback(() => {
+    if (gardenCloseTimerRef.current) clearTimeout(gardenCloseTimerRef.current);
+    gardenCloseTimerRef.current = setTimeout(() => {
+      setGardenExpanded(false);
+      gardenCloseTimerRef.current = null;
+    }, 180);
+  }, []);
 
   const CLICK_GATE_MS = 1000;
 
@@ -124,6 +141,10 @@ export function Header() {
     if (!gardenExpanded) return;
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (gardenRef.current && !gardenRef.current.contains(e.target as Node)) {
+        if (gardenCloseTimerRef.current) {
+          clearTimeout(gardenCloseTimerRef.current);
+          gardenCloseTimerRef.current = null;
+        }
         setGardenExpanded(false);
       }
     };
@@ -207,6 +228,10 @@ export function Header() {
       if (rootAnimRef.current) {
         cancelAnimationFrame(rootAnimRef.current);
         rootAnimRef.current = 0;
+      }
+      if (gardenCloseTimerRef.current) {
+        clearTimeout(gardenCloseTimerRef.current);
+        gardenCloseTimerRef.current = null;
       }
     };
   }, [gardenExpanded]);
@@ -486,8 +511,8 @@ export function Header() {
         ref={gardenRef}
         data-testid="garden-wrapper"
         className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
-        onMouseEnter={() => setGardenExpanded(true)}
-        onMouseLeave={() => { if (!rootHoveredRef.current) setGardenExpanded(false); }}
+        onMouseEnter={openGarden}
+        onMouseLeave={closeGarden}
       >
         <Link
           href="/garden"
@@ -538,10 +563,10 @@ export function Header() {
             <path d="M10 0C10 1.5 10.5 3 10 5C9.8 6 10 6.5 10 7" stroke="#8B6914" strokeWidth="1" strokeLinecap="round" fill="none" />
           </svg>
           <div
-            className={`absolute top-full left-1/2 mt-[4px] z-10 ${gardenExpanded ? 'pointer-events-auto' : 'pointer-events-none'}`}
-            style={{ transform: 'translateX(-50%)', width: '60px', height: `${55 * Math.max(gardenRootScale, 0.001)}px`, marginLeft: '0px', cursor: gardenExpanded ? `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='24' font-size='24'>🪴</text></svg>") 16 16, auto` : 'default' }}
-            onMouseEnter={() => { rootHoveredRef.current = true; setRootHovered(true); setGardenExpanded(true); }}
-            onMouseLeave={() => { rootHoveredRef.current = false; setRootHovered(false); setGardenExpanded(false); }}
+            className={`absolute top-full left-1/2 mt-[0px] z-10 ${gardenExpanded ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            style={{ transform: 'translateX(-50%)', width: '60px', height: `${55 * Math.max(gardenRootScale, 0.2)}px`, marginLeft: '0px' }}
+            onMouseEnter={() => { rootHoveredRef.current = true; setRootHovered(true); openGarden(); }}
+            onMouseLeave={() => { rootHoveredRef.current = false; setRootHovered(false); closeGarden(); }}
             onMouseMove={(e) => setRootCursorPos({ x: e.clientX, y: e.clientY })}
           >
           <svg
