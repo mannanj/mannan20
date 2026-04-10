@@ -959,7 +959,7 @@ export function Header() {
             </div>
           </div>
         </Link>
-        <div className={`absolute left-1/2 -translate-x-1/2 bottom-0 h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith('/garden') ? 'w-9' : 'group-hover/garden:w-9 w-0'}`} />
+        <div className={`absolute left-1/2 -translate-x-[calc(50%-13px)] bottom-[1.5px] h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith('/garden') ? 'w-9' : 'group-hover/garden:w-9 w-0'}`} />
       </div>
       {rootHovered && (
         <div
