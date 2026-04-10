@@ -499,7 +499,7 @@ export function Header() {
             <a
               id={`${link}-link`}
               data-testid={`header-nav-${link}`}
-              className={`header-link ${state.activeSection === link ? 'header-link-selected' : ''}`}
+              className={`header-link ${isHome && state.activeSection === link ? 'header-link-selected' : ''}`}
               onClick={() => goTo(link)}
             >
               {link.charAt(0).toUpperCase() + link.slice(1)}
@@ -510,7 +510,7 @@ export function Header() {
       <div
         ref={gardenRef}
         data-testid="garden-wrapper"
-        className={`absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
+        className={`group/garden absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
         onMouseEnter={openGarden}
         onMouseLeave={closeGarden}
       >
@@ -959,6 +959,7 @@ export function Header() {
             </div>
           </div>
         </Link>
+        <div className={`absolute left-1/2 -translate-x-1/2 bottom-0 h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith('/garden') ? 'w-9' : 'group-hover/garden:w-9 w-0'}`} />
       </div>
       {rootHovered && (
         <div
