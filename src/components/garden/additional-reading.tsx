@@ -83,9 +83,9 @@ export function AdditionalReading({ currentHref }: { currentHref: string }) {
             <Link
               key={article.href}
               href={article.href}
-              className="block rounded-lg border border-white/10 p-4 hover:border-white/20 hover:bg-white/[0.03] hover:scale-[1.05] transition-all duration-200 max-w-xs flex-shrink-0"
+              className="group block rounded-lg border border-white/10 p-4 hover:border-white/20 hover:bg-white/[0.03] hover:scale-[1.05] transition-all duration-200 max-w-xs flex-shrink-0"
             >
-              <h3 className="text-sm font-medium text-white mb-1">
+              <h3 className="text-sm font-medium text-white group-hover:text-red-500 transition-colors duration-200 mb-1">
                 {article.title}
               </h3>
               <p className="text-xs text-white/40">{article.description}</p>

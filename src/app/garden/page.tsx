@@ -1,38 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { GARDEN_ARTICLES } from '@/lib/garden-articles';
 
 export const metadata: Metadata = {
-  title: 'Garden | Mannan Javid',
+  title: 'Garden',
   description: 'Thoughts, projects, and interests — at various stages of growth.',
 };
-
-interface GardenArticle {
-  title: string;
-  description: string;
-  href: string;
-  date?: string;
-  readingTime?: string;
-  wordCount?: number;
-}
-
-const ARTICLES: GardenArticle[] = [
-  {
-    title: 'Seeking Community',
-    description: 'From Cosmos to car camping to Hawaii — a journey through spirituality, community, and finding guiding principles.',
-    date: '2026-04-07',
-    readingTime: '8 min read',
-    wordCount: 1800,
-    href: '/garden/article/seeking-community',
-  },
-{
-    title: "Health is an Artform",
-    description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
-    date: '2026-03-15',
-    readingTime: '3 min read',
-    wordCount: 620,
-    href: '/garden/article/health-longevity',
-  },
-];
 
 function PlantOne() {
   return (
@@ -81,18 +54,21 @@ export default function GardenPage() {
       <div className="relative max-w-2xl mx-auto px-6 pt-40 pb-16">
         <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
 
+        <p className="text-sm text-white/50 leading-relaxed mb-4">
+          Welcome
+        </p>
         <p className="text-sm text-white/50 leading-relaxed mb-12">
-          Welcome to my garden. Here live my thoughts, projects, and interests at various stages of growth.
+          Here live my thoughts, projects, and interests at various stages of growth
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {ARTICLES.map((article) => (
+          {GARDEN_ARTICLES.map((article) => (
             <Link
               key={article.href}
               href={article.href}
-              className="group flex flex-col rounded-lg px-4 py-5 hover:scale-[1.05] hover:bg-white/[0.03] transition-all duration-200"
+              className="group flex flex-col rounded-lg border border-white/10 px-4 py-5 hover:scale-[1.05] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200"
             >
-              <span className="text-base font-medium text-white">
+              <span className="text-base font-medium text-white group-hover:text-red-500 transition-colors duration-200">
                 {article.title}
               </span>
               <span className="text-sm text-white/40 mt-1">
