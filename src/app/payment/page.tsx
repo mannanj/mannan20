@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { Payment } from '@/components/payment';
 
 export const metadata: Metadata = {
-  title: 'Payment - Mannan Javid',
+  title: 'Payment',
 };
 
 interface PaymentDetails {

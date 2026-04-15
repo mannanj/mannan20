@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import Link from "next/link";
 import { BlueprintPopout } from "./blueprint-popout";
+import { AdditionalReading } from "./additional-reading";
 
 export function HealthArticleBody() {
   const [popoutOpen, setPopoutOpen] = useState(false);
@@ -98,23 +98,7 @@ export function HealthArticleBody() {
         </p>
       </div>
 
-      <div className="mt-16 border-t border-white/10 pt-10">
-        <h2 className="text-lg font-medium text-white mb-6">
-          Additional Reading
-        </h2>
-        <Link
-          href="/garden/article/seeking-community"
-          className="block rounded-lg border border-white/10 p-4 hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200 max-w-xs"
-        >
-          <h3 className="text-sm font-medium text-white mb-1">
-            Seeking Community
-          </h3>
-          <p className="text-xs text-white/40">
-            From Cosmos to car camping to Hawaii &mdash; a journey through
-            spirituality, community, and finding guiding principles.
-          </p>
-        </Link>
-      </div>
+      <AdditionalReading currentHref="/garden/article/health-longevity" />
 
       <BlueprintPopout
         open={popoutOpen}

@@ -3,8 +3,21 @@ import Image from 'next/image';
 import { HealthArticleBody } from '@/components/garden/health-article-body';
 
 export const metadata: Metadata = {
-  title: "Health is an Artform | Garden",
+  title: 'Health is an Artform',
   description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
+  openGraph: {
+    title: 'Health is an Artform',
+    description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
+    type: 'article',
+    publishedTime: '2026-03-15',
+    authors: ['Mannan Javid'],
+    url: 'https://mannan.is/garden/article/health-longevity',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Health is an Artform',
+    description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
+  },
 };
 
 export default function HealthLongevityArticle() {

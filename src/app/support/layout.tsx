@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { SupportHeader } from '@/components/support/support-header';
 
 export const metadata: Metadata = {
-  title: 'Support — Mannan Javid',
+  title: 'Support',
 };
 
 export default function SupportLayout({ children }: { children: React.ReactNode }) {

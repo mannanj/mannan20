@@ -1,101 +1,91 @@
 import Link from "next/link";
 
-function WhiteFlower({ cx, cy, scale = 1, rotation = 0 }: { cx: number; cy: number; scale?: number; rotation?: number }) {
+function Blossom({ cx, cy, scale = 1, rotation = 0 }: { cx: number; cy: number; scale?: number; rotation?: number }) {
   return (
-    <g transform={`translate(${cx}, ${cy}) scale(${scale}) rotate(${rotation}) translate(${-cx}, ${-cy})`}>
-      <ellipse cx={cx} cy={cy - 4.5} rx={2.5} ry={4} fill="#fff5f8" opacity={0.92} transform={`rotate(0, ${cx}, ${cy})`} />
-      <ellipse cx={cx + 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(72, ${cx}, ${cy})`} />
-      <ellipse cx={cx + 2.7} cy={cy + 3} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.88} transform={`rotate(144, ${cx}, ${cy})`} />
-      <ellipse cx={cx - 2.7} cy={cy + 3} rx={2.5} ry={4} fill="#ffe8ef" opacity={0.92} transform={`rotate(216, ${cx}, ${cy})`} />
-      <ellipse cx={cx - 4.3} cy={cy - 2} rx={2.5} ry={4} fill="#fff0f5" opacity={0.88} transform={`rotate(288, ${cx}, ${cy})`} />
-      <circle cx={cx} cy={cy} r={2.2} fill="url(#staticHibiscusCenter)" />
-      <circle cx={cx} cy={cy} r={0.7} fill="#ffee55" opacity={0.9} />
-      <circle cx={cx - 0.5} cy={cy - 0.7} r={0.2} fill="#cc4400" />
-      <circle cx={cx + 0.2} cy={cy - 0.9} r={0.2} fill="#cc4400" />
-      <circle cx={cx + 0.7} cy={cy - 0.4} r={0.2} fill="#cc4400" />
+    <g transform={`translate(${cx}, ${cy}) scale(${scale}) rotate(${rotation})`}>
+      <ellipse cx={0} cy={-3.5} rx={2} ry={3.2} fill="#f5c6d0" opacity={0.85} />
+      <ellipse cx={3.3} cy={-1.2} rx={2} ry={3.2} fill="#f0b8c4" opacity={0.8} transform="rotate(72)" />
+      <ellipse cx={2.1} cy={2.6} rx={2} ry={3.2} fill="#ebadb8" opacity={0.8} transform="rotate(144)" />
+      <ellipse cx={-2.1} cy={2.6} rx={2} ry={3.2} fill="#f0b8c4" opacity={0.85} transform="rotate(216)" />
+      <ellipse cx={-3.3} cy={-1.2} rx={2} ry={3.2} fill="#f5c6d0" opacity={0.8} transform="rotate(288)" />
+      <circle cx={0} cy={0} r={1.8} fill="#de7b8b" opacity={0.6} />
+      <circle cx={0} cy={0} r={0.8} fill="#f5e6a3" opacity={0.9} />
     </g>
   );
 }
 
-function IridescentFlower({ cx, cy, scale = 1, rotation = 0 }: { cx: number; cy: number; scale?: number; rotation?: number }) {
+function SmallBlossom({ cx, cy, scale = 0.6, rotation = 0 }: { cx: number; cy: number; scale?: number; rotation?: number }) {
   return (
-    <g transform={`translate(${cx}, ${cy}) scale(${scale}) rotate(${rotation}) translate(${-cx}, ${-cy})`}>
-      <ellipse cx={cx} cy={cy - 4.5} rx={2.8} ry={4.3} fill="#88aaff" opacity={0.85} transform={`rotate(5, ${cx}, ${cy})`} />
-      <ellipse cx={cx + 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#bb88ff" opacity={0.8} transform={`rotate(77, ${cx}, ${cy})`} />
-      <ellipse cx={cx + 2.9} cy={cy + 3} rx={2.8} ry={4.3} fill="#ff88cc" opacity={0.8} transform={`rotate(149, ${cx}, ${cy})`} />
-      <ellipse cx={cx - 2.9} cy={cy + 3} rx={2.8} ry={4.3} fill="#77ccff" opacity={0.85} transform={`rotate(221, ${cx}, ${cy})`} />
-      <ellipse cx={cx - 4.5} cy={cy - 2} rx={2.8} ry={4.3} fill="#88ddee" opacity={0.8} transform={`rotate(293, ${cx}, ${cy})`} />
-      <circle cx={cx} cy={cy} r={2.5} fill="url(#staticIridescentCenter)" />
-      <circle cx={cx} cy={cy} r={0.8} fill="#ffee55" opacity={0.9} />
-      <circle cx={cx - 0.5} cy={cy - 0.8} r={0.25} fill="#ee4400" />
-      <circle cx={cx + 0.1} cy={cy - 1} r={0.25} fill="#ee4400" />
-      <circle cx={cx + 0.7} cy={cy - 0.6} r={0.25} fill="#ee4400" />
-      <circle cx={cx - 0.7} cy={cy - 0.4} r={0.25} fill="#ee4400" />
+    <g transform={`translate(${cx}, ${cy}) scale(${scale}) rotate(${rotation})`}>
+      <ellipse cx={0} cy={-3} rx={1.8} ry={2.8} fill="#f8d5dc" opacity={0.7} />
+      <ellipse cx={2.8} cy={-1} rx={1.8} ry={2.8} fill="#f3c7d0" opacity={0.65} transform="rotate(72)" />
+      <ellipse cx={1.8} cy={2.2} rx={1.8} ry={2.8} fill="#f3c7d0" opacity={0.65} transform="rotate(144)" />
+      <ellipse cx={-1.8} cy={2.2} rx={1.8} ry={2.8} fill="#f8d5dc" opacity={0.7} transform="rotate(216)" />
+      <ellipse cx={-2.8} cy={-1} rx={1.8} ry={2.8} fill="#f3c7d0" opacity={0.65} transform="rotate(288)" />
+      <circle cx={0} cy={0} r={1.2} fill="#e8a0ad" opacity={0.5} />
     </g>
   );
 }
 
-function LeafCluster({ cx, cy, scale = 1, rotation = 0 }: { cx: number; cy: number; scale?: number; rotation?: number }) {
+function FallingPetal({ cx, cy, rotation = 0, opacity = 0.5 }: { cx: number; cy: number; rotation?: number; opacity?: number }) {
   return (
-    <g transform={`translate(${cx}, ${cy}) scale(${scale}) rotate(${rotation}) translate(${-cx}, ${-cy})`}>
-      <ellipse cx={cx} cy={cy - 2} rx={2} ry={4} fill="#3a8a2e" opacity={0.8} transform={`rotate(-15, ${cx}, ${cy})`} />
-      <ellipse cx={cx + 1.5} cy={cy} rx={1.73} ry={3.33} fill="#45a035" opacity={0.75} transform={`rotate(25, ${cx}, ${cy})`} />
-      <ellipse cx={cx - 1.5} cy={cy + 1} rx={1.6} ry={2.93} fill="#2d7a22" opacity={0.75} transform={`rotate(-35, ${cx}, ${cy})`} />
-    </g>
+    <ellipse cx={cx} cy={cy} rx={1.5} ry={2.8} fill="#f5c6d0" opacity={opacity} transform={`rotate(${rotation}, ${cx}, ${cy})`} />
   );
 }
 
-export function GardenPlantDecoration({ flowerScale = 0.7 }: { flowerScale?: number }) {
+export function GardenPlantDecoration() {
   return (
-    <Link href="/garden" className="block opacity-60 hover:opacity-80 transition-opacity duration-300">
+    <Link href="/garden" className="block hover:opacity-90 transition-opacity duration-300">
       <svg
-        viewBox="0 0 40 170"
+        viewBox="0 0 70 260"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-[120px]"
+        className="w-[105px]"
         style={{ overflow: 'visible' }}
       >
-        <defs>
-          <radialGradient id="staticHibiscusCenter" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ffee55" />
-            <stop offset="30%" stopColor="#cc1144" />
-            <stop offset="70%" stopColor="#990033" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-          <radialGradient id="staticIridescentCenter" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ffee55" />
-            <stop offset="30%" stopColor="#dd3388" />
-            <stop offset="70%" stopColor="#8833aa" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-        </defs>
+        <path
+          d="M55 0C52 8 45 18 38 30C31 42 28 52 30 65C32 78 36 85 34 100C32 115 25 125 22 140C19 155 22 165 28 178C34 191 30 200 26 215C22 230 24 245 28 260"
+          stroke="#5a3a2a"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          fill="none"
+          opacity={0.7}
+        />
 
-        <path d="M20 0C20 4 23 8 21 14C19 20 24 24 22 30C20 36 23 40 21 46C19.5 50 20 54 20 58C20 62 18 66 20 72C22 78 19 82 20 88C21 94 18 98 20 104C22 110 20 114 20 120C20 126 19 132 20 138C21 144 20 150 20 158C20 163 19 167 20 170" stroke="#8B6914" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        <path d="M45 20C42 16 36 14 30 16" stroke="#5a3a2a" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity={0.5} />
+        <path d="M38 30C44 28 50 30 54 35" stroke="#5a3a2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity={0.45} />
+        <path d="M32 55C26 50 18 48 12 52" stroke="#5a3a2a" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity={0.5} />
+        <path d="M30 65C36 60 44 58 50 62" stroke="#5a3a2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity={0.45} />
+        <path d="M34 100C28 95 20 93 14 97" stroke="#5a3a2a" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity={0.5} />
+        <path d="M30 110C38 108 46 112 52 118" stroke="#5a3a2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity={0.45} />
+        <path d="M22 140C16 135 10 132 4 136" stroke="#5a3a2a" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity={0.5} />
+        <path d="M24 150C32 148 40 152 46 158" stroke="#5a3a2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity={0.45} />
+        <path d="M28 178C22 174 14 172 8 176" stroke="#5a3a2a" strokeWidth="1" strokeLinecap="round" fill="none" opacity={0.45} />
+        <path d="M28 190C36 188 44 192 50 198" stroke="#5a3a2a" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity={0.4} />
+        <path d="M26 215C20 210 12 208 6 212" stroke="#5a3a2a" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity={0.4} />
 
-        <path d="M20 10C13 8 10 9 7 11" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M21 22C28 20 31 21 34 23" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M20 36C13 34 10 35 7 37" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M21 50C28 48 31 49 34 51" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M20 64C13 62 9 63 6 65" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M21 78C28 76 31 77 34 79" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M20 92C13 90 9 91 6 93" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M21 106C28 104 31 105 34 107" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M20 120C13 118 9 119 6 121" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M21 134C28 132 31 133 34 135" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M20 148C13 146 9 147 6 149" stroke="#8B6914" strokeWidth="0.8" strokeLinecap="round" />
+        <Blossom cx={28} cy={15} scale={1} rotation={-15} />
+        <Blossom cx={55} cy={36} scale={0.85} rotation={20} />
+        <Blossom cx={10} cy={52} scale={0.95} rotation={-10} />
+        <Blossom cx={52} cy={63} scale={0.75} rotation={30} />
+        <Blossom cx={12} cy={97} scale={1} rotation={-5} />
+        <SmallBlossom cx={38} cy={90} scale={0.7} rotation={15} />
+        <Blossom cx={53} cy={120} scale={0.8} rotation={25} />
+        <SmallBlossom cx={18} cy={130} scale={0.65} rotation={-20} />
+        <Blossom cx={2} cy={136} scale={0.9} rotation={-12} />
+        <Blossom cx={48} cy={160} scale={0.85} rotation={18} />
+        <SmallBlossom cx={20} cy={170} scale={0.7} rotation={-8} />
+        <Blossom cx={6} cy={176} scale={0.75} rotation={-22} />
+        <Blossom cx={52} cy={200} scale={0.8} rotation={15} />
+        <SmallBlossom cx={4} cy={212} scale={0.7} rotation={-25} />
+        <SmallBlossom cx={34} cy={240} scale={0.6} rotation={10} />
 
-        <ellipse cx={7} cy={11} rx={1.6} ry={2.66} fill="#3a8a2e" opacity={0.75} transform="rotate(-30, 7, 11)" />
-        <ellipse cx={34} cy={23} rx={1.6} ry={2.66} fill="#2d7a22" opacity={0.75} transform="rotate(25, 34, 23)" />
-
-        <WhiteFlower cx={7} cy={37} scale={flowerScale} rotation={-10} />
-        <LeafCluster cx={34} cy={51} scale={1.1} rotation={15} />
-        <IridescentFlower cx={6} cy={65} scale={flowerScale} rotation={-5} />
-        <ellipse cx={34} cy={79} rx={1.6} ry={2.66} fill="#45a035" opacity={0.75} transform="rotate(20, 34, 79)" />
-        <WhiteFlower cx={6} cy={93} scale={flowerScale} rotation={-15} />
-        <LeafCluster cx={34} cy={107} scale={1.0} rotation={10} />
-        <IridescentFlower cx={6} cy={121} scale={flowerScale} rotation={5} />
-        <WhiteFlower cx={34} cy={135} scale={flowerScale} rotation={-8} />
-        <LeafCluster cx={6} cy={149} scale={1.2} rotation={-20} />
+        <FallingPetal cx={60} cy={45} rotation={35} opacity={0.35} />
+        <FallingPetal cx={2} cy={75} rotation={-40} opacity={0.3} />
+        <FallingPetal cx={58} cy={145} rotation={50} opacity={0.25} />
+        <FallingPetal cx={0} cy={195} rotation={-30} opacity={0.3} />
+        <FallingPetal cx={62} cy={230} rotation={45} opacity={0.2} />
+        <FallingPetal cx={8} cy={250} rotation={-55} opacity={0.25} />
       </svg>
     </Link>
   );

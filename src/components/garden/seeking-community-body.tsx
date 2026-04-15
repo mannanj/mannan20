@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Timeline } from "./timeline";
 import { DraggablePopout } from "./draggable-popout";
 import { CommunityNodes } from "./community-nodes";
+import { AdditionalReading } from "./additional-reading";
 
 const ERAS = [
   {
@@ -87,7 +88,10 @@ function Divider() {
 
 function HawaiiPopout() {
   const [open, setOpen] = useState(false);
-  const [anchorPos, setAnchorPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [anchorPos, setAnchorPos] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
 
   const handleOpen = useCallback((e: React.MouseEvent) => {
     setAnchorPos({ x: e.clientX, y: e.clientY });
@@ -102,8 +106,19 @@ function HawaiiPopout() {
           onClick={handleOpen}
           className="text-sm text-white/70 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-2"
         >
-          <span className="underline underline-offset-4 decoration-white/40 hover:decoration-white/70">The Full Story</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <span className="underline underline-offset-4 decoration-white/40 hover:decoration-white/70">
+            More
+          </span>
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />
@@ -118,27 +133,27 @@ function HawaiiPopout() {
         width={420}
         minimizable
         header={
-          <h3 className="text-sm font-medium text-white mb-4">Hawaii &mdash; The Full Story</h3>
+          <h3 className="text-sm font-medium text-white mb-4">
+            Hawaii &mdash; The Full Story
+          </h3>
         }
       >
         <div className="space-y-4 text-sm text-white/70 leading-relaxed">
           <p>
             When I arrived on the Island, I was 6 of 9 months into a zen
-            practice of self-belonging &mdash; exploring my relationship
-            with validation, approval and intimacy, and choosing to redirect
-            that energy inward. It was intense and powerful, and this
-            community was the perfect place to hold it.
+            practice of self-belonging &mdash; exploring my relationship with
+            validation, approval and intimacy, and choosing to redirect that
+            energy inward. It was intense and powerful, and this community was
+            the perfect place to hold it.
           </p>
           <p>
             I would work early in the mornings and then dance, meditate, and
             spend time in nature and community often eating delicious food.
           </p>
           <p>
-            I love to find ideas and frameworks and come to agreements on
-            ways to improve things &mdash; leading into a system of
-            community we could isolate and release for the public to
-            recreate anywhere. It turns out I should have asked if my
-            community here was interested in the same vision.
+            I love to find ideas and frameworks and come to agreements on ways
+            to improve things &mdash; leading into a system of community we
+            could isolate and release for the public to recreate anywhere.
           </p>
         </div>
       </DraggablePopout>
@@ -155,8 +170,13 @@ export function SeekingCommunityBody() {
   const hasScrolled = useRef(false);
 
   useEffect(() => {
-    const markScrolled = () => { hasScrolled.current = true; };
-    window.addEventListener("scroll", markScrolled, { once: true, passive: true });
+    const markScrolled = () => {
+      hasScrolled.current = true;
+    };
+    window.addEventListener("scroll", markScrolled, {
+      once: true,
+      passive: true,
+    });
     return () => window.removeEventListener("scroll", markScrolled);
   }, []);
 
@@ -294,11 +314,11 @@ export function SeekingCommunityBody() {
               provide.
             </p>
             <p>
-              I remember one evening, coming home after a group seminar
-              on self-awareness. I held my mother&apos;s hands while she
-              sat on her prayer rug. It was a moment of cathartic release for me
-              &mdash; and grief for her. Something unexplainable shifted for me
-              that night.
+              I remember one evening, coming home after a group seminar on
+              self-awareness. I held my mother&apos;s hands while she sat on her
+              prayer rug. It was a moment of cathartic release for me &mdash;
+              and grief for her. Something unexplainable shifted for me that
+              night.
             </p>
             <p>
               I found new space to seek and embrace answers to life&apos;s
@@ -367,9 +387,9 @@ export function SeekingCommunityBody() {
         <section id="era-la">
           <div className="space-y-4">
             <p className="text-white/80">
-              A global pandemic and lucky circumstances took me to Los
-              Angeles. I found new friends and a new kind of community &mdash;
-              this one moved differently than any I'd known.
+              A global pandemic and lucky circumstances took me to Los Angeles.
+              I found new friends and a new kind of community &mdash; this one
+              moved differently than any I'd known.
             </p>
             <p>
               I was shortly initiated into manhood and studied a system of
@@ -396,24 +416,31 @@ export function SeekingCommunityBody() {
               My dream was to create intentional, conscious communities and
               apply my engineering and analytical mindset to understanding and
               scaling them for others. I would still be working in tech,
-              remotely. I believed I could experiment with living out a more efficient
-              and effective system of harmony within society than the
+              remotely. I believed I could experiment with living out a more
+              efficient and effective system of harmony within society than the
               divisive hatred-filled one I was seeing on social media.
             </p>
             <p>
               Combined with modern technologies only now being adopted for
-              communities like this 3 years later (<a href="https://www.flow.life" target="_blank" rel="noopener noreferrer" className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">flow ↗</a>),
-              I think I was a bit early. One path forward in the AI age is a
-              return to in-person communities and the tighter social fabrics
-              we once had &mdash; meeting our social needs, optimizing shared
+              communities like this 3 years later (
+              <a
+                href="https://www.flow.life"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]"
+              >
+                flow ↗
+              </a>
+              ), I think I was a bit early. One path forward in the AI age is a
+              return to in-person communities and the tighter social fabrics we
+              once had &mdash; meeting our social needs, optimizing shared
               resources, and helping immeasurably with raising family.
             </p>
             <p>
               Underneath it all I saw a unifying philosophy &mdash; a fruit
               salad of the world&apos;s religions and wisdom traditions: release
-              identity, let go of hostility rooted in labels and
-              discrimination, and accept others without requiring that they
-              share your own.
+              identity, let go of hostility rooted in labels and discrimination,
+              and accept others without requiring that they share your own.
             </p>
             <p>
               <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 ml-auto">
@@ -426,11 +453,11 @@ export function SeekingCommunityBody() {
                 />
               </span>
               I arrived at an ecovillage in the mountains. My stay was two
-              weeks. Work practicalities meant I traveled an hour to town twice daily
-              and could not contribute
-              meaningfully to the local community while internet was not yet
-              there. Starlink had just been created and with divine timing
-              arrived in my box in town the day I was leaving.
+              weeks. Work practicalities meant I traveled an hour to town twice
+              daily and could not contribute meaningfully to the local community
+              while internet was not yet there. Starlink had just been created
+              and with divine timing arrived in my box in town the day I was
+              leaving.
             </p>
             <p>
               I next went car camping across the national forests, continuing to
@@ -452,11 +479,10 @@ export function SeekingCommunityBody() {
             <p>
               Time there was enlightening and moved at its own pace. I enjoyed
               learning from those on the land and leaning into my dream of
-              building community. I learned a lot about myself: I carried a
-              flaw of being overly trusting and naive. As I practiced
-              discernment, I sharpened my rules for friend making and keeping
-              community, and learned better to articulate what I need when I
-              join the next one.
+              building community. I learned a lot about myself: I carried a flaw
+              of being overly trusting and naive. As I practiced discernment, I
+              sharpened my rules for friend making and keeping community, and
+              learned better to articulate what I need when I join the next one.
             </p>
             <HawaiiPopout />
           </div>
@@ -481,16 +507,6 @@ export function SeekingCommunityBody() {
             </div>
             <div>
               <span className="text-white/90 text-sm font-medium">
-                Seek Discomfort
-              </span>
-              <p className="mt-1">
-                My capacity for seeking discomfort makes me ruthless at growing.
-                It was a unifying interest between my roommate and I, and we
-                loved to challenge each other to grow in positive ways.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium">
                 Generosity
               </span>
               <p className="mt-1">
@@ -509,6 +525,16 @@ export function SeekingCommunityBody() {
               </p>
             </div>
             <div>
+              <span className="text-white/90 text-sm font-medium">
+                Seek Discomfort
+              </span>
+              <p className="mt-1">
+                My capacity for seeking discomfort makes me ruthless at growing.
+                It was a unifying interest between my roommate and I, and we
+                loved to challenge each other to grow in positive ways.
+              </p>
+            </div>
+            <div>
               <span className="text-white/90 text-sm font-medium italic">
                 &ldquo;What if everything goes right?&rdquo;
               </span>
@@ -518,8 +544,8 @@ export function SeekingCommunityBody() {
                 for it to occur actually gets noticed and happens around me. It
                 doesn't mean it happens for free without offering anything in
                 return, but there is a very powerful sense of control behind
-                that I believe everyone can access if they discern what
-                they want and focus on that.
+                that I believe everyone can access if they discern what they
+                want and focus on that.
               </p>
             </div>
           </div>
@@ -536,6 +562,8 @@ export function SeekingCommunityBody() {
           </div>
         </section>
       </div>
+
+      <AdditionalReading currentHref="/garden/article/seeking-community" />
     </>
   );
 }

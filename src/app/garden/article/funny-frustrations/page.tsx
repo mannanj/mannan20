@@ -7,7 +7,7 @@ import { JOYFUL_FRUSTRATIONS } from '@/lib/garden-articles';
 const DISABLED = true;
 
 export const metadata: Metadata = {
-  title: `${JOYFUL_FRUSTRATIONS.title} | Garden`,
+  title: JOYFUL_FRUSTRATIONS.title,
   description: JOYFUL_FRUSTRATIONS.description,
 };
 

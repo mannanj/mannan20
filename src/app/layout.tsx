@@ -10,7 +10,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: 'Mannan Javid',
+  title: { default: 'Mannan Javid', template: '%s | Mannan Javid' },
   description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
   keywords: 'Mannan Javid, Software Engineer, Portfolio',
   authors: [{ name: 'Mannan Javid' }],
