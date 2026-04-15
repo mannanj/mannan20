@@ -104,7 +104,7 @@ export function Header() {
     gardenCloseTimerRef.current = setTimeout(() => {
       setGardenExpanded(false);
       gardenCloseTimerRef.current = null;
-    }, 180);
+    }, 300);
   }, []);
 
   const CLICK_GATE_MS = 1000;
@@ -510,7 +510,7 @@ export function Header() {
       <div
         ref={gardenRef}
         data-testid="garden-wrapper"
-        className={`group/garden absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? 'right-[20px]' : 'right-[-2px]'}`}
+        className={`group/garden absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out ${gardenExpanded ? 'right-[20px] pt-10 pb-10 pl-20 pr-16' : 'right-[-2px] py-5 pl-7 pr-1'}`}
         onMouseEnter={openGarden}
         onMouseLeave={closeGarden}
       >
