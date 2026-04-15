@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GARDEN_ARTICLES } from '@/lib/garden-articles';
-import { GardenPlantDecoration } from '@/components/garden/garden-plant-decoration';
 
 export const metadata: Metadata = {
   title: 'Garden',
@@ -52,9 +51,6 @@ export default function GardenPage() {
         <PlantThree />
       </div>
 
-      <div className="hidden lg:block absolute left-[calc(50%-480px)] top-40">
-        <GardenPlantDecoration />
-      </div>
 
       <div className="relative max-w-2xl mx-auto px-6 pt-40 pb-16">
         <Link href="/garden" className="block w-fit">
