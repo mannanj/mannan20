@@ -107,7 +107,7 @@ function AtmosphereParticles() {
 
 export default function CommunityConstellation() {
   return (
-    <div className="h-[60px] w-2/3 mb-6">
+    <div className="absolute top-0 left-0 w-[20px] h-[20px]">
       <Canvas
         dpr={[1, 2]}
         camera={{ position: [0, 0, 3.2], fov: 42 }}
