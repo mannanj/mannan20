@@ -258,7 +258,6 @@ export function SeekingCommunityBody() {
       </p>
       <div className="relative w-2/3 h-[60px] mb-6">
         <CommunityNodes />
-        <CommunityConstellation />
       </div>
       <Timeline
         eras={ERAS}
@@ -568,11 +567,19 @@ export function SeekingCommunityBody() {
               My dream for community evolution is strong. The moment for its
               mainstream adoption is never better than now.
             </p>
+            <div className="flex justify-center mt-4">
+              <CommunityConstellation />
+            </div>
           </div>
         </section>
       </div>
 
-      <AdditionalReading currentHref="/garden/article/seeking-community" />
+      <div className="-mt-2">
+        <AdditionalReading
+          currentHref="/garden/article/seeking-community"
+          hideTopDivider
+        />
+      </div>
     </>
   );
 }

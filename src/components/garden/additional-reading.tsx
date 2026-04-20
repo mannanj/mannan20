@@ -6,7 +6,13 @@ import { GARDEN_ARTICLES } from "@/lib/garden-articles";
 
 const SCROLL_AMOUNT = 280;
 
-export function AdditionalReading({ currentHref }: { currentHref: string }) {
+export function AdditionalReading({
+  currentHref,
+  hideTopDivider = false,
+}: {
+  currentHref: string;
+  hideTopDivider?: boolean;
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -47,7 +53,13 @@ export function AdditionalReading({ currentHref }: { currentHref: string }) {
   if (articles.length === 0) return null;
 
   return (
-    <div className="mt-16 border-t border-white/10 pt-10">
+    <div
+      className={
+        hideTopDivider
+          ? "mt-16 pt-10"
+          : "mt-16 border-t border-white/10 pt-10"
+      }
+    >
       <h2 className="text-lg font-medium text-white mb-6">
         Additional Reading
       </h2>
