@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function SeekingCommunityArticle() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <div className="max-w-2xl mx-auto px-6 pt-[260px] pb-16">
+      <div className="max-w-2xl mx-auto px-6 pt-[235px] pb-16">
         <SeekingCommunityBody />
       </div>
     </div>

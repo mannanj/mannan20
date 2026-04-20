@@ -243,22 +243,15 @@ export function SeekingCommunityBody() {
 
   return (
     <>
-      <Image
-        src="/mannan-profile.png"
-        alt="Mannan Javid"
-        width={44}
-        height={44}
-        className="rounded-full mb-4"
-      />
+      <div className="relative w-2/3 h-[60px] mb-4">
+        <CommunityNodes />
+      </div>
       <h1 className="text-2xl font-semibold tracking-tight mb-2">
         On Seeking Community
       </h1>
-      <p className="text-xs text-white/30 mb-4">
+      <p className="text-xs text-white/30 mb-6">
         April 7, 2026 &middot; 8 min read &middot; 1,800 words
       </p>
-      <div className="relative w-2/3 h-[60px] mb-6">
-        <CommunityNodes />
-      </div>
       <Timeline
         eras={ERAS}
         view="linear"
@@ -451,13 +444,13 @@ export function SeekingCommunityBody() {
               and accept others without requiring that they share your own.
             </p>
             <p>
-              <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 ml-auto">
+              <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
                 <Image
                   src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains.png"
                   alt="Illustrated scene of car camping in the mountains"
                   width={480}
                   height={300}
-                  className="w-full h-auto -translate-y-[40%]"
+                  className="w-full h-auto -translate-y-[calc(40%+15px)]"
                 />
               </span>
               I arrived at an ecovillage in the mountains. My stay was two
