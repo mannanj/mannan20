@@ -17,6 +17,8 @@ function usePrefersReducedMotion() {
 
 function Icosahedron() {
   const groupRef = useRef<THREE.Group>(null);
+  const lineMaterialRef = useRef<THREE.LineBasicMaterial>(null);
+  const vertexMaterialsRef = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
   const reduced = usePrefersReducedMotion();
 
   const { edgesGeometry, vertexPositions } = useMemo(() => {
@@ -37,10 +39,20 @@ function Icosahedron() {
     return { edgesGeometry: edges, vertexPositions: verts };
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!groupRef.current || reduced) return;
     groupRef.current.rotation.y += delta * 0.35;
     groupRef.current.rotation.x += delta * 0.08;
+
+    const t = state.clock.elapsedTime;
+    if (lineMaterialRef.current) {
+      lineMaterialRef.current.color.setHSL((t * 0.12) % 1, 0.85, 0.6);
+    }
+    const count = vertexMaterialsRef.current.length || 1;
+    for (let i = 0; i < vertexMaterialsRef.current.length; i++) {
+      const mat = vertexMaterialsRef.current[i];
+      if (mat) mat.color.setHSL((t * 0.12 + i / count) % 1, 0.9, 0.7);
+    }
   });
 
   return (
@@ -56,12 +68,16 @@ function Icosahedron() {
         </mesh>
         <lineSegments>
           <primitive object={edgesGeometry} attach="geometry" />
-          <lineBasicMaterial color={RIM_COLOR} transparent opacity={0.7} />
+          <lineBasicMaterial ref={lineMaterialRef} transparent opacity={0.85} />
         </lineSegments>
         {vertexPositions.map((pos, i) => (
           <mesh key={i} position={pos}>
             <sphereGeometry args={[0.045, 10, 10]} />
-            <meshBasicMaterial color={VERTEX_COLOR} />
+            <meshBasicMaterial
+              ref={(m) => {
+                vertexMaterialsRef.current[i] = m;
+              }}
+            />
           </mesh>
         ))}
       </group>
@@ -114,9 +130,9 @@ export default function CommunityConstellation() {
         gl={{ alpha: true, antialias: true }}
         style={{ background: "transparent" }}
       >
-        <ambientLight intensity={0.15} />
-        <pointLight position={[3, 2, 2]} intensity={1.4} color={RIM_COLOR} />
-        <pointLight position={[-2, -1, 2.5]} intensity={0.35} color={VERTEX_COLOR} />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[3, 2, 2]} intensity={1.2} color="#ffffff" />
+        <pointLight position={[-2, -1, 2.5]} intensity={0.4} color="#ffffff" />
         <Icosahedron />
         <AtmosphereParticles />
       </Canvas>
