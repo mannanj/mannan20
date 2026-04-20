@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { GardenHero } from '@/components/garden/garden-hero';
 import { HealthArticleBody } from '@/components/garden/health-article-body';
 
 export const metadata: Metadata = {
@@ -23,22 +23,12 @@ export const metadata: Metadata = {
 export default function HealthLongevityArticle() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <div className="max-w-2xl mx-auto px-6 pt-40 pb-16">
-        <Image
-          src="/mannan-profile.png"
-          alt="Mannan Javid"
-          width={44}
-          height={44}
-          className="rounded-full mb-4 mt-[3px]"
-        />
-
-        <h1 className="text-2xl font-semibold tracking-tight mb-2">
-          Health is an Artform
-        </h1>
-        <p className="text-xs text-white/30 mb-10">
-          March 15, 2026 &middot; 3 min read &middot; 620 words
-        </p>
-
+      <GardenHero
+        title="Health is an Artform"
+        date="March 15, 2026"
+        readTime="3 min read"
+      />
+      <div className="max-w-2xl mx-auto px-6 pt-4 pb-16">
         <HealthArticleBody />
       </div>
     </div>
