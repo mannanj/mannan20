@@ -2,10 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { Timeline } from "./timeline";
 import { DraggablePopout } from "./draggable-popout";
-import { CommunityNodes } from "./community-nodes";
 import { AdditionalReading } from "./additional-reading";
+
+const CommunityConstellation = dynamic(() => import("./community-constellation"), {
+  ssr: false,
+  loading: () => <div className="h-[60px] w-2/3 mb-6" />,
+});
 
 const ERAS = [
   {
@@ -250,7 +255,7 @@ export function SeekingCommunityBody() {
       <p className="text-xs text-white/30 mb-4">
         April 7, 2026 &middot; 8 min read &middot; 1,800 words
       </p>
-      <CommunityNodes />
+      <CommunityConstellation />
       <Timeline
         eras={ERAS}
         view="linear"
