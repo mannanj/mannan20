@@ -243,7 +243,7 @@ export function SeekingCommunityBody() {
 
   return (
     <>
-      <div className="relative w-2/3 h-[60px] mb-4">
+      <div className="relative w-2/3 h-[180px] mb-4">
         <CommunityNodes />
       </div>
       <h1 className="text-2xl font-semibold tracking-tight mb-2">
@@ -450,7 +450,7 @@ export function SeekingCommunityBody() {
                   alt="Illustrated scene of car camping in the mountains"
                   width={480}
                   height={300}
-                  className="w-full h-auto -translate-y-[calc(40%+15px)]"
+                  className="w-full h-auto -translate-y-[calc(40%-30px)]"
                 />
               </span>
               I arrived at an ecovillage in the mountains. My stay was two

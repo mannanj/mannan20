@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-const HEIGHT = 60;
+const HEIGHT = 180;
 const SPAWN_MIN_MS = 3600;
 const SPAWN_MAX_MS = 8400;
 const PARTICLE_DURATION_MIN = 200;
@@ -62,6 +62,12 @@ function generateTreeNodes(width: number): Node[] {
     { count: 5, y: 11 },
     { count: 7, y: 29 },
     { count: 5, y: 47 },
+    { count: 7, y: 65 },
+    { count: 5, y: 83 },
+    { count: 7, y: 101 },
+    { count: 5, y: 119 },
+    { count: 7, y: 137 },
+    { count: 5, y: 155 },
   ];
 
   let seed = 73;
@@ -106,7 +112,8 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
     }
   };
 
-  const rowIndices: number[][] = [[], [], []];
+  const rowCount = nodes.reduce((max, n) => Math.max(max, n.row), 0) + 1;
+  const rowIndices: number[][] = Array.from({ length: rowCount }, () => []);
   for (let i = 0; i < nodes.length; i++) {
     rowIndices[nodes[i].row].push(i);
   }
@@ -173,9 +180,12 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
     }
   }
 
-  if (rowIndices[0].length > 0 && rowIndices[2].length > 0) {
-    for (const ti of rowIndices[0]) {
-      for (const bi of rowIndices[2]) {
+  for (let r = 0; r < rowIndices.length - 2; r++) {
+    const top = rowIndices[r];
+    const skip = rowIndices[r + 2];
+    if (!top.length || !skip.length) continue;
+    for (const ti of top) {
+      for (const bi of skip) {
         const d = Math.hypot(nodes[ti].x - nodes[bi].x, nodes[ti].y - nodes[bi].y);
         if (d < 140 && rand() < 0.7) {
           addEdge(ti, bi);
