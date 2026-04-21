@@ -8,10 +8,13 @@ import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
 import { CommunityNodes } from "./community-nodes";
 
-const CommunityConstellation = dynamic(() => import("./community-constellation"), {
-  ssr: false,
-  loading: () => null,
-});
+const CommunityConstellation = dynamic(
+  () => import("./community-constellation"),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 const ERAS = [
   {
@@ -21,14 +24,6 @@ const ERAS = [
     side: "left" as const,
     type: "dated" as const,
     preview: "Cosmos lit an insatiable curiosity",
-  },
-  {
-    id: "era-meditation",
-    year: "2018",
-    title: "The Break",
-    side: "right" as const,
-    type: "dated" as const,
-    preview: "Meditation changed everything",
   },
   {
     id: "era-letting-go",
@@ -246,6 +241,13 @@ export function SeekingCommunityBody() {
       <div className="relative w-full h-[349px] -mt-[169px] mb-4">
         <CommunityNodes />
       </div>
+      <p className="text-xs text-white/45 leading-snug mb-2 max-w-2xl">
+        I was in college when <em>Cosmos: A Spacetime Odyssey</em> came out.
+        Neil deGrasse Tyson walked my friends and I through the vastness of
+        space and something clicked &mdash; the sheer scale, the power, and the
+        beauty. It was the most fascinating, engrossing thing I&apos;d ever
+        witnessed.
+      </p>
       <h1 className="text-2xl font-semibold tracking-tight mb-2">
         On Seeking Community
       </h1>
@@ -266,13 +268,6 @@ export function SeekingCommunityBody() {
         <section id="era-cosmos">
           <div className="space-y-4">
             <p className="text-white/80">
-              I was in college when <em>Cosmos: A Spacetime Odyssey</em> came
-              out. Neil deGrasse Tyson walked my friends and I through the
-              vastness of space and something clicked &mdash; the sheer scale,
-              the power, and the beauty. It was the most fascinating, engrossing
-              thing I&apos;d ever witnessed.
-            </p>
-            <p>
               I grew up intellectually in an open-minded, liberal environment.
               My public school system was ranked top ten in the country, and I
               had access to the resources I needed to satisfy my curiosity. I
@@ -284,23 +279,17 @@ export function SeekingCommunityBody() {
               I later learned to extend that same open-mindedness to religion
               and spirituality.
             </p>
-          </div>
-        </section>
-
-        <Divider />
-
-        <section id="era-meditation">
-          <div className="space-y-4">
             <p className="text-white/80">
               Four years later I learned to meditate. The thoughts I got swept
               up in and thought were me suddenly became another thing that just
               happens within me. Am I my heart? My breath? What I see? The
               answers to those questions led me to realize I am more than my
-              thoughts. I am not what any person or thought tells me. In fact,
-              reality says I can be whatever identity I want to be.
+              thoughts. I am not what any person or thought tells me.
             </p>
           </div>
         </section>
+
+        <Divider />
 
         <section id="era-letting-go" className="-mt-4">
           <div className="mb-3">
@@ -323,63 +312,72 @@ export function SeekingCommunityBody() {
             </p>
             <p>
               I found new space to seek and embrace answers to life&apos;s
-              deepest questions outside of any particular authority figure. The
-              authority was always within me.
+              deepest questions outside of any particular authority figure. Now
+              the authority was within me.
             </p>
           </div>
         </section>
 
-        <section id="era-beliefs" className="-mt-4">
+        <section id="era-values" className="mt-8">
           <div className="mb-3">
             <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
-              North Stars
+              Guiding Values
             </span>
           </div>
-          <div className="space-y-3">
-            {[
-              {
-                num: "01",
-                title: "Life is change",
-                body: "Nothing is permanent. Resistance to change is resistance to life itself.",
-              },
-              {
-                num: "02",
-                title: "Everything is vibration",
-                body: "Everything is movement. As Einstein would say — match the frequency of the reality you desire, and you cannot help but get that reality.",
-              },
-              {
-                num: "03",
-                title: "We are one",
-                body: "If thoughts aren't us, and identities aren't us, then we are not different from one another.",
-              },
-              {
-                num: "04",
-                title: "As above, so below",
-                body: "How I treat myself reflects how I treat others. Everything is a mirror for my internal landscape.",
-              },
-              {
-                num: "05",
-                title: "The mind is a servant",
-                body: "I'll want to lead myself, otherwise someone else will.",
-              },
-            ].map((belief) => (
-              <div
-                key={belief.num}
-                className="flex gap-4 rounded-lg border border-white/[0.06] bg-white/[0.02] px-5 py-4"
-              >
-                <span className="text-white/20 font-mono text-xs mt-0.5 flex-shrink-0">
-                  {belief.num}
-                </span>
-                <div>
-                  <span className="text-white/90 text-sm font-medium">
-                    {belief.title}
-                  </span>
-                  <p className="text-white/50 text-xs mt-1 leading-relaxed">
-                    {belief.body}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="space-y-6">
+            <div>
+              <span className="text-white/90 text-sm font-medium">Love</span>
+              <p className="mt-1">
+                My first tattoo was <em>Love over Fear</em>. I got it after
+                running on the beach in LA with my close friend and roommate
+                Jonnie for a movement we were both part of called Seek
+                Discomfort. Love is the through-line of every decision that has
+                mattered.
+              </p>
+            </div>
+            <div>
+              <span className="text-white/90 text-sm font-medium">
+                Generosity
+              </span>
+              <p className="mt-1">
+                My name from birth, Mannan, translates to Generous. It feels
+                true to who I am. One of my lived values is to give, and I know
+                very well how this can go in excess.
+              </p>
+            </div>
+            <div>
+              <span className="text-white/90 text-sm font-medium">
+                Devotion
+              </span>
+              <p className="mt-1">
+                I hold a devotional character. By nature I love to cultivate my
+                interests into obsessions. I love a powerful commitment.
+              </p>
+            </div>
+            <div>
+              <span className="text-white/90 text-sm font-medium">
+                Seek Discomfort
+              </span>
+              <p className="mt-1">
+                My capacity for seeking discomfort makes me ruthless at growing.
+                It was a unifying interest between my roommate and I, and we
+                loved to challenge each other to grow in positive ways.
+              </p>
+            </div>
+            <div>
+              <span className="text-white/90 text-sm font-medium italic">
+                &ldquo;What if everything goes right?&rdquo;
+              </span>
+              <p className="mt-1">
+                This represents a perspective I've noticed drastically changes
+                experience: once I'm looking for things to go right, opportunity
+                for it to occur actually gets noticed and happens around me. It
+                doesn't mean it happens for free without offering anything in
+                return, but there is a very powerful sense of control behind
+                that I believe everyone can access if they discern what they
+                want and focus on that.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -486,69 +484,6 @@ export function SeekingCommunityBody() {
               learned better to articulate what I need when I join the next one.
             </p>
             <HawaiiPopout />
-          </div>
-        </section>
-
-        <section id="era-values" className="mt-8">
-          <div className="mb-3">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
-              Guiding Values
-            </span>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <span className="text-white/90 text-sm font-medium">Love</span>
-              <p className="mt-1">
-                My first tattoo was <em>Love over Fear</em>. I got it after
-                running on the beach in LA with my close friend and roommate
-                Jonnie for a movement we were both part of called Seek
-                Discomfort. Love is the through-line of every decision that has
-                mattered.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium">
-                Generosity
-              </span>
-              <p className="mt-1">
-                My name from birth, Mannan, translates to Generous. It feels
-                true to who I am. One of my lived values is to give, and I know
-                very well how this can go in excess.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium">
-                Devotion
-              </span>
-              <p className="mt-1">
-                I hold a devotional character. By nature I love to cultivate my
-                interests into obsessions. I love a powerful commitment.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium">
-                Seek Discomfort
-              </span>
-              <p className="mt-1">
-                My capacity for seeking discomfort makes me ruthless at growing.
-                It was a unifying interest between my roommate and I, and we
-                loved to challenge each other to grow in positive ways.
-              </p>
-            </div>
-            <div>
-              <span className="text-white/90 text-sm font-medium italic">
-                &ldquo;What if everything goes right?&rdquo;
-              </span>
-              <p className="mt-1">
-                This represents a perspective I've noticed drastically changes
-                experience: once I'm looking for things to go right, opportunity
-                for it to occur actually gets noticed and happens around me. It
-                doesn't mean it happens for free without offering anything in
-                return, but there is a very powerful sense of control behind
-                that I believe everyone can access if they discern what they
-                want and focus on that.
-              </p>
-            </div>
           </div>
         </section>
 
