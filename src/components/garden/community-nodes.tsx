@@ -47,6 +47,10 @@ const PARTICLE_FADE_MS = 1200;
 const TRAIL_DURATION_MS = 500;
 const COLLISION_PADDING = 0;
 const SOURCE_IGNORE_MS = 50;
+const GALAXY_SPIN_SPEED = 0.00038;
+const GALAXY_HALO_SCALE = 4.2;
+const GALAXY_HALO_SQUASH = 0.42;
+const GALAXY_CORE_SCALE = 1.25;
 const DUST_TINY_COUNT_MULTIPLIER = 4.35;
 const DUST_TINY_RADIUS_MIN = 0.11;
 const DUST_TINY_RADIUS_MAX = 0.35;
@@ -70,6 +74,8 @@ interface Node {
   baseAlpha: number;
   radius: number;
   color: [number, number, number];
+  isGalaxy: boolean;
+  galaxyPhase: number;
 }
 
 interface Particle {
@@ -126,20 +132,30 @@ function generateTreeNodes(width: number, height: number): Node[] {
       const jitterX = (rand() - 0.5) * spacing * 0.4;
       const jitterY = (rand() - 0.5) * 6;
       const nudgeX = (Math.random() - 0.5) * 8.4;
+      const tierRoll = Math.random();
+      let radius: number;
+      let isGalaxy = false;
+      if (tierRoll < 0.79) {
+        radius = NODE_TIER_TINY_MIN + Math.random() * (NODE_TIER_TINY_MAX - NODE_TIER_TINY_MIN);
+      } else if (tierRoll < 0.95) {
+        radius = NODE_TIER_BASE_MIN + Math.random() * (NODE_TIER_BASE_MAX - NODE_TIER_BASE_MIN);
+      } else if (tierRoll < 0.99) {
+        radius = NODE_TIER_MID_MIN + Math.random() * (NODE_TIER_MID_MAX - NODE_TIER_MID_MIN);
+      } else if (tierRoll < 0.998) {
+        radius = NODE_TIER_LARGE_MIN + Math.random() * (NODE_TIER_LARGE_MAX - NODE_TIER_LARGE_MIN);
+        isGalaxy = true;
+      } else {
+        radius = NODE_TIER_XL_MIN + Math.random() * (NODE_TIER_XL_MAX - NODE_TIER_XL_MIN);
+      }
       nodes.push({
         x: startX + i * spacing + jitterX + nudgeX,
         y: y + jitterY,
         row: r,
         baseAlpha: 0.2 + rand() * 0.2,
-        radius: (() => {
-          const tier = Math.random();
-          if (tier < 0.79) return NODE_TIER_TINY_MIN + Math.random() * (NODE_TIER_TINY_MAX - NODE_TIER_TINY_MIN);
-          if (tier < 0.95) return NODE_TIER_BASE_MIN + Math.random() * (NODE_TIER_BASE_MAX - NODE_TIER_BASE_MIN);
-          if (tier < 0.99) return NODE_TIER_MID_MIN + Math.random() * (NODE_TIER_MID_MAX - NODE_TIER_MID_MIN);
-          if (tier < 0.998) return NODE_TIER_LARGE_MIN + Math.random() * (NODE_TIER_LARGE_MAX - NODE_TIER_LARGE_MIN);
-          return NODE_TIER_XL_MIN + Math.random() * (NODE_TIER_XL_MAX - NODE_TIER_XL_MIN);
-        })(),
+        radius,
         color: Math.random() < 2 / 3 ? NODE_COLORS[0] : NODE_COLORS[1 + Math.floor(Math.random() * 3)],
+        isGalaxy,
+        galaxyPhase: Math.random() * Math.PI * 2,
       });
     }
   }
@@ -574,12 +590,55 @@ export function CommunityNodes() {
       }
 
       for (let i = 0; i < nodes.length; i++) {
-        const alpha = nodes[i].baseAlpha;
-        const [nr, ng, nb] = nodes[i].color;
-        ctx.fillStyle = `rgba(${nr}, ${ng}, ${nb}, ${alpha})`;
-        ctx.beginPath();
-        ctx.arc(nodes[i].x, nodes[i].y, nodes[i].radius, 0, Math.PI * 2);
-        ctx.fill();
+        const node = nodes[i];
+        const [nr, ng, nb] = node.color;
+        if (node.isGalaxy) {
+          const angle = timestamp * GALAXY_SPIN_SPEED + node.galaxyPhase;
+          ctx.save();
+          ctx.translate(node.x, node.y);
+          ctx.rotate(angle);
+          ctx.scale(1, GALAXY_HALO_SQUASH);
+          const haloR = node.radius * GALAXY_HALO_SCALE;
+          const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, haloR);
+          halo.addColorStop(0, `rgba(${nr}, ${ng}, ${nb}, 0.28)`);
+          halo.addColorStop(0.45, `rgba(${nr}, ${ng}, ${nb}, 0.14)`);
+          halo.addColorStop(1, `rgba(0, 0, 0, 0)`);
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(0, 0, haloR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          ctx.save();
+          ctx.translate(node.x, node.y);
+          ctx.rotate(-angle * 0.6);
+          ctx.scale(1, GALAXY_HALO_SQUASH * 1.6);
+          const innerR = node.radius * (GALAXY_HALO_SCALE * 0.55);
+          const innerHalo = ctx.createRadialGradient(0, 0, 0, 0, 0, innerR);
+          innerHalo.addColorStop(0, `rgba(${nr}, ${ng}, ${nb}, 0.32)`);
+          innerHalo.addColorStop(1, `rgba(0, 0, 0, 0)`);
+          ctx.fillStyle = innerHalo;
+          ctx.beginPath();
+          ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          const coreR = node.radius * GALAXY_CORE_SCALE;
+          const core = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, coreR);
+          core.addColorStop(0, `rgba(255, 245, 215, 0.95)`);
+          core.addColorStop(0.5, `rgba(${nr}, ${ng}, ${nb}, 0.6)`);
+          core.addColorStop(1, `rgba(0, 0, 0, 0)`);
+          ctx.fillStyle = core;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, coreR, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          const alpha = node.baseAlpha;
+          ctx.fillStyle = `rgba(${nr}, ${ng}, ${nb}, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       ctx.save();
