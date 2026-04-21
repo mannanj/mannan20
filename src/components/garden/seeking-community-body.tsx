@@ -243,7 +243,7 @@ export function SeekingCommunityBody() {
 
   return (
     <>
-      <div className="relative w-2/3 h-[180px] mb-4">
+      <div className="relative w-full h-[349px] -mt-[169px] mb-4">
         <CommunityNodes />
       </div>
       <h1 className="text-2xl font-semibold tracking-tight mb-2">

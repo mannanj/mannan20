@@ -2,21 +2,27 @@
 
 import { useEffect, useRef } from "react";
 
-const HEIGHT = 180;
-const SPAWN_MIN_MS = 3600;
-const SPAWN_MAX_MS = 8400;
-const PARTICLE_DURATION_MIN = 200;
-const PARTICLE_DURATION_MAX = 1100;
+const SPAWN_MIN_MS = 16500;
+const SPAWN_MAX_MS = 40000;
+const ROW_SPACING = 30.5;
+const ROW_PADDING_TOP = 11;
+const TARGET_COL_SPACING = 124;
 const MAX_DT = 32;
 const NODE_RADIUS_MIN = 0.84;
 const NODE_RADIUS_MAX = 2.2;
-const PARTICLE_RADIUS = 0.8;
+const PARTICLE_RADIUS = 0.375;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
 const BOUNCE_CHANCE = 0.33;
-const BOUNCE_SPEED = 40;
 const BOUNCE_DELAY_MIN = 1100;
 const BOUNCE_DELAY_MAX = 3300;
+const PARTICLE_SPEED_MIN = 0.008;
+const PARTICLE_SPEED_MAX = 0.031;
+const PARTICLE_LIFE_MS = 30000;
+const PARTICLE_FADE_MS = 1200;
+const TRAIL_DURATION_MS = 500;
+const COLLISION_PADDING = 0;
+const SOURCE_IGNORE_MS = 50;
 const NODE_COLORS: [number, number, number][] = [
   [255, 255, 255],
   [248, 113, 113],
@@ -34,41 +40,39 @@ interface Node {
 }
 
 interface Particle {
-  edgeIndex: number;
-  progress: number;
-  prevProgress: number;
-  duration: number;
-  elapsed: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  startX: number;
+  startY: number;
+  spawnTime: number;
+  travelMs: number;
   hitFired: boolean;
+  stoppedAt: number;
   color: [number, number, number];
   bounceGen: number;
+  sourceNodeIndex: number;
+  lastCollisionNode: number;
 }
 
 interface PendingBounce {
-  edgeIndex: number;
+  sourceNodeIndex: number;
   color: [number, number, number];
   spawnAt: number;
   bounceGen: number;
 }
 
-
-function easeInOutQuad(t: number): number {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-}
-
-function generateTreeNodes(width: number): Node[] {
+function generateTreeNodes(width: number, height: number): Node[] {
   const nodes: Node[] = [];
-  const rows = [
-    { count: 5, y: 11 },
-    { count: 7, y: 29 },
-    { count: 5, y: 47 },
-    { count: 7, y: 65 },
-    { count: 5, y: 83 },
-    { count: 7, y: 101 },
-    { count: 5, y: 119 },
-    { count: 7, y: 137 },
-    { count: 5, y: 155 },
-  ];
+  const usableHeight = height - ROW_PADDING_TOP - 12;
+  const rowCount = Math.max(4, Math.floor(usableHeight / ROW_SPACING) + 1);
+  const baseCount = Math.max(5, Math.round((width - 8) / TARGET_COL_SPACING) + 1);
+  const rows: { count: number; y: number }[] = [];
+  for (let r = 0; r < rowCount; r++) {
+    const count = r % 2 === 0 ? baseCount : baseCount + 2;
+    rows.push({ count, y: ROW_PADDING_TOP + r * ROW_SPACING });
+  }
 
   let seed = 73;
   const rand = () => {
@@ -84,8 +88,8 @@ function generateTreeNodes(width: number): Node[] {
 
     for (let i = 0; i < count; i++) {
       const jitterX = (rand() - 0.5) * spacing * 0.4;
-      const jitterY = (rand() - 0.5) * 5;
-      const nudgeX = (Math.random() - 0.5) * 7;
+      const jitterY = (rand() - 0.5) * 6;
+      const nudgeX = (Math.random() - 0.5) * 8.4;
       nodes.push({
         x: startX + i * spacing + jitterX + nudgeX,
         y: y + jitterY,
@@ -167,7 +171,7 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
     for (const ti of top) {
       for (const bi of bottom) {
         const d = Math.hypot(nodes[ti].x - nodes[bi].x, nodes[ti].y - nodes[bi].y);
-        if (d < 150 && rand() < 0.9) {
+        if (d < 150 && rand() < 0.45) {
           addEdge(ti, bi);
         }
       }
@@ -176,7 +180,7 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
 
   for (const row of rowIndices) {
     for (let i = 0; i < row.length - 2; i++) {
-      if (rand() < 0.9) addEdge(row[i], row[i + 2]);
+      if (rand() < 0.45) addEdge(row[i], row[i + 2]);
     }
   }
 
@@ -187,7 +191,7 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
     for (const ti of top) {
       for (const bi of skip) {
         const d = Math.hypot(nodes[ti].x - nodes[bi].x, nodes[ti].y - nodes[bi].y);
-        if (d < 140 && rand() < 0.7) {
+        if (d < 140 && rand() < 0.35) {
           addEdge(ti, bi);
         }
       }
@@ -195,19 +199,6 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
   }
 
   return edges;
-}
-
-function getNeighborEdges(
-  nodeIndex: number,
-  edges: [number, number][]
-): number[] {
-  const result: number[] = [];
-  for (let i = 0; i < edges.length; i++) {
-    if (edges[i][0] === nodeIndex || edges[i][1] === nodeIndex) {
-      result.push(i);
-    }
-  }
-  return result;
 }
 
 export function CommunityNodes() {
@@ -224,21 +215,51 @@ export function CommunityNodes() {
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const width = container.clientWidth;
+    const height = container.clientHeight;
 
     canvas.width = width * dpr;
-    canvas.height = HEIGHT * dpr;
+    canvas.height = height * dpr;
     canvas.style.width = `${width}px`;
-    canvas.style.height = `${HEIGHT}px`;
+    canvas.style.height = `${height}px`;
     ctx.scale(dpr, dpr);
 
-    const nodes = generateTreeNodes(width);
+    const nodes = generateTreeNodes(width, height);
     const edges = generateTreeEdges(nodes);
     const particles: Particle[] = [];
     const nodeHits: { time: number }[][] = nodes.map(() => []);
     const pendingBounces: PendingBounce[] = [];
     let lastTime = 0;
-    let nextSpawn = 0;
+    let nextSpawn = 3000;
     let spawnTimer = 0;
+    let initialEmitFired = false;
+
+    const spawnParticle = (
+      sourceIdx: number,
+      color: [number, number, number],
+      bounceGen: number,
+      timestamp: number,
+    ) => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = PARTICLE_SPEED_MIN +
+        Math.random() * (PARTICLE_SPEED_MAX - PARTICLE_SPEED_MIN);
+      const n = nodes[sourceIdx];
+      particles.push({
+        x: n.x,
+        y: n.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        startX: n.x,
+        startY: n.y,
+        spawnTime: timestamp,
+        travelMs: 0,
+        hitFired: false,
+        stoppedAt: 0,
+        color,
+        bounceGen,
+        sourceNodeIndex: sourceIdx,
+        lastCollisionNode: -1,
+      });
+    };
 
     const animate = (timestamp: number) => {
       if (lastTime === 0) lastTime = timestamp;
@@ -246,102 +267,118 @@ export function CommunityNodes() {
       const dt = Math.min(rawDt, MAX_DT);
       lastTime = timestamp;
 
+      const emitFromRandomNode = () => {
+        const sourceIdx = Math.floor(Math.random() * nodes.length);
+        const wideBurst = Math.random() < 0.2;
+        const count = wideBurst
+          ? 5 + Math.floor(Math.random() * 3)
+          : 3 + Math.floor(Math.random() * 2);
+        const color = nodes[sourceIdx].color;
+        for (let k = 0; k < count; k++) {
+          spawnParticle(sourceIdx, color, 0, timestamp);
+        }
+      };
+
+      if (!initialEmitFired) {
+        initialEmitFired = true;
+        emitFromRandomNode();
+        if (Math.random() < 0.25) {
+          emitFromRandomNode();
+          if (Math.random() < 0.2) emitFromRandomNode();
+        }
+      }
+
       spawnTimer += dt;
       if (spawnTimer >= nextSpawn) {
         spawnTimer = 0;
         nextSpawn = SPAWN_MIN_MS + Math.random() * (SPAWN_MAX_MS - SPAWN_MIN_MS);
-        const sourceNode = Math.floor(Math.random() * nodes.length);
-        const neighborEdges = getNeighborEdges(sourceNode, edges);
-        const speed = PARTICLE_DURATION_MIN +
-          Math.random() * (PARTICLE_DURATION_MAX - PARTICLE_DURATION_MIN);
-        for (const edgeIdx of neighborEdges) {
-          const [a, b] = edges[edgeIdx];
-          const dist = Math.hypot(nodes[a].x - nodes[b].x, nodes[a].y - nodes[b].y);
-          const needsFlip = edges[edgeIdx][0] !== sourceNode;
-          particles.push({
-            edgeIndex: needsFlip ? -(edgeIdx + 1) : edgeIdx,
-            progress: 0,
-            prevProgress: 0,
-            duration: dist * (speed / 60),
-            elapsed: 0,
-            hitFired: false,
-            color: nodes[sourceNode].color,
-            bounceGen: 0,
-          });
+        emitFromRandomNode();
+        if (Math.random() < 0.25) {
+          emitFromRandomNode();
+          if (Math.random() < 0.2) emitFromRandomNode();
         }
       }
 
       for (let i = pendingBounces.length - 1; i >= 0; i--) {
         if (timestamp >= pendingBounces[i].spawnAt) {
           const pb = pendingBounces[i];
-          const rawIdx = pb.edgeIndex;
-          const rev = rawIdx < 0;
-          const ei = rev ? -(rawIdx + 1) : rawIdx;
-          const [a, b] = edges[ei];
-          const dist = Math.hypot(nodes[a].x - nodes[b].x, nodes[a].y - nodes[b].y);
-          particles.push({
-            edgeIndex: pb.edgeIndex,
-            progress: 0,
-            prevProgress: 0,
-            duration: dist * (BOUNCE_SPEED / 60),
-            elapsed: 0,
-            hitFired: false,
-            color: pb.color,
-            bounceGen: pb.bounceGen,
-          });
+          const burstCount = 1 + Math.floor(Math.random() * 2);
+          for (let k = 0; k < burstCount; k++) {
+            spawnParticle(pb.sourceNodeIndex, pb.color, pb.bounceGen, timestamp);
+          }
           pendingBounces.splice(i, 1);
         }
       }
 
       for (let i = particles.length - 1; i >= 0; i--) {
-        particles[i].prevProgress = particles[i].progress;
-        particles[i].elapsed += dt;
-        particles[i].progress = Math.min(
-          particles[i].elapsed / particles[i].duration,
-          1
-        );
-        if (particles[i].progress >= 1 && !particles[i].hitFired) {
-          particles[i].hitFired = true;
-          const rawIdx = particles[i].edgeIndex;
-          const reversed = rawIdx < 0;
-          const edgeIdx = reversed ? -(rawIdx + 1) : rawIdx;
-          const [a, b] = edges[edgeIdx];
-          const sourceNode = reversed ? b : a;
-          const destNode = reversed ? a : b;
-          nodeHits[destNode].push({ time: timestamp });
+        const p = particles[i];
+        if (!p.hitFired) {
+          p.travelMs += dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
 
-          const pColor = particles[i].color;
-          const dColor = nodes[destNode].color;
-          const blended: [number, number, number] = [
-            Math.round((pColor[0] + dColor[0]) / 2),
-            Math.round((pColor[1] + dColor[1]) / 2),
-            Math.round((pColor[2] + dColor[2]) / 2),
-          ];
+          let hitNode = -1;
+          let hitDistSq = Infinity;
+          for (let n = 0; n < nodes.length; n++) {
+            if (n === p.sourceNodeIndex && p.travelMs < SOURCE_IGNORE_MS) continue;
+            if (n === p.lastCollisionNode) continue;
+            const node = nodes[n];
+            const dx = p.x - node.x;
+            const dy = p.y - node.y;
+            const r = node.radius + PARTICLE_RADIUS + COLLISION_PADDING;
+            const distSq = dx * dx + dy * dy;
+            if (distSq <= r * r && distSq < hitDistSq) {
+              hitDistSq = distSq;
+              hitNode = n;
+            }
+          }
 
-          if (particles[i].bounceGen === 0 && Math.random() < 0.66) {
-            const flipped = reversed ? edgeIdx : -(edgeIdx + 1);
-            pendingBounces.push({
-              edgeIndex: flipped,
-              color: blended,
-              spawnAt: timestamp + BOUNCE_DELAY_MIN + Math.random() * (BOUNCE_DELAY_MAX - BOUNCE_DELAY_MIN),
-              bounceGen: 1,
-            });
-          } else if (particles[i].bounceGen === 1 && Math.random() < BOUNCE_CHANCE) {
-            const flipped = reversed ? edgeIdx : -(edgeIdx + 1);
-            pendingBounces.push({
-              edgeIndex: flipped,
-              color: blended,
-              spawnAt: timestamp + BOUNCE_DELAY_MIN + Math.random() * (BOUNCE_DELAY_MAX - BOUNCE_DELAY_MIN),
-              bounceGen: 2,
-            });
+          if (hitNode >= 0) {
+            const node = nodes[hitNode];
+            p.hitFired = true;
+            p.stoppedAt = timestamp;
+            p.x = node.x;
+            p.y = node.y;
+            p.lastCollisionNode = hitNode;
+            nodeHits[hitNode].push({ time: timestamp });
+
+            const [pr, pg, pb] = p.color;
+            const [nr, ng, nb] = node.color;
+            const blended: [number, number, number] = [
+              Math.round((pr + nr) / 2),
+              Math.round((pg + ng) / 2),
+              Math.round((pb + nb) / 2),
+            ];
+
+            if (p.bounceGen === 0 && Math.random() < 0.66) {
+              pendingBounces.push({
+                sourceNodeIndex: hitNode,
+                color: blended,
+                spawnAt: timestamp + BOUNCE_DELAY_MIN +
+                  Math.random() * (BOUNCE_DELAY_MAX - BOUNCE_DELAY_MIN),
+                bounceGen: 1,
+              });
+            } else if (p.bounceGen === 1 && Math.random() < BOUNCE_CHANCE) {
+              pendingBounces.push({
+                sourceNodeIndex: hitNode,
+                color: blended,
+                spawnAt: timestamp + BOUNCE_DELAY_MIN +
+                  Math.random() * (BOUNCE_DELAY_MAX - BOUNCE_DELAY_MIN),
+                bounceGen: 2,
+              });
+            }
+          } else if (p.travelMs > PARTICLE_LIFE_MS) {
+            particles.splice(i, 1);
+            continue;
           }
         }
-        if (particles[i].elapsed > particles[i].duration * 5.5) {
+
+        if (p.hitFired && timestamp - p.stoppedAt > PARTICLE_FADE_MS) {
           particles.splice(i, 1);
         }
       }
 
-      ctx.clearRect(0, 0, width, HEIGHT);
+      ctx.clearRect(0, 0, width, height);
 
       ctx.save();
       ctx.lineWidth = 0.4;
@@ -358,48 +395,8 @@ export function CommunityNodes() {
       }
       ctx.restore();
 
-
       for (let i = 0; i < nodes.length; i++) {
-        const hits = nodeHits[i];
-        for (let h = hits.length - 1; h >= 0; h--) {
-          if (timestamp - hits[h].time > HIT_GLOW_DECAY) {
-            hits.splice(h, 1);
-          }
-        }
-
-        let hitAlpha = 0;
-        for (const hit of hits) {
-          const age = (timestamp - hit.time) / HIT_GLOW_DECAY;
-          const a = 1 - age;
-          if (a > hitAlpha) hitAlpha = a;
-        }
-
-        if (hitAlpha > 0.01) {
-          const r = HIT_GLOW_RADIUS * (0.8 + hitAlpha * 0.2);
-          const fog = ctx.createRadialGradient(
-            nodes[i].x, nodes[i].y, 0,
-            nodes[i].x, nodes[i].y, r
-          );
-          const [cr, cg, cb] = nodes[i].color;
-          fog.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, ${hitAlpha * 0.15})`);
-          fog.addColorStop(0.5, `rgba(${cr}, ${cg}, ${cb}, ${hitAlpha * 0.08})`);
-          fog.addColorStop(1, "rgba(0, 0, 0, 0)");
-          ctx.fillStyle = fog;
-          ctx.beginPath();
-          ctx.arc(nodes[i].x, nodes[i].y, r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      for (let i = 0; i < nodes.length; i++) {
-        const hits = nodeHits[i];
-        let hitAlpha = 0;
-        for (const hit of hits) {
-          const age = (timestamp - hit.time) / HIT_GLOW_DECAY;
-          const a = 1 - age;
-          if (a > hitAlpha) hitAlpha = a;
-        }
-        const alpha = nodes[i].baseAlpha + hitAlpha * 0.08;
+        const alpha = nodes[i].baseAlpha;
         const [nr, ng, nb] = nodes[i].color;
         ctx.fillStyle = `rgba(${nr}, ${ng}, ${nb}, ${alpha})`;
         ctx.beginPath();
@@ -409,43 +406,32 @@ export function CommunityNodes() {
 
       ctx.save();
       for (const p of particles) {
-        const rawIdx = p.edgeIndex;
-        const reversed = rawIdx < 0;
-        const edgeIdx = reversed ? -(rawIdx + 1) : rawIdx;
-        const [a, b] = edges[edgeIdx];
-        const fromNode = reversed ? nodes[b] : nodes[a];
-        const toNode = reversed ? nodes[a] : nodes[b];
-        const t = easeInOutQuad(p.progress);
-        const x = fromNode.x + (toNode.x - fromNode.x) * t;
-        const y = fromNode.y + (toNode.y - fromNode.y) * t;
+        const trailTravel = Math.max(0, p.travelMs - TRAIL_DURATION_MS);
+        const tx = p.startX + p.vx * trailTravel;
+        const ty = p.startY + p.vy * trailTravel;
 
         const ghostFade = p.hitFired
-          ? Math.max(0, 1 - (p.elapsed - p.duration) / (p.duration * 4.5))
+          ? Math.max(0, 1 - (timestamp - p.stoppedAt) / PARTICLE_FADE_MS)
           : 1;
 
-        const trailStart = p.hitFired ? 0 : Math.max(0, p.progress - 0.35);
-        const tTrail = easeInOutQuad(trailStart);
-        const tx = fromNode.x + (toNode.x - fromNode.x) * tTrail;
-        const ty = fromNode.y + (toNode.y - fromNode.y) * tTrail;
-        const trailAlpha = (p.hitFired ? 0.18 : 0.25) * ghostFade;
+        const trailAlpha = (p.hitFired ? 0.14 : 0.28) * ghostFade;
         const [pr, pg, pb] = p.color;
-        const grad = ctx.createLinearGradient(tx, ty, x, y);
+        const grad = ctx.createLinearGradient(tx, ty, p.x, p.y);
         grad.addColorStop(0, `rgba(${pr}, ${pg}, ${pb}, 0)`);
         grad.addColorStop(1, `rgba(${pr}, ${pg}, ${pb}, ${trailAlpha})`);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(tx, ty);
-        ctx.lineTo(x, y);
+        ctx.lineTo(p.x, p.y);
         ctx.stroke();
 
         if (!p.hitFired) {
-          const fadeIn = Math.min(p.progress * 4, 1);
-          const fadeOut = Math.min((1 - p.progress) * 4, 1);
-          const opacity = fadeIn * fadeOut * 0.55;
+          const fadeIn = Math.min(p.travelMs / 120, 1);
+          const opacity = fadeIn * 0.9;
           ctx.fillStyle = `rgba(${pr}, ${pg}, ${pb}, ${opacity})`;
           ctx.beginPath();
-          ctx.arc(x, y, PARTICLE_RADIUS, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, PARTICLE_RADIUS, 0, Math.PI * 2);
           ctx.fill();
         }
       }
