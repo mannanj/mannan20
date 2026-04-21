@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from "react";
 
-const SPAWN_MIN_MS = 33000;
-const SPAWN_MAX_MS = 80000;
-const EXTERNAL_SPAWN_MIN_MS = 6000;
-const EXTERNAL_SPAWN_MAX_MS = 14000;
+const SPAWN_MIN_MS = 66000;
+const SPAWN_MAX_MS = 160000;
+const EXTERNAL_SPAWN_MIN_MS = 12000;
+const EXTERNAL_SPAWN_MAX_MS = 28000;
 const METEOR_SMALL_MIN = 0.25;
 const METEOR_SMALL_MAX = 0.4;
 const METEOR_BASE_MIN = 0.4;
@@ -24,18 +24,22 @@ const ROW_SPACING = 30.5;
 const ROW_PADDING_TOP = 11;
 const TARGET_COL_SPACING = 124;
 const MAX_DT = 32;
-const NODE_TIER_TINY_MIN = 0.55;
-const NODE_TIER_TINY_MAX = 0.75;
-const NODE_TIER_BASE_MIN = 0.75;
-const NODE_TIER_BASE_MAX = 1.25;
-const NODE_TIER_MID_MIN = 1.25;
-const NODE_TIER_MID_MAX = 1.5;
+const NODE_TIER_TINY_MIN = 0.35;
+const NODE_TIER_TINY_MAX = 0.55;
+const NODE_TIER_BASE_MIN = 0.55;
+const NODE_TIER_BASE_MAX = 0.75;
+const NODE_TIER_MID_MIN = 0.75;
+const NODE_TIER_MID_MAX = 1.25;
+const NODE_TIER_LARGE_MIN = 1.25;
+const NODE_TIER_LARGE_MAX = 1.75;
+const NODE_TIER_XL_MIN = 1.75;
+const NODE_TIER_XL_MAX = 2.25;
 const PARTICLE_RADIUS = 0.22;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
 const BOUNCE_CHANCE = 0.33;
-const BOUNCE_DELAY_MIN = 2200;
-const BOUNCE_DELAY_MAX = 6600;
+const BOUNCE_DELAY_MIN = 4400;
+const BOUNCE_DELAY_MAX = 13200;
 const PARTICLE_SPEED_MIN = 0.008;
 const PARTICLE_SPEED_MAX = 0.031;
 const PARTICLE_LIFE_MS = 30000;
@@ -129,9 +133,11 @@ function generateTreeNodes(width: number, height: number): Node[] {
         baseAlpha: 0.2 + rand() * 0.2,
         radius: (() => {
           const tier = Math.random();
-          if (tier < 0.8) return NODE_TIER_TINY_MIN + Math.random() * (NODE_TIER_TINY_MAX - NODE_TIER_TINY_MIN);
-          if (tier < 0.96) return NODE_TIER_BASE_MIN + Math.random() * (NODE_TIER_BASE_MAX - NODE_TIER_BASE_MIN);
-          return NODE_TIER_MID_MIN + Math.random() * (NODE_TIER_MID_MAX - NODE_TIER_MID_MIN);
+          if (tier < 0.79) return NODE_TIER_TINY_MIN + Math.random() * (NODE_TIER_TINY_MAX - NODE_TIER_TINY_MIN);
+          if (tier < 0.95) return NODE_TIER_BASE_MIN + Math.random() * (NODE_TIER_BASE_MAX - NODE_TIER_BASE_MIN);
+          if (tier < 0.99) return NODE_TIER_MID_MIN + Math.random() * (NODE_TIER_MID_MAX - NODE_TIER_MID_MIN);
+          if (tier < 0.998) return NODE_TIER_LARGE_MIN + Math.random() * (NODE_TIER_LARGE_MAX - NODE_TIER_LARGE_MIN);
+          return NODE_TIER_XL_MIN + Math.random() * (NODE_TIER_XL_MAX - NODE_TIER_XL_MIN);
         })(),
         color: Math.random() < 2 / 3 ? NODE_COLORS[0] : NODE_COLORS[1 + Math.floor(Math.random() * 3)],
       });
