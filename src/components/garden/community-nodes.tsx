@@ -66,6 +66,9 @@ const DUST_RADIUS_MAX = 0.55;
 const DUST_MID_COUNT_MULTIPLIER = 0.75;
 const DUST_MID_RADIUS_MIN = 0.55;
 const DUST_MID_RADIUS_MAX = 0.75;
+const LENS_RADIUS = 18;
+const LENS_ZOOM = 2.6;
+const LENS_RING_WIDTH = 1.2;
 const NODE_COLORS: [number, number, number][] = [
   [255, 255, 255],
   [248, 113, 113],
@@ -276,6 +279,11 @@ export function CommunityNodes() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
+  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
+    x: 0,
+    y: 0,
+    active: false,
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -576,8 +584,7 @@ export function CommunityNodes() {
         }
       }
 
-      ctx.clearRect(0, 0, width, height);
-
+      const drawScene = () => {
       ctx.save();
       ctx.lineWidth = 0.4;
       for (const [a, b] of edges) {
@@ -738,18 +745,92 @@ export function CommunityNodes() {
         }
       }
       ctx.restore();
+      };
+
+      ctx.clearRect(0, 0, width, height);
+      drawScene();
+
+      const m = mouseRef.current;
+      if (m.active) {
+        const mx = m.x;
+        const my = m.y;
+        const r = LENS_RADIUS;
+        const zoom = LENS_ZOOM;
+
+        const haloR = r + 8;
+        const halo = ctx.createRadialGradient(mx, my, r - 2, mx, my, haloR);
+        halo.addColorStop(0, "rgba(255, 255, 255, 0.0)");
+        halo.addColorStop(0.5, "rgba(255, 255, 255, 0.04)");
+        halo.addColorStop(1, "rgba(255, 255, 255, 0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(mx, my, haloR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(mx, my, r, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = "#0b0b0b";
+        ctx.fillRect(mx - r, my - r, r * 2, r * 2);
+
+        ctx.translate(mx, my);
+        ctx.scale(zoom, zoom);
+        ctx.translate(-mx, -my);
+        drawScene();
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.lineWidth = LENS_RING_WIDTH + 2;
+        ctx.beginPath();
+        ctx.arc(mx, my, r + 1, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+        ctx.lineWidth = LENS_RING_WIDTH;
+        ctx.beginPath();
+        ctx.arc(mx, my, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+      }
 
       rafRef.current = requestAnimationFrame(animate);
     };
 
+    const onMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = rect.width > 0 ? width / rect.width : 1;
+      const scaleY = rect.height > 0 ? height / rect.height : 1;
+      mouseRef.current.x = (e.clientX - rect.left) * scaleX;
+      mouseRef.current.y = (e.clientY - rect.top) * scaleY;
+      mouseRef.current.active = true;
+    };
+    const onLeave = () => {
+      mouseRef.current.active = false;
+    };
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerenter", onMove);
+    canvas.addEventListener("pointerleave", onLeave);
+    canvas.addEventListener("pointercancel", onLeave);
+
     rafRef.current = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerenter", onMove);
+      canvas.removeEventListener("pointerleave", onLeave);
+      canvas.removeEventListener("pointercancel", onLeave);
+    };
   }, []);
 
   return (
     <div ref={containerRef} className="absolute inset-0">
-      <canvas ref={canvasRef} />
+      <canvas ref={canvasRef} className="cursor-none block" />
     </div>
   );
 }
