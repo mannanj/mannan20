@@ -134,7 +134,7 @@ function Sun() {
 export default function CommunityNodesSun() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 5], fov: 45, near: 0.1, far: 100 }}
+      camera={{ position: [0, 0, 3.6], fov: 45, near: 0.1, far: 100 }}
       gl={{
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,

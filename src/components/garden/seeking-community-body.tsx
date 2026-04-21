@@ -241,8 +241,9 @@ export function SeekingCommunityBody() {
       <div className="relative w-full h-[349px] -mt-[169px] mb-4">
         <CommunityNodes />
       </div>
-      <p className="text-xs text-white/45 leading-snug mb-2 max-w-2xl">
-        I was in college when <em>Cosmos: A Spacetime Odyssey</em> came out.
+      <p className="font-[family-name:var(--font-caption)] italic text-[13px] text-white/50 leading-snug mb-2 max-w-2xl tracking-wide">
+        I was in college when{" "}
+        <em className="not-italic">Cosmos: A Spacetime Odyssey</em> came out.
         Neil deGrasse Tyson walked my friends and I through the vastness of
         space and something clicked &mdash; the sheer scale, the power, and the
         beauty. It was the most fascinating, engrossing thing I&apos;d ever
@@ -275,10 +276,6 @@ export function SeekingCommunityBody() {
               latest computers and internet at an early age to answer them. From
               2002, I learned how to browse the web and search for my answers.
             </p>
-            <p>
-              I later learned to extend that same open-mindedness to religion
-              and spirituality.
-            </p>
             <p className="text-white/80">
               Four years later I learned to meditate. The thoughts I got swept
               up in and thought were me suddenly became another thing that just
@@ -286,37 +283,14 @@ export function SeekingCommunityBody() {
               answers to those questions led me to realize I am more than my
               thoughts. I am not what any person or thought tells me.
             </p>
+            <p>
+              I later learned to extend that same open-mindedness to religion
+              and spirituality.
+            </p>
           </div>
         </section>
 
         <Divider />
-
-        <section id="era-letting-go" className="-mt-4">
-          <div className="mb-3">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
-              Letting Go
-            </span>
-          </div>
-          <div className="space-y-4">
-            <p className="text-white/80">
-              <em>Cosmos</em> also helped plant a growing curiosity for answers
-              to questions that the religion I grew up with couldn&apos;t
-              provide.
-            </p>
-            <p>
-              I remember one evening, coming home after a group seminar on
-              self-awareness. I held my mother&apos;s hands while she sat on her
-              prayer rug. It was a moment of cathartic release for me &mdash;
-              and grief for her. Something unexplainable shifted for me that
-              night.
-            </p>
-            <p>
-              I found new space to seek and embrace answers to life&apos;s
-              deepest questions outside of any particular authority figure. Now
-              the authority was within me.
-            </p>
-          </div>
-        </section>
 
         <section id="era-values" className="mt-8">
           <div className="mb-3">
@@ -331,8 +305,8 @@ export function SeekingCommunityBody() {
                 My first tattoo was <em>Love over Fear</em>. I got it after
                 running on the beach in LA with my close friend and roommate
                 Jonnie for a movement we were both part of called Seek
-                Discomfort. Love is the through-line of every decision that has
-                mattered.
+                Discomfort. Love is the through-line of every decision that
+                matters.
               </p>
             </div>
             <div>
@@ -341,13 +315,12 @@ export function SeekingCommunityBody() {
               </span>
               <p className="mt-1">
                 My name from birth, Mannan, translates to Generous. It feels
-                true to who I am. One of my lived values is to give, and I know
-                very well how this can go in excess.
+                true to who I am. I also know very well how this goes in excess.
               </p>
             </div>
             <div>
               <span className="text-white/90 text-sm font-medium">
-                Devotion
+                Commitment
               </span>
               <p className="mt-1">
                 I hold a devotional character. By nature I love to cultivate my
@@ -370,14 +343,37 @@ export function SeekingCommunityBody() {
               </span>
               <p className="mt-1">
                 This represents a perspective I've noticed drastically changes
-                experience: once I'm looking for things to go right, opportunity
-                for it to occur actually gets noticed and happens around me. It
-                doesn't mean it happens for free without offering anything in
-                return, but there is a very powerful sense of control behind
-                that I believe everyone can access if they discern what they
-                want and focus on that.
+                experience and causes life itself to bend for you to gain a
+                better experience now. Perspectives change what our bodies look
+                for, how information is filtered and perceived, and what we are
+                open to. This is about as free as living a positive, hopeful
+                life can get.
               </p>
             </div>
+          </div>
+        </section>
+
+        <Divider />
+
+        <section id="era-letting-go" className="-mt-4">
+          <div className="space-y-4">
+            <p className="text-white/80">
+              <em>Cosmos</em> helped light an inner flame for answers to
+              questions that the people around me and the frameworks I grew up
+              with couldn&apos;t offer.
+            </p>
+            <p>
+              I remember one evening, coming home after a group seminar on
+              self-awareness. I held my mother&apos;s hands while she sat on her
+              prayer rug. It was a moment of cathartic release for me &mdash;
+              and grief for her. Something unexplainable shifted for me that
+              night.
+            </p>
+            <p>
+              I found new space to seek and embrace answers to life&apos;s
+              deepest questions outside of any particular authority figure. Now
+              the authority was within me.
+            </p>
           </div>
         </section>
 

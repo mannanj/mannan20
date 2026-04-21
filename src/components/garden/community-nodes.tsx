@@ -766,7 +766,7 @@ export function CommunityNodes() {
   }, []);
 
   const activeMarker = sunMarkers.find((m) => m.id === activeSunId) ?? null;
-  const triggerSize = activeMarker ? Math.max(60, activeMarker.radius * 18) : 0;
+  const triggerSize = activeMarker ? Math.max(140, activeMarker.radius * 60) : 0;
 
   return (
     <div ref={containerRef} className="absolute inset-0">
@@ -796,6 +796,7 @@ export function CommunityNodes() {
           x={activeMarker.x}
           y={activeMarker.y}
           size={triggerSize}
+          dotRadius={activeMarker.radius}
           onDone={() => setActiveSunId(null)}
         />
       )}

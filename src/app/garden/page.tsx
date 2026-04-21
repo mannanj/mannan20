@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GARDEN_ARTICLES } from '@/lib/garden-articles';
+import { CommunityNodesPreview } from '@/components/garden/community-nodes-preview';
 
 export const metadata: Metadata = {
   title: 'Garden',
@@ -62,27 +63,37 @@ export default function GardenPage() {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {GARDEN_ARTICLES.map((article) => (
-            <Link
-              key={article.href}
-              href={article.href}
-              className="group flex flex-col rounded-lg border border-white/10 px-4 py-5 hover:scale-[1.05] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200"
-            >
-              <span className="text-base font-medium text-white group-hover:text-red-500 transition-colors duration-200">
-                {article.title}
-              </span>
-              <span className="text-sm text-white/40 mt-1">
-                {article.description}
-              </span>
-              {article.date && (
-                <span className="text-xs text-white/30 mt-2">
-                  {new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                  {article.readingTime && <>{' '}&middot;{' '}{article.readingTime}</>}
-                  {article.wordCount && <>{' '}&middot;{' '}{article.wordCount.toLocaleString()} words</>}
-                </span>
-              )}
-            </Link>
-          ))}
+          {GARDEN_ARTICLES.map((article) => {
+            const hasPreview = article.href === '/garden/article/seeking-community';
+            return (
+              <Link
+                key={article.href}
+                href={article.href}
+                className="group flex h-28 rounded-lg border border-white/10 hover:scale-[1.05] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200"
+              >
+                {hasPreview && (
+                  <div className="w-1/3 shrink-0 self-stretch py-3 pl-3">
+                    <CommunityNodesPreview />
+                  </div>
+                )}
+                <div className="flex flex-col px-3 py-3 flex-1 min-w-0">
+                  <span className="text-sm font-medium text-white group-hover:text-red-500 transition-colors duration-200 truncate">
+                    {article.title}
+                  </span>
+                  <span className="text-xs text-white/40 mt-1 leading-tight line-clamp-2">
+                    {article.description}
+                  </span>
+                  {article.date && (
+                    <span className="text-[10px] text-white/30 mt-auto pt-2 truncate">
+                      {new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {article.readingTime && <>{' '}&middot;{' '}{article.readingTime}</>}
+                      {article.wordCount && <>{' '}&middot;{' '}{article.wordCount.toLocaleString()} words</>}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
       </div>

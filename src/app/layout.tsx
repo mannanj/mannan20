@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Geist, EB_Garamond } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
@@ -7,6 +7,12 @@ import './globals.css';
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',
+});
+
+const ebGaramond = EB_Garamond({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  variable: '--font-caption',
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={geistSans.variable}>
+    <html lang="en" className={`${geistSans.variable} ${ebGaramond.variable}`}>
       <body>
         {children}
         <Analytics />
