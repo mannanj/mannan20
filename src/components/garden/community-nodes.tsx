@@ -8,8 +8,12 @@ const ROW_SPACING = 30.5;
 const ROW_PADDING_TOP = 11;
 const TARGET_COL_SPACING = 124;
 const MAX_DT = 32;
-const NODE_RADIUS_MIN = 0.84;
-const NODE_RADIUS_MAX = 2.2;
+const NODE_TIER_TINY_MIN = 0.55;
+const NODE_TIER_TINY_MAX = 0.75;
+const NODE_TIER_BASE_MIN = 0.75;
+const NODE_TIER_BASE_MAX = 1.25;
+const NODE_TIER_MID_MIN = 1.25;
+const NODE_TIER_MID_MAX = 1.5;
 const PARTICLE_RADIUS = 0.22;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
@@ -104,7 +108,12 @@ function generateTreeNodes(width: number, height: number): Node[] {
         y: y + jitterY,
         row: r,
         baseAlpha: 0.2 + rand() * 0.2,
-        radius: NODE_RADIUS_MIN + Math.random() * (NODE_RADIUS_MAX - NODE_RADIUS_MIN),
+        radius: (() => {
+          const tier = Math.random();
+          if (tier < 0.8) return NODE_TIER_TINY_MIN + Math.random() * (NODE_TIER_TINY_MAX - NODE_TIER_TINY_MIN);
+          if (tier < 0.96) return NODE_TIER_BASE_MIN + Math.random() * (NODE_TIER_BASE_MAX - NODE_TIER_BASE_MIN);
+          return NODE_TIER_MID_MIN + Math.random() * (NODE_TIER_MID_MAX - NODE_TIER_MID_MIN);
+        })(),
         color: Math.random() < 2 / 3 ? NODE_COLORS[0] : NODE_COLORS[1 + Math.floor(Math.random() * 3)],
       });
     }
@@ -319,10 +328,7 @@ export function CommunityNodes() {
 
       const emitFromRandomNode = () => {
         const sourceIdx = Math.floor(Math.random() * nodes.length);
-        const wideBurst = Math.random() < 0.2;
-        const count = wideBurst
-          ? 5 + Math.floor(Math.random() * 3)
-          : 3 + Math.floor(Math.random() * 2);
+        const count = 1 + Math.floor(Math.random() * 2);
         const color = nodes[sourceIdx].color;
         for (let k = 0; k < count; k++) {
           spawnParticle(sourceIdx, color, 0, timestamp);
