@@ -10,7 +10,7 @@ const TARGET_COL_SPACING = 124;
 const MAX_DT = 32;
 const NODE_RADIUS_MIN = 0.84;
 const NODE_RADIUS_MAX = 2.2;
-const PARTICLE_RADIUS = 0.375;
+const PARTICLE_RADIUS = 0.22;
 const HIT_GLOW_RADIUS = 10;
 const HIT_GLOW_DECAY = 600;
 const BOUNCE_CHANCE = 0.33;
@@ -23,6 +23,15 @@ const PARTICLE_FADE_MS = 1200;
 const TRAIL_DURATION_MS = 500;
 const COLLISION_PADDING = 0;
 const SOURCE_IGNORE_MS = 50;
+const DUST_TINY_COUNT_MULTIPLIER = 4.35;
+const DUST_TINY_RADIUS_MIN = 0.11;
+const DUST_TINY_RADIUS_MAX = 0.35;
+const DUST_COUNT_MULTIPLIER = 3.6;
+const DUST_RADIUS_MIN = 0.35;
+const DUST_RADIUS_MAX = 0.55;
+const DUST_MID_COUNT_MULTIPLIER = 0.75;
+const DUST_MID_RADIUS_MIN = 0.55;
+const DUST_MID_RADIUS_MAX = 0.75;
 const NODE_COLORS: [number, number, number][] = [
   [255, 255, 255],
   [248, 113, 113],
@@ -225,6 +234,47 @@ export function CommunityNodes() {
 
     const nodes = generateTreeNodes(width, height);
     const edges = generateTreeEdges(nodes);
+    const dust: {
+      x: number;
+      y: number;
+      radius: number;
+      alpha: number;
+      color: [number, number, number];
+    }[] = [];
+    const pickDustColor = (): [number, number, number] =>
+      Math.random() < 0.1
+        ? NODE_COLORS[1 + Math.floor(Math.random() * 3)]
+        : NODE_COLORS[0];
+    const dustTinyCount = Math.round(nodes.length * DUST_TINY_COUNT_MULTIPLIER);
+    for (let i = 0; i < dustTinyCount; i++) {
+      dust.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: DUST_TINY_RADIUS_MIN + Math.random() * (DUST_TINY_RADIUS_MAX - DUST_TINY_RADIUS_MIN),
+        alpha: 0.1 + Math.random() * 0.14,
+        color: pickDustColor(),
+      });
+    }
+    const dustCount = Math.round(nodes.length * DUST_COUNT_MULTIPLIER);
+    for (let i = 0; i < dustCount; i++) {
+      dust.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: DUST_RADIUS_MIN + Math.random() * (DUST_RADIUS_MAX - DUST_RADIUS_MIN),
+        alpha: 0.12 + Math.random() * 0.16,
+        color: pickDustColor(),
+      });
+    }
+    const dustMidCount = Math.round(nodes.length * DUST_MID_COUNT_MULTIPLIER);
+    for (let i = 0; i < dustMidCount; i++) {
+      dust.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: DUST_MID_RADIUS_MIN + Math.random() * (DUST_MID_RADIUS_MAX - DUST_MID_RADIUS_MIN),
+        alpha: 0.16 + Math.random() * 0.18,
+        color: pickDustColor(),
+      });
+    }
     const particles: Particle[] = [];
     const nodeHits: { time: number }[][] = nodes.map(() => []);
     const pendingBounces: PendingBounce[] = [];
@@ -394,6 +444,14 @@ export function CommunityNodes() {
         ctx.stroke();
       }
       ctx.restore();
+
+      for (const d of dust) {
+        const [dr, dg, db] = d.color;
+        ctx.fillStyle = `rgba(${dr}, ${dg}, ${db}, ${d.alpha})`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       for (let i = 0; i < nodes.length; i++) {
         const alpha = nodes[i].baseAlpha;
