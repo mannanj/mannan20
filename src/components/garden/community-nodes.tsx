@@ -69,6 +69,7 @@ const DUST_MID_RADIUS_MAX = 0.75;
 const LENS_RADIUS = 18;
 const LENS_ZOOM = 2.6;
 const LENS_RING_WIDTH = 1.2;
+const LENS_MAX_LEVEL = 2;
 const NODE_COLORS: [number, number, number][] = [
   [255, 255, 255],
   [248, 113, 113],
@@ -284,6 +285,7 @@ export function CommunityNodes() {
     y: 0,
     active: false,
   });
+  const levelRef = useRef<number>(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -752,12 +754,14 @@ export function CommunityNodes() {
 
       const m = mouseRef.current;
       if (m.active) {
+        const level = levelRef.current;
         const mx = m.x;
         const my = m.y;
-        const r = LENS_RADIUS;
-        const zoom = LENS_ZOOM;
+        const levelScale = Math.pow(2, level);
+        const r = LENS_RADIUS * levelScale;
+        const zoom = LENS_ZOOM * levelScale;
 
-        const haloR = r + 8;
+        const haloR = r + 8 * levelScale;
         const halo = ctx.createRadialGradient(mx, my, r - 2, mx, my, haloR);
         halo.addColorStop(0, "rgba(255, 255, 255, 0.0)");
         halo.addColorStop(0.5, "rgba(255, 255, 255, 0.04)");
@@ -790,12 +794,33 @@ export function CommunityNodes() {
         ctx.stroke();
 
         ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        ctx.lineWidth = LENS_RING_WIDTH;
+        ctx.lineWidth = LENS_RING_WIDTH * Math.min(levelScale, 2);
         ctx.beginPath();
         ctx.arc(mx, my, r, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
+        const iconR = 3 + level * 1.2;
+        const iconOffset = r + iconR + 4;
+        const iconAngle = -Math.PI / 4;
+        const iconX = mx + Math.cos(iconAngle) * iconOffset;
+        const iconY = my + Math.sin(iconAngle) * iconOffset;
+        const isExpandable = level < LENS_MAX_LEVEL;
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+        const armLen = iconR * 0.7;
+        ctx.beginPath();
+        ctx.moveTo(iconX - armLen, iconY);
+        ctx.lineTo(iconX + armLen, iconY);
+        if (isExpandable) {
+          ctx.moveTo(iconX, iconY - armLen);
+          ctx.lineTo(iconX, iconY + armLen);
+        }
+        ctx.stroke();
+        ctx.restore();
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -812,10 +837,17 @@ export function CommunityNodes() {
     const onLeave = () => {
       mouseRef.current.active = false;
     };
+    const onClick = () => {
+      if (!mouseRef.current.active) return;
+      const level = levelRef.current;
+      levelRef.current = level >= LENS_MAX_LEVEL ? 0 : level + 1;
+    };
+
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerenter", onMove);
     canvas.addEventListener("pointerleave", onLeave);
     canvas.addEventListener("pointercancel", onLeave);
+    canvas.addEventListener("click", onClick);
 
     rafRef.current = requestAnimationFrame(animate);
 
@@ -825,6 +857,7 @@ export function CommunityNodes() {
       canvas.removeEventListener("pointerenter", onMove);
       canvas.removeEventListener("pointerleave", onLeave);
       canvas.removeEventListener("pointercancel", onLeave);
+      canvas.removeEventListener("click", onClick);
     };
   }, []);
 
