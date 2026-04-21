@@ -16,7 +16,7 @@ export function GardenHero({
   return (
     <section className="relative h-[720px] md:h-[900px] overflow-hidden bg-[#0b0b0b]">
       <div className="absolute inset-0">
-        <UnicornScene filePath={sceneFilePath} className="absolute inset-0 z-0" />
+        <UnicornScene filePath={sceneFilePath} className="absolute inset-0 z-0" dpi={2.5} />
         <div className="absolute inset-0 z-10 opacity-[0.3] bg-[radial-gradient(ellipse_at_top,#1b1b1b,transparent_50%)]" />
         <div className="absolute inset-0 z-10 bg-gradient-to-b from-transparent via-transparent to-[#0b0b0b]" />
       </div>
