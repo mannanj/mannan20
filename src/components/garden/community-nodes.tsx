@@ -51,6 +51,12 @@ const GALAXY_SPIN_SPEED = 0.00038;
 const GALAXY_HALO_SCALE = 4.2;
 const GALAXY_HALO_SQUASH = 0.42;
 const GALAXY_CORE_SCALE = 1.25;
+const SUN_CORONA_SCALE = 4.5;
+const SUN_CORONA_PULSE_SPEED = 0.0005;
+const SUN_CORONA_PULSE_AMP = 0.08;
+const SUN_CORE_SCALE = 1.2;
+const SUN_INNER_PULSE_SPEED = 0.0013;
+const SUN_INNER_PULSE_AMP = 0.04;
 const DUST_TINY_COUNT_MULTIPLIER = 4.35;
 const DUST_TINY_RADIUS_MIN = 0.11;
 const DUST_TINY_RADIUS_MAX = 0.35;
@@ -76,6 +82,8 @@ interface Node {
   color: [number, number, number];
   isGalaxy: boolean;
   galaxyPhase: number;
+  isSun: boolean;
+  sunPhase: number;
 }
 
 interface Particle {
@@ -135,6 +143,7 @@ function generateTreeNodes(width: number, height: number): Node[] {
       const tierRoll = Math.random();
       let radius: number;
       let isGalaxy = false;
+      let isSun = false;
       if (tierRoll < 0.79) {
         radius = NODE_TIER_TINY_MIN + Math.random() * (NODE_TIER_TINY_MAX - NODE_TIER_TINY_MIN);
       } else if (tierRoll < 0.95) {
@@ -146,6 +155,7 @@ function generateTreeNodes(width: number, height: number): Node[] {
         isGalaxy = true;
       } else {
         radius = NODE_TIER_XL_MIN + Math.random() * (NODE_TIER_XL_MAX - NODE_TIER_XL_MIN);
+        isSun = true;
       }
       nodes.push({
         x: startX + i * spacing + jitterX + nudgeX,
@@ -156,6 +166,8 @@ function generateTreeNodes(width: number, height: number): Node[] {
         color: Math.random() < 2 / 3 ? NODE_COLORS[0] : NODE_COLORS[1 + Math.floor(Math.random() * 3)],
         isGalaxy,
         galaxyPhase: Math.random() * Math.PI * 2,
+        isSun,
+        sunPhase: Math.random() * Math.PI * 2,
       });
     }
   }
@@ -628,6 +640,46 @@ export function CommunityNodes() {
           core.addColorStop(0, `rgba(255, 245, 215, 0.95)`);
           core.addColorStop(0.5, `rgba(${nr}, ${ng}, ${nb}, 0.6)`);
           core.addColorStop(1, `rgba(0, 0, 0, 0)`);
+          ctx.fillStyle = core;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, coreR, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (node.isSun) {
+          const t = timestamp;
+          const outerPulse = 1 + Math.sin(t * SUN_CORONA_PULSE_SPEED + node.sunPhase) * SUN_CORONA_PULSE_AMP;
+          const innerPulse = 1 + Math.sin(t * SUN_INNER_PULSE_SPEED + node.sunPhase * 0.7) * SUN_INNER_PULSE_AMP;
+
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+
+          const outerR = node.radius * SUN_CORONA_SCALE * outerPulse;
+          const corona = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, outerR);
+          corona.addColorStop(0, "rgba(255, 180, 60, 0.0)");
+          corona.addColorStop(0.25, "rgba(255, 140, 40, 0.22)");
+          corona.addColorStop(0.6, "rgba(255, 80, 30, 0.1)");
+          corona.addColorStop(1, "rgba(0, 0, 0, 0)");
+          ctx.fillStyle = corona;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, outerR, 0, Math.PI * 2);
+          ctx.fill();
+
+          const midR = node.radius * 2.4 * innerPulse;
+          const mid = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, midR);
+          mid.addColorStop(0, "rgba(255, 230, 150, 0.55)");
+          mid.addColorStop(0.5, "rgba(255, 150, 50, 0.22)");
+          mid.addColorStop(1, "rgba(0, 0, 0, 0)");
+          ctx.fillStyle = mid;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, midR, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+
+          const coreR = node.radius * SUN_CORE_SCALE;
+          const core = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, coreR);
+          core.addColorStop(0, "rgba(255, 248, 220, 1.0)");
+          core.addColorStop(0.55, "rgba(255, 190, 90, 0.95)");
+          core.addColorStop(1, "rgba(255, 110, 40, 0.6)");
           ctx.fillStyle = core;
           ctx.beginPath();
           ctx.arc(node.x, node.y, coreR, 0, Math.PI * 2);
