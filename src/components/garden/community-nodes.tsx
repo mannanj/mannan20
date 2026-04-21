@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { CommunityNodesSunTrigger } from "./community-nodes-sun-trigger";
+import { useEffect, useRef } from "react";
 
 const SPAWN_MIN_MS = 66000;
 const SPAWN_MAX_MS = 160000;
@@ -273,19 +272,10 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
   return edges;
 }
 
-interface SunMarker {
-  id: number;
-  x: number;
-  y: number;
-  radius: number;
-}
-
 export function CommunityNodes() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
-  const [sunMarkers, setSunMarkers] = useState<SunMarker[]>([]);
-  const [activeSunId, setActiveSunId] = useState<number | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -306,14 +296,6 @@ export function CommunityNodes() {
 
     const nodes = generateTreeNodes(width, height);
     const edges = generateTreeEdges(nodes);
-
-    const markers: SunMarker[] = [];
-    for (let i = 0; i < nodes.length; i++) {
-      if (nodes[i].isSun) {
-        markers.push({ id: i, x: nodes[i].x, y: nodes[i].y, radius: nodes[i].radius });
-      }
-    }
-    setSunMarkers(markers);
     const dust: {
       x: number;
       y: number;
@@ -765,41 +747,9 @@ export function CommunityNodes() {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  const activeMarker = sunMarkers.find((m) => m.id === activeSunId) ?? null;
-  const triggerSize = activeMarker ? Math.max(140, activeMarker.radius * 60) : 0;
-
   return (
     <div ref={containerRef} className="absolute inset-0">
       <canvas ref={canvasRef} />
-      {sunMarkers.map((m) => {
-        const hitSize = Math.max(18, m.radius * 2 + 10);
-        return (
-          <button
-            key={m.id}
-            type="button"
-            aria-label="Activate sun"
-            onClick={() => activeSunId === null && setActiveSunId(m.id)}
-            onMouseEnter={() => activeSunId === null && setActiveSunId(m.id)}
-            className="absolute rounded-full cursor-pointer focus:outline-none"
-            style={{
-              left: m.x - hitSize / 2,
-              top: m.y - hitSize / 2,
-              width: hitSize,
-              height: hitSize,
-              background: "transparent",
-            }}
-          />
-        );
-      })}
-      {activeMarker && (
-        <CommunityNodesSunTrigger
-          x={activeMarker.x}
-          y={activeMarker.y}
-          size={triggerSize}
-          dotRadius={activeMarker.radius}
-          onDone={() => setActiveSunId(null)}
-        />
-      )}
     </div>
   );
 }
