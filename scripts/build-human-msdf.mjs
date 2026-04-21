@@ -1,0 +1,232 @@
+import sharp from "sharp";
+import { writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const OUT_PATH = resolve(__dirname, "..", "public", "human-msdf.png");
+const SIZE = 1024;
+const PX_RANGE = 12;
+
+const SVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect width="1024" height="1024" fill="black"/>
+  <g fill="white">
+
+    <!-- DORYPHOROS (Polykleitos' Spear-Bearer) silhouette.
+         Contrapposto: weight on figure's right leg (viewer's left), left leg relaxed.
+         Right arm hanging at side; left arm bent at elbow gripping the spear low.
+         Spear shaft angles up-and-inward past the left shoulder, terminating in a
+         leaf-shaped blade above the head. -->
+
+    <!-- SPEAR: shaft from butt (~755, 558) through the left hand up to tip (~600, 60).
+         Rendered first so the hand ellipse overlaps the shaft cleanly in silhouette. -->
+    <path d="M 759.8 556.5 L 604.8 58.5 L 595.2 61.5 L 750.2 559.5 Z"/>
+    <!-- Spearhead: narrow leaf blade tapering to a point beyond the shaft -->
+    <path d="M 616 98
+             Q 624 60 590 18
+             Q 570 64 602 110 Z"/>
+
+    <!-- HEAD: slight right-ward tilt toward weight-bearing side -->
+    <circle cx="508" cy="158" r="52"/>
+
+    <!-- NECK -->
+    <path d="M 486 206 L 530 206 L 540 272 L 476 272 Z"/>
+
+    <!-- TORSO: broad classical shoulders, V-taper to defined waist -->
+    <path d="M 400 272
+             C 388 276 382 292 382 312
+             L 384 370
+             Q 384 402 392 432
+             L 404 488
+             Q 410 518 412 548
+             L 416 584
+             Q 420 602 430 612
+             L 446 622
+             L 574 622
+             L 590 612
+             Q 600 602 604 584
+             L 608 548
+             Q 610 518 616 488
+             L 628 432
+             Q 636 402 636 370
+             L 638 312
+             C 638 292 632 276 620 272
+             L 602 262
+             L 418 262 Z"/>
+
+    <!-- PELVIS / HIPS: tilted — right hip (viewer's left) raised for contrapposto -->
+    <path d="M 446 618
+             L 574 618
+             L 592 664
+             Q 596 686 586 700
+             L 568 716
+             L 448 720
+             L 432 706
+             Q 424 688 426 672 Z"/>
+
+    <!-- RIGHT LEG (weight-bearing, straight, viewer's left) -->
+    <path d="M 448 712
+             C 442 756 440 808 444 848
+             L 452 900
+             Q 456 918 466 924
+             L 480 928
+             Q 492 928 500 924
+             L 508 918
+             Q 512 908 512 896
+             L 510 820
+             Q 508 760 506 712 Z"/>
+
+    <!-- LEFT LEG (relaxed, knee slightly bent, foot placed back, viewer's right) -->
+    <path d="M 528 716
+             C 528 756 536 810 548 858
+             L 572 906
+             Q 582 920 594 922
+             L 612 922
+             Q 626 920 632 914
+             L 640 906
+             Q 642 896 638 890
+             L 612 828
+             Q 596 770 586 712 Z"/>
+
+    <!-- FEET: back foot rotated slightly outward to sell the relaxed pose -->
+    <ellipse cx="492" cy="930" rx="28" ry="6"/>
+    <g transform="translate(618 920) rotate(8)">
+      <ellipse cx="0" cy="0" rx="30" ry="6"/>
+    </g>
+
+    <!-- RIGHT ARM: hanging naturally at side (viewer's left) -->
+    <path d="M 394 276
+             C 378 282 368 298 366 320
+             L 358 468
+             Q 356 518 362 566
+             L 372 606
+             Q 378 614 388 614
+             L 400 614
+             Q 410 614 416 606
+             L 422 566
+             Q 426 518 422 468
+             L 416 320
+             C 414 298 408 282 400 276 Z"/>
+
+    <!-- LEFT UPPER ARM: hangs close to the body, shoulder (~622, 276) to elbow (~622, 464) -->
+    <path d="M 610 276
+             C 608 282 614 288 622 288
+             L 632 288
+             C 640 288 642 282 640 276
+             L 646 438
+             Q 648 454 640 460
+             L 630 466
+             Q 620 466 614 460
+             Q 606 454 608 438 Z"/>
+
+    <!-- LEFT FOREARM + HAND: drawn vertical from the elbow, then rotated -80° so the
+         forearm extends forward-and-slightly-down and the hand meets the spear grip. -->
+    <g transform="rotate(-80 622 464)">
+      <path d="M 612 464
+               Q 608 472 614 480
+               L 614 548
+               Q 614 558 624 560
+               L 634 560
+               Q 644 558 644 548
+               L 644 480
+               Q 648 472 644 464 Z"/>
+      <ellipse cx="629" cy="574" rx="17" ry="13"/>
+    </g>
+
+  </g>
+</svg>`;
+
+function edt1d(f, n) {
+  const d = new Float64Array(n);
+  const v = new Int32Array(n);
+  const z = new Float64Array(n + 1);
+  let k = 0;
+  v[0] = 0;
+  z[0] = -Infinity;
+  z[1] = Infinity;
+  for (let q = 1; q < n; q++) {
+    let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+    while (s <= z[k]) {
+      k--;
+      s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+    }
+    k++;
+    v[k] = q;
+    z[k] = s;
+    z[k + 1] = Infinity;
+  }
+  k = 0;
+  for (let q = 0; q < n; q++) {
+    while (z[k + 1] < q) k++;
+    d[q] = (q - v[k]) ** 2 + f[v[k]];
+  }
+  return d;
+}
+
+function edt2d(binary, w, h) {
+  const INF = 1e20;
+  const grid = new Float64Array(w * h);
+  for (let i = 0; i < w * h; i++) grid[i] = binary[i] ? 0 : INF;
+
+  const colBuf = new Float64Array(h);
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) colBuf[y] = grid[y * w + x];
+    const dt = edt1d(colBuf, h);
+    for (let y = 0; y < h; y++) grid[y * w + x] = dt[y];
+  }
+
+  const rowBuf = new Float64Array(w);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) rowBuf[x] = grid[y * w + x];
+    const dt = edt1d(rowBuf, w);
+    for (let x = 0; x < w; x++) grid[y * w + x] = Math.sqrt(dt[x]);
+  }
+
+  return grid;
+}
+
+async function run() {
+  const raw = await sharp(Buffer.from(SVG))
+    .resize(SIZE, SIZE, { kernel: "nearest" })
+    .greyscale()
+    .raw()
+    .toBuffer();
+
+  const inside = new Uint8Array(SIZE * SIZE);
+  const outside = new Uint8Array(SIZE * SIZE);
+  for (let i = 0; i < raw.length; i++) {
+    const v = raw[i] > 127 ? 1 : 0;
+    inside[i] = v;
+    outside[i] = 1 - v;
+  }
+
+  const distInside = edt2d(outside, SIZE, SIZE);
+  const distOutside = edt2d(inside, SIZE, SIZE);
+
+  const out = Buffer.alloc(SIZE * SIZE * 4);
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const signed = distInside[i] - distOutside[i];
+    let u = 0.5 + signed / (2 * PX_RANGE);
+    if (u < 0) u = 0;
+    if (u > 1) u = 1;
+    const byte = Math.round(u * 255);
+    const o = i * 4;
+    out[o] = byte;
+    out[o + 1] = byte;
+    out[o + 2] = byte;
+    out[o + 3] = byte;
+  }
+
+  await sharp(out, { raw: { width: SIZE, height: SIZE, channels: 4 } })
+    .png()
+    .toFile(OUT_PATH);
+
+  writeFileSync(resolve(__dirname, "..", "public", "human-silhouette.svg"), SVG);
+  console.log(`wrote ${OUT_PATH} (${SIZE}x${SIZE}, pxRange=${PX_RANGE})`);
+}
+
+run().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
