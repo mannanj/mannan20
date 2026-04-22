@@ -28,16 +28,19 @@ export default function HealthLongevityArticle() {
         title="Health is an Artform"
         date="March 15, 2026"
         readTime="3 min read"
+        caption={
+          <ArticleCaption className="text-center mb-0 mx-auto">
+            I recently had this insight, after 10 years of obsession optimizing
+            my health and trying everything under the sun. Health is an art,
+            just as much as it&apos;s a science. And with our over-reliance on
+            everything being science &mdash; meaning it&apos;s something you
+            have to give personal autonomy and agency away over to an authority
+            figure &mdash; it means to me it&apos;s more of an art than a
+            science.
+          </ArticleCaption>
+        }
       />
       <div className="max-w-2xl mx-auto px-6 pt-4 pb-16">
-        <ArticleCaption className="mb-6">
-          I recently had this insight, after 10 years of obsession optimizing
-          my health and trying everything under the sun. Health is an art, just
-          as much as it&apos;s a science. And with our over-reliance on
-          everything being science &mdash; meaning it&apos;s something you have
-          to give personal autonomy and agency away over to an authority figure
-          &mdash; it means to me it&apos;s more of an art than a science.
-        </ArticleCaption>
         <HealthArticleBody />
       </div>
     </div>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { UnicornScene } from "./unicorn-scene";
 
 interface GardenHeroProps {
@@ -5,6 +6,7 @@ interface GardenHeroProps {
   date: string;
   readTime?: string;
   sceneFilePath?: string;
+  caption?: ReactNode;
 }
 
 export function GardenHero({
@@ -12,6 +14,7 @@ export function GardenHero({
   date,
   readTime,
   sceneFilePath = "/unicorn/health-hero-scene.json",
+  caption,
 }: GardenHeroProps) {
   return (
     <section className="relative h-[720px] md:h-[900px] overflow-hidden bg-[#0b0b0b]">
@@ -23,6 +26,9 @@ export function GardenHero({
 
       <div className="relative z-20 max-w-5xl mx-auto px-4 h-full flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-end gap-6 pb-16">
+          {caption && (
+            <div className="w-full flex justify-center px-2">{caption}</div>
+          )}
           <h1 className="font-serif text-4xl leading-[1.15] md:text-6xl md:leading-[1.1] tracking-[-0.8px] md:tracking-[-1.2px] text-center text-white md:max-w-4xl">
             {title}
           </h1>
