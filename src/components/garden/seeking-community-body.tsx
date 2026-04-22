@@ -8,6 +8,8 @@ import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
 import { CommunityNodes } from "./community-nodes";
 import { ArticleCaption } from "../article-caption";
+import { ArticleTitle } from "../article-title";
+import { ArticleMeta } from "../article-meta";
 
 const CommunityConstellation = dynamic(
   () => import("./community-constellation"),
@@ -250,12 +252,14 @@ export function SeekingCommunityBody() {
         beauty. It was the most fascinating, engrossing thing I&apos;d ever
         witnessed.
       </ArticleCaption>
-      <h1 className="text-2xl font-semibold tracking-tight mb-2">
-        On Seeking Community
-      </h1>
-      <p className="text-xs text-white/30 mb-6">
-        April 7, 2026 &middot; 8 min read &middot; 1,800 words
-      </p>
+      <ArticleTitle variant="community">On Seeking Community</ArticleTitle>
+      <ArticleMeta
+        variant="inline"
+        date="April 7, 2026"
+        readTime="8 min read"
+        wordCount="1,800 words"
+      />
+
       <Timeline
         eras={ERAS}
         view="linear"

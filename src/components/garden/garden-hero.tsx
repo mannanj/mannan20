@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { UnicornScene } from "./unicorn-scene";
+import { ArticleTitle } from "../article-title";
+import { ArticleMeta } from "../article-meta";
 
 interface GardenHeroProps {
   title: string;
@@ -29,14 +31,9 @@ export function GardenHero({
           {caption && (
             <div className="w-full flex justify-center px-2">{caption}</div>
           )}
-          <h1 className="font-serif text-4xl leading-[1.15] md:text-6xl md:leading-[1.1] tracking-[-0.8px] md:tracking-[-1.2px] text-center text-white md:max-w-4xl">
-            {title}
-          </h1>
-          <div className="flex items-center gap-3 px-4 py-2 bg-white/[0.06] border border-white/20 rounded-full">
-            <span className="text-[11px] text-white/70 tracking-[0.18em] uppercase">
-              {date}
-              {readTime ? ` · ${readTime}` : ""}
-            </span>
+          <div className="flex flex-col items-center gap-3">
+            <ArticleTitle variant="editorial">{title}</ArticleTitle>
+            <ArticleMeta variant="pill" date={date} readTime={readTime} />
           </div>
         </div>
       </div>
