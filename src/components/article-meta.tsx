@@ -23,9 +23,9 @@ export function ArticleMeta({
   if (variant === "pill") {
     return (
       <div
-        className={`flex items-center gap-3 px-4 py-2 bg-white/[0.06] border border-white/20 rounded-full ${className}`.trim()}
+        className={`flex items-center gap-2 px-3 py-1 bg-white/[0.06] border border-white/20 rounded-full ${className}`.trim()}
       >
-        <span className="text-[11px] text-white/70 tracking-[0.18em] uppercase">
+        <span className="text-[9px] text-white/70 tracking-[0.15em] uppercase">
           {text}
         </span>
       </div>
