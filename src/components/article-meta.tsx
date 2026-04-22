@@ -23,7 +23,7 @@ export function ArticleMeta({
   if (variant === "pill") {
     return (
       <div
-        className={`flex items-center gap-2 px-3 py-1 bg-white/[0.06] border border-white/20 rounded-full ${className}`.trim()}
+        className={`inline-flex self-center items-center gap-2 px-3 py-1 bg-white/[0.06] border border-white/20 rounded-full mb-6 ${className}`.trim()}
       >
         <span className="text-[9px] text-white/70 tracking-[0.15em] uppercase">
           {text}

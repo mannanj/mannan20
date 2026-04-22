@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { BlueprintPopout } from "./blueprint-popout";
 import { AdditionalReading } from "./additional-reading";
+import { ArticleBody } from "../article-body";
 
 export function HealthArticleBody() {
   const [popoutOpen, setPopoutOpen] = useState(false);
@@ -28,7 +29,7 @@ export function HealthArticleBody() {
 
   return (
     <>
-      <div className="space-y-6 text-sm text-white/70 leading-relaxed">
+      <ArticleBody spacing="comfortable">
         <p id="origin">
           I grew up eating fast food. That was the norm &mdash; quick,
           convenient, and nobody questioned it. It wasn&apos;t until my early
@@ -96,7 +97,7 @@ export function HealthArticleBody() {
           accessible to everyone &mdash; and it's already available waiting to
           be discovered.
         </p>
-      </div>
+      </ArticleBody>
 
       <AdditionalReading currentHref="/garden/article/health-longevity" />
 

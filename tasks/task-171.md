@@ -1,0 +1,11 @@
+### Task 171: Standardize article layout with reusable DRY primitives
+- [x] Create `ArticleLayout` primitive (page shell with graphic slot + alignment options)
+- [x] Create `ArticleBody` primitive (standardized paragraph spacing + prose classes)
+- [x] Bake `mb-2` into `ArticleTitle` editorial variant (symmetry with community)
+- [x] Bake `mb-6` into `ArticleMeta` pill variant (symmetry with inline)
+- [x] Strip `GardenHero` to graphic-only (no more cluster overlay)
+- [x] Refactor Community page to use `ArticleLayout` with `graphicLayout="inline"` + `clusterAlign="left"`
+- [x] Refactor Health page to use `ArticleLayout` with `graphicLayout="bleed"` + `clusterAlign="center"`
+- [x] Both bodies now use `ArticleBody` with `spacing="comfortable"` (space-y-8 rhythm)
+- [x] Meta→first-paragraph gap now governed by `ArticleMeta.mb-6` on both articles
+- Location: `src/components/article-layout.tsx`, `src/components/article-body.tsx`, `src/components/article-title.tsx`, `src/components/article-meta.tsx`, `src/components/garden/garden-hero.tsx`, `src/components/garden/seeking-community-body.tsx`, `src/components/garden/health-article-body.tsx`, `src/app/garden/article/seeking-community/page.tsx`, `src/app/garden/article/health-longevity/page.tsx`

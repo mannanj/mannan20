@@ -6,10 +6,7 @@ import dynamic from "next/dynamic";
 import { Timeline } from "./timeline";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
-import { CommunityNodes } from "./community-nodes";
-import { ArticleCaption } from "../article-caption";
-import { ArticleTitle } from "../article-title";
-import { ArticleMeta } from "../article-meta";
+import { ArticleBody } from "../article-body";
 
 const CommunityConstellation = dynamic(
   () => import("./community-constellation"),
@@ -241,25 +238,6 @@ export function SeekingCommunityBody() {
 
   return (
     <>
-      <div className="relative w-full h-[349px] -mt-[169px] mb-4">
-        <CommunityNodes />
-      </div>
-      <ArticleCaption>
-        I was in college when{" "}
-        <em className="not-italic">Cosmos: A Spacetime Odyssey</em> came out.
-        Neil deGrasse Tyson walked my friends and I through the vastness of
-        space and something clicked &mdash; the sheer scale, the power, and the
-        beauty. It was the most fascinating, engrossing thing I&apos;d ever
-        witnessed.
-      </ArticleCaption>
-      <ArticleTitle variant="community">On Seeking Community</ArticleTitle>
-      <ArticleMeta
-        variant="inline"
-        date="April 7, 2026"
-        readTime="8 min read"
-        wordCount="1,800 words"
-      />
-
       <Timeline
         eras={ERAS}
         view="linear"
@@ -270,7 +248,7 @@ export function SeekingCommunityBody() {
         topOffset={timelineOffset}
       />
 
-      <div className="space-y-8 text-sm text-white/70 leading-relaxed">
+      <ArticleBody spacing="comfortable">
         <section id="era-cosmos">
           <div className="space-y-4">
             <p className="text-white/80">
@@ -501,7 +479,7 @@ export function SeekingCommunityBody() {
             </div>
           </div>
         </section>
-      </div>
+      </ArticleBody>
 
       <div className="-mt-2">
         <AdditionalReading
