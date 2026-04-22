@@ -1,23 +1,26 @@
-import type { Metadata } from 'next';
-import { GardenHero } from '@/components/garden/garden-hero';
-import { HealthArticleBody } from '@/components/garden/health-article-body';
-import { ArticleCaption } from '@/components/article-caption';
+import type { Metadata } from "next";
+import { GardenHero } from "@/components/garden/garden-hero";
+import { HealthArticleBody } from "@/components/garden/health-article-body";
+import { ArticleCaption } from "@/components/article-caption";
 
 export const metadata: Metadata = {
-  title: 'Health is an Artform',
-  description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
+  title: "Health is an Artform",
+  description:
+    "A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.",
   openGraph: {
-    title: 'Health is an Artform',
-    description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
-    type: 'article',
-    publishedTime: '2026-03-15',
-    authors: ['Mannan Javid'],
-    url: 'https://mannan.is/garden/article/health-longevity',
+    title: "Health is an Artform",
+    description:
+      "A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.",
+    type: "article",
+    publishedTime: "2026-03-15",
+    authors: ["Mannan Javid"],
+    url: "https://mannan.is/garden/article/health-longevity",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Health is an Artform',
-    description: 'A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.',
+    card: "summary_large_image",
+    title: "Health is an Artform",
+    description:
+      "A decade of health optimization, reversing prediabetes, and why wellbeing became my north star.",
   },
 };
 
@@ -31,12 +34,10 @@ export default function HealthLongevityArticle() {
         caption={
           <ArticleCaption className="text-center mb-0 mx-auto">
             I recently had this insight, after 10 years of obsession optimizing
-            my health and trying everything under the sun. Health is an art,
-            just as much as it&apos;s a science. And with our over-reliance on
-            everything being science &mdash; meaning it&apos;s something you
-            have to give personal autonomy and agency away over to an authority
-            figure &mdash; it means to me it&apos;s more of an art than a
-            science.
+            my health and trying everything under the sun. And in a culture that
+            reduces everything to science - insisting truth must be confirmed by
+            consensus, reduced to a repeatable process, and stripped of personal
+            experience - that makes health, to me, more art than science.
           </ArticleCaption>
         }
       />
