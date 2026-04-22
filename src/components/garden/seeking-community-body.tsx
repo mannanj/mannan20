@@ -7,6 +7,7 @@ import { Timeline } from "./timeline";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
 import { CommunityNodes } from "./community-nodes";
+import { ArticleCaption } from "../article-caption";
 
 const CommunityConstellation = dynamic(
   () => import("./community-constellation"),
@@ -241,14 +242,14 @@ export function SeekingCommunityBody() {
       <div className="relative w-full h-[349px] -mt-[169px] mb-4">
         <CommunityNodes />
       </div>
-      <p className="font-[family-name:var(--font-caption)] italic text-[13px] text-white/50 leading-snug mb-2 max-w-2xl tracking-wide">
+      <ArticleCaption>
         I was in college when{" "}
         <em className="not-italic">Cosmos: A Spacetime Odyssey</em> came out.
         Neil deGrasse Tyson walked my friends and I through the vastness of
         space and something clicked &mdash; the sheer scale, the power, and the
         beauty. It was the most fascinating, engrossing thing I&apos;d ever
         witnessed.
-      </p>
+      </ArticleCaption>
       <h1 className="text-2xl font-semibold tracking-tight mb-2">
         On Seeking Community
       </h1>
