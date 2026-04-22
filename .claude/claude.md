@@ -107,6 +107,16 @@ public/
 **Build:** `bun run build`
 **Start:** `bun run start`
 
+## Unicorn Studio scene — re-export workflow
+
+The "Health is an Artform" hero uses a Unicorn Studio scene. It lives as **two files**:
+- `public/unicorn/health-hero-scene.raw.json` — pristine export, source of truth
+- `public/unicorn/health-hero-scene.json` — derived file the app loads
+
+The derivation is done by `scripts/apply-unicorn-transforms.mjs`, which applies a 3× slowdown and an iridescent shader recolor on top of the raw export. It runs automatically on `bun install` via the `postinstall` script, or manually via `bun run unicorn:build`.
+
+When re-exporting from Unicorn Studio: replace the `.raw.json` file, run `bun run unicorn:build`, commit **both** files. Never hand-edit the non-raw file. See `public/unicorn/README.md` for the full rationale (and the "option C" escape hatch if the shader string-replacements ever break).
+
 ## Code Quality
 
 - Minimal, performant

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack -p 3847",
     "build": "next build",
     "start": "next start",
-    "test:e2e": "bunx playwright test"
+    "test:e2e": "bunx playwright test",
+    "unicorn:build": "node scripts/apply-unicorn-transforms.mjs",
+    "postinstall": "node scripts/apply-unicorn-transforms.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
