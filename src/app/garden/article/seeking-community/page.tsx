@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SeekingCommunityBody } from "@/components/garden/seeking-community-body";
 import { CommunityNodes } from "@/components/garden/community-nodes";
 import { ArticleLayout } from "@/components/article-layout";
+import { ArticleHeader } from "@/components/article-header";
 import { ArticleCaption } from "@/components/article-caption";
 import { ArticleTitle } from "@/components/article-title";
 import { ArticleMeta } from "@/components/article-meta";
@@ -36,23 +37,24 @@ export default function SeekingCommunityArticle() {
         </div>
       }
       graphicLayout="inline"
-      clusterAlign="left"
     >
-      <ArticleCaption>
-        I was in college when{" "}
-        <em className="not-italic">Cosmos: A Spacetime Odyssey</em> came out.
-        Neil deGrasse Tyson walked my friends and I through the vastness of
-        space and something clicked &mdash; the sheer scale, the power, and the
-        beauty. It was the most fascinating, engrossing thing I&apos;d ever
-        witnessed.
-      </ArticleCaption>
-      <ArticleTitle variant="community">On Seeking Community</ArticleTitle>
-      <ArticleMeta
-        variant="inline"
-        date="April 7, 2026"
-        readTime="8 min read"
-        wordCount="1,800 words"
-      />
+      <ArticleHeader align="left">
+        <ArticleCaption>
+          I was in college when{" "}
+          <em className="not-italic">Cosmos: A Spacetime Odyssey</em> came out.
+          Neil deGrasse Tyson walked my friends and I through the vastness of
+          space and something clicked &mdash; the sheer scale, the power, and
+          the beauty. It was the most fascinating, engrossing thing I&apos;d
+          ever witnessed.
+        </ArticleCaption>
+        <ArticleTitle variant="community">On Seeking Community</ArticleTitle>
+        <ArticleMeta
+          variant="inline"
+          date="April 7, 2026"
+          readTime="8 min read"
+          wordCount="1,800 words"
+        />
+      </ArticleHeader>
       <SeekingCommunityBody />
     </ArticleLayout>
   );

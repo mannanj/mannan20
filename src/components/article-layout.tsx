@@ -1,14 +1,12 @@
 import type { ReactNode } from "react";
 
 type GraphicLayout = "bleed" | "inline";
-type ClusterAlign = "left" | "center";
 
 interface ArticleLayoutProps {
   children: ReactNode;
   graphic?: ReactNode;
   graphicLayout?: GraphicLayout;
   topPadding?: string;
-  clusterAlign?: ClusterAlign;
   className?: string;
 }
 
@@ -17,13 +15,10 @@ export function ArticleLayout({
   graphic,
   graphicLayout = "bleed",
   topPadding,
-  clusterAlign = "left",
   className = "",
 }: ArticleLayoutProps) {
   const resolvedTop =
     topPadding ?? (graphicLayout === "inline" ? "pt-[235px]" : "pt-8");
-  const clusterClass =
-    clusterAlign === "center" ? "flex flex-col items-center" : "";
 
   return (
     <div
@@ -32,7 +27,7 @@ export function ArticleLayout({
       {graphicLayout === "bleed" && graphic}
       <div className={`max-w-2xl mx-auto px-6 ${resolvedTop} pb-16`}>
         {graphicLayout === "inline" && graphic}
-        <div className={clusterClass}>{children}</div>
+        {children}
       </div>
     </div>
   );

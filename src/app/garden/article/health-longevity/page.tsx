@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GardenHero } from "@/components/garden/garden-hero";
 import { HealthArticleBody } from "@/components/garden/health-article-body";
 import { ArticleLayout } from "@/components/article-layout";
+import { ArticleHeader } from "@/components/article-header";
 import { ArticleCaption } from "@/components/article-caption";
 import { ArticleTitle } from "@/components/article-title";
 import { ArticleMeta } from "@/components/article-meta";
@@ -32,21 +33,23 @@ export default function HealthLongevityArticle() {
     <ArticleLayout
       graphic={<GardenHero />}
       graphicLayout="bleed"
-      clusterAlign="center"
+      topPadding="-mt-[278px] pt-0 relative z-20"
     >
-      <ArticleCaption className="text-center mx-auto">
-        I recently had this insight, after 10 years of obsession optimizing my
-        health and trying everything under the sun. And in a culture that
-        reduces everything to science - insisting truth must be confirmed by
-        consensus, reduced to a repeatable process, and stripped of personal
-        experience - that makes health, to me, more art than science.
-      </ArticleCaption>
-      <ArticleTitle variant="editorial">Health is an Artform</ArticleTitle>
-      <ArticleMeta
-        variant="pill"
-        date="March 15, 2026"
-        readTime="3 min read"
-      />
+      <ArticleHeader align="center">
+        <ArticleCaption className="text-center mx-auto">
+          I recently had this insight, after 10 years of obsession optimizing
+          my health and trying everything under the sun. And in a culture that
+          reduces everything to science - insisting truth must be confirmed by
+          consensus, reduced to a repeatable process, and stripped of personal
+          experience - that makes health, to me, more art than science.
+        </ArticleCaption>
+        <ArticleTitle variant="editorial">Health is an Artform</ArticleTitle>
+        <ArticleMeta
+          variant="pill"
+          date="March 15, 2026"
+          readTime="3 min read"
+        />
+      </ArticleHeader>
       <HealthArticleBody />
     </ArticleLayout>
   );

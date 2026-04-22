@@ -11,7 +11,7 @@ interface GardenHeroProps {
 
 export function GardenHero({
   sceneFilePath = "/unicorn/health-hero-scene.json",
-  heightClassName = "h-[420px] md:h-[560px]",
+  heightClassName = "h-[620px] md:h-[820px]",
   translateY = "-translate-y-[50px]",
 }: GardenHeroProps) {
   const gold = useOptionalGoldInfection();

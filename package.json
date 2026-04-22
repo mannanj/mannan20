@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3847",
+    "dev": "lsof -ti:3847 | xargs kill -9 2>/dev/null; rm -rf .next; next dev --turbopack -p 3847",
     "build": "next build",
     "start": "next start",
     "test:e2e": "bunx playwright test",
