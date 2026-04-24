@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GARDEN_ARTICLES } from '@/lib/garden-articles';
 import { CommunityNodesPreview } from '@/components/garden/community-nodes-preview';
+import { HealthPocketCard } from '@/components/garden/health-pocket-card';
 
 export const metadata: Metadata = {
   title: 'Garden',
@@ -42,6 +43,7 @@ function PlantThree() {
 export default function GardenPage() {
   return (
     <div className="relative min-h-screen bg-[#0b0b0b] text-white">
+      <HealthPocketCard />
       <div className="absolute top-24 right-8 opacity-[0.12] pointer-events-none">
         <PlantOne />
       </div>
