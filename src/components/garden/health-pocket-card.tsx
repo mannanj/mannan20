@@ -168,16 +168,16 @@ export function HealthPocketCard() {
       >
         <div
           aria-hidden
-          className="absolute -inset-8 pointer-events-none"
+          className="absolute -inset-6 pointer-events-none"
           style={{
             background:
-              'radial-gradient(ellipse 55% 60% at 25% 35%, rgba(239,68,68,0.35), transparent 65%), ' +
-              'radial-gradient(ellipse 55% 60% at 75% 40%, rgba(34,197,94,0.28), transparent 65%), ' +
-              'radial-gradient(ellipse 60% 55% at 50% 75%, rgba(59,130,246,0.38), transparent 65%)',
+              'radial-gradient(ellipse 51% 55% at 42% 47%, rgba(239,68,68,0.50), transparent 65%), ' +
+              'radial-gradient(ellipse 51% 55% at 58% 47%, rgba(34,197,94,0.42), transparent 65%), ' +
+              'radial-gradient(ellipse 55% 51% at 50% 67%, rgba(59,130,246,0.55), transparent 65%)',
             backgroundRepeat: 'no-repeat',
-            filter: cardHover || open ? 'blur(22px)' : 'blur(18px)',
+            filter: cardHover || open ? 'blur(20px)' : 'blur(17px)',
             mixBlendMode: 'screen',
-            opacity: cardHover || open ? 0.55 : 0.4,
+            opacity: cardHover || open ? 0.8 : 0.6,
             animation: 'pocketAura 14s ease-in-out infinite',
             transition: 'opacity 300ms ease, filter 300ms ease',
             zIndex: 0,
