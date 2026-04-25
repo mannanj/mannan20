@@ -308,7 +308,8 @@ export function CommunityNodes() {
         window.innerHeight,
       );
     const WORLD_PAD = 2000;
-    let worldWidth = window.innerWidth;
+    const WORLD_MAX_WIDTH = 2560;
+    let worldWidth = Math.max(window.innerWidth, WORLD_MAX_WIDTH);
     let worldHeight = measureHeight() + WORLD_PAD;
 
     canvas.width = viewportW * dpr;
@@ -368,6 +369,7 @@ export function CommunityNodes() {
       xMax: number,
       yMin: number,
       yMax: number,
+      withEdges: boolean,
     ) => {
       const regionW = xMax - xMin;
       const regionH = yMax - yMin;
@@ -376,7 +378,6 @@ export function CommunityNodes() {
 
       const baseIdx = nodes.length;
       const regionNodes = generateTreeNodes(regionW, regionH);
-      const regionEdges = generateTreeEdges(regionNodes);
       for (let i = 0; i < regionNodes.length; i++) {
         const n = regionNodes[i];
         n.x += xMin;
@@ -385,10 +386,13 @@ export function CommunityNodes() {
         nodeHits.push([]);
         indexNode(nodes.length - 1);
       }
-      for (let i = 0; i < regionEdges.length; i++) {
-        const [a, b] = regionEdges[i];
-        edges.push([a + baseIdx, b + baseIdx]);
-        indexEdge(edges.length - 1);
+      if (withEdges) {
+        const regionEdges = generateTreeEdges(regionNodes);
+        for (let i = 0; i < regionEdges.length; i++) {
+          const [a, b] = regionEdges[i];
+          edges.push([a + baseIdx, b + baseIdx]);
+          indexEdge(edges.length - 1);
+        }
       }
 
       const tinyCount = Math.round(regionNodes.length * DUST_TINY_COUNT_MULTIPLIER);
@@ -426,7 +430,7 @@ export function CommunityNodes() {
       }
     };
 
-    extendRegion(0, worldWidth, 0, worldHeight);
+    extendRegion(0, worldWidth, 0, worldHeight, true);
     const particles: Particle[] = [];
     const pendingBounces: PendingBounce[] = [];
     let lastTime = 0;
@@ -505,15 +509,15 @@ export function CommunityNodes() {
       let sx = 0, sy = 0, angle = 0;
       const offset = 12;
       if (edge === 0) {
-        sx = Math.random() * worldWidth;
+        sx = Math.random() * viewportW;
         sy = viewTop - offset;
         angle = Math.PI / 3 + Math.random() * (Math.PI / 3);
       } else if (edge === 1) {
-        sx = worldWidth + offset;
+        sx = viewportW + offset;
         sy = viewTop + Math.random() * viewportH;
         angle = Math.PI - Math.PI / 6 + Math.random() * (Math.PI / 3);
       } else if (edge === 2) {
-        sx = Math.random() * worldWidth;
+        sx = Math.random() * viewportW;
         sy = viewBottom + offset;
         angle = -Math.PI / 3 - Math.random() * (Math.PI / 3);
       } else {
@@ -962,16 +966,15 @@ export function CommunityNodes() {
     };
 
     const growWorld = () => {
-      const newW = window.innerWidth;
       const newH = measureHeight();
       if (newH > worldHeight - WORLD_PAD / 2) {
         const target = newH + WORLD_PAD;
-        extendRegion(0, worldWidth, worldHeight, target);
+        extendRegion(0, worldWidth, worldHeight, target, false);
         worldHeight = target;
       }
-      if (newW > worldWidth) {
-        extendRegion(worldWidth, newW, 0, worldHeight);
-        worldWidth = newW;
+      if (window.innerWidth > worldWidth) {
+        extendRegion(worldWidth, window.innerWidth, 0, worldHeight, false);
+        worldWidth = window.innerWidth;
       }
     };
 
