@@ -66,10 +66,6 @@ const DUST_RADIUS_MAX = 0.55;
 const DUST_MID_COUNT_MULTIPLIER = 0.75;
 const DUST_MID_RADIUS_MIN = 0.55;
 const DUST_MID_RADIUS_MAX = 0.75;
-const LENS_RADIUS = 18;
-const LENS_ZOOM = 2.6;
-const LENS_RING_WIDTH = 1.2;
-const LENS_MAX_LEVEL = 2;
 const NODE_COLORS: [number, number, number][] = [
   [255, 255, 255],
   [248, 113, 113],
@@ -276,21 +272,12 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
   return edges;
 }
 
-const READING_COLUMN_PX = 672;
 const VIEWPORT_CULL_MARGIN = 64;
 const BAND_HEIGHT = 256;
 
 export function CommunityNodes() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const leftGutterRef = useRef<HTMLDivElement>(null);
-  const rightGutterRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
-  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
-    x: 0,
-    y: 0,
-    active: false,
-  });
-  const levelRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -862,94 +849,9 @@ export function CommunityNodes() {
       drawScene();
       ctx.restore();
 
-      const m = mouseRef.current;
-      if (m.active) {
-        const level = levelRef.current;
-        const mx = m.x;
-        const my = m.y;
-        const levelScale = Math.pow(2, level);
-        const r = LENS_RADIUS * levelScale;
-        const zoom = LENS_ZOOM * levelScale;
-
-        const haloR = r + 8 * levelScale;
-        const halo = ctx.createRadialGradient(mx, my, r - 2, mx, my, haloR);
-        halo.addColorStop(0, "rgba(255, 255, 255, 0.0)");
-        halo.addColorStop(0.5, "rgba(255, 255, 255, 0.04)");
-        halo.addColorStop(1, "rgba(255, 255, 255, 0)");
-        ctx.fillStyle = halo;
-        ctx.beginPath();
-        ctx.arc(mx, my, haloR, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(mx, my, r, 0, Math.PI * 2);
-        ctx.clip();
-
-        ctx.fillStyle = "#0b0b0b";
-        ctx.fillRect(mx - r, my - r, r * 2, r * 2);
-
-        ctx.translate(mx, my);
-        ctx.scale(zoom, zoom);
-        ctx.translate(-mx, -my);
-        ctx.translate(0, -scrollY);
-        drawScene();
-
-        ctx.restore();
-
-        ctx.save();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-        ctx.lineWidth = LENS_RING_WIDTH + 2;
-        ctx.beginPath();
-        ctx.arc(mx, my, r + 1, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.strokeStyle = "rgba(255, 255, 255, 1)";
-        ctx.lineWidth = LENS_RING_WIDTH * Math.min(levelScale, 2);
-        ctx.beginPath();
-        ctx.arc(mx, my, r, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-
-        const iconR = 3 + level * 1.2;
-        const iconOffset = r + iconR + 4;
-        const iconAngle = -Math.PI / 4;
-        const iconX = mx + Math.cos(iconAngle) * iconOffset;
-        const iconY = my + Math.sin(iconAngle) * iconOffset;
-        const isExpandable = level < LENS_MAX_LEVEL;
-
-        ctx.save();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
-        ctx.lineWidth = 1;
-        ctx.lineCap = "round";
-        const armLen = iconR * 0.7;
-        ctx.beginPath();
-        ctx.moveTo(iconX - armLen, iconY);
-        ctx.lineTo(iconX + armLen, iconY);
-        if (isExpandable) {
-          ctx.moveTo(iconX, iconY - armLen);
-          ctx.lineTo(iconX, iconY + armLen);
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
-
       rafRef.current = requestAnimationFrame(animate);
     };
 
-    const onMove = (e: PointerEvent) => {
-      mouseRef.current.x = e.clientX;
-      mouseRef.current.y = e.clientY;
-      mouseRef.current.active = true;
-    };
-    const onLeave = () => {
-      mouseRef.current.active = false;
-    };
-    const onClick = () => {
-      if (!mouseRef.current.active) return;
-      const level = levelRef.current;
-      levelRef.current = level >= LENS_MAX_LEVEL ? 0 : level + 1;
-    };
     const onScroll = () => {
       scrollY = window.scrollY;
     };
@@ -982,18 +884,6 @@ export function CommunityNodes() {
     docObserver.observe(document.documentElement);
     if (document.body) docObserver.observe(document.body);
 
-    const leftGutter = leftGutterRef.current;
-    const rightGutter = rightGutterRef.current;
-    const gutters = [leftGutter, rightGutter].filter(
-      (el): el is HTMLDivElement => el !== null,
-    );
-    for (const g of gutters) {
-      g.addEventListener("pointermove", onMove);
-      g.addEventListener("pointerenter", onMove);
-      g.addEventListener("pointerleave", onLeave);
-      g.addEventListener("pointercancel", onLeave);
-      g.addEventListener("click", onClick);
-    }
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
@@ -1001,13 +891,6 @@ export function CommunityNodes() {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      for (const g of gutters) {
-        g.removeEventListener("pointermove", onMove);
-        g.removeEventListener("pointerenter", onMove);
-        g.removeEventListener("pointerleave", onLeave);
-        g.removeEventListener("pointercancel", onLeave);
-        g.removeEventListener("click", onClick);
-      }
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       docObserver.disconnect();
@@ -1018,21 +901,8 @@ export function CommunityNodes() {
     <>
       <canvas
         ref={canvasRef}
+        data-magnifiable
         className="block fixed inset-0 z-0 pointer-events-none"
-      />
-      <div
-        ref={leftGutterRef}
-        className="fixed top-0 bottom-0 left-0 z-[1] cursor-none"
-        style={{
-          width: `calc((100vw - ${READING_COLUMN_PX}px) / 2)`,
-        }}
-      />
-      <div
-        ref={rightGutterRef}
-        className="fixed top-0 bottom-0 right-0 z-[1] cursor-none"
-        style={{
-          width: `calc((100vw - ${READING_COLUMN_PX}px) / 2)`,
-        }}
       />
     </>
   );
