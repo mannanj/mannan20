@@ -163,6 +163,7 @@ function HawaiiPopout() {
 }
 
 const TIMELINE_NATURAL_OFFSET = 33;
+const TIMELINE_INITIAL_DROP = 30;
 
 export function SeekingCommunityBody() {
   const [activeEra, setActiveEra] = useState<string | undefined>(undefined);
@@ -221,11 +222,6 @@ export function SeekingCommunityBody() {
   }, []);
 
   useEffect(() => {
-    let navHalfHeight = 0;
-    const measureNav = () => {
-      const nav = document.querySelector<HTMLElement>("[data-side-timeline]");
-      if (nav) navHalfHeight = nav.offsetHeight / 2;
-    };
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
@@ -234,28 +230,18 @@ export function SeekingCommunityBody() {
         setActiveEra(ERAS[ERAS.length - 1].id);
       }
       const scrollY = window.scrollY;
-      const captionDocY = window.innerHeight / 2 - (navHalfHeight - TIMELINE_NATURAL_OFFSET);
-      const naturalTop = window.innerHeight / 2 + TIMELINE_NATURAL_OFFSET;
-      const baseOffset = captionDocY - naturalTop + navHalfHeight;
-      const offset = Math.max(0, baseOffset - scrollY);
+      const offset = Math.max(
+        -TIMELINE_NATURAL_OFFSET,
+        TIMELINE_INITIAL_DROP - scrollY,
+      );
       setTimelineOffset(offset);
     };
-    measureNav();
     handleScroll();
-    const raf = requestAnimationFrame(() => {
-      measureNav();
-      handleScroll();
-    });
     window.addEventListener("scroll", handleScroll, { passive: true });
-    const onResize = () => {
-      measureNav();
-      handleScroll();
-    };
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", handleScroll);
     return () => {
-      cancelAnimationFrame(raf);
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", handleScroll);
     };
   }, []);
 

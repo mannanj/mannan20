@@ -301,7 +301,6 @@ export function CommunityNodes() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let viewportW = window.innerWidth;
     let viewportH = window.innerHeight;
-    const width = window.innerWidth;
     const measureHeight = () =>
       Math.max(
         document.documentElement.scrollHeight,
@@ -309,7 +308,8 @@ export function CommunityNodes() {
         window.innerHeight,
       );
     const WORLD_PAD = 2000;
-    const height = measureHeight() + WORLD_PAD;
+    let worldWidth = window.innerWidth;
+    let worldHeight = measureHeight() + WORLD_PAD;
 
     canvas.width = viewportW * dpr;
     canvas.height = viewportH * dpr;
@@ -317,24 +317,8 @@ export function CommunityNodes() {
     canvas.style.height = `${viewportH}px`;
     ctx.scale(dpr, dpr);
 
-    const nodes = generateTreeNodes(width, height);
-    const edges = generateTreeEdges(nodes);
-
-    const bandCount = Math.max(1, Math.ceil(height / BAND_HEIGHT));
-    const nodeBands: number[][] = Array.from({ length: bandCount }, () => []);
-    for (let i = 0; i < nodes.length; i++) {
-      const b = Math.min(bandCount - 1, Math.floor(nodes[i].y / BAND_HEIGHT));
-      nodeBands[b].push(i);
-    }
-    const edgeBands: number[][] = Array.from({ length: bandCount }, () => []);
-    for (let i = 0; i < edges.length; i++) {
-      const [a, b] = edges[i];
-      const minY = Math.min(nodes[a].y, nodes[b].y);
-      const maxY = Math.max(nodes[a].y, nodes[b].y);
-      const startBand = Math.min(bandCount - 1, Math.floor(minY / BAND_HEIGHT));
-      const endBand = Math.min(bandCount - 1, Math.floor(maxY / BAND_HEIGHT));
-      for (let bi = startBand; bi <= endBand; bi++) edgeBands[bi].push(i);
-    }
+    const nodes: Node[] = [];
+    const edges: [number, number][] = [];
     const dust: {
       x: number;
       y: number;
@@ -342,47 +326,108 @@ export function CommunityNodes() {
       alpha: number;
       color: [number, number, number];
     }[] = [];
+    const nodeBands: number[][] = [];
+    const edgeBands: number[][] = [];
+    const dustBands: number[][] = [];
+    let bandCount = 0;
+    const nodeHits: { time: number }[][] = [];
+
+    const ensureBands = (target: number) => {
+      while (bandCount < target) {
+        nodeBands.push([]);
+        edgeBands.push([]);
+        dustBands.push([]);
+        bandCount++;
+      }
+    };
+
     const pickDustColor = (): [number, number, number] =>
       Math.random() < 0.1
         ? NODE_COLORS[1 + Math.floor(Math.random() * 3)]
         : NODE_COLORS[0];
-    const dustTinyCount = Math.round(nodes.length * DUST_TINY_COUNT_MULTIPLIER);
-    for (let i = 0; i < dustTinyCount; i++) {
-      dust.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: DUST_TINY_RADIUS_MIN + Math.random() * (DUST_TINY_RADIUS_MAX - DUST_TINY_RADIUS_MIN),
-        alpha: 0.1 + Math.random() * 0.14,
-        color: pickDustColor(),
-      });
-    }
-    const dustCount = Math.round(nodes.length * DUST_COUNT_MULTIPLIER);
-    for (let i = 0; i < dustCount; i++) {
-      dust.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: DUST_RADIUS_MIN + Math.random() * (DUST_RADIUS_MAX - DUST_RADIUS_MIN),
-        alpha: 0.12 + Math.random() * 0.16,
-        color: pickDustColor(),
-      });
-    }
-    const dustMidCount = Math.round(nodes.length * DUST_MID_COUNT_MULTIPLIER);
-    for (let i = 0; i < dustMidCount; i++) {
-      dust.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: DUST_MID_RADIUS_MIN + Math.random() * (DUST_MID_RADIUS_MAX - DUST_MID_RADIUS_MIN),
-        alpha: 0.16 + Math.random() * 0.18,
-        color: pickDustColor(),
-      });
-    }
-    const dustBands: number[][] = Array.from({ length: bandCount }, () => []);
-    for (let i = 0; i < dust.length; i++) {
+
+    const indexNode = (i: number) => {
+      const b = Math.min(bandCount - 1, Math.floor(nodes[i].y / BAND_HEIGHT));
+      nodeBands[b].push(i);
+    };
+    const indexEdge = (i: number) => {
+      const [a, b] = edges[i];
+      const minY = Math.min(nodes[a].y, nodes[b].y);
+      const maxY = Math.max(nodes[a].y, nodes[b].y);
+      const startBand = Math.min(bandCount - 1, Math.floor(minY / BAND_HEIGHT));
+      const endBand = Math.min(bandCount - 1, Math.floor(maxY / BAND_HEIGHT));
+      for (let bi = startBand; bi <= endBand; bi++) edgeBands[bi].push(i);
+    };
+    const indexDust = (i: number) => {
       const b = Math.min(bandCount - 1, Math.floor(dust[i].y / BAND_HEIGHT));
       dustBands[b].push(i);
-    }
+    };
+
+    const extendRegion = (
+      xMin: number,
+      xMax: number,
+      yMin: number,
+      yMax: number,
+    ) => {
+      const regionW = xMax - xMin;
+      const regionH = yMax - yMin;
+      if (regionW <= 0 || regionH <= 0) return;
+      ensureBands(Math.ceil(yMax / BAND_HEIGHT));
+
+      const baseIdx = nodes.length;
+      const regionNodes = generateTreeNodes(regionW, regionH);
+      const regionEdges = generateTreeEdges(regionNodes);
+      for (let i = 0; i < regionNodes.length; i++) {
+        const n = regionNodes[i];
+        n.x += xMin;
+        n.y += yMin;
+        nodes.push(n);
+        nodeHits.push([]);
+        indexNode(nodes.length - 1);
+      }
+      for (let i = 0; i < regionEdges.length; i++) {
+        const [a, b] = regionEdges[i];
+        edges.push([a + baseIdx, b + baseIdx]);
+        indexEdge(edges.length - 1);
+      }
+
+      const tinyCount = Math.round(regionNodes.length * DUST_TINY_COUNT_MULTIPLIER);
+      for (let i = 0; i < tinyCount; i++) {
+        dust.push({
+          x: xMin + Math.random() * regionW,
+          y: yMin + Math.random() * regionH,
+          radius: DUST_TINY_RADIUS_MIN + Math.random() * (DUST_TINY_RADIUS_MAX - DUST_TINY_RADIUS_MIN),
+          alpha: 0.1 + Math.random() * 0.14,
+          color: pickDustColor(),
+        });
+        indexDust(dust.length - 1);
+      }
+      const midDustCount = Math.round(regionNodes.length * DUST_COUNT_MULTIPLIER);
+      for (let i = 0; i < midDustCount; i++) {
+        dust.push({
+          x: xMin + Math.random() * regionW,
+          y: yMin + Math.random() * regionH,
+          radius: DUST_RADIUS_MIN + Math.random() * (DUST_RADIUS_MAX - DUST_RADIUS_MIN),
+          alpha: 0.12 + Math.random() * 0.16,
+          color: pickDustColor(),
+        });
+        indexDust(dust.length - 1);
+      }
+      const largeDustCount = Math.round(regionNodes.length * DUST_MID_COUNT_MULTIPLIER);
+      for (let i = 0; i < largeDustCount; i++) {
+        dust.push({
+          x: xMin + Math.random() * regionW,
+          y: yMin + Math.random() * regionH,
+          radius: DUST_MID_RADIUS_MIN + Math.random() * (DUST_MID_RADIUS_MAX - DUST_MID_RADIUS_MIN),
+          alpha: 0.16 + Math.random() * 0.18,
+          color: pickDustColor(),
+        });
+        indexDust(dust.length - 1);
+      }
+    };
+
+    extendRegion(0, worldWidth, 0, worldHeight);
     const particles: Particle[] = [];
-    const nodeHits: { time: number }[][] = nodes.map(() => []);
     const pendingBounces: PendingBounce[] = [];
     let lastTime = 0;
     let nextSpawn = 3000;
@@ -460,15 +505,15 @@ export function CommunityNodes() {
       let sx = 0, sy = 0, angle = 0;
       const offset = 12;
       if (edge === 0) {
-        sx = Math.random() * width;
+        sx = Math.random() * worldWidth;
         sy = viewTop - offset;
         angle = Math.PI / 3 + Math.random() * (Math.PI / 3);
       } else if (edge === 1) {
-        sx = width + offset;
+        sx = worldWidth + offset;
         sy = viewTop + Math.random() * viewportH;
         angle = Math.PI - Math.PI / 6 + Math.random() * (Math.PI / 3);
       } else if (edge === 2) {
-        sx = Math.random() * width;
+        sx = Math.random() * worldWidth;
         sy = viewBottom + offset;
         angle = -Math.PI / 3 - Math.random() * (Math.PI / 3);
       } else {
@@ -913,7 +958,26 @@ export function CommunityNodes() {
       canvas.style.height = `${viewportH}px`;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
+      growWorld();
     };
+
+    const growWorld = () => {
+      const newW = window.innerWidth;
+      const newH = measureHeight();
+      if (newH > worldHeight - WORLD_PAD / 2) {
+        const target = newH + WORLD_PAD;
+        extendRegion(0, worldWidth, worldHeight, target);
+        worldHeight = target;
+      }
+      if (newW > worldWidth) {
+        extendRegion(worldWidth, newW, 0, worldHeight);
+        worldWidth = newW;
+      }
+    };
+
+    const docObserver = new ResizeObserver(() => growWorld());
+    docObserver.observe(document.documentElement);
+    if (document.body) docObserver.observe(document.body);
 
     const leftGutter = leftGutterRef.current;
     const rightGutter = rightGutterRef.current;
@@ -943,6 +1007,7 @@ export function CommunityNodes() {
       }
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
+      docObserver.disconnect();
     };
   }, []);
 
