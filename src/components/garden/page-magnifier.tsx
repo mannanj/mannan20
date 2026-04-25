@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-const LENS_RADIUS = 90;
-const LENS_ZOOM = 2.5;
+import {
+  MAGNIFIER_LENS_RADIUS,
+  MAGNIFIER_LENS_ZOOM,
+  MAGNIFIER_MAX_LEVEL,
+  magnifierState,
+} from "./magnifier-state";
 
 export function PageMagnifier() {
   const [enabled, setEnabled] = useState(false);
+  const [, forceTick] = useState(0);
   const lensRef = useRef<HTMLDivElement>(null);
   const cloneRef = useRef<HTMLDivElement>(null);
-  const cloneCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const clickCountRef = useRef(0);
   const rafRef = useRef(0);
+  const positionRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    magnifierState.enabled = enabled;
+    if (enabled) magnifierState.level = 0;
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled) return;
-
-    clickCountRef.current = 0;
-    const lens = lensRef.current;
     const cloneRoot = cloneRef.current;
-    if (!lens || !cloneRoot) return;
+    if (!cloneRoot) return;
 
     const buildClone = () => {
       cloneRoot.innerHTML = "";
@@ -30,53 +33,65 @@ export function PageMagnifier() {
         .querySelectorAll("[data-page-magnifier-root]")
         .forEach((el) => el.remove());
       cloneRoot.appendChild(bodyClone);
-
-      const sourceCanvas = document.querySelector<HTMLCanvasElement>(
-        "canvas[data-magnifiable]",
-      );
-      const cloneCanvas =
-        bodyClone.querySelector<HTMLCanvasElement>("canvas[data-magnifiable]");
-      sourceCanvasRef.current = sourceCanvas;
-      cloneCanvasRef.current = cloneCanvas;
-      if (sourceCanvas && cloneCanvas) {
-        cloneCanvas.width = sourceCanvas.width;
-        cloneCanvas.height = sourceCanvas.height;
-      }
     };
-
     buildClone();
 
-    const tick = () => {
-      const { x, y } = mouseRef.current;
-      lens.style.left = `${x - LENS_RADIUS}px`;
-      lens.style.top = `${y - LENS_RADIUS}px`;
-      cloneRoot.style.transform = `translate(${
-        LENS_RADIUS - x * LENS_ZOOM
-      }px, ${LENS_RADIUS - y * LENS_ZOOM}px) scale(${LENS_ZOOM})`;
-
-      const src = sourceCanvasRef.current;
-      const dst = cloneCanvasRef.current;
+    const copyCanvas = () => {
+      const src =
+        document.querySelector<HTMLCanvasElement>("canvas[data-magnifiable]");
+      const dst = cloneRoot.querySelector<HTMLCanvasElement>(
+        "canvas[data-magnifiable]",
+      );
       if (src && dst) {
+        if (dst.width !== src.width || dst.height !== src.height) {
+          dst.width = src.width;
+          dst.height = src.height;
+        }
         const dctx = dst.getContext("2d");
         if (dctx) {
           dctx.clearRect(0, 0, dst.width, dst.height);
           dctx.drawImage(src, 0, 0);
         }
       }
+    };
 
+    const tick = () => {
+      const lens = lensRef.current;
+      const clone = cloneRef.current;
+      if (lens && clone) {
+        const { x, y } = positionRef.current;
+        const level = magnifierState.level;
+        const scale = Math.pow(2, level);
+        const r = MAGNIFIER_LENS_RADIUS * scale;
+        const zoom = MAGNIFIER_LENS_ZOOM * scale;
+
+        lens.style.left = `${x - r}px`;
+        lens.style.top = `${y - r}px`;
+        lens.style.width = `${r * 2}px`;
+        lens.style.height = `${r * 2}px`;
+        clone.style.transform = `translate(${r - x * zoom}px, ${r - y * zoom}px) scale(${zoom})`;
+      }
+      copyCanvas();
+      // also nudge re-render so + icon repositions
+      forceTick((t) => (t + 1) & 0xffff);
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
 
     const onMove = (e: MouseEvent) => {
-      mouseRef.current.x = e.clientX;
-      mouseRef.current.y = e.clientY;
+      positionRef.current.x = e.clientX;
+      positionRef.current.y = e.clientY;
+      magnifierState.x = e.clientX;
+      magnifierState.y = e.clientY;
     };
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest("[data-magnifier-toggle]")) return;
-      clickCountRef.current += 1;
-      if (clickCountRef.current >= 2) setEnabled(false);
+      if (magnifierState.level >= MAGNIFIER_MAX_LEVEL) {
+        setEnabled(false);
+        return;
+      }
+      magnifierState.level += 1;
     };
     const onScroll = () => buildClone();
     const onResize = () => buildClone();
@@ -96,27 +111,59 @@ export function PageMagnifier() {
     };
   }, [enabled]);
 
+  const handleToggle = () => {
+    setEnabled((prev) => {
+      if (prev) return false;
+      magnifierState.level = 0;
+      return true;
+    });
+  };
+
+  // Compute + icon position based on current state (re-renders via forceTick)
+  const level = magnifierState.level;
+  const scale = Math.pow(2, level);
+  const r = MAGNIFIER_LENS_RADIUS * scale;
+  const iconR = 3 + level * 1.2;
+  const iconOffset = r + iconR + 4;
+  const iconAngle = -Math.PI / 4;
+  const { x: mx, y: my } = positionRef.current;
+  const iconX = mx + Math.cos(iconAngle) * iconOffset;
+  const iconY = my + Math.sin(iconAngle) * iconOffset;
+  const isExpandable = level < MAGNIFIER_MAX_LEVEL;
+
   return (
     <div data-page-magnifier-root>
+      {enabled && (
+        <style jsx global>{`
+          body,
+          body * {
+            cursor: none !important;
+          }
+          [data-magnifier-toggle],
+          [data-magnifier-toggle] * {
+            cursor: pointer !important;
+          }
+        `}</style>
+      )}
       <button
         type="button"
         data-magnifier-toggle
-        onClick={() => setEnabled((prev) => !prev)}
-        className={`fixed right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border backdrop-blur z-[10001] flex items-center justify-center transition-colors duration-200 ${
+        onClick={handleToggle}
+        className={`fixed right-6 top-[28%] -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur z-[10001] flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-[0_6px_18px_rgba(255,255,255,0.18)] ${
           enabled
-            ? "border-white bg-white/15 text-white"
-            : "border-white/40 bg-black/50 text-white/80 hover:text-white hover:bg-black/70"
+            ? "bg-white/15 text-white"
+            : "bg-black/70 text-white/80 hover:text-white hover:bg-black/85"
         }`}
         aria-label="Toggle magnifier"
         aria-pressed={enabled}
       >
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -125,35 +172,60 @@ export function PageMagnifier() {
         </svg>
       </button>
       {enabled && (
-        <div
-          ref={lensRef}
-          className="fixed pointer-events-none rounded-full border-2 border-white shadow-2xl overflow-hidden z-[10000]"
-          style={{
-            width: LENS_RADIUS * 2,
-            height: LENS_RADIUS * 2,
-            cursor: "none",
-          }}
-        >
+        <>
           <div
-            ref={cloneRef}
+            ref={lensRef}
+            className="fixed pointer-events-none rounded-full overflow-hidden z-[10000]"
             style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              width: "100vw",
-              height: "100vh",
-              transformOrigin: "0 0",
-              pointerEvents: "none",
+              boxShadow:
+                "0 0 0 1px rgba(255,255,255,1), 0 0 0 3px rgba(255,255,255,0.35), 0 0 18px 4px rgba(255,255,255,0.04)",
             }}
-          />
-        </div>
-      )}
-      {enabled && (
-        <style jsx global>{`
-          body {
-            cursor: none !important;
-          }
-        `}</style>
+          >
+            <div
+              ref={cloneRef}
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                width: "100vw",
+                height: "100vh",
+                transformOrigin: "0 0",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+          <svg
+            className="fixed pointer-events-none z-[10002]"
+            style={{
+              left: iconX - iconR - 2,
+              top: iconY - iconR - 2,
+              width: (iconR + 2) * 2,
+              height: (iconR + 2) * 2,
+            }}
+            viewBox={`${-iconR - 2} ${-iconR - 2} ${(iconR + 2) * 2} ${(iconR + 2) * 2}`}
+          >
+            <line
+              x1={-iconR * 0.7}
+              y1={0}
+              x2={iconR * 0.7}
+              y2={0}
+              stroke="rgba(255,255,255,0.7)"
+              strokeWidth={1}
+              strokeLinecap="round"
+            />
+            {isExpandable && (
+              <line
+                x1={0}
+                y1={-iconR * 0.7}
+                x2={0}
+                y2={iconR * 0.7}
+                stroke="rgba(255,255,255,0.7)"
+                strokeWidth={1}
+                strokeLinecap="round"
+              />
+            )}
+          </svg>
+        </>
       )}
     </div>
   );
