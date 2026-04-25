@@ -149,10 +149,10 @@ export function PageMagnifier() {
         type="button"
         data-magnifier-toggle
         onClick={handleToggle}
-        className={`fixed right-6 top-[28%] -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur z-[10001] flex items-center justify-center transition-colors duration-200 cursor-pointer shadow-[0_6px_18px_rgba(255,255,255,0.18)] ${
+        className={`fixed right-6 top-[28%] -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur-md border border-white/10 z-[10001] flex items-center justify-center transition-colors duration-200 cursor-pointer ${
           enabled
-            ? "bg-white/15 text-white"
-            : "bg-black/70 text-white/80 hover:text-white hover:bg-black/85"
+            ? "bg-white/20 text-white border-white/25"
+            : "bg-black/40 text-white/80 hover:text-white hover:bg-black/55 hover:border-white/20"
         }`}
         aria-label="Toggle magnifier"
         aria-pressed={enabled}

@@ -79,7 +79,7 @@ function Divider() {
   return <div className="w-1/3 h-px bg-white/[0.12]" />;
 }
 
-function HawaiiPopout() {
+function HawaiiSection() {
   const [open, setOpen] = useState(false);
   const [anchorPos, setAnchorPos] = useState<{ x: number; y: number }>({
     x: 0,
@@ -92,32 +92,27 @@ function HawaiiPopout() {
   }, []);
 
   return (
-    <>
-      <div className="mt-2 mb-2">
+    <div className="space-y-4">
+      <p className="text-white/80">
+        There was a dream community I&apos;d had my eye on. I was accepted and
+        hurriedly joined&mdash; a community based at the southern tip of the Big
+        Island of Hawaii.
+      </p>
+      <p>
         <button
           type="button"
           onClick={handleOpen}
-          className="text-sm text-white/70 hover:text-white transition-colors duration-200 cursor-pointer flex items-center gap-2"
+          className="underline underline-offset-4 decoration-white/40 hover:decoration-white/70 text-white/70 hover:text-white transition-colors duration-200 cursor-pointer"
         >
-          <span className="underline underline-offset-4 decoration-white/40 hover:decoration-white/70">
-            More
-          </span>
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            <polyline points="15 3 21 3 21 9" />
-            <line x1="10" y1="14" x2="21" y2="3" />
-          </svg>
-        </button>
-      </div>
+          Time there was enlightening
+        </button>{" "}
+        and moved at its own pace. I enjoyed learning from those on the land
+        and leaning into my dream of building community. I learned a lot about
+        myself: I carried a flaw of being overly trusting and naive. As I
+        practiced discernment, I sharpened my rules for friend making and
+        keeping community, and learned better to articulate what I need when I
+        join the next one.
+      </p>
 
       <DraggablePopout
         open={open}
@@ -145,7 +140,7 @@ function HawaiiPopout() {
           </p>
         </div>
       </DraggablePopout>
-    </>
+    </div>
   );
 }
 
@@ -272,11 +267,6 @@ export function SeekingCommunityBody() {
         <Divider />
 
         <section id="era-values" className="mt-8">
-          <div className="mb-3">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-white/25">
-              Guiding Values
-            </span>
-          </div>
           <div className="space-y-6">
             <div>
               <span className="text-white/90 text-sm font-medium">Love</span>
@@ -444,22 +434,7 @@ export function SeekingCommunityBody() {
         <Divider />
 
         <section id="era-hawaii">
-          <div className="space-y-4">
-            <p className="text-white/80">
-              There was a dream community I&apos;d had my eye on. I was accepted
-              and hurriedly joined&mdash; a community based at the southern tip
-              of the Big Island of Hawaii.
-            </p>
-            <p>
-              Time there was enlightening and moved at its own pace. I enjoyed
-              learning from those on the land and leaning into my dream of
-              building community. I learned a lot about myself: I carried a flaw
-              of being overly trusting and naive. As I practiced discernment, I
-              sharpened my rules for friend making and keeping community, and
-              learned better to articulate what I need when I join the next one.
-            </p>
-            <HawaiiPopout />
-          </div>
+          <HawaiiSection />
         </section>
 
         <Divider />
