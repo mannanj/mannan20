@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GARDEN_ARTICLES } from '@/lib/garden-articles';
 import { CommunityNodesPreview } from '@/components/garden/community-nodes-preview';
-import { HealthPocketCard } from '@/components/garden/health-pocket-card';
+import { HealthHeroPreview } from '@/components/garden/health-hero-preview';
+// import { HealthPocketCard } from '@/components/garden/health-pocket-card';
+// import { HealthInkEffect } from '@/components/garden/health-ink-effect';
 
 export const metadata: Metadata = {
   title: 'Garden',
@@ -43,7 +45,7 @@ function PlantThree() {
 export default function GardenPage() {
   return (
     <div className="relative min-h-screen bg-[#0b0b0b] text-white">
-      <HealthPocketCard />
+      {/* <HealthPocketCard /> */}
       <div className="absolute top-24 right-8 opacity-[0.12] pointer-events-none">
         <PlantOne />
       </div>
@@ -66,19 +68,25 @@ export default function GardenPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {GARDEN_ARTICLES.map((article) => {
-            const hasPreview = article.href === '/garden/article/seeking-community';
+            const preview =
+              article.href === '/garden/article/seeking-community' ? (
+                <CommunityNodesPreview />
+              ) : article.href === '/garden/article/health-longevity' ? (
+                <HealthHeroPreview />
+              ) : null;
             return (
               <Link
                 key={article.href}
                 href={article.href}
-                className="group flex h-28 rounded-lg border border-white/10 hover:scale-[1.05] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200"
+                className="group relative flex h-28 rounded-lg border border-white/10 hover:scale-[1.05] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200"
               >
-                {hasPreview && (
-                  <div className="w-1/3 shrink-0 self-stretch py-3 pl-3">
-                    <CommunityNodesPreview />
+                {/* {article.href === '/garden/article/health-longevity' && <HealthInkEffect />} */}
+                {preview && (
+                  <div className="relative z-10 w-1/3 shrink-0 self-stretch py-3 pl-3">
+                    {preview}
                   </div>
                 )}
-                <div className="flex flex-col px-3 py-3 flex-1 min-w-0">
+                <div className="relative z-10 flex flex-col px-3 py-3 flex-1 min-w-0">
                   <span className="text-sm font-medium text-white group-hover:text-red-500 transition-colors duration-200 truncate">
                     {article.title}
                   </span>

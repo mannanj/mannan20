@@ -37,11 +37,8 @@ export default function HealthLongevityArticle() {
     >
       <ArticleHeader align="center">
         <ArticleCaption className="text-center mx-auto">
-          I recently had this insight, after 10 years of obsession optimizing
-          my health and trying everything under the sun. And in a culture that
-          reduces everything to science - insisting truth must be confirmed by
-          consensus, reduced to a repeatable process, and stripped of personal
-          experience - that makes health, to me, more art than science.
+          I recently had this insight, after 10 years of obsession optimizing my
+          health.
         </ArticleCaption>
         <ArticleTitle variant="editorial">Health is an Artform</ArticleTitle>
         <ArticleMeta

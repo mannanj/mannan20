@@ -3,6 +3,8 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { GARDEN_ARTICLES } from "@/lib/garden-articles";
+import { CommunityNodesPreview } from "./community-nodes-preview";
+import { HealthHeroPreview } from "./health-hero-preview";
 
 const SCROLL_AMOUNT = 280;
 
@@ -91,18 +93,33 @@ export function AdditionalReading({
           onScroll={updateArrows}
           className="flex gap-4 overflow-x-auto scrollbar-hide"
         >
-          {articles.map((article) => (
-            <Link
-              key={article.href}
-              href={article.href}
-              className="group block rounded-lg border border-white/10 p-4 hover:border-white/20 hover:bg-white/[0.03] hover:scale-[1.05] transition-all duration-200 max-w-xs flex-shrink-0"
-            >
-              <h3 className="text-sm font-medium text-white group-hover:text-red-500 transition-colors duration-200 mb-1">
-                {article.title}
-              </h3>
-              <p className="text-xs text-white/40">{article.description}</p>
-            </Link>
-          ))}
+          {articles.map((article) => {
+            const preview =
+              article.href === "/garden/article/seeking-community" ? (
+                <CommunityNodesPreview />
+              ) : article.href === "/garden/article/health-longevity" ? (
+                <HealthHeroPreview />
+              ) : null;
+            return (
+              <Link
+                key={article.href}
+                href={article.href}
+                className="group flex gap-3 items-stretch rounded-lg border border-white/10 p-3 hover:border-white/20 hover:bg-white/[0.03] hover:scale-[1.05] transition-all duration-200 max-w-sm flex-shrink-0"
+              >
+                {preview && (
+                  <div className="w-20 shrink-0 self-stretch">{preview}</div>
+                )}
+                <div className="flex flex-col justify-center min-w-0">
+                  <h3 className="text-sm font-medium text-white group-hover:text-red-500 transition-colors duration-200 mb-1">
+                    {article.title}
+                  </h3>
+                  <p className="text-xs text-white/40 line-clamp-3">
+                    {article.description}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         {canScrollRight && (
