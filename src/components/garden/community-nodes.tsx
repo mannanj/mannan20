@@ -643,11 +643,6 @@ export function CommunityNodes() {
 
             if (p.passthroughRemaining > 0) {
               p.passthroughRemaining--;
-            } else {
-              p.hitFired = true;
-              p.stoppedAt = timestamp;
-              p.x = node.x;
-              p.y = node.y;
             }
           } else if (p.travelMs > PARTICLE_LIFE_MS) {
             particles.splice(i, 1);
