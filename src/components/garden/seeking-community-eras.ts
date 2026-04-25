@@ -1,0 +1,60 @@
+import type { TimelineEra } from "./timeline";
+
+export const ERAS: TimelineEra[] = [
+  {
+    id: "era-cosmos",
+    year: "2014",
+    title: "The Spark",
+    side: "left",
+    type: "dated",
+    preview: "Cosmos lit an insatiable curiosity",
+  },
+  {
+    id: "era-values",
+    year: "",
+    title: "Guiding Values",
+    side: "left",
+    type: "thematic",
+    preview: "",
+  },
+  {
+    id: "era-letting-go",
+    year: "",
+    title: "Letting Go",
+    side: "left",
+    type: "thematic",
+    preview: "",
+  },
+  {
+    id: "era-la",
+    year: "2021",
+    title: "LA & Initiation",
+    side: "left",
+    type: "dated",
+    preview: "Jungian shadow work and new community",
+  },
+  {
+    id: "era-north",
+    year: "2022",
+    title: "Moving North",
+    side: "right",
+    type: "dated",
+    preview: "Ecovillages, car camping, the woods",
+  },
+  {
+    id: "era-hawaii",
+    year: "2023",
+    title: "Hawaii",
+    side: "left",
+    type: "dated",
+    preview: "A dream community, a hard lesson",
+  },
+  {
+    id: "era-return",
+    year: "2026",
+    title: "The Return",
+    side: "right",
+    type: "dated",
+    preview: "Coming home with clarity",
+  },
+];

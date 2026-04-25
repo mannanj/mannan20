@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { Timeline } from "./timeline";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
 import { ArticleBody } from "../article-body";
@@ -15,65 +14,6 @@ const CommunityConstellation = dynamic(
     loading: () => null,
   },
 );
-
-const ERAS = [
-  {
-    id: "era-cosmos",
-    year: "2014",
-    title: "The Spark",
-    side: "left" as const,
-    type: "dated" as const,
-    preview: "Cosmos lit an insatiable curiosity",
-  },
-  {
-    id: "era-values",
-    year: "",
-    title: "Guiding Values",
-    side: "left" as const,
-    type: "thematic" as const,
-    preview: "",
-  },
-  {
-    id: "era-letting-go",
-    year: "",
-    title: "Letting Go",
-    side: "left" as const,
-    type: "thematic" as const,
-    preview: "",
-  },
-  {
-    id: "era-la",
-    year: "2021",
-    title: "LA & Initiation",
-    side: "left" as const,
-    type: "dated" as const,
-    preview: "Jungian shadow work and new community",
-  },
-  {
-    id: "era-north",
-    year: "2022",
-    title: "Moving North",
-    side: "right" as const,
-    type: "dated" as const,
-    preview: "Ecovillages, car camping, the woods",
-  },
-  {
-    id: "era-hawaii",
-    year: "2023",
-    title: "Hawaii",
-    side: "left" as const,
-    type: "dated" as const,
-    preview: "A dream community, a hard lesson",
-  },
-  {
-    id: "era-return",
-    year: "2026",
-    title: "The Return",
-    side: "right" as const,
-    type: "dated" as const,
-    preview: "Coming home with clarity",
-  },
-];
 
 function Divider() {
   return <div className="w-1/3 h-px bg-white/[0.12]" />;
@@ -144,101 +84,9 @@ function HawaiiSection() {
   );
 }
 
-const TIMELINE_NATURAL_OFFSET = 33;
-const TIMELINE_INITIAL_DROP = 30;
-
 export function SeekingCommunityBody() {
-  const [activeEra, setActiveEra] = useState<string | undefined>(undefined);
-  const [showSideTimeline, setShowSideTimeline] = useState(true);
-  const [timelineOffset, setTimelineOffset] = useState(0);
-  const hasScrolled = useRef(false);
-
-  useEffect(() => {
-    const markScrolled = () => {
-      hasScrolled.current = true;
-    };
-    window.addEventListener("scroll", markScrolled, {
-      once: true,
-      passive: true,
-    });
-    return () => window.removeEventListener("scroll", markScrolled);
-  }, []);
-
-  useEffect(() => {
-    const entryMap = new Map<string, boolean>();
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!hasScrolled.current) return;
-        for (const entry of entries) {
-          entryMap.set(entry.target.id, entry.isIntersecting);
-        }
-
-        let current: string | null = null;
-        for (const era of ERAS) {
-          if (entryMap.get(era.id)) current = era.id;
-        }
-        if (current) setActiveEra(current);
-      },
-      { rootMargin: "-15% 0px -35% 0px", threshold: 0 },
-    );
-
-    for (const era of ERAS) {
-      const el = document.getElementById(era.id);
-      if (el) observer.observe(el);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-      const el = document.getElementById(hash);
-      if (el) {
-        const y = el.getBoundingClientRect().top + window.scrollY - 82;
-        window.scrollTo({ top: y, behavior: "smooth" });
-        setActiveEra(hash);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + window.scrollY >=
-        document.body.scrollHeight - 200
-      ) {
-        setActiveEra(ERAS[ERAS.length - 1].id);
-      }
-      const scrollY = window.scrollY;
-      const offset = Math.max(
-        -TIMELINE_NATURAL_OFFSET,
-        TIMELINE_INITIAL_DROP - scrollY,
-      );
-      setTimelineOffset(offset);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, []);
-
   return (
     <>
-      <Timeline
-        eras={ERAS}
-        view="linear"
-        size="md"
-        activeEra={activeEra}
-        visible={showSideTimeline}
-        previewMaxWidth={150}
-        topOffset={timelineOffset}
-      />
-
       <ArticleBody spacing="comfortable">
         <section id="era-cosmos">
           <div className="space-y-4">

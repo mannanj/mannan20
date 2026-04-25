@@ -18,6 +18,7 @@ interface TimelineProps {
   hideThematic?: boolean;
   activeEra?: string;
   visible?: boolean;
+  hideMobileBar?: boolean;
   heroRef?: RefObject<HTMLDivElement | null>;
   previewMaxWidth?: number;
   topOffset?: number;
@@ -46,6 +47,7 @@ export function Timeline({
   hideThematic = false,
   activeEra,
   visible = true,
+  hideMobileBar = false,
   heroRef,
   previewMaxWidth,
   topOffset = 0,
@@ -352,7 +354,7 @@ export function Timeline({
 
       <div
         className={`lg:hidden fixed top-0 left-0 right-0 z-20 transition-all duration-300 ${
-          visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
+          visible && !hideMobileBar ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
         }`}
       >
         <div className="bg-[#0b0b0b]/90 backdrop-blur-sm border-b border-white/[0.06] px-6 py-2.5">

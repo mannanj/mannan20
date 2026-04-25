@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SeekingCommunityBody } from "@/components/garden/seeking-community-body";
+import { SeekingCommunitySideRail } from "@/components/garden/seeking-community-side-rail";
 import { CommunityNodes } from "@/components/garden/community-nodes";
 import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
@@ -33,6 +34,7 @@ export default function SeekingCommunityArticle() {
     <ArticleLayout
       graphic={<CommunityNodes />}
       graphicLayout="fullpage"
+      sideRail={<SeekingCommunitySideRail />}
     >
       <ArticleHeader align="left">
         <ArticleCaption>
