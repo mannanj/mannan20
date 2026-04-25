@@ -47,6 +47,9 @@ export function PageMagnifier() {
           dst.width = src.width;
           dst.height = src.height;
         }
+        dst.style.position = "absolute";
+        dst.style.top = `${window.scrollY}px`;
+        dst.style.left = "0px";
         const dctx = dst.getContext("2d");
         if (dctx) {
           dctx.clearRect(0, 0, dst.width, dst.height);
