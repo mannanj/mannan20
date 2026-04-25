@@ -125,11 +125,6 @@ function HawaiiPopout() {
         anchorPosition={anchorPos}
         width={420}
         minimizable
-        header={
-          <h3 className="text-sm font-medium text-white mb-4">
-            Hawaii &mdash; The Full Story
-          </h3>
-        }
       >
         <div className="space-y-4 text-sm text-white/70 leading-relaxed">
           <p>
