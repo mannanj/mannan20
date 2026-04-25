@@ -249,6 +249,7 @@ export function Timeline({
   return (
     <>
       <nav
+        data-side-timeline
         className={`hidden lg:flex fixed left-[max(1rem,calc(50vw-400px-140px))] -translate-y-1/2 flex-col z-10 transition-opacity duration-500 ${
           visible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}

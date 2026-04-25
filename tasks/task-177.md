@@ -1,0 +1,11 @@
+### Task 177: Full-page space canvas on /seeking-community
+- [x] Add `graphicLayout="fullpage"` mode to ArticleLayout (canvas as fixed sibling, content `relative z-10`)
+- [x] Refactor CommunityNodes to viewport-sized canvas with full-document world, scroll-offset rendering, and band-based viewport culling for perf
+- [x] Make stars pass upward as you scroll (canvas fixed; world generated once)
+- [x] Move lens magnifier interaction to left/right gutter divs (not over the reading column)
+- [x] Add transparent header on /garden/article/seeking-community via pathname check
+- [x] Wrap article body in solid bg so stars don't bleed through text
+- [x] Pad world height +2000px so post-mount layout growth doesn't leave a black bottom
+- [x] Align side timeline first item with article caption; small drop at top of page, timeline rises to vertical center on scroll
+- [x] Validate alignment at 1440x900 and 1280x720 via Puppeteer
+- Location: `src/components/garden/community-nodes.tsx`, `src/components/article-layout.tsx`, `src/app/garden/article/seeking-community/page.tsx`, `src/components/garden/seeking-community-body.tsx`, `src/components/garden/timeline.tsx`, `src/components/header.tsx`

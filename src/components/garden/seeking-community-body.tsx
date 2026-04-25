@@ -162,12 +162,12 @@ function HawaiiPopout() {
   );
 }
 
-const TIMELINE_DROP = 100;
+const TIMELINE_NATURAL_OFFSET = 33;
 
 export function SeekingCommunityBody() {
   const [activeEra, setActiveEra] = useState<string | undefined>(undefined);
   const [showSideTimeline, setShowSideTimeline] = useState(true);
-  const [timelineOffset, setTimelineOffset] = useState(TIMELINE_DROP);
+  const [timelineOffset, setTimelineOffset] = useState(0);
   const hasScrolled = useRef(false);
 
   useEffect(() => {
@@ -221,6 +221,11 @@ export function SeekingCommunityBody() {
   }, []);
 
   useEffect(() => {
+    let navHalfHeight = 0;
+    const measureNav = () => {
+      const nav = document.querySelector<HTMLElement>("[data-side-timeline]");
+      if (nav) navHalfHeight = nav.offsetHeight / 2;
+    };
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
@@ -229,11 +234,29 @@ export function SeekingCommunityBody() {
         setActiveEra(ERAS[ERAS.length - 1].id);
       }
       const scrollY = window.scrollY;
-      const offset = Math.max(0, TIMELINE_DROP - scrollY);
+      const captionDocY = window.innerHeight / 2 - (navHalfHeight - TIMELINE_NATURAL_OFFSET);
+      const naturalTop = window.innerHeight / 2 + TIMELINE_NATURAL_OFFSET;
+      const baseOffset = captionDocY - naturalTop + navHalfHeight;
+      const offset = Math.max(0, baseOffset - scrollY);
       setTimelineOffset(offset);
     };
+    measureNav();
+    handleScroll();
+    const raf = requestAnimationFrame(() => {
+      measureNav();
+      handleScroll();
+    });
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onResize = () => {
+      measureNav();
+      handleScroll();
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   return (

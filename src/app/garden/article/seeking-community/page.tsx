@@ -31,12 +31,8 @@ export const metadata: Metadata = {
 export default function SeekingCommunityArticle() {
   return (
     <ArticleLayout
-      graphic={
-        <div className="relative w-full h-[349px] -mt-[169px] mb-4">
-          <CommunityNodes />
-        </div>
-      }
-      graphicLayout="inline"
+      graphic={<CommunityNodes />}
+      graphicLayout="fullpage"
     >
       <ArticleHeader align="left">
         <ArticleCaption>

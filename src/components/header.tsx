@@ -76,6 +76,7 @@ export function Header() {
   const { state } = useApp();
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isTransparent = pathname === "/garden/article/seeking-community";
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
@@ -530,7 +531,11 @@ export function Header() {
   );
 
   return (
-    <div className="flex justify-between items-center fixed top-0 w-screen bg-[#0b0b0b] border-b border-white h-[66px] z-[99] px-4">
+    <div
+      className={`flex justify-between items-center fixed top-0 w-screen border-b border-white h-[66px] z-[99] px-4 ${
+        isTransparent ? "" : "bg-[#0b0b0b]"
+      }`}
+    >
       <div
         ref={containerRef}
         data-testid="header-controls"

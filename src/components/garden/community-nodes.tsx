@@ -276,9 +276,14 @@ function generateTreeEdges(nodes: Node[]): [number, number][] {
   return edges;
 }
 
+const READING_COLUMN_PX = 672;
+const VIEWPORT_CULL_MARGIN = 64;
+const BAND_HEIGHT = 256;
+
 export function CommunityNodes() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const leftGutterRef = useRef<HTMLDivElement>(null);
+  const rightGutterRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
     x: 0,
@@ -288,24 +293,48 @@ export function CommunityNodes() {
   const levelRef = useRef<number>(0);
 
   useEffect(() => {
-    const container = containerRef.current;
     const canvas = canvasRef.current;
-    if (!container || !canvas) return;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    let viewportW = window.innerWidth;
+    let viewportH = window.innerHeight;
+    const width = window.innerWidth;
+    const measureHeight = () =>
+      Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+        window.innerHeight,
+      );
+    const WORLD_PAD = 2000;
+    const height = measureHeight() + WORLD_PAD;
 
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    canvas.width = viewportW * dpr;
+    canvas.height = viewportH * dpr;
+    canvas.style.width = `${viewportW}px`;
+    canvas.style.height = `${viewportH}px`;
     ctx.scale(dpr, dpr);
 
     const nodes = generateTreeNodes(width, height);
     const edges = generateTreeEdges(nodes);
+
+    const bandCount = Math.max(1, Math.ceil(height / BAND_HEIGHT));
+    const nodeBands: number[][] = Array.from({ length: bandCount }, () => []);
+    for (let i = 0; i < nodes.length; i++) {
+      const b = Math.min(bandCount - 1, Math.floor(nodes[i].y / BAND_HEIGHT));
+      nodeBands[b].push(i);
+    }
+    const edgeBands: number[][] = Array.from({ length: bandCount }, () => []);
+    for (let i = 0; i < edges.length; i++) {
+      const [a, b] = edges[i];
+      const minY = Math.min(nodes[a].y, nodes[b].y);
+      const maxY = Math.max(nodes[a].y, nodes[b].y);
+      const startBand = Math.min(bandCount - 1, Math.floor(minY / BAND_HEIGHT));
+      const endBand = Math.min(bandCount - 1, Math.floor(maxY / BAND_HEIGHT));
+      for (let bi = startBand; bi <= endBand; bi++) edgeBands[bi].push(i);
+    }
     const dust: {
       x: number;
       y: number;
@@ -346,6 +375,11 @@ export function CommunityNodes() {
         alpha: 0.16 + Math.random() * 0.18,
         color: pickDustColor(),
       });
+    }
+    const dustBands: number[][] = Array.from({ length: bandCount }, () => []);
+    for (let i = 0; i < dust.length; i++) {
+      const b = Math.min(bandCount - 1, Math.floor(dust[i].y / BAND_HEIGHT));
+      dustBands[b].push(i);
     }
     const particles: Particle[] = [];
     const nodeHits: { time: number }[][] = nodes.map(() => []);
@@ -389,8 +423,12 @@ export function CommunityNodes() {
       });
     };
 
+    let scrollY = window.scrollY;
+
     const spawnExternalParticle = (timestamp: number) => {
       const edge = Math.floor(Math.random() * 4);
+      const viewTop = scrollY;
+      const viewBottom = scrollY + viewportH;
       const isComet = Math.random() < COMET_CHANCE;
       const speed = PARTICLE_SPEED_MIN +
         Math.random() * (PARTICLE_SPEED_MAX - PARTICLE_SPEED_MIN);
@@ -423,19 +461,19 @@ export function CommunityNodes() {
       const offset = 12;
       if (edge === 0) {
         sx = Math.random() * width;
-        sy = -offset;
+        sy = viewTop - offset;
         angle = Math.PI / 3 + Math.random() * (Math.PI / 3);
       } else if (edge === 1) {
         sx = width + offset;
-        sy = Math.random() * height;
+        sy = viewTop + Math.random() * viewportH;
         angle = Math.PI - Math.PI / 6 + Math.random() * (Math.PI / 3);
       } else if (edge === 2) {
         sx = Math.random() * width;
-        sy = height + offset;
+        sy = viewBottom + offset;
         angle = -Math.PI / 3 - Math.random() * (Math.PI / 3);
       } else {
         sx = -offset;
-        sy = Math.random() * height;
+        sy = viewTop + Math.random() * viewportH;
         angle = -Math.PI / 6 + Math.random() * (Math.PI / 3);
       }
       particles.push({
@@ -587,31 +625,50 @@ export function CommunityNodes() {
       }
 
       const drawScene = () => {
+      const viewTop = scrollY - VIEWPORT_CULL_MARGIN;
+      const viewBottom = scrollY + viewportH + VIEWPORT_CULL_MARGIN;
+      const startBand = Math.max(0, Math.floor(viewTop / BAND_HEIGHT));
+      const endBand = Math.min(bandCount - 1, Math.floor(viewBottom / BAND_HEIGHT));
+      const seenEdges = new Set<number>();
       ctx.save();
       ctx.lineWidth = 0.4;
-      for (const [a, b] of edges) {
-        const dx = nodes[b].x - nodes[a].x;
-        const dy = nodes[b].y - nodes[a].y;
-        const dist = Math.hypot(dx, dy);
-        const alpha = Math.max(0.025, 0.06 - dist * 0.0003);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.beginPath();
-        ctx.moveTo(nodes[a].x, nodes[a].y);
-        ctx.lineTo(nodes[b].x, nodes[b].y);
-        ctx.stroke();
+      for (let bi = startBand; bi <= endBand; bi++) {
+        const list = edgeBands[bi];
+        for (let j = 0; j < list.length; j++) {
+          const ei = list[j];
+          if (seenEdges.has(ei)) continue;
+          seenEdges.add(ei);
+          const [a, b] = edges[ei];
+          const dx = nodes[b].x - nodes[a].x;
+          const dy = nodes[b].y - nodes[a].y;
+          const dist = Math.hypot(dx, dy);
+          const alpha = Math.max(0.025, 0.06 - dist * 0.0003);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(nodes[a].x, nodes[a].y);
+          ctx.lineTo(nodes[b].x, nodes[b].y);
+          ctx.stroke();
+        }
       }
       ctx.restore();
 
-      for (const d of dust) {
-        const [dr, dg, db] = d.color;
-        ctx.fillStyle = `rgba(${dr}, ${dg}, ${db}, ${d.alpha})`;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
-        ctx.fill();
+      for (let bi = startBand; bi <= endBand; bi++) {
+        const list = dustBands[bi];
+        for (let j = 0; j < list.length; j++) {
+          const d = dust[list[j]];
+          const [dr, dg, db] = d.color;
+          ctx.fillStyle = `rgba(${dr}, ${dg}, ${db}, ${d.alpha})`;
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
-      for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
+      for (let bi = startBand; bi <= endBand; bi++) {
+        const list = nodeBands[bi];
+        for (let j = 0; j < list.length; j++) {
+          const i = list[j];
+          const node = nodes[i];
         const [nr, ng, nb] = node.color;
         if (node.isGalaxy) {
           const angle = timestamp * GALAXY_SPIN_SPEED + node.galaxyPhase;
@@ -700,6 +757,7 @@ export function CommunityNodes() {
           ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
           ctx.fill();
         }
+        }
       }
 
       ctx.save();
@@ -749,8 +807,11 @@ export function CommunityNodes() {
       ctx.restore();
       };
 
-      ctx.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, viewportW, viewportH);
+      ctx.save();
+      ctx.translate(0, -scrollY);
       drawScene();
+      ctx.restore();
 
       const m = mouseRef.current;
       if (m.active) {
@@ -782,6 +843,7 @@ export function CommunityNodes() {
         ctx.translate(mx, my);
         ctx.scale(zoom, zoom);
         ctx.translate(-mx, -my);
+        ctx.translate(0, -scrollY);
         drawScene();
 
         ctx.restore();
@@ -827,11 +889,8 @@ export function CommunityNodes() {
     };
 
     const onMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = rect.width > 0 ? width / rect.width : 1;
-      const scaleY = rect.height > 0 ? height / rect.height : 1;
-      mouseRef.current.x = (e.clientX - rect.left) * scaleX;
-      mouseRef.current.y = (e.clientY - rect.top) * scaleY;
+      mouseRef.current.x = e.clientX;
+      mouseRef.current.y = e.clientY;
       mouseRef.current.active = true;
     };
     const onLeave = () => {
@@ -842,28 +901,71 @@ export function CommunityNodes() {
       const level = levelRef.current;
       levelRef.current = level >= LENS_MAX_LEVEL ? 0 : level + 1;
     };
+    const onScroll = () => {
+      scrollY = window.scrollY;
+    };
+    const onResize = () => {
+      viewportW = window.innerWidth;
+      viewportH = window.innerHeight;
+      canvas.width = viewportW * dpr;
+      canvas.height = viewportH * dpr;
+      canvas.style.width = `${viewportW}px`;
+      canvas.style.height = `${viewportH}px`;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    };
 
-    canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerenter", onMove);
-    canvas.addEventListener("pointerleave", onLeave);
-    canvas.addEventListener("pointercancel", onLeave);
-    canvas.addEventListener("click", onClick);
+    const leftGutter = leftGutterRef.current;
+    const rightGutter = rightGutterRef.current;
+    const gutters = [leftGutter, rightGutter].filter(
+      (el): el is HTMLDivElement => el !== null,
+    );
+    for (const g of gutters) {
+      g.addEventListener("pointermove", onMove);
+      g.addEventListener("pointerenter", onMove);
+      g.addEventListener("pointerleave", onLeave);
+      g.addEventListener("pointercancel", onLeave);
+      g.addEventListener("click", onClick);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
 
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerenter", onMove);
-      canvas.removeEventListener("pointerleave", onLeave);
-      canvas.removeEventListener("pointercancel", onLeave);
-      canvas.removeEventListener("click", onClick);
+      for (const g of gutters) {
+        g.removeEventListener("pointermove", onMove);
+        g.removeEventListener("pointerenter", onMove);
+        g.removeEventListener("pointerleave", onLeave);
+        g.removeEventListener("pointercancel", onLeave);
+        g.removeEventListener("click", onClick);
+      }
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0">
-      <canvas ref={canvasRef} className="cursor-none block" />
-    </div>
+    <>
+      <canvas
+        ref={canvasRef}
+        className="block fixed inset-0 z-0 pointer-events-none"
+      />
+      <div
+        ref={leftGutterRef}
+        className="fixed top-0 bottom-0 left-0 z-[1] cursor-none"
+        style={{
+          width: `calc((100vw - ${READING_COLUMN_PX}px) / 2)`,
+        }}
+      />
+      <div
+        ref={rightGutterRef}
+        className="fixed top-0 bottom-0 right-0 z-[1] cursor-none"
+        style={{
+          width: `calc((100vw - ${READING_COLUMN_PX}px) / 2)`,
+        }}
+      />
+    </>
   );
 }
