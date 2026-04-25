@@ -28,7 +28,7 @@ export function ArticleLayout({
         {graphic}
         <div className="relative z-10 max-w-2xl mx-auto px-6">
           <div className="h-[calc(50vh-61px)]" />
-          <div className="bg-[#0b0b0b] pb-16">{children}</div>
+          <div className="pb-16">{children}</div>
         </div>
       </div>
     );
