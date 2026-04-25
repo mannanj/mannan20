@@ -64,12 +64,13 @@ export function PageMagnifier() {
         const scale = Math.pow(2, level);
         const r = MAGNIFIER_LENS_RADIUS * scale;
         const zoom = MAGNIFIER_LENS_ZOOM * scale;
+        const docY = y + window.scrollY;
 
         lens.style.left = `${x - r}px`;
         lens.style.top = `${y - r}px`;
         lens.style.width = `${r * 2}px`;
         lens.style.height = `${r * 2}px`;
-        clone.style.transform = `translate(${r - x * zoom}px, ${r - y * zoom}px) scale(${zoom})`;
+        clone.style.transform = `translate(${r - x * zoom}px, ${r - docY * zoom}px) scale(${zoom})`;
       }
       copyCanvas();
       // also nudge re-render so + icon repositions
