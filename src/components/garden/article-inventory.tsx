@@ -471,7 +471,7 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
           bottom: PANEL_BOTTOM_FROM_BOTTOM,
           width: "max-content",
           maxWidth: 240,
-          zIndex: 1,
+          zIndex: 20,
         }}
       >
         <ul className="space-y-1">
@@ -546,42 +546,50 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
           className="hidden"
         />
       </div>
-      <Modal
-        isOpen={confirmLoad !== null}
-        onClose={() => setConfirmLoad(null)}
-      >
-        <div className="text-white p-2 min-w-[300px]">
-          <h3 className="text-lg font-medium mb-2">Load inventory?</h3>
-          <p className="text-white/70 text-sm mb-4">
-            This will replace your current inventory. Any unsaved progress will
-            be lost.
-          </p>
-          <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              onClick={() => setConfirmLoad(null)}
-              className="text-sm px-3 py-1.5 rounded text-white/70 hover:text-white cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={confirmLoadApply}
-              className="text-sm px-3 py-1.5 rounded bg-[#039be5] hover:bg-[#4fc3f7] text-white cursor-pointer"
-            >
-              Replace
-            </button>
+      {createPortal(
+        <Modal
+          isOpen={confirmLoad !== null}
+          onClose={() => setConfirmLoad(null)}
+        >
+          <div className="text-white p-2 min-w-[300px]">
+            <h3 className="text-lg font-medium mb-2">Load inventory?</h3>
+            <p className="text-white/70 text-sm mb-4">
+              This will replace your current inventory. Any unsaved progress
+              will be lost.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmLoad(null)}
+                className="text-sm px-3 py-1.5 rounded text-white/70 hover:text-white cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmLoadApply}
+                className="text-sm px-3 py-1.5 rounded bg-[#039be5] hover:bg-[#4fc3f7] text-white cursor-pointer"
+              >
+                Replace
+              </button>
+            </div>
           </div>
-        </div>
-      </Modal>
-      <Modal isOpen={loadError !== null} onClose={() => setLoadError(null)}>
-        <div className="text-white p-2 min-w-[280px]">
-          <h3 className="text-lg font-medium mb-2">Couldn&apos;t load file</h3>
-          <p className="text-white/70 text-sm">
-            That file isn&apos;t a valid inventory export.
-          </p>
-        </div>
-      </Modal>
+        </Modal>,
+        document.body,
+      )}
+      {createPortal(
+        <Modal isOpen={loadError !== null} onClose={() => setLoadError(null)}>
+          <div className="text-white p-2 min-w-[280px]">
+            <h3 className="text-lg font-medium mb-2">
+              Couldn&apos;t load file
+            </h3>
+            <p className="text-white/70 text-sm">
+              That file isn&apos;t a valid inventory export.
+            </p>
+          </div>
+        </Modal>,
+        document.body,
+      )}
       <svg
         width={W}
         height={H}
