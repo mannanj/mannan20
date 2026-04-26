@@ -300,8 +300,8 @@ export function EasterEgg({ map = false }: { map?: boolean }) {
     setHover(false);
   };
 
-  const eggW = map ? 10 : 12;
-  const eggH = map ? 13 : 16;
+  const eggW = map ? 8 : 12;
+  const eggH = map ? 10 : 16;
   const eggGlow = map
     ? "drop-shadow(0 0 3px rgba(255,225,140,0.9)) drop-shadow(0 0 6px rgba(255,200,80,0.55))"
     : undefined;
