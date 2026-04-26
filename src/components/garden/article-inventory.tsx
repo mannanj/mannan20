@@ -619,7 +619,7 @@ function ThrownEgg({
         pointerEvents: "none",
         offsetPath: `path('M 0 0 Q ${ctrlX} ${ctrlY} ${dx} ${dy}')`,
         offsetRotate: "0deg",
-        animation: "eggThrow 0.95s ease-out forwards",
+        animation: "eggThrow 0.5s ease-out forwards",
       }}
     />
   );
