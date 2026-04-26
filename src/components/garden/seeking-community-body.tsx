@@ -271,9 +271,9 @@ export function SeekingCommunityBody() {
                 />
                 <span
                   className="absolute"
-                  style={{ left: "24%", top: "72%" }}
+                  style={{ left: "36.5%", top: "83%" }}
                 >
-                  <IdCardCollectible rotate={-78} />
+                  <IdCardCollectible rotate={25} />
                 </span>
               </span>
               I arrived at an ecovillage in the mountains. My stay was two

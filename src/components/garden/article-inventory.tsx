@@ -32,6 +32,7 @@ const ITEM_MAX: Record<string, number> = {
 };
 const DEFAULT_MAX = 12;
 const maxFor = (id: string) => ITEM_MAX[id] ?? DEFAULT_MAX;
+const SHOW_MAX_LABEL: Set<string> = new Set(["easter-egg"]);
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -315,8 +316,8 @@ export function IdCardCollectible({ rotate = -78 }: { rotate?: number }) {
     setHover(false);
   };
 
-  const W = 24;
-  const H = 16;
+  const W = 17;
+  const H = 11;
 
   return (
     <>
@@ -338,12 +339,7 @@ export function IdCardCollectible({ rotate = -78 }: { rotate?: number }) {
       >
         <span
           className="block relative"
-          style={{
-            width: W,
-            height: H,
-            animation: "idPulse 2.5s ease-in-out infinite",
-            transformOrigin: "center",
-          }}
+          style={{ width: W, height: H }}
         >
           <IdCardArt width={W} height={H} rotate={rotate} glow />
         </span>
@@ -387,8 +383,8 @@ function FlyingIdCard({
   const dy = targetY - (from.top + from.height / 2);
   const ctrlX = dx * 0.4;
   const ctrlY = -120;
-  const W = 24;
-  const H = 16;
+  const W = 17;
+  const H = 11;
 
   return createPortal(
     <div
@@ -651,10 +647,16 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
                 <span className="text-amber-300/80">•</span>
               )}
               <span>
-                {item.label}{" "}
-                {item.count >= maxFor(item.id)
-                  ? `(${maxFor(item.id)}) (max)`
-                  : `x${item.count}`}
+                {item.label}
+                {maxFor(item.id) > 1 && (
+                  <>
+                    {" "}
+                    {item.count >= maxFor(item.id) &&
+                    SHOW_MAX_LABEL.has(item.id)
+                      ? `(${maxFor(item.id)}) (max)`
+                      : `x${item.count}`}
+                  </>
+                )}
               </span>
             </li>
           ))}
