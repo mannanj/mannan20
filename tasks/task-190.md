@@ -171,6 +171,37 @@ approach can't keep up with continuous user input on a long page. The targeted
 patches in Approach A fix the actual bug (z-index hierarchy in clone) without
 adding the snapshot pipeline overhead.
 
+## Adversarial review findings (post-ship validation)
+
+After shipping, ran a code-reviewer pass. Confirmed issues, in-scope fixes:
+
+### High — fixing now
+1. **Per-frame React re-render via `forceTick`.** Used only to update the
+   cosmetic `+` cursor SVG position. Causes a full reconcile every frame at
+   60fps. Drop `forceTick`; drive the cursor SVG imperatively via a ref.
+2. **Stale clone — no MutationObserver.** Clone only rebuilds on
+   scroll/resize/initial mount. Inventory bag opening, splats appearing,
+   FlyingEgg portals, ThrowOverlay being added — none trigger a rebuild. Add
+   debounced `MutationObserver` on `document.body`.
+3. **`wheel` and `contextmenu` not swallowed.** Right-click in the lens shows
+   the browser context menu (e.g. "Save image" on the canvas) breaking the
+   illusion. Wheel passes through to handlers under the lens. Add to swallow
+   list.
+
+### Acknowledged, not changing
+- **DraggablePopout drag broken while lens open.** Confirmed by user as
+  intended ("don't need to move popouts with the lens open").
+- **Tab key navigation under lens.** Low impact; would require keymap that
+  swallows Tab too. Skipping unless reported.
+- **Canvas index-pairing fragility.** Currently aligned (filter on live side
+  matches removal on clone side). Latent only — leaving as-is with a comment.
+- **Rapid toggle race.** Theoretical; React batches state updates so the
+  enabled effect cleanup runs before the next effect setup. Leaving.
+
+### Out of scope
+Other e2e failures observed during validation (health-article, contact-form,
+gem-rain, etc.) are not magnifier-related. Not investigating.
+
 ## Final implementation (Approach A, what shipped)
 
 In `page-magnifier.tsx`:

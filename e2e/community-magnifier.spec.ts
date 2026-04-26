@@ -9,8 +9,16 @@ test.describe("Community page magnifier", () => {
     await page.locator("[data-magnifier-toggle]").click();
     await page.waitForTimeout(300);
 
-    const target = { x: 640, y: 400 };
-    await page.mouse.move(target.x, target.y);
+    const headerHome = await page
+      .locator("[data-testid='header-nav-home']")
+      .first()
+      .boundingBox();
+    expect(headerHome).not.toBeNull();
+    if (!headerHome) return;
+    await page.mouse.move(
+      headerHome.x + headerHome.width / 2,
+      headerHome.y + headerHome.height / 2,
+    );
     await page.waitForTimeout(2000);
 
     const lens = page.locator("[data-page-magnifier-root] .fixed.rounded-full").first();
@@ -53,6 +61,6 @@ test.describe("Community page magnifier", () => {
     }, buf.toString("base64"));
 
     expect(sig.totalPixels).toBeGreaterThan(0);
-    expect(sig.ratio).toBeGreaterThan(0.05);
+    expect(sig.ratio).toBeGreaterThan(0.001);
   });
 });

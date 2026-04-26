@@ -15,9 +15,11 @@ export function PageMagnifier() {
   const pathname = usePathname();
   const [enabled, setEnabled] = useState(false);
   const [toggleHover, setToggleHover] = useState(false);
-  const [, forceTick] = useState(0);
   const lensRef = useRef<HTMLDivElement>(null);
   const cloneRef = useRef<HTMLDivElement>(null);
+  const cursorIconRef = useRef<SVGSVGElement>(null);
+  const cursorIconHRef = useRef<SVGLineElement>(null);
+  const cursorIconVRef = useRef<SVGLineElement>(null);
   const rafRef = useRef(0);
   const positionRef = useRef({ x: 0, y: 0 });
 
@@ -158,6 +160,9 @@ export function PageMagnifier() {
     const tick = () => {
       const lens = lensRef.current;
       const clone = cloneRef.current;
+      const cursorIcon = cursorIconRef.current;
+      const cursorIconV = cursorIconVRef.current;
+      const cursorIconH = cursorIconHRef.current;
       if (lens && clone) {
         const { x, y } = positionRef.current;
         const level = magnifierState.level;
@@ -171,9 +176,34 @@ export function PageMagnifier() {
         lens.style.width = `${r * 2}px`;
         lens.style.height = `${r * 2}px`;
         clone.style.transform = `translate(${r - x * zoom}px, ${r - docY * zoom}px) scale(${zoom})`;
+
+        if (cursorIcon) {
+          const iconR = 3 + level * 1.2;
+          const iconOffset = r + iconR + 4;
+          const iconAngle = -Math.PI / 4;
+          const iconX = x + Math.cos(iconAngle) * iconOffset;
+          const iconY = y + Math.sin(iconAngle) * iconOffset;
+          cursorIcon.style.left = `${iconX - iconR - 2}px`;
+          cursorIcon.style.top = `${iconY - iconR - 2}px`;
+          cursorIcon.style.width = `${(iconR + 2) * 2}px`;
+          cursorIcon.style.height = `${(iconR + 2) * 2}px`;
+          cursorIcon.setAttribute(
+            "viewBox",
+            `${-iconR - 2} ${-iconR - 2} ${(iconR + 2) * 2} ${(iconR + 2) * 2}`,
+          );
+          if (cursorIconH) {
+            cursorIconH.setAttribute("x1", String(-iconR * 0.7));
+            cursorIconH.setAttribute("x2", String(iconR * 0.7));
+          }
+          if (cursorIconV) {
+            const isExpandable = level < MAGNIFIER_MAX_LEVEL;
+            cursorIconV.style.display = isExpandable ? "" : "none";
+            cursorIconV.setAttribute("y1", String(-iconR * 0.7));
+            cursorIconV.setAttribute("y2", String(iconR * 0.7));
+          }
+        }
       }
       copyCanvas();
-      forceTick((t) => (t + 1) & 0xffff);
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -216,6 +246,8 @@ export function PageMagnifier() {
     document.addEventListener("mousemove", onMove);
     document.addEventListener("click", onClick, true);
     document.addEventListener("keydown", onKeyDown, true);
+    document.addEventListener("contextmenu", swallowHover, true);
+    document.addEventListener("wheel", swallowHover, { capture: true, passive: true });
     const hoverEvents: (keyof DocumentEventMap)[] = [
       "mouseover",
       "mouseout",
@@ -238,12 +270,40 @@ export function PageMagnifier() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
+    let mutationDirty = false;
+    const flushMutations = () => {
+      if (!mutationDirty) return;
+      mutationDirty = false;
+      scheduleRebuild();
+    };
+    const mo = new MutationObserver((records) => {
+      for (const r of records) {
+        const target = r.target as Node;
+        if (
+          target instanceof Element &&
+          target.closest("[data-page-magnifier-root]")
+        ) continue;
+        mutationDirty = true;
+        break;
+      }
+      if (mutationDirty) flushMutations();
+    });
+    mo.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "style", "src", "hidden", "data-state", "aria-hidden"],
+    });
+
     return () => {
       cancelAnimationFrame(rafRef.current);
       if (rebuildTimer) clearTimeout(rebuildTimer);
+      mo.disconnect();
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("contextmenu", swallowHover, true);
+      document.removeEventListener("wheel", swallowHover, { capture: true } as EventListenerOptions);
       for (const evt of hoverEvents) {
         document.removeEventListener(evt, swallowHover, true);
       }
@@ -260,17 +320,6 @@ export function PageMagnifier() {
       return true;
     });
   };
-
-  const level = magnifierState.level;
-  const scale = Math.pow(2, level);
-  const r = MAGNIFIER_LENS_RADIUS * scale;
-  const iconR = 3 + level * 1.2;
-  const iconOffset = r + iconR + 4;
-  const iconAngle = -Math.PI / 4;
-  const { x: mx, y: my } = positionRef.current;
-  const iconX = mx + Math.cos(iconAngle) * iconOffset;
-  const iconY = my + Math.sin(iconAngle) * iconOffset;
-  const isExpandable = level < MAGNIFIER_MAX_LEVEL;
 
   if (pathname === "/garden/article/health-longevity") return null;
 
@@ -369,35 +418,25 @@ export function PageMagnifier() {
             />
           </div>
           <svg
+            ref={cursorIconRef}
             className="fixed pointer-events-none z-[10002]"
-            style={{
-              left: iconX - iconR - 2,
-              top: iconY - iconR - 2,
-              width: (iconR + 2) * 2,
-              height: (iconR + 2) * 2,
-            }}
-            viewBox={`${-iconR - 2} ${-iconR - 2} ${(iconR + 2) * 2} ${(iconR + 2) * 2}`}
           >
             <line
-              x1={-iconR * 0.7}
+              ref={cursorIconHRef}
               y1={0}
-              x2={iconR * 0.7}
               y2={0}
               stroke="rgba(255,255,255,0.7)"
               strokeWidth={1}
               strokeLinecap="round"
             />
-            {isExpandable && (
-              <line
-                x1={0}
-                y1={-iconR * 0.7}
-                x2={0}
-                y2={iconR * 0.7}
-                stroke="rgba(255,255,255,0.7)"
-                strokeWidth={1}
-                strokeLinecap="round"
-              />
-            )}
+            <line
+              ref={cursorIconVRef}
+              x1={0}
+              x2={0}
+              stroke="rgba(255,255,255,0.7)"
+              strokeWidth={1}
+              strokeLinecap="round"
+            />
           </svg>
         </>
       )}
