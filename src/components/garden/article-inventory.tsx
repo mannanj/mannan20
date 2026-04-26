@@ -968,29 +968,34 @@ function InventoryBag() {
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const [addedLabel, setAddedLabel] = useState<string | null>(null);
-  const prevTotal = useRef<number | null>(null);
+  const prevCounts = useRef<Map<string, number> | null>(null);
 
   useEffect(() => {
     if (throwingItemId) setOpen(false);
   }, [throwingItemId]);
 
-  const total = items.reduce((sum, i) => sum + i.count, 0);
-
   useEffect(() => {
     if (!hydrated) return;
-    if (prevTotal.current === null) {
-      prevTotal.current = total;
+    const current = new Map(items.map((i) => [i.id, i.count]));
+    if (prevCounts.current === null) {
+      prevCounts.current = current;
       return;
     }
-    if (total > prevTotal.current) {
-      const newest = items[items.length - 1];
-      setAddedLabel(newest?.label ?? null);
-      prevTotal.current = total;
+    let grewItem: InventoryItem | null = null;
+    for (const item of items) {
+      const prev = prevCounts.current.get(item.id) ?? 0;
+      if (item.count > prev) {
+        grewItem = item;
+        break;
+      }
+    }
+    prevCounts.current = current;
+    if (grewItem) {
+      setAddedLabel(grewItem.label);
       const t = setTimeout(() => setAddedLabel(null), 3000);
       return () => clearTimeout(t);
     }
-    prevTotal.current = total;
-  }, [total, items, hydrated]);
+  }, [items, hydrated]);
 
   if (!hydrated) return null;
   if (items.length === 0) return null;
