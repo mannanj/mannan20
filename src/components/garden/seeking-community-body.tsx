@@ -113,8 +113,8 @@ export function SeekingCommunityBody() {
             <p>
               I later learned to extend that same open-mindedness to religion
               and spirituality.
-              <EasterEgg />
             </p>
+            <EasterEgg map />
           </div>
         </section>
 

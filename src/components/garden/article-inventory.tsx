@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -269,13 +270,34 @@ function MiniIdCard({ size }: { size: number }) {
   );
 }
 
-export function EasterEgg() {
+export function EasterEgg({ map = false }: { map?: boolean }) {
   const { countOf, add, hydrated } = useInventory();
   const [hover, setHover] = useState(false);
   const [flyFrom, setFlyFrom] = useState<DOMRect | null>(null);
   const [sessionCollected, setSessionCollected] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const eggCount = countOf("easter-egg");
+
+  const mapPos = useMemo(() => {
+    if (!map || typeof window === "undefined") return null;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 80;
+    const bagAvoid = { x: vw - 100, y: vh - 100, w: 100, h: 100 };
+    for (let i = 0; i < 24; i++) {
+      const x = margin + Math.random() * (vw - margin * 2);
+      const y = margin + 60 + Math.random() * (vh - margin * 2 - 60);
+      if (
+        x > bagAvoid.x - 40 &&
+        y > bagAvoid.y - 40 &&
+        x < bagAvoid.x + bagAvoid.w &&
+        y < bagAvoid.y + bagAvoid.h
+      )
+        continue;
+      return { x, y };
+    }
+    return { x: vw / 2, y: vh / 3 };
+  }, [map]);
 
   if (!hydrated) return null;
   if (eggCount >= maxFor("easter-egg")) return null;
@@ -287,8 +309,26 @@ export function EasterEgg() {
     setHover(false);
   };
 
-  return (
-    <span className="relative inline-flex align-middle">
+  const eggW = map ? 10 : 12;
+  const eggH = map ? 13 : 16;
+  const eggGlow = map
+    ? "drop-shadow(0 0 3px rgba(255,225,140,0.9)) drop-shadow(0 0 6px rgba(255,200,80,0.55))"
+    : undefined;
+
+  const eggButton = (
+    <span
+      className="relative inline-flex align-middle"
+      style={
+        map && mapPos
+          ? {
+              position: "fixed",
+              left: mapPos.x,
+              top: mapPos.y,
+              zIndex: 20,
+            }
+          : undefined
+      }
+    >
       <button
         ref={buttonRef}
         type="button"
@@ -306,11 +346,14 @@ export function EasterEgg() {
           style={{
             animation: "eggPulse 3.5s ease-in-out infinite",
             transformOrigin: "center",
+            filter: eggGlow,
           }}
         >
           <span
-            className="block w-[12px] h-[16px] transition-transform duration-300 group-hover:scale-150"
+            className="block transition-transform duration-300 group-hover:scale-150"
             style={{
+              width: eggW,
+              height: eggH,
               background: EGG_GRADIENT,
               borderRadius: EGG_RADIUS,
               boxShadow: EGG_SHADOW,
@@ -340,6 +383,9 @@ export function EasterEgg() {
       )}
     </span>
   );
+
+  if (map) return createPortal(eggButton, document.body);
+  return eggButton;
 }
 
 function FlyingEgg({
