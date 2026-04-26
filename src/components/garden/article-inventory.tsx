@@ -214,7 +214,7 @@ function FlyingEgg({
   );
 }
 
-function BagIcon({ size }: { size: number }) {
+function BagIcon({ size, open }: { size: number; open?: boolean }) {
   return (
     <svg
       width={size}
@@ -232,6 +232,10 @@ function BagIcon({ size }: { size: number }) {
           <stop offset="0" stopColor="#8a4a22" />
           <stop offset="1" stopColor="#5a2c12" />
         </linearGradient>
+        <linearGradient id="bagInterior" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1a0a02" />
+          <stop offset="1" stopColor="#3a1c08" />
+        </linearGradient>
       </defs>
       <path
         d="M16 7 Q20 5 24 7 L24 11 L16 11 Z"
@@ -244,13 +248,27 @@ function BagIcon({ size }: { size: number }) {
         strokeWidth="0.8"
         strokeLinejoin="round"
       />
-      <path
-        d="M8 14 Q8 9 14 8 Q20 7 26 8 Q32 9 32 14 L33 22 Q33 25 30 26 Q20 28 10 26 Q7 25 7 22 Z"
-        fill="url(#bagFlap)"
-        stroke="#2a1305"
-        strokeWidth="0.8"
-        strokeLinejoin="round"
-      />
+      {open && (
+        <path
+          d="M9 14 Q20 12 31 14 Q31 18 20 19 Q9 18 9 14 Z"
+          fill="url(#bagInterior)"
+        />
+      )}
+      <g
+        style={{
+          transformOrigin: "20px 8px",
+          transform: open ? "rotate(-22deg) translateY(-1px)" : "none",
+          transition: "transform 0.35s ease",
+        }}
+      >
+        <path
+          d="M8 14 Q8 9 14 8 Q20 7 26 8 Q32 9 32 14 L33 22 Q33 25 30 26 Q20 28 10 26 Q7 25 7 22 Z"
+          fill="url(#bagFlap)"
+          stroke="#2a1305"
+          strokeWidth="0.8"
+          strokeLinejoin="round"
+        />
+      </g>
       <path
         d="M20 22 L19 33 M20 22 L21 33"
         stroke="#2a1305"
@@ -314,7 +332,7 @@ function InventoryBag() {
           open ? "scale-[1.08]" : "scale-[0.9] hover:scale-[1.08]"
         }`}
       >
-        <BagIcon size={40} />
+        <BagIcon size={40} open={open} />
       </button>
       {showLabel && (
         <span
@@ -344,7 +362,7 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
   const W = 320;
   const H = 240;
   const PANEL_LEFT = 90;
-  const PANEL_BOTTOM_FROM_BOTTOM = 36;
+  const PANEL_BOTTOM_FROM_BOTTOM = 80;
   const PANEL_BOTTOM_Y = H - PANEL_BOTTOM_FROM_BOTTOM;
   const BAG_EXIT_X = W - 36;
   const BAG_EXIT_Y = H - 18;
@@ -381,7 +399,7 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
     >
       <div
         ref={panelRef}
-        className="absolute text-white text-[11px] leading-snug bg-black/85 px-3 py-2 rounded"
+        className="absolute text-white text-[11px] leading-snug bg-black/85 rounded-md p-1"
         style={{
           left: PANEL_LEFT,
           bottom: PANEL_BOTTOM_FROM_BOTTOM,
