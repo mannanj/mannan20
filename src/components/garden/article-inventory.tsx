@@ -221,7 +221,7 @@ function FlyingEgg({
   );
 }
 
-function BagIcon({ size, open }: { size: number; open?: boolean }) {
+function BagIcon({ size }: { size: number }) {
   return (
     <svg
       width={size}
@@ -239,101 +239,36 @@ function BagIcon({ size, open }: { size: number; open?: boolean }) {
           <stop offset="0" stopColor="#8a4a22" />
           <stop offset="1" stopColor="#5a2c12" />
         </linearGradient>
-        <radialGradient id="bagInterior" cx="0.5" cy="0.3" r="0.7">
-          <stop offset="0" stopColor="#3a1c08" />
-          <stop offset="0.6" stopColor="#1a0a02" />
-          <stop offset="1" stopColor="#0a0400" />
-        </radialGradient>
       </defs>
-
-      {open ? (
-        <>
-          <path
-            d="M7 18 Q3 16 5 24 Q7 26 9 24"
-            fill="none"
-            stroke="#5a2c12"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-          />
-          <path
-            d="M5 14 Q20 6 35 14 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
-            fill="url(#bagBody)"
-            stroke="#2a1305"
-            strokeWidth="0.8"
-            strokeLinejoin="round"
-          />
-          <ellipse
-            cx="20"
-            cy="14"
-            rx="14"
-            ry="4.5"
-            fill="url(#bagInterior)"
-            stroke="#2a1305"
-            strokeWidth="0.6"
-          />
-          <ellipse
-            cx="20"
-            cy="13.4"
-            rx="11"
-            ry="2.6"
-            fill="#3a1c08"
-            opacity="0.55"
-          />
-          <path
-            d="M14 14.5 Q20 18 26 14.5"
-            fill="none"
-            stroke="#0a0400"
-            strokeWidth="0.6"
-            opacity="0.6"
-          />
-          <path
-            d="M30 14 Q35 12 36 18"
-            fill="none"
-            stroke="#5a2c12"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            opacity="0.85"
-          />
-          <path
-            d="M19 16 L18 22 M21 16 L22 22"
-            stroke="#2a1305"
-            strokeWidth="0.7"
-            strokeLinecap="round"
-          />
-        </>
-      ) : (
-        <>
-          <path d="M16 7 Q20 5 24 7 L24 11 L16 11 Z" fill="#3a1c08" />
-          <path
-            d="M6 19 Q6 14 12 13 Q20 11 28 13 Q34 14 34 19 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
-            fill="url(#bagBody)"
-            stroke="#2a1305"
-            strokeWidth="0.8"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M8 14 Q8 9 14 8 Q20 7 26 8 Q32 9 32 14 L33 22 Q33 25 30 26 Q20 28 10 26 Q7 25 7 22 Z"
-            fill="url(#bagFlap)"
-            stroke="#2a1305"
-            strokeWidth="0.8"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M20 22 L19 33 M20 22 L21 33"
-            stroke="#2a1305"
-            strokeWidth="0.7"
-            strokeLinecap="round"
-          />
-          <circle cx="20" cy="22" r="1.4" fill="#2a1305" />
-          <path
-            d="M10 12 Q14 10 20 10 Q26 10 30 12"
-            fill="none"
-            stroke="#3a1c08"
-            strokeWidth="0.5"
-            opacity="0.6"
-          />
-        </>
-      )}
+      <path d="M16 7 Q20 5 24 7 L24 11 L16 11 Z" fill="#3a1c08" />
+      <path
+        d="M6 19 Q6 14 12 13 Q20 11 28 13 Q34 14 34 19 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
+        fill="url(#bagBody)"
+        stroke="#2a1305"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 14 Q8 9 14 8 Q20 7 26 8 Q32 9 32 14 L33 22 Q33 25 30 26 Q20 28 10 26 Q7 25 7 22 Z"
+        fill="url(#bagFlap)"
+        stroke="#2a1305"
+        strokeWidth="0.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 22 L19 33 M20 22 L21 33"
+        stroke="#2a1305"
+        strokeWidth="0.7"
+        strokeLinecap="round"
+      />
+      <circle cx="20" cy="22" r="1.4" fill="#2a1305" />
+      <path
+        d="M10 12 Q14 10 20 10 Q26 10 30 12"
+        fill="none"
+        stroke="#3a1c08"
+        strokeWidth="0.5"
+        opacity="0.6"
+      />
     </svg>
   );
 }
@@ -383,7 +318,7 @@ function InventoryBag() {
           open ? "scale-[1.08]" : "scale-[0.9] hover:scale-[1.08]"
         }`}
       >
-        <BagIcon size={40} open={open} />
+        <BagIcon size={40} />
       </button>
       {showLabel && (
         <span
