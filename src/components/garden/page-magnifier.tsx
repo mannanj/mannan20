@@ -31,7 +31,12 @@ export function PageMagnifier() {
 
     let rebuildTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const styleClonedCanvas = (dst: HTMLCanvasElement, src: HTMLCanvasElement) => {
+    const CANVAS_TAG = "data-magnifier-canvas-id";
+
+    const styleClonedFixedInsetCanvas = (
+      dst: HTMLCanvasElement,
+      src: HTMLCanvasElement,
+    ) => {
       const srcZ = window.getComputedStyle(src).zIndex;
       dst.style.position = "absolute";
       dst.style.left = "0px";
@@ -88,13 +93,23 @@ export function PageMagnifier() {
         dst.style.margin = "0";
       }
 
-      const srcCanvas = document.querySelector<HTMLCanvasElement>(
-        "canvas[data-magnifiable]",
+      const srcCanvases = Array.from(
+        document.querySelectorAll<HTMLCanvasElement>("canvas"),
+      ).filter((c) => !c.closest("[data-page-magnifier-root]"));
+      const dstCanvases = Array.from(
+        bodyClone.querySelectorAll<HTMLCanvasElement>("canvas"),
       );
-      const dstCanvas = bodyClone.querySelector<HTMLCanvasElement>(
-        "canvas[data-magnifiable]",
-      );
-      if (srcCanvas && dstCanvas) styleClonedCanvas(dstCanvas, srcCanvas);
+      const len = Math.min(srcCanvases.length, dstCanvases.length);
+      for (let i = 0; i < len; i++) {
+        const src = srcCanvases[i];
+        const dst = dstCanvases[i];
+        if (
+          src.hasAttribute("data-magnifiable") &&
+          window.getComputedStyle(src).position === "fixed"
+        ) {
+          styleClonedFixedInsetCanvas(dst, src);
+        }
+      }
       cloneRoot.appendChild(bodyClone);
     };
     buildClone();
@@ -105,23 +120,39 @@ export function PageMagnifier() {
     };
 
     const copyCanvas = () => {
-      const src =
-        document.querySelector<HTMLCanvasElement>("canvas[data-magnifiable]");
-      const dst = cloneRoot.querySelector<HTMLCanvasElement>(
-        "canvas[data-magnifiable]",
+      const srcs = Array.from(
+        document.querySelectorAll<HTMLCanvasElement>("canvas"),
+      ).filter((c) => !c.closest("[data-page-magnifier-root]"));
+      const dsts = Array.from(
+        cloneRoot.querySelectorAll<HTMLCanvasElement>(`canvas[${CANVAS_TAG}]`),
       );
-      if (src && dst) {
+      const dstById = new Map<string, HTMLCanvasElement>();
+      for (const dst of dsts) {
+        const id = dst.getAttribute(CANVAS_TAG);
+        if (id != null) dstById.set(id, dst);
+      }
+      for (let i = 0; i < srcs.length; i++) {
+        const src = srcs[i];
+        const dst = dstById.get(String(i));
+        if (!dst) continue;
+        if (src.width === 0 || src.height === 0) continue;
         if (dst.width !== src.width || dst.height !== src.height) {
           dst.width = src.width;
           dst.height = src.height;
         }
-        dst.style.top = `${window.scrollY}px`;
-        dst.style.width = `${window.innerWidth}px`;
-        dst.style.height = `${window.innerHeight}px`;
+        if (src.hasAttribute("data-magnifiable") && window.getComputedStyle(src).position === "fixed") {
+          dst.style.top = `${window.scrollY}px`;
+          dst.style.width = `${window.innerWidth}px`;
+          dst.style.height = `${window.innerHeight}px`;
+        }
         const dctx = dst.getContext("2d");
         if (dctx) {
-          dctx.clearRect(0, 0, dst.width, dst.height);
-          dctx.drawImage(src, 0, 0);
+          try {
+            dctx.clearRect(0, 0, dst.width, dst.height);
+            dctx.drawImage(src, 0, 0);
+          } catch {
+            // tainted or non-readable canvas — skip
+          }
         }
       }
     };
@@ -176,8 +207,17 @@ export function PageMagnifier() {
     const onScroll = () => scheduleRebuild();
     const onResize = () => scheduleRebuild();
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        setEnabled(false);
+      }
+    };
+
     document.addEventListener("mousemove", onMove);
     document.addEventListener("click", onClick, true);
+    document.addEventListener("keydown", onKeyDown, true);
     const hoverEvents: (keyof DocumentEventMap)[] = [
       "mouseover",
       "mouseout",
@@ -205,6 +245,7 @@ export function PageMagnifier() {
       if (rebuildTimer) clearTimeout(rebuildTimer);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("click", onClick, true);
+      document.removeEventListener("keydown", onKeyDown, true);
       for (const evt of hoverEvents) {
         document.removeEventListener(evt, swallowHover, true);
       }

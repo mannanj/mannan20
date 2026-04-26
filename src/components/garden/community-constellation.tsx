@@ -127,8 +127,11 @@ export default function CommunityConstellation() {
       <Canvas
         dpr={[1, 2]}
         camera={{ position: [0, 0, 3.2], fov: 42 }}
-        gl={{ alpha: true, antialias: true }}
+        gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}
         style={{ background: "transparent" }}
+        onCreated={({ gl }) => {
+          gl.domElement.setAttribute("data-magnifiable", "");
+        }}
       >
         <ambientLight intensity={0.4} />
         <pointLight position={[3, 2, 2]} intensity={1.2} color="#ffffff" />
