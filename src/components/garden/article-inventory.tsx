@@ -9,23 +9,40 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "../modal";
 
 type InventoryItem = { id: string; label: string; count: number };
 
+type SplatRecord = {
+  id: string;
+  xRatio: number;
+  y: number;
+  rotation: number;
+};
+
 type InventoryCtx = {
   items: InventoryItem[];
   hydrated: boolean;
   countOf: (id: string) => number;
   add: (item: { id: string; label: string }) => void;
+  decrement: (id: string) => void;
   replace: (next: InventoryItem[]) => void;
+  throwingItemId: string | null;
+  startThrow: (id: string) => void;
+  cancelThrow: () => void;
+  splats: SplatRecord[];
+  addSplat: (s: SplatRecord) => void;
+  removeSplat: (id: string) => void;
+  surfaceRef: RefObject<HTMLDivElement | null>;
 };
 
 const InventoryContext = createContext<InventoryCtx | null>(null);
 
 const STORAGE_KEY = "article-inventory-v1";
+const SPLAT_STORAGE_KEY = "seeking-community-splats-v1";
 const ITEM_MAX: Record<string, number> = {
   "easter-egg": 12,
   "id-card": 1,
@@ -34,9 +51,19 @@ const DEFAULT_MAX = 12;
 const maxFor = (id: string) => ITEM_MAX[id] ?? DEFAULT_MAX;
 const SHOW_MAX_LABEL: Set<string> = new Set(["easter-egg"]);
 
+const BAG_OFFSET_X = 24 + 20;
+const BAG_OFFSET_Y = 24 + 20;
+const getBagPoint = () => ({
+  x: window.innerWidth - BAG_OFFSET_X,
+  y: window.innerHeight - BAG_OFFSET_Y,
+});
+
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [splats, setSplats] = useState<SplatRecord[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [throwingItemId, setThrowingItemId] = useState<string | null>(null);
+  const surfaceRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -44,6 +71,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setItems(parsed);
+      }
+    } catch {}
+    try {
+      const raw = localStorage.getItem(SPLAT_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setSplats(parsed);
       }
     } catch {}
     setHydrated(true);
@@ -55,6 +89,13 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {}
   }, [items, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(SPLAT_STORAGE_KEY, JSON.stringify(splats));
+    } catch {}
+  }, [splats, hydrated]);
 
   const countOf = useCallback(
     (id: string) => items.find((i) => i.id === id)?.count ?? 0,
@@ -74,16 +115,57 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const decrement = useCallback((id: string) => {
+    setItems((prev) =>
+      prev
+        .map((i) => (i.id === id ? { ...i, count: i.count - 1 } : i))
+        .filter((i) => i.count > 0),
+    );
+  }, []);
+
   const replace = useCallback((next: InventoryItem[]) => {
     setItems(next);
   }, []);
 
+  const startThrow = useCallback((id: string) => setThrowingItemId(id), []);
+  const cancelThrow = useCallback(() => setThrowingItemId(null), []);
+  const addSplat = useCallback(
+    (s: SplatRecord) => setSplats((prev) => [...prev, s]),
+    [],
+  );
+  const removeSplat = useCallback(
+    (id: string) => setSplats((prev) => prev.filter((s) => s.id !== id)),
+    [],
+  );
+
   return (
     <InventoryContext.Provider
-      value={{ items, hydrated, countOf, add, replace }}
+      value={{
+        items,
+        hydrated,
+        countOf,
+        add,
+        decrement,
+        replace,
+        throwingItemId,
+        startThrow,
+        cancelThrow,
+        splats,
+        addSplat,
+        removeSplat,
+        surfaceRef,
+      }}
     >
-      {children}
+      <div
+        ref={surfaceRef}
+        data-testid="inventory-surface"
+        className="relative"
+      >
+        {children}
+        <SplatLayer />
+      </div>
       <InventoryBag />
+      {throwingItemId && <ThrowOverlay />}
     </InventoryContext.Provider>
   );
 }
@@ -408,6 +490,388 @@ function FlyingIdCard({
   );
 }
 
+function ThrowOverlay() {
+  const { surfaceRef, decrement, cancelThrow, addSplat, throwingItemId } =
+    useInventory();
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const [thrownAt, setThrownAt] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => setPos({ x: e.clientX, y: e.clientY });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") cancelThrow();
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [cancelThrow]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (thrownAt) return;
+    setThrownAt({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleLand = () => {
+    if (!thrownAt || !throwingItemId) {
+      cancelThrow();
+      return;
+    }
+    const surface = surfaceRef.current;
+    if (surface) {
+      const rect = surface.getBoundingClientRect();
+      const xRatio = rect.width > 0 ? (thrownAt.x - rect.left) / rect.width : 0;
+      const y = thrownAt.y - rect.top;
+      addSplat({
+        id: `splat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        xRatio,
+        y,
+        rotation: Math.round((Math.random() - 0.5) * 60),
+      });
+    }
+    decrement(throwingItemId);
+    cancelThrow();
+  };
+
+  const cursorEgg = pos && !thrownAt && (
+    <>
+      <div
+        style={{
+          position: "fixed",
+          left: pos.x - 9,
+          top: pos.y - 12,
+          width: 18,
+          height: 24,
+          background: EGG_GRADIENT,
+          borderRadius: EGG_RADIUS,
+          boxShadow: EGG_SHADOW,
+          pointerEvents: "none",
+          zIndex: 10001,
+          animation: "spin 11.5s linear infinite",
+        }}
+      />
+      <span
+        role="tooltip"
+        className="text-center text-[11px] px-2 py-1 rounded bg-black/85 text-white pointer-events-none leading-tight"
+        style={{
+          position: "fixed",
+          left: pos.x,
+          top: pos.y - 40,
+          transform: "translateX(-50%)",
+          zIndex: 10001,
+          whiteSpace: "nowrap",
+        }}
+      >
+        Tap to throw
+      </span>
+    </>
+  );
+
+  return createPortal(
+    <div
+      onClick={handleClick}
+      data-testid="throw-overlay"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        cursor: "none",
+      }}
+    >
+      {cursorEgg}
+      {thrownAt && <ThrownEgg target={thrownAt} onLand={handleLand} />}
+    </div>,
+    document.body,
+  );
+}
+
+function ThrownEgg({
+  target,
+  onLand,
+}: {
+  target: { x: number; y: number };
+  onLand: () => void;
+}) {
+  const bag = getBagPoint();
+  const dx = target.x - bag.x;
+  const dy = target.y - bag.y;
+  const ctrlX = dx * 0.5;
+  const ctrlY = Math.min(-180, dy - 200);
+
+  return (
+    <div
+      onAnimationEnd={onLand}
+      data-testid="thrown-egg"
+      style={{
+        position: "fixed",
+        left: bag.x - 9,
+        top: bag.y - 12,
+        width: 18,
+        height: 24,
+        background: EGG_GRADIENT,
+        borderRadius: EGG_RADIUS,
+        boxShadow: EGG_SHADOW,
+        zIndex: 10002,
+        pointerEvents: "none",
+        offsetPath: `path('M 0 0 Q ${ctrlX} ${ctrlY} ${dx} ${dy}')`,
+        offsetRotate: "0deg",
+        animation: "eggThrow 0.95s ease-out forwards",
+      }}
+    />
+  );
+}
+
+const SPLAT_SIZE = 66;
+const SPLAT_HALF = SPLAT_SIZE / 2;
+
+function MiniSplat({ size }: { size: number }) {
+  const visualSize = size * 2;
+  return (
+    <span
+      className="inline-block shrink-0 relative"
+      style={{ width: size, height: size }}
+    >
+      <span
+        className="absolute"
+        style={{
+          left: "50%",
+          top: "50%",
+          width: visualSize,
+          height: visualSize,
+          transform: "translate(-50%, -50%)",
+          pointerEvents: "none",
+        }}
+      >
+        <SplatShape size={visualSize} />
+      </span>
+    </span>
+  );
+}
+
+function SplatShape({ size = 66 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="-30 -30 60 60"
+      aria-hidden="true"
+      style={{ overflow: "visible" }}
+    >
+      <defs>
+        <linearGradient id="egg-splat-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#5eead4" />
+          <stop offset="50%" stopColor="#f9a8d4" />
+          <stop offset="100%" stopColor="#fde68a" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M-8,-12 Q-16,-6 -13,3 Q-18,10 -8,13 Q0,18 9,11 Q17,9 13,0 Q18,-9 7,-11 Q1,-17 -8,-12 Z"
+        fill="url(#egg-splat-grad)"
+        opacity="0.9"
+        stroke="rgba(0,0,0,0.15)"
+        strokeWidth="0.5"
+      />
+      <circle cx="-17" cy="-3" r="2.4" fill="url(#egg-splat-grad)" opacity="0.8" />
+      <circle cx="14" cy="-14" r="1.8" fill="url(#egg-splat-grad)" opacity="0.7" />
+      <circle cx="16" cy="15" r="2.6" fill="url(#egg-splat-grad)" opacity="0.8" />
+      <circle cx="-12" cy="16" r="1.6" fill="url(#egg-splat-grad)" opacity="0.7" />
+      <circle cx="-2" cy="-18" r="1.2" fill="url(#egg-splat-grad)" opacity="0.6" />
+    </svg>
+  );
+}
+
+function SplatLayer() {
+  const { splats, hydrated } = useInventory();
+  const [width, setWidth] = useState(0);
+  const layerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const layer = layerRef.current;
+    const surface = layer?.parentElement;
+    if (!surface) return;
+    const update = () => setWidth(surface.getBoundingClientRect().width);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(surface);
+    return () => ro.disconnect();
+  }, []);
+
+  const showSplats = hydrated && splats.length > 0 && width > 0;
+
+  return (
+    <div
+      ref={layerRef}
+      aria-hidden="true"
+      data-testid="splat-layer"
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 5 }}
+    >
+      {showSplats &&
+        splats.map((s, idx) => (
+          <SplatItem
+            key={s.id}
+            splat={s}
+            width={width}
+            isNewest={idx === splats.length - 1}
+          />
+        ))}
+    </div>
+  );
+}
+
+function SplatItem({
+  splat,
+  width,
+  isNewest,
+}: {
+  splat: SplatRecord;
+  width: number;
+  isNewest: boolean;
+}) {
+  const { removeSplat, add } = useInventory();
+  const [hoverX, setHoverX] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [flyFrom, setFlyFrom] = useState<DOMRect | null>(null);
+  const splatRef = useRef<HTMLDivElement>(null);
+
+  const handleX = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirming(true);
+  };
+
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const el = splatRef.current;
+    if (!el) return;
+    setFlyFrom(el.getBoundingClientRect());
+  };
+
+  const handleLand = () => {
+    add({ id: "egg-splat", label: "Splat" });
+    removeSplat(splat.id);
+  };
+
+  return (
+    <>
+      <div
+        ref={splatRef}
+        style={{
+          position: "absolute",
+          left: splat.xRatio * width - SPLAT_HALF,
+          top: splat.y - SPLAT_HALF,
+          width: SPLAT_SIZE,
+          height: SPLAT_SIZE,
+          pointerEvents: "none",
+          visibility: flyFrom ? "hidden" : "visible",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            ["--splat-rot" as string]: `${splat.rotation}deg`,
+            transform: `rotate(${splat.rotation}deg)`,
+            animation: isNewest ? "splatAppear 0.45s ease-out" : undefined,
+          }}
+        >
+          <SplatShape size={SPLAT_SIZE} />
+        </div>
+        {!confirming && (
+          <button
+            type="button"
+            onClick={handleX}
+            onMouseEnter={() => setHoverX(true)}
+            onMouseLeave={() => setHoverX(false)}
+            aria-label="Clean up splat"
+            data-testid="splat-x"
+            className="absolute top-0 right-0 w-5 h-5 rounded-full bg-black/85 text-white text-[12px] leading-none flex items-center justify-center cursor-pointer hover:bg-black transition-opacity"
+            style={{ zIndex: 2, pointerEvents: "auto", opacity: hoverX ? 1 : 0.7 }}
+          >
+            ×
+          </button>
+        )}
+        {hoverX && !confirming && (
+          <span
+            role="tooltip"
+            className="absolute text-center text-[11px] px-2 py-1 rounded bg-black/85 text-white pointer-events-none whitespace-nowrap leading-tight"
+            style={{ zIndex: 2, right: -2, bottom: "calc(100% - 6px)" }}
+          >
+            Tap to clean
+          </span>
+        )}
+        {confirming && (
+          <button
+            type="button"
+            onClick={handleConfirm}
+            onMouseLeave={() => setConfirming(false)}
+            data-testid="splat-confirm"
+            className="absolute text-[11px] px-2 py-1 rounded bg-emerald-500/90 hover:bg-emerald-500 text-white whitespace-nowrap leading-tight cursor-pointer"
+            style={{
+              zIndex: 2,
+              pointerEvents: "auto",
+              right: -2,
+              bottom: "calc(100% - 6px)",
+            }}
+          >
+            Confirm cleanup?
+          </button>
+        )}
+      </div>
+      {flyFrom && (
+        <FlyingSplat
+          from={flyFrom}
+          rotation={splat.rotation}
+          onDone={handleLand}
+        />
+      )}
+    </>
+  );
+}
+
+function FlyingSplat({
+  from,
+  rotation,
+  onDone,
+}: {
+  from: DOMRect;
+  rotation: number;
+  onDone: () => void;
+}) {
+  const targetX = window.innerWidth - BAG_OFFSET_X;
+  const targetY = window.innerHeight - BAG_OFFSET_Y;
+  const dx = targetX - (from.left + from.width / 2);
+  const dy = targetY - (from.top + from.height / 2);
+  const ctrlX = dx * 0.4;
+  const ctrlY = -120;
+
+  return createPortal(
+    <div
+      onAnimationEnd={onDone}
+      data-testid="flying-splat"
+      style={{
+        position: "fixed",
+        left: from.left + from.width / 2 - SPLAT_HALF,
+        top: from.top + from.height / 2 - SPLAT_HALF,
+        width: SPLAT_SIZE,
+        height: SPLAT_SIZE,
+        zIndex: 200,
+        pointerEvents: "none",
+        offsetPath: `path('M 0 0 Q ${ctrlX} ${ctrlY} ${dx} ${dy}')`,
+        offsetRotate: "0deg",
+        animation: "eggFly 1.6s linear forwards",
+        transform: `rotate(${rotation}deg)`,
+      }}
+    >
+      <SplatShape size={SPLAT_SIZE} />
+    </div>,
+    document.body,
+  );
+}
+
 function BagIcon({ size }: { size: number }) {
   return (
     <svg
@@ -461,11 +925,15 @@ function BagIcon({ size }: { size: number }) {
 }
 
 function InventoryBag() {
-  const { items, hydrated } = useInventory();
+  const { items, hydrated, throwingItemId } = useInventory();
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const [addedLabel, setAddedLabel] = useState<string | null>(null);
   const prevTotal = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (throwingItemId) setOpen(false);
+  }, [throwingItemId]);
 
   const total = items.reduce((sum, i) => sum + i.count, 0);
 
@@ -528,7 +996,7 @@ function InventoryBag() {
 }
 
 function InventoryHud({ items }: { items: InventoryItem[] }) {
-  const { replace } = useInventory();
+  const { replace, startThrow } = useInventory();
   const [panelSize, setPanelSize] = useState({ w: 180, h: 90 });
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [confirmLoad, setConfirmLoad] = useState<InventoryItem[] | null>(null);
@@ -637,29 +1105,58 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
         }}
       >
         <ul className="space-y-1">
-          {items.map((item) => (
-            <li key={item.id} className="flex items-center gap-1.5">
-              {item.id === "easter-egg" ? (
-                <MiniEgg size={9} />
-              ) : item.id === "id-card" ? (
-                <MiniIdCard size={14} />
-              ) : (
-                <span className="text-amber-300/80">•</span>
-              )}
-              <span>
-                {item.label}
-                {maxFor(item.id) > 1 && (
-                  <>
-                    {" "}
-                    {item.count >= maxFor(item.id) &&
-                    SHOW_MAX_LABEL.has(item.id)
-                      ? `(${maxFor(item.id)}) (max)`
-                      : `x${item.count}`}
-                  </>
+          {items.map((item) => {
+            const throwable = item.id === "easter-egg" && item.count > 0;
+            const content = (
+              <>
+                {item.id === "easter-egg" ? (
+                  <MiniEgg size={9} />
+                ) : item.id === "id-card" ? (
+                  <MiniIdCard size={14} />
+                ) : item.id === "egg-splat" ? (
+                  <MiniSplat size={14} />
+                ) : (
+                  <span className="text-amber-300/80">•</span>
                 )}
-              </span>
-            </li>
-          ))}
+                <span>
+                  {item.label}
+                  {maxFor(item.id) > 1 && (
+                    <>
+                      {" "}
+                      {item.count >= maxFor(item.id) &&
+                      SHOW_MAX_LABEL.has(item.id)
+                        ? `(${maxFor(item.id)}) (max)`
+                        : `x${item.count}`}
+                    </>
+                  )}
+                </span>
+              </>
+            );
+
+            if (!throwable) {
+              return (
+                <li key={item.id} className="flex items-center gap-1.5">
+                  {content}
+                </li>
+              );
+            }
+
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startThrow(item.id);
+                  }}
+                  data-testid="throw-egg"
+                  className="pointer-events-auto flex items-center gap-1.5 w-full text-left rounded px-1 -mx-1 hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  {content}
+                </button>
+              </li>
+            );
+          })}
         </ul>
         <p className="mt-2 text-[10px] text-white/70 leading-relaxed">
           Items grant perks and privileges.

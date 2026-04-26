@@ -487,6 +487,30 @@ body {
   }
 }
 
+@keyframes eggThrow {
+  0% {
+    offset-distance: 0%;
+    transform: scale(0.7) rotate(0deg);
+    opacity: 0.85;
+  }
+  85% {
+    offset-distance: 100%;
+    transform: scale(1.1) rotate(720deg);
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    transform: scale(1.5) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes splatAppear {
+  0% { transform: scale(0.2) rotate(var(--splat-rot, 0deg)); opacity: 0; }
+  50% { transform: scale(1.15) rotate(var(--splat-rot, 0deg)); opacity: 1; }
+  100% { transform: scale(1) rotate(var(--splat-rot, 0deg)); opacity: 1; }
+}
+
 @keyframes ellipsis {
   0% { content: ''; }
   25% { content: '.'; }
