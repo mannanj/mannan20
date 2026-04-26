@@ -269,7 +269,7 @@ export function PageMagnifier() {
               <>
                 Telescope
                 <br />
-                enabled
+                Enabled
               </>
             )}
           </span>
