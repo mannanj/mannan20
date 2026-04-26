@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   MAGNIFIER_LENS_RADIUS,
   MAGNIFIER_LENS_ZOOM,
@@ -11,6 +12,7 @@ import {
 const REBUILD_DEBOUNCE_MS = 200;
 
 export function PageMagnifier() {
+  const pathname = usePathname();
   const [enabled, setEnabled] = useState(false);
   const [toggleHover, setToggleHover] = useState(false);
   const [, forceTick] = useState(0);
@@ -269,6 +271,8 @@ export function PageMagnifier() {
   const iconX = mx + Math.cos(iconAngle) * iconOffset;
   const iconY = my + Math.sin(iconAngle) * iconOffset;
   const isExpandable = level < MAGNIFIER_MAX_LEVEL;
+
+  if (pathname === "/garden/article/health-longevity") return null;
 
   return (
     <div data-page-magnifier-root>
