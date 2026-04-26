@@ -32,6 +32,16 @@ export function PageMagnifier() {
       bodyClone
         .querySelectorAll("[data-page-magnifier-root]")
         .forEach((el) => el.remove());
+      bodyClone
+        .querySelectorAll<HTMLCanvasElement>("canvas[data-magnifiable]")
+        .forEach((c) => {
+          c.style.zIndex = "-1";
+        });
+      bodyClone
+        .querySelectorAll<HTMLElement>("[data-testid='garden-wrapper']")
+        .forEach((el) => {
+          el.style.zIndex = "200";
+        });
       cloneRoot.appendChild(bodyClone);
     };
     buildClone();
@@ -91,6 +101,9 @@ export function PageMagnifier() {
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest("[data-magnifier-toggle]")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       if (magnifierState.level >= MAGNIFIER_MAX_LEVEL) {
         setEnabled(false);
         return;
