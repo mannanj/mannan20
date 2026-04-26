@@ -20,6 +20,7 @@ type InventoryCtx = {
   hydrated: boolean;
   countOf: (id: string) => number;
   add: (item: { id: string; label: string }) => void;
+  replace: (next: InventoryItem[]) => void;
 };
 
 const InventoryContext = createContext<InventoryCtx | null>(null);
@@ -67,8 +68,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const replace = useCallback((next: InventoryItem[]) => {
+    setItems(next);
+  }, []);
+
   return (
-    <InventoryContext.Provider value={{ items, hydrated, countOf, add }}>
+    <InventoryContext.Provider
+      value={{ items, hydrated, countOf, add, replace }}
+    >
       {children}
       <InventoryBag />
     </InventoryContext.Provider>
@@ -355,9 +362,68 @@ function InventoryBag() {
 }
 
 function InventoryHud({ items }: { items: InventoryItem[] }) {
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const { replace } = useInventory();
   const [panelSize, setPanelSize] = useState({ w: 180, h: 90 });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [confirmLoad, setConfirmLoad] = useState<InventoryItem[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const total = items.reduce((s, i) => s + i.count, 0);
+  const primaryAction: "save" | "load" = total > 1 ? "save" : "load";
+  const altAction: "save" | "load" = primaryAction === "save" ? "load" : "save";
+
+  const handleSave = () => {
+    setDropdownOpen(false);
+    const blob = new Blob([JSON.stringify(items, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `inventory-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleLoadClick = () => {
+    setDropdownOpen(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    file
+      .text()
+      .then((txt) => {
+        const parsed = JSON.parse(txt);
+        if (!Array.isArray(parsed)) throw new Error("Not an array");
+        const valid = parsed.every(
+          (i) =>
+            i &&
+            typeof i.id === "string" &&
+            typeof i.label === "string" &&
+            typeof i.count === "number",
+        );
+        if (!valid) throw new Error("Invalid item shape");
+        setConfirmLoad(parsed as InventoryItem[]);
+      })
+      .catch((err) => {
+        setLoadError(err instanceof Error ? err.message : "Could not read file");
+      })
+      .finally(() => {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      });
+  };
+
+  const confirmLoadApply = () => {
+    if (confirmLoad) replace(confirmLoad);
+    setConfirmLoad(null);
+  };
 
   const W = 320;
   const H = 240;
@@ -428,18 +494,92 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
         <p className="mt-2 text-[10px] text-white/70 leading-relaxed">
           Items grant perks and privileges.
         </p>
-        <button
-          type="button"
-          onClick={() => setSaveModalOpen(true)}
-          className="mt-1.5 text-[10px] text-[#039be5] hover:text-[#4fc3f7] underline-offset-2 hover:underline pointer-events-auto cursor-pointer"
-        >
-          Save inventory
-        </button>
+        <div className="mt-1.5 relative pointer-events-auto inline-flex items-center gap-1">
+          <button
+            type="button"
+            onClick={primaryAction === "save" ? handleSave : handleLoadClick}
+            className="text-[10px] text-[#039be5] hover:text-[#4fc3f7] underline-offset-2 hover:underline cursor-pointer"
+          >
+            {primaryAction === "save" ? "Save inventory" : "Load inventory"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setDropdownOpen((o) => !o)}
+            aria-label="More inventory options"
+            className="text-[10px] text-[#039be5] hover:text-[#4fc3f7] cursor-pointer leading-none"
+          >
+            <svg
+              width="8"
+              height="8"
+              viewBox="0 0 8 8"
+              fill="none"
+              style={{
+                transform: dropdownOpen ? "rotate(180deg)" : "none",
+                transition: "transform 0.2s",
+              }}
+            >
+              <path
+                d="M1 2 L4 6 L7 2"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          {dropdownOpen && (
+            <button
+              type="button"
+              onClick={altAction === "save" ? handleSave : handleLoadClick}
+              className="absolute top-full left-0 mt-1 whitespace-nowrap text-[10px] text-[#039be5] hover:text-[#4fc3f7] bg-black/95 rounded px-2 py-1 cursor-pointer underline-offset-2 hover:underline"
+              style={{ zIndex: 5 }}
+            >
+              {altAction === "save" ? "Save inventory" : "Load inventory"}
+            </button>
+          )}
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </div>
-      <Modal isOpen={saveModalOpen} onClose={() => setSaveModalOpen(false)}>
+      <Modal
+        isOpen={confirmLoad !== null}
+        onClose={() => setConfirmLoad(null)}
+      >
+        <div className="text-white p-2 min-w-[300px]">
+          <h3 className="text-lg font-medium mb-2">Load inventory?</h3>
+          <p className="text-white/70 text-sm mb-4">
+            This will replace your current inventory. Any unsaved progress will
+            be lost.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={() => setConfirmLoad(null)}
+              className="text-sm px-3 py-1.5 rounded text-white/70 hover:text-white cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmLoadApply}
+              className="text-sm px-3 py-1.5 rounded bg-[#039be5] hover:bg-[#4fc3f7] text-white cursor-pointer"
+            >
+              Replace
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal isOpen={loadError !== null} onClose={() => setLoadError(null)}>
         <div className="text-white p-2 min-w-[280px]">
-          <h3 className="text-lg font-medium mb-2">Save inventory</h3>
-          <p className="text-white/70 text-sm">To be added soon.</p>
+          <h3 className="text-lg font-medium mb-2">Couldn&apos;t load file</h3>
+          <p className="text-white/70 text-sm">
+            That file isn&apos;t a valid inventory export.
+          </p>
         </div>
       </Modal>
       <svg
