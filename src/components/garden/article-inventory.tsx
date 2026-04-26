@@ -281,12 +281,14 @@ export function EasterEgg({ map = false }: { map?: boolean }) {
   const mapPos = useMemo(() => {
     if (!map || typeof window === "undefined") return null;
     const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const scrollY = window.scrollY;
+    const docH = Math.max(
+      document.documentElement.scrollHeight,
+      document.body.scrollHeight,
+    );
     const margin = 80;
-    const topMin = margin + 80;
+    const topMin = margin + 160;
     const x = margin + Math.random() * (vw - margin * 2);
-    const y = scrollY + topMin + Math.random() * (vh - topMin - margin);
+    const y = topMin + Math.random() * (docH - topMin - margin);
     return { x, y };
   }, [map]);
 
