@@ -282,21 +282,12 @@ export function EasterEgg({ map = false }: { map?: boolean }) {
     if (!map || typeof window === "undefined") return null;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const scrollY = window.scrollY;
     const margin = 80;
-    const bagAvoid = { x: vw - 100, y: vh - 100, w: 100, h: 100 };
-    for (let i = 0; i < 24; i++) {
-      const x = margin + Math.random() * (vw - margin * 2);
-      const y = margin + 60 + Math.random() * (vh - margin * 2 - 60);
-      if (
-        x > bagAvoid.x - 40 &&
-        y > bagAvoid.y - 40 &&
-        x < bagAvoid.x + bagAvoid.w &&
-        y < bagAvoid.y + bagAvoid.h
-      )
-        continue;
-      return { x, y };
-    }
-    return { x: vw / 2, y: vh / 3 };
+    const topMin = margin + 80;
+    const x = margin + Math.random() * (vw - margin * 2);
+    const y = scrollY + topMin + Math.random() * (vh - topMin - margin);
+    return { x, y };
   }, [map]);
 
   if (!hydrated) return null;
@@ -321,7 +312,7 @@ export function EasterEgg({ map = false }: { map?: boolean }) {
       style={
         map && mapPos
           ? {
-              position: "fixed",
+              position: "absolute",
               left: mapPos.x,
               top: mapPos.y,
               zIndex: 20,
