@@ -7,6 +7,7 @@ export function HealthGoldHoverShell({ children }: { children: ReactNode }) {
   const gold = useOptionalGoldInfection();
   return (
     <div
+      className="relative bg-[#0b0b0b] min-h-screen"
       onMouseEnter={(e) => gold?.enterScene(e.clientX, e.clientY)}
       onMouseMove={(e) => gold?.moveInScene(e.clientX, e.clientY)}
       onMouseLeave={() => gold?.leaveScene()}

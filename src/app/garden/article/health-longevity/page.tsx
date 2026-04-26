@@ -38,6 +38,7 @@ export default function HealthLongevityArticle() {
         graphic={<GardenHero />}
         graphicLayout="bleed"
         topPadding="-mt-[278px] pt-0 relative z-20"
+        className="!bg-transparent"
       >
         <ArticleHeader align="center">
           <ArticleCaption className="text-center mx-auto">
