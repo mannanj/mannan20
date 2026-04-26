@@ -76,9 +76,7 @@ export function Header() {
   const { state } = useApp();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const isTransparent =
-    pathname === "/garden/article/seeking-community" ||
-    pathname === "/garden/article/health-longevity";
+  const isTransparent = pathname === "/garden/article/seeking-community";
   const [expanded, setExpanded] = useState(false);
   const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);

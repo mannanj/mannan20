@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GardenHero } from "@/components/garden/garden-hero";
-import { HealthBarFlow } from "@/components/garden/health-bar-flow";
+import { HealthShapesLayer } from "@/components/garden/health-shapes-layer";
 import { HealthGoldHoverShell } from "@/components/garden/health-gold-hover-shell";
 import { HealthArticleBody } from "@/components/garden/health-article-body";
 import { ArticleLayout } from "@/components/article-layout";
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 export default function HealthLongevityArticle() {
   return (
     <HealthGoldHoverShell>
-      <HealthBarFlow />
+      <HealthShapesLayer />
       <ArticleLayout
         graphic={<GardenHero />}
         graphicLayout="bleed"
