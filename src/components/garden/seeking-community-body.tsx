@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
 import { ArticleBody } from "../article-body";
+import { EasterEgg, InventoryProvider } from "./article-inventory";
 
 const CommunityConstellation = dynamic(
   () => import("./community-constellation"),
@@ -86,7 +87,7 @@ function HawaiiSection() {
 
 export function SeekingCommunityBody() {
   return (
-    <>
+    <InventoryProvider>
       <ArticleBody spacing="comfortable">
         <section id="era-cosmos">
           <div className="space-y-4">
@@ -108,6 +109,7 @@ export function SeekingCommunityBody() {
             <p>
               I later learned to extend that same open-mindedness to religion
               and spirituality.
+              <EasterEgg />
             </p>
           </div>
         </section>
@@ -306,6 +308,6 @@ export function SeekingCommunityBody() {
           hideTopDivider
         />
       </div>
-    </>
+    </InventoryProvider>
   );
 }
