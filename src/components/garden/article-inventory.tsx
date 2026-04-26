@@ -10,11 +10,13 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { Modal } from "../modal";
 
 type InventoryItem = { id: string; label: string; count: number };
 
 type InventoryCtx = {
   items: InventoryItem[];
+  hydrated: boolean;
   countOf: (id: string) => number;
   add: (item: { id: string; label: string }) => void;
 };
@@ -65,7 +67,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <InventoryContext.Provider value={{ items, countOf, add }}>
+    <InventoryContext.Provider value={{ items, hydrated, countOf, add }}>
       {children}
       <InventoryBag />
     </InventoryContext.Provider>
@@ -83,6 +85,22 @@ const EGG_GRADIENT =
 const EGG_SHADOW =
   "0 1px 3px rgba(0,0,0,0.2), inset -1px -2px 3px rgba(0,0,0,0.08), inset 1px 1px 3px rgba(255,255,255,0.4)";
 const EGG_RADIUS = "50% 50% 50% 50% / 60% 60% 40% 40%";
+
+function MiniEgg({ size }: { size: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-block shrink-0"
+      style={{
+        width: size,
+        height: Math.round((size * 4) / 3),
+        background: EGG_GRADIENT,
+        borderRadius: EGG_RADIUS,
+        boxShadow: EGG_SHADOW,
+      }}
+    />
+  );
+}
 
 export function EasterEgg() {
   const { countOf, add } = useInventory();
@@ -167,8 +185,8 @@ function FlyingEgg({
   const targetY = window.innerHeight - 24 - 20;
   const dx = targetX - (from.left + from.width / 2);
   const dy = targetY - (from.top + from.height / 2);
-  const midX = dx * 0.55;
-  const midY = dy * 0.4 - 80;
+  const ctrlX = dx * 0.4;
+  const ctrlY = -120;
 
   return createPortal(
     <div
@@ -185,11 +203,9 @@ function FlyingEgg({
         boxShadow: EGG_SHADOW,
         zIndex: 200,
         pointerEvents: "none",
-        animation: "eggFly 1.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards",
-        ["--fly-x" as string]: `${dx}px`,
-        ["--fly-y" as string]: `${dy}px`,
-        ["--fly-mid-x" as string]: `${midX}px`,
-        ["--fly-mid-y" as string]: `${midY}px`,
+        offsetPath: `path('M 0 0 Q ${ctrlX} ${ctrlY} ${dx} ${dy}')`,
+        offsetRotate: "0deg",
+        animation: "eggFly 1.6s linear forwards",
       }}
     />,
     document.body,
@@ -220,7 +236,7 @@ function BagIcon({ size }: { size: number }) {
         fill="#3a1c08"
       />
       <path
-        d="M6 19 Q6 14 12 13 Q20 11 28 13 Q34 14 34 19 L36 31 Q36 35 32 36 Q20 38 8 36 Q4 35 4 31 Z"
+        d="M6 19 Q6 14 12 13 Q20 11 28 13 Q34 14 34 19 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
         fill="url(#bagBody)"
         stroke="#2a1305"
         strokeWidth="0.8"
@@ -252,18 +268,16 @@ function BagIcon({ size }: { size: number }) {
 }
 
 function InventoryBag() {
-  const { items } = useInventory();
+  const { items, hydrated } = useInventory();
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [addedLabel, setAddedLabel] = useState<string | null>(null);
   const prevTotal = useRef<number | null>(null);
-
-  useEffect(() => setMounted(true), []);
 
   const total = items.reduce((sum, i) => sum + i.count, 0);
 
   useEffect(() => {
+    if (!hydrated) return;
     if (prevTotal.current === null) {
       prevTotal.current = total;
       return;
@@ -276,9 +290,9 @@ function InventoryBag() {
       return () => clearTimeout(t);
     }
     prevTotal.current = total;
-  }, [total, items]);
+  }, [total, items, hydrated]);
 
-  if (!mounted) return null;
+  if (!hydrated) return null;
   if (items.length === 0) return null;
 
   const showLabel = !!addedLabel || hover || open;
@@ -295,7 +309,7 @@ function InventoryBag() {
         aria-label={open ? "Close inventory" : "Open inventory"}
         data-testid="inventory-bag"
         className={`relative block transition-transform duration-300 cursor-pointer ${
-          open ? "scale-[1.2]" : "hover:scale-[1.2]"
+          open ? "scale-[1.08]" : "scale-[0.9] hover:scale-[1.08]"
         }`}
       >
         <BagIcon size={40} />
@@ -321,13 +335,19 @@ function InventoryBag() {
 }
 
 function InventoryHud({ items }: { items: InventoryItem[] }) {
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
   const W = 320;
   const H = 240;
   const PANEL_LEFT = 20;
   const PANEL_WIDTH = 240;
   const PANEL_RIGHT = PANEL_LEFT + PANEL_WIDTH;
   const PANEL_BOTTOM_FROM_BOTTOM = 80;
-  const PANEL_BOTTOM_Y = H - PANEL_BOTTOM_FROM_BOTTOM;
+  const BAG_EXIT_X = W - 36;
+  const BAG_EXIT_Y = H - 18;
+  const BEND_X = 240;
+  const BEND_Y = 195;
+  const END_X = PANEL_RIGHT;
+  const END_Y = 110;
 
   return (
     <div
@@ -335,7 +355,7 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
       style={{ right: 0, bottom: 0, width: W, height: H }}
     >
       <div
-        className="absolute text-white text-[13px] leading-snug bg-black/85 px-3 py-2 rounded"
+        className="absolute text-white text-[11px] leading-snug bg-black/85 px-3 py-2 rounded"
         style={{
           left: PANEL_LEFT,
           bottom: PANEL_BOTTOM_FROM_BOTTOM,
@@ -343,22 +363,40 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
           zIndex: 1,
         }}
       >
-        <ul className="space-y-0.5">
+        <ul className="space-y-1">
           {items.map((item) => (
-            <li key={item.id}>
-              • {item.label}{" "}
-              {item.count >= MAX_COUNT
-                ? `(${MAX_COUNT}) (max)`
-                : `x${item.count}`}
+            <li key={item.id} className="flex items-center gap-1.5">
+              {item.id === "easter-egg" ? (
+                <MiniEgg size={9} />
+              ) : (
+                <span className="text-amber-300/80">•</span>
+              )}
+              <span>
+                {item.label}{" "}
+                {item.count >= MAX_COUNT
+                  ? `(${MAX_COUNT}) (max)`
+                  : `x${item.count}`}
+              </span>
             </li>
           ))}
-          <li className="italic text-white/55">• More coming soon</li>
         </ul>
-        <p className="mt-3 text-[11px] text-white/70 leading-relaxed">
-          Collecting items earns special perks and privileges. Once you reach
-          specific tiers, privileges appear here.
+        <p className="mt-2 text-[10px] text-white/70 leading-relaxed">
+          Items grant perks and privileges.
         </p>
+        <button
+          type="button"
+          onClick={() => setSaveModalOpen(true)}
+          className="mt-1.5 text-[10px] text-[#039be5] hover:text-[#4fc3f7] underline-offset-2 hover:underline pointer-events-auto cursor-pointer"
+        >
+          Save inventory
+        </button>
       </div>
+      <Modal isOpen={saveModalOpen} onClose={() => setSaveModalOpen(false)}>
+        <div className="text-white p-2 min-w-[280px]">
+          <h3 className="text-lg font-medium mb-2">Save inventory</h3>
+          <p className="text-white/70 text-sm">To be added soon.</p>
+        </div>
+      </Modal>
       <svg
         width={W}
         height={H}
@@ -371,14 +409,13 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
         }}
         aria-hidden="true"
       >
-        <line
-          x1={W - 18}
-          y1={H - 18}
-          x2={PANEL_RIGHT}
-          y2={PANEL_BOTTOM_Y}
+        <polyline
+          points={`${BAG_EXIT_X},${BAG_EXIT_Y} ${BEND_X},${BEND_Y} ${END_X},${END_Y}`}
+          fill="none"
           stroke="rgba(255,255,255,0.9)"
           strokeWidth="1"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
     </div>
