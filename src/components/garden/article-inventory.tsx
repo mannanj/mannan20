@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -24,7 +25,7 @@ type InventoryCtx = {
 const InventoryContext = createContext<InventoryCtx | null>(null);
 
 const STORAGE_KEY = "article-inventory-v1";
-const MAX_COUNT = 10;
+const MAX_COUNT = 12;
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -103,15 +104,16 @@ function MiniEgg({ size }: { size: number }) {
 }
 
 export function EasterEgg() {
-  const { countOf, add } = useInventory();
+  const { countOf, add, hydrated } = useInventory();
   const [hover, setHover] = useState(false);
   const [flyFrom, setFlyFrom] = useState<DOMRect | null>(null);
   const [sessionCollected, setSessionCollected] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const eggCount = countOf("easter-egg");
 
-  if (sessionCollected && !flyFrom) return null;
+  if (!hydrated) return null;
   if (eggCount >= MAX_COUNT) return null;
+  if (sessionCollected && !flyFrom) return null;
 
   const handleClick = () => {
     if (!buttonRef.current || flyFrom) return;
@@ -336,18 +338,41 @@ function InventoryBag() {
 
 function InventoryHud({ items }: { items: InventoryItem[] }) {
   const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [panelSize, setPanelSize] = useState({ w: 180, h: 90 });
+  const panelRef = useRef<HTMLDivElement>(null);
+
   const W = 320;
   const H = 240;
-  const PANEL_LEFT = 20;
-  const PANEL_WIDTH = 240;
-  const PANEL_RIGHT = PANEL_LEFT + PANEL_WIDTH;
-  const PANEL_BOTTOM_FROM_BOTTOM = 80;
+  const PANEL_LEFT = 90;
+  const PANEL_BOTTOM_FROM_BOTTOM = 36;
+  const PANEL_BOTTOM_Y = H - PANEL_BOTTOM_FROM_BOTTOM;
   const BAG_EXIT_X = W - 36;
   const BAG_EXIT_Y = H - 18;
-  const BEND_X = 240;
-  const BEND_Y = 195;
-  const END_X = PANEL_RIGHT;
-  const END_Y = 110;
+
+  useLayoutEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      setPanelSize({ w: r.width, h: r.height });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const END_X = PANEL_LEFT + panelSize.w / 2;
+  const END_Y = PANEL_BOTTOM_Y;
+  const dx = END_X - BAG_EXIT_X;
+  const dy = END_Y - BAG_EXIT_Y;
+  const leg1Angle = (5 * Math.PI) / 180;
+  const cosA = Math.cos(leg1Angle);
+  const sinA = Math.sin(leg1Angle);
+  const denom = 2 * (cosA * dx + sinA * dy);
+  const legLen = denom !== 0 ? -(dx * dx + dy * dy) / denom : 60;
+  const BEND_X = BAG_EXIT_X - legLen * cosA;
+  const BEND_Y = BAG_EXIT_Y - legLen * sinA;
 
   return (
     <div
@@ -355,11 +380,13 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
       style={{ right: 0, bottom: 0, width: W, height: H }}
     >
       <div
+        ref={panelRef}
         className="absolute text-white text-[11px] leading-snug bg-black/85 px-3 py-2 rounded"
         style={{
           left: PANEL_LEFT,
           bottom: PANEL_BOTTOM_FROM_BOTTOM,
-          width: PANEL_WIDTH,
+          width: "max-content",
+          maxWidth: 240,
           zIndex: 1,
         }}
       >
