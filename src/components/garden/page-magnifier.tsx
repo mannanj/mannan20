@@ -31,8 +31,6 @@ export function PageMagnifier() {
 
     let rebuildTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const CANVAS_TAG = "data-magnifier-canvas-id";
-
     const styleClonedFixedInsetCanvas = (
       dst: HTMLCanvasElement,
       src: HTMLCanvasElement,
@@ -124,23 +122,21 @@ export function PageMagnifier() {
         document.querySelectorAll<HTMLCanvasElement>("canvas"),
       ).filter((c) => !c.closest("[data-page-magnifier-root]"));
       const dsts = Array.from(
-        cloneRoot.querySelectorAll<HTMLCanvasElement>(`canvas[${CANVAS_TAG}]`),
+        cloneRoot.querySelectorAll<HTMLCanvasElement>("canvas"),
       );
-      const dstById = new Map<string, HTMLCanvasElement>();
-      for (const dst of dsts) {
-        const id = dst.getAttribute(CANVAS_TAG);
-        if (id != null) dstById.set(id, dst);
-      }
-      for (let i = 0; i < srcs.length; i++) {
+      const len = Math.min(srcs.length, dsts.length);
+      for (let i = 0; i < len; i++) {
         const src = srcs[i];
-        const dst = dstById.get(String(i));
-        if (!dst) continue;
+        const dst = dsts[i];
         if (src.width === 0 || src.height === 0) continue;
         if (dst.width !== src.width || dst.height !== src.height) {
           dst.width = src.width;
           dst.height = src.height;
         }
-        if (src.hasAttribute("data-magnifiable") && window.getComputedStyle(src).position === "fixed") {
+        if (
+          src.hasAttribute("data-magnifiable") &&
+          window.getComputedStyle(src).position === "fixed"
+        ) {
           dst.style.top = `${window.scrollY}px`;
           dst.style.width = `${window.innerWidth}px`;
           dst.style.height = `${window.innerHeight}px`;
@@ -151,7 +147,7 @@ export function PageMagnifier() {
             dctx.clearRect(0, 0, dst.width, dst.height);
             dctx.drawImage(src, 0, 0);
           } catch {
-            // tainted or non-readable canvas — skip
+            // tainted or non-readable — skip
           }
         }
       }
