@@ -239,57 +239,101 @@ function BagIcon({ size, open }: { size: number; open?: boolean }) {
           <stop offset="0" stopColor="#8a4a22" />
           <stop offset="1" stopColor="#5a2c12" />
         </linearGradient>
-        <linearGradient id="bagInterior" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1a0a02" />
-          <stop offset="1" stopColor="#3a1c08" />
-        </linearGradient>
+        <radialGradient id="bagInterior" cx="0.5" cy="0.3" r="0.7">
+          <stop offset="0" stopColor="#3a1c08" />
+          <stop offset="0.6" stopColor="#1a0a02" />
+          <stop offset="1" stopColor="#0a0400" />
+        </radialGradient>
       </defs>
-      <path
-        d="M16 7 Q20 5 24 7 L24 11 L16 11 Z"
-        fill="#3a1c08"
-      />
-      <path
-        d="M6 19 Q6 14 12 13 Q20 11 28 13 Q34 14 34 19 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
-        fill="url(#bagBody)"
-        stroke="#2a1305"
-        strokeWidth="0.8"
-        strokeLinejoin="round"
-      />
-      {open && (
-        <path
-          d="M9 14 Q20 12 31 14 Q31 18 20 19 Q9 18 9 14 Z"
-          fill="url(#bagInterior)"
-        />
+
+      {open ? (
+        <>
+          <path
+            d="M7 18 Q3 16 5 24 Q7 26 9 24"
+            fill="none"
+            stroke="#5a2c12"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+          <path
+            d="M5 14 Q20 6 35 14 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
+            fill="url(#bagBody)"
+            stroke="#2a1305"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
+          />
+          <ellipse
+            cx="20"
+            cy="14"
+            rx="14"
+            ry="4.5"
+            fill="url(#bagInterior)"
+            stroke="#2a1305"
+            strokeWidth="0.6"
+          />
+          <ellipse
+            cx="20"
+            cy="13.4"
+            rx="11"
+            ry="2.6"
+            fill="#3a1c08"
+            opacity="0.55"
+          />
+          <path
+            d="M14 14.5 Q20 18 26 14.5"
+            fill="none"
+            stroke="#0a0400"
+            strokeWidth="0.6"
+            opacity="0.6"
+          />
+          <path
+            d="M30 14 Q35 12 36 18"
+            fill="none"
+            stroke="#5a2c12"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+          <path
+            d="M19 16 L18 22 M21 16 L22 22"
+            stroke="#2a1305"
+            strokeWidth="0.7"
+            strokeLinecap="round"
+          />
+        </>
+      ) : (
+        <>
+          <path d="M16 7 Q20 5 24 7 L24 11 L16 11 Z" fill="#3a1c08" />
+          <path
+            d="M6 19 Q6 14 12 13 Q20 11 28 13 Q34 14 34 19 L36 28 Q36 36 28 36 Q20 38 12 36 Q4 36 4 28 Z"
+            fill="url(#bagBody)"
+            stroke="#2a1305"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8 14 Q8 9 14 8 Q20 7 26 8 Q32 9 32 14 L33 22 Q33 25 30 26 Q20 28 10 26 Q7 25 7 22 Z"
+            fill="url(#bagFlap)"
+            stroke="#2a1305"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M20 22 L19 33 M20 22 L21 33"
+            stroke="#2a1305"
+            strokeWidth="0.7"
+            strokeLinecap="round"
+          />
+          <circle cx="20" cy="22" r="1.4" fill="#2a1305" />
+          <path
+            d="M10 12 Q14 10 20 10 Q26 10 30 12"
+            fill="none"
+            stroke="#3a1c08"
+            strokeWidth="0.5"
+            opacity="0.6"
+          />
+        </>
       )}
-      <g
-        style={{
-          transformOrigin: "20px 8px",
-          transform: open ? "rotate(-22deg) translateY(-1px)" : "none",
-          transition: "transform 0.35s ease",
-        }}
-      >
-        <path
-          d="M8 14 Q8 9 14 8 Q20 7 26 8 Q32 9 32 14 L33 22 Q33 25 30 26 Q20 28 10 26 Q7 25 7 22 Z"
-          fill="url(#bagFlap)"
-          stroke="#2a1305"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
-      </g>
-      <path
-        d="M20 22 L19 33 M20 22 L21 33"
-        stroke="#2a1305"
-        strokeWidth="0.7"
-        strokeLinecap="round"
-      />
-      <circle cx="20" cy="22" r="1.4" fill="#2a1305" />
-      <path
-        d="M10 12 Q14 10 20 10 Q26 10 30 12"
-        fill="none"
-        stroke="#3a1c08"
-        strokeWidth="0.5"
-        opacity="0.6"
-      />
     </svg>
   );
 }
@@ -369,10 +413,6 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const total = items.reduce((s, i) => s + i.count, 0);
-  const primaryAction: "save" | "load" = total > 1 ? "save" : "load";
-  const altAction: "save" | "load" = primaryAction === "save" ? "load" : "save";
 
   const handleSave = () => {
     setDropdownOpen(false);
@@ -497,17 +537,12 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
         <div className="mt-1.5 relative pointer-events-auto inline-flex items-center gap-1">
           <button
             type="button"
-            onClick={primaryAction === "save" ? handleSave : handleLoadClick}
-            className="text-[10px] text-[#039be5] hover:text-[#4fc3f7] underline-offset-2 hover:underline cursor-pointer"
-          >
-            {primaryAction === "save" ? "Save inventory" : "Load inventory"}
-          </button>
-          <button
-            type="button"
             onClick={() => setDropdownOpen((o) => !o)}
-            aria-label="More inventory options"
-            className="text-[10px] text-[#039be5] hover:text-[#4fc3f7] cursor-pointer leading-none"
+            aria-haspopup="menu"
+            aria-expanded={dropdownOpen}
+            className="inline-flex items-center gap-1 text-[10px] text-[#039be5] hover:text-[#4fc3f7] underline-offset-2 hover:underline cursor-pointer"
           >
+            Manage inventory
             <svg
               width="8"
               height="8"
@@ -528,14 +563,28 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
             </svg>
           </button>
           {dropdownOpen && (
-            <button
-              type="button"
-              onClick={altAction === "save" ? handleSave : handleLoadClick}
-              className="absolute top-full left-0 mt-1 whitespace-nowrap text-[10px] text-[#039be5] hover:text-[#4fc3f7] bg-black/95 rounded px-2 py-1 cursor-pointer underline-offset-2 hover:underline"
+            <div
+              role="menu"
+              className="absolute top-full left-0 mt-1 flex flex-col bg-black/95 rounded overflow-hidden"
               style={{ zIndex: 5 }}
             >
-              {altAction === "save" ? "Save inventory" : "Load inventory"}
-            </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={handleSave}
+                className="whitespace-nowrap text-left text-[10px] text-[#039be5] hover:text-[#4fc3f7] hover:bg-white/5 px-2 py-1 cursor-pointer"
+              >
+                Save inventory
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={handleLoadClick}
+                className="whitespace-nowrap text-left text-[10px] text-[#039be5] hover:text-[#4fc3f7] hover:bg-white/5 px-2 py-1 cursor-pointer"
+              >
+                Load inventory
+              </button>
+            </div>
           )}
         </div>
         <input
