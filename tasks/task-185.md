@@ -1,0 +1,16 @@
+### Task 185: Live Cursor Party Mode on Seeking-Community Article
+- [ ] Research collaborative cursor npm packages (e.g. `@liveblocks/react`, `yjs` + `y-websocket`, `partykit`, `perfect-cursors`, `tldraw/sync`) and pick one that fits a static Next.js page with low ongoing cost
+- [ ] Add presence layer to the seeking-community article page so visitors see each other's cursors in real time (smooth interpolation, name/color per visitor, idle fade)
+- [ ] Add ability to leave short floating messages for other visitors (click-to-drop chat bubble that other cursors can see; auto-expire after N seconds)
+- [ ] Broadcast existing inventory interactions so other visitors can watch:
+  - Egg pickup from the article (the eggs each user sees and collects remain their own — only the *action* of someone picking up / throwing is broadcast)
+  - Egg throw animation visible to everyone in the room
+  - Easter-egg HUD reactions (no shared inventory state — purely visual broadcast)
+- [ ] Design a generic "broadcast action" channel so future visual effects can opt in:
+  - Shooting stars / meteors launched by one user briefly visible to others
+  - Comets, magnifier ripples, etc. — extensible event type with a per-user rate limit so the page never becomes chaotic
+- [ ] Rate-limit + sanity-cap broadcast events per user (e.g. max N actions/sec, drop rather than queue) so a single visitor can't spam the room
+- [ ] Graceful offline / no-room fallback: page must work identically with zero peers and degrade silently if the realtime service is down
+- [ ] Privacy + safety: ephemeral random handle by default, no PII, profanity filter on free-form messages, easy mute/hide-others toggle
+- [ ] Performance: cursor updates throttled (~30–60 Hz outbound, interpolated inbound), suspend updates when tab is hidden, lazy-load the realtime client so it doesn't bloat first paint
+- Location: `src/components/garden/article-inventory.tsx`, `src/app/seeking-community/`, plus a new `src/lib/realtime/` module for the presence client

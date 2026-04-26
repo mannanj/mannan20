@@ -43,32 +43,41 @@ export function PageMagnifier() {
       dst.style.zIndex = srcZ && srcZ !== "auto" ? srcZ : "0";
     };
 
-    const repositionFixedInClone = (bodyClone: HTMLElement) => {
+    const FIXED_TAG = "data-magnifier-fixed-id";
+
+    const buildClone = () => {
+      cloneRoot.innerHTML = "";
       const sy = window.scrollY;
+
+      const fixedSrcs: { id: string; rect: DOMRect }[] = [];
       const srcAll = Array.from(document.body.querySelectorAll<HTMLElement>("*"));
-      const fixedSrcs: { src: HTMLElement; rect: DOMRect }[] = [];
+      let nextId = 0;
       for (const src of srcAll) {
         if (src.closest("[data-page-magnifier-root]")) continue;
-        if (window.getComputedStyle(src).position === "fixed") {
-          fixedSrcs.push({ src, rect: src.getBoundingClientRect() });
-        }
-      }
-      for (const { src, rect } of fixedSrcs) {
+        if (window.getComputedStyle(src).position !== "fixed") continue;
+        const rect = src.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) continue;
-        const path: number[] = [];
-        let cur: HTMLElement | null = src;
-        while (cur && cur !== document.body) {
-          const parentEl: HTMLElement | null = cur.parentElement;
-          if (!parentEl) break;
-          path.unshift(Array.prototype.indexOf.call(parentEl.children, cur));
-          cur = parentEl;
-        }
-        let dst: HTMLElement | null = bodyClone;
-        for (const idx of path) {
-          if (!dst) break;
-          dst = dst.children[idx] as HTMLElement | null;
-        }
+        const id = String(nextId++);
+        src.setAttribute(FIXED_TAG, id);
+        fixedSrcs.push({ id, rect });
+      }
+
+      const bodyClone = document.body.cloneNode(true) as HTMLElement;
+
+      for (const src of srcAll) {
+        if (src.hasAttribute(FIXED_TAG)) src.removeAttribute(FIXED_TAG);
+      }
+
+      bodyClone
+        .querySelectorAll("[data-page-magnifier-root]")
+        .forEach((el) => el.remove());
+
+      for (const { id, rect } of fixedSrcs) {
+        const dst = bodyClone.querySelector<HTMLElement>(
+          `[${FIXED_TAG}="${id}"]`,
+        );
         if (!dst) continue;
+        dst.removeAttribute(FIXED_TAG);
         dst.style.position = "absolute";
         dst.style.left = `${rect.left}px`;
         dst.style.top = `${rect.top + sy}px`;
@@ -78,15 +87,7 @@ export function PageMagnifier() {
         dst.style.height = `${rect.height}px`;
         dst.style.margin = "0";
       }
-    };
 
-    const buildClone = () => {
-      cloneRoot.innerHTML = "";
-      const bodyClone = document.body.cloneNode(true) as HTMLElement;
-      bodyClone
-        .querySelectorAll("[data-page-magnifier-root]")
-        .forEach((el) => el.remove());
-      repositionFixedInClone(bodyClone);
       const srcCanvas = document.querySelector<HTMLCanvasElement>(
         "canvas[data-magnifiable]",
       );
@@ -247,19 +248,13 @@ export function PageMagnifier() {
         `}</style>
       )}
       <div className="fixed right-6 top-[28%] -translate-y-1/2 z-[10001] w-9 h-9">
-        {(enabled || toggleHover) && (
+        {toggleHover && (
           <span
             role="tooltip"
             className="absolute left-1/2 -translate-x-1/2 text-center text-[11px] px-2 py-1 rounded bg-black/85 text-white pointer-events-none leading-tight"
             style={{ bottom: 36 }}
           >
-            {!enabled ? (
-              <>
-                Tap to
-                <br />
-                Enable
-              </>
-            ) : toggleHover ? (
+            {enabled ? (
               <>
                 Tap to
                 <br />
@@ -267,9 +262,9 @@ export function PageMagnifier() {
               </>
             ) : (
               <>
-                Telescope
+                Tap to
                 <br />
-                Enabled
+                Enable
               </>
             )}
           </span>
@@ -329,7 +324,6 @@ export function PageMagnifier() {
                 height: "100vh",
                 transformOrigin: "0 0",
                 pointerEvents: "none",
-                contain: "layout paint",
               }}
             />
           </div>
