@@ -8,8 +8,11 @@ import {
   magnifierState,
 } from "./magnifier-state";
 
+const REBUILD_DEBOUNCE_MS = 200;
+
 export function PageMagnifier() {
   const [enabled, setEnabled] = useState(false);
+  const [toggleHover, setToggleHover] = useState(false);
   const [, forceTick] = useState(0);
   const lensRef = useRef<HTMLDivElement>(null);
   const cloneRef = useRef<HTMLDivElement>(null);
@@ -26,25 +29,79 @@ export function PageMagnifier() {
     const cloneRoot = cloneRef.current;
     if (!cloneRoot) return;
 
+    let rebuildTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const styleClonedCanvas = (dst: HTMLCanvasElement, src: HTMLCanvasElement) => {
+      const srcZ = window.getComputedStyle(src).zIndex;
+      dst.style.position = "absolute";
+      dst.style.left = "0px";
+      dst.style.right = "auto";
+      dst.style.bottom = "auto";
+      dst.style.top = `${window.scrollY}px`;
+      dst.style.width = `${window.innerWidth}px`;
+      dst.style.height = `${window.innerHeight}px`;
+      dst.style.zIndex = srcZ && srcZ !== "auto" ? srcZ : "0";
+    };
+
+    const repositionFixedInClone = (bodyClone: HTMLElement) => {
+      const sy = window.scrollY;
+      const srcAll = Array.from(document.body.querySelectorAll<HTMLElement>("*"));
+      const fixedSrcs: { src: HTMLElement; rect: DOMRect }[] = [];
+      for (const src of srcAll) {
+        if (src.closest("[data-page-magnifier-root]")) continue;
+        if (window.getComputedStyle(src).position === "fixed") {
+          fixedSrcs.push({ src, rect: src.getBoundingClientRect() });
+        }
+      }
+      for (const { src, rect } of fixedSrcs) {
+        if (rect.width === 0 || rect.height === 0) continue;
+        const path: number[] = [];
+        let cur: HTMLElement | null = src;
+        while (cur && cur !== document.body) {
+          const parentEl: HTMLElement | null = cur.parentElement;
+          if (!parentEl) break;
+          path.unshift(Array.prototype.indexOf.call(parentEl.children, cur));
+          cur = parentEl;
+        }
+        let dst: HTMLElement | null = bodyClone;
+        for (const idx of path) {
+          if (!dst) break;
+          dst = dst.children[idx] as HTMLElement | null;
+        }
+        if (!dst) continue;
+        dst.style.position = "absolute";
+        dst.style.left = `${rect.left}px`;
+        dst.style.top = `${rect.top + sy}px`;
+        dst.style.right = "auto";
+        dst.style.bottom = "auto";
+        dst.style.width = `${rect.width}px`;
+        dst.style.height = `${rect.height}px`;
+        dst.style.margin = "0";
+      }
+    };
+
     const buildClone = () => {
       cloneRoot.innerHTML = "";
       const bodyClone = document.body.cloneNode(true) as HTMLElement;
       bodyClone
         .querySelectorAll("[data-page-magnifier-root]")
         .forEach((el) => el.remove());
-      bodyClone
-        .querySelectorAll<HTMLCanvasElement>("canvas[data-magnifiable]")
-        .forEach((c) => {
-          c.style.zIndex = "-1";
-        });
-      bodyClone
-        .querySelectorAll<HTMLElement>("[data-testid='garden-wrapper']")
-        .forEach((el) => {
-          el.style.zIndex = "200";
-        });
+      repositionFixedInClone(bodyClone);
+      const srcCanvas = document.querySelector<HTMLCanvasElement>(
+        "canvas[data-magnifiable]",
+      );
+      const dstCanvas = bodyClone.querySelector<HTMLCanvasElement>(
+        "canvas[data-magnifiable]",
+      );
+      if (srcCanvas && dstCanvas) styleClonedCanvas(dstCanvas, srcCanvas);
       cloneRoot.appendChild(bodyClone);
     };
     buildClone();
+
+    const scheduleRebuild = () => {
+      if (rebuildTimer) clearTimeout(rebuildTimer);
+      rebuildTimer = setTimeout(buildClone, REBUILD_DEBOUNCE_MS);
+    };
 
     const copyCanvas = () => {
       const src =
@@ -57,9 +114,9 @@ export function PageMagnifier() {
           dst.width = src.width;
           dst.height = src.height;
         }
-        dst.style.position = "absolute";
         dst.style.top = `${window.scrollY}px`;
-        dst.style.left = "0px";
+        dst.style.width = `${window.innerWidth}px`;
+        dst.style.height = `${window.innerHeight}px`;
         const dctx = dst.getContext("2d");
         if (dctx) {
           dctx.clearRect(0, 0, dst.width, dst.height);
@@ -86,7 +143,6 @@ export function PageMagnifier() {
         clone.style.transform = `translate(${r - x * zoom}px, ${r - docY * zoom}px) scale(${zoom})`;
       }
       copyCanvas();
-      // also nudge re-render so + icon repositions
       forceTick((t) => (t + 1) & 0xffff);
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -105,23 +161,52 @@ export function PageMagnifier() {
       e.stopPropagation();
       e.stopImmediatePropagation();
       if (magnifierState.level >= MAGNIFIER_MAX_LEVEL) {
-        setEnabled(false);
+        magnifierState.level = 0;
         return;
       }
       magnifierState.level += 1;
     };
-    const onScroll = () => buildClone();
-    const onResize = () => buildClone();
+    const swallowHover = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-magnifier-toggle]")) return;
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    };
+    const onScroll = () => scheduleRebuild();
+    const onResize = () => scheduleRebuild();
 
     document.addEventListener("mousemove", onMove);
     document.addEventListener("click", onClick, true);
+    const hoverEvents: (keyof DocumentEventMap)[] = [
+      "mouseover",
+      "mouseout",
+      "mouseenter",
+      "mouseleave",
+      "pointerover",
+      "pointerout",
+      "pointerenter",
+      "pointerleave",
+      "mousedown",
+      "mouseup",
+      "pointerdown",
+      "pointerup",
+      "focusin",
+      "focusout",
+    ];
+    for (const evt of hoverEvents) {
+      document.addEventListener(evt, swallowHover, true);
+    }
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      if (rebuildTimer) clearTimeout(rebuildTimer);
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("click", onClick, true);
+      for (const evt of hoverEvents) {
+        document.removeEventListener(evt, swallowHover, true);
+      }
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       cloneRoot.innerHTML = "";
@@ -136,7 +221,6 @@ export function PageMagnifier() {
     });
   };
 
-  // Compute + icon position based on current state (re-renders via forceTick)
   const level = magnifierState.level;
   const scale = Math.pow(2, level);
   const r = MAGNIFIER_LENS_RADIUS * scale;
@@ -162,18 +246,48 @@ export function PageMagnifier() {
           }
         `}</style>
       )}
-      <button
-        type="button"
-        data-magnifier-toggle
-        onClick={handleToggle}
-        className={`fixed right-6 top-[28%] -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur-md border border-white/10 z-[10001] flex items-center justify-center transition-colors duration-200 cursor-pointer ${
-          enabled
-            ? "bg-white/20 text-white border-white/25"
-            : "bg-black/40 text-white/80 hover:text-white hover:bg-black/55 hover:border-white/20"
-        }`}
-        aria-label="Toggle magnifier"
-        aria-pressed={enabled}
-      >
+      <div className="fixed right-6 top-[28%] -translate-y-1/2 z-[10001] w-9 h-9">
+        {(enabled || toggleHover) && (
+          <span
+            role="tooltip"
+            className="absolute left-1/2 -translate-x-1/2 text-center text-[11px] px-2 py-1 rounded bg-black/85 text-white pointer-events-none leading-tight"
+            style={{ bottom: 36 }}
+          >
+            {!enabled ? (
+              <>
+                Tap to
+                <br />
+                Enable
+              </>
+            ) : toggleHover ? (
+              <>
+                Tap to
+                <br />
+                Disable
+              </>
+            ) : (
+              <>
+                Telescope
+                <br />
+                enabled
+              </>
+            )}
+          </span>
+        )}
+        <button
+          type="button"
+          data-magnifier-toggle
+          onClick={handleToggle}
+          onMouseEnter={() => setToggleHover(true)}
+          onMouseLeave={() => setToggleHover(false)}
+          className={`w-9 h-9 rounded-full backdrop-blur-md border border-white/10 flex items-center justify-center transition-colors duration-200 cursor-pointer ${
+            enabled
+              ? "bg-white/20 text-white border-white/25"
+              : "bg-black/40 text-white/80 hover:text-white hover:bg-black/55 hover:border-white/20"
+          }`}
+          aria-label="Toggle magnifier"
+          aria-pressed={enabled}
+        >
         <svg
           width="22"
           height="22"
@@ -187,7 +301,8 @@ export function PageMagnifier() {
           <circle cx="11" cy="11" r="7" />
           <line x1="16.5" y1="16.5" x2="21" y2="21" />
         </svg>
-      </button>
+        </button>
+      </div>
       {enabled && (
         <>
           <div
@@ -196,6 +311,7 @@ export function PageMagnifier() {
             style={{
               boxShadow:
                 "0 0 0 1px rgba(255,255,255,1), 0 0 0 3px rgba(255,255,255,0.35), 0 0 18px 4px rgba(255,255,255,0.04)",
+              isolation: "isolate",
             }}
           >
             <div
@@ -208,6 +324,7 @@ export function PageMagnifier() {
                 height: "100vh",
                 transformOrigin: "0 0",
                 pointerEvents: "none",
+                contain: "layout paint",
               }}
             />
           </div>
