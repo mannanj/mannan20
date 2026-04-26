@@ -26,7 +26,12 @@ type InventoryCtx = {
 const InventoryContext = createContext<InventoryCtx | null>(null);
 
 const STORAGE_KEY = "article-inventory-v1";
-const MAX_COUNT = 12;
+const ITEM_MAX: Record<string, number> = {
+  "easter-egg": 12,
+  "id-card": 1,
+};
+const DEFAULT_MAX = 12;
+const maxFor = (id: string) => ITEM_MAX[id] ?? DEFAULT_MAX;
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -59,7 +64,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
-        if (existing.count >= MAX_COUNT) return prev;
+        if (existing.count >= maxFor(item.id)) return prev;
         return prev.map((i) =>
           i.id === item.id ? { ...i, count: i.count + 1 } : i,
         );
@@ -110,6 +115,77 @@ function MiniEgg({ size }: { size: number }) {
   );
 }
 
+function IdCardArt({
+  width,
+  height,
+  rotate = 0,
+  glow = true,
+}: {
+  width: number;
+  height: number;
+  rotate?: number;
+  glow?: boolean;
+}) {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 16"
+      fill="none"
+      aria-hidden="true"
+      style={{
+        transform: `rotate(${rotate}deg)`,
+        filter: glow
+          ? "drop-shadow(0 0 3px rgba(255,225,140,0.9)) drop-shadow(0 0 6px rgba(255,200,80,0.55))"
+          : "drop-shadow(0 1px 1px rgba(0,0,0,0.4))",
+        overflow: "visible",
+      }}
+    >
+      <rect
+        x="0.5"
+        y="0.5"
+        width="23"
+        height="15"
+        rx="1.6"
+        fill="#fef9e6"
+        stroke="#7a4a16"
+        strokeWidth="0.6"
+      />
+      <rect
+        x="2"
+        y="2.4"
+        width="6"
+        height="7"
+        rx="0.5"
+        fill="#b48050"
+        opacity="0.7"
+      />
+      <circle cx="5" cy="5" r="1.2" fill="#7a4a16" opacity="0.55" />
+      <path
+        d="M2.6 9.1 Q5 7.2 7.4 9.1"
+        fill="#7a4a16"
+        opacity="0.55"
+      />
+      <line x1="9.5" y1="3.2" x2="22" y2="3.2" stroke="#7a4a16" strokeWidth="0.7" opacity="0.55" />
+      <line x1="9.5" y1="5.2" x2="20" y2="5.2" stroke="#7a4a16" strokeWidth="0.55" opacity="0.45" />
+      <line x1="9.5" y1="7.2" x2="22" y2="7.2" stroke="#7a4a16" strokeWidth="0.55" opacity="0.45" />
+      <line x1="2" y1="11.3" x2="22" y2="11.3" stroke="#7a4a16" strokeWidth="0.4" opacity="0.35" />
+      <line x1="2" y1="13" x2="22" y2="13" stroke="#7a4a16" strokeWidth="0.4" opacity="0.35" />
+    </svg>
+  );
+}
+
+function MiniIdCard({ size }: { size: number }) {
+  return (
+    <span
+      className="inline-block shrink-0"
+      style={{ width: size, height: Math.round((size * 2) / 3) }}
+    >
+      <IdCardArt width={size} height={Math.round((size * 2) / 3)} glow={false} />
+    </span>
+  );
+}
+
 export function EasterEgg() {
   const { countOf, add, hydrated } = useInventory();
   const [hover, setHover] = useState(false);
@@ -119,7 +195,7 @@ export function EasterEgg() {
   const eggCount = countOf("easter-egg");
 
   if (!hydrated) return null;
-  if (eggCount >= MAX_COUNT) return null;
+  if (eggCount >= maxFor("easter-egg")) return null;
   if (sessionCollected && !flyFrom) return null;
 
   const handleClick = () => {
@@ -217,6 +293,121 @@ function FlyingEgg({
         animation: "eggFly 1.6s linear forwards",
       }}
     />,
+    document.body,
+  );
+}
+
+export function IdCardCollectible({ rotate = -78 }: { rotate?: number }) {
+  const { countOf, add, hydrated } = useInventory();
+  const [hover, setHover] = useState(false);
+  const [flyFrom, setFlyFrom] = useState<DOMRect | null>(null);
+  const [sessionCollected, setSessionCollected] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const idCount = countOf("id-card");
+
+  if (!hydrated) return null;
+  if (idCount >= maxFor("id-card")) return null;
+  if (sessionCollected && !flyFrom) return null;
+
+  const handleClick = () => {
+    if (!buttonRef.current || flyFrom) return;
+    setFlyFrom(buttonRef.current.getBoundingClientRect());
+    setHover(false);
+  };
+
+  const W = 24;
+  const H = 16;
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        disabled={!!flyFrom}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onClick={handleClick}
+        aria-label="ID card — tap to claim"
+        data-testid="id-card"
+        className="absolute z-10 cursor-pointer p-1 -m-1 group"
+        style={{
+          visibility: flyFrom ? "hidden" : "visible",
+          width: W,
+          height: H,
+        }}
+      >
+        <span
+          className="block relative"
+          style={{
+            width: W,
+            height: H,
+            animation: "idPulse 2.5s ease-in-out infinite",
+            transformOrigin: "center",
+          }}
+        >
+          <IdCardArt width={W} height={H} rotate={rotate} glow />
+        </span>
+        {hover && (
+          <span
+            role="tooltip"
+            className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 text-center text-[10px] px-2 py-1 rounded bg-black/90 text-white pointer-events-none whitespace-nowrap leading-tight"
+          >
+            <span className="block">ID Card</span>
+            <span className="block">Tap to claim</span>
+          </span>
+        )}
+      </button>
+      {flyFrom && (
+        <FlyingIdCard
+          from={flyFrom}
+          rotate={rotate}
+          onDone={() => {
+            add({ id: "id-card", label: "ID Card" });
+            setSessionCollected(true);
+            setFlyFrom(null);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function FlyingIdCard({
+  from,
+  rotate,
+  onDone,
+}: {
+  from: DOMRect;
+  rotate: number;
+  onDone: () => void;
+}) {
+  const targetX = window.innerWidth - 24 - 20;
+  const targetY = window.innerHeight - 24 - 20;
+  const dx = targetX - (from.left + from.width / 2);
+  const dy = targetY - (from.top + from.height / 2);
+  const ctrlX = dx * 0.4;
+  const ctrlY = -120;
+  const W = 24;
+  const H = 16;
+
+  return createPortal(
+    <div
+      onAnimationEnd={onDone}
+      style={{
+        position: "fixed",
+        left: from.left + from.width / 2 - W / 2,
+        top: from.top + from.height / 2 - H / 2,
+        width: W,
+        height: H,
+        zIndex: 200,
+        pointerEvents: "none",
+        offsetPath: `path('M 0 0 Q ${ctrlX} ${ctrlY} ${dx} ${dy}')`,
+        offsetRotate: "0deg",
+        animation: "eggFly 1.6s linear forwards",
+      }}
+    >
+      <IdCardArt width={W} height={H} rotate={rotate} glow />
+    </div>,
     document.body,
   );
 }
@@ -454,13 +645,15 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
             <li key={item.id} className="flex items-center gap-1.5">
               {item.id === "easter-egg" ? (
                 <MiniEgg size={9} />
+              ) : item.id === "id-card" ? (
+                <MiniIdCard size={14} />
               ) : (
                 <span className="text-amber-300/80">•</span>
               )}
               <span>
                 {item.label}{" "}
-                {item.count >= MAX_COUNT
-                  ? `(${MAX_COUNT}) (max)`
+                {item.count >= maxFor(item.id)
+                  ? `(${maxFor(item.id)}) (max)`
                   : `x${item.count}`}
               </span>
             </li>

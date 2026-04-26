@@ -6,7 +6,11 @@ import dynamic from "next/dynamic";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
 import { ArticleBody } from "../article-body";
-import { EasterEgg, InventoryProvider } from "./article-inventory";
+import {
+  EasterEgg,
+  IdCardCollectible,
+  InventoryProvider,
+} from "./article-inventory";
 
 const CommunityConstellation = dynamic(
   () => import("./community-constellation"),
@@ -257,7 +261,7 @@ export function SeekingCommunityBody() {
               and accept others without requiring that they share your own.
             </p>
             <p>
-              <span className="block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
+              <span className="relative block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
                 <Image
                   src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains.png"
                   alt="Illustrated scene of car camping in the mountains"
@@ -265,6 +269,12 @@ export function SeekingCommunityBody() {
                   height={300}
                   className="w-full h-auto -translate-y-[calc(40%-30px)]"
                 />
+                <span
+                  className="absolute"
+                  style={{ left: "24%", top: "72%" }}
+                >
+                  <IdCardCollectible rotate={-78} />
+                </span>
               </span>
               I arrived at an ecovillage in the mountains. My stay was two
               weeks. Work practicalities meant I traveled an hour to town twice

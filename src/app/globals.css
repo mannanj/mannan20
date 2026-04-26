@@ -469,6 +469,11 @@ body {
   50% { transform: scale(1.2); }
 }
 
+@keyframes idPulse {
+  0%, 100% { transform: scale(0.8); }
+  50% { transform: scale(1.2); }
+}
+
 @keyframes eggFly {
   0% {
     offset-distance: 0%;
