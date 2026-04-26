@@ -399,7 +399,7 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
     >
       <div
         ref={panelRef}
-        className="absolute text-white text-[11px] leading-snug bg-black/85 rounded-md p-1"
+        className="absolute text-white text-[11px] leading-snug bg-black/85 rounded-md px-2 py-1"
         style={{
           left: PANEL_LEFT,
           bottom: PANEL_BOTTOM_FROM_BOTTOM,
