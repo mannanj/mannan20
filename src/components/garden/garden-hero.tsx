@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { UnicornScene } from "./unicorn-scene";
 import { useOptionalGoldInfection } from "@/context/gold-infection-context";
 
@@ -7,21 +8,31 @@ interface GardenHeroProps {
   sceneFilePath?: string;
   heightClassName?: string;
   translateY?: string;
+  ownGoldHandlers?: boolean;
 }
 
 export function GardenHero({
   sceneFilePath = "/unicorn/health-hero-scene.json",
   heightClassName = "h-[620px] md:h-[820px]",
   translateY = "-translate-y-[50px]",
+  ownGoldHandlers = true,
 }: GardenHeroProps) {
   const gold = useOptionalGoldInfection();
+
+  const goldHandlers = ownGoldHandlers
+    ? {
+        onMouseEnter: (e: ReactMouseEvent) =>
+          gold?.enterScene(e.clientX, e.clientY),
+        onMouseMove: (e: ReactMouseEvent) =>
+          gold?.moveInScene(e.clientX, e.clientY),
+        onMouseLeave: () => gold?.leaveScene(),
+      }
+    : {};
 
   return (
     <section
       className={`relative ${heightClassName} overflow-hidden bg-[#0b0b0b]`}
-      onMouseEnter={(e) => gold?.enterScene(e.clientX, e.clientY)}
-      onMouseMove={(e) => gold?.moveInScene(e.clientX, e.clientY)}
-      onMouseLeave={() => gold?.leaveScene()}
+      {...goldHandlers}
     >
       <div className="absolute inset-0">
         <UnicornScene

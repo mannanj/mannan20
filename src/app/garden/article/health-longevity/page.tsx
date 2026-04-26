@@ -33,7 +33,7 @@ export default function HealthLongevityArticle() {
   return (
     <HealthGoldHoverShell>
       <ArticleLayout
-        graphic={<GardenHero />}
+        graphic={<GardenHero ownGoldHandlers={false} />}
         graphicLayout="bleed"
         topPadding="-mt-[278px] pt-0 relative z-20"
       >
