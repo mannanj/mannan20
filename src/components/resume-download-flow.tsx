@@ -10,7 +10,7 @@ import { GuidedCursor } from '@/components/guided-flow/guided-cursor';
 import { Spotlight } from '@/components/guided-flow/spotlight';
 import { CursorHide } from '@/components/guided-flow/cursor-hide';
 
-const RESUME_PATH = '/data/documents/Mannan_Javid_Resume.pdf';
+const RESUME_PATH = 'https://hq19kliyhzkpvads.public.blob.vercel-storage.com/resume/Mannan_Javid_Resume.pdf';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
 const DEFAULT_BODY = 'Would you like to download this resume?';
 
