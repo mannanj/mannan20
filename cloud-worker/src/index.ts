@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import type { Env } from './types';
 import {
   bucketFor,
@@ -13,8 +13,8 @@ import {
   mintMagicToken,
   normalizeEmail,
   readSession,
-  stripFolderPrefix,
   FOLDER_CONFIG,
+  type Folder,
   type Session,
 } from './auth';
 import { sendMagicLink } from './email';
@@ -110,33 +110,31 @@ app.get('/cloud', async (c) => {
   return c.html(cloudIndexPage(session.email, folders));
 });
 
-app.get('/cloud/:folder', async (c) => {
-  const session = c.get('session');
-  if (!session) return c.redirect('/', 302);
-  const folder = c.req.param('folder');
-  if (!isFolder(folder)) return c.html(messagePage('Not found', 'That folder does not exist.'), 404);
-  if (!(await canAccess(c.env, session.email, folder))) {
-    return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
-  }
-
+async function handleFolderListing(c: Context<AppCtx>, folder: Folder, subpath: string) {
   type Entry = { name: string; size: number; uploaded: string };
-  const cacheKey = listingCacheKey(folder);
+  type Listing = { dirs: string[]; files: Entry[] };
+  const cacheKey = listingCacheKey(folder, subpath);
   const cache = caches.default;
-  let files: Entry[];
+  let listing: Listing;
 
   const hit = await cache.match(cacheKey);
   if (hit) {
-    files = await hit.json<Entry[]>();
+    listing = await hit.json<Listing>();
   } else {
     const cfg = FOLDER_CONFIG[folder];
+    const fullPrefix = subpath ? `${cfg.keyPrefix}${subpath}/` : cfg.keyPrefix;
     const bucket = bucketFor(c.env, folder);
-    const list = await bucket.list({ prefix: cfg.keyPrefix, limit: 1000 });
-    files = list.objects.map((o) => ({
-      name: stripFolderPrefix(folder, o.key),
+    const list = await bucket.list({ prefix: fullPrefix, delimiter: '/', limit: 1000 });
+    const dirs = (list.delimitedPrefixes ?? [])
+      .map((p) => p.slice(fullPrefix.length).replace(/\/$/, ''))
+      .filter((p) => p.length > 0);
+    const files = list.objects.map((o) => ({
+      name: o.key.slice(fullPrefix.length),
       size: o.size,
       uploaded: o.uploaded.toISOString().slice(0, 10),
     }));
-    const cacheRes = new Response(JSON.stringify(files), {
+    listing = { dirs, files };
+    const cacheRes = new Response(JSON.stringify(listing), {
       headers: {
         'content-type': 'application/json',
         'cache-control': 's-maxage=300',
@@ -145,7 +143,34 @@ app.get('/cloud/:folder', async (c) => {
     c.executionCtx.waitUntil(cache.put(cacheKey, cacheRes));
   }
 
-  return c.html(folderPage(session.email, folder, files));
+  return c.html(folderPage(c.get('session')!.email, folder, subpath, listing.dirs, listing.files));
+}
+
+function normalizeSubpath(raw: string): string {
+  return raw.replace(/^\/+|\/+$/g, '');
+}
+
+app.get('/cloud/:folder', async (c) => {
+  const session = c.get('session');
+  if (!session) return c.redirect('/', 302);
+  const folder = c.req.param('folder');
+  if (!isFolder(folder)) return c.html(messagePage('Not found', 'That folder does not exist.'), 404);
+  if (!(await canAccess(c.env, session.email, folder))) {
+    return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
+  }
+  return handleFolderListing(c, folder, '');
+});
+
+app.get('/cloud/:folder/*', async (c) => {
+  const session = c.get('session');
+  if (!session) return c.redirect('/', 302);
+  const folder = c.req.param('folder');
+  if (!isFolder(folder)) return c.html(messagePage('Not found', 'That folder does not exist.'), 404);
+  if (!(await canAccess(c.env, session.email, folder))) {
+    return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
+  }
+  const subpath = normalizeSubpath(c.req.path.slice(`/cloud/${folder}`.length));
+  return handleFolderListing(c, folder, subpath);
 });
 
 app.get('/files/:folder/:name{.+}', async (c) => {

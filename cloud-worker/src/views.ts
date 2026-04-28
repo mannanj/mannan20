@@ -83,27 +83,50 @@ export const cloudIndexPage = (email: string, folders: readonly Folder[]) => htm
 export const folderPage = (
   email: string,
   folder: Folder,
+  subpath: string,
+  dirs: string[],
   files: { name: string; size: number; uploaded: string }[],
-) => html`<!doctype html>
-<html><head><title>Cloud — ${folder}</title>${SHELL_HEAD}</head>
+) => {
+  const segments = subpath ? subpath.split('/') : [];
+  const title = segments.length ? segments[segments.length - 1] : folder;
+  const crumbs: { label: string; href: string }[] = [
+    { label: 'cloud', href: '/cloud' },
+  ];
+  if (segments.length > 0) {
+    crumbs.push({ label: folder, href: `/cloud/${folder}` });
+    for (let i = 0; i < segments.length - 1; i++) {
+      crumbs.push({
+        label: segments[i],
+        href: `/cloud/${folder}/${segments.slice(0, i + 1).join('/')}`,
+      });
+    }
+  }
+  const subPrefix = subpath ? `${subpath}/` : '';
+  return html`<!doctype html>
+<html><head><title>Cloud — ${title}</title>${SHELL_HEAD}</head>
 <body><div class="card">
   <div class="header">
     <div>
-      <div class="crumb"><a href="/cloud">cloud</a> /</div>
-      <h1>${folder}</h1>
+      <div class="crumb">${crumbs.map((c) => html`<a href="${c.href}">${c.label}</a> / `)}</div>
+      <h1>${title}</h1>
       <div class="meta">${email}</div>
     </div>
     <form method="post" action="/auth/sign-out"><button type="submit">Sign out</button></form>
   </div>
-  ${files.length === 0
+  ${dirs.length === 0 && files.length === 0
     ? html`<p class="msg">No files yet.</p>`
     : html`<ul class="files">
+        ${dirs.map((d) => html`<li>
+          <a href="/cloud/${folder}/${subPrefix}${d}">${d}/</a>
+          <div class="meta">folder</div>
+        </li>`)}
         ${files.map((f) => html`<li>
-          <a href="/files/${folder}/${f.name}">${f.name}</a>
+          <a href="/files/${folder}/${subPrefix}${f.name}">${f.name}</a>
           <div class="meta">${formatSize(f.size)} · ${f.uploaded}</div>
         </li>`)}
       </ul>`}
 </div></body></html>`;
+};
 
 export const messagePage = (title: string, body: string) => html`<!doctype html>
 <html><head><title>${title}</title>${SHELL_HEAD}</head>
