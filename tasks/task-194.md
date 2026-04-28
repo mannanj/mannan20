@@ -107,7 +107,7 @@ Notes:
 - [ ] Commit + push (`[Task-194]` tag, one commit)
 - [ ] Invite real Hans (need email from user)
 - [ ] Optional: add a third folder — change `FOLDERS` in `src/auth.ts`, redeploy
-- [ ] Deferred: move `mannan.is` to Cloudflare DNS, bind custom domain `cloud.mannan.is`, update `PUBLIC_BASE_URL`
+- [x] ~~Deferred: move `mannan.is` to Cloudflare DNS, bind custom domain `cloud.mannan.is`, update `PUBLIC_BASE_URL`~~ — **not possible: Cloudflare does not support `.is` TLDs.** Staying on `cloud-worker.mannanteam.workers.dev` with `mannan.is/cloud` redirect (commits 8fd9e77, b3b497e).
 - [ ] Deferred: admin upload UI (current path is `wrangler r2 object put` or curl to `/admin/upload`)
 
 ## Files

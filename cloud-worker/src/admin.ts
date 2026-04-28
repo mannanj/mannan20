@@ -9,6 +9,7 @@ import {
   type Session,
 } from './auth';
 import { sendMagicLink } from './email';
+import { listingCacheKey } from './cache';
 
 interface AdminCtx {
   Bindings: Env;
@@ -97,6 +98,7 @@ admin.post('/upload', async (c) => {
   await c.env.FILES.put(key, file.stream(), {
     httpMetadata: { contentType: file.type || 'application/octet-stream' },
   });
+  c.executionCtx.waitUntil(caches.default.delete(listingCacheKey(folder)));
   return c.json({ ok: true, key, size: file.size });
 });
 

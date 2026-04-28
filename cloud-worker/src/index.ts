@@ -22,6 +22,7 @@ import {
   signInPage,
 } from './views';
 import { admin } from './admin';
+import { listingCacheKey } from './cache';
 
 interface AppCtx {
   Bindings: Env;
@@ -113,12 +114,31 @@ app.get('/cloud/:folder', async (c) => {
   if (!(await canAccess(c.env, session.email, folder))) {
     return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
   }
-  const list = await c.env.FILES.list({ prefix: `${folder}/`, limit: 1000 });
-  const files = list.objects.map((o) => ({
-    key: o.key,
-    size: o.size,
-    uploaded: o.uploaded.toISOString().slice(0, 10),
-  }));
+
+  type Entry = { key: string; size: number; uploaded: string };
+  const cacheKey = listingCacheKey(folder);
+  const cache = caches.default;
+  let files: Entry[];
+
+  const hit = await cache.match(cacheKey);
+  if (hit) {
+    files = await hit.json<Entry[]>();
+  } else {
+    const list = await c.env.FILES.list({ prefix: `${folder}/`, limit: 1000 });
+    files = list.objects.map((o) => ({
+      key: o.key,
+      size: o.size,
+      uploaded: o.uploaded.toISOString().slice(0, 10),
+    }));
+    const cacheRes = new Response(JSON.stringify(files), {
+      headers: {
+        'content-type': 'application/json',
+        'cache-control': 's-maxage=300',
+      },
+    });
+    c.executionCtx.waitUntil(cache.put(cacheKey, cacheRes));
+  }
+
   return c.html(folderPage(session.email, folder, files));
 });
 

@@ -76,15 +76,11 @@ wrangler deploy
 
 The Worker will be live at `https://cloud-worker.<your-workers-subdomain>.workers.dev`. Update `vars.PUBLIC_BASE_URL` in `wrangler.jsonc` to that exact URL and redeploy so magic-link emails point to the right host.
 
-### 6. Custom domain (later, when DNS moves to Cloudflare)
+### 6. Custom domain — not available
 
-When `mannan.is` is on Cloudflare DNS:
+Cloudflare does not support `.is` TLDs, so `mannan.is` cannot be moved to Cloudflare DNS and `cloud.mannan.is` cannot be bound as a custom domain. The Worker stays on `cloud-worker.mannanteam.workers.dev`; `mannan.is/cloud` redirects to it via the Next.js app.
 
-1. Cloudflare Dashboard → Workers & Pages → cloud-worker → Settings → Domains & Routes → Add Custom Domain → `cloud.mannan.is`.
-2. Update `vars.PUBLIC_BASE_URL` to `https://cloud.mannan.is`.
-3. `wrangler deploy`.
-
-Resend (sender domain) does NOT require Cloudflare DNS — verify `mannan.is` in Resend by adding the SPF/DKIM/DMARC records at whatever DNS host the domain is on.
+Resend (sender domain) does NOT require Cloudflare DNS — `mannan.is` is verified in Resend by SPF/DKIM/DMARC records at the existing DNS host.
 
 ## Local dev
 
