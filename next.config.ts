@@ -13,12 +13,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/cloud/:path*',
-        destination: 'https://cloud-worker.mannanteam.workers.dev/cloud/:path*',
-        permanent: false,
-      },
-      {
-        source: '/cloud',
+        source: '/cloud{/}?',
         destination: 'https://cloud-worker.mannanteam.workers.dev/',
         permanent: false,
       },
