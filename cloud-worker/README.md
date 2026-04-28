@@ -6,7 +6,10 @@ Magic-link gated file sharing on Cloudflare. One Worker, one D1 database, one R2
 
 - Cloudflare Workers + Hono
 - D1 (SQLite) — `users`, `magic_tokens`, `folder_members`
-- R2 — `portfolio-files` bucket, prefixes `general/` and `hans/`
+- R2 (three buckets):
+  - `portfolio-files` (binding `FILES`) — `general/` prefix
+  - `mannan-hans` (binding `FILES_HANS`) — Hans's portfolio deliverables
+  - `deep-calm-weave-backups` (binding `FILES_BACKUPS`) — Hans's website backups, written by an external Supabase Edge Function + GitHub Actions; bucket-scoped R2 API token managed in the dashboard
 - Resend HTTP API for magic-link emails
 - HMAC-signed `__Host-session` cookie (no session table)
 
@@ -27,7 +30,7 @@ Magic-link gated file sharing on Cloudflare. One Worker, one D1 database, one R2
 | POST | `/admin/upload` | admin — multipart `folder`, `file` |
 | GET | `/admin/users` | admin — debug listing |
 
-Folders are an in-code allowlist (`FOLDERS` in `src/auth.ts`) — currently `['general', 'hans']`. Add a string here to add a folder.
+Folders are an in-code allowlist (`FOLDERS` in `src/auth.ts`) — currently `['general', 'hans', 'backups']`. Each folder maps to a bucket binding + key prefix in `FOLDER_CONFIG`. Adding a folder requires extending the allowlist, choosing a binding (existing or new), and redeploying.
 
 ## Setup
 
@@ -43,6 +46,8 @@ wrangler d1 create cloud
 # copy the database_id into wrangler.jsonc
 
 wrangler r2 bucket create portfolio-files
+wrangler r2 bucket create mannan-hans
+wrangler r2 bucket create deep-calm-weave-backups
 ```
 
 ### 2. Apply migration

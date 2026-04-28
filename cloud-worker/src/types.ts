@@ -5,6 +5,8 @@ export interface RateLimit {
 export interface Env {
   DB: D1Database;
   FILES: R2Bucket;
+  FILES_HANS: R2Bucket;
+  FILES_BACKUPS: R2Bucket;
   REQUEST_LIMITER: RateLimit;
   VERIFY_LIMITER: RateLimit;
   SESSION_SECRET: string;

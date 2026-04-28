@@ -2,7 +2,9 @@ import { Hono } from 'hono';
 import type { Env } from './types';
 import {
   FOLDERS,
+  bucketFor,
   isFolder,
+  keyFor,
   normalizeEmail,
   mintMagicToken,
   getUser,
@@ -94,8 +96,8 @@ admin.post('/upload', async (c) => {
   if (!(file instanceof File)) {
     return c.json({ error: 'file required (multipart)' }, 400);
   }
-  const key = `${folder}/${file.name}`;
-  await c.env.FILES.put(key, file.stream(), {
+  const key = keyFor(folder, file.name);
+  await bucketFor(c.env, folder).put(key, file.stream(), {
     httpMetadata: { contentType: file.type || 'application/octet-stream' },
   });
   c.executionCtx.waitUntil(caches.default.delete(listingCacheKey(folder)));

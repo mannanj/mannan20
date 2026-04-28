@@ -83,7 +83,7 @@ export const cloudIndexPage = (email: string, folders: readonly Folder[]) => htm
 export const folderPage = (
   email: string,
   folder: Folder,
-  files: { key: string; size: number; uploaded: string }[],
+  files: { name: string; size: number; uploaded: string }[],
 ) => html`<!doctype html>
 <html><head><title>Cloud — ${folder}</title>${SHELL_HEAD}</head>
 <body><div class="card">
@@ -98,13 +98,10 @@ export const folderPage = (
   ${files.length === 0
     ? html`<p class="msg">No files yet.</p>`
     : html`<ul class="files">
-        ${files.map((f) => {
-          const name = f.key.split('/').slice(1).join('/');
-          return html`<li>
-            <a href="/files/${folder}/${name}">${name}</a>
-            <div class="meta">${formatSize(f.size)} · ${f.uploaded}</div>
-          </li>`;
-        })}
+        ${files.map((f) => html`<li>
+          <a href="/files/${folder}/${f.name}">${f.name}</a>
+          <div class="meta">${formatSize(f.size)} · ${f.uploaded}</div>
+        </li>`)}
       </ul>`}
 </div></body></html>`;
 

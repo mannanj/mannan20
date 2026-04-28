@@ -1,16 +1,20 @@
 import { Hono } from 'hono';
 import type { Env } from './types';
 import {
+  bucketFor,
   canAccess,
   clearSessionCookie,
   consumeMagicToken,
   createSessionCookie,
   getUser,
   isFolder,
+  keyFor,
   listAllowedFolders,
   mintMagicToken,
   normalizeEmail,
   readSession,
+  stripFolderPrefix,
+  FOLDER_CONFIG,
   type Session,
 } from './auth';
 import { sendMagicLink } from './email';
@@ -115,7 +119,7 @@ app.get('/cloud/:folder', async (c) => {
     return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
   }
 
-  type Entry = { key: string; size: number; uploaded: string };
+  type Entry = { name: string; size: number; uploaded: string };
   const cacheKey = listingCacheKey(folder);
   const cache = caches.default;
   let files: Entry[];
@@ -124,9 +128,11 @@ app.get('/cloud/:folder', async (c) => {
   if (hit) {
     files = await hit.json<Entry[]>();
   } else {
-    const list = await c.env.FILES.list({ prefix: `${folder}/`, limit: 1000 });
+    const cfg = FOLDER_CONFIG[folder];
+    const bucket = bucketFor(c.env, folder);
+    const list = await bucket.list({ prefix: cfg.keyPrefix, limit: 1000 });
     files = list.objects.map((o) => ({
-      key: o.key,
+      name: stripFolderPrefix(folder, o.key),
       size: o.size,
       uploaded: o.uploaded.toISOString().slice(0, 10),
     }));
@@ -151,8 +157,8 @@ app.get('/files/:folder/:name{.+}', async (c) => {
   if (!(await canAccess(c.env, session.email, folder))) {
     return c.json({ error: 'forbidden' }, 403);
   }
-  const key = `${folder}/${name}`;
-  const obj = await c.env.FILES.get(key);
+  const key = keyFor(folder, name);
+  const obj = await bucketFor(c.env, folder).get(key);
   if (!obj) return c.json({ error: 'not found' }, 404);
   const headers = new Headers();
   obj.writeHttpMetadata(headers);

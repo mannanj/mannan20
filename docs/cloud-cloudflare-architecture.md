@@ -17,7 +17,7 @@ Magic-link gated file sharing, sitting entirely on Cloudflare. The portfolio sit
 |---|---|---|---|
 | HTTP router & handlers | **Workers** (Hono) | Edge JS runtime, per-request V8 isolate | n/a |
 | User / membership tables | **D1** (SQLite) | Tiny relational data; ~3 tables, low writes | `DB` |
-| File storage | **R2** | Free egress, S3-compatible API, no per-GB transit cost | `FILES` |
+| File storage | **R2** (three buckets) | Free egress, S3-compatible API, no per-GB transit cost | `FILES`, `FILES_HANS`, `FILES_BACKUPS` |
 | Magic-link rate limiting | **Rate Limiting** binding | Protects `/auth/request` & `/auth/verify` from abuse | `REQUEST_LIMITER`, `VERIFY_LIMITER` |
 | Folder listing cache | **Cache API** (`caches.default`) | Avoids `R2.list()` on every page-load | n/a |
 | Magic-link email delivery | **Resend** (third-party) | CF doesn't ship transactional email; Resend HTTP API is the simplest path | secret `RESEND_API_KEY` |
@@ -25,25 +25,56 @@ Magic-link gated file sharing, sitting entirely on Cloudflare. The portfolio sit
 
 ## R2 specifically
 
-**Bucket:** `portfolio-files` (binding `FILES`).
+**Three buckets, one Cloudflare account:**
 
-**Layout:** flat object keys with folder prefixes. Folders aren't a real R2 concept — they're string prefixes. The folder allowlist lives in code (`FOLDERS` in `src/auth.ts`), not in the bucket.
+| Bucket | Binding | Purpose | Who writes |
+|---|---|---|---|
+| `portfolio-files` | `FILES` | General portfolio files (key prefix `general/`) | Worker only (admin via `/admin/upload`) |
+| `mannan-hans` | `FILES_HANS` | Hans's portfolio deliverables (whole bucket) | Worker only (admin) |
+| `deep-calm-weave-backups` | `FILES_BACKUPS` | Hans's personal-website backups (DB dumps, code, media) | External Supabase Edge Function + GitHub Actions, via S3-compatible R2 API token scoped to this bucket only |
+
+**Folder → bucket mapping** (in `src/auth.ts`):
+
+```ts
+const FOLDER_CONFIG = {
+  general: { binding: 'FILES',          keyPrefix: 'general/' },
+  hans:    { binding: 'FILES_HANS',     keyPrefix: '' },
+  backups: { binding: 'FILES_BACKUPS',  keyPrefix: '' },
+};
+```
+
+`portfolio-files` keeps a `general/` prefix because that bucket may host other prefixes in the future. The two Hans-owned buckets use the whole bucket as the namespace (no prefix), since the bucket *is* the namespace boundary.
+
+**Layouts:**
 
 ```
 portfolio-files/
   general/welcome.txt
-  general/spaced name.txt   # spaces are fine in keys
-  hans/readme.txt
+  general/spaced name.txt    # spaces are fine in keys
+
+mannan-hans/
+  readme.txt                 # no folder prefix needed
+
+deep-calm-weave-backups/     # populated by external app, not the Worker
+  code/<commit-sha>.tar.gz
+  db/daily/2026-04-28.json.gz
+  db/monthly/2026-04-01.json.gz
+  media/blog-images/<file>.jpg
 ```
 
-**Operations and how the Worker triggers them:**
+**Why three buckets, not one with prefixes:**
+
+R2 API tokens scope at the bucket level — there's no native prefix-restricted token. To give Hans's backup app credentials that *cannot* read or write the portfolio's `general/` content, the only mechanism is to put backups in their own bucket. Splitting Hans's deliverables into `mannan-hans` is then a structural cleanup so the bucket layout matches the access boundaries.
+
+**Operations and how the Worker triggers them** (each binding behaves identically):
 
 | Worker action | R2 method | Class | Cost / million |
 |---|---|---|---|
-| Folder listing (`/cloud/:folder`) | `FILES.list({ prefix })` | **A** | $4.50 |
-| Upload (`/admin/upload`) | `FILES.put(key, stream)` | **A** | $4.50 |
-| Download (`/files/:folder/:name`) | `FILES.get(key)` | **B** | $0.36 |
+| Folder listing (`/cloud/:folder`) | `bucket.list({ prefix })` | **A** | $4.50 |
+| Upload (`/admin/upload`) | `bucket.put(key, stream)` | **A** | $4.50 |
+| Download (`/files/:folder/:name`) | `bucket.get(key)` | **B** | $0.36 |
 | Admin delete (via wrangler) | `R2.delete(key)` | Free | — |
+| Backup-app uploads (S3 PUT to `deep-calm-weave-backups`) | external `s3:PutObject` | **A** | $4.50 |
 
 **Free tier (per month):** 10 GB stored, 1M Class A ops, 10M Class B ops, **unlimited egress**. At the current scale, none of this is approached.
 
@@ -67,7 +98,11 @@ portfolio-files/
 {
   "main": "src/index.ts",
   "d1_databases": [{ "binding": "DB", "database_name": "cloud", "database_id": "…" }],
-  "r2_buckets":  [{ "binding": "FILES", "bucket_name": "portfolio-files" }],
+  "r2_buckets":  [
+    { "binding": "FILES",          "bucket_name": "portfolio-files" },
+    { "binding": "FILES_HANS",     "bucket_name": "mannan-hans" },
+    { "binding": "FILES_BACKUPS",  "bucket_name": "deep-calm-weave-backups" }
+  ],
   "ratelimits":  [
     { "name": "REQUEST_LIMITER", "namespace_id": "1001", "simple": { "limit": 5,  "period": 60 } },
     { "name": "VERIFY_LIMITER",  "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } }
@@ -170,6 +205,38 @@ After a `FILES.put`, the next `/cloud/:folder` request misses cache, lists R2, a
 2. **Bypass paths don't trigger purge.** Uploading via `wrangler r2 object put` or deleting via `wrangler r2 object delete` skips the Worker entirely, so no purge runs. The TTL takes over (max 5 min staleness). Same applies if a delete-via-Worker route is ever added — it must also call `caches.default.delete(...)`.
 3. **Stale listing ≠ broken download.** If a deleted file is still in the cached listing, clicking it triggers `FILES.get(key)` → R2 returns null → existing 404 handler. The download path bypasses the cache entirely, so listings can lie but downloads are always authoritative.
 
+## External app access to `deep-calm-weave-backups`
+
+Hans's personal-website backup app (a separate Vite/React/Supabase project, deployed to Vercel — different repo, different account) writes to the `deep-calm-weave-backups` bucket directly via R2's S3-compatible API. It does **not** go through this Worker.
+
+**Credential:** an R2 API Token created via the Cloudflare Dashboard:
+- Permission: **Object Read & Write**
+- Scope: **specific bucket → `deep-calm-weave-backups`** (only)
+- Returns S3-compatible Access Key ID + Secret Access Key
+- Endpoint: `https://<account-id>.r2.cloudflarestorage.com`
+
+**Why R2 dashboard, not wrangler:** wrangler v4's `r2 bucket` subcommand does not expose API token management. Token creation must happen via the dashboard or the raw Cloudflare REST API (`/accounts/:id/r2/api-tokens`). wrangler can manage everything else (bucket creation, lifecycle rules, CORS, event notifications).
+
+**Why the bucket is also bound to the Worker (`FILES_BACKUPS`):** so Hans (the owner) can browse and download his own backups via magic sign-in at `/cloud/backups`. The Worker reads from the same bucket the backup app writes to. Direction matters here:
+
+| Actor | Reach |
+|---|---|
+| Backup app (S3 token) | Only `deep-calm-weave-backups`. Cannot reach `mannan-hans` or `portfolio-files`. |
+| Worker (admin user) | All three buckets. |
+| Worker (Hans, `folder_members` row for `hans` + `backups`) | `mannan-hans` and `deep-calm-weave-backups`. Not `portfolio-files`. |
+| Worker (other client with only `hans` row) | `mannan-hans` only. |
+
+The isolation that matters — **a compromise of the backup app's S3 token cannot touch `mannan-hans` or `portfolio-files`** — is preserved by the bucket-level scoping of the token. The Worker's broader reach is fine because the Worker is also where the ACL gating happens.
+
+**Sub-prefixes in `deep-calm-weave-backups`:**
+- `code/` — repo tarballs, every push to main (90-day lifecycle)
+- `db/daily/` — daily DB snapshots (30-day lifecycle)
+- `db/monthly/` — first-of-month snapshots (kept indefinitely)
+- `db/trigger/` — manual ad-hoc dumps
+- `media/blog-images/` — weekly delta-synced media (kept indefinitely)
+
+Lifecycle rules can be applied via `wrangler r2 bucket lifecycle add deep-calm-weave-backups …` or in the dashboard.
+
 ## Resend (not Cloudflare, but in the loop)
 
 Magic-link emails ship from `cloud@mannan.is` via Resend's HTTP API. Sender-domain DKIM/SPF/DMARC live at the existing DNS host (Resend doesn't require Cloudflare DNS, which is fortunate since `.is` isn't supported by CF). Free tier: 3k emails/mo, 100/day.
@@ -203,11 +270,13 @@ cd cloud-worker && wrangler deploy
 # Live tail
 wrangler tail cloud-worker --format=pretty
 
-# List R2 objects (wrangler v4 — Worker route is preferred)
-wrangler r2 object list portfolio-files --remote
+# List R2 objects (wrangler v4 has no `list` subcommand for r2 objects;
+# use the Worker's /cloud/<folder> view, the dashboard, or an S3 client)
 
 # Bypass-upload (won't purge listing cache; max 5min staleness)
 wrangler r2 object put portfolio-files/general/foo.pdf --file=./foo.pdf --remote
+wrangler r2 object put mannan-hans/some-deliverable.pdf --file=./x.pdf --remote
+# (Don't put files into deep-calm-weave-backups by hand — that's the backup app's territory)
 
 # Rotate session secret (forces sign-out for everyone)
 openssl rand -hex 32 | wrangler secret put SESSION_SECRET

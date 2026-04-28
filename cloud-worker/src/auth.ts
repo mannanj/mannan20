@@ -1,10 +1,31 @@
 import type { Env } from './types';
 
-export const FOLDERS = ['general', 'hans'] as const;
+export const FOLDERS = ['general', 'hans', 'backups'] as const;
 export type Folder = typeof FOLDERS[number];
 
 export function isFolder(value: string): value is Folder {
   return (FOLDERS as readonly string[]).includes(value);
+}
+
+type BucketBinding = 'FILES' | 'FILES_HANS' | 'FILES_BACKUPS';
+
+export const FOLDER_CONFIG: Record<Folder, { binding: BucketBinding; keyPrefix: string }> = {
+  general: { binding: 'FILES', keyPrefix: 'general/' },
+  hans:    { binding: 'FILES_HANS', keyPrefix: '' },
+  backups: { binding: 'FILES_BACKUPS', keyPrefix: '' },
+};
+
+export function bucketFor(env: Env, folder: Folder): R2Bucket {
+  return env[FOLDER_CONFIG[folder].binding];
+}
+
+export function keyFor(folder: Folder, name: string): string {
+  return `${FOLDER_CONFIG[folder].keyPrefix}${name}`;
+}
+
+export function stripFolderPrefix(folder: Folder, key: string): string {
+  const prefix = FOLDER_CONFIG[folder].keyPrefix;
+  return key.startsWith(prefix) ? key.slice(prefix.length) : key;
 }
 
 const SESSION_TTL_SEC = 60 * 60 * 24 * 30;

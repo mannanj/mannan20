@@ -21,6 +21,14 @@
     {
       "binding": "FILES",
       "bucket_name": "portfolio-files"
+    },
+    {
+      "binding": "FILES_HANS",
+      "bucket_name": "mannan-hans"
+    },
+    {
+      "binding": "FILES_BACKUPS",
+      "bucket_name": "deep-calm-weave-backups"
     }
   ],
   "ratelimits": [
