@@ -1,0 +1,23 @@
+{
+  "name": "cloud-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "types": "wrangler types",
+    "db:migrate:local": "wrangler d1 migrations apply cloud --local",
+    "db:migrate": "wrangler d1 migrations apply cloud --remote",
+    "db:studio": "wrangler d1 execute cloud --remote --command 'SELECT * FROM users;'"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260101.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.86.0"
+  }
+}

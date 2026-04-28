@@ -1,0 +1,4 @@
+SESSION_SECRET=replace-with-32-bytes-hex
+RESEND_API_KEY=re_xxx
+RESEND_FROM=Mannan <cloud@mannan.is>
+PUBLIC_BASE_URL=http://localhost:8787
