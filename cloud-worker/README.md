@@ -60,8 +60,10 @@ wrangler d1 migrations apply cloud --remote
 
 ```bash
 wrangler d1 execute cloud --remote --command \
-  "INSERT INTO users (email, role, created_at) VALUES ('hello@mannan.is','admin',unixepoch()*1000), ('mannanjavid@protonmail.com','admin',unixepoch()*1000)"
+  "INSERT INTO users (email, role, created_at) VALUES ('hello@mannan.is','admin',unixepoch()*1000)"
 ```
+
+`mannanjavid@protonmail.com` is kept as a `client` user (with access to `hans` and `backups`) for testing client-side functionality — the same flow Hans and other clients use.
 
 ### 4. Set secrets
 
