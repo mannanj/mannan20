@@ -551,6 +551,11 @@ body {
   100% { transform: scale(2.2); }
 }
 
+@keyframes shadowTabDrift {
+  0%, 100% { transform: translate(0, -50%); }
+  50%      { transform: translate(-2px, calc(-50% - 4px)); }
+}
+
 body.gem-rain-active #header > div:first-child {
   z-index: 1010 !important;
 }

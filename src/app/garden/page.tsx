@@ -1,43 +1,117 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { GARDEN_ARTICLES } from '@/lib/garden-articles';
-import { CommunityNodesPreview } from '@/components/garden/community-nodes-preview';
-import { HealthHeroPreview } from '@/components/garden/health-hero-preview';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { GARDEN_ARTICLES } from "@/lib/garden-articles";
+import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
+import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
+import { AiPocketCard } from "@/components/garden/ai-pocket-card";
 // import { HealthPocketCard } from '@/components/garden/health-pocket-card';
 // import { HealthInkEffect } from '@/components/garden/health-ink-effect';
 
 export const metadata: Metadata = {
-  title: 'Garden',
-  description: 'Thoughts, projects, and interests — at various stages of growth.',
+  title: "Garden",
+  description:
+    "Thoughts, projects, and interests — at various stages of growth.",
 };
 
 function PlantOne() {
   return (
-    <svg viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-24">
-      <path d="M30 110V50" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M30 70C20 60 12 45 18 35C24 25 30 40 30 50" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M30 55C40 45 48 30 42 20C36 10 30 25 30 35" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <svg
+      viewBox="0 0 60 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-12 h-24"
+    >
+      <path
+        d="M30 110V50"
+        stroke="#2d5a27"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M30 70C20 60 12 45 18 35C24 25 30 40 30 50"
+        stroke="#4a7c3f"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M30 55C40 45 48 30 42 20C36 10 30 25 30 35"
+        stroke="#2d5a27"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
     </svg>
   );
 }
 
 function PlantTwo() {
   return (
-    <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-16 h-20">
-      <path d="M40 90V45" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M40 60C30 55 15 50 20 38C25 26 35 42 40 50" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M40 50C50 45 65 40 60 28C55 16 45 32 40 40" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M40 45C35 35 30 18 38 12C46 6 42 25 40 35" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <svg
+      viewBox="0 0 80 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-16 h-20"
+    >
+      <path
+        d="M40 90V45"
+        stroke="#2d5a27"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M40 60C30 55 15 50 20 38C25 26 35 42 40 50"
+        stroke="#4a7c3f"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M40 50C50 45 65 40 60 28C55 16 45 32 40 40"
+        stroke="#4a7c3f"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M40 45C35 35 30 18 38 12C46 6 42 25 40 35"
+        stroke="#2d5a27"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
     </svg>
   );
 }
 
 function PlantThree() {
   return (
-    <svg viewBox="0 0 50 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-16">
-      <path d="M25 75V40" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M25 50C18 42 10 28 18 22C26 16 25 35 25 42" stroke="#4a7c3f" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-      <path d="M25 42C32 34 40 20 32 14C24 8 25 27 25 34" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <svg
+      viewBox="0 0 50 80"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-10 h-16"
+    >
+      <path
+        d="M25 75V40"
+        stroke="#2d5a27"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M25 50C18 42 10 28 18 22C26 16 25 35 25 42"
+        stroke="#4a7c3f"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M25 42C32 34 40 20 32 14C24 8 25 27 25 34"
+        stroke="#2d5a27"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
     </svg>
   );
 }
@@ -46,6 +120,7 @@ export default function GardenPage() {
   return (
     <div className="relative min-h-screen bg-[#0b0b0b] text-white">
       {/* <HealthPocketCard /> */}
+      <AiPocketCard />
       <div className="absolute top-24 right-8 opacity-[0.12] pointer-events-none">
         <PlantOne />
       </div>
@@ -56,22 +131,22 @@ export default function GardenPage() {
         <PlantThree />
       </div>
 
-
       <div className="relative max-w-2xl mx-auto px-6 pt-40 pb-16">
         <Link href="/garden" className="block w-fit">
           <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
         </Link>
 
         <p className="text-sm text-white/50 leading-relaxed mb-12">
-          Here live my thoughts, projects, and interests at various stages of growth
+          Welcome to my Garden. Here live several of my thoughts, projects, and
+          interests at various stages of growth.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {GARDEN_ARTICLES.map((article) => {
             const preview =
-              article.href === '/garden/article/seeking-community' ? (
+              article.href === "/garden/article/seeking-community" ? (
                 <CommunityNodesPreview />
-              ) : article.href === '/garden/article/health-longevity' ? (
+              ) : article.href === "/garden/article/health-longevity" ? (
                 <HealthHeroPreview />
               ) : null;
             return (
@@ -95,9 +170,20 @@ export default function GardenPage() {
                   </span>
                   {article.date && (
                     <span className="text-[10px] text-white/30 mt-auto pt-2 truncate">
-                      {new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      {article.readingTime && <>{' '}&middot;{' '}{article.readingTime}</>}
-                      {article.wordCount && <>{' '}&middot;{' '}{article.wordCount.toLocaleString()} words</>}
+                      {new Date(article.date).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                      {article.readingTime && (
+                        <> &middot; {article.readingTime}</>
+                      )}
+                      {article.wordCount && (
+                        <>
+                          {" "}
+                          &middot; {article.wordCount.toLocaleString()} words
+                        </>
+                      )}
                     </span>
                   )}
                 </div>
@@ -105,7 +191,6 @@ export default function GardenPage() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

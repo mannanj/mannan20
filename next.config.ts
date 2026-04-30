@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-2937173b25a2446ab81694b095fd8d4b.r2.dev',
+      },
     ],
   },
   async redirects() {
