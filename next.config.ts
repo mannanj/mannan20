@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
         destination: 'https://cloud-worker.mannanteam.workers.dev/',
         permanent: false,
       },
+      {
+        source: '/vision{/}?',
+        destination: 'https://vision-board.mannanteam.workers.dev/',
+        permanent: false,
+      },
     ];
   },
 };
