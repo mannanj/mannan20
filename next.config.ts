@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
         destination: 'https://vision-board.mannanteam.workers.dev/',
         permanent: false,
       },
+      {
+        source: '/github{/}?',
+        destination: 'https://github.com/mannanj',
+        permanent: false,
+      },
     ];
   },
 };
