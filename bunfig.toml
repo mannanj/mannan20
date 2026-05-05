@@ -1,0 +1,5 @@
+[install]
+backend = "hardlink"
+
+[install.cache]
+dir = "/Users/manblack/.bun/install/cache"
