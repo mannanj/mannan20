@@ -8,37 +8,37 @@ export interface ScheduleType {
 export const SCHEDULE_TYPES: ScheduleType[] = [
   {
     slug: 'example-demo',
-    label: 'Example Demo',
+    label: 'Example',
     blurb: 'Walk through the booking flow with mock data.',
     enabled: true,
   },
   {
     slug: 'friend',
-    label: 'Friend / Casual',
+    label: 'Friend',
     blurb: 'Catch up, no agenda.',
     enabled: false,
   },
   {
     slug: 'existing-client',
-    label: 'Existing Client',
+    label: 'Client',
     blurb: 'Check-in or weekly availability for ongoing work.',
     enabled: false,
   },
   {
     slug: 'new-project',
-    label: 'New Project',
+    label: 'New',
     blurb: 'Defined scope. Optional discovery call.',
     enabled: false,
   },
   {
     slug: 'discovery',
-    label: 'Discovery Call',
+    label: 'Discovery',
     blurb: 'Scope is fuzzy — let’s figure it out together.',
     enabled: false,
   },
   {
     slug: 'vibe-code',
-    label: 'Vibe Code Work',
+    label: 'Vibe Code',
     blurb: 'Flat $300 research fee, then hourly. AI-assisted intake.',
     enabled: false,
   },

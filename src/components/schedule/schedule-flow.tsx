@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SCHEDULE_TYPES, getTypeBySlug, type ScheduleType } from './types';
 
@@ -43,6 +43,27 @@ export function ScheduleFlow({ initialTypeSlug }: ScheduleFlowProps) {
 
   const mockDates = useMemo(() => buildMockDates(10), []);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDocClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
   function pickType(t: ScheduleType) {
     if (!t.enabled) return;
     setSelectedType(t);
@@ -72,37 +93,64 @@ export function ScheduleFlow({ initialTypeSlug }: ScheduleFlowProps) {
           <span className="block text-xs uppercase tracking-wider text-white/40 mb-2">
             Type
           </span>
-          <div className="relative inline-block">
-            <select
-              value={selectedType?.slug ?? ''}
-              onChange={(e) => {
-                const t = SCHEDULE_TYPES.find((x) => x.slug === e.target.value);
-                if (t) pickType(t);
-                else reset();
-              }}
-              className="appearance-none bg-[#141414] border border-white/10 rounded-md pl-3 pr-9 py-2 text-sm text-white/90 focus:outline-none focus:border-white/30 hover:border-white/25 transition-colors min-w-[220px]"
+          <div ref={menuRef} className="relative inline-block">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-haspopup="listbox"
+              aria-expanded={menuOpen}
+              className="flex items-center justify-between gap-3 bg-[#141414] border border-[#222] rounded-md px-3 py-2 text-sm text-white/90 hover:border-white/25 focus:outline-none focus:border-white/30 transition-colors min-w-[220px]"
             >
-              {SCHEDULE_TYPES.map((t) => (
-                <option key={t.slug} value={t.slug} disabled={!t.enabled}>
-                  {t.label}
-                  {!t.enabled ? ' — soon' : ''}
-                </option>
-              ))}
-            </select>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 12 8"
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-3 h-2 text-white/40"
-            >
-              <path
-                d="M1 1l5 5 5-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+              <span>{selectedType?.label ?? 'Choose'}</span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 12 8"
+                className={`w-3 h-2 text-white/50 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+              >
+                <path
+                  d="M1 1l5 5 5-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            {menuOpen && (
+              <div
+                role="listbox"
+                className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-[260px] bg-[#141414] border border-[#222] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)] py-2"
+              >
+                {SCHEDULE_TYPES.map((t) => {
+                  const isSelected = selectedType?.slug === t.slug;
+                  return (
+                    <button
+                      key={t.slug}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      disabled={!t.enabled}
+                      onClick={() => {
+                        if (!t.enabled) return;
+                        pickType(t);
+                        setMenuOpen(false);
+                      }}
+                      className={[
+                        'w-full px-4 py-2.5 text-left text-sm transition-colors',
+                        !t.enabled
+                          ? 'text-white/25 cursor-not-allowed'
+                          : isSelected
+                            ? 'bg-[#039be5]/20 text-white'
+                            : 'text-white/80 hover:bg-white/5',
+                      ].join(' ')}
+                    >
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </label>
       </section>
