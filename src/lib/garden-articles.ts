@@ -5,6 +5,7 @@ export interface GardenArticle {
   date?: string;
   readingTime?: string;
   wordCount?: number;
+  unavailable?: boolean;
 }
 
 export const GARDEN_ARTICLES: GardenArticle[] = [
@@ -16,6 +17,7 @@ export const GARDEN_ARTICLES: GardenArticle[] = [
     readingTime: "4 min read",
     wordCount: 1100,
     href: "/garden/article/taken",
+    unavailable: true,
   },
   {
     title: "Seeking Community",

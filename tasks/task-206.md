@@ -257,4 +257,14 @@ Two fix cycles maximum per blocker before escalation. The implementer DOES NOT c
 
 - Location: `src/components/garden/taken-body.tsx`, `src/app/garden/`, `src/lib/garden-articles.ts`, `tasks/`
 
+---
+
+#### Post-completion note (2026-05-08)
+
+After the Phase 4 gate passed and the rewrite shipped to production at commit `4235727`, Mannan walked the live `/garden/article/taken` and flagged it as **still not meeting quality needs**. The structural rewrite landed (voice, sections, citations, restraint, manifesto, framing), but the prose itself reads fluffy and reaches for forced poetry where depth would land harder. Sections cluster visually rather than each clearly showing a new insight earning its own pause. Not enough breathing room between sections or between elements within a section.
+
+**Follow-up:** [task-207.md](task-207.md) — sharpen language and pacing (depth over poetry). Same craft signatures S1–S11 from `task-206-source-analysis.md`; same approved editorial structure from `task-206-editorial.md`. The work is editorial tightening + spacing tuning, not a re-architecture. Sentences per paragraph: 1 ideal, 2–3 only if every additional sentence is fought for. Vertical white space significantly increased between sections so the eye reads each as a new insight, not a group.
+
+This note is preserved as a record that Phase 4 gate-passing did not equal user-quality-passing. Future work should reach the moment where the user — not the verifier scorecard — calls it done.
+
 [Task-206]

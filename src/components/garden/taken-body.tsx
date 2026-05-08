@@ -1048,13 +1048,6 @@ export function TakenBody() {
             <TellSomeone />
 
             <AdditionalReading currentHref="/garden/article/taken" />
-
-            <p className="text-[11px] text-white/35 italic pt-6">
-              <em>
-                garden — taken — vol. iv of the garden — written by mannan,
-                may 2026.
-              </em>
-            </p>
           </>
         )}
       </ArticleBody>

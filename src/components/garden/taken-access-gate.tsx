@@ -10,7 +10,7 @@ import {
 
 const STORAGE_KEY = "taken-access";
 const PASSWORD = "taken";
-const HINT = "Who am I?";
+const HINT = "What's my name?";
 
 export function TakenAccessGate({ children }: { children: ReactNode }) {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
