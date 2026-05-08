@@ -21,9 +21,9 @@ export default function AffiliateLeadsRedesignArticle({ content }: Props) {
   return (
     <>
       <header className="mb-16">
-        <h1 className="mb-4 text-4xl font-light tracking-tight">Affiliate System v3 — Leads-First Redesign</h1>
+        <h1 className="mb-4 text-4xl font-light tracking-tight">Affiliate Attribution, Reset</h1>
         <p className="mb-6 text-sm text-neutral-500">
-          May 6, 2026 &middot; Mannan Javid
+          May 8, 2026 &middot; Mannan Javid
         </p>
         <div className="flex items-center gap-4">
           <a

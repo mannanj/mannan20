@@ -5,8 +5,8 @@ import { join } from 'path';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Affiliate System v3 — Leads-First Redesign | Episodes',
-  description: 'A leads-first schema redesign for a small-operator affiliate system, by Mannan Javid.',
+  title: 'Affiliate Attribution, Reset | Episodes',
+  description: 'Three iterations to land on a one-table, two-view affiliate attribution system. By Mannan Javid.',
 };
 
 const Article = dynamic(

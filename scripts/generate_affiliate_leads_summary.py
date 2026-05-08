@@ -23,79 +23,79 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 OUT_DIR = os.path.join(ROOT, "public/data/audio/affiliate-leads")
 
 SUMMARY = """
-This is an unofficial summary of the Affiliate System v3 proposal.
+This is a summary of the Affiliate Attribution Reset.
 
-The short version. We were about to deploy a multi-affiliate redesign called v2,
-which uses three tables — conversions, conversion affiliates, and conversion
-affiliate visits — to track who gets credit for what. After looking at it more
-carefully, that schema is correct in the abstract but wrong for our actual
-operation. Hans reviews every payout by hand on a coaching site. He doesn't
-think in submissions. He thinks in Sally's people.
+The short version. We redesigned the same affiliate attribution system three
+times and ended up shipping less code than we started with. v1 was a working
+candidates table with a debug-y admin UI. v2 was a multi-affiliate redesign,
+correct on paper, that introduced three tables and four review states for a
+problem we did not have. v3 was a leads-first proposal that went further still,
+with durable pre-conversion identity rows and a cold-lead bucket. v3 was never
+built. The reset throws v3 out, collapses v2's three tables back to one, and
+ships a clean dashboard over the scoring engine that already worked.
 
-The proposal, called v3, replaces the three v2 tables with two. The spine
-becomes a new table called affiliate leads — one row per affiliate, per person.
-That row is created the first time someone clicks a ref-tagged link, and it
-accumulates identity, page history, and credit-share information over time.
-A second table, called lead conversions, is a slim junction that records the
-actual subscribe, contact, or application events when they happen.
+Hans is a relationship coach. He onboards roughly twenty affiliates by hand and
+reviews each conversion personally. One conversion, one affiliate. He does not
+need split credit, position fields, or pre-conversion lead funnels. He needs to
+know who sent this person, and to confirm it in five seconds.
 
-Why this is better. Three reasons.
+What ships. One table called conversion attributions, with a one-to-one primary
+key on conversion id. Affiliate id is nullable for untagged conversions —
+referral codes that appear in the URL but do not match any registered affiliate.
+The table carries the source — system suggested, manual, or none — a zero to
+one hundred confidence score, an evidence JSON blob, and a two-state lifecycle:
+needs attention, then confirmed. v2's four states collapse to two. v2's per-row
+review notes move to a single admin notes field on the conversion itself.
 
-First, it matches Hans's mental model. The unit of review is now "Sally's claim
-on this person," not "this affiliate's row of this conversion's claim table."
+Bots are marked, not dropped. The visits table gains an is bot column and a bot
+reason column. The track visit edge function flags suspected bots at ingest
+using a user-agent regex; lookup filters them at read time. A revised regex
+never retroactively flips historic rows.
 
-Second, it survives non-conversion. Today, a referrer can drive fifty visits
-in a month and have nothing to show for it if no one converts within thirty
-days, because the visits get pruned. Under v3, the lead row persists, so an
-affiliate building an audience over time has visible activity even before
-the first sale.
+Retention is one rule, not two. The original plan had a daily thirty-day prune
+and a monthly verified-backup clear. The daily prune never shipped. The monthly
+clear is now the only retention rule. On the first of each month, backup
+database snapshots visits to R2 and verifies. On day two, a four-attempt cron
+runs DELETE FROM visits WHERE created at is less than or equal to the last
+verified backup's completed at timestamp. Exactly the rows the backup captured.
+A new prune R2 archives cron keeps the newest twelve monthly archives. Twelve
+months rolling. Not ninety days. Not forever.
 
-Third, it's smaller. Two tables instead of three, with no functional loss.
-The audit data that lived in conversion affiliate visits moves into a JSON
-field on the lead row, and the prune query gets rewritten to anchor against
-that JSON.
+The dashboard has two views. Time-ordered list, and affiliate-grouped. Same
+conversions, two lenses. Each conversion expands to show its visitation log,
+notes, and an override picker. Each conversion has a refresh icon that re-runs
+the lookup incrementally — only visits newer than the last lookup watermark —
+and appends new matches to existing evidence. The dashboard never re-scores in
+bulk on load. Untagged ref codes are hidden by default behind an eye-icon
+toggle next to the date range; when shown, they group by ref code with a hint
+that they might be typos or missing affiliates.
 
-The model maps to industry conventions. Rewardful and similar platforms organize
-around a Visitor, Lead, Conversion trinity. v3 names the lead explicitly
-instead of treating it as a pre-conversion afterthought.
+Confidence is shown honestly. The scorer in shared attribution dot ts weighs
+five signals: browser id, FingerprintJS, Thumbmark, IP slash twenty-four
+subnet, and same-session presence. The weights sum to one hundred and thirty,
+hard-capped at one hundred — overlap between signals is real, and capping is
+more honest than re-normalizing. Each conversion shows a zero to one hundred
+donut broken down by mechanism, with plain-English copy on hover and a
+disclaimer footer: this is a confidence detector, not proof.
 
-A few quieter wins. There's now a place to do a self-referral check — if the
-submission email matches an affiliate's own email, flag it and zero out the
-credit share. There's also a clear hook for GDPR consent gating: if we ever
-get meaningful EU traffic, we can downgrade fingerprint capture without an
-explicit opt-in, and let the lead row still exist with reduced confidence.
-And the schema is forward-compatible with Stripe — when the four-to-six
-thousand dollar checkout goes live, a Stripe webhook becomes another row in
-lead conversions with a new kind value.
+What got cut. Multi-affiliate per conversion. Position fields and credit share
+splits. Leads-first schema with cold-lead buckets and funnel widgets. Auto-
+correcting referral-code typos. Auto-mapping unregistered codes. Cloudflare
+Worker first-party IP detection. Stripe-driven payouts. The daily prune cron.
+None of these are coming back without a new reason.
 
-The trade-offs, honestly. Asking "how many actual sales did we make" now
-requires a SELECT DISTINCT across lead conversions, because two affiliates
-who both touched the same buyer each get a row pointing at the same
-submission. That's documented in a small SQL view. The visit-by-visit audit
-trail moves from a dedicated junction table into evidence JSON, which is a
-loss in queryability but a win in storage simplicity.
+What I learned. Normalization isn't free. v2's multi-affiliate schema was
+textbook-correct for a problem we did not have. Doc-first redesigns drift —
+v3 lived in markdown for a week before I noticed I was solving problems v2
+had created, not problems Hans had. Retention rules compound — three rules
+that interact became one rule that doesn't. And confidence is a UX problem,
+not a math problem. The scorer was already good. What was missing was a way
+to show why it was confident.
 
-What needs to happen next. Phase A is the schema migration — drop the v1 and
-v2 tables, create affiliate leads and lead conversions, rewrite the prune
-function. Phase B is the capture path — about fifteen lines added to the
-track-visit edge function to upsert the lead row. Phase C is the conversion
-path — generate-candidates writes lead rows and conversion rows, with the
-self-referral check inline. Phase D is the admin endpoints. Phase E is the
-admin UI rename, from the existing AttributionsManager component to a new
-AffiliateLeadsManager. Total scope is about one focused session plus a
-Lovable handoff for migrations and types.
-
-There are also two small cleanups discovered along the way. There are
-duplicate v2 migration files in the repo — one human-authored, one Lovable
-hash-named — that need to be reconciled before any further migrations land.
-And the register-attribution endpoint currently does a five-minute
-email-based lookup to find the matching submission, which is brittle. v3
-doesn't fix that directly, but it's flagged as a follow-up.
-
-The bottom line. v3 is more opinionated than v2. It bakes in the assumption
-that this system serves one customer with one product line and a manual
-review process. That's the right move for our volume profile, and it leaves
-us with cleaner ergonomics for the workflow Hans actually runs every week.
+The bottom line. The right answer for a one-operator system is the smallest
+one that lets the operator stop thinking about it. Less code, less schema,
+less ceremony. The system Hans is running today should still be running a
+year from now, untouched.
 
 End of summary.
 """.strip()

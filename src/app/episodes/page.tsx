@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 const EPISODES = [
   {
-    title: 'Affiliate System v3 — Leads-First Redesign',
+    title: 'Affiliate Attribution, Reset',
     author: 'Mannan Javid',
-    date: 'May 6, 2026',
+    date: 'May 8, 2026',
     href: '/episodes/affiliate-leads-redesign',
   },
   {
