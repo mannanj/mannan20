@@ -15,3 +15,10 @@ export const MANIFESTO_CHUNKS: AudioChunk[] = [
 export const NEW_RICH_CHUNKS: AudioChunk[] = [
   { url: `${BLOB_BASE}/new-rich/chunk-1.wav`, key: 'new-rich/chunk-1', label: 'Full' },
 ];
+
+export const AFFILIATE_LEADS_CHUNKS: AudioChunk[] = [
+  { url: `${BLOB_BASE}/affiliate-leads/chunk-1.wav`, key: 'affiliate-leads/chunk-1', label: 'Part 1' },
+  { url: `${BLOB_BASE}/affiliate-leads/chunk-2.wav`, key: 'affiliate-leads/chunk-2', label: 'Part 2' },
+  { url: `${BLOB_BASE}/affiliate-leads/chunk-3.wav`, key: 'affiliate-leads/chunk-3', label: 'Part 3' },
+  { url: `${BLOB_BASE}/affiliate-leads/chunk-4.wav`, key: 'affiliate-leads/chunk-4', label: 'Summary' },
+];
