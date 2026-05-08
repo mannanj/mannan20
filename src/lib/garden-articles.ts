@@ -9,6 +9,15 @@ export interface GardenArticle {
 
 export const GARDEN_ARTICLES: GardenArticle[] = [
   {
+    title: "Taken",
+    description:
+      "Live observations from your browser, named as a confession — what every page reads, and where I chose to stop.",
+    date: "2026-05-08",
+    readingTime: "4 min read",
+    wordCount: 1100,
+    href: "/garden/article/taken",
+  },
+  {
     title: "Seeking Community",
     description:
       "From Cosmos to car camping to Hawaii — a journey through spirituality, community, and finding guiding principles.",
