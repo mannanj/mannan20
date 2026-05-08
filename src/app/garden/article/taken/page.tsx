@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TakenBody } from "@/components/garden/taken-body";
+import { TakenAccessGate } from "@/components/garden/taken-access-gate";
 import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
 import { ArticleCaption } from "@/components/article-caption";
@@ -43,7 +44,9 @@ export default function TakenArticle() {
           wordCount="700 words"
         />
       </ArticleHeader>
-      <TakenBody />
+      <TakenAccessGate>
+        <TakenBody />
+      </TakenAccessGate>
     </ArticleLayout>
   );
 }
