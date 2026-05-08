@@ -6,12 +6,21 @@ export const metadata: Metadata = {
   description: 'Curated readings and writings.',
 };
 
-const EPISODES = [
+type Episode = {
+  title: string;
+  author: string;
+  date: string;
+  href: string;
+  hidden?: boolean;
+};
+
+const EPISODES: Episode[] = [
   {
     title: 'Affiliate Attribution, Reset',
     author: 'Mannan Javid',
     date: 'May 8, 2026',
     href: '/episodes/affiliate-leads-redesign',
+    hidden: true,
   },
   {
     title: 'Rules of the New Rich',
@@ -33,14 +42,22 @@ const EPISODES = [
   },
 ];
 
-export default function EpisodesPage() {
+export default async function EpisodesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ showAll?: string }>;
+}) {
+  const { showAll } = await searchParams;
+  const showHidden = showAll === 'true';
+  const visible = EPISODES.filter((e) => showHidden || !e.hidden);
+
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="mx-auto max-w-2xl px-6 py-24">
         <h1 className="mb-2 text-3xl font-light tracking-tight">Episodes</h1>
         <p className="mb-16 text-sm text-neutral-500">Curated readings and writings.</p>
         <div className="space-y-0">
-          {EPISODES.map((episode) => (
+          {visible.map((episode) => (
             <Link
               key={episode.href}
               href={episode.href}
