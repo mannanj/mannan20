@@ -54,12 +54,14 @@ export function AdditionalReading({
 
   if (articles.length === 0) return null;
 
+  const bleedRight = "mr-[min(0px,calc(312px-50vw))]";
+
   return (
     <div
       className={
         hideTopDivider
-          ? "mt-16 pt-10"
-          : "mt-16 border-t border-white/10 pt-10"
+          ? `mt-16 pt-10 ${bleedRight}`
+          : `mt-16 border-t border-white/10 pt-10 ${bleedRight}`
       }
     >
       <h2 className="text-lg font-medium text-white mb-6">
@@ -91,7 +93,7 @@ export function AdditionalReading({
         <div
           ref={scrollRef}
           onScroll={updateArrows}
-          className="flex gap-4 overflow-x-auto scrollbar-hide"
+          className="flex gap-4 overflow-x-auto overflow-y-visible scrollbar-hide pr-6"
         >
           {articles.map((article) => {
             const preview =
@@ -126,7 +128,7 @@ export function AdditionalReading({
           <button
             type="button"
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-200 cursor-pointer"
+            className="absolute right-6 top-1/2 -translate-y-1/2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-200 cursor-pointer"
           >
             <svg
               width="14"
