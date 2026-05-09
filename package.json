@@ -8,7 +8,11 @@
     "start": "next start",
     "test:e2e": "bunx playwright test",
     "unicorn:build": "node scripts/apply-unicorn-transforms.mjs",
-    "postinstall": "node scripts/apply-unicorn-transforms.mjs"
+    "postinstall": "node scripts/apply-unicorn-transforms.mjs",
+    "visits:recent": "cd visits-worker && bun run db:recent",
+    "visits:top": "cd visits-worker && bun run db:top",
+    "visits:deploy": "cd visits-worker && bun run deploy",
+    "visits:tail": "cd visits-worker && bun run tail"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

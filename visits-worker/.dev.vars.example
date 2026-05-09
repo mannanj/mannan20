@@ -1,0 +1,2 @@
+VISIT_SECRET=replace-with-a-long-random-string
+IP_SALT=replace-with-another-long-random-string

@@ -48,6 +48,9 @@ Thumbs.db
 
 .vercel
 .env.local
+
+# Cloudflare Wrangler local cache (created by any wrangler invocation)
+.wrangler/
 .env*.local
 
 # Playwright
