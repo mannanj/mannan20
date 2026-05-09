@@ -37,6 +37,7 @@
   "exclude": [
     "node_modules",
     "scripts",
-    "cloud-worker"
+    "cloud-worker",
+    "visits-worker"
   ]
 }
