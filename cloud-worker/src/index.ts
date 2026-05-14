@@ -27,6 +27,7 @@ import {
 } from './views';
 import { admin } from './admin';
 import { listingCacheKey } from './cache';
+import { streamZip, type ZipSource } from './zip';
 
 interface AppCtx {
   Bindings: Env;
@@ -171,6 +172,81 @@ app.get('/cloud/:folder/*', async (c) => {
   }
   const subpath = normalizeSubpath(c.req.path.slice(`/cloud/${folder}`.length));
   return handleFolderListing(c, folder, subpath);
+});
+
+function sanitizeRelativeName(raw: string): string | null {
+  if (!raw) return null;
+  if (raw.length > 1024) return null;
+  if (raw.includes('\0')) return null;
+  if (raw.startsWith('/')) return null;
+  const parts = raw.split('/');
+  for (const p of parts) {
+    if (p === '' || p === '.' || p === '..') return null;
+  }
+  return raw;
+}
+
+app.post('/cloud/:folder/download', async (c) => {
+  const session = c.get('session');
+  if (!session) return c.redirect('/', 302);
+  const folder = c.req.param('folder');
+  if (!isFolder(folder)) return c.html(messagePage('Not found', 'That folder does not exist.'), 404);
+  if (!(await canAccess(c.env, session.email, folder))) {
+    return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
+  }
+
+  const form = await c.req.formData();
+  const mode = form.get('mode');
+  const subpath = normalizeSubpath(String(form.get('subpath') ?? ''));
+  const cfg = FOLDER_CONFIG[folder];
+  const basePrefix = subpath ? `${cfg.keyPrefix}${subpath}/` : cfg.keyPrefix;
+  const bucket = bucketFor(c.env, folder);
+
+  let keys: string[] = [];
+  if (mode === 'selected') {
+    const names = form.getAll('name').filter((v): v is string => typeof v === 'string');
+    for (const raw of names) {
+      const clean = sanitizeRelativeName(raw);
+      if (!clean) {
+        return c.html(messagePage('Bad request', 'One or more file names were invalid.'), 400);
+      }
+      keys.push(`${basePrefix}${clean}`);
+    }
+    if (keys.length === 0) {
+      return c.html(messagePage('Nothing selected', 'Pick at least one file, then click Download selected.'), 400);
+    }
+  } else if (mode === 'all') {
+    let cursor: string | undefined;
+    let guard = 0;
+    do {
+      const page = await bucket.list({ prefix: basePrefix, limit: 1000, cursor });
+      for (const o of page.objects) {
+        if (o.key.endsWith('/')) continue;
+        keys.push(o.key);
+      }
+      cursor = page.truncated ? page.cursor : undefined;
+      guard++;
+    } while (cursor && guard < 50);
+    if (keys.length === 0) {
+      return c.html(messagePage('Empty folder', 'There are no files to download here.'), 404);
+    }
+  } else {
+    return c.html(messagePage('Bad request', 'Missing or invalid mode.'), 400);
+  }
+
+  async function* sources(): AsyncIterable<ZipSource> {
+    for (const key of keys) {
+      const obj = await bucket.get(key);
+      if (!obj) continue;
+      const relative = key.slice(basePrefix.length);
+      yield { name: relative, body: obj.body };
+    }
+  }
+
+  const zipBase = subpath ? subpath.split('/').filter(Boolean).pop() ?? folder : folder;
+  const stamp = new Date().toISOString().slice(0, 10);
+  const zipName = `${zipBase}-${stamp}.zip`;
+  return streamZip(sources(), zipName);
 });
 
 app.get('/files/:folder/:name{.+}', async (c) => {
