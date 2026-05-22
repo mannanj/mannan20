@@ -88,7 +88,7 @@ export const sentPage = () => html`<!doctype html>
 <body><div class="card">
   <h1>Check your inbox</h1>
   <p class="lede">If that email is on the list, a sign-in link is on its way. The link expires in 15 minutes.</p>
-  <p class="msg">Don't see it? Check spam, then ask the admin to confirm you're invited.</p>
+  <p class="msg">Don't see it? Check spam, then check if you're invited.</p>
 </div></body></html>`;
 
 const FOLDER_ICON = raw(`<span class="folder-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 4.25a1 1 0 0 1 1-1h3l1.5 1.5h6a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H2.75a1 1 0 0 1-1-1v-8Z"/></svg></span>`);

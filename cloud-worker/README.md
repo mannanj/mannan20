@@ -30,7 +30,7 @@ Magic-link gated file sharing on Cloudflare. One Worker, one D1 database, one R2
 | POST | `/admin/upload` | admin — multipart `folder`, `file` |
 | GET | `/admin/users` | admin — debug listing |
 
-Folders are an in-code allowlist (`FOLDERS` in `src/auth.ts`) — currently `['general', 'hans', 'backups']`. Each folder maps to a bucket binding + key prefix in `FOLDER_CONFIG`. Adding a folder requires extending the allowlist, choosing a binding (existing or new), and redeploying.
+Folders are an in-code allowlist (`FOLDERS` in `src/auth.ts`) — currently `['general', 'hans', 'hans-backups']`. Each folder maps to a bucket binding + key prefix in `FOLDER_CONFIG`. Adding a folder requires extending the allowlist, choosing a binding (existing or new), and redeploying.
 
 ## Setup
 
@@ -63,7 +63,7 @@ wrangler d1 execute cloud --remote --command \
   "INSERT INTO users (email, role, created_at) VALUES ('hello@mannan.is','admin',unixepoch()*1000)"
 ```
 
-`mannanjavid@protonmail.com` is kept as a `client` user (with access to `hans` and `backups`) for testing client-side functionality — the same flow Hans and other clients use.
+`mannanjavid@protonmail.com` is kept as a `client` user (with access to `hans` and `hans-backups`) for testing client-side functionality — the same flow Hans and other clients use.
 
 ### 4. Set secrets
 

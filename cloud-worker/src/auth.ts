@@ -1,6 +1,6 @@
 import type { Env } from './types';
 
-export const FOLDERS = ['general', 'hans', 'backups'] as const;
+export const FOLDERS = ['general', 'hans', 'hans-backups'] as const;
 export type Folder = typeof FOLDERS[number];
 
 export function isFolder(value: string): value is Folder {
@@ -10,9 +10,9 @@ export function isFolder(value: string): value is Folder {
 type BucketBinding = 'FILES' | 'FILES_HANS' | 'FILES_BACKUPS';
 
 export const FOLDER_CONFIG: Record<Folder, { binding: BucketBinding; keyPrefix: string }> = {
-  general: { binding: 'FILES', keyPrefix: 'general/' },
-  hans:    { binding: 'FILES_HANS', keyPrefix: '' },
-  backups: { binding: 'FILES_BACKUPS', keyPrefix: '' },
+  general:        { binding: 'FILES', keyPrefix: 'general/' },
+  hans:           { binding: 'FILES_HANS', keyPrefix: '' },
+  'hans-backups': { binding: 'FILES_BACKUPS', keyPrefix: '' },
 };
 
 export function bucketFor(env: Env, folder: Folder): R2Bucket {
