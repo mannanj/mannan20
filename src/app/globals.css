@@ -36,6 +36,45 @@
   border-radius: 6px;
 }
 
+@keyframes swivelIn {
+  from {
+    opacity: 0;
+    transform: rotateY(calc(var(--swivel-dir, 1) * -42deg))
+      translateX(calc(var(--swivel-dir, 1) * 13%));
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0);
+  }
+}
+
+@keyframes swivelOut {
+  from {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: rotateY(calc(var(--swivel-dir, 1) * 42deg))
+      translateX(calc(var(--swivel-dir, 1) * -13%));
+  }
+}
+
+.swivel-in {
+  animation: swivelIn 480ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+.swivel-out {
+  animation: swivelOut 480ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swivel-in,
+  .swivel-out {
+    animation-duration: 1ms;
+  }
+}
+
 .canvas-md-editor {
   display: flex;
   flex-direction: column;
@@ -473,6 +512,19 @@ body {
   0%, 100% { transform: scale(0.8); }
   50% { transform: scale(1.2); }
 }
+
+@keyframes takenScanFlicker {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes takenBannerIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.taken-scan-flicker { animation: takenScanFlicker 1.4s ease-in-out infinite; }
+.taken-banner-in { animation: takenBannerIn 320ms ease-out both; }
 
 @keyframes eggFly {
   0% {
