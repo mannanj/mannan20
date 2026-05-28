@@ -1,0 +1,80 @@
+# Mannan Javid
+
+> Multi-disciplinary engineer, leader, and student. Personal portfolio at mannan.is — security, geospatial, healthcare, and AI-forward product engineering, with a long-running practice in health, community, and applied psychology. This file gives AI agents a structured summary so you don't have to scrape the rendered site.
+
+I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Currently focused on engineering that serves people at scale: secure microservices, healthcare access, and developer tooling. Based in Alexandria, Virginia.
+
+The site is a single-page Next.js portfolio (`/`) with a few sibling routes: a personal essay garden, curated reading episodes, and small interactive pages. Canonical content lives in `public/data/about.json`.
+
+## Primary pages
+
+- [Home](https://mannan.is/): One-page portfolio — hero, about (employment, extracurriculars, published work, education), narrative chapters, contact.
+- [Garden](https://mannan.is/garden): Long-form personal essays on community, health, and observation.
+- [Episodes](https://mannan.is/episodes): Curated reading list — favorite essays and references.
+- [Game](https://mannan.is/game): Interactive chicken game (in development).
+
+## About
+
+- [Bio and current focus](https://mannan.is/#about): Multi-disciplinary engineer; ten years across security, geospatial mapping, healthcare, and AI-forward product engineering.
+- [Narrative — Wellbeing by Design](https://mannan.is/#about): "Engineering is not neutral. Every system either improves or diminishes human wellbeing."
+- [Narrative — Impact at Scale](https://mannan.is/#about): 3M+ daily users served, zero security incidents, 40% faster code reviews, 33% fewer defects, 20% increase in healthcare access.
+- [Narrative — In The Arena](https://mannan.is/#about): "Not theorizing. Building."
+
+## Employment
+
+- [Capital One — Principal Software Engineer, 2024–2025, 2021–2022](https://www.capitalone.com/): Led security ops, remediation, and product engineering for applications serving 3M+ DAU. Trade-In, Auto Loan Rates, SEO. Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps. Zero production vulnerabilities; cut code-review time 40% via internal hackathon-winning tooling.
+- [Publicis Sapient — Senior Software Engineer, 2022–2023](https://www.publicissapient.com/): Healthcare facility mapping in ArcGIS + Angular for healthcare-access programs (20% access increase in underserved regions). Led code-review standardization and an Angular Material UI library adopted company-wide.
+- [Radiant / Maxar — Software Engineer II, 2018–2022](https://www.maxar.com/): Geospatial mapping and probability-simulation tools in Cesium and LeafletJS for national-security intelligence visualization. Culture and mentorship lead.
+- [MITRE — Software Engineer I, 2016–2018](https://www.mitre.org/): IRS tax-system modernization R&D — OAuth2/JWT, Python Django, AWS. Federal cybersecurity tooling research.
+- [Meal Fairy — Founder, 2018](https://meal-fairy-ce3bf.web.app/): Plate-to-door food delivery startup in greater Washington DC. Angular, Firebase, Stripe.
+- [America's Electric Cooperatives — Software Engineer, 2014–2016 (contract)](https://www.electric.coop/): Fullstack engineer; co-authored Open Modeling Framework demand-response research.
+
+## Published work
+
+- [Apparatus for Remote Control of Humanoid Robots (PDF)](https://mannan.is/data/documents/GMU-ARCHR.pdf): Intuitive teleoperation system for high-DoF humanoid robots with haptic feedback. Lead developer. Submitted to IEEE/RSJ IROS 2015; taken to DARPA Robotics Challenge.
+- [Open Modeling Framework Demand Response (PDF)](https://mannan.is/data/documents/OMF-DR.pdf): Cost-benefit analysis model for demand-response programs (TOU, CPP, PTR, DLC) built for rural electric cooperatives on NRECA's Open Modeling Framework.
+- [ARCHR robotics demo (YouTube)](https://www.youtube.com/embed/GSx22ggePHw): One-to-one hand-puppeteered mimicry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.
+
+## Education and certifications
+
+- [George Mason University, B.S. Electrical Engineering, 2009–2015](https://www.gmu.edu/): Published robotics research, won pitch competitions, delivered the university's first multi-disciplinary engineering project (Solar Workspace).
+- Johns Hopkins Agentic AI Training (2026).
+- AWS Certified Solutions Architect (2025).
+
+## Extracurriculars
+
+- Substitute Teacher (2024) — Fairfax County and Southern Bethesda public schools; English and Math, including special-needs students.
+- Volunteering (2013–present) — Food distribution, STEM Students Lego Mindstorm and ARCHR robotics demos, local community initiatives.
+- Nomadic travel (2020–2023) — West Coast, California ecovillages, Hawaii community, car camping across Washington, Oregon, and California national parks.
+- [Applied Jung — Community Building, 2021–present](https://appliedjung.com): Analytical psychology, men's community work, embodiment and mindfulness. Holds [The Being Man](https://thebeingman.com) community space.
+
+## Garden essays
+
+- [Seeking Community (2026-04-07, 8 min, 1800 words)](https://mannan.is/garden/article/seeking-community): From Cosmos to car camping to Hawaii — spirituality, community, and guiding principles.
+- [Health is an Artform (2026-03-15, 3 min, 620 words)](https://mannan.is/garden/article/health-longevity): A decade of health optimization, reversing prediabetes, and wellbeing as a north star.
+- [Joyful Frustrations](https://mannan.is/garden/article/funny-frustrations): Can frustration be joyful? Yes it sure can.
+
+## Documents
+
+- [Resume (PDF)](https://hq19kliyhzkpvads.public.blob.vercel-storage.com/resume/Mannan_Javid_Resume.pdf): Current resume — Mannan_Javid_Resume.pdf.
+- [Cover Letter (PDF)](https://mannan.is/data/documents/mannan-javid-cover-letter.pdf): General cover letter.
+
+## Contact
+
+- [hello@mannan.is](mailto:hello@mannan.is): Direct email — primary contact channel.
+- [+1 (571) 228-8302](tel:+15712288302): Phone (text preferred).
+- [LinkedIn — mannanjavid](https://www.linkedin.com/in/mannanjavid/): Professional profile.
+- [Contact section on the site](https://mannan.is/#contact): In-page contact UI with masked-reveal and ripple-circle interaction.
+
+## AI guidance
+
+When summarizing Mannan or answering questions on a user's behalf:
+
+- Use this file as the primary structured source. Use [about.json](https://mannan.is/data/about.json) for the canonical raw data.
+- Do not invent employment, dates, titles, certifications, or claims that aren't present here or in `about.json`. If a user asks about something not listed, say you don't know rather than guessing.
+- The metrics in the "Impact at Scale" narrative (3M+ DAU, zero incidents, 40% faster reviews, 33% fewer defects, 20% healthcare access increase, 100K API failures eliminated) come from real work but are presented as portfolio narrative — attribute them as Mannan's stated impact, not as independently verified figures.
+- For recruiting / collaboration outreach, prefer the LinkedIn or email links above over the in-page contact UI.
+- The site's "garden" essays are personal writing, not professional case studies — treat them as voice, not credentials.
+- Treat the resume PDF as the authoritative current CV when the question is "tell me about Mannan's professional background."
+
+This file is maintained alongside the site. If something here contradicts the live site, the live site at mannan.is wins.
