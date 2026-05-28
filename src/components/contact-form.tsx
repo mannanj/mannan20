@@ -8,7 +8,8 @@ import { FEATURES } from "@/lib/feature-flags";
 
 const PLACEHOLDER = "Share your name, email, and/or why you're here";
 const CHALLENGE_PLACEHOLDER = "Mention something from my portfolio...";
-const DEBOUNCE_MS = 2000;
+const DEBOUNCE_MS = 1200;
+const MAX_PENDING_MS = 3000;
 const MAX_INPUT_LENGTH = 1000;
 const MAX_NAME_DISPLAY = 30;
 const BOT_CHARS_PER_SEC = 15;
@@ -97,6 +98,10 @@ export function ContactForm({ onReveal }: ContactFormProps) {
   const firstInputTimeRef = useRef<number | null>(null);
   const pasteDetectedRef = useRef(false);
   const challengeModeRef = useRef(false);
+  const latestTextRef = useRef("");
+  const inFlightTextRef = useRef<string | null>(null);
+  const isComposingRef = useRef(false);
+  const pendingSinceRef = useRef<number | null>(null);
 
   const cancelDebounce = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -130,6 +135,7 @@ export function ContactForm({ onReveal }: ContactFormProps) {
     challengeModeRef.current = true;
     setStatus("challenge");
     setDisplayPhase({ kind: 'challenge' });
+    latestTextRef.current = "";
     setContactUserInput("");
   }, [setContactUserInput]);
 
@@ -142,11 +148,15 @@ export function ContactForm({ onReveal }: ContactFormProps) {
 
   const validate = useCallback(
     async (text: string) => {
+      if (inFlightTextRef.current === text) return;
       cancelRequest();
+      inFlightTextRef.current = text;
+      pendingSinceRef.current = null;
       setStatus("validating");
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      const isCurrent = () => text === latestTextRef.current;
 
       try {
         const res = await fetch("/api/validate-contact", {
@@ -155,6 +165,8 @@ export function ContactForm({ onReveal }: ContactFormProps) {
           body: JSON.stringify({ message: text }),
           signal: controller.signal,
         });
+
+        if (!isCurrent()) return;
 
         if (res.status === 429) {
           setStatus("rate-limited");
@@ -167,6 +179,8 @@ export function ContactForm({ onReveal }: ContactFormProps) {
         }
 
         const result: LLMValidationResult = await res.json();
+
+        if (!isCurrent()) return;
 
         if (result && (result as unknown as Record<string, unknown>).error) {
           setStatus("error");
@@ -188,14 +202,55 @@ export function ContactForm({ onReveal }: ContactFormProps) {
         }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
+        if (!isCurrent()) return;
         if (err instanceof TypeError) {
           setStatus("network-error");
         } else {
           setStatus("error");
         }
+      } finally {
+        if (inFlightTextRef.current === text) inFlightTextRef.current = null;
       }
     },
     [cancelRequest, triggerSuccess, isSuspiciousBehavior, enterChallengeMode]
+  );
+
+  const scheduleValidation = useCallback(
+    (text: string) => {
+      cancelDebounce();
+      if (pendingSinceRef.current === null) pendingSinceRef.current = Date.now();
+      const elapsed = Date.now() - pendingSinceRef.current;
+      const wait = Math.max(0, Math.min(DEBOUNCE_MS, MAX_PENDING_MS - elapsed));
+      debounceTimerRef.current = setTimeout(() => {
+        validate(text);
+      }, wait);
+    },
+    [cancelDebounce, validate]
+  );
+
+  const processValue = useCallback(
+    (value: string) => {
+      cancelDebounce();
+      setDisplayPhase({ kind: 'none' });
+
+      if (!value.trim()) {
+        cancelRequest();
+        inFlightTextRef.current = null;
+        pendingSinceRef.current = null;
+        firstInputTimeRef.current = null;
+        pasteDetectedRef.current = false;
+        setStatus("idle");
+        return;
+      }
+
+      if (!firstInputTimeRef.current) {
+        firstInputTimeRef.current = Date.now();
+      }
+
+      setStatus("pending");
+      scheduleValidation(value);
+    },
+    [cancelDebounce, cancelRequest, scheduleValidation]
   );
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -208,9 +263,9 @@ export function ContactForm({ onReveal }: ContactFormProps) {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
-      setContactUserInput(value);
 
       if (challengeModeRef.current) {
+        setContactUserInput(value);
         if (!value.trim()) return;
         if (matchesPortfolio(value)) {
           passChallengeMode();
@@ -218,33 +273,39 @@ export function ContactForm({ onReveal }: ContactFormProps) {
         return;
       }
 
-      cancelDebounce();
-      cancelRequest();
-      setStatus("idle");
-      setDisplayPhase({ kind: 'none' });
+      if (value === latestTextRef.current) return;
+      latestTextRef.current = value;
+      setContactUserInput(value);
 
-      if (!value.trim()) {
-        firstInputTimeRef.current = null;
-        pasteDetectedRef.current = false;
+      if (isComposingRef.current) return;
+
+      processValue(value);
+    },
+    [setContactUserInput, passChallengeMode, processValue]
+  );
+
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true;
+  }, []);
+
+  const handleCompositionEnd = useCallback(
+    (e: React.CompositionEvent<HTMLTextAreaElement>) => {
+      isComposingRef.current = false;
+      const value = e.currentTarget.value;
+
+      if (challengeModeRef.current) {
+        setContactUserInput(value);
+        if (value.trim() && matchesPortfolio(value)) {
+          passChallengeMode();
+        }
         return;
       }
 
-      if (!firstInputTimeRef.current) {
-        firstInputTimeRef.current = Date.now();
-      }
-
-      setStatus("pending");
-      debounceTimerRef.current = setTimeout(() => {
-        validate(value);
-      }, DEBOUNCE_MS);
+      latestTextRef.current = value;
+      setContactUserInput(value);
+      processValue(value);
     },
-    [
-      setContactUserInput,
-      cancelDebounce,
-      cancelRequest,
-      validate,
-      passChallengeMode,
-    ]
+    [setContactUserInput, passChallengeMode, processValue]
   );
 
   useEffect(() => {
@@ -271,6 +332,8 @@ export function ContactForm({ onReveal }: ContactFormProps) {
           value={userInput}
           onChange={handleChange}
           onPaste={handlePaste}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           maxLength={MAX_INPUT_LENGTH}
           rows={6}
           style={{
