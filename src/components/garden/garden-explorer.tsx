@@ -21,14 +21,18 @@ const ORDER: Record<Category, number> = { apps: 0, writings: 1 };
 
 function MannanThumb() {
   return (
-    <Image
-      src="/mannan.jpg"
-      alt="Mannan"
-      fill
-      priority
-      sizes="220px"
-      className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
-    />
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="relative aspect-square h-[62%] overflow-hidden rounded-full">
+        <Image
+          src="/mannan.jpg"
+          alt="Mannan"
+          fill
+          priority
+          sizes="80px"
+          className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+    </div>
   );
 }
 
