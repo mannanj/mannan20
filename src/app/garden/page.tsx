@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
-import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
-import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
+import { GardenExplorer } from "@/components/garden/garden-explorer";
 
 export const metadata: Metadata = {
   title: "Garden",
@@ -17,12 +14,7 @@ function PlantOne() {
       xmlns="http://www.w3.org/2000/svg"
       className="w-12 h-24"
     >
-      <path
-        d="M30 110V50"
-        stroke="#2d5a27"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <path d="M30 110V50" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" />
       <path
         d="M30 70C20 60 12 45 18 35C24 25 30 40 30 50"
         stroke="#4a7c3f"
@@ -49,12 +41,7 @@ function PlantTwo() {
       xmlns="http://www.w3.org/2000/svg"
       className="w-16 h-20"
     >
-      <path
-        d="M40 90V45"
-        stroke="#2d5a27"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <path d="M40 90V45" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" />
       <path
         d="M40 60C30 55 15 50 20 38C25 26 35 42 40 50"
         stroke="#4a7c3f"
@@ -88,12 +75,7 @@ function PlantThree() {
       xmlns="http://www.w3.org/2000/svg"
       className="w-10 h-16"
     >
-      <path
-        d="M25 75V40"
-        stroke="#2d5a27"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <path d="M25 75V40" stroke="#2d5a27" strokeWidth="1.5" strokeLinecap="round" />
       <path
         d="M25 50C18 42 10 28 18 22C26 16 25 35 25 42"
         stroke="#4a7c3f"
@@ -112,101 +94,20 @@ function PlantThree() {
   );
 }
 
-function ArticleCard({
-  article,
-  muted = false,
-}: {
-  article: GardenArticle;
-  muted?: boolean;
-}) {
-  const preview =
-    article.href === "/garden/article/seeking-community" ? (
-      <CommunityNodesPreview />
-    ) : article.href === "/garden/article/health-longevity" ? (
-      <HealthHeroPreview />
-    ) : null;
-  return (
-    <Link
-      href={article.href}
-      className={`group relative flex h-28 rounded-lg border border-white/10 hover:scale-[1.05] hover:border-white/20 hover:bg-white/[0.03] transition-all duration-200${muted ? " opacity-60 hover:opacity-90" : ""}`}
-    >
-      {preview && (
-        <div className="relative z-10 w-1/3 shrink-0 self-stretch py-3 pl-3">
-          {preview}
-        </div>
-      )}
-      <div className="relative z-10 flex flex-col px-3 py-3 flex-1 min-w-0">
-        <span className="text-sm font-medium text-white group-hover:text-red-500 transition-colors duration-200 truncate">
-          {article.title}
-        </span>
-        <span className="text-xs text-white/40 mt-1 leading-tight line-clamp-2">
-          {article.description}
-        </span>
-        {article.date && (
-          <span className="text-[10px] text-white/30 mt-auto pt-2 truncate">
-            {new Date(article.date).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-            {article.readingTime && <> &middot; {article.readingTime}</>}
-            {article.wordCount && (
-              <>
-                {" "}
-                &middot; {article.wordCount.toLocaleString()} words
-              </>
-            )}
-          </span>
-        )}
-      </div>
-    </Link>
-  );
-}
-
 export default function GardenPage() {
-  const available = GARDEN_ARTICLES.filter((a) => !a.unavailable);
-  const unavailable = GARDEN_ARTICLES.filter((a) => a.unavailable);
-
   return (
-    <div className="relative min-h-screen bg-[#0b0b0b] text-white">
-      <div className="absolute top-24 right-8 opacity-[0.12] pointer-events-none">
+    <div className="relative min-h-screen overflow-x-clip bg-[#0b0b0b] text-white">
+      <div className="pointer-events-none absolute top-24 right-8 opacity-[0.10]">
         <PlantOne />
       </div>
-      <div className="absolute top-[45%] left-6 opacity-[0.10] pointer-events-none">
+      <div className="pointer-events-none absolute top-[55%] left-6 opacity-[0.08]">
         <PlantTwo />
       </div>
-      <div className="absolute bottom-32 right-12 opacity-[0.12] pointer-events-none">
+      <div className="pointer-events-none absolute bottom-24 right-12 opacity-[0.10]">
         <PlantThree />
       </div>
 
-      <div className="relative max-w-2xl mx-auto px-6 pt-40 pb-16">
-        <Link href="/garden" className="block w-fit">
-          <h1 className="text-3xl font-semibold tracking-tight mb-6">Garden</h1>
-        </Link>
-
-        <p className="text-sm text-white/50 leading-relaxed mb-12">
-          Learn about me and my quirks and grooves.
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {available.map((article) => (
-            <ArticleCard key={article.href} article={article} />
-          ))}
-        </div>
-
-        {unavailable.length > 0 && (
-          <>
-            <h2 className="text-xs uppercase tracking-[0.2em] text-white/35 mt-12 mb-4">
-              Unavailable
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {unavailable.map((article) => (
-                <ArticleCard key={article.href} article={article} muted />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      <GardenExplorer />
     </div>
   );
 }
