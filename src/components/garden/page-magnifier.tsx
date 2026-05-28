@@ -20,8 +20,10 @@ export function PageMagnifier() {
   const cursorIconRef = useRef<SVGSVGElement>(null);
   const cursorIconHRef = useRef<SVGLineElement>(null);
   const cursorIconVRef = useRef<SVGLineElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef(0);
   const positionRef = useRef({ x: 0, y: 0 });
+  const [tooltipText, setTooltipText] = useState<string[] | null>(null);
 
   useEffect(() => {
     magnifierState.enabled = enabled;
@@ -163,6 +165,7 @@ export function PageMagnifier() {
       const cursorIcon = cursorIconRef.current;
       const cursorIconV = cursorIconVRef.current;
       const cursorIconH = cursorIconHRef.current;
+      const tooltip = tooltipRef.current;
       if (lens && clone) {
         const { x, y } = positionRef.current;
         const level = magnifierState.level;
@@ -176,6 +179,21 @@ export function PageMagnifier() {
         lens.style.width = `${r * 2}px`;
         lens.style.height = `${r * 2}px`;
         clone.style.transform = `translate(${r - x * zoom}px, ${r - docY * zoom}px) scale(${zoom})`;
+
+        if (tooltip) {
+          const ttW = tooltip.offsetWidth || 0;
+          const ttH = tooltip.offsetHeight || 0;
+          const margin = 8;
+          const minX = margin + ttW / 2;
+          const maxX = window.innerWidth - margin - ttW / 2;
+          const clampedX = Math.max(minX, Math.min(maxX, x));
+          let topY = y + r + 8;
+          if (topY + ttH > window.innerHeight - margin) {
+            topY = y - r - 8 - ttH;
+          }
+          tooltip.style.left = `${clampedX}px`;
+          tooltip.style.top = `${topY}px`;
+        }
 
         if (cursorIcon) {
           const iconR = 3 + level * 1.2;
@@ -217,6 +235,27 @@ export function PageMagnifier() {
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (target.closest("[data-magnifier-toggle]")) return;
+      const interactive = target.closest<HTMLElement>(
+        "[data-magnifier-interactive]",
+      );
+      if (interactive) {
+        const isClone = !!interactive.closest("[data-page-magnifier-root]");
+        if (isClone) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const testid = interactive.getAttribute("data-testid");
+          const realOriginal = Array.from(
+            document.querySelectorAll<HTMLElement>(
+              testid
+                ? `[data-testid="${testid}"]`
+                : "[data-magnifier-interactive]",
+            ),
+          ).find((el) => !el.closest("[data-page-magnifier-root]"));
+          if (realOriginal) realOriginal.click();
+        }
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
@@ -229,8 +268,42 @@ export function PageMagnifier() {
     const swallowHover = (e: Event) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest("[data-magnifier-toggle]")) return;
+      if (target?.closest("[data-magnifier-interactive]")) return;
       e.stopPropagation();
       e.stopImmediatePropagation();
+    };
+    const readInteractiveTooltip = (el: HTMLElement): string[] => {
+      const tt = el.querySelector('[role="tooltip"]');
+      if (tt) {
+        const lines = Array.from(tt.querySelectorAll(".block, span"))
+          .map((s) => s.textContent?.trim() || "")
+          .filter(Boolean);
+        if (lines.length > 0) return lines;
+        const t = tt.textContent?.trim();
+        if (t) return [t];
+      }
+      const aria = el.getAttribute("aria-label");
+      return aria ? [aria] : [];
+    };
+    const onInteractiveOver = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      const interactive = target?.closest<HTMLElement>(
+        "[data-magnifier-interactive]",
+      );
+      if (!interactive) return;
+      if (!interactive.closest("[data-page-magnifier-root]")) return;
+      setTooltipText(readInteractiveTooltip(interactive));
+    };
+    const onInteractiveOut = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      const interactive = target?.closest<HTMLElement>(
+        "[data-magnifier-interactive]",
+      );
+      if (!interactive) return;
+      if (!interactive.closest("[data-page-magnifier-root]")) return;
+      const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
+      if (related && related.closest("[data-magnifier-interactive]")) return;
+      setTooltipText(null);
     };
     const onScroll = () => scheduleRebuild();
     const onResize = () => scheduleRebuild();
@@ -267,6 +340,8 @@ export function PageMagnifier() {
     for (const evt of hoverEvents) {
       document.addEventListener(evt, swallowHover, true);
     }
+    document.addEventListener("mouseover", onInteractiveOver, true);
+    document.addEventListener("mouseout", onInteractiveOut, true);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
 
@@ -307,9 +382,12 @@ export function PageMagnifier() {
       for (const evt of hoverEvents) {
         document.removeEventListener(evt, swallowHover, true);
       }
+      document.removeEventListener("mouseover", onInteractiveOver, true);
+      document.removeEventListener("mouseout", onInteractiveOut, true);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       cloneRoot.innerHTML = "";
+      setTooltipText(null);
     };
   }, [enabled]);
 
@@ -321,6 +399,7 @@ export function PageMagnifier() {
     });
   };
 
+  if (pathname === "/garden") return null;
   if (pathname === "/garden/article/health-longevity") return null;
 
   return (
@@ -334,6 +413,13 @@ export function PageMagnifier() {
           [data-magnifier-toggle],
           [data-magnifier-toggle] * {
             cursor: pointer !important;
+          }
+          [data-page-magnifier-root] [data-magnifier-interactive] {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+          }
+          [data-page-magnifier-root] [role="tooltip"] {
+            display: none !important;
           }
         `}</style>
       )}
@@ -396,6 +482,14 @@ export function PageMagnifier() {
       {enabled && (
         <>
           <div
+            data-magnifier-catcher
+            className="fixed inset-0 z-[9999]"
+            style={{
+              pointerEvents: "auto",
+              background: "transparent",
+            }}
+          />
+          <div
             ref={lensRef}
             className="fixed pointer-events-none rounded-full overflow-hidden z-[10000]"
             style={{
@@ -438,6 +532,25 @@ export function PageMagnifier() {
               strokeLinecap="round"
             />
           </svg>
+          <div
+            ref={tooltipRef}
+            className="fixed pointer-events-none z-[10003] text-center px-3 py-1.5 rounded-md bg-black/90 text-white whitespace-nowrap leading-tight"
+            style={{
+              transform: "translateX(-50%)",
+              fontSize: 13,
+              fontWeight: 500,
+              letterSpacing: "0.01em",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.45)",
+              opacity: tooltipText ? 1 : 0,
+              transition: "opacity 120ms ease",
+            }}
+          >
+            {tooltipText?.map((line, i) => (
+              <span key={i} className="block">
+                {line}
+              </span>
+            ))}
+          </div>
         </>
       )}
     </div>

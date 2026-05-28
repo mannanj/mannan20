@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { Modal } from "../modal";
 
 type InventoryItem = { id: string; label: string; count: number };
@@ -47,6 +48,7 @@ const SPLAT_STORAGE_KEY = "seeking-community-splats-v1";
 const ITEM_MAX: Record<string, number> = {
   "easter-egg": 12,
   "id-card": 1,
+  "ruby-gem": 1,
 };
 const DEFAULT_MAX = 12;
 const maxFor = (id: string) => ITEM_MAX[id] ?? DEFAULT_MAX;
@@ -175,6 +177,10 @@ function useInventory() {
   const ctx = useContext(InventoryContext);
   if (!ctx) throw new Error("useInventory must be used inside InventoryProvider");
   return ctx;
+}
+
+function useInventoryOptional() {
+  return useContext(InventoryContext);
 }
 
 const EGG_GRADIENT =
@@ -529,7 +535,190 @@ function FlyingIdCard({
   );
 }
 
+const RUBY_GLOW =
+  "drop-shadow(0 0 1.5px rgba(255, 70, 90, 0.95)) drop-shadow(0 0 3px rgba(220, 38, 38, 0.55))";
+const RUBY_GEM_SIZE = 3;
+
+function RubyGemArt({ size, glow = true }: { size: number; glow?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        position: "relative",
+        display: "inline-block",
+        width: size,
+        height: size,
+        verticalAlign: "middle",
+        flexShrink: 0,
+        lineHeight: 0,
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        shapeRendering="geometricPrecision"
+        aria-hidden="true"
+        style={{
+          display: "block",
+          overflow: "visible",
+          transform: "scaleX(-1)",
+          filter: glow ? RUBY_GLOW : undefined,
+        }}
+      >
+        <defs>
+          <linearGradient id="ruby-body" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stopColor="#ff8a9a" />
+            <stop offset="35%" stopColor="#e6203a" />
+            <stop offset="100%" stopColor="#5a0410" />
+          </linearGradient>
+          <linearGradient id="ruby-top" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ffc6cf" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#ff5566" stopOpacity="0.45" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M9 7 L23 7 L29 13 L16 30 L3 13 Z"
+          fill="url(#ruby-body)"
+          stroke="#ffffff"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9 7 L23 7 L26 13 L16 17 L6 13 Z"
+          fill="url(#ruby-top)"
+          stroke="#ffffff"
+          strokeWidth="1.1"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M6 13 L16 17 L26 13"
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="0.9"
+          strokeLinejoin="round"
+        />
+        <path d="M16 17 L16 30" stroke="#ffffff" strokeWidth="0.7" />
+        <path
+          d="M9 7 L3 13 M23 7 L29 13"
+          stroke="#ffffff"
+          strokeWidth="0.7"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function MiniRubyGem({ size }: { size: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-block shrink-0"
+      style={{ width: size, height: size }}
+    >
+      <RubyGemArt size={size} glow={false} />
+    </span>
+  );
+}
+
+export function RubyGemCollectible() {
+  const inv = useInventoryOptional();
+  const [flyFrom, setFlyFrom] = useState<DOMRect | null>(null);
+  const [sessionCollected, setSessionCollected] = useState(false);
+  const buttonRef = useRef<HTMLSpanElement>(null);
+
+  if (!inv) return null;
+  if (!inv.hydrated) return null;
+  const rubyCount = inv.countOf("ruby-gem");
+  if (rubyCount >= maxFor("ruby-gem")) return null;
+  if (sessionCollected && !flyFrom) return null;
+
+  const handleClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!buttonRef.current || flyFrom) return;
+    setFlyFrom(buttonRef.current.getBoundingClientRect());
+  };
+
+  return (
+    <>
+      <span
+        ref={buttonRef}
+        role="button"
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handleClick(e);
+        }}
+        aria-label="Ruby gem — tap to claim"
+        data-testid="ruby-gem"
+        data-magnifier-interactive=""
+        className="group inline-flex items-center justify-center cursor-pointer relative"
+        style={{
+          width: RUBY_GEM_SIZE,
+          height: RUBY_GEM_SIZE,
+          background: "transparent",
+          lineHeight: 0,
+          visibility: flyFrom ? "hidden" : "visible",
+        }}
+      >
+        <RubyGemArt size={RUBY_GEM_SIZE} />
+        <span
+          role="tooltip"
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-1 text-center text-[10px] px-2 py-1 rounded bg-black/90 text-white pointer-events-none whitespace-nowrap leading-tight z-30 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-150"
+        >
+          <span className="block">Ruby Gem</span>
+          <span className="block">Tap to claim</span>
+        </span>
+      </span>
+      {flyFrom && (
+        <FlyingRuby
+          from={flyFrom}
+          onDone={() => {
+            inv.add({ id: "ruby-gem", label: "Ruby Gem" });
+            setSessionCollected(true);
+            setFlyFrom(null);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function FlyingRuby({ from, onDone }: { from: DOMRect; onDone: () => void }) {
+  const targetX = window.innerWidth - BAG_OFFSET_X;
+  const targetY = window.innerHeight - BAG_OFFSET_Y;
+  const dx = targetX - (from.left + from.width / 2);
+  const dy = targetY - (from.top + from.height / 2);
+  const ctrlX = dx * 0.4;
+  const ctrlY = -120;
+  const W = RUBY_GEM_SIZE;
+
+  return createPortal(
+    <div
+      onAnimationEnd={onDone}
+      data-testid="flying-ruby"
+      style={{
+        position: "fixed",
+        left: from.left + from.width / 2 - W / 2,
+        top: from.top + from.height / 2 - W / 2,
+        width: W,
+        height: W,
+        zIndex: 200,
+        pointerEvents: "none",
+        offsetPath: `path('M 0 0 Q ${ctrlX} ${ctrlY} ${dx} ${dy}')`,
+        offsetRotate: "0deg",
+        animation: "eggFly 1.6s linear forwards",
+      }}
+    >
+      <RubyGemArt size={W} />
+    </div>,
+    document.body,
+  );
+}
+
 function ThrowOverlay() {
+  const pathname = usePathname();
   const { surfaceRef, decrement, cancelThrow, addSplat, throwingItemId } =
     useInventory();
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
@@ -609,6 +798,8 @@ function ThrowOverlay() {
       </span>
     </>
   );
+
+  if (pathname !== "/garden/article/seeking-community") return null;
 
   return createPortal(
     <div
@@ -724,6 +915,7 @@ function SplatShape({ size = 66 }: { size?: number }) {
 }
 
 function SplatLayer() {
+  const pathname = usePathname();
   const { splats, hydrated } = useInventory();
   const [width, setWidth] = useState(0);
   const layerRef = useRef<HTMLDivElement | null>(null);
@@ -738,6 +930,8 @@ function SplatLayer() {
     ro.observe(surface);
     return () => ro.disconnect();
   }, []);
+
+  if (pathname !== "/garden/article/seeking-community") return null;
 
   const showSplats = hydrated && splats.length > 0 && width > 0;
 
@@ -964,6 +1158,7 @@ function BagIcon({ size }: { size: number }) {
 }
 
 function InventoryBag() {
+  const pathname = usePathname();
   const { items, hydrated, throwingItemId } = useInventory();
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
@@ -998,6 +1193,7 @@ function InventoryBag() {
   }, [items, hydrated]);
 
   if (!hydrated) return null;
+  if (pathname !== "/garden/article/seeking-community") return null;
   if (items.length === 0) return null;
 
   const showLabel = !!addedLabel || hover || open;
@@ -1157,6 +1353,8 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
                   <MiniEgg size={9} />
                 ) : item.id === "id-card" ? (
                   <MiniIdCard size={14} />
+                ) : item.id === "ruby-gem" ? (
+                  <MiniRubyGem size={9} />
                 ) : item.id === "egg-splat" ? (
                   <MiniSplat size={14} />
                 ) : (

@@ -9,7 +9,6 @@ import { ArticleBody } from "../article-body";
 import {
   EasterEgg,
   IdCardCollectible,
-  InventoryProvider,
 } from "./article-inventory";
 
 const CommunityConstellation = dynamic(
@@ -91,7 +90,7 @@ function HawaiiSection() {
 
 export function SeekingCommunityBody() {
   return (
-    <InventoryProvider>
+    <>
       <ArticleBody spacing="comfortable">
         <section id="era-cosmos">
           <div className="space-y-4">
@@ -263,11 +262,11 @@ export function SeekingCommunityBody() {
             <p>
               <span className="relative block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
                 <Image
-                  src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains.png"
+                  src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains-engraved.png"
                   alt="Illustrated scene of car camping in the mountains"
                   width={480}
                   height={300}
-                  className="w-full h-auto -translate-y-[calc(40%-30px)]"
+                  className="w-full h-auto -translate-y-[20%]"
                 />
                 <span
                   className="absolute"
@@ -318,6 +317,6 @@ export function SeekingCommunityBody() {
           hideTopDivider
         />
       </div>
-    </InventoryProvider>
+    </>
   );
 }

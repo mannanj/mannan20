@@ -9,6 +9,7 @@ import { scrollToSection } from "@/lib/utils";
 import type { Section } from "@/lib/types";
 import { PlantIcon } from "@/components/icons/plant-icon";
 import { AnimatedText } from "@/components/animated-text";
+import { RubyGemCollectible } from "@/components/garden/article-inventory";
 
 const LINKS: Section[] = ["home", "about", "contact"];
 
@@ -530,6 +531,8 @@ export function Header() {
     [clicksAllowed, expanded],
   );
 
+  if (pathname === "/garden") return null;
+
   return (
     <div
       className={`flex justify-between items-center fixed top-0 w-screen border-b border-white h-[66px] z-[99] px-4 ${
@@ -560,6 +563,22 @@ export function Header() {
             alt="Mannan"
             className="rounded-full"
           />
+          {pathname === "/garden/article/seeking-community" && (
+            <span
+              className="absolute pointer-events-auto block"
+              style={{
+                left: "62%",
+                top: "45%",
+                width: 3,
+                height: 3,
+                marginLeft: -1.5,
+                marginTop: -1.5,
+                lineHeight: 0,
+              }}
+            >
+              <RubyGemCollectible />
+            </span>
+          )}
           <div className="absolute top-full left-0 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-40">
             <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
             <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
@@ -2329,7 +2348,7 @@ export function Header() {
           >
             <div className="absolute -top-[6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
             <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
-              Walk through my Garden
+              View my Garden
             </div>
           </div>
         </Link>
