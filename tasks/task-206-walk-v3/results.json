@@ -1,0 +1,326 @@
+{
+  "check1_scroll_height_desktop": 3976,
+  "check2_first_viewport": {
+    "openerVisible": true,
+    "openerText": "I opened my own page to look at you. Here is what I read before you finished the first line.",
+    "bylineVisible": false,
+    "bylineText": "garden \u2014 taken \u2014 vol. iv of the garden \u2014 written by mannan, may 2026."
+  },
+  "check3_barcode": {
+    "present": true,
+    "bars": {
+      "count": 16,
+      "opacities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "check4_tell_someone_btn": {
+    "found": true,
+    "text": "TELL SOMEONE",
+    "x": 328,
+    "y": 486.578125
+  },
+  "check4_copy": {
+    "copy_clicked": {
+      "clicked": true,
+      "available": true
+    },
+    "copied_state": true,
+    "clipboard_text": "I just read a web page that told me everything it could see about me, and stopped exactly where it was supposed to."
+  },
+  "check5_popout_btn": {
+    "found": true,
+    "text": "the rest of it",
+    "x": 570.9765625,
+    "y": 555.8046875
+  },
+  "check5_popout": {
+    "open_state": {
+      "hasFullIpLabel": true,
+      "hasRedactsTimer": true,
+      "hasWithheld": false
+    },
+    "after_redact": {
+      "hasFullIpLabel": true,
+      "hasWithheld": true,
+      "hasRedactsTimer": false
+    }
+  },
+  "check6_bottom": {
+    "byline": "garden \u2014 taken \u2014 vol. iv of the garden \u2014 written by mannan, may 2026.",
+    "otherArticles": [
+      "/garden/article/seeking-community",
+      "/garden/article/health-longevity"
+    ]
+  },
+  "check9_console_main": {
+    "messages_count": 18,
+    "errors": [
+      {
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 403 ()",
+        "location": {
+          "url": "https://ipwho.is/",
+          "lineNumber": 0,
+          "columnNumber": 0
+        }
+      }
+    ],
+    "warnings": [
+      {
+        "type": "warning",
+        "text": "[.WebGL-0x10c001c5a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "location": {
+          "url": "http://localhost:3847/garden/article/taken",
+          "lineNumber": 0,
+          "columnNumber": 0
+        }
+      }
+    ],
+    "all_types": [
+      "log",
+      "info",
+      "warning",
+      "error"
+    ]
+  },
+  "check9_network_failures": [
+    {
+      "url": "https://ipwho.is/",
+      "status": 403
+    }
+  ],
+  "check7_scroll_height_mobile": 5359,
+  "check7_scroll_width_mobile": 375,
+  "check7_no_horizontal_overflow": true,
+  "check7_mobile_popout": {
+    "clicked": true,
+    "state": {
+      "hasFullIpLabel": true,
+      "hasRedactsTimer": true
+    }
+  },
+  "check8_reduced_motion": {
+    "is_reduce": true,
+    "barcode": {
+      "count": 16,
+      "className": "w-[3px] bg-white/55 opacity-100",
+      "transitionProperty": "all",
+      "transitionDuration": "0s",
+      "opacity": "1"
+    }
+  },
+  "check8_no_per_row_fades": {
+    "suspectsCount": 0,
+    "suspects": []
+  },
+  "check10_other_articles": {
+    "seeking-community": {
+      "scrollHeight": 3387,
+      "headerPresent": true,
+      "loaded": true
+    },
+    "health-longevity": {
+      "scrollHeight": 1782,
+      "headerPresent": false,
+      "loaded": true
+    }
+  },
+  "check10_console_other": {
+    "errors": [
+      {
+        "type": "error",
+        "text": "UnicornScene mount failed: TypeError: Cannot read properties of undefined (reading 'cache')\n    at A.loadImage (https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.5/dist/unicornStudio.umd.js:1:66223)\n    at https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.5/dist/unicornStudio.umd.js:1:139949\n    at Array.forEach (<anonymous>)\n    at it.preloadTextures (https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.5/dist/unicornStudio.umd.js:1:137973)\n    at https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.0.5/dist/unicornStudio.umd.js:1:169944"
+      }
+    ],
+    "count": 12
+  },
+  "browser_chromium_version": "147.0.7727.15",
+  "captured_at_iso": "2026-05-08T18:54:47.482481+00:00",
+  "console_log_full": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+        "lineNumber": 14537,
+        "columnNumber": 53
+      }
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x10c001c5a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "location": {
+        "url": "http://localhost:3847/garden/article/taken",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 ()",
+      "location": {
+        "url": "https://ipwho.is/",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "log",
+      "text": "%c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit",
+      "location": {
+        "url": "https://va.vercel-scripts.com/v1/script.debug.js",
+        "lineNumber": 0,
+        "columnNumber": 614
+      }
+    },
+    {
+      "type": "log",
+      "text": "%c[Vercel Web Analytics]%c [view] http://localhost:3847/garden/article/taken color: rgb(120, 120, 120) color: inherit {o: http://localhost:3847/garden/article/taken, sv: 0.1.3, sdkn: @vercel/analytics/react, sdkv: 1.6.1, ts: 1778266448875} /_vercel/insights/view",
+      "location": {
+        "url": "https://va.vercel-scripts.com/v1/script.debug.js",
+        "lineNumber": 0,
+        "columnNumber": 614
+      }
+    },
+    {
+      "type": "log",
+      "text": "%c[Vercel Speed Insights]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit",
+      "location": {
+        "url": "https://va.vercel-scripts.com/v1/speed-insights/script.debug.js",
+        "lineNumber": 0,
+        "columnNumber": 11263
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5949,
+        "columnNumber": 16
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 248ms",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5809,
+        "columnNumber": 12
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5949,
+        "columnNumber": 16
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 213ms",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5809,
+        "columnNumber": 12
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5949,
+        "columnNumber": 16
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 222ms",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5809,
+        "columnNumber": 12
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5949,
+        "columnNumber": 16
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 185ms",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5809,
+        "columnNumber": 12
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5949,
+        "columnNumber": 16
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 193ms",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5809,
+        "columnNumber": 12
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5949,
+        "columnNumber": 16
+      }
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 205ms",
+      "location": {
+        "url": "http://localhost:3847/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js",
+        "lineNumber": 5809,
+        "columnNumber": 12
+      }
+    }
+  ],
+  "network_failures_full": [
+    {
+      "url": "https://ipwho.is/",
+      "status": 403
+    }
+  ]
+}

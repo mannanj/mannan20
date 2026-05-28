@@ -66,3 +66,8 @@ public/data/audio/
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+.claude/session-memory/
+
+# Kick the Can — archived Shockwave game preservation (vendored ~470MB DirPlayer.app + game assets, not for the repo)
+scripts/kick-the-can-dirplayer/
+wants/kick-the-can/
