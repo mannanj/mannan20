@@ -1,8 +1,10 @@
-### Task 215: Add Spirit & Hammer to Employment History
-- [ ] Add a new "Spirit & Hammer" job entry as the first/top section under Employment History
-- [ ] Source the bullets from the current resume (`public/data/documents/Mannan_Javid_Resume.pdf`)
-- [ ] No `link` field — the company site does not exist yet
-- Location: `public/data/about.json` (`jobs` array, prepend as index 0)
+### Task 215: Add Spirit & Hammer to Employment History — ✅ DONE (2026-05-29)
+- [x] Add a new "Spirit & Hammer" job entry as the first/top section under Employment History
+- [x] Source the bullets from the current resume (`public/data/documents/Mannan_Javid_Resume.pdf`)
+- [x] No `link` field on the entry — the company site does not exist yet (inline links added to Intruex + Hans Morningstar within the bullets instead)
+- Location: `public/data/about.json` (`jobs` array, prepended as index 0)
+
+**Shipped scope (broader than the original proposal below).** The Spirit & Hammer card carries 7 bullets: the 3 resume Spirit & Hammer bullets (circadian-health platform, offline-first agent-editable apps, AI video pipelines), a Hans Morningstar client-platform bullet (linked to https://hansmorningstar.com), and the 3 resume Intruex bullets attributed "for Intruex" (linked to https://intruex.com). The "Proposed entry" JSON below was the original draft and is now superseded.
 
 #### Context
 Employment History is data-driven. The `jobs` array in `about.json` renders via
