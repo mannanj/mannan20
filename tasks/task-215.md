@@ -4,7 +4,7 @@
 - [x] No `link` field on the entry — the company site does not exist yet (inline links added to Intruex + Hans Morningstar within the bullets instead)
 - Location: `public/data/about.json` (`jobs` array, prepended as index 0)
 
-**Shipped scope (broader than the original proposal below).** The Spirit & Hammer card carries 7 bullets: the 3 resume Spirit & Hammer bullets (circadian-health platform, offline-first agent-editable apps, AI video pipelines), a Hans Morningstar client-platform bullet (linked to https://hansmorningstar.com), and the 3 resume Intruex bullets attributed "for Intruex" (linked to https://intruex.com). The "Proposed entry" JSON below was the original draft and is now superseded.
+**Shipped scope (broader than the original proposal below).** Position is "Founder". The Spirit & Hammer card covers the resume's Spirit & Hammer work as separate bullets — circadian-health platform, offline-first agent-editable apps, AI video pipelines, and a YouTube intelligence platform — plus a concise Hans Morningstar client-platform bullet (linked to https://hansmorningstar.com) and a single merged Intruex consulting bullet (consultant + AI agent harness + Playwright, linked to https://intruex.com). Description: "AI product studio & consulting agency shipping production-grade full-stack AI platforms." The "Proposed entry" JSON below was the original draft and is now superseded.
 
 #### Context
 Employment History is data-driven. The `jobs` array in `about.json` renders via
