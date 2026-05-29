@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import type { Section, ContactResultData } from '@/lib/types';
 
 const COOKIE_NAME = 'contact_revealed';
@@ -40,6 +40,7 @@ const initialState: AppState = {
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_ACTIVE_SECTION':
+      if (state.activeSection === action.section) return state;
       return { ...state, activeSection: action.section };
     case 'OPEN_CONTACT_MODAL':
       return { ...state, contactModalOpen: true, contactPopoutPosition: action.position };
@@ -79,18 +80,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const value: AppContextValue = {
+  const setActiveSection = useCallback((section: Section) => dispatch({ type: 'SET_ACTIVE_SECTION', section }), []);
+  const openContactModal = useCallback((x: number, y: number) => dispatch({ type: 'OPEN_CONTACT_MODAL', position: { x, y } }), []);
+  const closeContactModal = useCallback(() => dispatch({ type: 'CLOSE_CONTACT_MODAL' }), []);
+  const setContactResult = useCallback((result: ContactResultData) => {
+    document.cookie = `${COOKIE_NAME}=1;path=/;max-age=${COOKIE_MAX_AGE_SECONDS};SameSite=Lax`;
+    dispatch({ type: 'SET_CONTACT_RESULT', result });
+  }, []);
+  const setContactUserInput = useCallback((value: string) => dispatch({ type: 'SET_CONTACT_USER_INPUT', value }), []);
+  const toggleCommandsModal = useCallback(() => dispatch({ type: 'TOGGLE_COMMANDS_MODAL' }), []);
+
+  const value: AppContextValue = useMemo(() => ({
     state,
-    setActiveSection: (section) => dispatch({ type: 'SET_ACTIVE_SECTION', section }),
-    openContactModal: (x, y) => dispatch({ type: 'OPEN_CONTACT_MODAL', position: { x, y } }),
-    closeContactModal: () => dispatch({ type: 'CLOSE_CONTACT_MODAL' }),
-    setContactResult: (result) => {
-      document.cookie = `${COOKIE_NAME}=1;path=/;max-age=${COOKIE_MAX_AGE_SECONDS};SameSite=Lax`;
-      dispatch({ type: 'SET_CONTACT_RESULT', result });
-    },
-    setContactUserInput: (value) => dispatch({ type: 'SET_CONTACT_USER_INPUT', value }),
-    toggleCommandsModal: () => dispatch({ type: 'TOGGLE_COMMANDS_MODAL' }),
-  };
+    setActiveSection,
+    openContactModal,
+    closeContactModal,
+    setContactResult,
+    setContactUserInput,
+    toggleCommandsModal,
+  }), [state, setActiveSection, openContactModal, closeContactModal, setContactResult, setContactUserInput, toggleCommandsModal]);
 
   return <AppContext value={value}>{children}</AppContext>;
 }
