@@ -282,7 +282,7 @@ export function RobotsGuidedFlow() {
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
-    if (hash === 'robots-flow') {
+    if (hash === 'robots-flow' || hash === 'robotics-flow') {
       startFlow();
     }
   }, [startFlow]);

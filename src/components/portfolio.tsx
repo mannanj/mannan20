@@ -23,7 +23,7 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
 
   useEffect(() => {
     const hash = window.location.hash.slice(1);
-    if (!hash || hash === 'download-resume' || hash === 'robots-flow') return;
+    if (!hash || hash === 'download-resume' || hash === 'robots-flow' || hash === 'robotics-flow') return;
     const scroll = () => {
       const el = document.getElementById(hash);
       if (el) {
