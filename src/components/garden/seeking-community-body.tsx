@@ -260,13 +260,13 @@ export function SeekingCommunityBody() {
               and accept others without requiring that they share your own.
             </p>
             <p>
-              <span className="relative block max-w-[66%] h-[140px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
+              <span className="parallax-aggressive relative block max-w-[99%] h-[210px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
                 <Image
                   src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains-engraved.png"
                   alt="Illustrated scene of car camping in the mountains"
                   width={480}
                   height={300}
-                  className="w-full h-auto -translate-y-[20%]"
+                  className="w-full h-auto"
                 />
                 <span
                   className="absolute"

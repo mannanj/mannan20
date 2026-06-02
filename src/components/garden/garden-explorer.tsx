@@ -17,7 +17,8 @@ interface GardenApp {
   thumb: ReactNode;
 }
 
-const ORDER: Record<Category, number> = { apps: 0, writings: 1 };
+const ORDER: Record<Category, number> = { writings: 0, apps: 1 };
+const PANEL_TRANSITION_MS = 700;
 
 function MannanThumb() {
   return (
@@ -38,30 +39,25 @@ function MannanThumb() {
 
 function ReadAlongThumb() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#1b2a4a_0%,#0f3b3a_100%)]">
-      <svg viewBox="0 0 64 64" className="h-1/2 w-1/2" fill="none">
-        <rect x="14" y="18" width="36" height="3.2" rx="1.6" fill="#ffffff" opacity="0.55" />
-        <rect x="14" y="27" width="36" height="3.2" rx="1.6" fill="#f5b14a" />
-        <rect x="14" y="36" width="24" height="3.2" rx="1.6" fill="#ffffff" opacity="0.35" />
-        <path d="M44 33.5 L52 30 L52 39 Z" fill="#f5b14a" />
-      </svg>
-    </div>
+    <Image
+      src="/read-along.png"
+      alt="Read Along app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
   );
 }
 
 function SummonThumb() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#3a1b5a_0%,#7a1f5c_100%)]">
-      <svg viewBox="0 0 64 64" className="h-1/2 w-1/2" fill="none">
-        <path
-          d="M32 14 L35 28 L49 31 L35 34 L32 48 L29 34 L15 31 L29 28 Z"
-          fill="#ffffff"
-          opacity="0.92"
-        />
-        <path d="M48 16 L49.6 21 L54.5 22.5 L49.6 24 L48 29 L46.4 24 L41.5 22.5 L46.4 21 Z" fill="#f7c9ff" />
-        <path d="M17 38 L18.2 41.6 L21.8 42.8 L18.2 44 L17 47.6 L15.8 44 L12.2 42.8 L15.8 41.6 Z" fill="#f7c9ff" opacity="0.85" />
-      </svg>
-    </div>
+    <Image
+      src="/summon.png"
+      alt="Summon It app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
   );
 }
 
@@ -195,13 +191,13 @@ function Panel({ which }: { which: Category }) {
 }
 
 export function GardenExplorer() {
-  const [active, setActive] = useState<Category>("apps");
+  const [active, setActive] = useState<Category>("writings");
   const [prev, setPrev] = useState<Category | null>(null);
   const [dir, setDir] = useState(1);
 
   useEffect(() => {
     if (prev === null) return;
-    const t = setTimeout(() => setPrev(null), 480);
+    const t = setTimeout(() => setPrev(null), PANEL_TRANSITION_MS);
     return () => clearTimeout(t);
   }, [prev, active]);
 
@@ -225,28 +221,10 @@ export function GardenExplorer() {
           <button
             type="button"
             role="tab"
-            aria-selected={active === "apps"}
-            data-testid="garden-tab-apps"
-            onClick={() => select("apps")}
-            className={`relative pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-              active === "apps" ? "font-bold text-white" : "font-normal text-white/45 hover:text-white/75"
-            }`}
-          >
-            Apps
-            <span
-              className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
-                active === "apps" ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </button>
-
-          <button
-            type="button"
-            role="tab"
             aria-selected={active === "writings"}
             data-testid="garden-tab-writings"
             onClick={() => select("writings")}
-            className={`relative pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
+            className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
               active === "writings" ? "font-bold text-white" : "font-normal text-white/45 hover:text-white/75"
             }`}
           >
@@ -258,15 +236,33 @@ export function GardenExplorer() {
             />
           </button>
 
+          <button
+            type="button"
+            role="tab"
+            aria-selected={active === "apps"}
+            data-testid="garden-tab-apps"
+            onClick={() => select("apps")}
+            className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
+              active === "apps" ? "font-bold text-white" : "font-normal text-white/45 hover:text-white/75"
+            }`}
+          >
+            Apps
+            <span
+              className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
+                active === "apps" ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          </button>
+
           <span
             role="tab"
             aria-selected={false}
             aria-disabled="true"
             data-testid="garden-tab-work"
-            className="relative flex cursor-not-allowed flex-col items-center pb-1.5 text-lg text-white/25 sm:text-xl"
+            className="relative cursor-not-allowed pb-1.5 text-lg text-white/25 sm:text-xl"
           >
             Work
-            <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-white/20">
+            <span className="absolute left-1/2 top-full -translate-x-1/2 whitespace-nowrap text-[9px] font-normal uppercase tracking-[0.2em] text-white/20">
               coming soon
             </span>
           </span>

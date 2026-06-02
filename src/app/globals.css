@@ -39,33 +39,31 @@
 @keyframes swivelIn {
   from {
     opacity: 0;
-    transform: rotateY(calc(var(--swivel-dir, 1) * -42deg))
-      translateX(calc(var(--swivel-dir, 1) * 13%));
+    transform: translateX(calc(var(--swivel-dir, 1) * 13%));
   }
   to {
     opacity: 1;
-    transform: rotateY(0deg) translateX(0);
+    transform: translateX(0);
   }
 }
 
 @keyframes swivelOut {
   from {
     opacity: 1;
-    transform: rotateY(0deg) translateX(0);
+    transform: translateX(0);
   }
   to {
     opacity: 0;
-    transform: rotateY(calc(var(--swivel-dir, 1) * 42deg))
-      translateX(calc(var(--swivel-dir, 1) * -13%));
+    transform: translateX(calc(var(--swivel-dir, 1) * -13%));
   }
 }
 
 .swivel-in {
-  animation: swivelIn 480ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
+  animation: swivelIn 700ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
 }
 
 .swivel-out {
-  animation: swivelOut 480ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
+  animation: swivelOut 700ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -695,4 +693,32 @@ body.gem-rain-active #header > div:first-child {
   86%  { transform: translate(-2px, -2px) rotate(0.4deg); }
   93%  { transform: translate(-3px, 3px) rotate(-0.3deg); }
   100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+/* CSS-native scroll-driven parallax — aggressive variant (--parallax-offset: 30).
+   Technique: https://dan-webnotes.com/posts/2026-06-02-css-native-parallax-effect/ */
+.parallax-aggressive {
+  view-timeline-name: --parallax-camping;
+  view-timeline-axis: block;
+}
+
+.parallax-aggressive > img {
+  scale: 1.2;
+  animation: parallaxAggressive auto linear both;
+  animation-timeline: --parallax-camping;
+  animation-range: cover;
+  will-change: translate;
+}
+
+@keyframes parallaxAggressive {
+  from { translate: 0 -45%; }
+  to { translate: 0 5%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parallax-aggressive > img {
+    animation: none;
+    scale: 1;
+    translate: 0 -20%;
+  }
 }
