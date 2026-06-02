@@ -6,6 +6,7 @@ import Image from "next/image";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
+import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
 
 type Category = "apps" | "writings";
 
@@ -132,6 +133,8 @@ function WritingCard({ article, muted }: { article: GardenArticle; muted: boolea
       <CommunityNodesPreview />
     ) : article.href === "/garden/article/health-longevity" ? (
       <HealthHeroPreview />
+    ) : article.href === "/garden/article/self-parenting" ? (
+      <SelfParentingPreview />
     ) : null;
   return (
     <Link

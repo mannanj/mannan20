@@ -37,6 +37,15 @@ export const GARDEN_ARTICLES: GardenArticle[] = [
     wordCount: 620,
     href: "/garden/article/health-longevity",
   },
+  {
+    title: "Here are some things I've learned about parenting",
+    description:
+      "From self application and observation — self-parenting beliefs, and practices for respect, agency, and dignity.",
+    date: "2026-06-02",
+    readingTime: "3 min read",
+    wordCount: 480,
+    href: "/garden/article/self-parenting",
+  },
 ];
 
 export const JOYFUL_FRUSTRATIONS = {

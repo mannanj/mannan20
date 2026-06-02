@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GARDEN_ARTICLES } from "@/lib/garden-articles";
 import { CommunityNodesPreview } from "./community-nodes-preview";
 import { HealthHeroPreview } from "./health-hero-preview";
+import { SelfParentingPreview } from "./self-parenting-figures";
 
 const SCROLL_AMOUNT = 280;
 
@@ -101,6 +102,8 @@ export function AdditionalReading({
                 <CommunityNodesPreview />
               ) : article.href === "/garden/article/health-longevity" ? (
                 <HealthHeroPreview />
+              ) : article.href === "/garden/article/self-parenting" ? (
+                <SelfParentingPreview />
               ) : null;
             return (
               <Link
