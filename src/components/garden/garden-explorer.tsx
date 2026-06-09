@@ -8,17 +8,19 @@ import { CommunityNodesPreview } from "@/components/garden/community-nodes-previ
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
 
-type Category = "apps" | "writings";
+type Category = "products" | "writings";
 
-interface GardenApp {
+interface GardenProduct {
   title: string;
   description: string;
   href: string;
   external: boolean;
+  year: number;
+  retired?: boolean;
   thumb: ReactNode;
 }
 
-const ORDER: Record<Category, number> = { writings: 0, apps: 1 };
+const ORDER: Record<Category, number> = { writings: 0, products: 1 };
 const PANEL_TRANSITION_MS = 700;
 
 function MannanThumb() {
@@ -62,72 +64,135 @@ function SummonThumb() {
   );
 }
 
-const APPS: GardenApp[] = [
+function SkillGuardThumb() {
+  return (
+    <Image
+      src="/skillguard.png"
+      alt="SkillGuard app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
+function MealFairyThumb() {
+  return (
+    <Image
+      src="/meal-fairy.png"
+      alt="Meal Fairy app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
+const PRODUCTS: GardenProduct[] = [
   {
     title: "Mannan",
     description: "Portfolio, writing, and experiments — my corner of the web.",
     href: "/",
     external: false,
+    year: 2026,
     thumb: <MannanThumb />,
   },
   {
     title: "Read Along",
-    description: "Turn text into AI-narrated audiobooks with read-along highlights.",
+    description: "Turn text into AI-narrated audiobooks.",
     href: "https://tryreadalong.com",
     external: true,
+    year: 2026,
     thumb: <ReadAlongThumb />,
   },
   {
+    title: "SkillGuard",
+    description: "Scan Claude Code skills for prompt injection before they run.",
+    href: "https://skillguard.sh",
+    external: true,
+    year: 2026,
+    thumb: <SkillGuardThumb />,
+  },
+  {
     title: "Summon It",
-    description:
-      "Snap an image, paste text, or drop a link — Summon turns it into a calendar event, instantly.",
+    description: "Turn image or text into calendar events.",
     href: "https://summonit.app",
     external: true,
+    year: 2026,
     thumb: <SummonThumb />,
+  },
+  {
+    title: "Meal Fairy",
+    description: "Chef-cooked, healthy meals delivered to your door.",
+    href: "https://meal-fairy-ce3bf.web.app",
+    external: true,
+    year: 2018,
+    retired: true,
+    thumb: <MealFairyThumb />,
   },
 ];
 
-function AppCard({ app }: { app: GardenApp }) {
+function ProductCard({ product }: { product: GardenProduct }) {
   const className =
     "group flex aspect-square flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] transition-all duration-200 hover:scale-[1.04] hover:border-white/25 hover:bg-white/[0.05]";
   const body = (
     <>
-      <div className="relative basis-1/2 shrink-0 overflow-hidden">{app.thumb}</div>
-      <div className="flex flex-1 flex-col p-2.5 sm:p-3">
+      <div className="relative flex-1 overflow-hidden">
+        {product.thumb}
+      </div>
+      <div className="flex shrink-0 flex-col p-2.5 sm:p-3">
         <span className="text-xs font-medium text-white transition-colors duration-200 group-hover:text-red-500 sm:text-sm">
-          {app.title}
+          {product.title}
+          {product.retired && (
+            <span className="font-normal text-white/30"> (retired)</span>
+          )}
         </span>
         <span className="mt-1 line-clamp-3 text-[10px] leading-tight text-white/40 sm:text-[11px]">
-          {app.description}
+          {product.description}
         </span>
       </div>
     </>
   );
-  if (app.external) {
+  if (product.external) {
     return (
-      <a href={app.href} target="_blank" rel="noopener noreferrer" className={className}>
+      <a
+        href={product.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
         {body}
       </a>
     );
   }
   return (
-    <Link href={app.href} className={className}>
+    <Link href={product.href} className={className}>
       {body}
     </Link>
   );
 }
 
-function AppsPanel() {
+function ProductGrid({ products }: { products: GardenProduct[] }) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-      {APPS.map((app) => (
-        <AppCard key={app.title} app={app} />
+    <div className="grid grid-cols-3 gap-x-2 gap-y-0 sm:gap-x-3">
+      {products.map((product) => (
+        <ProductCard key={product.title} product={product} />
       ))}
     </div>
   );
 }
 
-function WritingCard({ article, muted }: { article: GardenArticle; muted: boolean }) {
+function ProductsPanel() {
+  return <ProductGrid products={PRODUCTS} />;
+}
+
+function WritingCard({
+  article,
+  muted,
+}: {
+  article: GardenArticle;
+  muted: boolean;
+}) {
   const preview =
     article.href === "/garden/article/seeking-community" ? (
       <CommunityNodesPreview />
@@ -144,7 +209,9 @@ function WritingCard({ article, muted }: { article: GardenArticle; muted: boolea
       }`}
     >
       {preview && (
-        <div className="relative z-10 w-1/4 shrink-0 self-stretch py-3 pl-3 sm:w-1/5">{preview}</div>
+        <div className="relative z-10 w-1/4 shrink-0 self-stretch py-3 pl-3 sm:w-1/5">
+          {preview}
+        </div>
       )}
       <div className="relative z-10 flex min-w-0 flex-1 flex-col px-3 py-3">
         <span className="truncate text-sm font-medium text-white transition-colors duration-200 group-hover:text-red-500">
@@ -162,10 +229,7 @@ function WritingCard({ article, muted }: { article: GardenArticle; muted: boolea
             })}
             {article.readingTime && <> &middot; {article.readingTime}</>}
             {article.wordCount && (
-              <>
-                {" "}
-                &middot; {article.wordCount.toLocaleString()} words
-              </>
+              <> &middot; {article.wordCount.toLocaleString()} words</>
             )}
           </span>
         )}
@@ -190,7 +254,7 @@ function WritingsPanel() {
 }
 
 function Panel({ which }: { which: Category }) {
-  return which === "apps" ? <AppsPanel /> : <WritingsPanel />;
+  return which === "products" ? <ProductsPanel /> : <WritingsPanel />;
 }
 
 export function GardenExplorer() {
@@ -211,7 +275,10 @@ export function GardenExplorer() {
     setActive(next);
   };
 
-  const layerStyle = { gridArea: "1 / 1", "--swivel-dir": dir } as CSSProperties;
+  const layerStyle = {
+    gridArea: "1 / 1",
+    "--swivel-dir": dir,
+  } as CSSProperties;
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-24">
@@ -220,7 +287,11 @@ export function GardenExplorer() {
           Garden
         </p>
 
-        <div role="tablist" aria-label="Garden categories" className="mb-10 flex items-center justify-center gap-7 sm:gap-10">
+        <div
+          role="tablist"
+          aria-label="Garden categories"
+          className="mb-10 flex items-center justify-center gap-7 sm:gap-10"
+        >
           <button
             type="button"
             role="tab"
@@ -228,7 +299,9 @@ export function GardenExplorer() {
             data-testid="garden-tab-writings"
             onClick={() => select("writings")}
             className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-              active === "writings" ? "font-bold text-white" : "font-normal text-white/45 hover:text-white/75"
+              active === "writings"
+                ? "font-bold text-white"
+                : "font-normal text-white/45 hover:text-white/75"
             }`}
           >
             Writings
@@ -242,17 +315,19 @@ export function GardenExplorer() {
           <button
             type="button"
             role="tab"
-            aria-selected={active === "apps"}
-            data-testid="garden-tab-apps"
-            onClick={() => select("apps")}
+            aria-selected={active === "products"}
+            data-testid="garden-tab-products"
+            onClick={() => select("products")}
             className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-              active === "apps" ? "font-bold text-white" : "font-normal text-white/45 hover:text-white/75"
+              active === "products"
+                ? "font-bold text-white"
+                : "font-normal text-white/45 hover:text-white/75"
             }`}
           >
-            Apps
+            Products
             <span
               className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
-                active === "apps" ? "opacity-100" : "opacity-0"
+                active === "products" ? "opacity-100" : "opacity-0"
               }`}
             />
           </button>
@@ -274,7 +349,11 @@ export function GardenExplorer() {
         <div className="[perspective:1400px]">
           <div className="grid">
             {prev && (
-              <div key={`out-${prev}`} style={layerStyle} className="swivel-out pointer-events-none [transform-style:preserve-3d]">
+              <div
+                key={`out-${prev}`}
+                style={layerStyle}
+                className="swivel-out pointer-events-none [transform-style:preserve-3d]"
+              >
                 <Panel which={prev} />
               </div>
             )}

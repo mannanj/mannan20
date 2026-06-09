@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
 import { GardenExplorer } from "@/components/garden/garden-explorer";
 
 export const metadata: Metadata = {
@@ -97,6 +99,25 @@ function PlantThree() {
 export default function GardenPage() {
   return (
     <div className="relative min-h-screen overflow-x-clip bg-[#0b0b0b] text-white">
+      <Link
+        href="/"
+        aria-label="Back to home"
+        className="group absolute left-5 top-5 z-20 sm:left-7 sm:top-7"
+      >
+        <span className="relative block h-11 w-11 overflow-hidden rounded-full ring-1 ring-white/15 transition-all duration-200 group-hover:scale-105 group-hover:ring-white/40 group-focus-visible:scale-105 group-focus-visible:ring-white/40">
+          <Image
+            src="/mannan.jpg"
+            alt="Mannan"
+            fill
+            sizes="44px"
+            className="object-cover object-center"
+          />
+        </span>
+        <span className="pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
+          Home
+        </span>
+      </Link>
+
       <div className="pointer-events-none absolute top-24 right-8 opacity-[0.10]">
         <PlantOne />
       </div>
