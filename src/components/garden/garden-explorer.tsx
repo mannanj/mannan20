@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useEffect, type ReactNode, type CSSProperties } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+  type CSSProperties,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
+import { EPISODES } from "@/lib/episodes";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
 
-type Category = "products" | "writings";
+type Category = "products" | "writings" | "readings";
 
 interface GardenProduct {
   title: string;
@@ -20,8 +27,25 @@ interface GardenProduct {
   thumb: ReactNode;
 }
 
-const ORDER: Record<Category, number> = { writings: 0, products: 1 };
+const ORDER: Record<Category, number> = {
+  writings: 0,
+  products: 1,
+  readings: 2,
+};
 const PANEL_TRANSITION_MS = 700;
+
+const TABS: { key: Category; label: string }[] = [
+  { key: "writings", label: "Writings" },
+  { key: "products", label: "Products" },
+  { key: "readings", label: "Readings" },
+];
+
+const HASH_TO_CATEGORY: Record<string, Category> = {
+  writings: "writings",
+  products: "products",
+  readings: "readings",
+  episodes: "readings",
+};
 
 function MannanThumb() {
   return (
@@ -194,7 +218,7 @@ function ProductCard({ product }: { product: GardenProduct }) {
 
 function ProductGrid({ products }: { products: GardenProduct[] }) {
   return (
-    <div className="grid grid-cols-3 gap-x-2 gap-y-0 sm:gap-x-3">
+    <div className="grid grid-cols-3 gap-x-2 gap-y-2.5 sm:gap-x-3">
       {products.map((product) => (
         <ProductCard key={product.title} product={product} />
       ))}
@@ -273,14 +297,61 @@ function WritingsPanel() {
   );
 }
 
-function Panel({ which }: { which: Category }) {
-  return which === "products" ? <ProductsPanel /> : <WritingsPanel />;
+function ReadingsPanel({ showAll }: { showAll: boolean }) {
+  const visible = EPISODES.filter((episode) => showAll || !episode.hidden);
+  return (
+    <div className="flex flex-col">
+      {visible.map((episode) => (
+        <Link
+          key={episode.href}
+          href={episode.href}
+          className="group -mx-4 flex items-baseline justify-between rounded-lg px-4 py-5 transition-colors hover:bg-white/[0.03]"
+        >
+          <div>
+            <span className="text-lg font-light text-white transition-colors duration-200 group-hover:text-red-500">
+              {episode.title}
+            </span>
+            <span className="ml-3 text-sm text-white/40">{episode.author}</span>
+          </div>
+          <span className="shrink-0 text-xs text-white/30">{episode.date}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function Panel({ which, showAll }: { which: Category; showAll: boolean }) {
+  if (which === "products") return <ProductsPanel />;
+  if (which === "readings") return <ReadingsPanel showAll={showAll} />;
+  return <WritingsPanel />;
+}
+
+function GardenSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="mb-10 flex items-center justify-center gap-7 sm:gap-10">
+        {TABS.map((tab) => (
+          <div key={tab.key} className="h-6 w-20 rounded bg-white/5 sm:h-7" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-28 rounded-lg border border-white/10 bg-white/[0.02]"
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function GardenExplorer() {
   const [active, setActive] = useState<Category>("writings");
   const [prev, setPrev] = useState<Category | null>(null);
   const [dir, setDir] = useState(1);
+  const [showAll, setShowAll] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (prev === null) return;
@@ -293,7 +364,26 @@ export function GardenExplorer() {
     setDir(ORDER[next] > ORDER[active] ? 1 : -1);
     setPrev(active);
     setActive(next);
+    window.history.replaceState(null, "", `#${next}`);
   };
+
+  const selectRef = useRef(select);
+  selectRef.current = select;
+
+  useEffect(() => {
+    setShowAll(
+      new URLSearchParams(window.location.search).get("showAll") === "true"
+    );
+    const initial = HASH_TO_CATEGORY[window.location.hash.slice(1)];
+    if (initial) setActive(initial);
+    setReady(true);
+    const onHashChange = () => {
+      const next = HASH_TO_CATEGORY[window.location.hash.slice(1)];
+      if (next) selectRef.current(next);
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const layerStyle = {
     gridArea: "1 / 1",
@@ -301,93 +391,69 @@ export function GardenExplorer() {
   } as CSSProperties;
 
   return (
-    <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-24">
+    <div className="relative z-10 flex min-h-screen flex-col items-center px-6 py-24">
       <div className="w-full max-w-2xl">
         <p className="mb-6 text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
           Garden
         </p>
 
-        <div
-          role="tablist"
-          aria-label="Garden categories"
-          className="mb-10 flex items-center justify-center gap-7 sm:gap-10"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={active === "writings"}
-            data-testid="garden-tab-writings"
-            onClick={() => select("writings")}
-            className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-              active === "writings"
-                ? "font-bold text-white"
-                : "font-normal text-white/45 hover:text-white/75"
-            }`}
-          >
-            Writings
-            <span
-              className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
-                active === "writings" ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={active === "products"}
-            data-testid="garden-tab-products"
-            onClick={() => select("products")}
-            className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-              active === "products"
-                ? "font-bold text-white"
-                : "font-normal text-white/45 hover:text-white/75"
-            }`}
-          >
-            Products
-            <span
-              className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
-                active === "products" ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </button>
-
-          <span
-            role="tab"
-            aria-selected={false}
-            aria-disabled="true"
-            data-testid="garden-tab-work"
-            className="relative cursor-not-allowed pb-1.5 text-lg text-white/25 sm:text-xl"
-          >
-            Work
-            <span className="absolute left-1/2 top-full -translate-x-1/2 whitespace-nowrap text-[9px] font-normal uppercase tracking-[0.2em] text-white/20">
-              coming soon
-            </span>
-          </span>
-        </div>
-
-        <div className="[perspective:1400px]">
-          <div className="grid">
-            {prev && (
-              <div
-                key={`out-${prev}`}
-                style={layerStyle}
-                className="swivel-out pointer-events-none [transform-style:preserve-3d]"
-              >
-                <Panel which={prev} />
-              </div>
-            )}
+        {!ready ? (
+          <GardenSkeleton />
+        ) : (
+          <>
             <div
-              key={`in-${active}`}
-              style={layerStyle}
-              className={prev ? "swivel-in [transform-style:preserve-3d]" : ""}
-              data-testid="garden-active-panel"
-              data-panel={active}
+              role="tablist"
+              aria-label="Garden categories"
+              className="mb-10 flex items-center justify-center gap-7 sm:gap-10"
             >
-              <Panel which={active} />
+              {TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active === tab.key}
+                  data-testid={`garden-tab-${tab.key}`}
+                  onClick={() => select(tab.key)}
+                  className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
+                    active === tab.key
+                      ? "font-bold text-white"
+                      : "font-normal text-white/45 hover:text-white/75"
+                  }`}
+                >
+                  {tab.label}
+                  <span
+                    className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
+                      active === tab.key ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                </button>
+              ))}
             </div>
-          </div>
-        </div>
+
+            <div className="[perspective:1400px]">
+              <div className="grid">
+                {prev && (
+                  <div
+                    key={`out-${prev}`}
+                    style={layerStyle}
+                    className="swivel-out pointer-events-none [transform-style:preserve-3d]"
+                  >
+                    <Panel which={prev} showAll={showAll} />
+                  </div>
+                )}
+                <div
+                  key={`in-${active}`}
+                  style={layerStyle}
+                  className={prev ? "swivel-in [transform-style:preserve-3d]" : ""}
+                  data-testid="garden-active-panel"
+                  data-panel={active}
+                >
+                  <Panel which={active} showAll={showAll} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

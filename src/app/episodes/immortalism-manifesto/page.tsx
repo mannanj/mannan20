@@ -17,10 +17,10 @@ export default function ImmortalismManifestoPage() {
     <main className="min-h-screen bg-[#0b0b0b] text-white">
       <article className="mx-auto max-w-2xl px-6 py-24">
         <Link
-          href="/episodes"
+          href="/garden#episodes"
           className="mb-16 inline-block text-sm tracking-wide text-neutral-500 transition-colors hover:text-white"
         >
-          &larr; Episodes
+          &larr; Garden
         </Link>
         <Article />
       </article>
