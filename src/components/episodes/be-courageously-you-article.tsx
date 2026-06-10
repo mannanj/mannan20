@@ -76,7 +76,7 @@ export default function BeCourageouslyYouArticle() {
           playsInline
           preload="metadata"
           className="w-full"
-          src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/video/be-courageously-you.mp4"
+          src="https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/video/be-courageously-you.mp4"
         />
       </div>
 

@@ -31,8 +31,8 @@ The site is a single-page Next.js portfolio (`/`) with a few sibling routes: a p
 
 ## Published work
 
-- [Apparatus for Remote Control of Humanoid Robots (PDF)](https://mannan.is/data/documents/GMU-ARCHR.pdf): Intuitive teleoperation system for high-DoF humanoid robots with haptic feedback. Lead developer. Submitted to IEEE/RSJ IROS 2015; taken to DARPA Robotics Challenge.
-- [Open Modeling Framework Demand Response (PDF)](https://mannan.is/data/documents/OMF-DR.pdf): Cost-benefit analysis model for demand-response programs (TOU, CPP, PTR, DLC) built for rural electric cooperatives on NRECA's Open Modeling Framework.
+- [Apparatus for Remote Control of Humanoid Robots (PDF)](https://mannan.is/api/download/gmu-archr): Intuitive teleoperation system for high-DoF humanoid robots with haptic feedback. Lead developer. Submitted to IEEE/RSJ IROS 2015; taken to DARPA Robotics Challenge.
+- [Open Modeling Framework Demand Response (PDF)](https://mannan.is/api/download/omf-dr): Cost-benefit analysis model for demand-response programs (TOU, CPP, PTR, DLC) built for rural electric cooperatives on NRECA's Open Modeling Framework.
 - [ARCHR robotics demo (YouTube)](https://www.youtube.com/embed/GSx22ggePHw): One-to-one hand-puppeteered mimicry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.
 
 ## Education and certifications
@@ -56,8 +56,8 @@ The site is a single-page Next.js portfolio (`/`) with a few sibling routes: a p
 
 ## Documents
 
-- [Resume (PDF)](https://hq19kliyhzkpvads.public.blob.vercel-storage.com/resume/Mannan_Javid_Resume.pdf): Current resume — Mannan_Javid_Resume.pdf.
-- [Cover Letter (PDF)](https://mannan.is/data/documents/mannan-javid-cover-letter.pdf): General cover letter.
+- [Resume (PDF)](https://mannan.is/api/download/resume): Current resume — Mannan_Javid_Resume.pdf.
+- [Cover Letter (PDF)](https://mannan.is/api/download/cover-letter): General cover letter.
 
 ## Contact
 

@@ -262,7 +262,7 @@ export function SeekingCommunityBody() {
             <p>
               <span className="parallax-aggressive relative block max-w-[99%] h-[210px] overflow-hidden rounded-lg mt-20 mb-4 mr-auto">
                 <Image
-                  src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/garden/camping-mountains-engraved.png"
+                  src="https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/images/garden/camping-mountains-engraved.png"
                   alt="Illustrated scene of car camping in the mountains"
                   width={480}
                   height={300}

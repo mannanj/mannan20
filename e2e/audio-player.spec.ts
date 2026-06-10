@@ -219,7 +219,7 @@ test.describe('Episodes Audio Player', () => {
     test('Download PDF link works', async ({ page }) => {
       await navigateToArticle(page);
       const pdfLink = page.getByTestId('audio-download-pdf');
-      await expect(pdfLink).toHaveAttribute('href', '/data/documents/immortalism-manifesto.pdf');
+      await expect(pdfLink).toHaveAttribute('href', '/api/download/immortalism-manifesto');
       await expect(pdfLink).toHaveAttribute('target', '_blank');
     });
 

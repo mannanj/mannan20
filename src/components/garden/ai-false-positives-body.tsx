@@ -12,7 +12,7 @@ interface Shot {
 }
 
 const R2_BASE =
-  "https://pub-2937173b25a2446ab81694b095fd8d4b.r2.dev/garden/ai-false-positives";
+  "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/garden/ai-false-positives";
 
 const CAPTION =
   "Asking Opus 4.7 how to creatively combine disciplines to remove glyphosate from locally harvested honey — was paused over 3 separate attempts.";

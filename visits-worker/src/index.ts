@@ -3,7 +3,11 @@ interface Env {
   VISIT_LIMITER: RateLimit
   VISIT_SECRET: string
   IP_SALT: string
+  FILES: R2Bucket
 }
+
+const MAX_KEY_LENGTH = 600
+const ALLOWED_KEY_PREFIX = 'portfolio/'
 
 interface VisitPayload {
   route?: unknown
@@ -43,7 +47,7 @@ async function hashIp(ip: string, salt: string): Promise<string | null> {
 function corsHeaders(origin: string | null): Record<string, string> {
   return {
     'access-control-allow-origin': origin ?? '*',
-    'access-control-allow-methods': 'POST, OPTIONS',
+    'access-control-allow-methods': 'POST, PUT, OPTIONS',
     'access-control-allow-headers': 'authorization, content-type',
     'access-control-max-age': '86400',
   }
@@ -57,11 +61,26 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders(origin) })
     }
 
+    const url = new URL(req.url)
+
+    if (req.method === 'PUT' && url.pathname === '/files') {
+      if (req.headers.get('authorization') !== `Bearer ${env.VISIT_SECRET}`) {
+        return new Response('unauthorized', { status: 401 })
+      }
+      const key = url.searchParams.get('key') ?? ''
+      if (!key || key.length > MAX_KEY_LENGTH || key.includes('..') || !key.startsWith(ALLOWED_KEY_PREFIX)) {
+        return new Response('invalid key', { status: 400 })
+      }
+      await env.FILES.put(key, req.body, {
+        httpMetadata: { contentType: req.headers.get('content-type') ?? 'application/octet-stream' },
+      })
+      return Response.json({ key })
+    }
+
     if (req.method !== 'POST') {
       return new Response('method not allowed', { status: 405 })
     }
 
-    const url = new URL(req.url)
     if (url.pathname !== '/v') {
       return new Response('not found', { status: 404 })
     }

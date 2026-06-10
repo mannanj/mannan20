@@ -61,7 +61,7 @@
       "dates": "2014-2016 (contract)",
       "position": "Software Engineer",
       "skills": "Javascript, jQuery, Python, Python-Flask, research",
-      "description": "Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and <a href=\"/data/documents/OMF-DR.pdf\" download=\"OMF-Energy-Demand-Response\" style=\"color: #039be5;\">cutting edge research.</a>"
+      "description": "Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and <a href=\"/api/download/omf-dr\" download=\"OMF-Energy-Demand-Response\" style=\"color: #039be5;\">cutting edge research.</a>"
     }
   ],
   "activities": {
@@ -93,7 +93,7 @@
     "archr": {
       "title": "Apparatus for Remote Control of Humanoid Robots",
       "description": "Lead developer for an intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Published and submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. One-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.",
-      "downloadLink": "/data/documents/GMU-ARCHR.pdf",
+      "downloadLink": "/api/download/gmu-archr",
       "downloadFilename": "ARCHR-Apparatus-for-Remote-Control-of-Humanoid-Robot",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
@@ -110,14 +110,14 @@
     {
       "title": "Apparatus for Remote Control of Humanoid Robots",
       "description": "An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge.",
-      "downloadPath": "/data/documents/GMU-ARCHR.pdf",
+      "downloadPath": "/api/download/gmu-archr",
       "downloadFilename": "ARCHR-Apparatus-for-Remote-Control of-Humanoid-Robot",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
     {
       "title": "Open Modeling Framework Demand Response",
       "description": "Cost-benefit analysis model for demand response programs built for rural electric cooperatives using NRECA's Open Modeling Framework, simulating TOU, CPP, PTR, and DLC programs.",
-      "downloadPath": "/data/documents/OMF-DR.pdf",
+      "downloadPath": "/api/download/omf-dr",
       "downloadFilename": "OMF-Energy-Demand-Response"
     }
   ],
@@ -169,12 +169,12 @@
   "downloads": [
     {
       "label": "Resume",
-      "path": "https://hq19kliyhzkpvads.public.blob.vercel-storage.com/resume/Mannan_Javid_Resume.pdf",
+      "path": "/api/download/resume",
       "filename": "Mannan_Javid_Resume.pdf"
     },
     {
       "label": "Cover Letter",
-      "path": "/data/documents/mannan-javid-cover-letter.pdf",
+      "path": "/api/download/cover-letter",
       "filename": "mannan-javid-cover-letter.pdf"
     }
   ]

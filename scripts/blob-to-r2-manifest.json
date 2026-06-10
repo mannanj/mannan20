@@ -1,0 +1,161 @@
+{
+  "r2PublicBase": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev",
+  "bucket": "portfolio-files",
+  "migratedAt": "2026-06-10T15:39:46.724Z",
+  "objects": [
+    {
+      "key": "portfolio/audio/affiliate-leads/chunk-1.wav",
+      "size": 7924844,
+      "contentType": "audio/wav",
+      "source": "blob:audio/affiliate-leads/chunk-1.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/affiliate-leads/chunk-1.wav"
+    },
+    {
+      "key": "portfolio/audio/affiliate-leads/chunk-2.wav",
+      "size": 8467244,
+      "contentType": "audio/wav",
+      "source": "blob:audio/affiliate-leads/chunk-2.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/affiliate-leads/chunk-2.wav"
+    },
+    {
+      "key": "portfolio/audio/affiliate-leads/chunk-3.wav",
+      "size": 7134044,
+      "contentType": "audio/wav",
+      "source": "blob:audio/affiliate-leads/chunk-3.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/affiliate-leads/chunk-3.wav"
+    },
+    {
+      "key": "portfolio/audio/affiliate-leads/chunk-4.wav",
+      "size": 15322844,
+      "contentType": "audio/wav",
+      "source": "blob:audio/affiliate-leads/chunk-4.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/affiliate-leads/chunk-4.wav"
+    },
+    {
+      "key": "portfolio/audio/manifesto/chunk-1.json",
+      "size": 113485,
+      "contentType": "application/json",
+      "source": "blob:audio/manifesto/chunk-1.json",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/manifesto/chunk-1.json"
+    },
+    {
+      "key": "portfolio/audio/manifesto/chunk-1.wav",
+      "size": 26988044,
+      "contentType": "audio/wav",
+      "source": "blob:audio/manifesto/chunk-1.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/manifesto/chunk-1.wav"
+    },
+    {
+      "key": "portfolio/audio/manifesto/chunk-2.json",
+      "size": 111943,
+      "contentType": "application/json",
+      "source": "blob:audio/manifesto/chunk-2.json",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/manifesto/chunk-2.json"
+    },
+    {
+      "key": "portfolio/audio/manifesto/chunk-2.wav",
+      "size": 27399644,
+      "contentType": "audio/wav",
+      "source": "blob:audio/manifesto/chunk-2.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/manifesto/chunk-2.wav"
+    },
+    {
+      "key": "portfolio/audio/manifesto/chunk-3.json",
+      "size": 99122,
+      "contentType": "application/json",
+      "source": "blob:audio/manifesto/chunk-3.json",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/manifesto/chunk-3.json"
+    },
+    {
+      "key": "portfolio/audio/manifesto/chunk-3.wav",
+      "size": 23216444,
+      "contentType": "audio/wav",
+      "source": "blob:audio/manifesto/chunk-3.wav",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/audio/manifesto/chunk-3.wav"
+    },
+    {
+      "key": "portfolio/images/frustrating-joy.png",
+      "size": 2032731,
+      "contentType": "image/png",
+      "source": "blob:images/frustrating-joy.png",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/images/frustrating-joy.png"
+    },
+    {
+      "key": "portfolio/images/garden/camping-mountains-engraved.png",
+      "size": 3764219,
+      "contentType": "image/png",
+      "source": "blob:images/garden/camping-mountains-engraved.png",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/images/garden/camping-mountains-engraved.png"
+    },
+    {
+      "key": "portfolio/images/garden/camping-mountains.png",
+      "size": 7101369,
+      "contentType": "image/png",
+      "source": "blob:images/garden/camping-mountains.png",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/images/garden/camping-mountains.png"
+    },
+    {
+      "key": "portfolio/video/be-courageously-you.mp4",
+      "size": 15446668,
+      "contentType": "video/mp4",
+      "source": "blob:video/be-courageously-you.mp4",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/video/be-courageously-you.mp4"
+    },
+    {
+      "key": "portfolio/resume/Mannan_Javid_Resume.pdf",
+      "size": 75128,
+      "contentType": "application/pdf",
+      "source": "local:public/data/documents/Mannan_Javid_Resume.pdf",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/resume/Mannan_Javid_Resume.pdf"
+    },
+    {
+      "key": "portfolio/documents/mannan-javid-cover-letter.pdf",
+      "size": 601,
+      "contentType": "application/pdf",
+      "source": "local:public/data/documents/mannan-javid-cover-letter.pdf",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/documents/mannan-javid-cover-letter.pdf"
+    },
+    {
+      "key": "portfolio/documents/GMU-ARCHR.pdf",
+      "size": 1621111,
+      "contentType": "application/pdf",
+      "source": "local:public/data/documents/GMU-ARCHR.pdf",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/documents/GMU-ARCHR.pdf"
+    },
+    {
+      "key": "portfolio/documents/OMF-DR.pdf",
+      "size": 441653,
+      "contentType": "application/pdf",
+      "source": "local:public/data/documents/OMF-DR.pdf",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/documents/OMF-DR.pdf"
+    },
+    {
+      "key": "portfolio/documents/immortalism-manifesto.pdf",
+      "size": 288495,
+      "contentType": "application/pdf",
+      "source": "local:public/data/documents/immortalism-manifesto.pdf",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/documents/immortalism-manifesto.pdf"
+    },
+    {
+      "key": "portfolio/documents/affiliate-leads-redesign.md",
+      "size": 9972,
+      "contentType": "text/markdown",
+      "source": "local:public/data/documents/affiliate-leads-redesign.md",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/documents/affiliate-leads-redesign.md"
+    },
+    {
+      "key": "garden/ai-false-positives/opus-47-chat-paused.png",
+      "size": 188802,
+      "contentType": "image/png",
+      "source": "r2:thebeingman-assets/garden/ai-false-positives/opus-47-chat-paused.png",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/garden/ai-false-positives/opus-47-chat-paused.png"
+    },
+    {
+      "key": "garden/ai-false-positives/opus-47-novel-ways.png",
+      "size": 114858,
+      "contentType": "image/png",
+      "source": "r2:thebeingman-assets/garden/ai-false-positives/opus-47-novel-ways.png",
+      "r2Url": "https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/garden/ai-false-positives/opus-47-novel-ways.png"
+    }
+  ]
+}

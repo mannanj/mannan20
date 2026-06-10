@@ -13,6 +13,12 @@
       "migrations_dir": "./migrations"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "portfolio-files"
+    }
+  ],
   "ratelimits": [
     {
       "name": "VISIT_LIMITER",

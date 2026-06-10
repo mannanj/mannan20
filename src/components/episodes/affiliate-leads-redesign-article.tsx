@@ -27,7 +27,7 @@ export default function AffiliateLeadsRedesignArticle({ content }: Props) {
         </p>
         <div className="flex items-center gap-4">
           <a
-            href="/data/documents/affiliate-leads-redesign.md"
+            href="/api/download/affiliate-leads-redesign"
             target="_blank"
             rel="noopener noreferrer"
             data-testid="audio-download-md"

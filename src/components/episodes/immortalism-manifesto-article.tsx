@@ -36,7 +36,7 @@ export default function ImmortalismManifestoArticle() {
             Bryan Johnson
           </a>
           <a
-            href="/data/documents/immortalism-manifesto.pdf"
+            href="/api/download/immortalism-manifesto"
             target="_blank"
             rel="noopener noreferrer"
             data-testid="audio-download-pdf"

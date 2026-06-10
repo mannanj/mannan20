@@ -25,7 +25,7 @@ export default function FunnyFrustrationsArticle() {
         </p>
         <div className="mb-10">
           <Image
-            src="https://hq19kliyhzkpvads.public.blob.vercel-storage.com/images/frustrating-joy.png"
+            src="https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/images/frustrating-joy.png"
             alt="Joyful Frustrations"
             width={44}
             height={44}

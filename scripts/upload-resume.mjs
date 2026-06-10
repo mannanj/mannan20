@@ -1,26 +1,15 @@
-import { put, list } from '@vercel/blob';
-import { readFile } from 'node:fs/promises';
+import { copyFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { uploadToR2 } from './upload-to-r2.mjs';
 
-let token = process.env.BLOB_READ_WRITE_TOKEN;
-if (!token) {
-  const env = await readFile(new URL('../.env.local', import.meta.url), 'utf8');
-  token = env.match(/^BLOB_READ_WRITE_TOKEN=(.+)$/m)?.[1]?.trim().replace(/^["']|["']$/g, '');
-}
-if (!token) throw new Error('BLOB_READ_WRITE_TOKEN not set');
+const RESUME_KEY = 'portfolio/resume/Mannan_Javid_Resume.pdf';
+const LOCAL_COPY = join(import.meta.dirname, '../public/data/documents/Mannan_Javid_Resume.pdf');
 
 const source = process.argv[2] ?? '/Users/manblack/Desktop/Resume-1-Page.pdf';
+const size = statSync(source).size;
 
-const existing = await list({ prefix: 'resume/', token });
-console.log('Existing resume blobs:', existing.blobs.map(b => ({ url: b.url, pathname: b.pathname, size: b.size })));
+copyFileSync(source, LOCAL_COPY);
+console.log(`copied ${source} -> public/data/documents/Mannan_Javid_Resume.pdf`);
 
-const file = await readFile(source);
-const blob = await put('resume/Mannan_Javid_Resume.pdf', file, {
-  access: 'public',
-  contentType: 'application/pdf',
-  addRandomSuffix: false,
-  allowOverwrite: true,
-  token,
-});
-console.log('Uploaded:', blob.url);
-console.log('Pathname:', blob.pathname);
-console.log('Size:', file.length);
+const url = uploadToR2(source, RESUME_KEY, 'application/pdf');
+console.log(`uploaded -> ${url} (${size} bytes)`);
