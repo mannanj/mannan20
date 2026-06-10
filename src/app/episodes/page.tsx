@@ -27,6 +27,7 @@ const EPISODES: Episode[] = [
     author: 'Tim Ferriss',
     date: 'April 8, 2026',
     href: '/episodes/rules-of-the-new-rich',
+    hidden: true,
   },
   {
     title: 'Be Courageously You',
