@@ -88,6 +88,18 @@ function MealFairyThumb() {
   );
 }
 
+function SunSignalThumb() {
+  return (
+    <Image
+      src="/sun-signal.png"
+      alt="Sun Signal app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
 const PRODUCTS: GardenProduct[] = [
   {
     title: "Mannan",
@@ -96,6 +108,14 @@ const PRODUCTS: GardenProduct[] = [
     external: false,
     year: 2026,
     thumb: <MannanThumb />,
+  },
+  {
+    title: "Sun Signal",
+    description: "Turn any US ZIP into real-time circadian timing.",
+    href: "https://sunsignal.app",
+    external: true,
+    year: 2026,
+    thumb: <SunSignalThumb />,
   },
   {
     title: "Read Along",

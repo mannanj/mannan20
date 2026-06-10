@@ -29,12 +29,12 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('selecting Products swivels to the five product cards', async ({ page }) => {
+  test('selecting Products swivels to the six product cards', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-products').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="products"] a')).toHaveCount(5);
+    await expect(page.locator('[data-panel="products"] a')).toHaveCount(6);
   });
 
   test('product cards link to the correct destinations', async ({ page }) => {
@@ -45,6 +45,11 @@ test.describe('Garden carousel', () => {
     const mannan = cards.filter({ hasText: 'Mannan' });
     await expect(mannan).toHaveAttribute('href', '/');
     await expect(mannan).not.toHaveAttribute('target', /.+/);
+
+    const sunSignal = cards.filter({ hasText: 'Sun Signal' });
+    await expect(sunSignal).toHaveAttribute('href', 'https://sunsignal.app');
+    await expect(sunSignal).toHaveAttribute('target', '_blank');
+    await expect(sunSignal).toHaveAttribute('rel', /noopener/);
 
     const readAlong = cards.filter({ hasText: 'Read Along' });
     await expect(readAlong).toHaveAttribute('href', 'https://tryreadalong.com');
@@ -83,6 +88,7 @@ test.describe('Garden carousel', () => {
       .evaluateAll((els) => els.map((el) => el.querySelector('span')?.textContent?.trim() ?? ''));
     expect(orderedTitles).toEqual([
       'Mannan',
+      'Sun Signal',
       'Read Along',
       'SkillGuard',
       'Summon It',
