@@ -27,12 +27,34 @@ afterAll(async () => {
 });
 
 describe("worker routes", () => {
-  it("serves an info card at root", async () => {
+  it("serves a JSON info card at root for agents", async () => {
     const res = await SELF.fetch("https://example.com/");
     expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("application/json");
     const body = (await res.json()) as { endpoint: string; name: string };
     expect(body.endpoint).toBe("/mcp");
     expect(body.name).toBe("mannan-portfolio");
+  });
+
+  it("serves HTML at root for browsers", async () => {
+    const res = await SELF.fetch("https://example.com/", {
+      headers: { accept: "text/html,application/xhtml+xml" },
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/html");
+    const body = await res.text();
+    expect(body).toContain("claude mcp add");
+    expect(body).toContain("https://mannan.is/mcp");
+  });
+
+  it("serves the server card at both well-known paths", async () => {
+    for (const path of ["/.well-known/mcp.json", "/.well-known/mcp/server-card.json"]) {
+      const res = await SELF.fetch(`https://example.com${path}`);
+      expect(res.status, path).toBe(200);
+      const card = (await res.json()) as { endpoint: string; transport: string };
+      expect(card.endpoint).toBe("https://mcp.mannanteam.workers.dev/mcp");
+      expect(card.transport).toBe("streamable-http");
+    }
   });
 
   it("404s unknown paths", async () => {

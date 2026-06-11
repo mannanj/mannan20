@@ -6,5 +6,18 @@
   "compatibility_date": "2026-04-01",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "portfolio-files"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "FILES_LIMITER",
+      "namespace_id": "2002",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ]
 }

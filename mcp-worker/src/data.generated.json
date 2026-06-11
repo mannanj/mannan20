@@ -273,7 +273,8 @@
       "author": "Bryan Johnson",
       "date": "March 20, 2026",
       "url": "https://mannan.is/episodes/immortalism-manifesto",
-      "note": "Curated reading on mannan.is; authored by Bryan Johnson, not by Mannan Javid."
+      "note": "Curated reading on mannan.is; authored by Bryan Johnson, not by Mannan Javid.",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/immortalism-manifesto"
     }
   ],
   "apps": [
@@ -332,20 +333,23 @@
       "description": "An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge.",
       "kind": "publication",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw",
-      "downloadUrl": "https://mannan.is/api/download/gmu-archr"
+      "downloadUrl": "https://mannan.is/api/download/gmu-archr",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/gmu-archr"
     },
     {
       "title": "Open Modeling Framework Demand Response",
       "description": "Cost-benefit analysis model for demand response programs built for rural electric cooperatives using NRECA's Open Modeling Framework, simulating TOU, CPP, PTR, and DLC programs.",
       "kind": "publication",
-      "downloadUrl": "https://mannan.is/api/download/omf-dr"
+      "downloadUrl": "https://mannan.is/api/download/omf-dr",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/omf-dr"
     },
     {
       "title": "Apparatus for Remote Control of Humanoid Robots",
       "description": "Lead developer for an intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Published and submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. One-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.",
       "kind": "university-project",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw",
-      "downloadUrl": "https://mannan.is/api/download/gmu-archr"
+      "downloadUrl": "https://mannan.is/api/download/gmu-archr",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/gmu-archr"
     },
     {
       "title": "Solar Workspace",
@@ -362,12 +366,51 @@
     {
       "label": "Resume",
       "url": "https://mannan.is/api/download/resume",
-      "filename": "Mannan_Javid_Resume.pdf"
+      "filename": "Mannan_Javid_Resume.pdf",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/resume"
     },
     {
       "label": "Cover Letter",
       "url": "https://mannan.is/api/download/cover-letter",
-      "filename": "mannan-javid-cover-letter.pdf"
+      "filename": "mannan-javid-cover-letter.pdf",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/cover-letter"
+    }
+  ],
+  "files": [
+    {
+      "slug": "resume",
+      "key": "portfolio/resume/Mannan_Javid_Resume.pdf",
+      "filename": "Mannan_Javid_Resume.pdf",
+      "contentType": "application/pdf",
+      "label": "Resume"
+    },
+    {
+      "slug": "cover-letter",
+      "key": "portfolio/documents/mannan-javid-cover-letter.pdf",
+      "filename": "mannan-javid-cover-letter.pdf",
+      "contentType": "application/pdf",
+      "label": "Cover Letter"
+    },
+    {
+      "slug": "gmu-archr",
+      "key": "portfolio/documents/GMU-ARCHR.pdf",
+      "filename": "GMU-ARCHR.pdf",
+      "contentType": "application/pdf",
+      "label": "ARCHR humanoid robotics research (GMU)"
+    },
+    {
+      "slug": "omf-dr",
+      "key": "portfolio/documents/OMF-DR.pdf",
+      "filename": "OMF-DR.pdf",
+      "contentType": "application/pdf",
+      "label": "Open Modeling Framework demand response research"
+    },
+    {
+      "slug": "immortalism-manifesto",
+      "key": "portfolio/documents/immortalism-manifesto.pdf",
+      "filename": "immortalism-manifesto.pdf",
+      "contentType": "application/pdf",
+      "label": "Immortalism Manifesto (curated reading PDF)"
     }
   ],
   "contact": {

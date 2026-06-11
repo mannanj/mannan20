@@ -88,7 +88,7 @@ export function createServer() {
     {
       title: "List research",
       description:
-        "Published research and university engineering projects, with demo and download links where available.",
+        "Published research and university engineering projects, with demo and download links where available. `agentUrl` fields are agent-fetchable via plain HTTPS GET (rate-limited 10/min/IP); `downloadUrl` is the human browser route.",
       annotations: READ_ONLY,
     },
     async () => text({ research: data.research }),
@@ -99,7 +99,7 @@ export function createServer() {
     {
       title: "Get downloads",
       description:
-        "Public document downloads (resume, cover letter). URLs are served by mannan.is for human browsers: they are rate-limited (10/min/IP) and sit behind Vercel bot protection, so agents should hand these links to a human rather than fetching them.",
+        "Public document downloads (resume, cover letter). Each entry has two URLs: `url` (mannan.is, for human browsers; behind bot protection) and `agentUrl` (this server, agent-fetchable via plain HTTPS GET, rate-limited 10/min/IP).",
       annotations: READ_ONLY,
     },
     async () => text({ downloads: data.downloads }),

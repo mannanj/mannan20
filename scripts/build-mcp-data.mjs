@@ -5,12 +5,24 @@ import about from "../public/data/about.json";
 import { GARDEN_ARTICLES, JOYFUL_FRUSTRATIONS } from "../src/lib/garden-articles.ts";
 import { EPISODES } from "../src/lib/episodes.ts";
 import { GARDEN_PRODUCTS } from "../src/lib/garden-products.ts";
+import { DOWNLOADS } from "../src/lib/downloads.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "mcp-worker", "src", "data.generated.json");
 const SITE = "https://mannan.is";
+const WORKER_BASE = "https://mcp.mannanteam.workers.dev";
+
+const PUBLIC_FILE_SLUGS = {
+  resume: "Resume",
+  "cover-letter": "Cover Letter",
+  "gmu-archr": "ARCHR humanoid robotics research (GMU)",
+  "omf-dr": "Open Modeling Framework demand response research",
+  "immortalism-manifesto": "Immortalism Manifesto (curated reading PDF)",
+};
 
 const abs = (p) => (p.startsWith("http") ? p : `${SITE}${p}`);
+const agentFileUrl = (slug) => `${WORKER_BASE}/files/${slug}`;
+const slugFromPath = (p) => p.split("/").pop();
 
 const clean = (s) =>
   s == null
@@ -88,13 +100,17 @@ const writing = [...GARDEN_ARTICLES.filter((a) => !a.unavailable), JOYFUL_FRUSTR
   }),
 );
 
-const readings = EPISODES.filter((e) => !e.hidden).map((e) => ({
-  title: e.title,
-  author: e.author,
-  date: e.date,
-  url: abs(e.href),
-  note: `Curated reading on mannan.is; authored by ${e.author}, not by Mannan Javid.`,
-}));
+const readings = EPISODES.filter((e) => !e.hidden).map((e) => {
+  const slug = slugFromPath(e.href);
+  return {
+    title: e.title,
+    author: e.author,
+    date: e.date,
+    url: abs(e.href),
+    note: `Curated reading on mannan.is; authored by ${e.author}, not by Mannan Javid.`,
+    ...(PUBLIC_FILE_SLUGS[slug] ? { agentUrl: agentFileUrl(slug) } : {}),
+  };
+});
 
 const apps = [
   ...GARDEN_PRODUCTS.map((p) => ({
@@ -111,6 +127,11 @@ const apps = [
   },
 ];
 
+const researchAgentUrl = (path) => {
+  const slug = path ? slugFromPath(path) : undefined;
+  return slug && PUBLIC_FILE_SLUGS[slug] ? { agentUrl: agentFileUrl(slug) } : {};
+};
+
 const research = [
   ...about.publishedWorks.map((w) => ({
     title: w.title,
@@ -118,6 +139,7 @@ const research = [
     kind: "publication",
     ...(w.demoUrl ? { demoUrl: w.demoUrl } : {}),
     ...(w.downloadPath ? { downloadUrl: abs(w.downloadPath) } : {}),
+    ...researchAgentUrl(w.downloadPath),
   })),
   ...Object.values(about.educationProjects).map((p) => ({
     title: p.title,
@@ -125,14 +147,34 @@ const research = [
     kind: "university-project",
     ...(p.demoUrl ? { demoUrl: p.demoUrl } : {}),
     ...(p.downloadLink ? { downloadUrl: abs(p.downloadLink) } : {}),
+    ...researchAgentUrl(p.downloadLink),
   })),
 ];
 
-const downloads = about.downloads.map((d) => ({
-  label: d.label,
-  url: abs(d.path),
-  filename: d.filename,
-}));
+const downloads = about.downloads.map((d) => {
+  const slug = slugFromPath(d.path);
+  return {
+    label: d.label,
+    url: abs(d.path),
+    filename: d.filename,
+    ...(PUBLIC_FILE_SLUGS[slug] ? { agentUrl: agentFileUrl(slug) } : {}),
+  };
+});
+
+const files = Object.entries(PUBLIC_FILE_SLUGS).map(([slug, label]) => {
+  const entry = DOWNLOADS[slug];
+  if (!entry) {
+    console.error(`public file slug missing from src/lib/downloads.ts: ${slug}`);
+    process.exit(1);
+  }
+  return {
+    slug,
+    key: entry.key,
+    filename: entry.filename,
+    contentType: entry.contentType,
+    label,
+  };
+});
 
 const contact = {
   how: "Email and phone are not published openly. The contact form in the Contact section of mannan.is reveals contact details to humans after a short validated message; agents should direct a human there, or reach out via GitHub.",
@@ -214,6 +256,7 @@ const data = {
   apps,
   research,
   downloads,
+  files,
   contact,
 };
 

@@ -44,6 +44,11 @@ afterAll(async () => {
   await client.close();
 });
 
+const RESPONSE_ONLY_PATTERNS: Array<[string, RegExp]> = [
+  ["raw R2 keys", /portfolio\/(resume|documents)\//],
+  ["raw R2 public host", /r2\.dev/],
+];
+
 describe("privacy", () => {
   it("bundled snapshot contains no gated or private content", () => {
     const snapshot = JSON.stringify(data);
@@ -53,7 +58,7 @@ describe("privacy", () => {
   });
 
   it("no tool response contains gated or private content", () => {
-    for (const [label, pattern] of FORBIDDEN_PATTERNS) {
+    for (const [label, pattern] of [...FORBIDDEN_PATTERNS, ...RESPONSE_ONLY_PATTERNS]) {
       expect(everyResponse, label).not.toMatch(pattern);
     }
   });

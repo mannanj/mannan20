@@ -55,6 +55,7 @@ export interface Reading {
   date: string;
   url: string;
   note: string;
+  agentUrl?: string;
 }
 
 export interface App {
@@ -71,12 +72,27 @@ export interface Research {
   kind: string;
   demoUrl?: string;
   downloadUrl?: string;
+  agentUrl?: string;
 }
 
 export interface Download {
   label: string;
   url: string;
   filename: string;
+  agentUrl?: string;
+}
+
+export interface FileEntry {
+  slug: string;
+  key: string;
+  filename: string;
+  contentType: string;
+  label: string;
+}
+
+export interface WorkerEnv {
+  FILES: R2Bucket;
+  FILES_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
 }
 
 export interface Contact {
@@ -98,5 +114,6 @@ export interface PortfolioData {
   apps: App[];
   research: Research[];
   downloads: Download[];
+  files: FileEntry[];
   contact: Contact;
 }

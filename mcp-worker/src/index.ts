@@ -1,6 +1,10 @@
 import { createMcpHandler } from "agents/mcp";
 import { createServer } from "./server";
 import { data } from "./data";
+import { handleFileRequest } from "./files";
+import type { WorkerEnv } from "./types";
+
+const ENDPOINT = "https://mcp.mannanteam.workers.dev/mcp";
 
 const INFO = JSON.stringify(
   {
@@ -10,17 +14,83 @@ const INFO = JSON.stringify(
     transport: "streamable-http",
     site: data.site,
     dataGeneratedAt: data.generatedAt,
+    docs: "https://mannan.is/mcp",
     source: "https://github.com/mannanj/mannan20/tree/main/mcp-worker",
   },
   null,
   2,
 );
 
+const SERVER_CARD = JSON.stringify(
+  {
+    name: "mannan-portfolio",
+    title: "Mannan Javid — Portfolio",
+    description:
+      "Read-only MCP server for the public data of mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads.",
+    version: "1.0.0",
+    endpoint: ENDPOINT,
+    transport: "streamable-http",
+    protocolVersion: "2025-11-25",
+    capabilities: { tools: {} },
+    websiteUrl: data.site,
+  },
+  null,
+  2,
+);
+
+const ROOT_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mannan MCP</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a0f;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif}
+main{max-width:560px;padding:48px 24px}
+h1{font-weight:300;font-size:28px;margin:0 0 8px}
+p{color:rgba(255,255,255,.55);line-height:1.6}
+code{display:block;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13px;overflow-x:auto;white-space:pre}
+a{color:#f43f5e;text-decoration:none}
+a:hover{text-decoration:underline}
+.links{margin-top:24px;display:flex;gap:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>Mannan MCP</h1>
+<p>A read-only MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent.</p>
+<code>${ENDPOINT}</code>
+<p>Claude Code:</p>
+<code>claude mcp add --transport http mannan ${ENDPOINT}</code>
+<p>Or paste the endpoint into claude.ai Settings &rarr; Connectors, or your agent's MCP config.</p>
+<div class="links">
+<a href="https://mannan.is/mcp">Full guide</a>
+<a href="https://github.com/mannanj/mannan20/tree/main/mcp-worker">Source</a>
+<a href="https://mannan.is">mannan.is</a>
+</div>
+</main>
+</body>
+</html>`;
+
+const JSON_HEADERS = { "content-type": "application/json" };
+
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext) {
     const { pathname } = new URL(request.url);
     if (pathname === "/") {
-      return new Response(INFO, { headers: { "content-type": "application/json" } });
+      const wantsHtml = request.headers.get("accept")?.includes("text/html");
+      if (wantsHtml) {
+        return new Response(ROOT_HTML, {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        });
+      }
+      return new Response(INFO, { headers: JSON_HEADERS });
+    }
+    if (pathname === "/.well-known/mcp.json" || pathname === "/.well-known/mcp/server-card.json") {
+      return new Response(SERVER_CARD, { headers: JSON_HEADERS });
+    }
+    if (pathname.startsWith("/files/")) {
+      return handleFileRequest(request, env);
     }
     if (pathname === "/mcp") {
       return createMcpHandler(createServer(), {
@@ -31,4 +101,4 @@ export default {
     }
     return new Response("Not found", { status: 404 });
   },
-} satisfies ExportedHandler;
+} satisfies ExportedHandler<WorkerEnv>;
