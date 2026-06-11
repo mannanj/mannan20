@@ -94,13 +94,24 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: C
         </defs>
       )}
       {current.hair !== 'none' && (
-        <path
-          d={current.hair === 'gold' ? GOLD_HAIR : DARK_HAIR}
-          fill={current.hair === 'gold' ? '#FFD740' : '#262626'}
-          stroke={current.hair === 'gold' ? '#FFB300' : '#5a5a5a'}
-          strokeWidth="1"
-          data-testid="chicken-hair"
-        />
+        <g data-testid="chicken-hair">
+          <path
+            d={current.hair === 'gold' ? GOLD_HAIR : DARK_HAIR}
+            fill={current.hair === 'gold' ? '#FFD740' : '#3a3a46'}
+            stroke={current.hair === 'gold' ? '#FFB300' : '#aeb6cc'}
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          {current.hair === 'dark' && (
+            <path
+              d="M29 16 L32 6 M36 12 L38 3 M43 10 L44 1 M49 12 L51 5"
+              stroke="#cdd5e8"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+          )}
+        </g>
       )}
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
