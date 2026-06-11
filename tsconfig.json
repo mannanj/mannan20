@@ -38,6 +38,7 @@
     "node_modules",
     "scripts",
     "cloud-worker",
-    "visits-worker"
+    "visits-worker",
+    "mcp-worker"
   ]
 }
