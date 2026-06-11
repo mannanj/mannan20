@@ -722,3 +722,25 @@ body.gem-rain-active #header > div:first-child {
     translate: 0 -20%;
   }
 }
+
+@keyframes chickenBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-7px) rotate(2deg); }
+}
+
+@keyframes chickenWaddle {
+  0%, 100% { transform: translateY(0) rotate(-7deg); }
+  50% { transform: translateY(-3px) rotate(7deg); }
+}
+
+@keyframes transformFlash {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes labelPop {
+  0% { opacity: 0; transform: translateX(-50%) scale(1.7); letter-spacing: 0.6em; }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateX(-50%) scale(1); letter-spacing: 0.3em; }
+}

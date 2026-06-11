@@ -1,43 +1,39 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
-import { Howl } from 'howler';
-
-const SOUND_COUNT = 8;
-const SOUND_PATHS = Array.from(
-  { length: SOUND_COUNT },
-  (_, i) => `/sounds/chicken/scream-${i + 1}.mp3`
-);
+import { useCallback, useEffect, useState } from 'react';
+import {
+  getChickenAudio,
+  type LoadProgress,
+  type RiserResult,
+  type ScreamResult,
+} from '@/lib/chicken-audio';
 
 export function useChickenSounds() {
-  const howlsRef = useRef<Howl[]>([]);
-  const lastPlayedRef = useRef(-1);
+  const [progress, setProgress] = useState<LoadProgress>(() => getChickenAudio().getProgress());
 
   useEffect(() => {
-    howlsRef.current = SOUND_PATHS.map(
-      (src) =>
-        new Howl({
-          src: [src],
-          preload: true,
-          volume: 0.7,
-        })
-    );
+    const audio = getChickenAudio();
+    audio.init();
+    const unsubscribe = audio.subscribe(setProgress);
     return () => {
-      howlsRef.current.forEach((h) => h.unload());
-      howlsRef.current = [];
+      unsubscribe();
+      audio.stopAura();
     };
   }, []);
 
-  const playRandom = useCallback(() => {
-    const howls = howlsRef.current;
-    if (howls.length === 0) return;
-    let idx = Math.floor(Math.random() * howls.length);
-    if (idx === lastPlayedRef.current && howls.length > 1) {
-      idx = (idx + 1) % howls.length;
-    }
-    lastPlayedRef.current = idx;
-    howls[idx].play();
-  }, []);
+  const playScream = useCallback(
+    (rate: number): ScreamResult | null => getChickenAudio().playScream(rate),
+    []
+  );
+  const playPowerUp = useCallback(
+    (final: boolean): RiserResult => getChickenAudio().playRiser(final),
+    []
+  );
+  const setAuraLevel = useCallback(
+    (level: number, tier: number) => getChickenAudio().setAuraLevel(level, tier),
+    []
+  );
+  const crackle = useCallback(() => getChickenAudio().crackle(), []);
 
-  return { playRandom };
+  return { progress, playScream, playPowerUp, setAuraLevel, crackle };
 }
