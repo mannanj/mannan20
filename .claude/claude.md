@@ -125,6 +125,8 @@ When re-exporting from Unicorn Studio: replace the `.raw.json` file, run `bun ru
 
 Privacy rules are enforced by build guards and tests: gated/hidden content (Taken, hidden episodes, /jordan), access codes, and email/phone must never appear in the snapshot. Articles with `robots: index:false` stay out of the MCP. Garden product data lives in `src/lib/garden-products.ts` (shared by the garden UI and the MCP build). See `mcp-worker/README.md`.
 
+`scripts/build-mcp-data.mjs` also generates `public/llms.txt` and the `public/.well-known/` server cards — never hand-edit those either. The site has a human-facing guide at `/mcp` (`src/app/mcp/page.tsx`, content constants in `src/lib/mcp-info.ts`) and a header popover (`src/components/mcp/mcp-header-button.tsx`); if MCP tools change, update `MCP_TOOLS` in `src/lib/mcp-info.ts` to match `mcp-worker/src/server.ts`. The worker also serves documents at `/files/<slug>` from R2 with per-IP rate limiting.
+
 ## Code Quality
 
 - Minimal, performant

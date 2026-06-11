@@ -10,6 +10,7 @@ import type { Section } from "@/lib/types";
 import { PlantIcon } from "@/components/icons/plant-icon";
 import { AnimatedText } from "@/components/animated-text";
 import { RubyGemCollectible } from "@/components/garden/article-inventory";
+import { McpHeaderButton } from "@/components/mcp/mcp-header-button";
 
 const LINKS: Section[] = ["home", "about", "contact"];
 
@@ -634,6 +635,9 @@ export function Header() {
             </a>
           </div>
         ))}
+        <div className="hidden md:block md:pl-[15px]">
+          <McpHeaderButton />
+        </div>
       </div>
       <div
         ref={gardenRef}
