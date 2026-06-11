@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChickenSvg } from './chicken-svg';
 import { GameInfoPanel } from './game-info-panel';
+import { GameScenery } from './game-scenery';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
@@ -25,7 +26,17 @@ const BASE_SPEED = 2.5;
 const MIN_SPEED = 1.5;
 const AVOIDANCE_RADIUS = 150;
 const AVOIDANCE_STRENGTH = 0.3;
-const ROTATION_DAMPING = 0.98;
+const ROTATION_SPRING = 0.02;
+const ROTATION_DAMP = 0.16;
+const MAX_BANK = 10;
+const BANK_LERP = 0.08;
+const SPIN_BOUNCE_CHANCE = 0.25;
+const SPIN_BOUNCE_STRENGTH = 13;
+const FACING_DEADZONE = 0.25;
+const FLAP_BASE_MS = 470;
+const FLAP_MIN_MS = 150;
+const FLAP_MAX_MS = 680;
+const FLAP_QUANTIZE_MS = 20;
 const WOBBLE_AMPLITUDE = 3;
 const WOBBLE_FREQUENCY = 0.002;
 const BOUNCE_RANDOM = 0.3;
@@ -86,6 +97,7 @@ interface Physics {
   vy: number;
   rotation: number;
   rv: number;
+  bank: number;
 }
 
 export interface SoundEvent {
@@ -102,12 +114,16 @@ interface ChickenStateSnapshot {
   mercy: number;
   morph: number;
   auraLevel: number;
+  rotation: number;
+  vx: number;
+  vy: number;
 }
 
 interface ChickenBridge {
   plays: SoundEvent[];
   state: () => ChickenStateSnapshot;
   boost: (n: number) => void;
+  spin: (v: number) => void;
 }
 
 declare global {
@@ -241,8 +257,10 @@ function ChickenGameInner() {
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
   const physicsRef = useRef<Physics>({
-    x: 0, y: 0, vx: 0, vy: 0, rotation: 0, rv: 0,
+    x: 0, y: 0, vx: 0, vy: 0, rotation: 0, rv: 0, bank: 0,
   });
+  const facingRef = useRef(1);
+  const flapMsRef = useRef(0);
   const mouseRef = useRef({ x: -1000, y: -1000 });
   const particlesRef = useRef<Particle[]>([]);
   const shardParticlesRef = useRef<ShardParticle[]>([]);
@@ -255,6 +273,7 @@ function ChickenGameInner() {
   const playsRef = useRef<SoundEvent[]>([]);
   const mountAtRef = useRef(0);
   const chickenElRef = useRef<HTMLDivElement>(null);
+  const facingElRef = useRef<HTMLDivElement>(null);
   const feedbackElRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
@@ -353,9 +372,15 @@ function ChickenGameInner() {
         mercy: mercyRef.current,
         morph: morphForScore(scoreRef.current),
         auraLevel: auraLevelFor(scoreRef.current, mercyRef.current),
+        rotation: physicsRef.current.rotation,
+        vx: physicsRef.current.vx,
+        vy: physicsRef.current.vy,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
+      },
+      spin: (v: number) => {
+        physicsRef.current.rv += v;
       },
     };
     window.__chicken = bridge;
@@ -428,18 +453,22 @@ function ChickenGameInner() {
       if (p.x <= 0 || p.x >= vw - CHICKEN_W) {
         p.vx *= -1;
         p.vy += (Math.random() - 0.5) * BOUNCE_RANDOM;
-        p.rv += (Math.random() - 0.5) * 2;
+        if (Math.random() < SPIN_BOUNCE_CHANCE) {
+          p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+        }
         p.x = Math.max(0, Math.min(p.x, vw - CHICKEN_W));
       }
       if (p.y <= 0 || p.y >= vh - CHICKEN_H) {
         p.vy *= -1;
         p.vx += (Math.random() - 0.5) * BOUNCE_RANDOM;
-        p.rv += (Math.random() - 0.5) * 2;
+        if (Math.random() < SPIN_BOUNCE_CHANCE) {
+          p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+        }
         p.y = Math.max(0, Math.min(p.y, vh - CHICKEN_H));
       }
 
+      p.rv += (-p.rotation * ROTATION_SPRING - p.rv * ROTATION_DAMP) * dt;
       p.rotation += p.rv * dt;
-      p.rv *= ROTATION_DAMPING;
       const wobble = Math.sin(ts * WOBBLE_FREQUENCY) * WOBBLE_AMPLITUDE;
 
       const cx = p.x + CHICKEN_W / 2;
@@ -464,9 +493,35 @@ function ChickenGameInner() {
         p.vy = (p.vy / speed) * minSpd;
       }
 
+      const moveSpeed = Math.hypot(p.vx, p.vy);
+      const horiz = moveSpeed > 0 ? p.vx / moveSpeed : 0;
+      p.bank += (horiz * MAX_BANK - p.bank) * Math.min(1, BANK_LERP * dt);
+      if (p.vx > FACING_DEADZONE) facingRef.current = 1;
+      else if (p.vx < -FACING_DEADZONE) facingRef.current = -1;
+
+      const flapMs =
+        Math.round(
+          Math.max(
+            FLAP_MIN_MS,
+            Math.min(FLAP_MAX_MS, FLAP_BASE_MS / Math.sqrt(Math.max(sp, 0.1)))
+          ) / FLAP_QUANTIZE_MS
+        ) * FLAP_QUANTIZE_MS;
+
       if (chickenElRef.current) {
         chickenElRef.current.style.transform =
-          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble}deg)`;
+          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg)`;
+        if (flapMs !== flapMsRef.current) {
+          flapMsRef.current = flapMs;
+          chickenElRef.current.style.setProperty('--flap-ms', `${flapMs}ms`);
+        }
+      }
+      if (facingElRef.current) {
+        const sign = String(facingRef.current);
+        if (facingElRef.current.dataset.facing !== sign) {
+          facingElRef.current.dataset.facing = sign;
+          facingElRef.current.style.transform =
+            facingRef.current < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+        }
       }
 
       const sc = scoreRef.current;
@@ -600,6 +655,7 @@ function ChickenGameInner() {
 
   return (
     <div className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none cursor-crosshair">
+      <GameScenery />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
       <span className="absolute top-4 left-5 text-xs text-white/40 font-medium tracking-wide pointer-events-none">
@@ -653,10 +709,17 @@ function ChickenGameInner() {
         onClick={hit}
       >
         <div
-          ref={feedbackElRef}
-          style={{ transition: 'transform 150ms ease-out' }}
+          ref={facingElRef}
+          data-testid="chicken-facing"
+          data-facing="1"
+          style={{ transition: 'transform 160ms ease-out', transformOrigin: 'center' }}
         >
-          <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} />
+          <div
+            ref={feedbackElRef}
+            style={{ transition: 'transform 150ms ease-out' }}
+          >
+            <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} />
+          </div>
         </div>
       </div>
 

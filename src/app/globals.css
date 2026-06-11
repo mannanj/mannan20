@@ -738,3 +738,47 @@ body.gem-rain-active #header > div:first-child {
   18% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+@keyframes chickenFlapLeft {
+  0%, 100% { transform: rotate(-17deg); }
+  50% { transform: rotate(11deg); }
+}
+
+@keyframes chickenFlapRight {
+  0%, 100% { transform: rotate(17deg); }
+  50% { transform: rotate(-11deg); }
+}
+
+.chicken-wing-left {
+  transform-box: view-box;
+  transform-origin: 22px 90px;
+  animation: chickenFlapLeft var(--flap-ms, 460ms) ease-in-out infinite;
+}
+
+.chicken-wing-right {
+  transform-box: view-box;
+  transform-origin: 58px 90px;
+  animation: chickenFlapRight var(--flap-ms, 460ms) ease-in-out infinite;
+}
+
+@keyframes sceneryDrift {
+  0%, 100% { transform: scale(1.08) translate3d(0, 0, 0); }
+  50% { transform: scale(1.08) translate3d(-1.6%, 0, 0); }
+}
+
+.scenery-slot {
+  transition-property: opacity;
+  transition-timing-function: ease-in-out;
+}
+
+.scenery-drift {
+  animation: sceneryDrift 120s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chicken-wing-left,
+  .chicken-wing-right,
+  .scenery-drift {
+    animation: none;
+  }
+}

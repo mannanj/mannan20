@@ -15,12 +15,16 @@ interface ChickenState {
   mercy: number;
   morph: number;
   auraLevel: number;
+  rotation: number;
+  vx: number;
+  vy: number;
 }
 
 interface ChickenBridge {
   plays: SoundEvent[];
   state: () => ChickenState;
   boost: (n: number) => void;
+  spin: (v: number) => void;
 }
 
 const SOUNDS_DIR = path.join(process.cwd(), 'public', 'sounds', 'chicken');
@@ -41,6 +45,12 @@ function bridge(page: Page) {
         (count) =>
           (window as unknown as { __chicken: ChickenBridge }).__chicken.boost(count),
         n
+      ),
+    spin: (v: number) =>
+      page.evaluate(
+        (amount) =>
+          (window as unknown as { __chicken: ChickenBridge }).__chicken.spin(amount),
+        v
       ),
     ready: () =>
       page.waitForFunction(
@@ -306,5 +316,86 @@ test.describe('chicken game', () => {
     const screams = (await bridge(page).plays()).filter((p) => p.type === 'scream');
     expect(screams).toEqual([]);
     expect(errors).toEqual([]);
+  });
+
+  test('flies upright and rights itself after a spin', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    expect(Math.abs((await b.state()).rotation)).toBeLessThan(2);
+
+    const peak = await page.evaluate(async () => {
+      const w = window as unknown as {
+        __chicken: { spin: (v: number) => void; state: () => { rotation: number } };
+      };
+      w.__chicken.spin(20);
+      let max = 0;
+      for (let i = 0; i < 40; i++) {
+        await new Promise((r) => requestAnimationFrame(r));
+        max = Math.max(max, Math.abs(w.__chicken.state().rotation));
+      }
+      return max;
+    });
+    expect(peak).toBeGreaterThan(10);
+
+    await expect
+      .poll(async () => Math.abs((await b.state()).rotation), { timeout: 4000 })
+      .toBeLessThan(5);
+  });
+
+  test('wings flap with speed and the sprite faces its travel direction', async ({ page }) => {
+    await gotoGame(page);
+    const wings = page.getByTestId('chicken-wing');
+    await expect(wings).toHaveCount(2);
+    await expect(wings.first()).toHaveClass(/chicken-wing-/);
+
+    const facing = page.getByTestId('chicken-facing');
+    await expect(facing).toHaveAttribute('data-facing', /^(1|-1)$/);
+
+    const consistent = await page.evaluate(async () => {
+      const w = window as unknown as { __chicken: { state: () => { vx: number } } };
+      const el = document.querySelector('[data-testid="chicken-facing"]');
+      for (let i = 0; i < 120; i++) {
+        await new Promise((r) => requestAnimationFrame(r));
+        const vx = w.__chicken.state().vx;
+        const f = el?.getAttribute('data-facing');
+        if (Math.abs(vx) > 0.6 && (vx < 0) !== (f === '-1')) return false;
+      }
+      return true;
+    });
+    expect(consistent).toBe(true);
+
+    const flap = await page.evaluate(async () => {
+      const w = window as unknown as { __chicken: { boost: (n: number) => void } };
+      const el = document.querySelector('[data-testid="chicken"]') as HTMLElement;
+      const read = () => getComputedStyle(el).getPropertyValue('--flap-ms').trim();
+      const before = read();
+      w.__chicken.boost(90);
+      for (let i = 0; i < 30; i++) await new Promise((r) => requestAnimationFrame(r));
+      return { before, after: read() };
+    });
+    expect(flap.before).toMatch(/^\d+ms$/);
+    expect(flap.after).toMatch(/^\d+ms$/);
+    expect(parseInt(flap.after, 10)).toBeLessThan(parseInt(flap.before, 10));
+  });
+
+  test('hand-drawn scenery crossfades between landscapes', async ({ page }) => {
+    await gotoGame(page);
+    await page.waitForFunction(
+      () => (window as unknown as { __scenery?: unknown }).__scenery !== undefined
+    );
+    const layer = page.getByTestId('game-scenery');
+    await expect(layer).toBeVisible();
+    await expect(page.getByTestId('scenery-slot')).toHaveCount(2);
+    expect(await layer.getAttribute('data-scene')).toBe('0');
+
+    await page.evaluate(() =>
+      (window as unknown as { __scenery: { advance: () => void } }).__scenery.advance()
+    );
+    await expect.poll(async () => layer.getAttribute('data-scene')).toBe('1');
+
+    await page.evaluate(() =>
+      (window as unknown as { __scenery: { advance: () => void } }).__scenery.advance()
+    );
+    await expect.poll(async () => layer.getAttribute('data-scene')).toBe('2');
   });
 });

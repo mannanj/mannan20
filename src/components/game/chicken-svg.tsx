@@ -68,6 +68,7 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: C
   const goldId = `chicken-gold-${uid}`;
   const body = mixHex(current.body, next.body, clampedMorph);
   const bodyDark = mixHex(current.bodyDark, next.bodyDark, clampedMorph);
+  const wing = mixHex(bodyDark, '#161616', 0.24);
   const belly = mixHex(current.belly, next.belly, clampedMorph);
   const bodyFill = gold ? `url(#${goldId})` : body;
 
@@ -126,8 +127,24 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: C
       <path d="M55 33 L72 44 L57 36 Z" fill="#E67E00" />
       <Eye kind={current.eyes} />
       <ellipse cx="52" cy="40" rx="4" ry="5" fill="#D32F2F" />
-      <ellipse cx="14" cy="100" rx="6" ry="16" fill={bodyDark} transform="rotate(-12, 14, 100)" />
-      <ellipse cx="66" cy="100" rx="6" ry="16" fill={bodyDark} transform="rotate(12, 66, 100)" />
+      <g data-testid="chicken-wing" className="chicken-wing-left">
+        <path
+          d="M22 90 C 10 92, 4 104, 8 120 C 14 116, 19 106, 24 97 Z"
+          fill={wing}
+          stroke="rgba(0,0,0,0.3)"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </g>
+      <g data-testid="chicken-wing" className="chicken-wing-right">
+        <path
+          d="M58 90 C 70 92, 76 104, 72 120 C 66 116, 61 106, 56 97 Z"
+          fill={wing}
+          stroke="rgba(0,0,0,0.3)"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </g>
       {gold && (
         <>
           <path
