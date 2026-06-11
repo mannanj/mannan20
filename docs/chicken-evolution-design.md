@@ -47,3 +47,7 @@ Full-screen overlay over the game on /game: mini bobbing chicken, gradient progr
 `chicken-tiers.ts` (config) · `chicken-audio.ts` (manifest, resilient loader, playback, AuraSynth) · `use-chicken-sounds.ts` (thin hook) · `chicken-svg.tsx` (tiers/shards/hair/emotions) · `sound-loader.tsx` · `chicken-game.tsx` (aura/electricity/mercy/transform integration) · `globals.css` keyframes · `e2e/chicken-game.spec.ts` · `scripts/upload-chicken-sounds.mjs`.
 
 Out of scope (stay in `chicken-game-features.md` backlog): exorcist walk, fourth-wall lunge, skins/unlockables, chicken friends, pause, chat panel, leaderboard.
+
+## Superseded 2026-06-11 (task-226)
+
+Same-day revisions from playtesting: shard patches replaced by a continuous color morph between tier colors (the patchy reveal read as broken, not damaged); tier names removed from the HUD; the synth aura bed and aura loop removed entirely (read as background noise — sounds are event-only now: scream, riser, crackle); screams changed from per-click random to sticky-per-window (rotate after 25-35 clicks or 8s idle) with retrigger-on-click and a light global reverb; mercy eased (5s delay, 10s ramp, 0.4 floor) and made graceful on recovery (~7s back to full speed instead of instant); speed curve softened; AudioContext resume now happens inside every play gesture for Safari.

@@ -8,7 +8,7 @@ import type { ContactResultData } from '@/lib/types';
 
 const POPOUT_WIDTH = 380;
 
-const CONTACT_DATA: ContactResultData = {
+export const CONTACT_DATA: ContactResultData = {
   email: 'hello@mannan.is',
   phone: '+1 (571) 228-8302',
 };

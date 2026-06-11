@@ -82,29 +82,6 @@ export const TIERS: ChickenTier[] = [
 
 export const FINAL_TIER = TIERS.length - 1;
 
-export const SHARD_PATCHES: string[] = [
-  'M20 90 L38 84 L34 104 L18 106 Z',
-  'M40 86 L58 92 L54 110 L40 102 Z',
-  'M26 112 L42 108 L46 126 L24 128 Z',
-  'M44 116 L60 112 L58 132 L46 134 Z',
-  'M22 130 L40 132 L36 146 L24 142 Z',
-  'M30 70 L48 72 L44 86 L28 84 Z',
-  'M34 44 L50 48 L46 64 L32 60 Z',
-  'M33 30 L44 27 L46 40 L36 42 Z',
-  'M26 18 L38 14 L36 30 L24 30 Z',
-  'M50 100 L62 96 L62 116 L52 118 Z',
-  'M16 96 L24 88 L28 102 L18 110 Z',
-  'M36 134 L52 136 L48 150 L38 148 Z',
-];
-
-const SHARD_ORDER_STEP = 5;
-const SHARD_ORDER_TIER_OFFSET = 7;
-
-export function shardOrderForTier(tier: number): number[] {
-  const n = SHARD_PATCHES.length;
-  return Array.from({ length: n }, (_, k) => (k * SHARD_ORDER_STEP + tier * SHARD_ORDER_TIER_OFFSET) % n);
-}
-
 export function tierForScore(score: number): number {
   let tier = 0;
   for (let i = 0; i < TIERS.length; i++) {
@@ -121,11 +98,24 @@ export function tierProgress(score: number): number {
   return (score - current) / (next - current);
 }
 
-export function shardsRevealedForScore(score: number): number {
+export function morphForScore(score: number): number {
   if (tierForScore(score) === FINAL_TIER) return 0;
-  return Math.floor(tierProgress(score) * SHARD_PATCHES.length);
+  return tierProgress(score);
 }
 
-export const MERCY_DELAY_MS = 6000;
-export const MERCY_RAMP_MS = 14000;
-export const MERCY_FLOOR = 0.45;
+export function mixHex(from: string, to: string, t: number): string {
+  const clamped = Math.max(0, Math.min(1, t));
+  const a = parseInt(from.slice(1), 16);
+  const b = parseInt(to.slice(1), 16);
+  const channel = (x: number, y: number) => Math.round(x + (y - x) * clamped);
+  const r = channel((a >> 16) & 255, (b >> 16) & 255);
+  const g = channel((a >> 8) & 255, (b >> 8) & 255);
+  const bl = channel(a & 255, b & 255);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | bl).toString(16).slice(1).toUpperCase()}`;
+}
+
+export const MERCY_DELAY_MS = 5000;
+export const MERCY_RAMP_MS = 10000;
+export const MERCY_FLOOR = 0.4;
+export const MERCY_RECOVERY_PER_MS = 0.000085;
+export const MERCY_FOLLOW_PER_MS = 0.0004;

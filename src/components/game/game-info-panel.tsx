@@ -1,29 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { BottomSheet } from './bottom-sheet';
 
 const PANEL_ID = 'chicken-info-panel';
 
 const SECTIONS = [
   {
-    title: 'The origin',
-    body: 'Commissioned in April 2026 as an homage to the classic rubber screaming-chicken toy: it floats, it dodges your cursor, it screams when you click it, and every click makes it faster.',
+    title: 'Origin',
+    body: 'A rubber screaming-chicken homage. It floats, it dodges, it screams, it speeds up.',
   },
   {
-    title: 'The screams',
-    body: 'Seven real screams — a rubber-chicken wail, a panic bawk, a rooster crow, one very loud BWACK — randomized so no two clicks sound alike, served from Cloudflare, and pitched deeper with every form.',
+    title: 'Screams',
+    body: 'Seven real screams. Each sticks around a while, then swaps. Deeper every form.',
   },
   {
-    title: 'The evolution',
-    body: 'Each click cracks shards of skin off, revealing what’s underneath: Yard Bird → Azure Comet at 20 → Jade Tempest at 45 → Crimson Fury at 75 → Golden God at 110. Saiyan hair arrives with the first transformation; the aura and bio-electricity follow.',
+    title: 'Evolution',
+    body: 'Clicks morph it — blue at 20, green at 45, red at 75, gold at 110. Hair, aura, lightning follow.',
   },
   {
-    title: 'The mercy',
-    body: 'Leave it uncaught long enough and it gets smug and slows down — the first shipped piece of its personality. Never impossible forever.',
+    title: 'Mercy',
+    body: 'Ignore it and it gets smug and slow. Never impossible.',
   },
   {
-    title: 'Still in the coop',
-    body: 'Demonic mode, chicken friends, fire trails, skins, a chat panel for special requests, and a leaderboard for anyone who reaches 100.',
+    title: 'Coming',
+    body: 'Demon mode. Chicken friends. Fire. Skins. Chat.',
   },
 ];
 
@@ -57,41 +57,37 @@ function CaretGlyph({ open }: { open: boolean }) {
   );
 }
 
-export function GameInfoPanel() {
-  const [open, setOpen] = useState(false);
+interface GameInfoPanelProps {
+  open: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
-
+export function GameInfoPanel({ open, onToggle, onClose }: GameInfoPanelProps) {
   return (
     <>
-      <div
+      <BottomSheet
         id={PANEL_ID}
-        data-testid="chicken-info-panel"
-        role="region"
-        aria-label="About this game"
-        aria-hidden={!open}
-        className={`fixed bottom-[68px] right-5 z-40 w-[340px] max-w-[calc(100vw-40px)] rounded-2xl border border-white/10 bg-[#121214]/90 p-5 shadow-2xl backdrop-blur-md transition-all duration-300 ${open ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'}`}
+        open={open}
+        onClose={onClose}
+        label="About this game"
+        testId="chicken-info-panel"
       >
         <h2 className="text-sm font-semibold tracking-wide text-white/90">About this chicken</h2>
-        {SECTIONS.map((section) => (
-          <div key={section.title} className="mt-3">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#4FC3F7]">
-              {section.title}
+        <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-5">
+          {SECTIONS.map((section) => (
+            <div key={section.title}>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#4FC3F7]">
+                {section.title}
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-white/60">{section.body}</p>
             </div>
-            <p className="mt-1 text-xs leading-relaxed text-white/60">{section.body}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </BottomSheet>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
         aria-expanded={open}
         aria-controls={PANEL_ID}
         aria-label="About this game"

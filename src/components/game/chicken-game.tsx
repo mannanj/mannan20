@@ -3,15 +3,20 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChickenSvg } from './chicken-svg';
 import { GameInfoPanel } from './game-info-panel';
+import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
+import { AppProvider } from '@/context/app-context';
 import {
   FINAL_TIER,
   MERCY_DELAY_MS,
   MERCY_FLOOR,
+  MERCY_FOLLOW_PER_MS,
   MERCY_RAMP_MS,
+  MERCY_RECOVERY_PER_MS,
   TIERS,
-  shardsRevealedForScore,
+  mixHex,
+  morphForScore,
   tierForScore,
   tierProgress,
 } from './chicken-tiers';
@@ -35,8 +40,8 @@ const SHARDS_PER_TRANSFORM = 26;
 const SHARD_GRAVITY = 0.08;
 const SHARD_FADE = 0.014;
 const AURA_SPIKES = 12;
-const AURA_SYNC_MS = 250;
-const AURA_LEVEL_EPSILON = 0.04;
+const TIER0_AURA_START = 0.55;
+const TIER0_AURA_MAX = 0.28;
 const ARC_LIFE_MS = 140;
 const ARC_SEGMENTS = 7;
 const MAX_ARCS_PER_BURST = 3;
@@ -95,7 +100,7 @@ interface ChickenStateSnapshot {
   score: number;
   tier: number;
   mercy: number;
-  shards: number;
+  morph: number;
   auraLevel: number;
 }
 
@@ -112,17 +117,17 @@ declare global {
 }
 
 function speedForScore(score: number): number {
-  if (score <= 20) return 1 + score * 0.03;
-  if (score <= 50) return 1.6 + (score - 20) * 0.06;
-  if (score <= 80) return 3.4 + (score - 50) * 0.12;
-  return 7.0 + (score - 80) * 0.2;
+  if (score <= 20) return 1 + score * 0.028;
+  if (score <= 50) return 1.56 + (score - 20) * 0.052;
+  if (score <= 80) return 3.12 + (score - 50) * 0.095;
+  return 5.97 + (score - 80) * 0.14;
 }
 
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
-function mercyMultiplier(idleMs: number): number {
+function mercyTargetFor(idleMs: number): number {
   if (idleMs <= MERCY_DELAY_MS) return 1;
   const t = Math.min(1, (idleMs - MERCY_DELAY_MS) / MERCY_RAMP_MS);
   return 1 - (1 - MERCY_FLOOR) * smoothstep(t);
@@ -130,9 +135,29 @@ function mercyMultiplier(idleMs: number): number {
 
 function auraLevelFor(score: number, mercy: number): number {
   const tier = tierForScore(score);
-  if (tier === 0) return 0;
-  const base = 0.35 + 0.13 * (tier - 1) + 0.25 * tierProgress(score);
-  return Math.min(1, base) * (0.55 + 0.45 * mercy);
+  const progress = tierProgress(score);
+  const damp = 0.55 + 0.45 * mercy;
+  if (tier === 0) {
+    if (progress <= TIER0_AURA_START) return 0;
+    return ((progress - TIER0_AURA_START) / (1 - TIER0_AURA_START)) * TIER0_AURA_MAX * damp;
+  }
+  const base = 0.35 + 0.13 * (tier - 1) + 0.25 * progress;
+  return Math.min(1, base) * damp;
+}
+
+function auraRgbFor(score: number): { r: number; g: number; b: number } {
+  const tier = tierForScore(score);
+  const progress = tier === FINAL_TIER ? 0 : tierProgress(score);
+  const nextAura = TIERS[Math.min(tier + 1, FINAL_TIER)].aura;
+  const current = TIERS[tier].aura ?? nextAura;
+  const next = nextAura ?? current;
+  if (!current || !next) return { r: 255, g: 255, b: 255 };
+  const channel = (a: number, b: number) => Math.round(a + (b - a) * progress);
+  return {
+    r: channel(current.r, next.r),
+    g: channel(current.g, next.g),
+    b: channel(current.b, next.b),
+  };
 }
 
 function makeArc(cx: number, cy: number): Arc {
@@ -153,11 +178,11 @@ function drawAura(
   cy: number,
   ts: number,
   tier: number,
-  level: number
+  level: number,
+  rgb: { r: number; g: number; b: number }
 ): void {
-  const aura = TIERS[tier].aura;
-  if (!aura || level <= 0) return;
-  const { r, g, b } = aura;
+  if (level <= 0) return;
+  const { r, g, b } = rgb;
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   const glow = ctx.createRadialGradient(cx, cy, 10, cx, cy, 80 + 30 * level);
@@ -169,10 +194,14 @@ function drawAura(
   ctx.fill();
   const baseRx = 36 + tier * 2;
   const baseRy = 66 + tier * 3;
+  const flickerSpeed = 1 + tier * 0.12;
   for (let k = 0; k < AURA_SPIKES; k++) {
     const angle = (k / AURA_SPIKES) * Math.PI * 2;
     const flick =
-      0.5 + 0.5 * Math.sin(ts * 0.013 + k * 2.7) * Math.sin(ts * 0.007 + k * 1.3);
+      0.5 +
+      0.5 *
+        Math.sin(ts * 0.013 * flickerSpeed + k * 2.7) *
+        Math.sin(ts * 0.007 * flickerSpeed + k * 1.3);
     const len = (26 + 36 * level) * (0.55 + 0.55 * flick);
     const bx = cx + Math.cos(angle) * baseRx * 0.8;
     const by = cy + Math.sin(angle) * baseRy * 0.8;
@@ -202,11 +231,12 @@ function drawAura(
   ctx.restore();
 }
 
-export function ChickenGame() {
+function ChickenGameInner() {
   const [score, setScore] = useState(0);
   const [tier, setTier] = useState(0);
   const [flashTier, setFlashTier] = useState<number | null>(null);
   const [mercyCaption, setMercyCaption] = useState(false);
+  const [sheet, setSheet] = useState<'info' | 'board' | null>(null);
   const [loaderPhase, setLoaderPhase] = useState<'loading' | 'fading' | 'done'>('loading');
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
@@ -222,8 +252,6 @@ export function ChickenGame() {
   const mercyRef = useRef(1);
   const mercyCaptionRef = useRef(false);
   const lastHitRef = useRef(0);
-  const lastAuraRef = useRef({ level: -1, tier: -1 });
-  const lastAuraSyncRef = useRef(0);
   const playsRef = useRef<SoundEvent[]>([]);
   const mountAtRef = useRef(0);
   const chickenElRef = useRef<HTMLDivElement>(null);
@@ -231,30 +259,13 @@ export function ChickenGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const { progress, playScream, playPowerUp, setAuraLevel, crackle } = useChickenSounds();
+  const { progress, playScream, playPowerUp, crackle } = useChickenSounds();
 
   const recordPlay = useCallback((event: SoundEvent) => {
     const log = playsRef.current;
     log.push(event);
     if (log.length > BRIDGE_LOG_CAP) log.shift();
   }, []);
-
-  const syncAura = useCallback(
-    (force: boolean) => {
-      const level = auraLevelFor(scoreRef.current, mercyRef.current);
-      const currentTier = tierRef.current;
-      const last = lastAuraRef.current;
-      if (
-        force ||
-        last.tier !== currentTier ||
-        Math.abs(last.level - level) > AURA_LEVEL_EPSILON
-      ) {
-        lastAuraRef.current = { level, tier: currentTier };
-        setAuraLevel(level, currentTier);
-      }
-    },
-    [setAuraLevel]
-  );
 
   const spawnShards = useCallback((cx: number, cy: number, count: number, color: string) => {
     const shards = shardParticlesRef.current;
@@ -293,7 +304,6 @@ export function ChickenGame() {
       const riser = playPowerUp(newTier === FINAL_TIER);
       recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
       spawnShards(cx, cy, SHARDS_PER_TRANSFORM, TIERS[previousTier].body);
-      syncAura(true);
     } else {
       const rate =
         TIERS[newTier].screamRate * (1 - SCREAM_JITTER / 2 + Math.random() * SCREAM_JITTER);
@@ -301,7 +311,9 @@ export function ChickenGame() {
       if (played) {
         recordPlay({ type: 'scream', key: played.key, rate: played.rate, at: Date.now() });
       }
-      spawnShards(cx, cy, SHARDS_PER_CLICK, TIERS[newTier].body);
+      const tierDef = TIERS[newTier];
+      const nextDef = TIERS[Math.min(newTier + 1, FINAL_TIER)];
+      spawnShards(cx, cy, SHARDS_PER_CLICK, mixHex(tierDef.body, nextDef.body, morphForScore(next)));
     }
     const el = feedbackElRef.current;
     if (el) {
@@ -310,7 +322,7 @@ export function ChickenGame() {
         if (el) el.style.transform = 'scale(1)';
       }, FEEDBACK_POP_MS);
     }
-  }, [playPowerUp, playScream, recordPlay, spawnShards, syncAura]);
+  }, [playPowerUp, playScream, recordPlay, spawnShards]);
 
   useEffect(() => {
     mountAtRef.current = performance.now();
@@ -339,8 +351,8 @@ export function ChickenGame() {
         score: scoreRef.current,
         tier: tierRef.current,
         mercy: mercyRef.current,
-        shards: shardsRevealedForScore(scoreRef.current),
-        auraLevel: Math.max(0, lastAuraRef.current.level),
+        morph: morphForScore(scoreRef.current),
+        auraLevel: auraLevelFor(scoreRef.current, mercyRef.current),
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -386,11 +398,17 @@ export function ChickenGame() {
     const animate = (ts: number) => {
       if (!lastTimeRef.current) lastTimeRef.current = ts;
       const rawDt = ts - lastTimeRef.current;
-      const dt = Math.min(rawDt, MAX_DT) / 16.67;
+      const dtMs = Math.min(rawDt, MAX_DT);
+      const dt = dtMs / 16.67;
       lastTimeRef.current = ts;
 
       if (!lastHitRef.current) lastHitRef.current = ts;
-      const mercy = mercyMultiplier(ts - lastHitRef.current);
+      const target = mercyTargetFor(ts - lastHitRef.current);
+      const currentMercy = mercyRef.current;
+      const mercy =
+        target < currentMercy
+          ? Math.max(target, currentMercy - MERCY_FOLLOW_PER_MS * dtMs)
+          : Math.min(target, currentMercy + MERCY_RECOVERY_PER_MS * dtMs);
       mercyRef.current = mercy;
       const captionVisible = mercy < MERCY_CAPTION_THRESHOLD;
       if (captionVisible !== mercyCaptionRef.current) {
@@ -451,11 +469,6 @@ export function ChickenGame() {
           `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble}deg)`;
       }
 
-      if (ts - lastAuraSyncRef.current > AURA_SYNC_MS) {
-        lastAuraSyncRef.current = ts;
-        syncAura(false);
-      }
-
       const sc = scoreRef.current;
       const currentTier = tierRef.current;
       const tierDef = TIERS[currentTier];
@@ -514,7 +527,8 @@ export function ChickenGame() {
       if (ctx && canvas) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy));
+        const auraRgb = auraRgbFor(sc);
+        drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
 
         const now = performance.now();
         const arcs = arcsRef.current;
@@ -526,15 +540,12 @@ export function ChickenGame() {
           }
           const alpha = 1 - age / ARC_LIFE_MS;
           const pts = arcs[i].points;
-          const aura = tierDef.aura;
-          if (aura) {
-            ctx.strokeStyle = `rgba(${aura.r}, ${aura.g}, ${aura.b}, ${0.45 * alpha})`;
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(pts[0].x, pts[0].y);
-            for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.stroke();
-          }
+          ctx.strokeStyle = `rgba(${auraRgb.r}, ${auraRgb.g}, ${auraRgb.b}, ${0.45 * alpha})`;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.stroke();
           ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * alpha})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
@@ -575,15 +586,17 @@ export function ChickenGame() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay, syncAura]);
+  }, [crackle, recordPlay]);
 
-  const tierDef = TIERS[tier];
-  const shardsCount = shardsRevealedForScore(score);
-  const glowStyle = tierDef.aura
-    ? {
-        filter: `drop-shadow(0 0 ${8 + tier * 3}px rgba(${tierDef.aura.r}, ${tierDef.aura.g}, ${tierDef.aura.b}, 0.55))`,
-      }
-    : undefined;
+  const morph = morphForScore(score);
+  const renderAuraLevel = auraLevelFor(score, 1);
+  const renderAuraRgb = auraRgbFor(score);
+  const glowStyle =
+    renderAuraLevel > 0
+      ? {
+          filter: `drop-shadow(0 0 ${6 + 10 * renderAuraLevel + tier * 2}px rgba(${renderAuraRgb.r}, ${renderAuraRgb.g}, ${renderAuraRgb.b}, ${Math.min(0.55, 0.15 + renderAuraLevel * 0.5)}))`,
+        }
+      : undefined;
 
   return (
     <div className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none cursor-crosshair">
@@ -601,21 +614,10 @@ export function ChickenGame() {
         {score}
       </div>
 
-      {tier >= 1 && (
-        <div
-          key={`label-${tier}`}
-          data-testid="chicken-form-label"
-          className="absolute top-[330px] left-1/2 -translate-x-1/2 text-sm font-semibold uppercase tracking-[0.3em] pointer-events-none animate-[labelPop_0.7s_ease-out]"
-          style={{ color: tierDef.body }}
-        >
-          {tierDef.name}
-        </div>
-      )}
-
       {mercyCaption && (
         <div
           data-testid="chicken-mercy-caption"
-          className="absolute top-[360px] left-1/2 -translate-x-1/2 text-xs italic text-white/35 pointer-events-none animate-[fadeIn_0.6s_ease-out]"
+          className="absolute top-[330px] left-1/2 -translate-x-1/2 text-xs italic text-white/35 pointer-events-none animate-[fadeIn_0.6s_ease-out]"
         >
           the chicken grows smug… and slow
         </div>
@@ -654,15 +656,34 @@ export function ChickenGame() {
           ref={feedbackElRef}
           style={{ transition: 'transform 150ms ease-out' }}
         >
-          <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} shards={shardsCount} />
+          <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} />
         </div>
       </div>
 
-      <GameInfoPanel />
+      <LeaderboardPanel
+        open={sheet === 'board'}
+        onToggle={() => setSheet((s) => (s === 'board' ? null : 'board'))}
+        onClose={() => setSheet(null)}
+        score={score}
+      />
+
+      <GameInfoPanel
+        open={sheet === 'info'}
+        onToggle={() => setSheet((s) => (s === 'info' ? null : 'info'))}
+        onClose={() => setSheet(null)}
+      />
 
       {loaderPhase !== 'done' && (
         <SoundLoader progress={progress} fading={loaderPhase === 'fading'} />
       )}
     </div>
+  );
+}
+
+export function ChickenGame() {
+  return (
+    <AppProvider>
+      <ChickenGameInner />
+    </AppProvider>
   );
 }

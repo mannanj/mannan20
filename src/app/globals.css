@@ -738,9 +738,3 @@ body.gem-rain-active #header > div:first-child {
   18% { opacity: 1; }
   100% { opacity: 0; }
 }
-
-@keyframes labelPop {
-  0% { opacity: 0; transform: translateX(-50%) scale(1.7); letter-spacing: 0.6em; }
-  60% { opacity: 1; }
-  100% { opacity: 1; transform: translateX(-50%) scale(1); letter-spacing: 0.3em; }
-}

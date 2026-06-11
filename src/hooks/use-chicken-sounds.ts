@@ -14,11 +14,7 @@ export function useChickenSounds() {
   useEffect(() => {
     const audio = getChickenAudio();
     audio.init();
-    const unsubscribe = audio.subscribe(setProgress);
-    return () => {
-      unsubscribe();
-      audio.stopAura();
-    };
+    return audio.subscribe(setProgress);
   }, []);
 
   const playScream = useCallback(
@@ -29,11 +25,7 @@ export function useChickenSounds() {
     (final: boolean): RiserResult => getChickenAudio().playRiser(final),
     []
   );
-  const setAuraLevel = useCallback(
-    (level: number, tier: number) => getChickenAudio().setAuraLevel(level, tier),
-    []
-  );
   const crackle = useCallback(() => getChickenAudio().crackle(), []);
 
-  return { progress, playScream, playPowerUp, setAuraLevel, crackle };
+  return { progress, playScream, playPowerUp, crackle };
 }

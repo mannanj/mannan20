@@ -41,9 +41,7 @@ The chicken develops emotional states based on gameplay:
 - Collapsible section: "Chat with the chicken — ask him special requests"
 - No backend yet, just UI shell
 
-## Leaderboard (Phase 7 in task-154)
+## Leaderboard (Phase 7 in task-154) — SHIPPED (task-226)
 
-- Score of 100 = memorialized on leaderboard
+Live: top-right "Leaderboard" link opens a bottom sheet with Human and Agent boards (self-identify checkbox), Upstash Redis persistence (best score per name), name + identity remembered via cookies, and a feedback path gated by the main site's contact validation. Original ideas not yet built:
 - Players can leave contact info (email / website) for free advertising
-- "Leaderboard" link always visible top-right
-- Needs backend persistence

@@ -13,7 +13,7 @@ interface ChickenState {
   score: number;
   tier: number;
   mercy: number;
-  shards: number;
+  morph: number;
   auraLevel: number;
 }
 
@@ -98,15 +98,17 @@ test.describe('chicken game', () => {
     expect((await bridge(page).state()).score).toBe(1);
   });
 
-  test('screams are randomized across clicks', async ({ page }) => {
+  test('one scream sticks per window, then rotates after many clicks', async ({ page }) => {
     await gotoGame(page);
-    await bridge(page).boost(12);
-    const screams = (await bridge(page).plays()).filter((p) => p.type === 'scream');
-    expect(screams.length).toBe(12);
-    const unique = new Set(screams.map((s) => s.key));
-    expect(unique.size).toBeGreaterThanOrEqual(3);
-    const consecutive = screams.filter((s, i) => i > 0 && s.key === screams[i - 1].key);
-    expect(consecutive).toEqual([]);
+    const b = bridge(page);
+    await b.boost(12);
+    const early = (await b.plays()).filter((p) => p.type === 'scream');
+    expect(early.length).toBe(12);
+    expect(new Set(early.map((s) => s.key)).size).toBe(1);
+    await b.boost(7);
+    await b.boost(30);
+    const all = (await b.plays()).filter((p) => p.type === 'scream');
+    expect(new Set(all.map((s) => s.key)).size).toBeGreaterThanOrEqual(2);
   });
 
   test('evolves through tiers with power-ups, saiyan hair, and deeper screams', async ({ page }) => {
@@ -118,7 +120,6 @@ test.describe('chicken game', () => {
     await expect(chicken).toHaveAttribute('data-tier', '1');
     await expect(page.getByTestId('chicken-hair')).toBeVisible();
     await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-hair', 'dark');
-    await expect(page.getByTestId('chicken-form-label')).toHaveText('Azure Comet');
     let powerups = (await b.plays()).filter((p) => p.type === 'powerup');
     expect(powerups.length).toBe(1);
     expect((await b.state()).auraLevel).toBeGreaterThan(0);
@@ -126,7 +127,6 @@ test.describe('chicken game', () => {
     await b.boost(90);
     await expect(chicken).toHaveAttribute('data-tier', '4');
     await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-hair', 'gold');
-    await expect(page.getByTestId('chicken-form-label')).toHaveText('Golden God');
     powerups = (await b.plays()).filter((p) => p.type === 'powerup');
     expect(powerups.length).toBe(4);
 
@@ -139,51 +139,140 @@ test.describe('chicken game', () => {
     expect(last.rate).toBeLessThanOrEqual(0.75);
   });
 
-  test('skin shards crack off toward the next tier', async ({ page }) => {
+  test('skin morphs gradually toward the next tier color', async ({ page }) => {
     await gotoGame(page);
     const b = bridge(page);
+    const baseFill = await page
+      .locator('[data-testid="chicken-svg"] ellipse')
+      .first()
+      .getAttribute('fill');
     await b.boost(10);
-    expect((await b.state()).shards).toBe(6);
-    await expect(page.getByTestId('chicken-shard')).toHaveCount(6);
-    await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-shards', '6');
+    expect((await b.state()).morph).toBeCloseTo(0.5, 5);
+    await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-morph', '0.50');
+    const morphedFill = await page
+      .locator('[data-testid="chicken-svg"] ellipse')
+      .first()
+      .getAttribute('fill');
+    expect(morphedFill).not.toBe(baseFill);
+    expect(page.getByTestId('chicken-form-label')).toHaveCount(0);
   });
 
-  test('mercy slowdown kicks in when idle and resets on hit', async ({ page }) => {
+  test('mercy slows an ignored chicken and recovers gently after a hit', async ({ page }) => {
     test.slow();
     await gotoGame(page);
     const b = bridge(page);
     await b.boost(3);
     expect((await b.state()).mercy).toBe(1);
-    await page.waitForTimeout(8500);
+    await page.waitForTimeout(13_500);
     const slowed = (await b.state()).mercy;
-    expect(slowed).toBeLessThan(0.99);
-    expect(slowed).toBeGreaterThan(0.4);
-    await page.getByTestId('chicken').click({ force: true });
-    await expect.poll(async () => (await b.state()).mercy).toBeGreaterThan(0.99);
+    expect(slowed).toBeLessThan(0.6);
+    expect(slowed).toBeGreaterThan(0.3);
+    await b.boost(1);
+    await page.waitForTimeout(400);
+    const justAfter = (await b.state()).mercy;
+    expect(justAfter).toBeLessThan(0.8);
+    expect(justAfter).toBeGreaterThan(slowed - 0.05);
+    for (let i = 0; i < 16; i++) {
+      await b.boost(1);
+      await page.waitForTimeout(500);
+    }
+    expect((await b.state()).mercy).toBeGreaterThan(0.99);
   });
 
-  test('info panel reveals the game intent and collapses again', async ({ page }) => {
+  test('info sheet reveals the game intent and collapses again', async ({ page }) => {
     await gotoGame(page);
     const button = page.getByTestId('chicken-info-button');
     const panel = page.getByTestId('chicken-info-panel');
     await expect(button).toBeVisible();
-    await expect(page.getByTestId('chicken-info-caret')).toBeVisible();
     await expect(button).toHaveAttribute('aria-expanded', 'false');
     await expect(panel).toHaveAttribute('aria-hidden', 'true');
     await button.click();
     await expect(button).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toHaveAttribute('aria-hidden', 'false');
     await expect(panel).toContainText('About this chicken');
-    await expect(panel).toContainText('rubber screaming-chicken toy');
-    await expect(panel).toContainText('Golden God at 110');
+    await expect(panel).toContainText('rubber screaming-chicken homage');
+    await expect(panel).toContainText('gold at 110');
+    await expect(panel).not.toContainText('Cloudflare');
     await expect(page.getByTestId('chicken-info-caret')).toHaveClass(/rotate-180/);
     await button.click();
     await expect(button).toHaveAttribute('aria-expanded', 'false');
-    await expect(panel).toHaveAttribute('aria-hidden', 'true');
     await button.click();
-    await expect(button).toHaveAttribute('aria-expanded', 'true');
     await page.keyboard.press('Escape');
     await expect(button).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('leaderboard tabs, submission, and cookie-remembered identity', async ({ page }) => {
+    const posted: Array<Record<string, unknown>> = [];
+    await page.route('**/api/game/leaderboard', (route) => {
+      if (route.request().method() === 'POST') {
+        const body = route.request().postDataJSON() as Record<string, unknown>;
+        posted.push(body);
+        return route.fulfill({
+          json: {
+            human: [{ name: 'Maximus', score: 412 }],
+            agent: [
+              { name: String(body.name), score: Number(body.score) },
+              { name: 'Clawde', score: 333 },
+            ],
+          },
+        });
+      }
+      return route.fulfill({
+        json: {
+          human: [{ name: 'Maximus', score: 412 }],
+          agent: [{ name: 'Clawde', score: 333 }],
+        },
+      });
+    });
+    await gotoGame(page);
+    const link = page.getByTestId('chicken-leaderboard-link');
+    const panel = page.getByTestId('chicken-leaderboard-panel');
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(panel).toHaveAttribute('aria-hidden', 'false');
+    await expect(panel).toContainText('Maximus');
+    await page.getByTestId('leaderboard-tab-agent').click();
+    await expect(panel).toContainText('Clawde');
+
+    await bridge(page).boost(5);
+    await page.getByTestId('leaderboard-name-input').fill('Testy');
+    await page.getByTestId('leaderboard-agent-checkbox').check();
+    await page.getByTestId('leaderboard-submit').click();
+    await expect.poll(() => posted.length).toBe(1);
+    expect(posted[0]).toEqual({ name: 'Testy', score: 5, kind: 'agent' });
+    await expect(panel).toContainText('Testy');
+
+    const cookies = await page.evaluate(() => document.cookie);
+    expect(cookies).toContain('chicken-name=Testy');
+    expect(cookies).toContain('chicken-kind=agent');
+
+    await page.goto('/game');
+    await page.getByTestId('chicken-loader').waitFor({ state: 'detached', timeout: 15_000 });
+    await page.getByTestId('chicken-leaderboard-link').click();
+    await expect(page.getByTestId('leaderboard-name-input')).toHaveValue('Testy');
+    await expect(page.getByTestId('leaderboard-agent-checkbox')).toBeChecked();
+  });
+
+  test('feedback gate reuses the contact validation before revealing email', async ({ page }) => {
+    await page.route('**/api/game/leaderboard', (route) =>
+      route.fulfill({ json: { human: [], agent: [] } })
+    );
+    await page.route('**/api/validate-contact', (route) =>
+      route.fulfill({
+        json: { name: { found: true, value: 'Testy' } },
+      })
+    );
+    await gotoGame(page);
+    await page.getByTestId('chicken-leaderboard-link').click();
+    await page.getByTestId('leaderboard-feedback-toggle').click();
+    const textarea = page.getByTestId('contact-textarea');
+    await expect(textarea).toBeVisible();
+    await expect(page.getByTestId('contact-result')).toHaveCount(0);
+    await textarea.pressSequentially('Hello, I love the chicken game on your portfolio site', {
+      delay: 60,
+    });
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('chicken-leaderboard-panel')).toContainText('hello@mannan.is');
   });
 
   test('game survives total sound failure', async ({ page }) => {

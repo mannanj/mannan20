@@ -1,14 +1,14 @@
 'use client';
 
 import { useId } from 'react';
-import { SHARD_PATCHES, TIERS, shardOrderForTier } from './chicken-tiers';
+import { TIERS, mixHex } from './chicken-tiers';
 
 interface ChickenSvgProps {
   className?: string;
   style?: React.CSSProperties;
   onClick?: () => void;
   tier?: number;
-  shards?: number;
+  morph?: number;
 }
 
 const DARK_HAIR = 'M26 26 L27 8 L32 20 L35 0 L40 18 L45 -2 L48 17 L52 6 L55 22 L56 26 Z';
@@ -58,19 +58,18 @@ function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
   );
 }
 
-export function ChickenSvg({ className, style, onClick, tier = 0, shards = 0 }: ChickenSvgProps) {
+export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: ChickenSvgProps) {
   const uid = useId();
   const clampedTier = Math.max(0, Math.min(tier, TIERS.length - 1));
+  const clampedMorph = Math.max(0, Math.min(morph, 1));
   const current = TIERS[clampedTier];
   const next = TIERS[Math.min(clampedTier + 1, TIERS.length - 1)];
   const gold = current.hair === 'gold';
-  const clipId = `chicken-body-${uid}`;
   const goldId = `chicken-gold-${uid}`;
-  const bodyFill = gold ? `url(#${goldId})` : current.body;
-  const revealed = shardOrderForTier(clampedTier).slice(
-    0,
-    Math.max(0, Math.min(shards, SHARD_PATCHES.length))
-  );
+  const body = mixHex(current.body, next.body, clampedMorph);
+  const bodyDark = mixHex(current.bodyDark, next.bodyDark, clampedMorph);
+  const belly = mixHex(current.belly, next.belly, clampedMorph);
+  const bodyFill = gold ? `url(#${goldId})` : body;
 
   return (
     <svg
@@ -83,22 +82,17 @@ export function ChickenSvg({ className, style, onClick, tier = 0, shards = 0 }: 
       data-testid="chicken-svg"
       data-tier={clampedTier}
       data-hair={current.hair}
-      data-shards={revealed.length}
+      data-morph={clampedMorph.toFixed(2)}
     >
-      <defs>
-        <clipPath id={clipId}>
-          <ellipse cx="40" cy="108" rx="24" ry="40" />
-          <ellipse cx="40" cy="58" rx="13" ry="26" />
-          <ellipse cx="40" cy="28" rx="16" ry="14" />
-        </clipPath>
-        {gold && (
+      {gold && (
+        <defs>
           <linearGradient id={goldId} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#FFE082" />
             <stop offset="55%" stopColor="#FFC107" />
             <stop offset="100%" stopColor="#FF8F00" />
           </linearGradient>
-        )}
-      </defs>
+        </defs>
+      )}
       {current.hair !== 'none' && (
         <path
           d={current.hair === 'gold' ? GOLD_HAIR : DARK_HAIR}
@@ -111,21 +105,8 @@ export function ChickenSvg({ className, style, onClick, tier = 0, shards = 0 }: 
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
       <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
-      <ellipse cx="40" cy="112" rx="18" ry="28" fill={current.belly} opacity="0.3" />
+      <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
       {gold && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
-      <g clipPath={`url(#${clipId})`}>
-        {revealed.map((index) => (
-          <path
-            key={index}
-            d={SHARD_PATCHES[index]}
-            fill={next.body}
-            stroke={next.bodyDark}
-            strokeOpacity="0.5"
-            strokeWidth="1"
-            data-testid="chicken-shard"
-          />
-        ))}
-      </g>
       {clampedTier === 0 && (
         <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill="#D32F2F" />
       )}
@@ -134,8 +115,8 @@ export function ChickenSvg({ className, style, onClick, tier = 0, shards = 0 }: 
       <path d="M55 33 L72 44 L57 36 Z" fill="#E67E00" />
       <Eye kind={current.eyes} />
       <ellipse cx="52" cy="40" rx="4" ry="5" fill="#D32F2F" />
-      <ellipse cx="14" cy="100" rx="6" ry="16" fill={current.bodyDark} transform="rotate(-12, 14, 100)" />
-      <ellipse cx="66" cy="100" rx="6" ry="16" fill={current.bodyDark} transform="rotate(12, 66, 100)" />
+      <ellipse cx="14" cy="100" rx="6" ry="16" fill={bodyDark} transform="rotate(-12, 14, 100)" />
+      <ellipse cx="66" cy="100" rx="6" ry="16" fill={bodyDark} transform="rotate(12, 66, 100)" />
       {gold && (
         <>
           <path
