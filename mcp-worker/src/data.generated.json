@@ -308,6 +308,12 @@
       "year": 2026
     },
     {
+      "name": "Mannan MCP",
+      "description": "Connect any AI agent to my site's public data.",
+      "url": "https://mcp.mannanteam.workers.dev",
+      "year": 2026
+    },
+    {
       "name": "Meal Fairy",
       "description": "Chef-cooked, healthy meals delivered to your door.",
       "url": "https://meal-fairy-ce3bf.web.app",

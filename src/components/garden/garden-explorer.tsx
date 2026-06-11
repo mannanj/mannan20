@@ -119,12 +119,21 @@ function SunSignalThumb() {
   );
 }
 
+function McpThumb() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#16161f] to-[#0b0b12] transition-transform duration-300 group-hover:scale-105">
+      <div className="font-mono text-lg tracking-wide text-white/60">{"{ mcp }"}</div>
+    </div>
+  );
+}
+
 const PRODUCT_THUMBS: Record<string, ReactNode> = {
   Mannan: <MannanThumb />,
   "Sun Signal": <SunSignalThumb />,
   "Read Along": <ReadAlongThumb />,
   SkillGuard: <SkillGuardThumb />,
   "Summon It": <SummonThumb />,
+  "Mannan MCP": <McpThumb />,
   "Meal Fairy": <MealFairyThumb />,
 };
 

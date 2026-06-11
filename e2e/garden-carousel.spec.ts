@@ -29,12 +29,12 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('selecting Products swivels to the six product cards', async ({ page }) => {
+  test('selecting Products swivels to the seven product cards', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-products').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="products"] a')).toHaveCount(6);
+    await expect(page.locator('[data-panel="products"] a')).toHaveCount(7);
   });
 
   test('product cards link to the correct destinations', async ({ page }) => {
@@ -42,7 +42,7 @@ test.describe('Garden carousel', () => {
     await page.getByTestId('garden-tab-products').click();
     const cards = page.locator('[data-panel="products"] a');
 
-    const mannan = cards.filter({ hasText: 'Mannan' });
+    const mannan = cards.filter({ has: page.getByText('Mannan', { exact: true }) });
     await expect(mannan).toHaveAttribute('href', '/');
     await expect(mannan).not.toHaveAttribute('target', /.+/);
 
@@ -50,6 +50,11 @@ test.describe('Garden carousel', () => {
     await expect(sunSignal).toHaveAttribute('href', 'https://sunsignal.app');
     await expect(sunSignal).toHaveAttribute('target', '_blank');
     await expect(sunSignal).toHaveAttribute('rel', /noopener/);
+
+    const mcp = cards.filter({ hasText: 'Mannan MCP' });
+    await expect(mcp).toHaveAttribute('href', 'https://mcp.mannanteam.workers.dev');
+    await expect(mcp).toHaveAttribute('target', '_blank');
+    await expect(mcp).toHaveAttribute('rel', /noopener/);
 
     const readAlong = cards.filter({ hasText: 'Read Along' });
     await expect(readAlong).toHaveAttribute('href', 'https://tryreadalong.com');
@@ -92,6 +97,7 @@ test.describe('Garden carousel', () => {
       'Read Along',
       'SkillGuard',
       'Summon It',
+      'Mannan MCP',
       'Meal Fairy (retired)',
     ]);
   });
@@ -108,12 +114,11 @@ test.describe('Garden carousel', () => {
     await expect(page.locator('[data-panel="writings"] a')).toHaveCount(4);
   });
 
-  test('Work is disabled and cannot become the active category', async ({ page }) => {
+  test('selecting Readings swivels to the curated readings list', async ({ page }) => {
     await gotoGarden(page);
-    const work = page.getByTestId('garden-tab-work');
-    await expect(work).toHaveAttribute('aria-disabled', 'true');
-    await expect(work).toContainText('coming soon');
-    await work.click({ force: true });
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
+    await page.getByTestId('garden-tab-readings').click();
+    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
+    await expect(page.getByTestId('garden-tab-readings')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(2);
   });
 });

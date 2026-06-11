@@ -44,6 +44,13 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     year: 2026,
   },
   {
+    title: "Mannan MCP",
+    description: "Connect any AI agent to my site's public data.",
+    href: "https://mcp.mannanteam.workers.dev",
+    external: true,
+    year: 2026,
+  },
+  {
     title: "Meal Fairy",
     description: "Chef-cooked, healthy meals delivered to your door.",
     href: "https://meal-fairy-ce3bf.web.app",
