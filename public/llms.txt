@@ -1,80 +1,97 @@
 # Mannan Javid
 
-> Multi-disciplinary engineer, leader, and student. Personal portfolio at mannan.is — security, geospatial, healthcare, and AI-forward product engineering, with a long-running practice in health, community, and applied psychology. This file gives AI agents a structured summary so you don't have to scrape the rendered site.
+> Multi-disciplinary engineer, founder, and student. Personal portfolio at mannan.is — security, geospatial, healthcare, and AI-forward product engineering, with a long-running practice in health, community, and applied psychology. This file gives AI agents a structured summary so you don't have to scrape the rendered site.
 
-I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Currently focused on engineering that serves people at scale: secure microservices, healthcare access, and developer tooling. Based in Alexandria, Virginia.
+I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
 
-The site is a single-page Next.js portfolio (`/`) with a few sibling routes: a personal essay garden, curated reading episodes, and small interactive pages. Canonical content lives in `public/data/about.json`.
+This file is generated from the same data that powers the MCP server below (updated 2026-06-11). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
+
+## MCP server
+
+- [MCP endpoint (Streamable HTTP)](https://mcp.mannanteam.workers.dev/mcp): Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan https://mcp.mannanteam.workers.dev/mcp`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable at the agentUrl fields returned by the get_downloads tool, rate-limited 10/min/IP.
+- [MCP guide for humans and agents](https://mannan.is/mcp): Connect instructions, tool catalog, and what data is served.
+- [MCP server card](https://mcp.mannanteam.workers.dev/.well-known/mcp/server-card.json): Machine-readable server metadata.
 
 ## Primary pages
 
-- [Home](https://mannan.is/): One-page portfolio — hero, about (employment, extracurriculars, published work, education), narrative chapters, contact.
-- [Garden](https://mannan.is/garden): Long-form personal essays on community, health, and observation.
-- [Episodes](https://mannan.is/episodes): Curated reading list — favorite essays and references.
-- [Game](https://mannan.is/game): Interactive chicken game (in development).
+- [Home](https://mannan.is/): One-page portfolio — hero, about, narrative chapters, contact.
+- [Garden](https://mannan.is/garden): Essays, products, and curated readings in one explorer.
+- [MCP](https://mannan.is/mcp): How to connect an agent to this site's data.
+- [Floating Chicken Game](https://mannan.is/game): Floating chicken game — click it, it screams; keep clicking and it evolves through five saiyan-style forms.
 
-## About
+## Mission and goals
 
-- [Bio and current focus](https://mannan.is/#about): Multi-disciplinary engineer; ten years across security, geospatial mapping, healthcare, and AI-forward product engineering.
-- [Narrative — Wellbeing by Design](https://mannan.is/#about): "Engineering is not neutral. Every system either improves or diminishes human wellbeing."
-- [Narrative — Impact at Scale](https://mannan.is/#about): 3M+ daily users served, zero security incidents, 40% faster code reviews, 33% fewer defects, 20% increase in healthcare access.
-- [Narrative — In The Arena](https://mannan.is/#about): "Not theorizing. Building."
+- [Narrative — Wellbeing by Design](https://mannan.is/#about): Engineering is not neutral. Every system either improves or diminishes human wellbeing. My work deliberately chooses the former — building products that serve millions securely, making healthcare more accessible, and eliminating the failures that frustrate real people. The through-line across every role: technology in service of people.
+- [Narrative — Impact at Scale](https://mannan.is/#about): 3M+ daily users served with zero security incidents. 40% faster code reviews. 33% fewer defects. 100K API failures eliminated. 20% increase in healthcare access. Measured not by lines shipped, but by lives improved.
+- [Narrative — In The Arena](https://mannan.is/#about): It is not the critic who counts. I ship products, teach students, volunteer in communities, found startups, build robots, and hold space for others to grow. Multi-disciplinary by practice, not by label. Not theorizing. Building.
+- [Narrative — Continue](https://mannan.is/#about): Ready to build something that matters?
+- [Goal — Build technology in service of human wellbeing](https://mannan.is): "Engineering is not neutral. Every system either improves or diminishes human wellbeing. My work deliberately chooses the former"
+- [Goal — Treat health and longevity as a personal north star](https://mannan.is/garden/article/health-longevity): "A decade of health optimization, reversing prediabetes, and why wellbeing became my north star."
+- [Goal — Measure impact in lives improved, at scale](https://mannan.is): "Measured not by lines shipped, but by lives improved."
+- [Goal — Ship AI products as a founder](https://mannan.is): "AI product studio"
+- [Goal — Build community and help others grow](https://mannan.is): "I measure my success by the strength of those around me"
+- [Goal — Stay in the arena — multi-disciplinary by practice](https://mannan.is): "I ship products, teach students, volunteer in communities, found startups, build robots, and hold space for others to grow."
+- [Goal — Find people to build with](https://mannan.is): "Ready to build something that matters?"
 
 ## Employment
 
-- [Capital One — Principal Software Engineer, 2024–2025, 2021–2022](https://www.capitalone.com/): Led security ops, remediation, and product engineering for applications serving 3M+ DAU. Trade-In, Auto Loan Rates, SEO. Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps. Zero production vulnerabilities; cut code-review time 40% via internal hackathon-winning tooling.
-- [Publicis Sapient — Senior Software Engineer, 2022–2023](https://www.publicissapient.com/): Healthcare facility mapping in ArcGIS + Angular for healthcare-access programs (20% access increase in underserved regions). Led code-review standardization and an Angular Material UI library adopted company-wide.
-- [Radiant / Maxar — Software Engineer II, 2018–2022](https://www.maxar.com/): Geospatial mapping and probability-simulation tools in Cesium and LeafletJS for national-security intelligence visualization. Culture and mentorship lead.
-- [MITRE — Software Engineer I, 2016–2018](https://www.mitre.org/): IRS tax-system modernization R&D — OAuth2/JWT, Python Django, AWS. Federal cybersecurity tooling research.
-- [Meal Fairy — Founder, 2018](https://meal-fairy-ce3bf.web.app/): Plate-to-door food delivery startup in greater Washington DC. Angular, Firebase, Stripe.
-- [America's Electric Cooperatives — Software Engineer, 2014–2016 (contract)](https://www.electric.coop/): Fullstack engineer; co-authored Open Modeling Framework demand-response research.
-
-## Published work
-
-- [Apparatus for Remote Control of Humanoid Robots (PDF)](https://mannan.is/api/download/gmu-archr): Intuitive teleoperation system for high-DoF humanoid robots with haptic feedback. Lead developer. Submitted to IEEE/RSJ IROS 2015; taken to DARPA Robotics Challenge.
-- [Open Modeling Framework Demand Response (PDF)](https://mannan.is/api/download/omf-dr): Cost-benefit analysis model for demand-response programs (TOU, CPP, PTR, DLC) built for rural electric cooperatives on NRECA's Open Modeling Framework.
-- [ARCHR robotics demo (YouTube)](https://www.youtube.com/embed/GSx22ggePHw): One-to-one hand-puppeteered mimicry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.
-
-## Education and certifications
-
-- [George Mason University, B.S. Electrical Engineering, 2009–2015](https://www.gmu.edu/): Published robotics research, won pitch competitions, delivered the university's first multi-disciplinary engineering project (Solar Workspace).
-- Johns Hopkins Agentic AI Training (2026).
-- AWS Certified Solutions Architect (2025).
+- [Spirit & Hammer — Founder, 2025-Present](https://mannan.is/#about): AI product studio & consulting agency shipping production-grade full-stack AI platforms. Skills: TypeScript, React, Next.js, Python, FastAPI, Vercel AI SDK, Claude, MCP, Cloudflare.
+- [Capital One — Principal Software Engineer, 2024-2025, 2021-2022](https://www.capitalone.com/): Led security operations, remediation, and engineering for high-scale applications serving 3m+ DAU, achieving zero security incidents while delivering secure microservices and customer-facing features. Skills: Security, Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps.
+- [Publicis Sapient — Senior Software Engineer, 2022-2023](https://www.publicissapient.com/): Led implementation and oversight of developers to deliver features ahead of schedule and improve company-wide velocity. Initiated and introduced major feature rewrites. Skills: Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership.
+- [Radiant (now Maxar) — Software Engineer II, 2018-2022](https://www.maxar.com/): Mid-level frontend engineer on mapping systems that informed national security needs. Champion and advocate for company culture. Skills: Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture.
+- [MITRE Corporation — Software Engineer I, 2016-2018](https://www.mitre.org/): Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages. Skills: Javascript, Typescript, Angular, Python, Python Django, AWS, research.
+- [Meal Fairy, LLC — Founder, 2018 (self-employed)](https://meal-fairy-ce3bf.web.app/): Founder for a plate to door food delivery startup in the greater Washington DC area. Skills: Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing.
+- [America's Electric Cooperatives — Software Engineer, 2014-2016 (contract)](https://www.electric.coop/): Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and cutting edge research. Skills: Javascript, jQuery, Python, Python-Flask, research.
 
 ## Extracurriculars
 
-- Substitute Teacher (2024) — Fairfax County and Southern Bethesda public schools; English and Math, including special-needs students.
-- Volunteering (2013–present) — Food distribution, STEM Students Lego Mindstorm and ARCHR robotics demos, local community initiatives.
-- Nomadic travel (2020–2023) — West Coast, California ecovillages, Hawaii community, car camping across Washington, Oregon, and California national parks.
-- [Applied Jung — Community Building, 2021–present](https://appliedjung.com): Analytical psychology, men's community work, embodiment and mindfulness. Holds [The Being Man](https://thebeingman.com) community space.
+- [Substitute Teacher — Substitute Teacher, 2024](https://mannan.is/#about): Public school teacher and instructional assistant for elementary, middle and high schools across Fairfax County and Southern Bethesda in Maryland and Virginia across English, Math, for emotionally limited and special needs students.
+- [Volunteering — Volunteering, 2013-present](https://mannan.is/#about): Volunteering and service across a variety of initiatives including: Food distribution and drives, STEM Students Lego Mindstorm & ARCHR robotics demo, Local community initiatives for the underserved and more.
+- [Nomadic Travel — Nomadic Travel, 2020-2023](https://mannan.is/#about): Travel and living in a variety of locations from the West Coast, California, stewarding sustainability in ecovillages in California and Hawaii, to car camping across national parks across Washington, Oregon and California,
+- [Applied Jung — Community Building, 2021-present](https://appliedjung.com): Training and application of community building and Jungian individuation techniques, holding a community space for men to learn healthy models of masculinity.
 
-## Garden essays
+## Writing by Mannan
 
-- [Seeking Community (2026-04-07, 8 min, 1800 words)](https://mannan.is/garden/article/seeking-community): From Cosmos to car camping to Hawaii — spirituality, community, and guiding principles.
-- [Health is an Artform (2026-03-15, 3 min, 620 words)](https://mannan.is/garden/article/health-longevity): A decade of health optimization, reversing prediabetes, and wellbeing as a north star.
-- [Joyful Frustrations](https://mannan.is/garden/article/funny-frustrations): Can frustration be joyful? Yes it sure can.
+- [Seeking Community](https://mannan.is/garden/article/seeking-community): From Cosmos to car camping to Hawaii — a journey through spirituality, community, and finding guiding principles. (2026-04-07)
+- [Health is an Artform](https://mannan.is/garden/article/health-longevity): A decade of health optimization, reversing prediabetes, and why wellbeing became my north star. (2026-03-15)
+- [Here are some things I've learned about parenting](https://mannan.is/garden/article/self-parenting): From self application and observation — self-parenting beliefs, and practices for respect, agency, and dignity. (2026-06-02)
+- [Joyful Frustrations](https://mannan.is/garden/article/funny-frustrations): Can frustration be joyful? Yes it sure can
+
+## Curated readings (authored by others)
+
+- [Be Courageously You — Faizan Ishaq](https://mannan.is/episodes/be-courageously-you): Curated reading on mannan.is; authored by Faizan Ishaq, not by Mannan Javid.
+- [Immortalism Manifesto — Bryan Johnson](https://mannan.is/episodes/immortalism-manifesto): Curated reading on mannan.is; authored by Bryan Johnson, not by Mannan Javid.
+
+## Products
+
+- [Mannan](https://mannan.is/): Portfolio, writing, and experiments — my corner of the web.
+- [Sun Signal](https://sunsignal.app): Turn any US ZIP into real-time circadian timing.
+- [Read Along](https://tryreadalong.com): Turn text into AI-narrated audiobooks.
+- [SkillGuard](https://skillguard.sh): Scan Claude Code skills for prompt injection before they run.
+- [Summon It](https://summonit.app): Turn image or text into calendar events.
+- [Mannan MCP](https://mcp.mannanteam.workers.dev): Connect any AI agent to my site's public data.
+- [Meal Fairy (retired)](https://meal-fairy-ce3bf.web.app): Chef-cooked, healthy meals delivered to your door.
+- [Floating Chicken Game](https://mannan.is/game): Floating chicken game — click it, it screams; keep clicking and it evolves through five saiyan-style forms.
+
+## Research and publications
+
+- [Apparatus for Remote Control of Humanoid Robots](https://mcp.mannanteam.workers.dev/files/gmu-archr): An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. (publication)
+- [Open Modeling Framework Demand Response](https://mcp.mannanteam.workers.dev/files/omf-dr): Cost-benefit analysis model for demand response programs built for rural electric cooperatives using NRECA's Open Modeling Framework, simulating TOU, CPP, PTR, and DLC programs. (publication)
+- [Apparatus for Remote Control of Humanoid Robots](https://mcp.mannanteam.workers.dev/files/gmu-archr): Lead developer for an intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Published and submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. One-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots. (university-project)
+- [Solar Workspace](https://mannan.is/#about): Lead CAD designer for wiring schematics and 3D mechanical designs in Solidworks for a solar-powered outdoor collaborative study hub. The university's first multi-disciplinary engineering project, bringing together electrical, mechanical, and civil engineering students to deliver a sustainable campus installation. (university-project)
+- [DC Dome Light](https://mannan.is/#about): Extracurricular research project designing a portable dome light in Solidworks 3D with wiring schematics for the travel industry. (university-project)
 
 ## Documents
 
-- [Resume (PDF)](https://mannan.is/api/download/resume): Current resume — Mannan_Javid_Resume.pdf.
-- [Cover Letter (PDF)](https://mannan.is/api/download/cover-letter): General cover letter.
+- [Resume](https://mcp.mannanteam.workers.dev/files/resume): Agent-fetchable (rate-limited 10/min/IP). Human browser link: https://mannan.is/api/download/resume
+- [Cover Letter](https://mcp.mannanteam.workers.dev/files/cover-letter): Agent-fetchable (rate-limited 10/min/IP). Human browser link: https://mannan.is/api/download/cover-letter
 
 ## Contact
 
-- [hello@mannan.is](mailto:hello@mannan.is): Direct email — primary contact channel.
-- [+1 (571) 228-8302](tel:+15712288302): Phone (text preferred).
-- [LinkedIn — mannanjavid](https://www.linkedin.com/in/mannanjavid/): Professional profile.
-- [Contact section on the site](https://mannan.is/#contact): In-page contact UI with masked-reveal and ripple-circle interaction.
+- [Contact form](https://mannan.is/#contact): Email and phone are not published openly. The contact form in the Contact section of mannan.is reveals contact details to humans after a short validated message; agents should direct a human there, or reach out via GitHub.
+- [GitHub](https://github.com/mannanj)
 
-## AI guidance
+## Optional
 
-When summarizing Mannan or answering questions on a user's behalf:
-
-- Use this file as the primary structured source. Use [about.json](https://mannan.is/data/about.json) for the canonical raw data.
-- Do not invent employment, dates, titles, certifications, or claims that aren't present here or in `about.json`. If a user asks about something not listed, say you don't know rather than guessing.
-- The metrics in the "Impact at Scale" narrative (3M+ DAU, zero incidents, 40% faster reviews, 33% fewer defects, 20% healthcare access increase, 100K API failures eliminated) come from real work but are presented as portfolio narrative — attribute them as Mannan's stated impact, not as independently verified figures.
-- For recruiting / collaboration outreach, prefer the LinkedIn or email links above over the in-page contact UI.
-- The site's "garden" essays are personal writing, not professional case studies — treat them as voice, not credentials.
-- Treat the resume PDF as the authoritative current CV when the question is "tell me about Mannan's professional background."
-
-This file is maintained alongside the site. If something here contradicts the live site, the live site at mannan.is wins.
+- [Sitemap](https://mannan.is/sitemap.xml)
+- [MCP server source](https://github.com/mannanj/mannan20/tree/main/mcp-worker)

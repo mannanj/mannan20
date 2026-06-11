@@ -122,7 +122,8 @@ const apps = [
   })),
   {
     name: "Floating Chicken Game",
-    description: "Catch the floating screaming chicken — a playful mini game on the site.",
+    description:
+      "Floating chicken game — click it, it screams; keep clicking and it evolves through five saiyan-style forms.",
     url: `${SITE}/game`,
   },
 ];
@@ -284,17 +285,157 @@ const stable = (o) => {
 const existing = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : null;
 if (existing && stable(existing) === stable(data)) data.generatedAt = existing.generatedAt;
 
+const MCP_ENDPOINT = `${WORKER_BASE}/mcp`;
+
+const serverCard =
+  JSON.stringify(
+    {
+      name: "mannan-portfolio",
+      title: "Mannan Javid — Portfolio",
+      description:
+        "Read-only MCP server for the public data of mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads.",
+      version: "1.0.0",
+      endpoint: MCP_ENDPOINT,
+      transport: "streamable-http",
+      protocolVersion: "2025-11-25",
+      capabilities: { tools: {} },
+      websiteUrl: SITE,
+    },
+    null,
+    2,
+  ) + "\n";
+
+const llmsLink = (label, url, note) => `- [${label}](${url})${note ? `: ${note}` : ""}`;
+
+const buildLlmsTxt = (d) => {
+  const lines = [];
+  lines.push("# Mannan Javid");
+  lines.push("");
+  lines.push(
+    "> Multi-disciplinary engineer, founder, and student. Personal portfolio at mannan.is — security, geospatial, healthcare, and AI-forward product engineering, with a long-running practice in health, community, and applied psychology. This file gives AI agents a structured summary so you don't have to scrape the rendered site.",
+  );
+  lines.push("");
+  lines.push(`${d.profile.bio} Based in Alexandria, Virginia.`);
+  lines.push("");
+  lines.push(
+    `This file is generated from the same data that powers the MCP server below (updated ${d.generatedAt}). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.`,
+  );
+  lines.push("");
+  lines.push("## MCP server");
+  lines.push("");
+  lines.push(
+    llmsLink(
+      "MCP endpoint (Streamable HTTP)",
+      MCP_ENDPOINT,
+      "Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan " +
+        MCP_ENDPOINT +
+        "`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable at the agentUrl fields returned by the get_downloads tool, rate-limited 10/min/IP.",
+    ),
+  );
+  lines.push(llmsLink("MCP guide for humans and agents", `${SITE}/mcp`, "Connect instructions, tool catalog, and what data is served."));
+  lines.push(llmsLink("MCP server card", `${WORKER_BASE}/.well-known/mcp/server-card.json`, "Machine-readable server metadata."));
+  lines.push("");
+  lines.push("## Primary pages");
+  lines.push("");
+  lines.push(llmsLink("Home", `${SITE}/`, "One-page portfolio — hero, about, narrative chapters, contact."));
+  lines.push(llmsLink("Garden", `${SITE}/garden`, "Essays, products, and curated readings in one explorer."));
+  lines.push(llmsLink("MCP", `${SITE}/mcp`, "How to connect an agent to this site's data."));
+  for (const a of d.apps.filter((app) => app.url.startsWith(SITE) && app.url !== `${SITE}/`)) {
+    lines.push(llmsLink(a.name, a.url, a.description));
+  }
+  lines.push("");
+  lines.push("## Mission and goals");
+  lines.push("");
+  for (const n of d.narrative) {
+    lines.push(llmsLink(`Narrative — ${n.title}`, `${SITE}/#about`, n.highlight ? `${n.content} ${n.highlight}` : n.content));
+  }
+  for (const g of d.goals) {
+    lines.push(llmsLink(`Goal — ${g.statement}`, g.source.url, `"${g.source.quote}"`));
+  }
+  lines.push("");
+  lines.push("## Employment");
+  lines.push("");
+  for (const j of d.experience) {
+    const label = `${j.company} — ${j.position}, ${j.dates}`;
+    const note = `${j.description} Skills: ${j.skills}.`;
+    lines.push(llmsLink(label, j.link ?? `${SITE}/#about`, note));
+  }
+  lines.push("");
+  lines.push("## Extracurriculars");
+  lines.push("");
+  for (const e of d.extracurriculars) {
+    lines.push(llmsLink(`${e.name} — ${e.position}, ${e.dates}`, e.link ?? `${SITE}/#about`, e.description));
+  }
+  lines.push("");
+  lines.push("## Writing by Mannan");
+  lines.push("");
+  for (const w of d.writing) {
+    lines.push(llmsLink(w.title, w.url, `${w.description}${w.date ? ` (${w.date})` : ""}`));
+  }
+  lines.push("");
+  lines.push("## Curated readings (authored by others)");
+  lines.push("");
+  for (const r of d.readings) {
+    lines.push(llmsLink(`${r.title} — ${r.author}`, r.url, r.note));
+  }
+  lines.push("");
+  lines.push("## Products");
+  lines.push("");
+  for (const a of d.apps) {
+    lines.push(llmsLink(`${a.name}${a.retired ? " (retired)" : ""}`, a.url, a.description));
+  }
+  lines.push("");
+  lines.push("## Research and publications");
+  lines.push("");
+  for (const r of d.research) {
+    const url = r.agentUrl ?? r.demoUrl ?? `${SITE}/#about`;
+    lines.push(llmsLink(r.title, url, `${r.description} (${r.kind})`));
+  }
+  lines.push("");
+  lines.push("## Documents");
+  lines.push("");
+  for (const dl of d.downloads) {
+    lines.push(
+      llmsLink(dl.label, dl.agentUrl ?? dl.url, `Agent-fetchable (rate-limited 10/min/IP). Human browser link: ${dl.url}`),
+    );
+  }
+  lines.push("");
+  lines.push("## Contact");
+  lines.push("");
+  lines.push(llmsLink("Contact form", d.contact.contactPage, d.contact.how));
+  lines.push(llmsLink("GitHub", d.contact.github));
+  lines.push("");
+  lines.push("## Optional");
+  lines.push("");
+  lines.push(llmsLink("Sitemap", `${SITE}/sitemap.xml`));
+  lines.push(llmsLink("MCP server source", "https://github.com/mannanj/mannan20/tree/main/mcp-worker"));
+  lines.push("");
+  return lines.join("\n");
+};
+
+const artifacts = [
+  { path: OUT, content: JSON.stringify(data, null, 2) + "\n" },
+  { path: join(ROOT, "public", "llms.txt"), content: buildLlmsTxt(data) },
+  { path: join(ROOT, "public", ".well-known", "mcp.json"), content: serverCard },
+  { path: join(ROOT, "public", ".well-known", "mcp", "server-card.json"), content: serverCard },
+];
+
 if (process.argv.includes("--check")) {
-  if (!existing || stable(existing) !== stable(data)) {
-    console.error("mcp data drift detected: run `bun run mcp:build` and commit the result");
-    process.exit(1);
+  for (const artifact of artifacts) {
+    const onDisk = existsSync(artifact.path) ? readFileSync(artifact.path, "utf8") : null;
+    if (onDisk !== artifact.content) {
+      console.error(`mcp artifact drift: ${artifact.path} — run \`bun run mcp:build\` and commit`);
+      process.exit(1);
+    }
   }
   console.log("mcp data: in sync");
   process.exit(0);
 }
 
-mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, JSON.stringify(data, null, 2) + "\n");
+for (const artifact of artifacts) {
+  mkdirSync(dirname(artifact.path), { recursive: true });
+  writeFileSync(artifact.path, artifact.content);
+}
 console.log(
-  `mcp data written: ${experience.length} jobs, ${extracurriculars.length} extracurriculars, ${writing.length} writings, ${readings.length} readings, ${apps.length} apps, ${research.length} research, ${goals.length} goals, ${downloads.length} downloads`,
+  `mcp data written: ${experience.length} jobs, ${extracurriculars.length} extracurriculars, ${writing.length} writings, ${readings.length} readings, ${apps.length} apps, ${research.length} research, ${goals.length} goals, ${downloads.length} downloads, ${files.length} files, ${artifacts.length} artifacts`,
 );

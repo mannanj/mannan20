@@ -10,4 +10,4 @@ User-agent: Bingbot
 Allow: /
 Crawl-delay: 5
 
-Sitemap: https://mannan.co/sitemap.xml
+Sitemap: https://mannan.is/sitemap.xml
