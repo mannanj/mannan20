@@ -162,6 +162,30 @@ test.describe('chicken game', () => {
     await expect.poll(async () => (await b.state()).mercy).toBeGreaterThan(0.99);
   });
 
+  test('info panel reveals the game intent and collapses again', async ({ page }) => {
+    await gotoGame(page);
+    const button = page.getByTestId('chicken-info-button');
+    const panel = page.getByTestId('chicken-info-panel');
+    await expect(button).toBeVisible();
+    await expect(page.getByTestId('chicken-info-caret')).toBeVisible();
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toHaveAttribute('aria-hidden', 'true');
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await expect(panel).toHaveAttribute('aria-hidden', 'false');
+    await expect(panel).toContainText('About this chicken');
+    await expect(panel).toContainText('rubber screaming-chicken toy');
+    await expect(panel).toContainText('Golden God at 110');
+    await expect(page.getByTestId('chicken-info-caret')).toHaveClass(/rotate-180/);
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel).toHaveAttribute('aria-hidden', 'true');
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('game survives total sound failure', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(String(e)));

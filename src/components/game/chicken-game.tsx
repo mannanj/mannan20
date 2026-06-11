@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChickenSvg } from './chicken-svg';
+import { GameInfoPanel } from './game-info-panel';
 import { SoundLoader } from './sound-loader';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import {
@@ -656,6 +657,8 @@ export function ChickenGame() {
           <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} shards={shardsCount} />
         </div>
       </div>
+
+      <GameInfoPanel />
 
       {loaderPhase !== 'done' && (
         <SoundLoader progress={progress} fading={loaderPhase === 'fading'} />
