@@ -1,0 +1,54 @@
+export interface GardenProductData {
+  title: string;
+  description: string;
+  href: string;
+  external: boolean;
+  year: number;
+  retired?: boolean;
+}
+
+export const GARDEN_PRODUCTS: GardenProductData[] = [
+  {
+    title: "Mannan",
+    description: "Portfolio, writing, and experiments — my corner of the web.",
+    href: "/",
+    external: false,
+    year: 2026,
+  },
+  {
+    title: "Sun Signal",
+    description: "Turn any US ZIP into real-time circadian timing.",
+    href: "https://sunsignal.app",
+    external: true,
+    year: 2026,
+  },
+  {
+    title: "Read Along",
+    description: "Turn text into AI-narrated audiobooks.",
+    href: "https://tryreadalong.com",
+    external: true,
+    year: 2026,
+  },
+  {
+    title: "SkillGuard",
+    description: "Scan Claude Code skills for prompt injection before they run.",
+    href: "https://skillguard.sh",
+    external: true,
+    year: 2026,
+  },
+  {
+    title: "Summon It",
+    description: "Turn image or text into calendar events.",
+    href: "https://summonit.app",
+    external: true,
+    year: 2026,
+  },
+  {
+    title: "Meal Fairy",
+    description: "Chef-cooked, healthy meals delivered to your door.",
+    href: "https://meal-fairy-ce3bf.web.app",
+    external: true,
+    year: 2018,
+    retired: true,
+  },
+];

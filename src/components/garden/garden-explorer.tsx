@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
+import { GARDEN_PRODUCTS, type GardenProductData } from "@/lib/garden-products";
 import { EPISODES } from "@/lib/episodes";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
@@ -17,13 +18,7 @@ import { SelfParentingPreview } from "@/components/garden/self-parenting-figures
 
 type Category = "products" | "writings" | "readings";
 
-interface GardenProduct {
-  title: string;
-  description: string;
-  href: string;
-  external: boolean;
-  year: number;
-  retired?: boolean;
+interface GardenProduct extends GardenProductData {
   thumb: ReactNode;
 }
 
@@ -124,57 +119,19 @@ function SunSignalThumb() {
   );
 }
 
-const PRODUCTS: GardenProduct[] = [
-  {
-    title: "Mannan",
-    description: "Portfolio, writing, and experiments — my corner of the web.",
-    href: "/",
-    external: false,
-    year: 2026,
-    thumb: <MannanThumb />,
-  },
-  {
-    title: "Sun Signal",
-    description: "Turn any US ZIP into real-time circadian timing.",
-    href: "https://sunsignal.app",
-    external: true,
-    year: 2026,
-    thumb: <SunSignalThumb />,
-  },
-  {
-    title: "Read Along",
-    description: "Turn text into AI-narrated audiobooks.",
-    href: "https://tryreadalong.com",
-    external: true,
-    year: 2026,
-    thumb: <ReadAlongThumb />,
-  },
-  {
-    title: "SkillGuard",
-    description: "Scan Claude Code skills for prompt injection before they run.",
-    href: "https://skillguard.sh",
-    external: true,
-    year: 2026,
-    thumb: <SkillGuardThumb />,
-  },
-  {
-    title: "Summon It",
-    description: "Turn image or text into calendar events.",
-    href: "https://summonit.app",
-    external: true,
-    year: 2026,
-    thumb: <SummonThumb />,
-  },
-  {
-    title: "Meal Fairy",
-    description: "Chef-cooked, healthy meals delivered to your door.",
-    href: "https://meal-fairy-ce3bf.web.app",
-    external: true,
-    year: 2018,
-    retired: true,
-    thumb: <MealFairyThumb />,
-  },
-];
+const PRODUCT_THUMBS: Record<string, ReactNode> = {
+  Mannan: <MannanThumb />,
+  "Sun Signal": <SunSignalThumb />,
+  "Read Along": <ReadAlongThumb />,
+  SkillGuard: <SkillGuardThumb />,
+  "Summon It": <SummonThumb />,
+  "Meal Fairy": <MealFairyThumb />,
+};
+
+const PRODUCTS: GardenProduct[] = GARDEN_PRODUCTS.map((p) => ({
+  ...p,
+  thumb: PRODUCT_THUMBS[p.title],
+}));
 
 function ProductCard({ product }: { product: GardenProduct }) {
   const className =
