@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.mannanj/mannan-portfolio",
+  "description": "Read-only MCP server for mannan.is: Mannan Javid's profile, experience, writing, apps, research, and sourced goals.",
+  "version": "1.0.0",
+  "websiteUrl": "https://mannan.is",
+  "repository": {
+    "url": "https://github.com/mannanj/mannan20",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.mannanteam.workers.dev/mcp"
+    }
+  ]
+}

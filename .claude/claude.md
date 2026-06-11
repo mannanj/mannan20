@@ -117,6 +117,14 @@ The derivation is done by `scripts/apply-unicorn-transforms.mjs`, which applies 
 
 When re-exporting from Unicorn Studio: replace the `.raw.json` file, run `bun run unicorn:build`, commit **both** files. Never hand-edit the non-raw file. See `public/unicorn/README.md` for the full rationale (and the "option C" escape hatch if the shader string-replacements ever break).
 
+## MCP worker — public data snapshot
+
+`mcp-worker/` serves a read-only MCP server at `https://mcp.mannanteam.workers.dev/mcp` exposing the site's public data to AI agents. The worker bundles `mcp-worker/src/data.generated.json`, generated from site sources by `scripts/build-mcp-data.mjs` — never hand-edit the generated file.
+
+**When changing site content** (`public/data/about.json`, `src/lib/garden-articles.ts`, `src/lib/episodes.ts`, `src/lib/garden-products.ts`): run `bun run mcp:build`, commit the regenerated snapshot, and `bun run mcp:deploy`. `bun run mcp:check` detects drift; `bun run mcp:test` runs the worker's suite (protocol, privacy, goals honesty, search); `bun run mcp:smoke` checks the live endpoint.
+
+Privacy rules are enforced by build guards and tests: gated/hidden content (Taken, hidden episodes, /jordan), access codes, and email/phone must never appear in the snapshot. Articles with `robots: index:false` stay out of the MCP. Garden product data lives in `src/lib/garden-products.ts` (shared by the garden UI and the MCP build). See `mcp-worker/README.md`.
+
 ## Code Quality
 
 - Minimal, performant

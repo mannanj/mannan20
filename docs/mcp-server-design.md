@@ -10,8 +10,9 @@ Agents and AIs (claude.ai connectors, Claude Code, Cursor, anything MCP-capable)
 
 **Cloudflare Worker**, new `mcp-worker/` directory in this repo (mirrors `visits-worker/`), worker name `mcp`, served at:
 
-- `https://mcp.mannanteam.workers.dev/mcp` — Streamable HTTP (canonical endpoint)
-- `https://mcp.mannanteam.workers.dev/sse` — legacy SSE transport
+- `https://mcp.mannanteam.workers.dev/mcp` — Streamable HTTP (sole endpoint)
+
+*Amendment (2026-06-11, implementation):* no `/sse` endpoint — the SSE transport is deprecated in the MCP ecosystem and Cloudflare's official template dropped it; current clients all speak Streamable HTTP.
 
 Rationale: a live probe (2026-06-11, POST to `https://mannan.is/api/episodes/auth` from a non-browser client) returned the Vercel Security Checkpoint HTML challenge with HTTP 429. Vercel's bot protection challenges exactly the audience an MCP server exists for, so hosting at `mannan.is/api/mcp` was rejected. Live-fetching mannan.is from the worker fails for the same reason. A custom domain (`mcp.mannan.is`) can be mapped later without code changes.
 
@@ -28,7 +29,7 @@ garden products registry   ──┘    filters gated content,               wra
                                   emits generatedAt stamp)
 ```
 
-- Server framework: Cloudflare Agents SDK (`agents` package) `McpAgent` wrapping the official `@modelcontextprotocol/sdk` `McpServer`. Requires a Durable Object binding (free plan: SQLite-backed DOs). Fallback if the DO path misbehaves: hand-rolled stateless Streamable HTTP JSON-RPC handler (rejected as primary because the SDK owns protocol conformance).
+- Server framework — *amended at implementation after live API research*: Cloudflare Agents SDK (`agents` package) `createMcpHandler` wrapping the official `@modelcontextprotocol/sdk` `McpServer`, constructed per request. This is Cloudflare's currently documented preferred shape for stateless read-only servers: same official SDK owning protocol conformance, but no Durable Object binding or migrations at all. (The spec originally named `McpAgent` + DO; the simpler documented path supersedes it.)
 - Garden products are currently defined inline in `src/components/garden/garden-explorer.tsx` (`PRODUCTS` array with JSX thumbs). The data portion (title, description, href, year, retired) is extracted to `src/lib/garden-products.ts` so both the component and the build script import one source of truth. No behavior change to the site.
 - Tool schemas via zod. Server declares `instructions` on initialize describing who Mannan is and which tool answers what.
 
@@ -38,8 +39,8 @@ garden products registry   ──┘    filters gated content,               wra
 |---|---|
 | `get_profile` | Name, tagline, bio (aboutIntro), education, certifications, GitHub/site links |
 | `get_mission_and_goals` | The 4 narrative chapters verbatim (wellbeing, impact, arena, continue) + derived goals, each `{statement, source: {url, quote}}` |
-| `list_experience` | 7 jobs: title, position, dates, skills, description, company links |
-| `list_writing` | 5 public articles authored by Mannan: title, date, summary, reading time, word count, absolute URL |
+| `list_experience` | 7 jobs (company, position, dates, skills, description, highlights, company links) + 4 extracurriculars (teaching, volunteering, travel, Applied Jung community building) with their public links |
+| `list_writing` | 4 public articles authored by Mannan: title, date, summary, reading time, word count, absolute URL (*amended from 5: AI False Positives excluded, see Exclusions*) |
 | `list_readings` | 2 public curated readings, explicitly labeled as authored by others (Faizan Ishaq, Bryan Johnson) |
 | `list_apps` | Sun Signal, Read Along, SkillGuard, Summon It, Meal Fairy (retired), the portfolio itself, Floating Chicken Game — name, one-liner, URL, year |
 | `list_research` | publishedWorks + educationProjects (ARCHR, solar, dome) with demo/download links |
@@ -64,6 +65,7 @@ Each goal's quote must appear verbatim in the bundled source data; a test enforc
 ## Exclusions (enforced by build script and by test)
 
 - Article "Taken" (`unavailable: true` in `src/lib/garden-articles.ts`)
+- Article "AI False Positives" — its page sets `robots: { index: false }`, an explicit don't-index signal a machine-facing server must respect (*added at implementation*)
 - Hidden episodes: "Affiliate Attribution, Reset", "Rules of the New Rich" (`hidden: true` in `src/lib/episodes.ts`)
 - Everything under `/jordan` and its API
 - Access codes (`JORDAN_ACCESS_CODE`, `EPISODES_ACCESS_CODE`) and all secrets
