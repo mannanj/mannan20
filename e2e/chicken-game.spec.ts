@@ -273,6 +273,23 @@ test.describe('chicken game', () => {
     });
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('chicken-leaderboard-panel')).toContainText('hello@mannan.is');
+    const cookies = await page.evaluate(() => document.cookie);
+    expect(cookies).toContain('contact_revealed=1');
+  });
+
+  test('feedback gate honors a prior main-site validation pass', async ({ page, context }) => {
+    await context.addCookies([
+      { name: 'contact_revealed', value: '1', url: 'http://localhost:3847' },
+    ]);
+    await page.route('**/api/game/leaderboard', (route) =>
+      route.fulfill({ json: { human: [], agent: [] } })
+    );
+    await gotoGame(page);
+    await page.getByTestId('chicken-leaderboard-link').click();
+    await page.getByTestId('leaderboard-feedback-toggle').click();
+    await expect(page.getByTestId('contact-result')).toBeVisible();
+    await expect(page.getByTestId('chicken-leaderboard-panel')).toContainText('hello@mannan.is');
+    await expect(page.getByTestId('contact-textarea')).toHaveCount(0);
   });
 
   test('game survives total sound failure', async ({ page }) => {

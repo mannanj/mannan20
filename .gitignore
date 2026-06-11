@@ -71,3 +71,4 @@ yarn.lock
 # Kick the Can — archived Shockwave game preservation (vendored ~470MB DirPlayer.app + game assets, not for the repo)
 scripts/kick-the-can-dirplayer/
 wants/kick-the-can/
+.claude/handoff/
