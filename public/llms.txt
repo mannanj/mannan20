@@ -8,7 +8,7 @@ This file is generated from the same data that powers the MCP server below (upda
 
 ## MCP server
 
-- [MCP endpoint (Streamable HTTP)](https://mcp.mannanteam.workers.dev/mcp): Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan https://mcp.mannanteam.workers.dev/mcp`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable at the agentUrl fields returned by the get_downloads tool, rate-limited 10/min/IP.
+- [MCP endpoint (Streamable HTTP)](https://mcp.mannanteam.workers.dev/mcp): Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan https://mcp.mannanteam.workers.dev/mcp`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.
 - [MCP guide for humans and agents](https://mannan.is/mcp): Connect instructions, tool catalog, and what data is served.
 - [MCP server card](https://mcp.mannanteam.workers.dev/.well-known/mcp/server-card.json): Machine-readable server metadata.
 
@@ -83,8 +83,8 @@ This file is generated from the same data that powers the MCP server below (upda
 
 ## Documents
 
-- [Resume](https://mcp.mannanteam.workers.dev/files/resume): Agent-fetchable (rate-limited 10/min/IP). Human browser link: https://mannan.is/api/download/resume
-- [Cover Letter](https://mcp.mannanteam.workers.dev/files/cover-letter): Agent-fetchable (rate-limited 10/min/IP). Human browser link: https://mannan.is/api/download/cover-letter
+- [Resume](https://mcp.mannanteam.workers.dev/files/resume): Agent-fetchable. Human browser link: https://mannan.is/api/download/resume
+- [Cover Letter](https://mcp.mannanteam.workers.dev/files/cover-letter): Agent-fetchable. Human browser link: https://mannan.is/api/download/cover-letter
 
 ## Contact
 

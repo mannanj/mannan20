@@ -329,7 +329,7 @@ const buildLlmsTxt = (d) => {
       MCP_ENDPOINT,
       "Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan " +
         MCP_ENDPOINT +
-        "`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable at the agentUrl fields returned by the get_downloads tool, rate-limited 10/min/IP.",
+        "`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.",
     ),
   );
   lines.push(llmsLink("MCP guide for humans and agents", `${SITE}/mcp`, "Connect instructions, tool catalog, and what data is served."));
@@ -395,9 +395,7 @@ const buildLlmsTxt = (d) => {
   lines.push("## Documents");
   lines.push("");
   for (const dl of d.downloads) {
-    lines.push(
-      llmsLink(dl.label, dl.agentUrl ?? dl.url, `Agent-fetchable (rate-limited 10/min/IP). Human browser link: ${dl.url}`),
-    );
+    lines.push(llmsLink(dl.label, dl.agentUrl ?? dl.url, `Agent-fetchable. Human browser link: ${dl.url}`));
   }
   lines.push("");
   lines.push("## Contact");

@@ -31,9 +31,8 @@ export default function McpPage() {
         <h1 className="text-3xl font-light">Mannan MCP</h1>
       </div>
       <p className="mt-4 leading-relaxed text-white/55">
-        Everything this site serves publicly — who I am, what I&apos;m building toward, my
-        experience, writing, apps, research, and documents — is also queryable by AI agents
-        through a read-only{" "}
+        This site&apos;s public data — profile, goals, experience, writing, apps, research,
+        documents — served to AI agents over a read-only{" "}
         <a
           href="https://modelcontextprotocol.io"
           target="_blank"
@@ -48,10 +47,10 @@ export default function McpPage() {
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-light text-white/90">Connect</h2>
         <div className="flex flex-col gap-4">
-          <CopySnippet label="Endpoint — claude.ai: Settings › Connectors › Add custom connector" value={MCP_ENDPOINT} />
+          <CopySnippet label="Endpoint — claude.ai › Settings › Connectors" value={MCP_ENDPOINT} />
           <CopySnippet label="Claude Code" value={MCP_CLAUDE_CODE_CMD} />
           <CopySnippet label="Cursor — .cursor/mcp.json" value={MCP_CURSOR_SNIPPET} />
-          <CopySnippet label="Any agent — paste this instruction" value={MCP_AGENT_INSTRUCTION} />
+          <CopySnippet label="Any agent" value={MCP_AGENT_INSTRUCTION} />
         </div>
       </section>
 
@@ -74,11 +73,10 @@ export default function McpPage() {
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-light text-white/90">Documents for agents</h2>
         <p className="text-sm leading-relaxed text-white/55">
-          The <code className="font-mono text-xs text-white/70">get_downloads</code> tool returns{" "}
-          <code className="font-mono text-xs text-white/70">agentUrl</code> links that agents can
-          fetch directly over HTTPS — my resume, cover letter, and research papers — rate-limited
-          to 10 downloads per minute per IP. Gated or unlisted site content is never served, and
-          every derived goal carries a verbatim quote from this site as its source.
+          <code className="font-mono text-xs text-white/70">get_downloads</code> returns{" "}
+          <code className="font-mono text-xs text-white/70">agentUrl</code> links agents fetch
+          directly — resume, cover letter, research papers. Unlisted content is never served.
+          Every derived goal cites this site verbatim.
         </p>
       </section>
 

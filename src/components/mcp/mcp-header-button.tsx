@@ -66,7 +66,7 @@ export function McpHeaderButton() {
             <span className="text-[10px] text-white/35">live data from this site</span>
           </div>
           <div className="flex flex-col gap-3">
-            <CopySnippet label="Endpoint — paste into claude.ai Settings › Connectors" value={MCP_ENDPOINT} />
+            <CopySnippet label="Endpoint — claude.ai › Connectors" value={MCP_ENDPOINT} />
             <CopySnippet label="Claude Code" value={MCP_CLAUDE_CODE_CMD} />
             <CopySnippet label="Tell your agent" value={MCP_AGENT_INSTRUCTION} />
           </div>
