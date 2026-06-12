@@ -2,16 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { BottomSheet } from './bottom-sheet';
-import { ContactForm } from '../contact-form';
-import { ContactResult } from '../contact-result';
-import { CONTACT_DATA } from '../contact-modal';
-import { useApp } from '@/context/app-context';
+import { FeedbackPopup } from './feedback-popup';
 
 const PANEL_ID = 'chicken-leaderboard-panel';
 const NAME_COOKIE = 'chicken-name';
 const KIND_COOKIE = 'chicken-kind';
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const NAME_MAX = 24;
+const CLAIM_TOAST_MS = 7000;
 
 type Kind = 'human' | 'agent';
 
@@ -23,6 +21,12 @@ interface Entry {
 interface Boards {
   human: Entry[];
   agent: Entry[];
+}
+
+interface Identity {
+  names: string[];
+  email: string | null;
+  verified: boolean;
 }
 
 function readCookie(key: string): string | null {
@@ -45,7 +49,6 @@ interface LeaderboardPanelProps {
 }
 
 export function LeaderboardPanel({ open, onToggle, onClose, score }: LeaderboardPanelProps) {
-  const { state, setContactResult } = useApp();
   const [boards, setBoards] = useState<Boards | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +58,26 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ name: string; kind: Kind } | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [identity, setIdentity] = useState<Identity | null>(null);
+  const [nameTaken, setNameTaken] = useState<{ emailBound: boolean } | null>(null);
+  const [claimFormOpen, setClaimFormOpen] = useState(false);
+  const [claimEmail, setClaimEmail] = useState('');
+  const [claimPhase, setClaimPhase] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [claimMessage, setClaimMessage] = useState<string | null>(null);
+  const [devLink, setDevLink] = useState<string | null>(null);
+  const [claimToast, setClaimToast] = useState<{ text: string; ok: boolean } | null>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameTo, setRenameTo] = useState('');
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
+
+  const fetchIdentity = useCallback(async () => {
+    try {
+      const res = await fetch('/api/game/leaderboard/me');
+      if (!res.ok) return;
+      setIdentity((await res.json()) as Identity);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     const savedName = readCookie(NAME_COOKIE);
@@ -63,7 +86,42 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
       setIsAgent(true);
       setTab('agent');
     }
-  }, []);
+    void fetchIdentity();
+  }, [fetchIdentity]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('claim');
+    if (!token) return;
+    url.searchParams.delete('claim');
+    window.history.replaceState(null, '', url.toString());
+    void (async () => {
+      try {
+        const res = await fetch('/api/game/leaderboard/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { names: string[]; email: string };
+          const suffix =
+            data.names.length > 0 ? ` — your names: ${data.names.join(', ')}` : '';
+          setClaimToast({ text: `Signed in as ${data.email}${suffix}`, ok: true });
+          void fetchIdentity();
+        } else {
+          setClaimToast({ text: 'Sign-in link expired — request a new one.', ok: false });
+        }
+      } catch {
+        setClaimToast({ text: 'Sign-in failed — try again.', ok: false });
+      }
+    })();
+  }, [fetchIdentity]);
+
+  useEffect(() => {
+    if (!claimToast) return;
+    const id = setTimeout(() => setClaimToast(null), CLAIM_TOAST_MS);
+    return () => clearTimeout(id);
+  }, [claimToast]);
 
   useEffect(() => {
     if (!open) return;
@@ -92,6 +150,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
     const kind: Kind = isAgent ? 'agent' : 'human';
     setSubmitting(true);
     setError(null);
+    setNameTaken(null);
     try {
       const res = await fetch('/api/game/leaderboard', {
         method: 'POST',
@@ -102,22 +161,101 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
         setError('Easy there — try again in a minute.');
         return;
       }
+      if (res.status === 409) {
+        const data = (await res.json().catch(() => null)) as { emailBound?: boolean } | null;
+        setNameTaken({ emailBound: data?.emailBound === true });
+        setClaimFormOpen(true);
+        return;
+      }
       if (!res.ok) {
         setError('Could not save your score. Try again.');
         return;
       }
-      const data: Boards = await res.json();
+      const data = (await res.json()) as Boards & { you?: { name: string } };
       setBoards(data);
-      writeCookie(NAME_COOKIE, trimmed);
+      const finalName = data.you?.name ?? trimmed;
+      writeCookie(NAME_COOKIE, finalName);
       writeCookie(KIND_COOKIE, kind);
-      setSubmitted({ name: trimmed, kind });
+      if (finalName !== trimmed) setName(finalName);
+      setSubmitted({ name: finalName, kind });
       setTab(kind);
+      void fetchIdentity();
     } catch {
       setError('Could not save your score. Try again.');
     } finally {
       setSubmitting(false);
     }
-  }, [name, score, isAgent, submitting]);
+  }, [name, score, isAgent, submitting, fetchIdentity]);
+
+  const requestMagicLink = useCallback(async () => {
+    const email = claimEmail.trim();
+    if (!email || claimPhase === 'sending') return;
+    setClaimPhase('sending');
+    setClaimMessage(null);
+    setDevLink(null);
+    try {
+      const res = await fetch('/api/game/leaderboard/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { sent?: boolean; devLink?: string; error?: string }
+        | null;
+      if (!res.ok) {
+        setClaimPhase('idle');
+        setClaimMessage(
+          res.status === 429 ? 'Too many link requests — try again later.' : 'Invalid email.'
+        );
+        return;
+      }
+      setClaimPhase('sent');
+      if (data?.sent) {
+        setClaimMessage('Magic link sent — check your inbox.');
+      } else if (data?.devLink) {
+        setClaimMessage('Email is not configured — use the dev link:');
+      } else {
+        setClaimMessage('Email sign-in is not available right now.');
+      }
+      if (data?.devLink) setDevLink(data.devLink);
+    } catch {
+      setClaimPhase('idle');
+      setClaimMessage('Could not request a link. Try again.');
+    }
+  }, [claimEmail, claimPhase]);
+
+  const rename = useCallback(async () => {
+    const to = renameTo.trim().replace(/\s+/g, ' ');
+    if (!to || renaming) return;
+    setRenaming(true);
+    setRenameError(null);
+    try {
+      const res = await fetch('/api/game/leaderboard/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to }),
+      });
+      if (res.status === 409) {
+        setRenameError('That name is taken.');
+        return;
+      }
+      if (!res.ok) {
+        setRenameError('Rename failed. Try again.');
+        return;
+      }
+      const data = (await res.json()) as Boards & { ok: boolean };
+      setBoards(data);
+      writeCookie(NAME_COOKIE, to);
+      setName(to);
+      setRenameOpen(false);
+      setRenameTo('');
+      void fetchIdentity();
+    } catch {
+      setRenameError('Rename failed. Try again.');
+    } finally {
+      setRenaming(false);
+    }
+  }, [renameTo, renaming, fetchIdentity]);
 
   const entries = boards?.[tab] ?? [];
 
@@ -210,31 +348,139 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
           </button>
         </div>
 
-        <div className="mt-5 border-t border-white/10 pt-4">
-          {!feedbackOpen ? (
-            <p className="text-xs text-white/40">
-              Humans on one board, agents on another — don’t like the division?{' '}
+        {nameTaken && (
+          <p data-testid="leaderboard-name-taken" className="mt-2 text-xs text-[#FF8A80]">
+            That name belongs to someone else.
+            {nameTaken.emailBound
+              ? ' It’s protected by email — if it’s yours, sign in below to claim it.'
+              : ' If it’s yours from another browser, sign in by email to claim it.'}
+          </p>
+        )}
+
+        <div className="mt-3 text-xs text-white/40">
+          {identity?.verified ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <span data-testid="leaderboard-identity">
+                ✓ Signed in as {identity.email}
+                {identity.names.length > 0 && ` · your names: ${identity.names.join(', ')}`}
+              </span>
               <button
                 type="button"
-                onClick={() => setFeedbackOpen(true)}
-                data-testid="leaderboard-feedback-toggle"
+                onClick={() => {
+                  setRenameOpen((v) => !v);
+                  setRenameError(null);
+                }}
+                data-testid="leaderboard-rename-toggle"
                 className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
               >
-                Send feedback
+                Rename all
               </button>
-              {' '}— we’d love to hear your voice.
-            </p>
-          ) : state.contactRevealed ? (
-            <div className="max-w-md">
-              <ContactResult result={CONTACT_DATA} />
             </div>
           ) : (
-            <div className="max-w-md">
-              <ContactForm onReveal={() => setContactResult(CONTACT_DATA)} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setClaimFormOpen((v) => !v)}
+              data-testid="leaderboard-claim-toggle"
+              className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
+            >
+              Sign in by email to protect your name
+            </button>
           )}
         </div>
+
+        {renameOpen && identity?.verified && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              value={renameTo}
+              onChange={(e) => setRenameTo(e.target.value)}
+              maxLength={NAME_MAX}
+              placeholder="New name for all entries"
+              data-testid="leaderboard-rename-input"
+              className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+            />
+            <button
+              type="button"
+              onClick={rename}
+              disabled={!renameTo.trim() || renaming}
+              data-testid="leaderboard-rename-save"
+              className="cursor-pointer rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/10 disabled:cursor-default disabled:opacity-40"
+            >
+              {renaming ? 'Renaming…' : 'Rename'}
+            </button>
+            {renameError && (
+              <span data-testid="leaderboard-rename-error" className="text-xs text-[#FF8A80]">
+                {renameError}
+              </span>
+            )}
+          </div>
+        )}
+
+        {claimFormOpen && !identity?.verified && (
+          <div className="mt-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="email"
+                value={claimEmail}
+                onChange={(e) => setClaimEmail(e.target.value)}
+                placeholder="you@example.com"
+                data-testid="leaderboard-claim-email"
+                className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+              />
+              <button
+                type="button"
+                onClick={requestMagicLink}
+                disabled={!claimEmail.trim() || claimPhase === 'sending'}
+                data-testid="leaderboard-claim-send"
+                className="cursor-pointer rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/10 disabled:cursor-default disabled:opacity-40"
+              >
+                {claimPhase === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
+              </button>
+            </div>
+            {claimMessage && (
+              <p data-testid="leaderboard-claim-message" className="mt-1.5 text-xs text-white/45">
+                {claimMessage}{' '}
+                {devLink && (
+                  <a
+                    href={devLink}
+                    data-testid="leaderboard-claim-devlink"
+                    className="text-[#4FC3F7] underline-offset-2 hover:underline"
+                  >
+                    Open sign-in link
+                  </a>
+                )}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="mt-5 border-t border-white/10 pt-4">
+          <p className="text-xs text-white/40">
+            Humans on one board, agents on another — don’t like the division?{' '}
+            <button
+              type="button"
+              onClick={() => setFeedbackOpen(true)}
+              data-testid="leaderboard-feedback-toggle"
+              className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
+            >
+              Send feedback
+            </button>
+            {' '}— we’d love to hear your voice.
+          </p>
+        </div>
       </BottomSheet>
+
+      {claimToast && (
+        <div
+          data-testid={claimToast.ok ? 'leaderboard-claim-success' : 'leaderboard-claim-error'}
+          className={`fixed bottom-16 left-1/2 z-50 -translate-x-1/2 rounded-lg border px-4 py-2 text-xs shadow-lg backdrop-blur-md ${claimToast.ok ? 'border-[#7ED88A]/30 bg-[#10241a]/90 text-[#7ED88A]' : 'border-[#FF8A80]/30 bg-[#2a1212]/90 text-[#FF8A80]'}`}
+        >
+          {claimToast.text}
+        </div>
+      )}
+
+      <FeedbackPopup open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+
       <button
         type="button"
         onClick={onToggle}
