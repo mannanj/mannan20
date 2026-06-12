@@ -328,6 +328,18 @@ function CityScene({ filterId, tier, accent }: SceneProps) {
         <path d="M940 630 L940 530 L1080 530 L1080 630" />
         <path d="M1180 630 L1180 440 L1300 440 L1300 630" />
         <path d="M1240 440 L1240 396" />
+        <circle cx="158" cy="498" r="4" />
+        <circle cx="202" cy="498" r="4" />
+        <path d="M150 522 q 30 22 60 0" />
+        <circle cx="350" cy="418" r="4" />
+        <circle cx="390" cy="418" r="4" />
+        <path d="M345 442 q 25 18 50 0" />
+        <circle cx="790" cy="456" r="4" />
+        <circle cx="830" cy="456" r="4" />
+        <path d="M786 480 q 25 16 50 0" />
+        <circle cx="1212" cy="478" r="5" />
+        <circle cx="1268" cy="478" r="5" />
+        <path d="M1208 506 q 32 20 64 0" />
         <path d="M-40 720 Q 400 700 760 716 Q 1140 730 1480 712" />
       </g>
       {tier >= 1 && (

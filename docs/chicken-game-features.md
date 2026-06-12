@@ -19,6 +19,10 @@ The chicken develops emotional states based on gameplay:
 - **Anger** — gets visibly frustrated at certain thresholds
 - **Fire effects** — chicken can catch fire to indicate state changes (rage, hypersensitivity), fire trail particles behind it
 
+## Tuning Backlog
+
+- **Particle trail** — repeatedly hard to land via prose ("more transparent" reads differently at different sizes/lifetimes because overlapping particles stack opacity). As of Task 237 it is deliberately small and faint (size 2–4, alpha 0.05–0.10, halved emission). Future: tune it interactively with Mannan watching (live sliders or a debug panel), not by adjusting constants blind.
+
 ## Skins & Unlockables
 
 - ✅ Cosmetic skins shipped in Task 236 (2026-06-11): 5 free League-style skins (Classic Yard, Void Walker, Mecha Cluck, Magma Core, Frostfall) with a top-right picker, localStorage persistence, tier colors tinting through each skin

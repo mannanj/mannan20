@@ -77,7 +77,10 @@ export function ChickenSvg({
   const agitated = eyeKind === 'angry' || eyeKind === 'furious';
   const next = TIERS[Math.min(clampedTier + 1, TIERS.length - 1)];
   const gold = classic && current.hair === 'gold';
+  const rainbow = classic && current.hair === 'rainbow';
+  const sparkly = gold || rainbow;
   const goldId = `chicken-gold-${uid}`;
+  const rainbowId = `chicken-rainbow-${uid}`;
   const tierBody = mixHex(current.body, next.body, clampedMorph);
   const tierBodyDark = mixHex(current.bodyDark, next.bodyDark, clampedMorph);
   const tierBelly = mixHex(current.belly, next.belly, clampedMorph);
@@ -85,7 +88,7 @@ export function ChickenSvg({
   const bodyDark = classic ? tierBodyDark : mixHex(skin.bodyDark, tierBodyDark, skin.tierBlend);
   const belly = classic ? tierBelly : mixHex(skin.belly, tierBelly, skin.tierBlend);
   const wing = mixHex(bodyDark, '#161616', 0.24);
-  const bodyFill = gold ? `url(#${goldId})` : body;
+  const bodyFill = gold ? `url(#${goldId})` : rainbow ? `url(#${rainbowId})` : body;
 
   return (
     <svg
@@ -95,6 +98,7 @@ export function ChickenSvg({
       className={className}
       style={style}
       onClick={onClick}
+      overflow="visible"
       data-testid="chicken-svg"
       data-tier={clampedTier}
       data-hair={current.hair}
@@ -110,10 +114,23 @@ export function ChickenSvg({
           </linearGradient>
         </defs>
       )}
+      {rainbow && (
+        <defs>
+          <linearGradient id={rainbowId} x1="0" y1="0" x2="0.9" y2="1">
+            <stop offset="0%" stopColor="#FF5E7E" />
+            <stop offset="20%" stopColor="#FFB347" />
+            <stop offset="40%" stopColor="#FFF066" />
+            <stop offset="60%" stopColor="#7DFF8E" />
+            <stop offset="80%" stopColor="#6EC9FF" />
+            <stop offset="100%" stopColor="#C77DFF" />
+          </linearGradient>
+        </defs>
+      )}
+      <g className="chicken-bend-upper">
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
       <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
-      {gold && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
+      {sparkly && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
       {skin.accessory === 'spikes' && (
         <g fill={skin.comb} opacity="0.9">
           <path d="M22 82 L13 72 L26 75 Z" />
@@ -186,7 +203,7 @@ export function ChickenSvg({
           />
         </g>
       </g>
-      {gold && (
+      {sparkly && (
         <>
           <path
             d="M20 72 l2 3.6 l3.6 2 l-3.6 2 l-2 3.6 l-2 -3.6 l-3.6 -2 l3.6 -2 Z"
@@ -200,6 +217,7 @@ export function ChickenSvg({
           />
         </>
       )}
+      </g>
       <g className="chicken-sq-legs">
         <line x1="33" y1="144" x2="30" y2="152" stroke={skin.legs} strokeWidth="3.5" strokeLinecap="round" />
         <path d="M22 155 L30 152 L38 155" stroke={skin.legs} strokeWidth="2.5" strokeLinecap="round" fill="none" />

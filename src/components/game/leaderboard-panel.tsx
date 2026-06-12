@@ -383,7 +383,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
               data-testid="leaderboard-claim-toggle"
               className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
             >
-              Sign in by email to use your name on any device
+              Take your name with you — link your email
             </button>
           )}
         </div>

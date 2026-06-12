@@ -17,7 +17,7 @@ import {
   type PortalSide,
   type Streak,
 } from './chicken-effects';
-import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY } from './chicken-skins';
+import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, skinById } from './chicken-skins';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
 import {
@@ -35,8 +35,8 @@ import {
   tierProgress,
 } from './chicken-tiers';
 
-const BASE_SPEED = 0.25;
-const MIN_SPEED = 0.15;
+const BASE_SPEED = 0.125;
+const MIN_SPEED = 0.075;
 const AVOIDANCE_RADIUS = 110;
 const AVOIDANCE_STRENGTH = 0.08;
 const HEAT_PER_CLICK = 0.22;
@@ -62,8 +62,9 @@ const BOUNCE_RANDOM = 0.3;
 const MAX_DT = 32;
 const CHICKEN_W = 70;
 const CHICKEN_H = 140;
-const PARTICLE_FADE = 0.0025;
-const MAX_PARTICLES = 420;
+const PARTICLE_FADE = 0.0008;
+const MAX_PARTICLES = 300;
+const PARTICLE_EMISSION = 0.5;
 const MAX_SHARD_PARTICLES = 90;
 const SHARDS_PER_TRANSFORM = 26;
 const SHARD_GRAVITY = 0.08;
@@ -92,23 +93,24 @@ const SCREAM_JITTER = 0.1;
 const MERCY_CAPTION_THRESHOLD = 0.7;
 const MIN_LOADER_MS = 700;
 const LOADER_FADE_MS = 320;
-const BRIDGE_LOG_CAP = 300;
+const BRIDGE_LOG_CAP = 600;
 const SPEED_SCORE_CAP = 180;
 const SPEED_PER_SCORE = 0.011;
-const TIER_SPEED_BUMP = [1, 1.12, 1.28, 1.45, 1.65];
+const TIER_SPEED_BUMP = [1, 1.12, 1.28, 1.45, 1.65, 1.8];
 const GROUND_FRAC = 0.76;
-const GROUND_WANDER = 0.055;
+const GROUND_WANDER = 0.028;
 const GROUND_TURN_MIN_MS = 2600;
 const GROUND_TURN_SPREAD_MS = 3800;
 const GROUND_PAUSE_CHANCE = 0.35;
 const GROUND_ROT_LERP = 0.1;
 const GRAZE_DELAY_MIN_MS = 3800;
 const GRAZE_DELAY_SPREAD_MS = 5200;
-const GRAZE_DURATION_MIN_MS = 1500;
-const GRAZE_DURATION_SPREAD_MS = 1600;
-const GRAZE_ANGLE = 34;
-const GRAZE_PECK_AMPLITUDE = 7;
-const GRAZE_PECK_FREQ = 0.02;
+const GRAZE_DURATION_MIN_MS = 2300;
+const GRAZE_DURATION_SPREAD_MS = 3200;
+const BEND_ANGLE = 74;
+const BEND_PECK_AMPLITUDE = 7;
+const BEND_PECK_FREQ = 0.004;
+const BEND_LERP = 0.07;
 const FEATHERS_PER_CLICK = 2;
 const FEATHER_EXTRA_CHANCE = 0.45;
 const FEATHERS_PER_TRANSFORM = 10;
@@ -169,13 +171,39 @@ const EDGE_PORTAL_CHANCE = 0.08;
 const EDGE_PORTAL_HOT_CHANCE = 0.3;
 const PORTAL_HOT_WINDOW_MS = 40_000;
 const EDGE_SPECIAL_COOLDOWN_MS = 4000;
-const PORTAL_SPLAT_MS = 520;
+const PORTAL_SPLAT_MS = 3520;
 const PORTAL_HIDE_MS = 260;
 const PORTAL_EDGE_MARGIN = 60;
 const JUMP_DELAY_MIN_MS = 7000;
 const JUMP_DELAY_SPREAD_MS = 11_000;
 const JUMP_CHANCE = 0.6;
 const JUMP_KICK = 2.4;
+const SCRAMBLE_MIN_SCORE = 10;
+const SCRAMBLE_DELAY_MIN_MS = 35_000;
+const SCRAMBLE_DELAY_SPREAD_MS = 70_000;
+const SCRAMBLE_DURATION_MS = 1700;
+const SCRAMBLE_RADIUS = 70;
+const SCRAMBLE_DART_MIN_MS = 70;
+const SCRAMBLE_DART_SPREAD_MS = 70;
+const SCRAMBLE_SPEED = 9;
+const CLICK_ACTIVE_WINDOW_MS = 1600;
+const EVENT_DEFER_CHANCE = 0.5;
+const KID_MERGE_CHANCE = 0.3;
+const KID_MERGE_SPEED = 3.4;
+const KID_MERGE_DELAY_MIN_MS = 8000;
+const KID_MERGE_DELAY_SPREAD_MS = 17_000;
+const KID_MERGE_PROXIMITY = 26;
+const SIZE_BOOST_PER_MERGE = 0.12;
+const SIZE_BOOST_MAX = 0.36;
+const SIZE_BOOST_DECAY_MS = 30_000;
+const VISIT_MERCY_THRESHOLD = 0.8;
+const VISIT_CHANCE = 0.35;
+const VISIT_ROLL_MS = 12_000;
+const VISIT_COOLDOWN_MIN_MS = 30_000;
+const VISIT_COOLDOWN_SPREAD_MS = 30_000;
+const VISIT_NEAR_X = 70;
+const VISIT_NEAR_Y = 56;
+const VISIT_SPEED = 2.2;
 
 interface Particle {
   x: number;
@@ -273,6 +301,26 @@ interface KidMotion {
   vx: number;
   fleeing: boolean;
   nextTurnAt: number;
+  merging: boolean;
+  mergeAt: number;
+}
+
+interface ScrambleState {
+  phase: 'idle' | 'running';
+  until: number;
+  nextAt: number;
+  originX: number;
+  originY: number;
+  targetX: number;
+  targetY: number;
+  nextDartAt: number;
+}
+
+interface VisitState {
+  phase: 'idle' | 'seeking' | 'visiting';
+  nextRollAt: number;
+  cooldownUntil: number;
+  kidId: number;
 }
 
 interface CeremonyState {
@@ -286,6 +334,7 @@ interface PortalTransit {
   phase: 'idle' | 'splat' | 'gone';
   until: number;
   exit: { side: PortalSide; x: number; y: number } | null;
+  entrySide: PortalSide | null;
   hotUntil: number;
   cooldownUntil: number;
 }
@@ -321,6 +370,10 @@ interface ChickenStateSnapshot {
   portal: 'idle' | 'splat' | 'gone';
   sqmode: 'hug' | 'stomp';
   skin: string;
+  scramble: 'idle' | 'running';
+  visit: 'idle' | 'seeking' | 'visiting';
+  sizeBoost: number;
+  bend: number;
 }
 
 interface ChickenBridge {
@@ -333,6 +386,9 @@ interface ChickenBridge {
   forceKid: () => void;
   forceCeremony: () => void;
   forcePortal: () => void;
+  forceScramble: () => void;
+  forceVisit: () => void;
+  forceMerge: () => void;
 }
 
 declare global {
@@ -569,12 +625,31 @@ function ChickenGameInner() {
     phase: 'idle',
     until: 0,
     exit: null,
+    entrySide: null,
     hotUntil: 0,
     cooldownUntil: 0,
   });
   const portalsRef = useRef<Portal[]>([]);
   const nextJumpAtRef = useRef(0);
   const skinRef = useRef(DEFAULT_SKIN_ID);
+  const scrambleRef = useRef<ScrambleState>({
+    phase: 'idle',
+    until: 0,
+    nextAt: 0,
+    originX: 0,
+    originY: 0,
+    targetX: 0,
+    targetY: 0,
+    nextDartAt: 0,
+  });
+  const visitRef = useRef<VisitState>({
+    phase: 'idle',
+    nextRollAt: 0,
+    cooldownUntil: 0,
+    kidId: 0,
+  });
+  const sizeBoostRef = useRef(0);
+  const bendRef = useRef(0);
   const ghostsRef = useRef<Ghost[]>([]);
   const ghostIdRef = useRef(0);
   const ghostSweepAtRef = useRef(0);
@@ -616,14 +691,20 @@ function ChickenGameInner() {
     }
   }, []);
 
-  const spawnFeathers = useCallback((cx: number, cy: number, count: number, maxTier: number) => {
+  const spawnFeathers = useCallback((cx: number, cy: number, count: number) => {
     const feathers = feathersRef.current;
     const now = performance.now();
+    const tier = tierRef.current;
+    const def = TIERS[tier];
+    const nextDef = TIERS[Math.min(tier + 1, FINAL_TIER)];
+    const m = morphForScore(scoreRef.current);
+    const skin = skinById(skinRef.current);
+    const tierBody = mixHex(def.body, nextDef.body, m);
+    const tierDark = mixHex(def.bodyDark, nextDef.bodyDark, m);
+    const body = skin.id === 'classic' ? tierBody : mixHex(skin.body, tierBody, skin.tierBlend);
+    const dark = skin.id === 'classic' ? tierDark : mixHex(skin.bodyDark, tierDark, skin.tierBlend);
     for (let i = 0; i < count && feathers.length < MAX_FEATHERS; i++) {
-      const t = Math.floor(Math.random() * (maxTier + 1));
-      const def = TIERS[t];
-      const color = Math.random() < 0.5 ? def.body : def.bodyDark;
-      feathers.push(makeFeather(cx, cy, color, now));
+      feathers.push(makeFeather(cx, cy, Math.random() < 0.5 ? body : dark, now));
     }
   }, []);
 
@@ -656,6 +737,11 @@ function ChickenGameInner() {
       vx: 0,
       fleeing: false,
       nextTurnAt: 0,
+      merging: false,
+      mergeAt:
+        Math.random() < KID_MERGE_CHANCE
+          ? performance.now() + KID_MERGE_DELAY_MIN_MS + Math.random() * KID_MERGE_DELAY_SPREAD_MS
+          : 0,
     });
     setKids((k) => {
       const next = [...k, { id, tier: Math.floor(Math.random() * (tierRef.current + 1)) }];
@@ -676,7 +762,7 @@ function ChickenGameInner() {
 
   const fleeKid = useCallback((id: number) => {
     const motion = kidMotionRef.current.get(id);
-    if (!motion || motion.fleeing) return;
+    if (!motion || motion.fleeing || motion.merging) return;
     motion.fleeing = true;
     const sign = motion.x < window.innerWidth / 2 ? -1 : 1;
     motion.vx = sign * (KID_FLEE_MIN + Math.random() * KID_FLEE_SPREAD);
@@ -684,6 +770,22 @@ function ChickenGameInner() {
     const el = kidElsRef.current.get(id);
     if (el) el.style.setProperty('--flap-ms', '90ms');
   }, []);
+
+  const startKidMerge = useCallback((id: number) => {
+    const motion = kidMotionRef.current.get(id);
+    if (!motion || motion.fleeing || motion.merging) return;
+    motion.merging = true;
+    const el = kidElsRef.current.get(id);
+    if (el) el.style.setProperty('--flap-ms', '90ms');
+  }, []);
+
+  const clickKid = useCallback(
+    (id: number) => {
+      if (Math.random() < KID_MERGE_CHANCE) startKidMerge(id);
+      else fleeKid(id);
+    },
+    [startKidMerge, fleeKid]
+  );
 
   const selectSkin = useCallback((id: string) => {
     setSkin(id);
@@ -752,6 +854,7 @@ function ChickenGameInner() {
     portal.phase = 'splat';
     portal.until = ts + PORTAL_SPLAT_MS;
     portal.exit = exit;
+    portal.entrySide = side;
     if (rubberElRef.current) rubberElRef.current.dataset.splat = side;
   }, []);
 
@@ -864,6 +967,11 @@ function ChickenGameInner() {
         p.vy = -BASE_SPEED * 1.2;
         p.vx = facingRef.current * BASE_SPEED * 0.8;
       }
+      const visit = visitRef.current;
+      if (visit.phase !== 'idle') {
+        visit.phase = 'idle';
+        visit.cooldownUntil = now + VISIT_COOLDOWN_MIN_MS + Math.random() * VISIT_COOLDOWN_SPREAD_MS;
+      }
       const next = scoreRef.current + award;
       scoreRef.current = next;
       setScore(next);
@@ -881,7 +989,7 @@ function ChickenGameInner() {
         const riser = playPowerUp(newTier === FINAL_TIER);
         recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
         spawnShards(cx, cy, SHARDS_PER_TRANSFORM, TIERS[previousTier].body);
-        spawnFeathers(cx, cy, FEATHERS_PER_TRANSFORM, newTier);
+        spawnFeathers(cx, cy, FEATHERS_PER_TRANSFORM);
         heatRef.current = Math.min(HEAT_MAX, heatRef.current + EVOLUTION_HEAT);
       } else {
         const rate =
@@ -891,7 +999,7 @@ function ChickenGameInner() {
           recordPlay({ type: 'scream', key: played.key, rate: played.rate, at: Date.now() });
         }
         const count = FEATHERS_PER_CLICK + (Math.random() < FEATHER_EXTRA_CHANCE ? 1 : 0);
-        spawnFeathers(cx, cy, count, newTier);
+        spawnFeathers(cx, cy, count);
       }
       applySquash(e);
       const ceremony = ceremonyRef.current;
@@ -957,6 +1065,10 @@ function ChickenGameInner() {
         portal: portalRef.current.phase,
         sqmode: sqModeRef.current,
         skin: skinRef.current,
+        scramble: scrambleRef.current.phase,
+        visit: visitRef.current.phase,
+        sizeBoost: sizeBoostRef.current,
+        bend: bendRef.current,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -999,12 +1111,38 @@ function ChickenGameInner() {
         const sides: PortalSide[] = ['left', 'right', 'top', 'bottom'];
         beginPortal(sides[Math.floor(Math.random() * sides.length)], performance.now());
       },
+      forceScramble: () => {
+        if (modeRef.current === 'ground') modeRef.current = 'flying';
+        const scramble = scrambleRef.current;
+        const p = physicsRef.current;
+        scramble.phase = 'running';
+        scramble.until = performance.now() + SCRAMBLE_DURATION_MS;
+        scramble.originX = p.x;
+        scramble.originY = p.y;
+        scramble.targetX = p.x;
+        scramble.targetY = p.y;
+        scramble.nextDartAt = 0;
+      },
+      forceVisit: () => {
+        const ids = [...kidMotionRef.current.keys()];
+        if (ids.length === 0) return;
+        if (modeRef.current === 'ground') modeRef.current = 'flying';
+        const motion = kidMotionRef.current.get(ids[0]);
+        if (motion) motion.mergeAt = 0;
+        const visit = visitRef.current;
+        visit.phase = 'seeking';
+        visit.kidId = ids[0];
+      },
+      forceMerge: () => {
+        const ids = [...kidMotionRef.current.keys()];
+        if (ids.length > 0) startKidMerge(ids[0]);
+      },
     };
     window.__chicken = bridge;
     return () => {
       if (window.__chicken === bridge) delete window.__chicken;
     };
-  }, [hit, spawnKid, beginPortal]);
+  }, [hit, spawnKid, beginPortal, startKidMerge]);
 
   useEffect(() => {
     const p = physicsRef.current;
@@ -1119,9 +1257,16 @@ function ChickenGameInner() {
           if (!hyper.nextAt) {
             hyper.nextAt = ts + HYPER_DELAY_MIN_MS + Math.random() * HYPER_DELAY_SPREAD_MS;
           } else if (ts >= hyper.nextAt) {
-            hyper.phase = 'burst';
-            hyper.until = ts + HYPER_DURATION_MS;
-            hyper.mult = HYPER_MULT_MIN + Math.random() * HYPER_MULT_SPREAD;
+            if (
+              ts - lastHitRef.current < CLICK_ACTIVE_WINDOW_MS &&
+              Math.random() < EVENT_DEFER_CHANCE
+            ) {
+              hyper.nextAt = ts + HYPER_DELAY_MIN_MS + Math.random() * HYPER_DELAY_SPREAD_MS;
+            } else {
+              hyper.phase = 'burst';
+              hyper.until = ts + HYPER_DURATION_MS;
+              hyper.mult = HYPER_MULT_MIN + Math.random() * HYPER_MULT_SPREAD;
+            }
           }
         }
       }
@@ -1143,6 +1288,16 @@ function ChickenGameInner() {
         portal.until = ts + PORTAL_HIDE_MS;
         if (rubberElRef.current) delete rubberElRef.current.dataset.splat;
         if (chickenElRef.current) chickenElRef.current.style.opacity = '0';
+        if (portal.entrySide) {
+          const side = portal.entrySide;
+          portalsRef.current.push({
+            x: side === 'left' ? 10 : side === 'right' ? vw - 10 : p.x + CHICKEN_W / 2,
+            y: side === 'top' ? 10 : side === 'bottom' ? vh - 10 : p.y + CHICKEN_H / 2,
+            side,
+            born: ts,
+            color: auraRgbFor(sc),
+          });
+        }
       } else if (portal.phase === 'gone' && ts >= portal.until && portal.exit) {
         const { side, x, y } = portal.exit;
         p.x = Math.max(0, Math.min(x, vw - CHICKEN_W));
@@ -1161,12 +1316,21 @@ function ChickenGameInner() {
           born: ts,
           color: auraRgbFor(sc),
         });
-        spawnFeathers(ecx, ecy, 4, tierRef.current);
+        spawnFeathers(ecx, ecy, 4);
         if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
         portal.phase = 'idle';
         portal.exit = null;
+        portal.entrySide = null;
         portal.hotUntil = ts + PORTAL_HOT_WINDOW_MS;
         portal.cooldownUntil = ts + EDGE_SPECIAL_COOLDOWN_MS;
+      }
+
+      if (
+        visitRef.current.phase === 'visiting' &&
+        !kidMotionRef.current.has(visitRef.current.kidId)
+      ) {
+        visitRef.current.phase = 'idle';
+        visitRef.current.cooldownUntil = ts + VISIT_COOLDOWN_MIN_MS;
       }
 
       const tp = teleportRef.current;
@@ -1174,9 +1338,17 @@ function ChickenGameInner() {
         flying &&
         (sc >= TELEPORT_MIN_SCORE || tp.forcedDecoys !== null) &&
         tp.phase === 'idle' &&
-        portal.phase === 'idle'
+        portal.phase === 'idle' &&
+        scrambleRef.current.phase === 'idle'
       ) {
         if (!tp.nextAt) {
+          tp.nextAt = ts + TELEPORT_DELAY_MIN_MS + Math.random() * TELEPORT_DELAY_SPREAD_MS;
+        } else if (
+          ts - lastHitRef.current < CLICK_ACTIVE_WINDOW_MS &&
+          tp.forcedDecoys === null &&
+          ts >= tp.nextAt &&
+          Math.random() < EVENT_DEFER_CHANCE
+        ) {
           tp.nextAt = ts + TELEPORT_DELAY_MIN_MS + Math.random() * TELEPORT_DELAY_SPREAD_MS;
         } else if (ts >= tp.nextAt) {
           const cx0 = p.x + CHICKEN_W / 2;
@@ -1260,19 +1432,97 @@ function ChickenGameInner() {
         p.vx += (wandering - p.vx) * Math.min(1, 0.05 * dt);
         p.vy = 0;
         p.x = Math.max(8, Math.min(p.x + p.vx * dt, vw - CHICKEN_W - 8));
-        const bob = Math.sin(ts * 0.004) * 1.2 + (grazing ? Math.sin(ts * GRAZE_PECK_FREQ) * 2 : 0);
+        const bob = Math.sin(ts * 0.004) * 1.2;
         p.y = groundYFor(vh) - CHICKEN_H + bob;
-        const rotTarget = grazing
-          ? facingRef.current * (GRAZE_ANGLE + Math.sin(ts * GRAZE_PECK_FREQ) * GRAZE_PECK_AMPLITUDE)
-          : 0;
-        p.rotation += (rotTarget - p.rotation) * Math.min(1, GROUND_ROT_LERP * dt);
+        p.rotation += (0 - p.rotation) * Math.min(1, GROUND_ROT_LERP * dt);
         p.rv = 0;
         p.bank = 0;
         if (p.vx > 0.01) facingRef.current = 1;
         else if (p.vx < -0.01) facingRef.current = -1;
       } else if (portal.phase !== 'idle') {
         p.bank = 0;
+      } else if (scrambleRef.current.phase === 'running') {
+        const scramble = scrambleRef.current;
+        if (ts >= scramble.until) {
+          scramble.phase = 'idle';
+          scramble.nextAt = ts + SCRAMBLE_DELAY_MIN_MS + Math.random() * SCRAMBLE_DELAY_SPREAD_MS;
+          const exitAngle = Math.random() * Math.PI * 2;
+          p.vx = Math.cos(exitAngle) * BASE_SPEED;
+          p.vy = Math.sin(exitAngle) * BASE_SPEED;
+        } else {
+          if (ts >= scramble.nextDartAt) {
+            scramble.nextDartAt = ts + SCRAMBLE_DART_MIN_MS + Math.random() * SCRAMBLE_DART_SPREAD_MS;
+            scramble.targetX = Math.max(
+              8,
+              Math.min(scramble.originX + (Math.random() - 0.5) * 2 * SCRAMBLE_RADIUS, vw - CHICKEN_W - 8)
+            );
+            scramble.targetY = Math.max(
+              8,
+              Math.min(scramble.originY + (Math.random() - 0.5) * 2 * SCRAMBLE_RADIUS, vh - CHICKEN_H - 8)
+            );
+          }
+          const ddx = scramble.targetX - p.x;
+          const ddy = scramble.targetY - p.y;
+          const dd = Math.hypot(ddx, ddy);
+          if (dd > 1) {
+            const step = Math.min(dd, SCRAMBLE_SPEED * dt);
+            p.x += (ddx / dd) * step;
+            p.y += (ddy / dd) * step;
+            if (Math.abs(ddx) > 4) facingRef.current = ddx > 0 ? 1 : -1;
+          }
+          p.vx = 0;
+          p.vy = 0;
+          p.rotation = Math.sin(ts * 0.05) * 6;
+          p.rv = 0;
+          p.bank = 0;
+        }
+      } else if (visitRef.current.phase === 'seeking') {
+        const visit = visitRef.current;
+        const motion = kidMotionRef.current.get(visit.kidId);
+        if (!motion || motion.fleeing || motion.merging) {
+          visit.phase = 'idle';
+        } else {
+          const targetX = motion.x + KID_W / 2 - CHICKEN_W / 2;
+          const targetY = groundYFor(vh) - CHICKEN_H;
+          const ddx = targetX - p.x;
+          const ddy = targetY - p.y;
+          const dd = Math.hypot(ddx, ddy);
+          if (dd > 1) {
+            const step = Math.min(dd, VISIT_SPEED * dt);
+            p.x += (ddx / dd) * step;
+            p.y += (ddy / dd) * step;
+            if (Math.abs(ddx) > 6) facingRef.current = ddx > 0 ? 1 : -1;
+          }
+          p.vx = 0;
+          p.vy = 0;
+          p.rotation += (0 - p.rotation) * Math.min(1, 0.08 * dt);
+          p.rv = 0;
+          p.bank = 0;
+          if (Math.abs(p.x - targetX) < VISIT_NEAR_X && Math.abs(p.y - targetY) < VISIT_NEAR_Y) {
+            modeRef.current = 'ground';
+            visit.phase = 'visiting';
+            groundRef.current.nextGrazeAt = ts + 800;
+          }
+        }
       } else {
+        const scramble = scrambleRef.current;
+        if (!scramble.nextAt) {
+          scramble.nextAt = ts + SCRAMBLE_DELAY_MIN_MS + Math.random() * SCRAMBLE_DELAY_SPREAD_MS;
+        } else if (
+          ts >= scramble.nextAt &&
+          sc >= SCRAMBLE_MIN_SCORE &&
+          ts - lastHitRef.current < CLICK_ACTIVE_WINDOW_MS &&
+          hyper.phase !== 'burst' &&
+          ceremonyRef.current.phase === 'idle'
+        ) {
+          scramble.phase = 'running';
+          scramble.until = ts + SCRAMBLE_DURATION_MS;
+          scramble.originX = p.x;
+          scramble.originY = p.y;
+          scramble.targetX = p.x;
+          scramble.targetY = p.y;
+          scramble.nextDartAt = 0;
+        }
         if (!nextJumpAtRef.current) {
           nextJumpAtRef.current = ts + JUMP_DELAY_MIN_MS + Math.random() * JUMP_DELAY_SPREAD_MS;
         } else if (ts >= nextJumpAtRef.current) {
@@ -1373,6 +1623,24 @@ function ChickenGameInner() {
           p.vy += (mdy / dist) * force;
         }
 
+        const visit = visitRef.current;
+        if (visit.phase === 'idle' && kidsCountRef.current > 0 && mercy < VISIT_MERCY_THRESHOLD) {
+          if (!visit.nextRollAt) {
+            visit.nextRollAt = ts + VISIT_ROLL_MS;
+          } else if (ts >= visit.nextRollAt) {
+            visit.nextRollAt = ts + VISIT_ROLL_MS;
+            if (ts >= visit.cooldownUntil && Math.random() < VISIT_CHANCE) {
+              const candidates = [...kidMotionRef.current.entries()].filter(
+                ([, kidMotion]) => !kidMotion.fleeing && !kidMotion.merging
+              );
+              if (candidates.length > 0) {
+                visit.kidId = candidates[Math.floor(Math.random() * candidates.length)][0];
+                visit.phase = 'seeking';
+              }
+            }
+          }
+        }
+
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
         const maxSpd = BASE_SPEED * sp;
         const minSpd = MIN_SPEED * sp;
@@ -1405,9 +1673,23 @@ function ChickenGameInner() {
           ) / FLAP_QUANTIZE_MS
         ) * FLAP_QUANTIZE_MS;
 
+      if (sizeBoostRef.current > 0) {
+        sizeBoostRef.current = Math.max(
+          0,
+          sizeBoostRef.current - (dtMs * SIZE_BOOST_PER_MERGE) / SIZE_BOOST_DECAY_MS
+        );
+      }
+      const bendTarget =
+        modeRef.current === 'ground' && ts < groundRef.current.grazeUntil
+          ? BEND_ANGLE + Math.sin(ts * BEND_PECK_FREQ) * BEND_PECK_AMPLITUDE
+          : 0;
+      bendRef.current += (bendTarget - bendRef.current) * Math.min(1, BEND_LERP * dt);
+      if (bendRef.current < 0.05 && bendTarget === 0) bendRef.current = 0;
+
       if (chickenElRef.current) {
         chickenElRef.current.style.transform =
-          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg)`;
+          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${(1 + sizeBoostRef.current).toFixed(3)})`;
+        chickenElRef.current.style.setProperty('--bend', `${bendRef.current.toFixed(1)}deg`);
         if (flapMs !== flapMsRef.current) {
           flapMsRef.current = flapMs;
           chickenElRef.current.style.setProperty('--flap-ms', `${flapMs}ms`);
@@ -1439,12 +1721,31 @@ function ChickenGameInner() {
       if (kidMotions.size > 0) {
         const kidY = groundYFor(vh) - KID_H;
         for (const [id, motion] of kidMotions) {
-          if (motion.fleeing) {
+          if (motion.merging) {
+            const chickenCx = p.x + CHICKEN_W / 2;
+            const kidCx = motion.x + KID_W / 2;
+            const dxm = chickenCx - kidCx;
+            if (Math.abs(dxm) > 2) motion.dir = dxm > 0 ? 1 : -1;
+            motion.x += Math.sign(dxm) * Math.min(Math.abs(dxm), KID_MERGE_SPEED * dt);
+            if (Math.abs(dxm) < KID_MERGE_PROXIMITY) {
+              removeKid(id);
+              sizeBoostRef.current = Math.min(
+                SIZE_BOOST_MAX,
+                sizeBoostRef.current + SIZE_BOOST_PER_MERGE
+              );
+              spawnFeathers(chickenCx, p.y + CHICKEN_H / 2, 5);
+              squeak(0.35);
+              recordPlay({ type: 'squeak', at: Date.now() });
+              continue;
+            }
+          } else if (motion.fleeing) {
             motion.x += motion.vx * dt;
             if (motion.x < -KID_W * 3 || motion.x > vw + KID_W * 3) {
               removeKid(id);
               continue;
             }
+          } else if (motion.mergeAt && ts >= motion.mergeAt) {
+            startKidMerge(id);
           } else {
             if (!motion.nextTurnAt || ts >= motion.nextTurnAt) {
               motion.nextTurnAt = ts + KID_TURN_MIN_MS + Math.random() * KID_TURN_SPREAD_MS;
@@ -1474,17 +1775,17 @@ function ChickenGameInner() {
       const currentTier = tierRef.current;
       const tierDef = TIERS[currentTier];
       const intensity = Math.min(1 + sc * 0.05, 5);
-      const count = Math.ceil(intensity * dt);
+      const count = Math.ceil(intensity * dt * PARTICLE_EMISSION);
       const particles = particlesRef.current;
 
       for (let i = 0; i < count && particles.length < MAX_PARTICLES; i++) {
         particles.push({
-          x: cx + (Math.random() - 0.5) * 28,
-          y: cy + (Math.random() - 0.5) * 28,
+          x: cx + (Math.random() - 0.5) * 20,
+          y: cy + (Math.random() - 0.5) * 20,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
-          alpha: 0.15 + Math.random() * 0.12,
-          size: 6 + Math.random() * 9,
+          alpha: 0.05 + Math.random() * 0.05,
+          size: 2 + Math.random() * 2,
           hue: tierDef.particleHue,
         });
       }
@@ -1611,7 +1912,7 @@ function ChickenGameInner() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal]);
+  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge]);
 
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
@@ -1624,7 +1925,10 @@ function ChickenGameInner() {
       : undefined;
 
   return (
-    <div className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none cursor-crosshair">
+    <div
+      data-testid="chicken-stage"
+      className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
+    >
       <GameScenery tier={tier} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
@@ -1744,8 +2048,8 @@ function ChickenGameInner() {
             if (el) kidElsRef.current.set(kid.id, el);
             else kidElsRef.current.delete(kid.id);
           }}
-          onClick={() => fleeKid(kid.id)}
-          className="absolute top-0 left-0 cursor-pointer will-change-transform"
+          onClick={() => clickKid(kid.id)}
+          className="absolute top-0 left-0 will-change-transform"
         >
           <ChickenSvg className="w-[26px]" tier={kid.tier} morph={0} eyes="calm" />
         </div>
@@ -1756,7 +2060,7 @@ function ChickenGameInner() {
         data-testid="chicken"
         data-tier={tier}
         data-squash="0"
-        className="absolute will-change-transform cursor-pointer"
+        className="absolute will-change-transform"
         style={{ left: 0, top: 0 }}
         onClick={hit}
       >

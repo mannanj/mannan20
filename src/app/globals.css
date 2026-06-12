@@ -793,6 +793,20 @@ body.gem-rain-active #header > div:first-child {
   animation: sceneryPan 34s linear forwards;
 }
 
+.chicken-hand-cursor {
+  cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Ctext y='28' font-size='27'%3E%F0%9F%96%90%3C/text%3E%3C/svg%3E") 18 18, pointer;
+}
+
+.chicken-hand-cursor:active {
+  cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Ctext y='27' font-size='24'%3E%E2%9C%8A%3C/text%3E%3C/svg%3E") 18 18, pointer;
+}
+
+.chicken-bend-upper {
+  transform-box: view-box;
+  transform-origin: 40px 148px;
+  transform: rotate(var(--bend, 0deg));
+}
+
 .chicken-rubber {
   transform-origin: 50% 96%;
   transform: scaleX(calc(1 + 0.34 * var(--sq, 0))) scaleY(calc(1 - 0.4 * var(--sq, 0)))

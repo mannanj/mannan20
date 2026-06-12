@@ -13,6 +13,8 @@ export interface Feather {
   alphaMul: number;
   gravityMul: number;
   drifter: boolean;
+  elong: number;
+  electric: boolean;
 }
 
 export interface Streak {
@@ -39,6 +41,12 @@ const FEATHER_TERMINAL_VY = 1.05;
 const FEATHER_SWAY_FORCE = 0.02;
 const FEATHER_FADE_MS = 900;
 const FEATHER_BIG_CHANCE = 0.25;
+const FEATHER_BIG_MIN = 1.6;
+const FEATHER_BIG_SPREAD = 0.6;
+const FEATHER_ELONG_CHANCE = 0.12;
+const FEATHER_ELONG_MIN = 3;
+const FEATHER_ELONG_SPREAD = 2;
+const FEATHER_ELECTRIC_CHANCE = 0.15;
 const FEATHER_LINGER_CHANCE = 0.22;
 const FEATHER_DRIFTER_CHANCE = 0.12;
 const FEATHER_ALPHA_MIN = 0.42;
@@ -49,9 +57,13 @@ export const STREAK_LIFE_MS = 280;
 export const PORTAL_LIFE_MS = 950;
 
 export function makeFeather(cx: number, cy: number, color: string, now: number): Feather {
-  const big = Math.random() < FEATHER_BIG_CHANCE;
+  const elong =
+    Math.random() < FEATHER_ELONG_CHANCE
+      ? FEATHER_ELONG_MIN + Math.random() * FEATHER_ELONG_SPREAD
+      : 1;
+  const big = elong === 1 && Math.random() < FEATHER_BIG_CHANCE;
   const drifter = Math.random() < FEATHER_DRIFTER_CHANCE;
-  const size = (9 + Math.random() * 6) * (big ? 2 + Math.random() : 1);
+  const size = (9 + Math.random() * 6) * (big ? FEATHER_BIG_MIN + Math.random() * FEATHER_BIG_SPREAD : 1);
   let life = 2400 + Math.random() * 1600;
   if (Math.random() < FEATHER_LINGER_CHANCE) life *= 3 + Math.random();
   if (drifter) life = 9000 + Math.random() * 7000;
@@ -70,6 +82,8 @@ export function makeFeather(cx: number, cy: number, color: string, now: number):
     alphaMul: FEATHER_ALPHA_MIN + Math.random() * FEATHER_ALPHA_SPREAD,
     gravityMul: drifter ? 0.05 : 0.55 + Math.random() * 0.65,
     drifter,
+    elong,
+    electric: Math.random() < FEATHER_ELECTRIC_CHANCE,
   };
 }
 
@@ -98,29 +112,51 @@ export function drawFeather(ctx: CanvasRenderingContext2D, f: Feather, ts: numbe
   const alpha = featherAlpha(f, ts);
   if (alpha <= 0) return;
   const s = f.size;
+  const sl = s * f.elong;
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(f.x, f.y);
   ctx.rotate(f.rotation);
   ctx.fillStyle = f.color;
   ctx.beginPath();
-  ctx.moveTo(0, -s * 0.55);
-  ctx.quadraticCurveTo(s * 0.46, -s * 0.12, 0, s * 0.66);
-  ctx.quadraticCurveTo(-s * 0.46, -s * 0.12, 0, -s * 0.55);
+  ctx.moveTo(0, -sl * 0.55);
+  ctx.quadraticCurveTo(s * 0.46, -sl * 0.12, 0, sl * 0.66);
+  ctx.quadraticCurveTo(-s * 0.46, -sl * 0.12, 0, -sl * 0.55);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
   ctx.lineWidth = 0.8;
   ctx.beginPath();
-  ctx.moveTo(0, -s * 0.5);
-  ctx.lineTo(0, s * 0.62);
+  ctx.moveTo(0, -sl * 0.5);
+  ctx.lineTo(0, sl * 0.62);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(0, -s * 0.1);
-  ctx.lineTo(s * 0.26, -s * 0.26);
-  ctx.moveTo(0, s * 0.18);
-  ctx.lineTo(-s * 0.26, s * 0.02);
+  ctx.moveTo(0, -sl * 0.1);
+  ctx.lineTo(s * 0.26, -sl * 0.26);
+  ctx.moveTo(0, sl * 0.18);
+  ctx.lineTo(-s * 0.26, sl * 0.02);
   ctx.stroke();
+  if (f.electric) {
+    const flicker = 0.5 + 0.5 * Math.sin(ts * 0.02 + f.sway * 3);
+    if (flicker > 0.25) {
+      ctx.strokeStyle = `rgba(150, 205, 255, ${0.7 * alpha * flicker})`;
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.5, -sl * 0.3);
+      ctx.lineTo(-s * 0.75, -sl * 0.12);
+      ctx.lineTo(-s * 0.5, sl * 0.05);
+      ctx.moveTo(s * 0.5, sl * 0.05);
+      ctx.lineTo(s * 0.78, sl * 0.24);
+      ctx.lineTo(s * 0.52, sl * 0.42);
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * alpha * flicker})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.5, -sl * 0.3);
+      ctx.lineTo(-s * 0.75, -sl * 0.12);
+      ctx.stroke();
+    }
+  }
   ctx.restore();
 }
 

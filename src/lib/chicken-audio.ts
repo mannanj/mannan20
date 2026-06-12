@@ -24,6 +24,14 @@ export const RISERS: SoundDef[] = [
   { key: 'power-up-final', file: 'power-up-final.mp3', volume: 1 },
 ];
 
+export const SCREAM_TUNING: Record<string, { weight: number; rateMul: number }> = {
+  panic: { weight: 0.5, rateMul: 1.22 },
+  dramatic: { weight: 0.5, rateMul: 1.22 },
+};
+
+const SCREAM_VOLUMES = new Map(SCREAMS.map((def) => [def.key, def.volume]));
+const SCREAM_FADE_OUT_MS = 28;
+
 export interface LoadProgress {
   loaded: number;
   failed: number;
@@ -86,54 +94,75 @@ class EffectsSynth {
 
   crackle(): void {
     const t = this.ctx.currentTime;
-    const duration = 0.16;
+    const duration = 0.26;
     const length = Math.ceil(this.ctx.sampleRate * duration);
     const buffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
+    let smoothed = 0;
     for (let i = 0; i < length; i++) {
-      const spark = Math.random() < 0.16 ? 1 : 0.22;
-      data[i] = (Math.random() * 2 - 1) * spark;
+      smoothed = smoothed * 0.6 + (Math.random() * 2 - 1) * 0.4;
+      data[i] = smoothed;
     }
-    const burst = this.ctx.createBufferSource();
-    burst.buffer = buffer;
+    const sizzle = this.ctx.createBufferSource();
+    sizzle.buffer = buffer;
     const bp = this.ctx.createBiquadFilter();
     bp.type = 'bandpass';
-    bp.Q.value = 0.9;
-    bp.frequency.setValueAtTime(3400, t);
-    bp.frequency.exponentialRampToValueAtTime(700, t + duration);
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(EXP_FLOOR, t);
-    gain.gain.exponentialRampToValueAtTime(0.15, t + 0.006);
-    gain.gain.exponentialRampToValueAtTime(0.002, t + duration);
-    burst.connect(bp);
-    bp.connect(gain);
-    gain.connect(this.ctx.destination);
-    burst.start(t);
-    burst.stop(t + duration + 0.02);
+    bp.Q.value = 2;
+    bp.frequency.setValueAtTime(5200, t);
+    bp.frequency.exponentialRampToValueAtTime(850, t + duration);
+    const sizzleGain = this.ctx.createGain();
+    sizzleGain.gain.setValueAtTime(EXP_FLOOR, t);
+    sizzleGain.gain.exponentialRampToValueAtTime(0.13, t + 0.014);
+    sizzleGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + duration);
+    const buzz = this.ctx.createGain();
+    buzz.gain.value = 0.55;
+    const buzzLfo = this.ctx.createOscillator();
+    buzzLfo.type = 'square';
+    buzzLfo.frequency.value = 92;
+    const buzzDepth = this.ctx.createGain();
+    buzzDepth.gain.value = 0.45;
+    buzzLfo.connect(buzzDepth);
+    buzzDepth.connect(buzz.gain);
+    sizzle.connect(bp);
+    bp.connect(sizzleGain);
+    sizzleGain.connect(buzz);
+    buzz.connect(this.ctx.destination);
+    sizzle.start(t);
+    sizzle.stop(t + duration + 0.02);
+    buzzLfo.start(t);
+    buzzLfo.stop(t + duration + 0.02);
     const zap = this.ctx.createOscillator();
     zap.type = 'sawtooth';
-    zap.frequency.setValueAtTime(2200, t);
-    zap.frequency.exponentialRampToValueAtTime(240, t + 0.07);
+    zap.frequency.setValueAtTime(1600, t);
+    zap.frequency.exponentialRampToValueAtTime(150, t + 0.16);
+    const vib = this.ctx.createOscillator();
+    vib.frequency.value = 60;
+    const vibGain = this.ctx.createGain();
+    vibGain.gain.value = 90;
+    vib.connect(vibGain);
+    vibGain.connect(zap.frequency);
     const zapGain = this.ctx.createGain();
     zapGain.gain.setValueAtTime(EXP_FLOOR, t);
-    zapGain.gain.exponentialRampToValueAtTime(0.03, t + 0.005);
-    zapGain.gain.exponentialRampToValueAtTime(0.0008, t + 0.075);
+    zapGain.gain.exponentialRampToValueAtTime(0.05, t + 0.018);
+    zapGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + 0.19);
     zap.connect(zapGain);
     zapGain.connect(this.ctx.destination);
     zap.start(t);
-    zap.stop(t + 0.1);
+    zap.stop(t + 0.22);
+    vib.start(t);
+    vib.stop(t + 0.22);
     const thump = this.ctx.createOscillator();
     thump.type = 'sine';
-    thump.frequency.setValueAtTime(130, t);
-    thump.frequency.exponentialRampToValueAtTime(46, t + 0.18);
+    thump.frequency.setValueAtTime(120, t);
+    thump.frequency.exponentialRampToValueAtTime(44, t + 0.2);
     const thumpGain = this.ctx.createGain();
     thumpGain.gain.setValueAtTime(EXP_FLOOR, t);
-    thumpGain.gain.exponentialRampToValueAtTime(0.07, t + 0.012);
-    thumpGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + 0.2);
+    thumpGain.gain.exponentialRampToValueAtTime(0.055, t + 0.02);
+    thumpGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + 0.24);
     thump.connect(thumpGain);
     thumpGain.connect(this.ctx.destination);
     thump.start(t);
-    thump.stop(t + 0.24);
+    thump.stop(t + 0.28);
   }
 
   squeak(depth: number): void {
@@ -246,6 +275,7 @@ class ChickenAudio {
   private screamClicks = 0;
   private rotateAt = SCREAM_ROTATE_MIN;
   private lastScreamAt = 0;
+  private lastPlay: { key: string; howl: Howl; id: number } | null = null;
   private synth: EffectsSynth | null = null;
   private reverbReady = false;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -343,9 +373,28 @@ class ChickenAudio {
       keys.length > 1 && this.currentScreamKey
         ? keys.filter((k) => k !== this.currentScreamKey)
         : keys;
-    this.currentScreamKey = pool[Math.floor(Math.random() * pool.length)];
+    const total = pool.reduce((sum, k) => sum + (SCREAM_TUNING[k]?.weight ?? 1), 0);
+    let roll = Math.random() * total;
+    let picked = pool[pool.length - 1];
+    for (const k of pool) {
+      roll -= SCREAM_TUNING[k]?.weight ?? 1;
+      if (roll <= 0) {
+        picked = k;
+        break;
+      }
+    }
+    this.currentScreamKey = picked;
     this.screamClicks = 0;
     this.rotateAt = SCREAM_ROTATE_MIN + Math.floor(Math.random() * SCREAM_ROTATE_SPREAD);
+  }
+
+  private fadeOutLastScream(): void {
+    const last = this.lastPlay;
+    if (!last) return;
+    this.lastPlay = null;
+    if (!last.howl.playing(last.id)) return;
+    last.howl.fade(SCREAM_VOLUMES.get(last.key) ?? 0.75, 0, SCREAM_FADE_OUT_MS, last.id);
+    setTimeout(() => last.howl.stop(last.id), SCREAM_FADE_OUT_MS + 12);
   }
 
   playScream(rate: number): ScreamResult | null {
@@ -363,10 +412,13 @@ class ChickenAudio {
     if (!howl) return null;
     this.screamClicks += 1;
     this.lastScreamAt = now;
-    howl.stop();
+    this.fadeOutLastScream();
+    const effectiveRate = rate * (SCREAM_TUNING[key]?.rateMul ?? 1);
     const id = howl.play();
-    howl.rate(rate, id);
-    return { key, rate };
+    howl.volume(SCREAM_VOLUMES.get(key) ?? 0.75, id);
+    howl.rate(effectiveRate, id);
+    this.lastPlay = { key, howl, id };
+    return { key, rate: effectiveRate };
   }
 
   playRiser(final: boolean): RiserResult {

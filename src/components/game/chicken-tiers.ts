@@ -4,7 +4,7 @@ export interface ChickenTier {
   body: string;
   bodyDark: string;
   belly: string;
-  hair: 'none' | 'dark' | 'gold';
+  hair: 'none' | 'dark' | 'gold' | 'rainbow';
   eyes: 'calm' | 'determined' | 'angry' | 'furious' | 'ascended';
   aura: { r: number; g: number; b: number } | null;
   particleHue: number;
@@ -68,6 +68,17 @@ export const TIERS: ChickenTier[] = [
     aura: { r: 255, g: 226, b: 140 },
     particleHue: 48,
     screamRate: 0.68,  },
+  {
+    name: 'Iridescent One',
+    threshold: 190,
+    body: '#C77DFF',
+    bodyDark: '#9D4EDD',
+    belly: '#F1E3FF',
+    hair: 'rainbow',
+    eyes: 'ascended',
+    aura: { r: 215, g: 170, b: 255 },
+    particleHue: 285,
+    screamRate: 0.6,  },
 ];
 
 export const FINAL_TIER = TIERS.length - 1;

@@ -32,6 +32,10 @@ interface ChickenState {
   portal: 'idle' | 'splat' | 'gone';
   sqmode: 'hug' | 'stomp';
   skin: string;
+  scramble: 'idle' | 'running';
+  visit: 'idle' | 'seeking' | 'visiting';
+  sizeBoost: number;
+  bend: number;
 }
 
 interface ChickenBridge {
@@ -44,6 +48,9 @@ interface ChickenBridge {
   forceKid: () => void;
   forceCeremony: () => void;
   forcePortal: () => void;
+  forceScramble: () => void;
+  forceVisit: () => void;
+  forceMerge: () => void;
 }
 
 const SOUNDS_DIR = path.join(process.cwd(), 'public', 'sounds', 'chicken');
@@ -123,7 +130,7 @@ test.describe('chicken game', () => {
       .toBeGreaterThan(0);
     const screams = (await bridge(page).plays()).filter((p) => p.type === 'scream');
     expect(screams[0].rate).toBeGreaterThanOrEqual(0.93);
-    expect(screams[0].rate).toBeLessThanOrEqual(1.07);
+    expect(screams[0].rate).toBeLessThanOrEqual(1.31);
     expect((await bridge(page).state()).score).toBe(1);
   });
 
@@ -163,7 +170,7 @@ test.describe('chicken game', () => {
       .toBeGreaterThan(0);
     const screams = (await b.plays()).filter((p) => p.type === 'scream');
     const last = screams[screams.length - 1];
-    expect(last.rate).toBeLessThanOrEqual(0.75);
+    expect(last.rate).toBeLessThanOrEqual(0.9);
   });
 
   test('skin morphs gradually toward the next tier color', async ({ page }) => {
@@ -405,7 +412,7 @@ test.describe('chicken game', () => {
     expect(late!.color.b).toBeGreaterThan(200);
     expect(late!.intervalMs).toBeLessThan(mid!.intervalMs);
 
-    await expect.poll(async () => (await b.state()).arcs, { timeout: 3000 }).toBeGreaterThan(0);
+    await expect.poll(async () => (await b.state()).arcs, { timeout: 7000 }).toBeGreaterThan(0);
   });
 
   test('hand-drawn scenery crossfades between landscapes', async ({ page }) => {
@@ -515,7 +522,7 @@ test.describe('chicken game', () => {
     const kid = page.getByTestId('chicken-kid');
     await expect(kid).toHaveCount(1);
     await kid.click({ force: true });
-    await expect(kid).toHaveCount(0, { timeout: 8000 });
+    await expect(kid).toHaveCount(0, { timeout: 12_000 });
   });
 
   test('evolving recolors the landscape and swaps the scene', async ({ page }) => {
@@ -538,7 +545,7 @@ test.describe('chicken game', () => {
       slowMax = Math.max(slowMax, Math.hypot(s.vx, s.vy));
       await page.waitForTimeout(50);
     }
-    expect(slowMax).toBeLessThan(0.5);
+    expect(slowMax).toBeLessThan(0.3);
     await b.boost(139);
     await expect
       .poll(
@@ -548,7 +555,7 @@ test.describe('chicken game', () => {
         },
         { timeout: 4000 }
       )
-      .toBeGreaterThan(0.52);
+      .toBeGreaterThan(0.3);
   });
 
   test('the title is gone and the label says squeeze', async ({ page }) => {
@@ -599,7 +606,9 @@ test.describe('chicken game', () => {
     await expect.poll(async () => (await b.state()).portal).toBe('splat');
     const rubber = page.locator('[data-testid="chicken"] .chicken-rubber');
     await expect(rubber).toHaveAttribute('data-splat', /^(left|right|top|bottom)$/);
-    await expect.poll(async () => (await b.state()).portal, { timeout: 3000 }).toBe('idle');
+    await page.waitForTimeout(2500);
+    expect((await b.state()).portal).toBe('splat');
+    await expect.poll(async () => (await b.state()).portal, { timeout: 6500 }).toBe('idle');
     await expect(rubber).not.toHaveAttribute('data-splat', /.+/);
     const visible = await page
       .getByTestId('chicken')
@@ -633,6 +642,100 @@ test.describe('chicken game', () => {
       w.__chicken.forceKid();
     });
     await expect(page.getByTestId('chicken-kid')).toHaveCount(3);
+  });
+
+  test('a rainbow iridescent form awaits past the golden god', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    await b.boost(190);
+    const chicken = page.getByTestId('chicken');
+    await expect(chicken).toHaveAttribute('data-tier', '5');
+    await expect(
+      page.locator('[data-testid="chicken"] [data-testid="chicken-svg"]')
+    ).toHaveAttribute('data-hair', 'rainbow');
+    const powerups = (await b.plays()).filter((p) => p.type === 'powerup');
+    expect(powerups.length).toBe(5);
+  });
+
+  test('scramble makes the chicken dart frantically in place, then settle', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    const result = await page.evaluate(async () => {
+      const w = window as unknown as { __chicken: ChickenBridge };
+      const el = document.querySelector('[data-testid="chicken"]') as HTMLElement;
+      const read = () => {
+        const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+        return { x: m.m41, y: m.m42 };
+      };
+      w.__chicken.forceScramble();
+      const start = read();
+      let maxDist = 0;
+      let moves = 0;
+      let prev = start;
+      for (let i = 0; i < 60; i++) {
+        await new Promise((r) => requestAnimationFrame(r));
+        const cur = read();
+        maxDist = Math.max(maxDist, Math.hypot(cur.x - start.x, cur.y - start.y));
+        if (Math.hypot(cur.x - prev.x, cur.y - prev.y) > 1.5) moves++;
+        prev = cur;
+      }
+      return { maxDist, moves, phase: w.__chicken.state().scramble };
+    });
+    expect(result.phase).toBe('running');
+    expect(result.moves).toBeGreaterThan(10);
+    expect(result.maxDist).toBeLessThan(220);
+    await expect.poll(async () => (await b.state()).scramble, { timeout: 3000 }).toBe('idle');
+  });
+
+  test('a kid can run into the chicken and merge, bulking it up briefly', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    await page.evaluate(() => {
+      const w = window as unknown as { __chicken: ChickenBridge };
+      w.__chicken.forceKid();
+      w.__chicken.forceMerge();
+    });
+    await expect(page.getByTestId('chicken-kid')).toHaveCount(0, { timeout: 12_000 });
+    const boosted = (await b.state()).sizeBoost;
+    expect(boosted).toBeGreaterThan(0);
+    await page.waitForTimeout(2500);
+    const later = (await b.state()).sizeBoost;
+    expect(later).toBeLessThan(boosted);
+  });
+
+  test('an idle-hearted chicken flies down to visit its kid', async ({ page }) => {
+    test.slow();
+    await gotoGame(page);
+    const b = bridge(page);
+    await b.boost(1);
+    await page.evaluate(() => {
+      const w = window as unknown as { __chicken: ChickenBridge };
+      w.__chicken.forceKid();
+      w.__chicken.forceVisit();
+    });
+    await expect.poll(async () => (await b.state()).visit, { timeout: 20_000 }).toBe('visiting');
+    expect((await b.state()).mode).toBe('ground');
+  });
+
+  test('the cursor is a hand over the game stage', async ({ page }) => {
+    await gotoGame(page);
+    const cursor = await page
+      .getByTestId('chicken-stage')
+      .evaluate((el) => getComputedStyle(el).cursor);
+    expect(cursor).toContain('url(');
+    expect(cursor).toContain('svg');
+  });
+
+  test('grazing bends from the waist with feet planted, not a lean', async ({ page }) => {
+    test.slow();
+    await gotoGame(page);
+    const b = bridge(page);
+    expect((await b.state()).mode).toBe('ground');
+    await expect.poll(async () => (await b.state()).bend, { timeout: 16_000 }).toBeGreaterThan(40);
+    const bent = await b.state();
+    expect(Math.abs(bent.rotation)).toBeLessThan(12);
+    expect(bent.mode).toBe('ground');
+    await expect.poll(async () => (await b.state()).bend, { timeout: 12_000 }).toBeLessThan(10);
   });
 
   test('leaderboard toggle sits bottom-center with a caret that flips open', async ({ page }) => {

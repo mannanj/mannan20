@@ -1,0 +1,16 @@
+### Task 237: Chicken feel IV — scramble, waist-bend pecks, rainbow tier, kid merges, hand cursor, calmer pace
+- [x] Scramble-in-place: chicken occasionally darts frantically within a small radius while being clicked; hyper + teleport trigger rates halved while actively clicking
+- [x] Portal splat pancake stays visible 3s longer (with a fresh swirl when it finally vanishes)
+- [x] Chicken 50% slower across the board (flight, ground wander, takeoff)
+- [x] City-scene buildings get smiley faces
+- [x] New tier 6 "Iridescent One" at 190: rainbow gradient body, violet aura, sparkles
+- [x] Trail shrunk considerably and made faint (per feedback that transparency wasn't landing); future-tuning note added to docs
+- [x] Sign-in toggle reworded to "Take your name with you — link your email" (researched: action+benefit beats "sign in" for cookie-portability)
+- [x] Hand cursor (🖐) that squeezes into a fist (✊) while clicking
+- [x] Pained screams (panic/dramatic) picked half as often and pitched up 22%; scream retrigger click-pop fixed with micro-fade; lightning crackle rebuilt as a proper buzzy zap
+- [x] Idle chicken sometimes (35% per idle window) flies down to visit its kids and pecks beside them
+- [x] Kids sometimes run into the chicken and merge (30% temperament roll; same odds on click vs flee); chicken grows per merge and shrinks back over 30s
+- [x] Grazing is now a true waist bend: feet planted, upper body folds to the floor, 1–3 slow pecks (was a whole-body lean)
+- [x] Feathers: biggest feathers smaller (1.6–2.2x), colors always match the chicken's current body color (skin+morph aware), 15% get an electric flicker, 12% are 3–5x elongated
+- [x] Tests updated + new e2e coverage; tsc clean; verified on dev server
+- Location: `src/components/game/`, `src/lib/chicken-audio.ts`, `src/app/globals.css`, `e2e/`
