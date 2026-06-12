@@ -1,0 +1,13 @@
+### Task 236: Chicken feel III — hug squeeze, countdown ceremony, portals, skins, living scenery, unlimited scores
+- [x] Hug squeeze as the default click squash (belly pinch, varies with click position), old vertical squash kept as ~1-in-10 variation, rare frantic random-squeeze burst
+- [x] Hot-streak ceremony: cursor countdown 5s…1s while clicking hot, then a big up-and-down mega squeeze
+- [x] Remove floating "Floating Chicken Game" title; center label now "Squeeze the chicken"
+- [x] Flight variety: wild random-direction bounces, screen wrap-through, portal splat (pancake goop + portal swirl, exits another edge, more likely again within the same scene window), spontaneous random jumps
+- [x] Feathers: 2–3x size variation, wider spread, floatier drift, 3–4x lingerers, screen drifters, more transparent
+- [x] Trail: ~3x wider, ~3x longer-lived, more transparent
+- [x] Kids: broods of 1–3 spawn simultaneously
+- [x] Scenery: 3 new scenes (forest, ocean, city → 7 total), faster cycle, continuous left-to-right pan + slow turbulence morph
+- [x] Chicken skins: 5 League-style cosmetic skins with picker UI, localStorage persistence, applied to chicken + ghosts
+- [x] Leaderboard: toggle moved to bottom center with proper open/close caret, friendly "use your name anywhere" email copy, unlimited scores per name (suffixed zset members + rename migration, memory fallback)
+- [x] Tests: store unit tests (memory path), new/updated e2e specs, tsc + lint clean, verified on dev server
+- Location: `src/components/game/`, `src/app/globals.css`, `src/lib/leaderboard-store.ts`, `e2e/`

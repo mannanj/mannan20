@@ -350,10 +350,10 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
 
         {nameTaken && (
           <p data-testid="leaderboard-name-taken" className="mt-2 text-xs text-[#FF8A80]">
-            That name belongs to someone else.
+            Someone already plays as that name.
             {nameTaken.emailBound
-              ? ' It’s protected by email — if it’s yours, sign in below to claim it.'
-              : ' If it’s yours from another browser, sign in by email to claim it.'}
+              ? ' If it’s you, sign in below with your email and you can keep using it here.'
+              : ' If it’s you from another browser or device, sign in below with your email to keep using it.'}
           </p>
         )}
 
@@ -383,7 +383,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
               data-testid="leaderboard-claim-toggle"
               className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
             >
-              Sign in by email to protect your name
+              Sign in by email to use your name on any device
             </button>
           )}
         </div>
@@ -487,9 +487,24 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
         aria-expanded={open}
         aria-controls={PANEL_ID}
         data-testid="chicken-leaderboard-link"
-        className="fixed right-5 bottom-4 z-40 cursor-pointer text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
+        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 cursor-pointer items-center gap-1.5 text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
       >
         Leaderboard
+        <svg
+          data-testid="leaderboard-caret"
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden
+          className={`h-3 w-3 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+        >
+          <path
+            d="M2.5 7.5 L6 4 L9.5 7.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
     </>
   );

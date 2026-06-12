@@ -7,13 +7,17 @@ import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import {
   drawFeather,
+  drawPortals,
   drawStreaks,
   makeFeather,
   makeTeleportStreaks,
   updateFeather,
   type Feather,
+  type Portal,
+  type PortalSide,
   type Streak,
 } from './chicken-effects';
+import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY } from './chicken-skins';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
 import {
@@ -58,8 +62,8 @@ const BOUNCE_RANDOM = 0.3;
 const MAX_DT = 32;
 const CHICKEN_W = 70;
 const CHICKEN_H = 140;
-const PARTICLE_FADE = 0.02;
-const MAX_PARTICLES = 200;
+const PARTICLE_FADE = 0.0025;
+const MAX_PARTICLES = 420;
 const MAX_SHARD_PARTICLES = 90;
 const SHARDS_PER_TRANSFORM = 26;
 const SHARD_GRAVITY = 0.08;
@@ -108,7 +112,7 @@ const GRAZE_PECK_FREQ = 0.02;
 const FEATHERS_PER_CLICK = 2;
 const FEATHER_EXTRA_CHANCE = 0.45;
 const FEATHERS_PER_TRANSFORM = 10;
-const MAX_FEATHERS = 40;
+const MAX_FEATHERS = 64;
 const SQUASH_WINDOW_MS = 650;
 const SQUASH_BASE = 0.5;
 const SQUASH_PER_COMBO = 0.13;
@@ -147,6 +151,31 @@ const KID_TURN_MIN_MS = 2200;
 const KID_TURN_SPREAD_MS = 2600;
 const KID_FLEE_MIN = 4.6;
 const KID_FLEE_SPREAD = 1.4;
+const KID_MAX = 4;
+const STOMP_SQUEEZE_CHANCE = 0.1;
+const FRANTIC_SQUEEZE_CHANCE = 0.04;
+const FRANTIC_DURATION_MS = 720;
+const FRANTIC_STEP_MS = 70;
+const CEREMONY_COMBO = 8;
+const CEREMONY_HEAT = 1.1;
+const CEREMONY_COUNT_FROM = 5;
+const CEREMONY_TICK_MS = 1000;
+const CEREMONY_COOLDOWN_MIN_MS = 45_000;
+const CEREMONY_COOLDOWN_SPREAD_MS = 45_000;
+const MEGA_SQUEEZE_MS = 1300;
+const EDGE_WILD_CHANCE = 0.22;
+const EDGE_WRAP_CHANCE = 0.1;
+const EDGE_PORTAL_CHANCE = 0.08;
+const EDGE_PORTAL_HOT_CHANCE = 0.3;
+const PORTAL_HOT_WINDOW_MS = 40_000;
+const EDGE_SPECIAL_COOLDOWN_MS = 4000;
+const PORTAL_SPLAT_MS = 520;
+const PORTAL_HIDE_MS = 260;
+const PORTAL_EDGE_MARGIN = 60;
+const JUMP_DELAY_MIN_MS = 7000;
+const JUMP_DELAY_SPREAD_MS = 11_000;
+const JUMP_CHANCE = 0.6;
+const JUMP_KICK = 2.4;
 
 interface Particle {
   x: number;
@@ -246,6 +275,21 @@ interface KidMotion {
   nextTurnAt: number;
 }
 
+interface CeremonyState {
+  phase: 'idle' | 'counting' | 'squeezing';
+  value: number;
+  nextTickAt: number;
+  cooldownUntil: number;
+}
+
+interface PortalTransit {
+  phase: 'idle' | 'splat' | 'gone';
+  until: number;
+  exit: { side: PortalSide; x: number; y: number } | null;
+  hotUntil: number;
+  cooldownUntil: number;
+}
+
 export interface SoundEvent {
   type: 'scream' | 'powerup' | 'crackle' | 'squeak';
   key?: string;
@@ -273,6 +317,10 @@ interface ChickenStateSnapshot {
   teleportFrames: number;
   squash: number;
   kids: number;
+  countdown: number | null;
+  portal: 'idle' | 'splat' | 'gone';
+  sqmode: 'hug' | 'stomp';
+  skin: string;
 }
 
 interface ChickenBridge {
@@ -283,6 +331,8 @@ interface ChickenBridge {
   forceHyper: () => void;
   forceTeleport: (decoys: boolean) => void;
   forceKid: () => void;
+  forceCeremony: () => void;
+  forcePortal: () => void;
 }
 
 declare global {
@@ -455,6 +505,9 @@ function ChickenGameInner() {
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const [kids, setKids] = useState<Kid[]>([]);
   const [bonus, setBonus] = useState<{ amount: number; id: number } | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [skin, setSkin] = useState(DEFAULT_SKIN_ID);
+  const [skinsOpen, setSkinsOpen] = useState(false);
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
   const physicsRef = useRef<Physics>({
@@ -500,6 +553,28 @@ function ChickenGameInner() {
   const squashRef = useRef(0);
   const squashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const squashAttrTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sqModeRef = useRef<'hug' | 'stomp'>('hug');
+  const franticUntilRef = useRef(0);
+  const franticTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const ceremonyRef = useRef<CeremonyState>({
+    phase: 'idle',
+    value: 0,
+    nextTickAt: 0,
+    cooldownUntil: 0,
+  });
+  const countdownRef = useRef<number | null>(null);
+  const countdownElRef = useRef<HTMLDivElement>(null);
+  const megaTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const portalRef = useRef<PortalTransit>({
+    phase: 'idle',
+    until: 0,
+    exit: null,
+    hotUntil: 0,
+    cooldownUntil: 0,
+  });
+  const portalsRef = useRef<Portal[]>([]);
+  const nextJumpAtRef = useRef(0);
+  const skinRef = useRef(DEFAULT_SKIN_ID);
   const ghostsRef = useRef<Ghost[]>([]);
   const ghostIdRef = useRef(0);
   const ghostSweepAtRef = useRef(0);
@@ -610,6 +685,110 @@ function ChickenGameInner() {
     if (el) el.style.setProperty('--flap-ms', '90ms');
   }, []);
 
+  const selectSkin = useCallback((id: string) => {
+    setSkin(id);
+    skinRef.current = id;
+    try {
+      window.localStorage.setItem(SKIN_STORAGE_KEY, id);
+    } catch {}
+    setSkinsOpen(false);
+  }, []);
+
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = window.localStorage.getItem(SKIN_STORAGE_KEY);
+    } catch {}
+    if (saved && SKINS.some((s) => s.id === saved)) {
+      setSkin(saved);
+      skinRef.current = saved;
+    }
+  }, []);
+
+  const beginPortal = useCallback((side: PortalSide, ts: number) => {
+    const portal = portalRef.current;
+    if (portal.phase !== 'idle') return;
+    const p = physicsRef.current;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (side === 'left') p.x = 0;
+    else if (side === 'right') p.x = vw - CHICKEN_W;
+    else if (side === 'top') p.y = 0;
+    else p.y = vh - CHICKEN_H;
+    p.vx = 0;
+    p.vy = 0;
+    p.rv = 0;
+    const cx = p.x + CHICKEN_W / 2;
+    const cy = p.y + CHICKEN_H / 2;
+    const color = auraRgbFor(scoreRef.current);
+    portalsRef.current.push({
+      x: side === 'left' ? 10 : side === 'right' ? vw - 10 : cx,
+      y: side === 'top' ? 10 : side === 'bottom' ? vh - 10 : cy,
+      side,
+      born: ts,
+      color,
+    });
+    const exitSides = (['left', 'right', 'top', 'bottom'] as PortalSide[]).filter(
+      (s) => s !== side
+    );
+    const exitSide = exitSides[Math.floor(Math.random() * exitSides.length)];
+    const spanX = Math.max(PORTAL_EDGE_MARGIN, vw - CHICKEN_W - PORTAL_EDGE_MARGIN * 2);
+    const spanY = Math.max(PORTAL_EDGE_MARGIN, vh - CHICKEN_H - PORTAL_EDGE_MARGIN * 2);
+    const exit = {
+      side: exitSide,
+      x:
+        exitSide === 'left'
+          ? 0
+          : exitSide === 'right'
+            ? vw - CHICKEN_W
+            : PORTAL_EDGE_MARGIN + Math.random() * spanX,
+      y:
+        exitSide === 'top'
+          ? 0
+          : exitSide === 'bottom'
+            ? vh - CHICKEN_H
+            : PORTAL_EDGE_MARGIN + Math.random() * spanY,
+    };
+    portal.phase = 'splat';
+    portal.until = ts + PORTAL_SPLAT_MS;
+    portal.exit = exit;
+    if (rubberElRef.current) rubberElRef.current.dataset.splat = side;
+  }, []);
+
+  const startFrantic = useCallback(() => {
+    const rubber = rubberElRef.current;
+    const chicken = chickenElRef.current;
+    if (!rubber || !chicken) return;
+    franticUntilRef.current = performance.now() + FRANTIC_DURATION_MS;
+    if (squashTimerRef.current) clearTimeout(squashTimerRef.current);
+    if (squashAttrTimerRef.current) clearTimeout(squashAttrTimerRef.current);
+    if (franticTimerRef.current) clearInterval(franticTimerRef.current);
+    rubber.dataset.squashed = '1';
+    chicken.setAttribute('data-squash', '1.00');
+    const step = () => {
+      if (performance.now() >= franticUntilRef.current) {
+        if (franticTimerRef.current) clearInterval(franticTimerRef.current);
+        franticTimerRef.current = null;
+        rubber.style.setProperty('--sq', '0');
+        rubber.dataset.squashed = '0';
+        squashRef.current = 0;
+        squashAttrTimerRef.current = setTimeout(() => {
+          chicken.setAttribute('data-squash', '0');
+        }, SQUASH_ATTR_CLEAR_MS);
+        return;
+      }
+      const sq = 0.55 + Math.random() * 0.45;
+      squashRef.current = sq;
+      sqModeRef.current = Math.random() < 0.5 ? 'stomp' : 'hug';
+      rubber.dataset.sqmode = sqModeRef.current;
+      rubber.style.setProperty('--sq', sq.toFixed(3));
+      rubber.style.setProperty('--sqx', (Math.random() * 2 - 1).toFixed(2));
+      rubber.style.setProperty('--sqy', Math.random().toFixed(2));
+    };
+    step();
+    franticTimerRef.current = setInterval(step, FRANTIC_STEP_MS);
+  }, []);
+
   const applySquash = useCallback(
     (e?: ReactMouseEvent<HTMLDivElement>) => {
       const rubber = rubberElRef.current;
@@ -623,16 +802,32 @@ function ChickenGameInner() {
         1,
         SQUASH_BASE + (combo.count - 1) * SQUASH_PER_COMBO + heatRef.current * SQUASH_HEAT
       );
+      if (sq >= SQUEAK_THRESHOLD) {
+        squeak(sq);
+        recordPlay({ type: 'squeak', at: Date.now() });
+      }
+      if (now < franticUntilRef.current) return;
+      if (Math.random() < FRANTIC_SQUEEZE_CHANCE) {
+        startFrantic();
+        return;
+      }
       let sqx = 0;
+      let sqy = 0.5;
       if (e) {
         const rect = chicken.getBoundingClientRect();
         if (rect.width > 0) {
           sqx = Math.max(-1, Math.min(1, ((e.clientX - rect.left) / rect.width) * 2 - 1));
         }
+        if (rect.height > 0) {
+          sqy = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+        }
       }
+      sqModeRef.current = Math.random() < STOMP_SQUEEZE_CHANCE ? 'stomp' : 'hug';
       squashRef.current = sq;
       rubber.style.setProperty('--sq', sq.toFixed(3));
       rubber.style.setProperty('--sqx', sqx.toFixed(2));
+      rubber.style.setProperty('--sqy', sqy.toFixed(2));
+      rubber.dataset.sqmode = sqModeRef.current;
       rubber.dataset.squashed = '1';
       chicken.setAttribute('data-squash', sq.toFixed(2));
       if (squashTimerRef.current) clearTimeout(squashTimerRef.current);
@@ -645,12 +840,8 @@ function ChickenGameInner() {
           chicken.setAttribute('data-squash', '0');
         }, SQUASH_ATTR_CLEAR_MS);
       }, SQUASH_RELEASE_MS);
-      if (sq >= SQUEAK_THRESHOLD) {
-        squeak(sq);
-        recordPlay({ type: 'squeak', at: Date.now() });
-      }
     },
-    [squeak, recordPlay]
+    [squeak, recordPlay, startFrantic]
   );
 
   const hit = useCallback(
@@ -703,6 +894,19 @@ function ChickenGameInner() {
         spawnFeathers(cx, cy, count, newTier);
       }
       applySquash(e);
+      const ceremony = ceremonyRef.current;
+      if (
+        ceremony.phase === 'idle' &&
+        now >= ceremony.cooldownUntil &&
+        heatRef.current >= CEREMONY_HEAT &&
+        comboRef.current.count >= CEREMONY_COMBO
+      ) {
+        ceremony.phase = 'counting';
+        ceremony.value = CEREMONY_COUNT_FROM;
+        ceremony.nextTickAt = now + CEREMONY_TICK_MS;
+        countdownRef.current = ceremony.value;
+        setCountdown(ceremony.value);
+      }
     },
     [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash]
   );
@@ -749,6 +953,10 @@ function ChickenGameInner() {
         teleportFrames: teleportRef.current.arrivedFrames,
         squash: squashRef.current,
         kids: kidsCountRef.current,
+        countdown: countdownRef.current,
+        portal: portalRef.current.phase,
+        sqmode: sqModeRef.current,
+        skin: skinRef.current,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -777,12 +985,26 @@ function ChickenGameInner() {
       forceKid: () => {
         spawnKid();
       },
+      forceCeremony: () => {
+        const ceremony = ceremonyRef.current;
+        if (ceremony.phase !== 'idle') return;
+        ceremony.phase = 'counting';
+        ceremony.value = CEREMONY_COUNT_FROM;
+        ceremony.nextTickAt = performance.now() + CEREMONY_TICK_MS;
+        countdownRef.current = ceremony.value;
+        setCountdown(ceremony.value);
+      },
+      forcePortal: () => {
+        if (modeRef.current === 'ground') modeRef.current = 'flying';
+        const sides: PortalSide[] = ['left', 'right', 'top', 'bottom'];
+        beginPortal(sides[Math.floor(Math.random() * sides.length)], performance.now());
+      },
     };
     window.__chicken = bridge;
     return () => {
       if (window.__chicken === bridge) delete window.__chicken;
     };
-  }, [hit, spawnKid]);
+  }, [hit, spawnKid, beginPortal]);
 
   useEffect(() => {
     const p = physicsRef.current;
@@ -817,6 +1039,8 @@ function ChickenGameInner() {
     return () => {
       if (squashTimerRef.current) clearTimeout(squashTimerRef.current);
       if (squashAttrTimerRef.current) clearTimeout(squashAttrTimerRef.current);
+      if (franticTimerRef.current) clearInterval(franticTimerRef.current);
+      if (megaTimerRef.current) clearTimeout(megaTimerRef.current);
     };
   }, []);
 
@@ -847,6 +1071,39 @@ function ChickenGameInner() {
       if (nextMood !== moodRef.current) {
         moodRef.current = nextMood;
         setMood(nextMood);
+      }
+
+      const ceremony = ceremonyRef.current;
+      if (ceremony.phase === 'counting' && ts >= ceremony.nextTickAt) {
+        ceremony.value -= 1;
+        if (ceremony.value <= 0) {
+          ceremony.phase = 'squeezing';
+          ceremony.cooldownUntil =
+            ts + CEREMONY_COOLDOWN_MIN_MS + Math.random() * CEREMONY_COOLDOWN_SPREAD_MS;
+          countdownRef.current = null;
+          setCountdown(null);
+          const rubber = rubberElRef.current;
+          if (rubber) {
+            rubber.classList.add('chicken-mega-squeeze');
+            squeak(1);
+            recordPlay({ type: 'squeak', at: Date.now() });
+            if (megaTimerRef.current) clearTimeout(megaTimerRef.current);
+            megaTimerRef.current = setTimeout(() => {
+              rubber.classList.remove('chicken-mega-squeeze');
+              ceremonyRef.current.phase = 'idle';
+            }, MEGA_SQUEEZE_MS);
+          } else {
+            ceremony.phase = 'idle';
+          }
+        } else {
+          ceremony.nextTickAt += CEREMONY_TICK_MS;
+          countdownRef.current = ceremony.value;
+          setCountdown(ceremony.value);
+        }
+      }
+      if (countdownElRef.current) {
+        const mm = mouseRef.current;
+        countdownElRef.current.style.transform = `translate(${mm.x + 14}px, ${mm.y + 18}px)`;
       }
 
       const p = physicsRef.current;
@@ -880,8 +1137,45 @@ function ChickenGameInner() {
 
       const sp = speedRef.current * mercy * hyperFactor;
 
+      const portal = portalRef.current;
+      if (portal.phase === 'splat' && ts >= portal.until) {
+        portal.phase = 'gone';
+        portal.until = ts + PORTAL_HIDE_MS;
+        if (rubberElRef.current) delete rubberElRef.current.dataset.splat;
+        if (chickenElRef.current) chickenElRef.current.style.opacity = '0';
+      } else if (portal.phase === 'gone' && ts >= portal.until && portal.exit) {
+        const { side, x, y } = portal.exit;
+        p.x = Math.max(0, Math.min(x, vw - CHICKEN_W));
+        p.y = Math.max(0, Math.min(y, vh - CHICKEN_H));
+        const inward =
+          side === 'left' ? 0 : side === 'right' ? Math.PI : side === 'top' ? Math.PI / 2 : -Math.PI / 2;
+        const exitAngle = inward + (Math.random() - 0.5) * 1.2;
+        p.vx = Math.cos(exitAngle) * BASE_SPEED;
+        p.vy = Math.sin(exitAngle) * BASE_SPEED;
+        const ecx = p.x + CHICKEN_W / 2;
+        const ecy = p.y + CHICKEN_H / 2;
+        portalsRef.current.push({
+          x: side === 'left' ? 10 : side === 'right' ? vw - 10 : ecx,
+          y: side === 'top' ? 10 : side === 'bottom' ? vh - 10 : ecy,
+          side,
+          born: ts,
+          color: auraRgbFor(sc),
+        });
+        spawnFeathers(ecx, ecy, 4, tierRef.current);
+        if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
+        portal.phase = 'idle';
+        portal.exit = null;
+        portal.hotUntil = ts + PORTAL_HOT_WINDOW_MS;
+        portal.cooldownUntil = ts + EDGE_SPECIAL_COOLDOWN_MS;
+      }
+
       const tp = teleportRef.current;
-      if (flying && (sc >= TELEPORT_MIN_SCORE || tp.forcedDecoys !== null) && tp.phase === 'idle') {
+      if (
+        flying &&
+        (sc >= TELEPORT_MIN_SCORE || tp.forcedDecoys !== null) &&
+        tp.phase === 'idle' &&
+        portal.phase === 'idle'
+      ) {
         if (!tp.nextAt) {
           tp.nextAt = ts + TELEPORT_DELAY_MIN_MS + Math.random() * TELEPORT_DELAY_SPREAD_MS;
         } else if (ts >= tp.nextAt) {
@@ -976,7 +1270,21 @@ function ChickenGameInner() {
         p.bank = 0;
         if (p.vx > 0.01) facingRef.current = 1;
         else if (p.vx < -0.01) facingRef.current = -1;
+      } else if (portal.phase !== 'idle') {
+        p.bank = 0;
       } else {
+        if (!nextJumpAtRef.current) {
+          nextJumpAtRef.current = ts + JUMP_DELAY_MIN_MS + Math.random() * JUMP_DELAY_SPREAD_MS;
+        } else if (ts >= nextJumpAtRef.current) {
+          nextJumpAtRef.current = ts + JUMP_DELAY_MIN_MS + Math.random() * JUMP_DELAY_SPREAD_MS;
+          if (Math.random() < JUMP_CHANCE) {
+            const jumpAngle = Math.random() * Math.PI * 2;
+            p.vx += Math.cos(jumpAngle) * BASE_SPEED * JUMP_KICK;
+            p.vy += Math.sin(jumpAngle) * BASE_SPEED * JUMP_KICK;
+            p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH * 0.8;
+          }
+        }
+
         let dx = p.vx * dt * sp;
         let dy = p.vy * dt * sp;
         const travel = Math.hypot(dx, dy);
@@ -987,21 +1295,68 @@ function ChickenGameInner() {
         p.x += dx;
         p.y += dy;
 
+        const wildKick = (side: PortalSide) => {
+          if (Math.random() >= EDGE_WILD_CHANCE) return;
+          const speed0 = Math.max(BASE_SPEED * 0.8, Math.hypot(p.vx, p.vy));
+          const wildAngle = Math.random() * Math.PI * 2;
+          p.vx = Math.cos(wildAngle) * speed0;
+          p.vy = Math.sin(wildAngle) * speed0;
+          if (side === 'left' && p.vx < 0) p.vx *= -1;
+          else if (side === 'right' && p.vx > 0) p.vx *= -1;
+          else if (side === 'top' && p.vy < 0) p.vy *= -1;
+          else if (side === 'bottom' && p.vy > 0) p.vy *= -1;
+          p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH * 1.5;
+        };
+        const tryEdgeSpecial = (side: PortalSide): boolean => {
+          if (ts < portal.cooldownUntil || portal.phase !== 'idle' || tp.phase !== 'idle') {
+            return false;
+          }
+          const portalChance = ts < portal.hotUntil ? EDGE_PORTAL_HOT_CHANCE : EDGE_PORTAL_CHANCE;
+          const roll = Math.random();
+          if (roll < portalChance) {
+            beginPortal(side, ts);
+            return true;
+          }
+          if (roll < portalChance + EDGE_WRAP_CHANCE) {
+            streaksRef.current.push(
+              ...makeTeleportStreaks(p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, ts, 6)
+            );
+            if (side === 'left') p.x = vw - CHICKEN_W - 2;
+            else if (side === 'right') p.x = 2;
+            else if (side === 'top') p.y = vh - CHICKEN_H - 2;
+            else p.y = 2;
+            streaksRef.current.push(
+              ...makeTeleportStreaks(p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, ts, 6)
+            );
+            portal.cooldownUntil = ts + EDGE_SPECIAL_COOLDOWN_MS;
+            return true;
+          }
+          return false;
+        };
+
         if (p.x <= 0 || p.x >= vw - CHICKEN_W) {
-          p.vx *= -1;
-          p.vy += (Math.random() - 0.5) * BOUNCE_RANDOM;
-          if (Math.random() < SPIN_BOUNCE_CHANCE) {
-            p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+          const side: PortalSide = p.x <= 0 ? 'left' : 'right';
+          if (!tryEdgeSpecial(side)) {
+            p.vx *= -1;
+            p.vy += (Math.random() - 0.5) * BOUNCE_RANDOM;
+            if (Math.random() < SPIN_BOUNCE_CHANCE) {
+              p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+            }
+            p.x = Math.max(0, Math.min(p.x, vw - CHICKEN_W));
+            wildKick(side);
           }
-          p.x = Math.max(0, Math.min(p.x, vw - CHICKEN_W));
         }
-        if (p.y <= 0 || p.y >= vh - CHICKEN_H) {
-          p.vy *= -1;
-          p.vx += (Math.random() - 0.5) * BOUNCE_RANDOM;
-          if (Math.random() < SPIN_BOUNCE_CHANCE) {
-            p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+        if (portal.phase === 'idle' && (p.y <= 0 || p.y >= vh - CHICKEN_H)) {
+          const side: PortalSide = p.y <= 0 ? 'top' : 'bottom';
+          if (!tryEdgeSpecial(side)) {
+            p.vy *= -1;
+            p.vx += (Math.random() - 0.5) * BOUNCE_RANDOM;
+            if (Math.random() < SPIN_BOUNCE_CHANCE) {
+              p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+            }
+            p.y = Math.max(0, Math.min(p.y, vh - CHICKEN_H));
+            wildKick(side);
           }
-          p.y = Math.max(0, Math.min(p.y, vh - CHICKEN_H));
         }
 
         p.rv += (-p.rotation * ROTATION_SPRING - p.rv * ROTATION_DAMP) * dt;
@@ -1072,7 +1427,14 @@ function ChickenGameInner() {
         nextKidAtRef.current = ts + KID_DELAY_MIN_MS + Math.random() * KID_DELAY_SPREAD_MS;
       } else if (ts >= nextKidAtRef.current) {
         nextKidAtRef.current = ts + KID_DELAY_MIN_MS + Math.random() * KID_DELAY_SPREAD_MS;
-        if (kidMotions.size === 0) spawnKid();
+        if (kidMotions.size < KID_MAX) {
+          const broodRoll = Math.random();
+          const brood = Math.min(
+            KID_MAX - kidMotions.size,
+            broodRoll < 0.12 ? 3 : broodRoll < 0.45 ? 2 : 1
+          );
+          for (let i = 0; i < brood; i++) spawnKid();
+        }
       }
       if (kidMotions.size > 0) {
         const kidY = groundYFor(vh) - KID_H;
@@ -1117,12 +1479,12 @@ function ChickenGameInner() {
 
       for (let i = 0; i < count && particles.length < MAX_PARTICLES; i++) {
         particles.push({
-          x: cx + (Math.random() - 0.5) * 20,
-          y: cy + (Math.random() - 0.5) * 20,
+          x: cx + (Math.random() - 0.5) * 28,
+          y: cy + (Math.random() - 0.5) * 28,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
-          alpha: 0.4 + Math.random() * 0.3,
-          size: 2 + Math.random() * 3,
+          alpha: 0.15 + Math.random() * 0.12,
+          size: 6 + Math.random() * 9,
           hue: tierDef.particleHue,
         });
       }
@@ -1239,6 +1601,7 @@ function ChickenGameInner() {
         }
 
         drawStreaks(ctx, streaksRef.current, now, dt, auraRgb);
+        drawPortals(ctx, portalsRef.current, now);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -1248,7 +1611,7 @@ function ChickenGameInner() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay, addGhost, spawnKid, removeKid]);
+  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal]);
 
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
@@ -1265,13 +1628,55 @@ function ChickenGameInner() {
       <GameScenery tier={tier} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
-      <span className="absolute top-4 left-5 text-xs text-white/40 font-medium tracking-wide pointer-events-none">
-        Floating Chicken Game
-      </span>
-
       <div className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
-        Click the chicken
+        Squeeze the chicken
       </div>
+
+      <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
+        <button
+          type="button"
+          onClick={() => setSkinsOpen((v) => !v)}
+          aria-expanded={skinsOpen}
+          data-testid="chicken-skins-toggle"
+          className="cursor-pointer text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
+        >
+          Skins
+        </button>
+        {skinsOpen && (
+          <div
+            data-testid="chicken-skins-panel"
+            className="flex gap-2 rounded-xl border border-white/10 bg-black/50 p-2 backdrop-blur-md"
+          >
+            {SKINS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                title={s.name}
+                onClick={() => selectSkin(s.id)}
+                data-testid={`chicken-skin-${s.id}`}
+                aria-pressed={skin === s.id}
+                className={`cursor-pointer rounded-lg border p-1.5 transition-colors ${skin === s.id ? 'border-[#FFD700]/60 bg-white/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+              >
+                <ChickenSvg className="w-[22px]" tier={tier} morph={0} eyes="calm" skin={s.id} />
+                <span className="sr-only">{s.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {countdown !== null && (
+        <div
+          ref={countdownElRef}
+          data-testid="chicken-countdown"
+          className="absolute top-0 left-0 z-30 pointer-events-none text-xl font-bold text-white/90 drop-shadow-[0_0_8px_rgba(255,215,0,0.7)] tabular-nums"
+          style={{
+            transform: `translate(${mouseRef.current.x + 14}px, ${mouseRef.current.y + 18}px)`,
+          }}
+        >
+          {countdown}s…
+        </div>
+      )}
 
       {bonus && (
         <div
@@ -1327,7 +1732,7 @@ function ChickenGameInner() {
           className={`absolute top-0 left-0 pointer-events-none will-change-transform ${ghost.pre ? 'chicken-ghost-pre' : 'chicken-ghost'}`}
           style={{ transform: `translate(${ghost.x}px, ${ghost.y}px)` }}
         >
-          <ChickenSvg className="w-[70px]" tier={ghost.tier} morph={ghost.morph} />
+          <ChickenSvg className="w-[70px]" tier={ghost.tier} morph={ghost.morph} skin={skin} />
         </div>
       ))}
 
@@ -1361,8 +1766,15 @@ function ChickenGameInner() {
           data-facing="1"
           style={{ transition: 'transform 160ms ease-out', transformOrigin: 'center' }}
         >
-          <div ref={rubberElRef} className="chicken-rubber" data-squashed="0">
-            <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} eyes={mood} />
+          <div ref={rubberElRef} className="chicken-rubber" data-squashed="0" data-sqmode="hug">
+            <ChickenSvg
+              className="w-[70px]"
+              style={glowStyle}
+              tier={tier}
+              morph={morph}
+              eyes={mood}
+              skin={skin}
+            />
           </div>
         </div>
       </div>

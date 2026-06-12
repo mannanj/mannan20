@@ -55,7 +55,7 @@ test.describe('chicken leaderboard identity', () => {
 
     const taken = page.getByTestId('leaderboard-name-taken');
     await expect(taken).toBeVisible();
-    await expect(taken).toContainText('protected by email');
+    await expect(taken).toContainText('sign in below with your email');
 
     await page.getByTestId('leaderboard-claim-email').fill('me@example.com');
     await page.getByTestId('leaderboard-claim-send').click();

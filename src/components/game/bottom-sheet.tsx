@@ -30,7 +30,7 @@ export function BottomSheet({ id, open, onClose, label, testId, children }: Bott
       aria-hidden={!open}
       className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#121214]/95 backdrop-blur-md transition-transform duration-300 ease-out ${open ? 'translate-y-0' : 'pointer-events-none translate-y-full'}`}
     >
-      <div className="mx-auto max-h-[60vh] w-full max-w-5xl overflow-y-auto px-6 py-5">
+      <div className="mx-auto max-h-[60vh] w-full max-w-5xl overflow-y-auto px-6 pt-5 pb-12">
         {children}
       </div>
     </div>

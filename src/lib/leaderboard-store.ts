@@ -36,6 +36,8 @@ export type RenameResult =
   | { ok: true }
   | { ok: false; code: 'taken' | 'no-names' };
 
+export const ENTRY_SEP = '\u001F';
+
 const BOARD_KEYS: Record<Kind, string> = {
   human: 'game:chicken:lb:human',
   agent: 'game:chicken:lb:agent',
@@ -51,9 +53,9 @@ const url = process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
 const token = process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
 const redis = url && token ? new Redis({ url, token }) : null;
 
-const memBoards: Record<Kind, Map<string, number>> = {
-  human: new Map(),
-  agent: new Map(),
+const memBoards: Record<Kind, Entry[]> = {
+  human: [],
+  agent: [],
 };
 const memOwners = new Map<string, OwnerRec>();
 const memIdEmail = new Map<string, string>();
@@ -97,11 +99,19 @@ export function readCookieValue(header: string | null, key: string): string | nu
   }
 }
 
+function entryMember(name: string): string {
+  return `${name}${ENTRY_SEP}${crypto.randomUUID().slice(0, 8)}`;
+}
+
+function entryName(member: string): string {
+  const sep = member.indexOf(ENTRY_SEP);
+  return sep === -1 ? member : member.slice(0, sep);
+}
+
 function memTop(kind: Kind): Entry[] {
-  return [...memBoards[kind]]
-    .map(([name, score]) => ({ name, score }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, TOP_N);
+  return memBoards[kind]
+    .slice(0, TOP_N)
+    .map((entry) => ({ name: entry.name, score: entry.score }));
 }
 
 async function topFor(kind: Kind): Promise<Entry[]> {
@@ -112,7 +122,7 @@ async function topFor(kind: Kind): Promise<Entry[]> {
   });
   const entries: Entry[] = [];
   for (let i = 0; i + 1 < raw.length; i += 2) {
-    entries.push({ name: String(raw[i]), score: Number(raw[i + 1]) });
+    entries.push({ name: entryName(String(raw[i])), score: Number(raw[i + 1]) });
   }
   return entries;
 }
@@ -139,7 +149,10 @@ async function resolveRenames(lower: string): Promise<{ lower: string; rec: Owne
 
 async function legacyNameExists(name: string): Promise<boolean> {
   if (!redis) {
-    return memBoards.human.has(name) || memBoards.agent.has(name);
+    return (
+      memBoards.human.some((e) => e.name === name) ||
+      memBoards.agent.some((e) => e.name === name)
+    );
   }
   const [h, a] = await Promise.all([
     redis.zscore(BOARD_KEYS.human, name),
@@ -180,11 +193,12 @@ async function claimName(
 
 async function writeScore(kind: Kind, name: string, score: number): Promise<void> {
   if (!redis) {
-    const current = memBoards[kind].get(name) ?? 0;
-    if (score > current) memBoards[kind].set(name, score);
+    memBoards[kind].push({ name, score });
+    memBoards[kind].sort((a, b) => b.score - a.score);
+    if (memBoards[kind].length > KEEP_PER_BOARD) memBoards[kind].length = KEEP_PER_BOARD;
     return;
   }
-  await redis.zadd(BOARD_KEYS[kind], { gt: true }, { score, member: name });
+  await redis.zadd(BOARD_KEYS[kind], { score, member: entryMember(name) });
   await redis.zremrangebyrank(BOARD_KEYS[kind], 0, -(KEEP_PER_BOARD + 1));
 }
 
@@ -385,10 +399,24 @@ for i = 1, #olds do
       if old.o == ARGV[1] and old.r == nil then
         local oldMember = old.n
         for k = 2, 3 do
-          local s = redis.call('ZSCORE', KEYS[k], oldMember)
-          if s then
-            redis.call('ZADD', KEYS[k], 'GT', s, newMember)
-            redis.call('ZREM', KEYS[k], oldMember)
+          local members = redis.call('ZRANGE', KEYS[k], 0, -1)
+          for j = 1, #members do
+            local m = members[j]
+            local base = m
+            local suffix = ''
+            local sep = string.find(m, ARGV[6], 1, true)
+            if sep then
+              base = string.sub(m, 1, sep - 1)
+              suffix = string.sub(m, sep)
+            end
+            if base == oldMember then
+              local s = redis.call('ZSCORE', KEYS[k], m)
+              redis.call('ZREM', KEYS[k], m)
+              if suffix == '' then
+                suffix = ARGV[6] .. ARGV[7] .. j
+              end
+              redis.call('ZADD', KEYS[k], s, newMember .. suffix)
+            end
           end
         end
         old.r = ARGV[2]
@@ -437,11 +465,8 @@ export async function renameIdentity(input: {
       const old = memOwners.get(oldLower);
       if (!old || old.o !== input.ownerId || old.r) continue;
       for (const kind of ['human', 'agent'] as Kind[]) {
-        const s = memBoards[kind].get(old.n);
-        if (s !== undefined) {
-          const current = memBoards[kind].get(toDisplay) ?? 0;
-          if (s > current) memBoards[kind].set(toDisplay, s);
-          memBoards[kind].delete(old.n);
+        for (const entry of memBoards[kind]) {
+          if (entry.name === old.n) entry.name = toDisplay;
         }
       }
       memOwners.set(oldLower, { ...old, r: toLower });
@@ -455,7 +480,15 @@ export async function renameIdentity(input: {
   const result = await redis.eval(
     RENAME_SCRIPT,
     [OWNERS_KEY, BOARD_KEYS.human, BOARD_KEYS.agent, idNamesKey(input.ownerId)],
-    [input.ownerId, toLower, toDisplay, verified ? '1' : '0', JSON.stringify(olds)]
+    [
+      input.ownerId,
+      toLower,
+      toDisplay,
+      verified ? '1' : '0',
+      JSON.stringify(olds),
+      ENTRY_SEP,
+      newOwnerId().slice(0, 8),
+    ]
   );
   if (result === 'taken') return { ok: false, code: 'taken' };
   return { ok: true };
@@ -479,4 +512,15 @@ export async function pushFeedback(input: {
   }
   await redis.lpush(FEEDBACK_KEY, record);
   await redis.ltrim(FEEDBACK_KEY, 0, FEEDBACK_KEEP - 1);
+}
+
+export function __resetMemoryStore(): void {
+  memBoards.human.length = 0;
+  memBoards.agent.length = 0;
+  memOwners.clear();
+  memIdEmail.clear();
+  memIdNames.clear();
+  memEmailId.clear();
+  memMagic.clear();
+  memFeedback.length = 0;
 }

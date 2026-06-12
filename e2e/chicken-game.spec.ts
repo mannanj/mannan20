@@ -28,6 +28,10 @@ interface ChickenState {
   teleportFrames: number;
   squash: number;
   kids: number;
+  countdown: number | null;
+  portal: 'idle' | 'splat' | 'gone';
+  sqmode: 'hug' | 'stomp';
+  skin: string;
 }
 
 interface ChickenBridge {
@@ -38,6 +42,8 @@ interface ChickenBridge {
   forceHyper: () => void;
   forceTeleport: (decoys: boolean) => void;
   forceKid: () => void;
+  forceCeremony: () => void;
+  forcePortal: () => void;
 }
 
 const SOUNDS_DIR = path.join(process.cwd(), 'public', 'sounds', 'chicken');
@@ -543,5 +549,110 @@ test.describe('chicken game', () => {
         { timeout: 4000 }
       )
       .toBeGreaterThan(0.52);
+  });
+
+  test('the title is gone and the label says squeeze', async ({ page }) => {
+    await gotoGame(page);
+    await expect(page.getByText('Squeeze the chicken')).toBeVisible();
+    await expect(page.locator('span', { hasText: 'Floating Chicken Game' })).toHaveCount(0);
+    await expect(page.getByText('Floating Chicken Game')).not.toBeVisible();
+  });
+
+  test('clicks squeeze the belly hug-style by default', async ({ page }) => {
+    await gotoGame(page);
+    const rubber = page.locator('[data-testid="chicken"] .chicken-rubber');
+    await expect(rubber).toHaveAttribute('data-sqmode', 'hug');
+    const chicken = page.getByTestId('chicken');
+    for (let i = 0; i < 12; i++) {
+      await chicken.click({ force: true, delay: 5 });
+    }
+    await expect(rubber).toHaveAttribute('data-sqmode', /^(hug|stomp)$/);
+    await expect.poll(async () => (await bridge(page).state()).sqmode).toBe('hug');
+  });
+
+  test('hot-streak ceremony counts down at the cursor, then mega-squeezes', async ({ page }) => {
+    test.slow();
+    await gotoGame(page);
+    await page.evaluate(() =>
+      (window as unknown as { __chicken: ChickenBridge }).__chicken.forceCeremony()
+    );
+    const countdown = page.getByTestId('chicken-countdown');
+    await expect(countdown).toBeVisible();
+    await expect(countdown).toHaveText(/[1-5]s…/);
+    const rubber = page.locator('[data-testid="chicken"] .chicken-rubber');
+    await expect
+      .poll(() => rubber.getAttribute('class'), { timeout: 8000 })
+      .toContain('chicken-mega-squeeze');
+    await expect(countdown).toHaveCount(0);
+    await expect
+      .poll(() => rubber.getAttribute('class'), { timeout: 4000 })
+      .not.toContain('chicken-mega-squeeze');
+    expect((await bridge(page).state()).countdown).toBeNull();
+  });
+
+  test('portal splat goops the chicken into a wall and out another side', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    await page.evaluate(() =>
+      (window as unknown as { __chicken: ChickenBridge }).__chicken.forcePortal()
+    );
+    await expect.poll(async () => (await b.state()).portal).toBe('splat');
+    const rubber = page.locator('[data-testid="chicken"] .chicken-rubber');
+    await expect(rubber).toHaveAttribute('data-splat', /^(left|right|top|bottom)$/);
+    await expect.poll(async () => (await b.state()).portal, { timeout: 3000 }).toBe('idle');
+    await expect(rubber).not.toHaveAttribute('data-splat', /.+/);
+    const visible = await page
+      .getByTestId('chicken')
+      .evaluate((el) => (el as HTMLElement).style.opacity);
+    expect(visible).toBe('1');
+  });
+
+  test('skins picker applies a skin and remembers it across visits', async ({ page }) => {
+    await gotoGame(page);
+    const mainChicken = page.locator('[data-testid="chicken"] [data-testid="chicken-svg"]');
+    await expect(mainChicken).toHaveAttribute('data-skin', 'classic');
+    await page.getByTestId('chicken-skins-toggle').click();
+    await expect(page.getByTestId('chicken-skins-panel')).toBeVisible();
+    await page.getByTestId('chicken-skin-void').click();
+    await expect(mainChicken).toHaveAttribute('data-skin', 'void');
+    await expect(page.getByTestId('chicken-skins-panel')).toHaveCount(0);
+    expect((await bridge(page).state()).skin).toBe('void');
+
+    await gotoGame(page);
+    await expect(
+      page.locator('[data-testid="chicken"] [data-testid="chicken-svg"]')
+    ).toHaveAttribute('data-skin', 'void');
+  });
+
+  test('several chicken kids can roam at the same time', async ({ page }) => {
+    await gotoGame(page);
+    await page.evaluate(() => {
+      const w = window as unknown as { __chicken: ChickenBridge };
+      w.__chicken.forceKid();
+      w.__chicken.forceKid();
+      w.__chicken.forceKid();
+    });
+    await expect(page.getByTestId('chicken-kid')).toHaveCount(3);
+  });
+
+  test('leaderboard toggle sits bottom-center with a caret that flips open', async ({ page }) => {
+    await page.route('**/api/game/leaderboard', (route) =>
+      route.fulfill({ json: { human: [], agent: [] } })
+    );
+    await gotoGame(page);
+    const link = page.getByTestId('chicken-leaderboard-link');
+    const caret = page.getByTestId('leaderboard-caret');
+    await expect(caret).toBeVisible();
+    const box = await link.boundingBox();
+    expect(box).not.toBeNull();
+    const viewport = page.viewportSize();
+    expect(Math.abs(box!.x + box!.width / 2 - viewport!.width / 2)).toBeLessThan(80);
+    await expect(link).toHaveAttribute('aria-expanded', 'false');
+    await expect(caret).not.toHaveClass(/rotate-180/);
+    await link.click();
+    await expect(link).toHaveAttribute('aria-expanded', 'true');
+    await expect(caret).toHaveClass(/rotate-180/);
+    await link.click();
+    await expect(link).toHaveAttribute('aria-expanded', 'false');
   });
 });

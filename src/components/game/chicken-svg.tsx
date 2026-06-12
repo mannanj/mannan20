@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 import { TIERS, mixHex } from './chicken-tiers';
+import { skinById } from './chicken-skins';
 
 interface ChickenSvgProps {
   className?: string;
@@ -10,6 +11,7 @@ interface ChickenSvgProps {
   tier?: number;
   morph?: number;
   eyes?: (typeof TIERS)[number]['eyes'];
+  skin?: string;
 }
 
 function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
@@ -56,20 +58,33 @@ function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
   );
 }
 
-export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eyes }: ChickenSvgProps) {
+export function ChickenSvg({
+  className,
+  style,
+  onClick,
+  tier = 0,
+  morph = 0,
+  eyes,
+  skin: skinId,
+}: ChickenSvgProps) {
   const uid = useId();
   const clampedTier = Math.max(0, Math.min(tier, TIERS.length - 1));
   const clampedMorph = Math.max(0, Math.min(morph, 1));
   const current = TIERS[clampedTier];
+  const skin = skinById(skinId);
+  const classic = skin.id === 'classic';
   const eyeKind = eyes ?? current.eyes;
   const agitated = eyeKind === 'angry' || eyeKind === 'furious';
   const next = TIERS[Math.min(clampedTier + 1, TIERS.length - 1)];
-  const gold = current.hair === 'gold';
+  const gold = classic && current.hair === 'gold';
   const goldId = `chicken-gold-${uid}`;
-  const body = mixHex(current.body, next.body, clampedMorph);
-  const bodyDark = mixHex(current.bodyDark, next.bodyDark, clampedMorph);
+  const tierBody = mixHex(current.body, next.body, clampedMorph);
+  const tierBodyDark = mixHex(current.bodyDark, next.bodyDark, clampedMorph);
+  const tierBelly = mixHex(current.belly, next.belly, clampedMorph);
+  const body = classic ? tierBody : mixHex(skin.body, tierBody, skin.tierBlend);
+  const bodyDark = classic ? tierBodyDark : mixHex(skin.bodyDark, tierBodyDark, skin.tierBlend);
+  const belly = classic ? tierBelly : mixHex(skin.belly, tierBelly, skin.tierBlend);
   const wing = mixHex(bodyDark, '#161616', 0.24);
-  const belly = mixHex(current.belly, next.belly, clampedMorph);
   const bodyFill = gold ? `url(#${goldId})` : body;
 
   return (
@@ -84,6 +99,7 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eye
       data-tier={clampedTier}
       data-hair={current.hair}
       data-morph={clampedMorph.toFixed(2)}
+      data-skin={skin.id}
     >
       {gold && (
         <defs>
@@ -98,16 +114,49 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eye
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
       <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
       {gold && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
+      {skin.accessory === 'spikes' && (
+        <g fill={skin.comb} opacity="0.9">
+          <path d="M22 82 L13 72 L26 75 Z" />
+          <path d="M18 98 L8 91 L20 90 Z" />
+          <path d="M19 114 L10 110 L21 106 Z" />
+        </g>
+      )}
       <g className="chicken-sq-head">
+        {skin.accessory === 'halo' && (
+          <ellipse
+            cx="40"
+            cy="6"
+            rx="13"
+            ry="3.6"
+            stroke={skin.comb}
+            strokeWidth="2"
+            opacity="0.85"
+          />
+        )}
         <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
-        <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill="#D32F2F" />
-        <path d="M55 25 L65 19 L66 38 L55 33 Z" fill="#CC3300" />
-        <path d="M55 21 L74 14 L58 27 Z" fill="#FF8C00" />
-        <path d="M55 33 L72 44 L57 36 Z" fill="#E67E00" />
+        <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill={skin.comb} />
+        <path d="M55 25 L65 19 L66 38 L55 33 Z" fill={skin.mouth} />
+        <path d="M55 21 L74 14 L58 27 Z" fill={skin.beakTop} />
+        <path d="M55 33 L72 44 L57 36 Z" fill={skin.beakBottom} />
         <g className="chicken-sq-eye">
           <Eye kind={eyeKind} />
         </g>
-        <ellipse cx="52" cy="40" rx="4" ry="5" fill="#D32F2F" />
+        {skin.accessory === 'visor' && (
+          <g>
+            <rect x="37" y="17" width="21" height="12" rx="4" fill="#263238" opacity="0.82" />
+            <line
+              x1="40.5"
+              y1="23"
+              x2="54.5"
+              y2="23"
+              stroke="#00E5FF"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              opacity="0.9"
+            />
+          </g>
+        )}
+        <ellipse cx="52" cy="40" rx="4" ry="5" fill={skin.wattle} />
       </g>
       <g className="chicken-sq-wing-left">
         <g
@@ -152,12 +201,12 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eye
         </>
       )}
       <g className="chicken-sq-legs">
-        <line x1="33" y1="144" x2="30" y2="152" stroke="#D32F2F" strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M22 155 L30 152 L38 155" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        <line x1="30" y1="152" x2="30" y2="158" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="47" y1="144" x2="50" y2="152" stroke="#D32F2F" strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M42 155 L50 152 L58 155" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        <line x1="50" y1="152" x2="50" y2="158" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="33" y1="144" x2="30" y2="152" stroke={skin.legs} strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M22 155 L30 152 L38 155" stroke={skin.legs} strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <line x1="30" y1="152" x2="30" y2="158" stroke={skin.legs} strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="47" y1="144" x2="50" y2="152" stroke={skin.legs} strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M42 155 L50 152 L58 155" stroke={skin.legs} strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <line x1="50" y1="152" x2="50" y2="158" stroke={skin.legs} strokeWidth="2.5" strokeLinecap="round" />
       </g>
     </svg>
   );
