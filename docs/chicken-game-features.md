@@ -21,9 +21,8 @@ The chicken develops emotional states based on gameplay:
 
 ## Skins & Unlockables
 
-- Cosmetic skins unlocked based on score thresholds and leaderboard status
-- Displayed as prizes at the top of the screen
-- Tied to progression system
+- ✅ Cosmetic skins shipped in Task 236 (2026-06-11): 5 free League-style skins (Classic Yard, Void Walker, Mecha Cluck, Magma Core, Frostfall) with a top-right picker, localStorage persistence, tier colors tinting through each skin
+- Still open: skins *unlocked* by score thresholds / leaderboard status, displayed as prizes, tied to progression
 
 ## Chicken Friends
 
