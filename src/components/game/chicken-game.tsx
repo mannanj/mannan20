@@ -56,10 +56,18 @@ const SHARDS_PER_CLICK = 7;
 const SHARDS_PER_TRANSFORM = 26;
 const SHARD_GRAVITY = 0.08;
 const SHARD_FADE = 0.014;
-const AURA_SPIKES = 12;
+const AURA_TONGUES = 20;
+const LIGHTNING_START = 15;
+const LIGHTNING_FULL = 140;
+const LIGHTNING_INTERVAL_RARE = 3200;
+const LIGHTNING_INTERVAL_FREQUENT = 480;
+const CRACKLE_MIN_GAP_MS = 520;
+const LIGHT_BLUE = { r: 95, g: 165, b: 255 };
+const LIGHT_RED = { r: 255, g: 70, b: 55 };
+const LIGHT_WHITE = { r: 255, g: 245, b: 235 };
 const TIER0_AURA_START = 0.55;
 const TIER0_AURA_MAX = 0.28;
-const ARC_LIFE_MS = 140;
+const ARC_LIFE_MS = 240;
 const ARC_SEGMENTS = 7;
 const MAX_ARCS_PER_BURST = 3;
 const SCREAM_JITTER = 0.1;
@@ -91,9 +99,22 @@ interface ShardParticle {
   color: string;
 }
 
+interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
+
 interface Arc {
   points: { x: number; y: number }[];
   born: number;
+  color: Rgb;
+}
+
+interface Lightning {
+  intervalMs: number;
+  color: Rgb;
+  intensity: number;
 }
 
 interface Physics {
@@ -124,6 +145,8 @@ interface ChickenStateSnapshot {
   vx: number;
   vy: number;
   mood: string;
+  lightning: Lightning | null;
+  arcs: number;
 }
 
 interface ChickenBridge {
@@ -145,6 +168,24 @@ function speedForScore(score: number): number {
 
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
+}
+
+function lerpRgb(a: Rgb, b: Rgb, t: number): Rgb {
+  return {
+    r: Math.round(a.r + (b.r - a.r) * t),
+    g: Math.round(a.g + (b.g - a.g) * t),
+    b: Math.round(a.b + (b.b - a.b) * t),
+  };
+}
+
+function lightningForScore(score: number): Lightning | null {
+  if (score < LIGHTNING_START) return null;
+  const t = Math.min(1, (score - LIGHTNING_START) / (LIGHTNING_FULL - LIGHTNING_START));
+  const intervalMs =
+    LIGHTNING_INTERVAL_RARE + (LIGHTNING_INTERVAL_FREQUENT - LIGHTNING_INTERVAL_RARE) * t;
+  const color =
+    t < 0.5 ? lerpRgb(LIGHT_BLUE, LIGHT_RED, t / 0.5) : lerpRgb(LIGHT_RED, LIGHT_WHITE, (t - 0.5) / 0.5);
+  return { intervalMs, color, intensity: 0.4 + 0.6 * t };
 }
 
 function mercyTargetFor(idleMs: number): number {
@@ -180,16 +221,18 @@ function auraRgbFor(score: number): { r: number; g: number; b: number } {
   };
 }
 
-function makeArc(cx: number, cy: number): Arc {
+function makeArc(cx: number, cy: number, color: Rgb): Arc {
   const points: { x: number; y: number }[] = [];
-  let angle = Math.random() * Math.PI * 2;
-  for (let i = 0; i < ARC_SEGMENTS; i++) {
-    angle += 0.22 + Math.random() * 0.34;
-    const rx = 34 + Math.random() * 26;
-    const ry = 62 + Math.random() * 34;
-    points.push({ x: cx + Math.cos(angle) * rx, y: cy + Math.sin(angle) * ry });
+  const baseAngle = Math.random() * Math.PI * 2;
+  const startR = 18 + Math.random() * 18;
+  const endR = 80 + Math.random() * 56;
+  for (let i = 0; i <= ARC_SEGMENTS; i++) {
+    const t = i / ARC_SEGMENTS;
+    const r = startR + (endR - startR) * t;
+    const a = baseAngle + (Math.random() - 0.5) * 1.0;
+    points.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r * 1.35 });
   }
-  return { points, born: performance.now() };
+  return { points, born: performance.now(), color };
 }
 
 function drawAura(
@@ -199,51 +242,67 @@ function drawAura(
   ts: number,
   tier: number,
   level: number,
-  rgb: { r: number; g: number; b: number }
+  rgb: Rgb
 ): void {
   if (level <= 0) return;
   const { r, g, b } = rgb;
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
-  const glow = ctx.createRadialGradient(cx, cy, 10, cx, cy, 80 + 30 * level);
-  glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.22 * level})`);
+
+  const gy = cy - 14 * level;
+  const glow = ctx.createRadialGradient(cx, gy, 8, cx, gy, 96 + 46 * level);
+  glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.2 * level})`);
   glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.ellipse(cx, cy, 70 + 26 * level, 100 + 34 * level, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, gy, 70 + 30 * level, 104 + 48 * level, 0, 0, Math.PI * 2);
   ctx.fill();
-  const baseRx = 36 + tier * 2;
-  const baseRy = 66 + tier * 3;
-  const flickerSpeed = 1 + tier * 0.12;
-  for (let k = 0; k < AURA_SPIKES; k++) {
-    const angle = (k / AURA_SPIKES) * Math.PI * 2;
-    const flick =
-      0.5 +
-      0.5 *
-        Math.sin(ts * 0.013 * flickerSpeed + k * 2.7) *
-        Math.sin(ts * 0.007 * flickerSpeed + k * 1.3);
-    const len = (26 + 36 * level) * (0.55 + 0.55 * flick);
-    const bx = cx + Math.cos(angle) * baseRx * 0.8;
-    const by = cy + Math.sin(angle) * baseRy * 0.8;
-    const tx = cx + Math.cos(angle) * (baseRx * 0.8 + len);
-    const ty = cy + Math.sin(angle) * (baseRy * 0.8 + len * 1.4);
-    const w = 6 + 5 * level;
-    const px = Math.cos(angle + Math.PI / 2) * w;
-    const py = Math.sin(angle + Math.PI / 2) * w;
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.4 + 0.35 * level * flick})`;
+
+  const hotR = Math.min(255, r + 90);
+  const hotG = Math.min(255, g + 90);
+  const hotB = Math.min(255, b + 90);
+  const core = ctx.createRadialGradient(cx, cy - 4, 3, cx, cy - 4, 54 + 26 * level);
+  core.addColorStop(0, `rgba(255, 255, 255, ${0.42 * level})`);
+  core.addColorStop(0.5, `rgba(${hotR}, ${hotG}, ${hotB}, ${0.26 * level})`);
+  core.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - 6, 46 + 16 * level, 76 + 24 * level, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const tongues = AURA_TONGUES + tier * 2;
+  const baseRx = 32 + tier * 1.5;
+  const baseRy = 58 + tier * 2;
+  const flickA = ts * 0.012;
+  const flickB = ts * 0.02;
+  for (let k = 0; k < tongues; k++) {
+    const angle = (k / tongues) * Math.PI * 2;
+    const ca = Math.cos(angle);
+    const sa = Math.sin(angle);
+    const upward = -sa;
+    const upFactor = 0.5 + 0.5 * upward;
+    const flick = 0.55 + 0.45 * Math.sin(flickA + k * 2.3) * Math.sin(flickB + k * 1.1);
+    const len = (16 + 54 * level) * (0.35 + upFactor) * flick;
+    const bx = cx + ca * baseRx;
+    const by = cy + sa * baseRy;
+    const tx = cx + ca * (baseRx + len * 0.6);
+    const ty = cy + sa * (baseRy + len * 0.4) - len * upFactor;
+    const w = (4.5 + 4 * level) * (0.5 + 0.5 * upFactor);
+    const px = -sa * w;
+    const py = ca * w;
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(0.16 + 0.26 * level) * (0.6 + 0.4 * flick)})`;
     ctx.beginPath();
     ctx.moveTo(bx + px, by + py);
     ctx.lineTo(tx, ty);
     ctx.lineTo(bx - px, by - py);
     ctx.closePath();
     ctx.fill();
-    const hr = Math.min(255, r + 110);
-    const hg = Math.min(255, g + 110);
-    const hb = Math.min(255, b + 110);
-    ctx.fillStyle = `rgba(${hr}, ${hg}, ${hb}, ${0.35 + 0.3 * level * flick})`;
+    const ix = cx + ca * (baseRx + len * 0.42);
+    const iy = cy + sa * (baseRy + len * 0.28) - len * upFactor * 0.72;
+    ctx.fillStyle = `rgba(255, 250, 235, ${(0.1 + 0.22 * level) * flick})`;
     ctx.beginPath();
     ctx.moveTo(bx + px * 0.5, by + py * 0.5);
-    ctx.lineTo(cx + Math.cos(angle) * (baseRx * 0.8 + len * 0.6), cy + Math.sin(angle) * (baseRy * 0.8 + len * 0.8));
+    ctx.lineTo(ix, iy);
     ctx.lineTo(bx - px * 0.5, by - py * 0.5);
     ctx.closePath();
     ctx.fill();
@@ -271,6 +330,7 @@ function ChickenGameInner() {
   const shardParticlesRef = useRef<ShardParticle[]>([]);
   const arcsRef = useRef<Arc[]>([]);
   const nextArcAtRef = useRef(0);
+  const lastCrackleAtRef = useRef(0);
   const speedRef = useRef(1);
   const heatRef = useRef(0);
   const moodRef = useRef<(typeof TIERS)[number]['eyes']>('calm');
@@ -385,6 +445,8 @@ function ChickenGameInner() {
         vx: physicsRef.current.vx,
         vy: physicsRef.current.vy,
         mood: moodRef.current,
+        lightning: lightningForScore(scoreRef.current),
+        arcs: arcsRef.current.length,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -581,14 +643,18 @@ function ChickenGameInner() {
         if (sh.alpha <= 0) shards.splice(i, 1);
       }
 
-      if (tierDef.electricityMs) {
-        if (!nextArcAtRef.current) nextArcAtRef.current = ts + tierDef.electricityMs;
+      const lightning = lightningForScore(sc);
+      if (lightning) {
+        if (!nextArcAtRef.current) nextArcAtRef.current = ts + lightning.intervalMs;
         if (ts >= nextArcAtRef.current) {
-          nextArcAtRef.current = ts + tierDef.electricityMs * (0.5 + Math.random());
+          nextArcAtRef.current = ts + lightning.intervalMs * (0.6 + Math.random() * 0.8);
           const burst = 1 + Math.floor(Math.random() * MAX_ARCS_PER_BURST);
-          for (let i = 0; i < burst; i++) arcsRef.current.push(makeArc(cx, cy));
-          crackle();
-          recordPlay({ type: 'crackle', at: Date.now() });
+          for (let i = 0; i < burst; i++) arcsRef.current.push(makeArc(cx, cy, lightning.color));
+          if (ts - lastCrackleAtRef.current > CRACKLE_MIN_GAP_MS) {
+            lastCrackleAtRef.current = ts;
+            crackle();
+            recordPlay({ type: 'crackle', at: Date.now() });
+          }
         }
       } else {
         nextArcAtRef.current = 0;
@@ -613,18 +679,24 @@ function ChickenGameInner() {
           }
           const alpha = 1 - age / ARC_LIFE_MS;
           const pts = arcs[i].points;
-          ctx.strokeStyle = `rgba(${auraRgb.r}, ${auraRgb.g}, ${auraRgb.b}, ${0.45 * alpha})`;
+          const col = arcs[i].color;
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+          const trace = () => {
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.stroke();
+          };
+          ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.28 * alpha})`;
+          ctx.lineWidth = 9;
+          trace();
+          ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.75 * alpha})`;
           ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(pts[0].x, pts[0].y);
-          for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
-          ctx.stroke();
-          ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * alpha})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(pts[0].x, pts[0].y);
-          for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
-          ctx.stroke();
+          trace();
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * alpha})`;
+          ctx.lineWidth = 1.8;
+          trace();
         }
 
         for (const pt of particles) {

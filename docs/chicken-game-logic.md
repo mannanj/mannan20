@@ -90,16 +90,19 @@ The chicken should read as **flying**, not tumbling (`chicken-game.tsx` rAF):
 
 ## Aura & lightning
 
-Drawn on the full-screen canvas behind the sprite (`drawAura`, arc system in the rAF):
+Drawn on the full-screen canvas behind the sprite (`drawAura` + the arc system in the rAF):
 
-- **Aura**: a saiyan-style energy flame that grows with stage and in-stage progress
-  (`auraLevelFor`), colored per stage (`auraRgbFor`), dampened a little by mercy. White-hot core,
-  colored licking tongues that flicker.
-- **Lightning**: jagged arcs that crackle around the chicken. Introduced early but **rare**, growing
-  **more frequent** at higher stages, with color progressing **blue → red → white**. Each arc draws
-  a colored bolt under a white-hot core and plays a crackle.
-
-> Aura/lightning visuals are iterated in Task 233; this section tracks the intended behavior.
+- **Flame aura** (`drawAura`): a Saiyan-style energy flame. A white-hot core hugs the body, and
+  colored tongues lick **upward** (taller at the top, short at the sides — they rise like fire) and
+  flicker via layered sine noise. It grows with stage and in-stage progress (`auraLevelFor`), is
+  colored per stage (`auraRgbFor`: blue / green / red / gold), dampened a little by mercy, and uses
+  additive (`lighter`) blending so overlaps glow white-hot.
+- **Lightning** (`lightningForScore` → arc system): sharp jagged bolts that radiate outward past the
+  flame and crackle around the chicken. It starts **late and rare** (from score `LIGHTNING_START`
+  = 15, ~3.2s apart) and ramps **more frequent** with score (down to ~0.48s), with color progressing
+  **blue → red → white** (independent of the body color). Each bolt draws a soft colored glow, a
+  colored core, and a white-hot center line, lives ~240ms, and triggers a crackle throttled by
+  `CRACKLE_MIN_GAP_MS` so the audio never spams at high frequency.
 
 ## Background scenery
 
@@ -120,6 +123,7 @@ Event-only — no background/ambient beds (`chicken-audio.ts`):
 ## Test bridge
 
 `window.__chicken` (e2e backbone, `e2e/chicken-game.spec.ts`):
-`plays` (sound log), `state()` → `{score, tier, mercy, morph, auraLevel, rotation, vx, vy, mood}`,
+`plays` (sound log), `state()` →
+`{score, tier, mercy, morph, auraLevel, rotation, vx, vy, mood, lightning, arcs}`,
 `boost(n)` (n clicks), `spin(v)` (impart angular velocity). `window.__scenery` → `advance()`,
 `index()` for the background cycle.

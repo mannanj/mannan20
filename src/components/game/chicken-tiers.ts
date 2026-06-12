@@ -9,7 +9,6 @@ export interface ChickenTier {
   aura: { r: number; g: number; b: number } | null;
   particleHue: number;
   screamRate: number;
-  electricityMs: number | null;
 }
 
 export const TIERS: ChickenTier[] = [
@@ -24,7 +23,6 @@ export const TIERS: ChickenTier[] = [
     aura: null,
     particleHue: 45,
     screamRate: 1,
-    electricityMs: null,
   },
   {
     name: 'Azure Comet',
@@ -36,9 +34,7 @@ export const TIERS: ChickenTier[] = [
     eyes: 'determined',
     aura: { r: 79, g: 195, b: 247 },
     particleHue: 199,
-    screamRate: 0.92,
-    electricityMs: null,
-  },
+    screamRate: 0.92,  },
   {
     name: 'Jade Tempest',
     threshold: 64,
@@ -49,9 +45,7 @@ export const TIERS: ChickenTier[] = [
     eyes: 'determined',
     aura: { r: 105, g: 230, b: 120 },
     particleHue: 122,
-    screamRate: 0.84,
-    electricityMs: null,
-  },
+    screamRate: 0.84,  },
   {
     name: 'Crimson Fury',
     threshold: 100,
@@ -62,9 +56,7 @@ export const TIERS: ChickenTier[] = [
     eyes: 'angry',
     aura: { r: 255, g: 96, b: 56 },
     particleHue: 8,
-    screamRate: 0.76,
-    electricityMs: 2200,
-  },
+    screamRate: 0.76,  },
   {
     name: 'Golden God',
     threshold: 140,
@@ -75,9 +67,7 @@ export const TIERS: ChickenTier[] = [
     eyes: 'ascended',
     aura: { r: 255, g: 226, b: 140 },
     particleHue: 48,
-    screamRate: 0.68,
-    electricityMs: 700,
-  },
+    screamRate: 0.68,  },
 ];
 
 export const FINAL_TIER = TIERS.length - 1;

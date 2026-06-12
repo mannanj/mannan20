@@ -19,6 +19,8 @@ interface ChickenState {
   vx: number;
   vy: number;
   mood: string;
+  lightning: { intervalMs: number; color: { r: number; g: number; b: number }; intensity: number } | null;
+  arcs: number;
 }
 
 interface ChickenBridge {
@@ -398,6 +400,33 @@ test.describe('chicken game', () => {
     expect(flap.before).toMatch(/^\d+ms$/);
     expect(flap.after).toMatch(/^\d+ms$/);
     expect(parseInt(flap.after, 10)).toBeLessThan(parseInt(flap.before, 10));
+  });
+
+  test('lightning starts late and rare, then ramps blue → red → white', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+
+    await b.boost(10);
+    expect((await b.state()).lightning).toBeNull();
+
+    await b.boost(15);
+    const early = (await b.state()).lightning;
+    expect(early).not.toBeNull();
+    expect(early!.color.b).toBeGreaterThan(early!.color.r);
+
+    await b.boost(85);
+    const mid = (await b.state()).lightning;
+    expect(mid!.color.r).toBeGreaterThan(mid!.color.b);
+    expect(mid!.intervalMs).toBeLessThan(early!.intervalMs);
+
+    await b.boost(35);
+    const late = (await b.state()).lightning;
+    expect(late!.color.r).toBeGreaterThan(200);
+    expect(late!.color.g).toBeGreaterThan(200);
+    expect(late!.color.b).toBeGreaterThan(200);
+    expect(late!.intervalMs).toBeLessThan(mid!.intervalMs);
+
+    await expect.poll(async () => (await b.state()).arcs, { timeout: 3000 }).toBeGreaterThan(0);
   });
 
   test('hand-drawn scenery crossfades between landscapes', async ({ page }) => {
