@@ -37,3 +37,24 @@ test.describe('header mcp popover', () => {
     await expect(page.getByTestId('mcp-popover')).toHaveCount(0);
   });
 });
+
+test.describe('header mcp popover on mobile', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('icon is visible and popover fits the viewport', async ({ page }) => {
+    await page.goto('/');
+    const button = page.getByTestId('mcp-header-button');
+    await expect(button).toBeVisible();
+    await button.click();
+    const popover = page.getByTestId('mcp-popover');
+    await expect(popover).toBeVisible();
+    const box = await popover.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(375);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    expect(overflow).toBe(false);
+  });
+});

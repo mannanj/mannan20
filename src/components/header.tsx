@@ -621,10 +621,10 @@ export function Header() {
         </a>
       </div>
       <div
-        className={`relative flex items-center gap-4 md:pr-[15px] md:pl-[15px] transition-all duration-300 ease-out ${gardenExpanded ? "mr-[63px]" : "mr-[22px]"}`}
+        className={`relative flex items-center gap-2 md:gap-4 md:pr-[15px] md:pl-[15px] transition-all duration-300 ease-out ${gardenExpanded ? "mr-[63px]" : "mr-[22px]"}`}
       >
         {LINKS.map((link) => (
-          <div key={link} className="pl-[15px] md:pl-[15px]">
+          <div key={link} className="pl-[10px] md:pl-[15px]">
             <a
               id={`${link}-link`}
               data-testid={`header-nav-${link}`}
@@ -635,7 +635,7 @@ export function Header() {
             </a>
           </div>
         ))}
-        <div className="hidden md:block md:pl-[15px]">
+        <div className="md:pl-[15px]">
           <McpHeaderButton />
         </div>
       </div>

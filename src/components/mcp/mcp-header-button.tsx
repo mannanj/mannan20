@@ -59,7 +59,7 @@ export function McpHeaderButton() {
       {open && (
         <div
           data-testid="mcp-popover"
-          className="absolute top-full right-0 z-50 mt-4 w-[316px] rounded-xl border border-white/10 bg-[#111] p-4 shadow-2xl shadow-black/60"
+          className="absolute top-full right-0 z-50 mt-4 w-[316px] max-w-[calc(100vw-32px)] rounded-xl border border-white/10 bg-[#111] p-4 shadow-2xl shadow-black/60"
         >
           <div className="mb-3 flex items-baseline justify-between">
             <span className="text-sm font-medium text-white">Mannan MCP</span>
