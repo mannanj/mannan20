@@ -241,7 +241,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
         aria-expanded={open}
         aria-controls={PANEL_ID}
         data-testid="chicken-leaderboard-link"
-        className="fixed right-5 top-4 z-40 cursor-pointer text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
+        className="fixed right-5 bottom-4 z-40 cursor-pointer text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
       >
         Leaderboard
       </button>

@@ -761,6 +761,24 @@ body.gem-rain-active #header > div:first-child {
   animation: chickenFlapRight var(--flap-ms, 460ms) ease-in-out infinite;
 }
 
+@keyframes chickenFlapLeftHard {
+  0%, 100% { transform: rotate(-28deg); }
+  50% { transform: rotate(18deg); }
+}
+
+@keyframes chickenFlapRightHard {
+  0%, 100% { transform: rotate(28deg); }
+  50% { transform: rotate(-18deg); }
+}
+
+.chicken-wing-left.agitated {
+  animation-name: chickenFlapLeftHard;
+}
+
+.chicken-wing-right.agitated {
+  animation-name: chickenFlapRightHard;
+}
+
 @keyframes sceneryDrift {
   0%, 100% { transform: scale(1.08) translate3d(0, 0, 0); }
   50% { transform: scale(1.08) translate3d(-1.6%, 0, 0); }

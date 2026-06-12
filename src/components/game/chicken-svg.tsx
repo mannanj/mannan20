@@ -9,10 +9,8 @@ interface ChickenSvgProps {
   onClick?: () => void;
   tier?: number;
   morph?: number;
+  eyes?: (typeof TIERS)[number]['eyes'];
 }
-
-const DARK_HAIR = 'M26 26 L27 8 L32 20 L35 0 L40 18 L45 -2 L48 17 L52 6 L55 22 L56 26 Z';
-const GOLD_HAIR = 'M24 26 L26 4 L30 18 L34 -6 L39 16 L43 -9 L47 15 L51 -4 L54 18 L57 8 L58 26 Z';
 
 function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
   if (kind === 'ascended') {
@@ -58,11 +56,13 @@ function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
   );
 }
 
-export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: ChickenSvgProps) {
+export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eyes }: ChickenSvgProps) {
   const uid = useId();
   const clampedTier = Math.max(0, Math.min(tier, TIERS.length - 1));
   const clampedMorph = Math.max(0, Math.min(morph, 1));
   const current = TIERS[clampedTier];
+  const eyeKind = eyes ?? current.eyes;
+  const agitated = eyeKind === 'angry' || eyeKind === 'furious';
   const next = TIERS[Math.min(clampedTier + 1, TIERS.length - 1)];
   const gold = current.hair === 'gold';
   const goldId = `chicken-gold-${uid}`;
@@ -94,40 +94,21 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: C
           </linearGradient>
         </defs>
       )}
-      {current.hair !== 'none' && (
-        <g data-testid="chicken-hair">
-          <path
-            d={current.hair === 'gold' ? GOLD_HAIR : DARK_HAIR}
-            fill={current.hair === 'gold' ? '#FFD740' : '#3a3a46'}
-            stroke={current.hair === 'gold' ? '#FFB300' : '#aeb6cc'}
-            strokeWidth="1.6"
-            strokeLinejoin="round"
-          />
-          {current.hair === 'dark' && (
-            <path
-              d="M29 16 L32 6 M36 12 L38 3 M43 10 L44 1 M49 12 L51 5"
-              stroke="#cdd5e8"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              opacity="0.7"
-            />
-          )}
-        </g>
-      )}
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
       <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
       <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
       {gold && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
-      {clampedTier === 0 && (
-        <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill="#D32F2F" />
-      )}
+      <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill="#D32F2F" />
       <path d="M55 25 L65 19 L66 38 L55 33 Z" fill="#CC3300" />
       <path d="M55 21 L74 14 L58 27 Z" fill="#FF8C00" />
       <path d="M55 33 L72 44 L57 36 Z" fill="#E67E00" />
-      <Eye kind={current.eyes} />
+      <Eye kind={eyeKind} />
       <ellipse cx="52" cy="40" rx="4" ry="5" fill="#D32F2F" />
-      <g data-testid="chicken-wing" className="chicken-wing-left">
+      <g
+        data-testid="chicken-wing"
+        className={`chicken-wing-left${agitated ? ' agitated' : ''}`}
+      >
         <path
           d="M22 90 C 10 92, 4 104, 8 120 C 14 116, 19 106, 24 97 Z"
           fill={wing}
@@ -136,7 +117,10 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0 }: C
           strokeLinejoin="round"
         />
       </g>
-      <g data-testid="chicken-wing" className="chicken-wing-right">
+      <g
+        data-testid="chicken-wing"
+        className={`chicken-wing-right${agitated ? ' agitated' : ''}`}
+      >
         <path
           d="M58 90 C 70 92, 76 104, 72 120 C 66 116, 61 106, 56 97 Z"
           fill={wing}

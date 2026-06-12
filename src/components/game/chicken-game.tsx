@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChickenSvg } from './chicken-svg';
-import { GameInfoPanel } from './game-info-panel';
 import { GameScenery } from './game-scenery';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
@@ -17,15 +16,22 @@ import {
   MERCY_RECOVERY_PER_MS,
   TIERS,
   mixHex,
+  moodEyes,
   morphForScore,
   tierForScore,
   tierProgress,
 } from './chicken-tiers';
 
-const BASE_SPEED = 2.5;
-const MIN_SPEED = 1.5;
-const AVOIDANCE_RADIUS = 150;
-const AVOIDANCE_STRENGTH = 0.3;
+const BASE_SPEED = 0.25;
+const MIN_SPEED = 0.15;
+const AVOIDANCE_RADIUS = 110;
+const AVOIDANCE_STRENGTH = 0.08;
+const HEAT_PER_CLICK = 0.22;
+const HEAT_DECAY_PER_MS = 0.0006;
+const HEAT_MAX = 1.4;
+const EVOLUTION_HEAT = 0.4;
+const FLAP_AGITATION = 0.85;
+const FLAP_SPEED_FLOOR = 0.6;
 const ROTATION_SPRING = 0.02;
 const ROTATION_DAMP = 0.16;
 const MAX_BANK = 10;
@@ -117,6 +123,7 @@ interface ChickenStateSnapshot {
   rotation: number;
   vx: number;
   vy: number;
+  mood: string;
 }
 
 interface ChickenBridge {
@@ -133,10 +140,7 @@ declare global {
 }
 
 function speedForScore(score: number): number {
-  if (score <= 20) return 1 + score * 0.028;
-  if (score <= 50) return 1.56 + (score - 20) * 0.052;
-  if (score <= 80) return 3.12 + (score - 50) * 0.095;
-  return 5.97 + (score - 80) * 0.14;
+  return 1 + Math.min(score, 160) * 0.005;
 }
 
 function smoothstep(t: number): number {
@@ -252,7 +256,8 @@ function ChickenGameInner() {
   const [tier, setTier] = useState(0);
   const [flashTier, setFlashTier] = useState<number | null>(null);
   const [mercyCaption, setMercyCaption] = useState(false);
-  const [sheet, setSheet] = useState<'info' | 'board' | null>(null);
+  const [mood, setMood] = useState<(typeof TIERS)[number]['eyes']>('calm');
+  const [sheet, setSheet] = useState<'board' | null>(null);
   const [loaderPhase, setLoaderPhase] = useState<'loading' | 'fading' | 'done'>('loading');
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
@@ -267,6 +272,8 @@ function ChickenGameInner() {
   const arcsRef = useRef<Arc[]>([]);
   const nextArcAtRef = useRef(0);
   const speedRef = useRef(1);
+  const heatRef = useRef(0);
+  const moodRef = useRef<(typeof TIERS)[number]['eyes']>('calm');
   const mercyRef = useRef(1);
   const mercyCaptionRef = useRef(false);
   const lastHitRef = useRef(0);
@@ -310,6 +317,7 @@ function ChickenGameInner() {
     scoreRef.current = next;
     setScore(next);
     speedRef.current = speedForScore(next);
+    heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
     lastHitRef.current = performance.now();
     const p = physicsRef.current;
     const cx = p.x + CHICKEN_W / 2;
@@ -323,6 +331,7 @@ function ChickenGameInner() {
       const riser = playPowerUp(newTier === FINAL_TIER);
       recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
       spawnShards(cx, cy, SHARDS_PER_TRANSFORM, TIERS[previousTier].body);
+      heatRef.current = Math.min(HEAT_MAX, heatRef.current + EVOLUTION_HEAT);
     } else {
       const rate =
         TIERS[newTier].screamRate * (1 - SCREAM_JITTER / 2 + Math.random() * SCREAM_JITTER);
@@ -375,6 +384,7 @@ function ChickenGameInner() {
         rotation: physicsRef.current.rotation,
         vx: physicsRef.current.vx,
         vy: physicsRef.current.vy,
+        mood: moodRef.current,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -441,6 +451,13 @@ function ChickenGameInner() {
         setMercyCaption(captionVisible);
       }
 
+      heatRef.current = Math.max(0, heatRef.current - HEAT_DECAY_PER_MS * dtMs);
+      const nextMood = moodEyes(scoreRef.current, heatRef.current);
+      if (nextMood !== moodRef.current) {
+        moodRef.current = nextMood;
+        setMood(nextMood);
+      }
+
       const p = physicsRef.current;
       const m = mouseRef.current;
       const sp = speedRef.current * mercy;
@@ -499,11 +516,12 @@ function ChickenGameInner() {
       if (p.vx > FACING_DEADZONE) facingRef.current = 1;
       else if (p.vx < -FACING_DEADZONE) facingRef.current = -1;
 
+      const agitation = 1 + heatRef.current * FLAP_AGITATION;
       const flapMs =
         Math.round(
           Math.max(
             FLAP_MIN_MS,
-            Math.min(FLAP_MAX_MS, FLAP_BASE_MS / Math.sqrt(Math.max(sp, 0.1)))
+            Math.min(FLAP_MAX_MS, FLAP_BASE_MS / ((FLAP_SPEED_FLOOR + sp) * agitation))
           ) / FLAP_QUANTIZE_MS
         ) * FLAP_QUANTIZE_MS;
 
@@ -718,7 +736,7 @@ function ChickenGameInner() {
             ref={feedbackElRef}
             style={{ transition: 'transform 150ms ease-out' }}
           >
-            <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} />
+            <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} eyes={mood} />
           </div>
         </div>
       </div>
@@ -728,12 +746,6 @@ function ChickenGameInner() {
         onToggle={() => setSheet((s) => (s === 'board' ? null : 'board'))}
         onClose={() => setSheet(null)}
         score={score}
-      />
-
-      <GameInfoPanel
-        open={sheet === 'info'}
-        onToggle={() => setSheet((s) => (s === 'info' ? null : 'info'))}
-        onClose={() => setSheet(null)}
       />
 
       {loaderPhase !== 'done' && (

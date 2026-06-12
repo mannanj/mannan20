@@ -18,6 +18,7 @@ interface ChickenState {
   rotation: number;
   vx: number;
   vy: number;
+  mood: string;
 }
 
 interface ChickenBridge {
@@ -121,22 +122,20 @@ test.describe('chicken game', () => {
     expect(new Set(all.map((s) => s.key)).size).toBeGreaterThanOrEqual(2);
   });
 
-  test('evolves through tiers with power-ups, saiyan hair, and deeper screams', async ({ page }) => {
+  test('evolves through stages with power-ups and deeper screams', async ({ page }) => {
     await gotoGame(page);
     const b = bridge(page);
 
-    await b.boost(20);
+    await b.boost(30);
     const chicken = page.getByTestId('chicken');
     await expect(chicken).toHaveAttribute('data-tier', '1');
-    await expect(page.getByTestId('chicken-hair')).toBeVisible();
-    await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-hair', 'dark');
+    await expect(page.getByTestId('chicken-hair')).toHaveCount(0);
     let powerups = (await b.plays()).filter((p) => p.type === 'powerup');
     expect(powerups.length).toBe(1);
     expect((await b.state()).auraLevel).toBeGreaterThan(0);
 
-    await b.boost(90);
+    await b.boost(110);
     await expect(chicken).toHaveAttribute('data-tier', '4');
-    await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-hair', 'gold');
     powerups = (await b.plays()).filter((p) => p.type === 'powerup');
     expect(powerups.length).toBe(4);
 
@@ -156,7 +155,7 @@ test.describe('chicken game', () => {
       .locator('[data-testid="chicken-svg"] ellipse')
       .first()
       .getAttribute('fill');
-    await b.boost(10);
+    await b.boost(15);
     expect((await b.state()).morph).toBeCloseTo(0.5, 5);
     await expect(page.getByTestId('chicken-svg')).toHaveAttribute('data-morph', '0.50');
     const morphedFill = await page
@@ -189,26 +188,49 @@ test.describe('chicken game', () => {
     expect((await b.state()).mercy).toBeGreaterThan(0.99);
   });
 
-  test('info sheet reveals the game intent and collapses again', async ({ page }) => {
+  test('info icon is gone from the bottom right', async ({ page }) => {
     await gotoGame(page);
-    const button = page.getByTestId('chicken-info-button');
-    const panel = page.getByTestId('chicken-info-panel');
-    await expect(button).toBeVisible();
-    await expect(button).toHaveAttribute('aria-expanded', 'false');
-    await expect(panel).toHaveAttribute('aria-hidden', 'true');
-    await button.click();
-    await expect(button).toHaveAttribute('aria-expanded', 'true');
-    await expect(panel).toHaveAttribute('aria-hidden', 'false');
-    await expect(panel).toContainText('About this chicken');
-    await expect(panel).toContainText('rubber screaming-chicken homage');
-    await expect(panel).toContainText('gold at 110');
-    await expect(panel).not.toContainText('Cloudflare');
-    await expect(page.getByTestId('chicken-info-caret')).toHaveClass(/rotate-180/);
-    await button.click();
-    await expect(button).toHaveAttribute('aria-expanded', 'false');
-    await button.click();
-    await page.keyboard.press('Escape');
-    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('chicken-info-button')).toHaveCount(0);
+    await expect(page.getByTestId('chicken-info-panel')).toHaveCount(0);
+  });
+
+  test('face turns angry on a hot click streak, then settles back', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    expect((await b.state()).mood).toBe('calm');
+    await b.boost(7);
+    await expect.poll(async () => (await b.state()).mood).toMatch(/angry|furious/);
+    await expect.poll(async () => (await b.state()).mood, { timeout: 6000 }).toBe('calm');
+  });
+
+  test('starts gentle — the chicken floats slowly for an easy game', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    let maxSpeed = 0;
+    for (let i = 0; i < 24; i++) {
+      const s = await b.state();
+      maxSpeed = Math.max(maxSpeed, Math.hypot(s.vx, s.vy));
+      await page.waitForTimeout(50);
+    }
+    expect(maxSpeed).toBeLessThan(1.0);
+  });
+
+  test('flaps harder when its blood is up (emotion-driven flap)', async ({ page }) => {
+    await gotoGame(page);
+    await bridge(page).ready();
+    const flap = await page.evaluate(async () => {
+      const w = window as unknown as { __chicken: { boost: (n: number) => void } };
+      const el = document.querySelector('[data-testid="chicken"]') as HTMLElement;
+      const read = () => parseInt(getComputedStyle(el).getPropertyValue('--flap-ms'), 10);
+      w.__chicken.boost(6);
+      for (let i = 0; i < 24; i++) await new Promise((r) => requestAnimationFrame(r));
+      const hot = read();
+      await new Promise((r) => setTimeout(r, 3600));
+      const cool = read();
+      return { hot, cool };
+    });
+    expect(flap.hot).toBeGreaterThan(0);
+    expect(flap.hot).toBeLessThan(flap.cool);
   });
 
   test('leaderboard tabs, submission, and cookie-remembered identity', async ({ page }) => {

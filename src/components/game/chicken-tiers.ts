@@ -28,7 +28,7 @@ export const TIERS: ChickenTier[] = [
   },
   {
     name: 'Azure Comet',
-    threshold: 20,
+    threshold: 30,
     body: '#4FC3F7',
     bodyDark: '#2BA8E0',
     belly: '#9BE1FF',
@@ -41,12 +41,12 @@ export const TIERS: ChickenTier[] = [
   },
   {
     name: 'Jade Tempest',
-    threshold: 45,
+    threshold: 64,
     body: '#66BB6A',
     bodyDark: '#43A047',
     belly: '#A5D6A7',
     hair: 'dark',
-    eyes: 'angry',
+    eyes: 'determined',
     aura: { r: 105, g: 230, b: 120 },
     particleHue: 122,
     screamRate: 0.84,
@@ -54,12 +54,12 @@ export const TIERS: ChickenTier[] = [
   },
   {
     name: 'Crimson Fury',
-    threshold: 75,
+    threshold: 100,
     body: '#EF5350',
     bodyDark: '#C62828',
     belly: '#FF8A80',
     hair: 'dark',
-    eyes: 'furious',
+    eyes: 'angry',
     aura: { r: 255, g: 96, b: 56 },
     particleHue: 8,
     screamRate: 0.76,
@@ -67,7 +67,7 @@ export const TIERS: ChickenTier[] = [
   },
   {
     name: 'Golden God',
-    threshold: 110,
+    threshold: 140,
     body: '#FFC107',
     bodyDark: '#FF8F00',
     belly: '#FFF8E1',
@@ -101,6 +101,19 @@ export function tierProgress(score: number): number {
 export function morphForScore(score: number): number {
   if (tierForScore(score) === FINAL_TIER) return 0;
   return tierProgress(score);
+}
+
+const MOOD_ORDER = ['calm', 'determined', 'angry', 'furious'] as const;
+
+export function moodEyes(score: number, heat: number): ChickenTier['eyes'] {
+  const stage = tierForScore(score);
+  const base = TIERS[stage].eyes;
+  if (base === 'ascended') return 'ascended';
+  const baseIdx = MOOD_ORDER.indexOf(base as (typeof MOOD_ORDER)[number]);
+  const heatLevel = heat > 0.72 ? 2 : heat > 0.38 ? 1 : 0;
+  const progress = stage === FINAL_TIER ? 0 : tierProgress(score);
+  const near = progress > 0.8 ? 1 : 0;
+  return MOOD_ORDER[Math.min(MOOD_ORDER.length - 1, baseIdx + heatLevel + near)];
 }
 
 export function mixHex(from: string, to: string, t: number): string {
