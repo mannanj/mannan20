@@ -96,38 +96,46 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eye
       )}
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
-      <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
       <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
       {gold && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
-      <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill="#D32F2F" />
-      <path d="M55 25 L65 19 L66 38 L55 33 Z" fill="#CC3300" />
-      <path d="M55 21 L74 14 L58 27 Z" fill="#FF8C00" />
-      <path d="M55 33 L72 44 L57 36 Z" fill="#E67E00" />
-      <Eye kind={eyeKind} />
-      <ellipse cx="52" cy="40" rx="4" ry="5" fill="#D32F2F" />
-      <g
-        data-testid="chicken-wing"
-        className={`chicken-wing-left${agitated ? ' agitated' : ''}`}
-      >
-        <path
-          d="M22 90 C 10 92, 4 104, 8 120 C 14 116, 19 106, 24 97 Z"
-          fill={wing}
-          stroke="rgba(0,0,0,0.3)"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
+      <g className="chicken-sq-head">
+        <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
+        <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill="#D32F2F" />
+        <path d="M55 25 L65 19 L66 38 L55 33 Z" fill="#CC3300" />
+        <path d="M55 21 L74 14 L58 27 Z" fill="#FF8C00" />
+        <path d="M55 33 L72 44 L57 36 Z" fill="#E67E00" />
+        <g className="chicken-sq-eye">
+          <Eye kind={eyeKind} />
+        </g>
+        <ellipse cx="52" cy="40" rx="4" ry="5" fill="#D32F2F" />
       </g>
-      <g
-        data-testid="chicken-wing"
-        className={`chicken-wing-right${agitated ? ' agitated' : ''}`}
-      >
-        <path
-          d="M58 90 C 70 92, 76 104, 72 120 C 66 116, 61 106, 56 97 Z"
-          fill={wing}
-          stroke="rgba(0,0,0,0.3)"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
+      <g className="chicken-sq-wing-left">
+        <g
+          data-testid="chicken-wing"
+          className={`chicken-wing-left${agitated ? ' agitated' : ''}`}
+        >
+          <path
+            d="M22 90 C 10 92, 4 104, 8 120 C 14 116, 19 106, 24 97 Z"
+            fill={wing}
+            stroke="rgba(0,0,0,0.3)"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+        </g>
+      </g>
+      <g className="chicken-sq-wing-right">
+        <g
+          data-testid="chicken-wing"
+          className={`chicken-wing-right${agitated ? ' agitated' : ''}`}
+        >
+          <path
+            d="M58 90 C 70 92, 76 104, 72 120 C 66 116, 61 106, 56 97 Z"
+            fill={wing}
+            stroke="rgba(0,0,0,0.3)"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+        </g>
       </g>
       {gold && (
         <>
@@ -143,12 +151,14 @@ export function ChickenSvg({ className, style, onClick, tier = 0, morph = 0, eye
           />
         </>
       )}
-      <line x1="33" y1="144" x2="30" y2="152" stroke="#D32F2F" strokeWidth="3.5" strokeLinecap="round" />
-      <path d="M22 155 L30 152 L38 155" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      <line x1="30" y1="152" x2="30" y2="158" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="47" y1="144" x2="50" y2="152" stroke="#D32F2F" strokeWidth="3.5" strokeLinecap="round" />
-      <path d="M42 155 L50 152 L58 155" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-      <line x1="50" y1="152" x2="50" y2="158" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" />
+      <g className="chicken-sq-legs">
+        <line x1="33" y1="144" x2="30" y2="152" stroke="#D32F2F" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M22 155 L30 152 L38 155" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <line x1="30" y1="152" x2="30" y2="158" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="47" y1="144" x2="50" y2="152" stroke="#D32F2F" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M42 155 L50 152 L58 155" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <line x1="50" y1="152" x2="50" y2="158" stroke="#D32F2F" strokeWidth="2.5" strokeLinecap="round" />
+      </g>
     </svg>
   );
 }

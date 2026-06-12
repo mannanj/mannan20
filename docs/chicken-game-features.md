@@ -45,3 +45,13 @@ The chicken develops emotional states based on gameplay:
 
 Live: top-right "Leaderboard" link opens a bottom sheet with Human and Agent boards (self-identify checkbox), Upstash Redis persistence (best score per name), name + identity remembered via cookies, and a feedback path gated by the main site's contact validation. Original ideas not yet built:
 - Players can leave contact info (email / website) for free advertising
+
+## Rubber Chicken Replica (exact look)
+
+Make the chicken an **exact rubber chicken replica** — the classic glossy yellow squeeze toy: long
+limp neck, open red gullet, vacant side-eyes, stubby wings molded flat against the body, seam lines,
+specular highlights. Carry the replica treatment through **every evolution**: each tier keeps its
+color/palette but reads as the same molded rubber toy (matte→glossy material, painted-on details).
+**Keep all special energy effects** — flame aura, lightning shroud, evolution flash/shards, teleport
+streaks stay exactly as they are; only the bird's body rendering changes. The squash-on-click system
+(task-234) already moves like rubber — this is the visual skin to match it.

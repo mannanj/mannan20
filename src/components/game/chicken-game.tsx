@@ -1,10 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { ChickenSvg } from './chicken-svg';
 import { GameScenery } from './game-scenery';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
+import {
+  drawFeather,
+  drawStreaks,
+  makeFeather,
+  makeTeleportStreaks,
+  updateFeather,
+  type Feather,
+  type Streak,
+} from './chicken-effects';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
 import {
@@ -52,7 +61,6 @@ const CHICKEN_H = 140;
 const PARTICLE_FADE = 0.02;
 const MAX_PARTICLES = 200;
 const MAX_SHARD_PARTICLES = 90;
-const SHARDS_PER_CLICK = 7;
 const SHARDS_PER_TRANSFORM = 26;
 const SHARD_GRAVITY = 0.08;
 const SHARD_FADE = 0.014;
@@ -69,13 +77,76 @@ const TIER0_AURA_START = 0.55;
 const TIER0_AURA_MAX = 0.28;
 const ARC_LIFE_MS = 240;
 const ARC_SEGMENTS = 7;
-const MAX_ARCS_PER_BURST = 3;
+const ARC_START_R_MIN = 6;
+const ARC_START_R_SPREAD = 6;
+const ARC_END_R_MIN = 26;
+const ARC_END_R_SPREAD = 18;
+const ARCS_PER_BURST_MIN = 3;
+const ARCS_PER_BURST_SPREAD = 7;
+const MAX_ARCS = 48;
 const SCREAM_JITTER = 0.1;
 const MERCY_CAPTION_THRESHOLD = 0.7;
 const MIN_LOADER_MS = 700;
 const LOADER_FADE_MS = 320;
 const BRIDGE_LOG_CAP = 300;
-const FEEDBACK_POP_MS = 150;
+const SPEED_SCORE_CAP = 180;
+const SPEED_PER_SCORE = 0.011;
+const TIER_SPEED_BUMP = [1, 1.12, 1.28, 1.45, 1.65];
+const GROUND_FRAC = 0.76;
+const GROUND_WANDER = 0.055;
+const GROUND_TURN_MIN_MS = 2600;
+const GROUND_TURN_SPREAD_MS = 3800;
+const GROUND_PAUSE_CHANCE = 0.35;
+const GROUND_ROT_LERP = 0.1;
+const GRAZE_DELAY_MIN_MS = 3800;
+const GRAZE_DELAY_SPREAD_MS = 5200;
+const GRAZE_DURATION_MIN_MS = 1500;
+const GRAZE_DURATION_SPREAD_MS = 1600;
+const GRAZE_ANGLE = 34;
+const GRAZE_PECK_AMPLITUDE = 7;
+const GRAZE_PECK_FREQ = 0.02;
+const FEATHERS_PER_CLICK = 2;
+const FEATHER_EXTRA_CHANCE = 0.45;
+const FEATHERS_PER_TRANSFORM = 10;
+const MAX_FEATHERS = 40;
+const SQUASH_WINDOW_MS = 650;
+const SQUASH_BASE = 0.5;
+const SQUASH_PER_COMBO = 0.13;
+const SQUASH_HEAT = 0.12;
+const SQUASH_RELEASE_MS = 95;
+const SQUASH_ATTR_CLEAR_MS = 380;
+const SQUEAK_THRESHOLD = 0.75;
+const HYPER_MIN_SCORE = 30;
+const HYPER_DELAY_MIN_MS = 75_000;
+const HYPER_DELAY_SPREAD_MS = 150_000;
+const HYPER_DURATION_MS = 3000;
+const HYPER_MULT_MIN = 10;
+const HYPER_MULT_SPREAD = 10;
+const HYPER_RECOVER_MS = 3500;
+const HYPER_RECOVER_FACTOR = 0.3;
+const HYPER_BONUS = 100;
+const MAX_FRAME_TRAVEL = 130;
+const TELEPORT_MIN_SCORE = 64;
+const TELEPORT_DELAY_MIN_MS = 40_000;
+const TELEPORT_DELAY_SPREAD_MS = 80_000;
+const TELEPORT_OUT_MS = 120;
+const TELEPORT_BONUS = 5;
+const TELEPORT_BONUS_FRAMES = 5;
+const TELEPORT_FRAME_TRACK_MAX = 90;
+const TELEPORT_MIN_DIST_FRAC = 0.3;
+const TELEPORT_DECOY_CHANCE = 0.4;
+const TELEPORT_PRE_CHANCE = 0.5;
+const TELEPORT_AFTER_CHANCE = 0.85;
+const GHOST_MAX = 8;
+const KID_DELAY_MIN_MS = 45_000;
+const KID_DELAY_SPREAD_MS = 120_000;
+const KID_W = 26;
+const KID_H = 52;
+const KID_WANDER = 0.04;
+const KID_TURN_MIN_MS = 2200;
+const KID_TURN_SPREAD_MS = 2600;
+const KID_FLEE_MIN = 4.6;
+const KID_FLEE_SPREAD = 1.4;
 
 interface Particle {
   x: number;
@@ -127,8 +198,56 @@ interface Physics {
   bank: number;
 }
 
+interface GroundState {
+  vxTarget: number;
+  nextTurnAt: number;
+  nextGrazeAt: number;
+  grazeUntil: number;
+}
+
+interface HyperState {
+  phase: 'idle' | 'burst' | 'recover';
+  until: number;
+  nextAt: number;
+  mult: number;
+}
+
+interface TeleportState {
+  phase: 'idle' | 'out';
+  nextAt: number;
+  outUntil: number;
+  target: { x: number; y: number } | null;
+  origin: { x: number; y: number } | null;
+  decoys: boolean;
+  forcedDecoys: boolean | null;
+  arrivedFrames: number;
+}
+
+interface Ghost {
+  id: number;
+  x: number;
+  y: number;
+  tier: number;
+  morph: number;
+  pre: boolean;
+  born: number;
+}
+
+interface Kid {
+  id: number;
+  tier: number;
+}
+
+interface KidMotion {
+  x: number;
+  dir: number;
+  vx: number;
+  fleeing: boolean;
+  nextTurnAt: number;
+}
+
 export interface SoundEvent {
-  type: 'scream' | 'powerup' | 'crackle';
+  type: 'scream' | 'powerup' | 'crackle' | 'squeak';
   key?: string;
   rate?: number;
   synth?: boolean;
@@ -147,6 +266,13 @@ interface ChickenStateSnapshot {
   mood: string;
   lightning: Lightning | null;
   arcs: number;
+  mode: 'ground' | 'flying';
+  feathers: number;
+  hyper: 'idle' | 'burst' | 'recover';
+  ghosts: number;
+  teleportFrames: number;
+  squash: number;
+  kids: number;
 }
 
 interface ChickenBridge {
@@ -154,6 +280,9 @@ interface ChickenBridge {
   state: () => ChickenStateSnapshot;
   boost: (n: number) => void;
   spin: (v: number) => void;
+  forceHyper: () => void;
+  forceTeleport: (decoys: boolean) => void;
+  forceKid: () => void;
 }
 
 declare global {
@@ -163,7 +292,8 @@ declare global {
 }
 
 function speedForScore(score: number): number {
-  return 1 + Math.min(score, 160) * 0.005;
+  const base = 1 + Math.min(score, SPEED_SCORE_CAP) * SPEED_PER_SCORE;
+  return base * TIER_SPEED_BUMP[tierForScore(score)];
 }
 
 function smoothstep(t: number): number {
@@ -224,8 +354,8 @@ function auraRgbFor(score: number): { r: number; g: number; b: number } {
 function makeArc(cx: number, cy: number, color: Rgb): Arc {
   const points: { x: number; y: number }[] = [];
   const baseAngle = Math.random() * Math.PI * 2;
-  const startR = 18 + Math.random() * 18;
-  const endR = 80 + Math.random() * 56;
+  const startR = ARC_START_R_MIN + Math.random() * ARC_START_R_SPREAD;
+  const endR = ARC_END_R_MIN + Math.random() * ARC_END_R_SPREAD;
   for (let i = 0; i <= ARC_SEGMENTS; i++) {
     const t = i / ARC_SEGMENTS;
     const r = startR + (endR - startR) * t;
@@ -233,6 +363,10 @@ function makeArc(cx: number, cy: number, color: Rgb): Arc {
     points.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r * 1.35 });
   }
   return { points, born: performance.now(), color };
+}
+
+function groundYFor(vh: number): number {
+  return vh * GROUND_FRAC;
 }
 
 function drawAura(
@@ -318,16 +452,39 @@ function ChickenGameInner() {
   const [mood, setMood] = useState<(typeof TIERS)[number]['eyes']>('calm');
   const [sheet, setSheet] = useState<'board' | null>(null);
   const [loaderPhase, setLoaderPhase] = useState<'loading' | 'fading' | 'done'>('loading');
+  const [ghosts, setGhosts] = useState<Ghost[]>([]);
+  const [kids, setKids] = useState<Kid[]>([]);
+  const [bonus, setBonus] = useState<{ amount: number; id: number } | null>(null);
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
   const physicsRef = useRef<Physics>({
     x: 0, y: 0, vx: 0, vy: 0, rotation: 0, rv: 0, bank: 0,
+  });
+  const modeRef = useRef<'ground' | 'flying'>('ground');
+  const groundRef = useRef<GroundState>({
+    vxTarget: 0,
+    nextTurnAt: 0,
+    nextGrazeAt: 0,
+    grazeUntil: 0,
+  });
+  const hyperRef = useRef<HyperState>({ phase: 'idle', until: 0, nextAt: 0, mult: 1 });
+  const teleportRef = useRef<TeleportState>({
+    phase: 'idle',
+    nextAt: 0,
+    outUntil: 0,
+    target: null,
+    origin: null,
+    decoys: false,
+    forcedDecoys: null,
+    arrivedFrames: -1,
   });
   const facingRef = useRef(1);
   const flapMsRef = useRef(0);
   const mouseRef = useRef({ x: -1000, y: -1000 });
   const particlesRef = useRef<Particle[]>([]);
   const shardParticlesRef = useRef<ShardParticle[]>([]);
+  const feathersRef = useRef<Feather[]>([]);
+  const streaksRef = useRef<Streak[]>([]);
   const arcsRef = useRef<Arc[]>([]);
   const nextArcAtRef = useRef(0);
   const lastCrackleAtRef = useRef(0);
@@ -339,13 +496,25 @@ function ChickenGameInner() {
   const lastHitRef = useRef(0);
   const playsRef = useRef<SoundEvent[]>([]);
   const mountAtRef = useRef(0);
+  const comboRef = useRef({ count: 0, lastAt: 0 });
+  const squashRef = useRef(0);
+  const squashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const squashAttrTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ghostsRef = useRef<Ghost[]>([]);
+  const ghostIdRef = useRef(0);
+  const ghostSweepAtRef = useRef(0);
+  const kidIdRef = useRef(0);
+  const nextKidAtRef = useRef(0);
+  const kidMotionRef = useRef(new Map<number, KidMotion>());
+  const kidElsRef = useRef(new Map<number, HTMLDivElement>());
+  const kidsCountRef = useRef(0);
   const chickenElRef = useRef<HTMLDivElement>(null);
   const facingElRef = useRef<HTMLDivElement>(null);
-  const feedbackElRef = useRef<HTMLDivElement>(null);
+  const rubberElRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const { progress, playScream, playPowerUp, crackle } = useChickenSounds();
+  const { progress, playScream, playPowerUp, crackle, squeak } = useChickenSounds();
 
   const recordPlay = useCallback((event: SoundEvent) => {
     const log = playsRef.current;
@@ -372,45 +541,171 @@ function ChickenGameInner() {
     }
   }, []);
 
-  const hit = useCallback(() => {
-    const next = scoreRef.current + 1;
-    scoreRef.current = next;
-    setScore(next);
-    speedRef.current = speedForScore(next);
-    heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
-    lastHitRef.current = performance.now();
-    const p = physicsRef.current;
-    const cx = p.x + CHICKEN_W / 2;
-    const cy = p.y + CHICKEN_H / 2;
-    const previousTier = tierRef.current;
-    const newTier = tierForScore(next);
-    if (newTier !== previousTier) {
-      tierRef.current = newTier;
-      setTier(newTier);
-      setFlashTier(newTier);
-      const riser = playPowerUp(newTier === FINAL_TIER);
-      recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
-      spawnShards(cx, cy, SHARDS_PER_TRANSFORM, TIERS[previousTier].body);
-      heatRef.current = Math.min(HEAT_MAX, heatRef.current + EVOLUTION_HEAT);
-    } else {
-      const rate =
-        TIERS[newTier].screamRate * (1 - SCREAM_JITTER / 2 + Math.random() * SCREAM_JITTER);
-      const played = playScream(rate);
-      if (played) {
-        recordPlay({ type: 'scream', key: played.key, rate: played.rate, at: Date.now() });
+  const spawnFeathers = useCallback((cx: number, cy: number, count: number, maxTier: number) => {
+    const feathers = feathersRef.current;
+    const now = performance.now();
+    for (let i = 0; i < count && feathers.length < MAX_FEATHERS; i++) {
+      const t = Math.floor(Math.random() * (maxTier + 1));
+      const def = TIERS[t];
+      const color = Math.random() < 0.5 ? def.body : def.bodyDark;
+      feathers.push(makeFeather(cx, cy, color, now));
+    }
+  }, []);
+
+  const addGhost = useCallback((x: number, y: number, pre: boolean) => {
+    const ghost: Ghost = {
+      id: ++ghostIdRef.current,
+      x,
+      y,
+      tier: tierRef.current,
+      morph: morphForScore(scoreRef.current),
+      pre,
+      born: performance.now(),
+    };
+    ghostsRef.current = [...ghostsRef.current.slice(-(GHOST_MAX - 1)), ghost];
+    setGhosts(ghostsRef.current);
+  }, []);
+
+  const removeGhost = useCallback((id: number) => {
+    ghostsRef.current = ghostsRef.current.filter((g) => g.id !== id);
+    setGhosts(ghostsRef.current);
+  }, []);
+
+  const spawnKid = useCallback(() => {
+    const vw = window.innerWidth;
+    const id = ++kidIdRef.current;
+    const x = 60 + Math.random() * Math.max(120, vw - 240);
+    kidMotionRef.current.set(id, {
+      x,
+      dir: Math.random() < 0.5 ? -1 : 1,
+      vx: 0,
+      fleeing: false,
+      nextTurnAt: 0,
+    });
+    setKids((k) => {
+      const next = [...k, { id, tier: Math.floor(Math.random() * (tierRef.current + 1)) }];
+      kidsCountRef.current = next.length;
+      return next;
+    });
+  }, []);
+
+  const removeKid = useCallback((id: number) => {
+    kidMotionRef.current.delete(id);
+    kidElsRef.current.delete(id);
+    setKids((k) => {
+      const next = k.filter((kid) => kid.id !== id);
+      kidsCountRef.current = next.length;
+      return next;
+    });
+  }, []);
+
+  const fleeKid = useCallback((id: number) => {
+    const motion = kidMotionRef.current.get(id);
+    if (!motion || motion.fleeing) return;
+    motion.fleeing = true;
+    const sign = motion.x < window.innerWidth / 2 ? -1 : 1;
+    motion.vx = sign * (KID_FLEE_MIN + Math.random() * KID_FLEE_SPREAD);
+    motion.dir = sign;
+    const el = kidElsRef.current.get(id);
+    if (el) el.style.setProperty('--flap-ms', '90ms');
+  }, []);
+
+  const applySquash = useCallback(
+    (e?: ReactMouseEvent<HTMLDivElement>) => {
+      const rubber = rubberElRef.current;
+      const chicken = chickenElRef.current;
+      if (!rubber || !chicken) return;
+      const now = performance.now();
+      const combo = comboRef.current;
+      combo.count = now - combo.lastAt < SQUASH_WINDOW_MS ? combo.count + 1 : 1;
+      combo.lastAt = now;
+      const sq = Math.min(
+        1,
+        SQUASH_BASE + (combo.count - 1) * SQUASH_PER_COMBO + heatRef.current * SQUASH_HEAT
+      );
+      let sqx = 0;
+      if (e) {
+        const rect = chicken.getBoundingClientRect();
+        if (rect.width > 0) {
+          sqx = Math.max(-1, Math.min(1, ((e.clientX - rect.left) / rect.width) * 2 - 1));
+        }
       }
-      const tierDef = TIERS[newTier];
-      const nextDef = TIERS[Math.min(newTier + 1, FINAL_TIER)];
-      spawnShards(cx, cy, SHARDS_PER_CLICK, mixHex(tierDef.body, nextDef.body, morphForScore(next)));
-    }
-    const el = feedbackElRef.current;
-    if (el) {
-      el.style.transform = 'scale(1.3)';
-      setTimeout(() => {
-        if (el) el.style.transform = 'scale(1)';
-      }, FEEDBACK_POP_MS);
-    }
-  }, [playPowerUp, playScream, recordPlay, spawnShards]);
+      squashRef.current = sq;
+      rubber.style.setProperty('--sq', sq.toFixed(3));
+      rubber.style.setProperty('--sqx', sqx.toFixed(2));
+      rubber.dataset.squashed = '1';
+      chicken.setAttribute('data-squash', sq.toFixed(2));
+      if (squashTimerRef.current) clearTimeout(squashTimerRef.current);
+      if (squashAttrTimerRef.current) clearTimeout(squashAttrTimerRef.current);
+      squashTimerRef.current = setTimeout(() => {
+        rubber.style.setProperty('--sq', '0');
+        rubber.dataset.squashed = '0';
+        squashRef.current = 0;
+        squashAttrTimerRef.current = setTimeout(() => {
+          chicken.setAttribute('data-squash', '0');
+        }, SQUASH_ATTR_CLEAR_MS);
+      }, SQUASH_RELEASE_MS);
+      if (sq >= SQUEAK_THRESHOLD) {
+        squeak(sq);
+        recordPlay({ type: 'squeak', at: Date.now() });
+      }
+    },
+    [squeak, recordPlay]
+  );
+
+  const hit = useCallback(
+    (e?: ReactMouseEvent<HTMLDivElement>) => {
+      const now = performance.now();
+      const p = physicsRef.current;
+      let award = 1;
+      const hyper = hyperRef.current;
+      const tp = teleportRef.current;
+      if (hyper.phase === 'burst') {
+        award = HYPER_BONUS;
+        hyper.phase = 'recover';
+        hyper.until = now + HYPER_RECOVER_MS;
+      } else if (tp.decoys && tp.arrivedFrames >= 0 && tp.arrivedFrames <= TELEPORT_BONUS_FRAMES) {
+        award = TELEPORT_BONUS;
+      }
+      if (award > 1) setBonus({ amount: award, id: now });
+      if (modeRef.current === 'ground') {
+        modeRef.current = 'flying';
+        p.vy = -BASE_SPEED * 1.2;
+        p.vx = facingRef.current * BASE_SPEED * 0.8;
+      }
+      const next = scoreRef.current + award;
+      scoreRef.current = next;
+      setScore(next);
+      speedRef.current = speedForScore(next);
+      heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
+      lastHitRef.current = now;
+      const cx = p.x + CHICKEN_W / 2;
+      const cy = p.y + CHICKEN_H / 2;
+      const previousTier = tierRef.current;
+      const newTier = tierForScore(next);
+      if (newTier !== previousTier) {
+        tierRef.current = newTier;
+        setTier(newTier);
+        setFlashTier(newTier);
+        const riser = playPowerUp(newTier === FINAL_TIER);
+        recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
+        spawnShards(cx, cy, SHARDS_PER_TRANSFORM, TIERS[previousTier].body);
+        spawnFeathers(cx, cy, FEATHERS_PER_TRANSFORM, newTier);
+        heatRef.current = Math.min(HEAT_MAX, heatRef.current + EVOLUTION_HEAT);
+      } else {
+        const rate =
+          TIERS[newTier].screamRate * (1 - SCREAM_JITTER / 2 + Math.random() * SCREAM_JITTER);
+        const played = playScream(rate);
+        if (played) {
+          recordPlay({ type: 'scream', key: played.key, rate: played.rate, at: Date.now() });
+        }
+        const count = FEATHERS_PER_CLICK + (Math.random() < FEATHER_EXTRA_CHANCE ? 1 : 0);
+        spawnFeathers(cx, cy, count, newTier);
+      }
+      applySquash(e);
+    },
+    [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash]
+  );
 
   useEffect(() => {
     mountAtRef.current = performance.now();
@@ -447,6 +742,13 @@ function ChickenGameInner() {
         mood: moodRef.current,
         lightning: lightningForScore(scoreRef.current),
         arcs: arcsRef.current.length,
+        mode: modeRef.current,
+        feathers: feathersRef.current.length,
+        hyper: hyperRef.current.phase,
+        ghosts: ghostsRef.current.length,
+        teleportFrames: teleportRef.current.arrivedFrames,
+        squash: squashRef.current,
+        kids: kidsCountRef.current,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -454,20 +756,40 @@ function ChickenGameInner() {
       spin: (v: number) => {
         physicsRef.current.rv += v;
       },
+      forceHyper: () => {
+        const now = performance.now();
+        hyperRef.current = {
+          phase: 'burst',
+          until: now + HYPER_DURATION_MS,
+          nextAt: now + HYPER_DELAY_MIN_MS,
+          mult: HYPER_MULT_MIN + Math.random() * HYPER_MULT_SPREAD,
+        };
+        if (modeRef.current === 'ground') modeRef.current = 'flying';
+      },
+      forceTeleport: (decoys: boolean) => {
+        if (modeRef.current === 'ground') modeRef.current = 'flying';
+        const tp = teleportRef.current;
+        tp.phase = 'idle';
+        tp.nextAt = performance.now();
+        tp.arrivedFrames = -1;
+        tp.forcedDecoys = decoys;
+      },
+      forceKid: () => {
+        spawnKid();
+      },
     };
     window.__chicken = bridge;
     return () => {
       if (window.__chicken === bridge) delete window.__chicken;
     };
-  }, [hit]);
+  }, [hit, spawnKid]);
 
   useEffect(() => {
     const p = physicsRef.current;
     p.x = window.innerWidth / 2 - CHICKEN_W / 2;
-    p.y = window.innerHeight / 2 - CHICKEN_H / 2;
-    const angle = Math.random() * Math.PI * 2;
-    p.vx = Math.cos(angle) * BASE_SPEED;
-    p.vy = Math.sin(angle) * BASE_SPEED;
+    p.y = groundYFor(window.innerHeight) - CHICKEN_H;
+    p.vx = 0;
+    p.vy = 0;
   }, []);
 
   useEffect(() => {
@@ -489,6 +811,13 @@ function ChickenGameInner() {
     };
     window.addEventListener('mousemove', onMove);
     return () => window.removeEventListener('mousemove', onMove);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (squashTimerRef.current) clearTimeout(squashTimerRef.current);
+      if (squashAttrTimerRef.current) clearTimeout(squashAttrTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -522,68 +851,202 @@ function ChickenGameInner() {
 
       const p = physicsRef.current;
       const m = mouseRef.current;
-      const sp = speedRef.current * mercy;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
+      const sc = scoreRef.current;
+      const flying = modeRef.current === 'flying';
 
-      p.x += p.vx * dt * sp;
-      p.y += p.vy * dt * sp;
-
-      if (p.x <= 0 || p.x >= vw - CHICKEN_W) {
-        p.vx *= -1;
-        p.vy += (Math.random() - 0.5) * BOUNCE_RANDOM;
-        if (Math.random() < SPIN_BOUNCE_CHANCE) {
-          p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+      const hyper = hyperRef.current;
+      if (flying && sc >= HYPER_MIN_SCORE) {
+        if (hyper.phase === 'idle') {
+          if (!hyper.nextAt) {
+            hyper.nextAt = ts + HYPER_DELAY_MIN_MS + Math.random() * HYPER_DELAY_SPREAD_MS;
+          } else if (ts >= hyper.nextAt) {
+            hyper.phase = 'burst';
+            hyper.until = ts + HYPER_DURATION_MS;
+            hyper.mult = HYPER_MULT_MIN + Math.random() * HYPER_MULT_SPREAD;
+          }
         }
-        p.x = Math.max(0, Math.min(p.x, vw - CHICKEN_W));
       }
-      if (p.y <= 0 || p.y >= vh - CHICKEN_H) {
-        p.vy *= -1;
-        p.vx += (Math.random() - 0.5) * BOUNCE_RANDOM;
-        if (Math.random() < SPIN_BOUNCE_CHANCE) {
-          p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+      if (hyper.phase === 'burst' && ts >= hyper.until) {
+        hyper.phase = 'recover';
+        hyper.until = ts + HYPER_RECOVER_MS;
+      } else if (hyper.phase === 'recover' && ts >= hyper.until) {
+        hyper.phase = 'idle';
+        hyper.nextAt = ts + HYPER_DELAY_MIN_MS + Math.random() * HYPER_DELAY_SPREAD_MS;
+      }
+      const hyperFactor =
+        hyper.phase === 'burst' ? hyper.mult : hyper.phase === 'recover' ? HYPER_RECOVER_FACTOR : 1;
+
+      const sp = speedRef.current * mercy * hyperFactor;
+
+      const tp = teleportRef.current;
+      if (flying && (sc >= TELEPORT_MIN_SCORE || tp.forcedDecoys !== null) && tp.phase === 'idle') {
+        if (!tp.nextAt) {
+          tp.nextAt = ts + TELEPORT_DELAY_MIN_MS + Math.random() * TELEPORT_DELAY_SPREAD_MS;
+        } else if (ts >= tp.nextAt) {
+          const cx0 = p.x + CHICKEN_W / 2;
+          const cy0 = p.y + CHICKEN_H / 2;
+          const minDist = Math.hypot(vw, vh) * TELEPORT_MIN_DIST_FRAC;
+          let tx = cx0;
+          let ty = cy0;
+          for (let attempt = 0; attempt < 12; attempt++) {
+            tx = 90 + Math.random() * Math.max(120, vw - 180);
+            ty = 90 + Math.random() * Math.max(120, vh - 240);
+            if (Math.hypot(tx - cx0, ty - cy0) >= minDist) break;
+          }
+          tp.phase = 'out';
+          tp.outUntil = ts + TELEPORT_OUT_MS;
+          tp.origin = { x: cx0, y: cy0 };
+          tp.target = { x: tx, y: ty };
+          tp.decoys = tp.forcedDecoys ?? Math.random() < TELEPORT_DECOY_CHANCE;
+          tp.forcedDecoys = null;
+          streaksRef.current.push(...makeTeleportStreaks(cx0, cy0, ts));
+          if (chickenElRef.current) chickenElRef.current.style.opacity = '0';
+          if (Math.random() < TELEPORT_PRE_CHANCE) {
+            addGhost(tx - CHICKEN_W / 2, ty - CHICKEN_H / 2, true);
+          }
         }
-        p.y = Math.max(0, Math.min(p.y, vh - CHICKEN_H));
+      }
+      if (tp.phase === 'out' && ts >= tp.outUntil && tp.target) {
+        const { x: tx, y: ty } = tp.target;
+        p.x = Math.max(0, Math.min(tx - CHICKEN_W / 2, vw - CHICKEN_W));
+        p.y = Math.max(0, Math.min(ty - CHICKEN_H / 2, vh - CHICKEN_H));
+        const angle = Math.random() * Math.PI * 2;
+        p.vx = Math.cos(angle) * BASE_SPEED;
+        p.vy = Math.sin(angle) * BASE_SPEED;
+        streaksRef.current.push(...makeTeleportStreaks(tx, ty, ts));
+        if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
+        if (tp.origin && Math.random() < TELEPORT_AFTER_CHANCE) {
+          addGhost(tp.origin.x - CHICKEN_W / 2, tp.origin.y - CHICKEN_H / 2, false);
+        }
+        if (tp.decoys) {
+          const decoyCount = 2 + (Math.random() < 0.5 ? 1 : 0);
+          for (let i = 0; i < decoyCount; i++) {
+            addGhost(
+              60 + Math.random() * Math.max(120, vw - 180),
+              60 + Math.random() * Math.max(120, vh - 260),
+              false
+            );
+          }
+        }
+        tp.phase = 'idle';
+        tp.arrivedFrames = 0;
+        tp.nextAt = ts + TELEPORT_DELAY_MIN_MS + Math.random() * TELEPORT_DELAY_SPREAD_MS;
+      }
+      if (tp.arrivedFrames >= 0) {
+        tp.arrivedFrames += 1;
+        if (tp.arrivedFrames > TELEPORT_FRAME_TRACK_MAX) {
+          tp.arrivedFrames = -1;
+          tp.decoys = false;
+        }
       }
 
-      p.rv += (-p.rotation * ROTATION_SPRING - p.rv * ROTATION_DAMP) * dt;
-      p.rotation += p.rv * dt;
-      const wobble = Math.sin(ts * WOBBLE_FREQUENCY) * WOBBLE_AMPLITUDE;
+      if (!flying) {
+        const g = groundRef.current;
+        if (!g.nextTurnAt) {
+          g.nextTurnAt = ts + GROUND_TURN_MIN_MS + Math.random() * GROUND_TURN_SPREAD_MS;
+          g.nextGrazeAt = ts + GRAZE_DELAY_MIN_MS + Math.random() * GRAZE_DELAY_SPREAD_MS;
+          g.vxTarget = (Math.random() < 0.5 ? -1 : 1) * GROUND_WANDER;
+        }
+        if (ts >= g.nextTurnAt) {
+          g.nextTurnAt = ts + GROUND_TURN_MIN_MS + Math.random() * GROUND_TURN_SPREAD_MS;
+          g.vxTarget =
+            Math.random() < GROUND_PAUSE_CHANCE
+              ? 0
+              : (Math.random() < 0.5 ? -1 : 1) * GROUND_WANDER;
+        }
+        const grazing = ts < g.grazeUntil;
+        if (!grazing && ts >= g.nextGrazeAt) {
+          g.grazeUntil = ts + GRAZE_DURATION_MIN_MS + Math.random() * GRAZE_DURATION_SPREAD_MS;
+          g.nextGrazeAt =
+            g.grazeUntil + GRAZE_DELAY_MIN_MS + Math.random() * GRAZE_DELAY_SPREAD_MS;
+        }
+        const wandering = grazing ? 0 : g.vxTarget;
+        p.vx += (wandering - p.vx) * Math.min(1, 0.05 * dt);
+        p.vy = 0;
+        p.x = Math.max(8, Math.min(p.x + p.vx * dt, vw - CHICKEN_W - 8));
+        const bob = Math.sin(ts * 0.004) * 1.2 + (grazing ? Math.sin(ts * GRAZE_PECK_FREQ) * 2 : 0);
+        p.y = groundYFor(vh) - CHICKEN_H + bob;
+        const rotTarget = grazing
+          ? facingRef.current * (GRAZE_ANGLE + Math.sin(ts * GRAZE_PECK_FREQ) * GRAZE_PECK_AMPLITUDE)
+          : 0;
+        p.rotation += (rotTarget - p.rotation) * Math.min(1, GROUND_ROT_LERP * dt);
+        p.rv = 0;
+        p.bank = 0;
+        if (p.vx > 0.01) facingRef.current = 1;
+        else if (p.vx < -0.01) facingRef.current = -1;
+      } else {
+        let dx = p.vx * dt * sp;
+        let dy = p.vy * dt * sp;
+        const travel = Math.hypot(dx, dy);
+        if (travel > MAX_FRAME_TRAVEL) {
+          dx = (dx / travel) * MAX_FRAME_TRAVEL;
+          dy = (dy / travel) * MAX_FRAME_TRAVEL;
+        }
+        p.x += dx;
+        p.y += dy;
 
+        if (p.x <= 0 || p.x >= vw - CHICKEN_W) {
+          p.vx *= -1;
+          p.vy += (Math.random() - 0.5) * BOUNCE_RANDOM;
+          if (Math.random() < SPIN_BOUNCE_CHANCE) {
+            p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+          }
+          p.x = Math.max(0, Math.min(p.x, vw - CHICKEN_W));
+        }
+        if (p.y <= 0 || p.y >= vh - CHICKEN_H) {
+          p.vy *= -1;
+          p.vx += (Math.random() - 0.5) * BOUNCE_RANDOM;
+          if (Math.random() < SPIN_BOUNCE_CHANCE) {
+            p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
+          }
+          p.y = Math.max(0, Math.min(p.y, vh - CHICKEN_H));
+        }
+
+        p.rv += (-p.rotation * ROTATION_SPRING - p.rv * ROTATION_DAMP) * dt;
+        p.rotation += p.rv * dt;
+
+        const ccx = p.x + CHICKEN_W / 2;
+        const ccy = p.y + CHICKEN_H / 2;
+        const mdx = ccx - m.x;
+        const mdy = ccy - m.y;
+        const dist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (dist < AVOIDANCE_RADIUS && dist > 0) {
+          const force = ((AVOIDANCE_RADIUS - dist) / AVOIDANCE_RADIUS) * AVOIDANCE_STRENGTH * sp;
+          p.vx += (mdx / dist) * force;
+          p.vy += (mdy / dist) * force;
+        }
+
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        const maxSpd = BASE_SPEED * sp;
+        const minSpd = MIN_SPEED * sp;
+        if (speed > maxSpd) {
+          p.vx = (p.vx / speed) * maxSpd;
+          p.vy = (p.vy / speed) * maxSpd;
+        } else if (speed < minSpd && speed > 0) {
+          p.vx = (p.vx / speed) * minSpd;
+          p.vy = (p.vy / speed) * minSpd;
+        }
+
+        const moveSpeed = Math.hypot(p.vx, p.vy);
+        const horiz = moveSpeed > 0 ? p.vx / moveSpeed : 0;
+        p.bank += (horiz * MAX_BANK - p.bank) * Math.min(1, BANK_LERP * dt);
+        if (p.vx > FACING_DEADZONE) facingRef.current = 1;
+        else if (p.vx < -FACING_DEADZONE) facingRef.current = -1;
+      }
+
+      const wobble = flying ? Math.sin(ts * WOBBLE_FREQUENCY) * WOBBLE_AMPLITUDE : 0;
       const cx = p.x + CHICKEN_W / 2;
       const cy = p.y + CHICKEN_H / 2;
-      const dx = cx - m.x;
-      const dy = cy - m.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < AVOIDANCE_RADIUS && dist > 0) {
-        const force = ((AVOIDANCE_RADIUS - dist) / AVOIDANCE_RADIUS) * AVOIDANCE_STRENGTH * sp;
-        p.vx += (dx / dist) * force;
-        p.vy += (dy / dist) * force;
-      }
-
-      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-      const maxSpd = BASE_SPEED * sp;
-      const minSpd = MIN_SPEED * sp;
-      if (speed > maxSpd) {
-        p.vx = (p.vx / speed) * maxSpd;
-        p.vy = (p.vy / speed) * maxSpd;
-      } else if (speed < minSpd && speed > 0) {
-        p.vx = (p.vx / speed) * minSpd;
-        p.vy = (p.vy / speed) * minSpd;
-      }
-
-      const moveSpeed = Math.hypot(p.vx, p.vy);
-      const horiz = moveSpeed > 0 ? p.vx / moveSpeed : 0;
-      p.bank += (horiz * MAX_BANK - p.bank) * Math.min(1, BANK_LERP * dt);
-      if (p.vx > FACING_DEADZONE) facingRef.current = 1;
-      else if (p.vx < -FACING_DEADZONE) facingRef.current = -1;
 
       const agitation = 1 + heatRef.current * FLAP_AGITATION;
+      const flapBase = flying ? FLAP_BASE_MS : FLAP_BASE_MS * 1.35;
       const flapMs =
         Math.round(
           Math.max(
             FLAP_MIN_MS,
-            Math.min(FLAP_MAX_MS, FLAP_BASE_MS / ((FLAP_SPEED_FLOOR + sp) * agitation))
+            Math.min(FLAP_MAX_MS, flapBase / ((FLAP_SPEED_FLOOR + sp) * agitation))
           ) / FLAP_QUANTIZE_MS
         ) * FLAP_QUANTIZE_MS;
 
@@ -604,7 +1067,48 @@ function ChickenGameInner() {
         }
       }
 
-      const sc = scoreRef.current;
+      const kidMotions = kidMotionRef.current;
+      if (!nextKidAtRef.current) {
+        nextKidAtRef.current = ts + KID_DELAY_MIN_MS + Math.random() * KID_DELAY_SPREAD_MS;
+      } else if (ts >= nextKidAtRef.current) {
+        nextKidAtRef.current = ts + KID_DELAY_MIN_MS + Math.random() * KID_DELAY_SPREAD_MS;
+        if (kidMotions.size === 0) spawnKid();
+      }
+      if (kidMotions.size > 0) {
+        const kidY = groundYFor(vh) - KID_H;
+        for (const [id, motion] of kidMotions) {
+          if (motion.fleeing) {
+            motion.x += motion.vx * dt;
+            if (motion.x < -KID_W * 3 || motion.x > vw + KID_W * 3) {
+              removeKid(id);
+              continue;
+            }
+          } else {
+            if (!motion.nextTurnAt || ts >= motion.nextTurnAt) {
+              motion.nextTurnAt = ts + KID_TURN_MIN_MS + Math.random() * KID_TURN_SPREAD_MS;
+              motion.vx =
+                Math.random() < 0.4 ? 0 : (Math.random() < 0.5 ? -1 : 1) * KID_WANDER;
+              if (motion.vx !== 0) motion.dir = motion.vx > 0 ? 1 : -1;
+            }
+            motion.x = Math.max(10, Math.min(motion.x + motion.vx * dt, vw - KID_W - 10));
+          }
+          const el = kidElsRef.current.get(id);
+          if (el) {
+            const bob = Math.sin(ts * 0.006 + id) * 1;
+            el.style.transform = `translate(${motion.x}px, ${kidY + bob}px) scaleX(${motion.dir})`;
+          }
+        }
+      }
+
+      if (ts >= ghostSweepAtRef.current) {
+        ghostSweepAtRef.current = ts + 500;
+        const alive = ghostsRef.current.filter((g) => ts - g.born < 1400);
+        if (alive.length !== ghostsRef.current.length) {
+          ghostsRef.current = alive;
+          setGhosts(alive);
+        }
+      }
+
       const currentTier = tierRef.current;
       const tierDef = TIERS[currentTier];
       const intensity = Math.min(1 + sc * 0.05, 5);
@@ -643,13 +1147,20 @@ function ChickenGameInner() {
         if (sh.alpha <= 0) shards.splice(i, 1);
       }
 
+      const feathers = feathersRef.current;
+      for (let i = feathers.length - 1; i >= 0; i--) {
+        if (!updateFeather(feathers[i], dt, ts)) feathers.splice(i, 1);
+      }
+
       const lightning = lightningForScore(sc);
       if (lightning) {
         if (!nextArcAtRef.current) nextArcAtRef.current = ts + lightning.intervalMs;
         if (ts >= nextArcAtRef.current) {
           nextArcAtRef.current = ts + lightning.intervalMs * (0.6 + Math.random() * 0.8);
-          const burst = 1 + Math.floor(Math.random() * MAX_ARCS_PER_BURST);
-          for (let i = 0; i < burst; i++) arcsRef.current.push(makeArc(cx, cy, lightning.color));
+          const burst = ARCS_PER_BURST_MIN + Math.floor(Math.random() * ARCS_PER_BURST_SPREAD);
+          for (let i = 0; i < burst && arcsRef.current.length < MAX_ARCS; i++) {
+            arcsRef.current.push(makeArc(cx, cy, lightning.color));
+          }
           if (ts - lastCrackleAtRef.current > CRACKLE_MIN_GAP_MS) {
             lastCrackleAtRef.current = ts;
             crackle();
@@ -689,13 +1200,13 @@ function ChickenGameInner() {
             ctx.stroke();
           };
           ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.28 * alpha})`;
-          ctx.lineWidth = 9;
+          ctx.lineWidth = 3.2;
           trace();
           ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.75 * alpha})`;
-          ctx.lineWidth = 4;
+          ctx.lineWidth = 1.5;
           trace();
           ctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * alpha})`;
-          ctx.lineWidth = 1.8;
+          ctx.lineWidth = 0.85;
           trace();
         }
 
@@ -722,6 +1233,12 @@ function ChickenGameInner() {
           ctx.restore();
         }
         ctx.globalAlpha = 1;
+
+        for (const f of feathers) {
+          drawFeather(ctx, f, ts);
+        }
+
+        drawStreaks(ctx, streaksRef.current, now, dt, auraRgb);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -731,7 +1248,7 @@ function ChickenGameInner() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay]);
+  }, [crackle, recordPlay, addGhost, spawnKid, removeKid]);
 
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
@@ -745,7 +1262,7 @@ function ChickenGameInner() {
 
   return (
     <div className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none cursor-crosshair">
-      <GameScenery />
+      <GameScenery tier={tier} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
       <span className="absolute top-4 left-5 text-xs text-white/40 font-medium tracking-wide pointer-events-none">
@@ -755,6 +1272,17 @@ function ChickenGameInner() {
       <div className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
         Click the chicken
       </div>
+
+      {bonus && (
+        <div
+          key={bonus.id}
+          data-testid="chicken-bonus-caption"
+          onAnimationEnd={() => setBonus(null)}
+          className="absolute top-[235px] left-1/2 text-2xl font-bold text-[#FFD700] pointer-events-none animate-[bonusRise_0.9s_ease-out_forwards]"
+        >
+          +{bonus.amount}
+        </div>
+      )}
 
       <div className="absolute top-[265px] left-1/2 -translate-x-1/2 text-5xl font-bold text-white tabular-nums pointer-events-none">
         {score}
@@ -790,10 +1318,39 @@ function ChickenGameInner() {
         />
       )}
 
+      {ghosts.map((ghost) => (
+        <div
+          key={ghost.id}
+          data-testid="chicken-ghost"
+          data-pre={ghost.pre ? '1' : '0'}
+          onAnimationEnd={() => removeGhost(ghost.id)}
+          className={`absolute top-0 left-0 pointer-events-none will-change-transform ${ghost.pre ? 'chicken-ghost-pre' : 'chicken-ghost'}`}
+          style={{ transform: `translate(${ghost.x}px, ${ghost.y}px)` }}
+        >
+          <ChickenSvg className="w-[70px]" tier={ghost.tier} morph={ghost.morph} />
+        </div>
+      ))}
+
+      {kids.map((kid) => (
+        <div
+          key={kid.id}
+          data-testid="chicken-kid"
+          ref={(el) => {
+            if (el) kidElsRef.current.set(kid.id, el);
+            else kidElsRef.current.delete(kid.id);
+          }}
+          onClick={() => fleeKid(kid.id)}
+          className="absolute top-0 left-0 cursor-pointer will-change-transform"
+        >
+          <ChickenSvg className="w-[26px]" tier={kid.tier} morph={0} eyes="calm" />
+        </div>
+      ))}
+
       <div
         ref={chickenElRef}
         data-testid="chicken"
         data-tier={tier}
+        data-squash="0"
         className="absolute will-change-transform cursor-pointer"
         style={{ left: 0, top: 0 }}
         onClick={hit}
@@ -804,10 +1361,7 @@ function ChickenGameInner() {
           data-facing="1"
           style={{ transition: 'transform 160ms ease-out', transformOrigin: 'center' }}
         >
-          <div
-            ref={feedbackElRef}
-            style={{ transition: 'transform 150ms ease-out' }}
-          >
+          <div ref={rubberElRef} className="chicken-rubber" data-squashed="0">
             <ChickenSvg className="w-[70px]" style={glowStyle} tier={tier} morph={morph} eyes={mood} />
           </div>
         </div>

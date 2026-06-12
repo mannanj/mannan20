@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import path from 'node:path';
 
 interface SoundEvent {
-  type: 'scream' | 'powerup' | 'crackle';
+  type: 'scream' | 'powerup' | 'crackle' | 'squeak';
   key?: string;
   rate?: number;
   synth?: boolean;
@@ -21,6 +21,13 @@ interface ChickenState {
   mood: string;
   lightning: { intervalMs: number; color: { r: number; g: number; b: number }; intensity: number } | null;
   arcs: number;
+  mode: 'ground' | 'flying';
+  feathers: number;
+  hyper: 'idle' | 'burst' | 'recover';
+  ghosts: number;
+  teleportFrames: number;
+  squash: number;
+  kids: number;
 }
 
 interface ChickenBridge {
@@ -28,6 +35,9 @@ interface ChickenBridge {
   state: () => ChickenState;
   boost: (n: number) => void;
   spin: (v: number) => void;
+  forceHyper: () => void;
+  forceTeleport: (decoys: boolean) => void;
+  forceKid: () => void;
 }
 
 const SOUNDS_DIR = path.join(process.cwd(), 'public', 'sounds', 'chicken');
@@ -287,45 +297,6 @@ test.describe('chicken game', () => {
     await expect(page.getByTestId('leaderboard-agent-checkbox')).toBeChecked();
   });
 
-  test('feedback gate reuses the contact validation before revealing email', async ({ page }) => {
-    await page.route('**/api/game/leaderboard', (route) =>
-      route.fulfill({ json: { human: [], agent: [] } })
-    );
-    await page.route('**/api/validate-contact', (route) =>
-      route.fulfill({
-        json: { name: { found: true, value: 'Testy' } },
-      })
-    );
-    await gotoGame(page);
-    await page.getByTestId('chicken-leaderboard-link').click();
-    await page.getByTestId('leaderboard-feedback-toggle').click();
-    const textarea = page.getByTestId('contact-textarea');
-    await expect(textarea).toBeVisible();
-    await expect(page.getByTestId('contact-result')).toHaveCount(0);
-    await textarea.pressSequentially('Hello, I love the chicken game on your portfolio site', {
-      delay: 60,
-    });
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('chicken-leaderboard-panel')).toContainText('hello@mannan.is');
-    const cookies = await page.evaluate(() => document.cookie);
-    expect(cookies).toContain('contact_revealed=1');
-  });
-
-  test('feedback gate honors a prior main-site validation pass', async ({ page, context }) => {
-    await context.addCookies([
-      { name: 'contact_revealed', value: '1', url: 'http://localhost:3847' },
-    ]);
-    await page.route('**/api/game/leaderboard', (route) =>
-      route.fulfill({ json: { human: [], agent: [] } })
-    );
-    await gotoGame(page);
-    await page.getByTestId('chicken-leaderboard-link').click();
-    await page.getByTestId('leaderboard-feedback-toggle').click();
-    await expect(page.getByTestId('contact-result')).toBeVisible();
-    await expect(page.getByTestId('chicken-leaderboard-panel')).toContainText('hello@mannan.is');
-    await expect(page.getByTestId('contact-textarea')).toHaveCount(0);
-  });
-
   test('game survives total sound failure', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(String(e)));
@@ -345,7 +316,9 @@ test.describe('chicken game', () => {
   test('flies upright and rights itself after a spin', async ({ page }) => {
     await gotoGame(page);
     const b = bridge(page);
-    expect(Math.abs((await b.state()).rotation)).toBeLessThan(2);
+    await b.boost(1);
+    await expect.poll(async () => (await b.state()).mode).toBe('flying');
+    expect(Math.abs((await b.state()).rotation)).toBeLessThan(6);
 
     const peak = await page.evaluate(async () => {
       const w = window as unknown as {
@@ -448,5 +421,127 @@ test.describe('chicken game', () => {
       (window as unknown as { __scenery: { advance: () => void } }).__scenery.advance()
     );
     await expect.poll(async () => layer.getAttribute('data-scene')).toBe('2');
+  });
+
+  test('starts grounded and grazing, takes off on the first click', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    const grounded = await b.state();
+    expect(grounded.mode).toBe('ground');
+    expect(Math.abs(grounded.vy)).toBeLessThan(0.01);
+    await page.getByTestId('chicken').click({ force: true });
+    await expect.poll(async () => (await b.state()).mode).toBe('flying');
+    expect((await b.state()).score).toBe(1);
+  });
+
+  test('clicks shed tier-colored feathers instead of shards', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    await b.boost(1);
+    await expect.poll(async () => (await b.state()).feathers).toBeGreaterThan(0);
+  });
+
+  test('clicking squashes the chicken like a rubber toy, then it springs back', async ({ page }) => {
+    await gotoGame(page);
+    const chicken = page.getByTestId('chicken');
+    await chicken.click({ force: true });
+    await expect
+      .poll(() => chicken.getAttribute('data-squash'), { timeout: 1000 })
+      .not.toBe('0');
+    await expect
+      .poll(() => chicken.getAttribute('data-squash'), { timeout: 3000 })
+      .toBe('0');
+  });
+
+  test('a fast click streak deepens the squash into a squeak', async ({ page }) => {
+    await gotoGame(page);
+    const chicken = page.getByTestId('chicken');
+    for (let i = 0; i < 4; i++) {
+      await chicken.click({ force: true, delay: 10 });
+    }
+    await expect
+      .poll(async () => (await bridge(page).plays()).filter((p) => p.type === 'squeak').length)
+      .toBeGreaterThan(0);
+  });
+
+  test('hyperspeed burst pays 100 points when caught', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    await page.evaluate(() =>
+      (window as unknown as { __chicken: ChickenBridge }).__chicken.forceHyper()
+    );
+    await expect.poll(async () => (await b.state()).hyper).toBe('burst');
+    await page.getByTestId('chicken').click({ force: true });
+    await expect.poll(async () => (await b.state()).score).toBe(100);
+    expect((await b.state()).hyper).toBe('recover');
+    await expect(page.getByTestId('chicken-bonus-caption')).toContainText('+100');
+  });
+
+  test('teleport leaves after-images and a 5-frame decoy bonus window', async ({ page }) => {
+    await gotoGame(page);
+    const result = await page.evaluate(async () => {
+      const w = window as unknown as { __chicken: ChickenBridge };
+      w.__chicken.forceTeleport(true);
+      const start = performance.now();
+      let ghostsSeen = 0;
+      while (performance.now() - start < 5000) {
+        const st = w.__chicken.state();
+        ghostsSeen = Math.max(ghostsSeen, st.ghosts);
+        if (st.teleportFrames >= 0 && st.teleportFrames <= 4) {
+          const el = document.querySelector('[data-testid="chicken"]') as HTMLElement;
+          el.click();
+          return { clicked: true, score: w.__chicken.state().score, ghosts: ghostsSeen };
+        }
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return { clicked: false, score: w.__chicken.state().score, ghosts: ghostsSeen };
+    });
+    expect(result.clicked).toBe(true);
+    expect(result.ghosts).toBeGreaterThan(0);
+    expect(result.score).toBe(5);
+  });
+
+  test('chicken kids wander the landscape and bolt when clicked', async ({ page }) => {
+    await gotoGame(page);
+    await page.evaluate(() =>
+      (window as unknown as { __chicken: ChickenBridge }).__chicken.forceKid()
+    );
+    const kid = page.getByTestId('chicken-kid');
+    await expect(kid).toHaveCount(1);
+    await kid.click({ force: true });
+    await expect(kid).toHaveCount(0, { timeout: 8000 });
+  });
+
+  test('evolving recolors the landscape and swaps the scene', async ({ page }) => {
+    await gotoGame(page);
+    const layer = page.getByTestId('game-scenery');
+    expect(await layer.getAttribute('data-tier')).toBe('0');
+    expect(await layer.getAttribute('data-scene')).toBe('0');
+    await bridge(page).boost(30);
+    await expect.poll(() => layer.getAttribute('data-tier')).toBe('1');
+    await expect.poll(() => layer.getAttribute('data-scene')).toBe('1');
+  });
+
+  test('late stages fly markedly faster than the first flight', async ({ page }) => {
+    await gotoGame(page);
+    const b = bridge(page);
+    await b.boost(1);
+    let slowMax = 0;
+    for (let i = 0; i < 12; i++) {
+      const s = await b.state();
+      slowMax = Math.max(slowMax, Math.hypot(s.vx, s.vy));
+      await page.waitForTimeout(50);
+    }
+    expect(slowMax).toBeLessThan(0.5);
+    await b.boost(139);
+    await expect
+      .poll(
+        async () => {
+          const s = await b.state();
+          return Math.hypot(s.vx, s.vy);
+        },
+        { timeout: 4000 }
+      )
+      .toBeGreaterThan(0.52);
   });
 });

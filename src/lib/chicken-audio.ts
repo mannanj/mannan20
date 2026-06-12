@@ -86,52 +86,136 @@ class EffectsSynth {
 
   crackle(): void {
     const t = this.ctx.currentTime;
-    const duration = 0.07;
+    const duration = 0.16;
     const length = Math.ceil(this.ctx.sampleRate * duration);
     const buffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+    for (let i = 0; i < length; i++) {
+      const spark = Math.random() < 0.16 ? 1 : 0.22;
+      data[i] = (Math.random() * 2 - 1) * spark;
+    }
     const burst = this.ctx.createBufferSource();
     burst.buffer = buffer;
-    const hp = this.ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.value = 2600;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 0.9;
+    bp.frequency.setValueAtTime(3400, t);
+    bp.frequency.exponentialRampToValueAtTime(700, t + duration);
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.14, t);
+    gain.gain.setValueAtTime(EXP_FLOOR, t);
+    gain.gain.exponentialRampToValueAtTime(0.15, t + 0.006);
     gain.gain.exponentialRampToValueAtTime(0.002, t + duration);
-    burst.connect(hp);
-    hp.connect(gain);
+    burst.connect(bp);
+    bp.connect(gain);
     gain.connect(this.ctx.destination);
     burst.start(t);
     burst.stop(t + duration + 0.02);
     const zap = this.ctx.createOscillator();
-    zap.type = 'square';
-    zap.frequency.setValueAtTime(1900, t);
-    zap.frequency.exponentialRampToValueAtTime(260, t + 0.05);
+    zap.type = 'sawtooth';
+    zap.frequency.setValueAtTime(2200, t);
+    zap.frequency.exponentialRampToValueAtTime(240, t + 0.07);
     const zapGain = this.ctx.createGain();
-    zapGain.gain.setValueAtTime(0.04, t);
-    zapGain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+    zapGain.gain.setValueAtTime(EXP_FLOOR, t);
+    zapGain.gain.exponentialRampToValueAtTime(0.03, t + 0.005);
+    zapGain.gain.exponentialRampToValueAtTime(0.0008, t + 0.075);
     zap.connect(zapGain);
     zapGain.connect(this.ctx.destination);
     zap.start(t);
-    zap.stop(t + 0.08);
+    zap.stop(t + 0.1);
+    const thump = this.ctx.createOscillator();
+    thump.type = 'sine';
+    thump.frequency.setValueAtTime(130, t);
+    thump.frequency.exponentialRampToValueAtTime(46, t + 0.18);
+    const thumpGain = this.ctx.createGain();
+    thumpGain.gain.setValueAtTime(EXP_FLOOR, t);
+    thumpGain.gain.exponentialRampToValueAtTime(0.07, t + 0.012);
+    thumpGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + 0.2);
+    thump.connect(thumpGain);
+    thumpGain.connect(this.ctx.destination);
+    thump.start(t);
+    thump.stop(t + 0.24);
+  }
+
+  squeak(depth: number): void {
+    const t = this.ctx.currentTime;
+    const d = Math.max(0, Math.min(1, depth));
+    const duration = 0.14 + 0.1 * d;
+    const start = 920 + 260 * d;
+    const makeVoice = (mult: number, level: number) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(start * mult, t);
+      osc.frequency.exponentialRampToValueAtTime(560 * mult, t + duration);
+      const vib = this.ctx.createOscillator();
+      vib.frequency.value = 26;
+      const vibGain = this.ctx.createGain();
+      vibGain.gain.value = 14 * mult;
+      vib.connect(vibGain);
+      vibGain.connect(osc.frequency);
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1250 * mult;
+      bp.Q.value = 6;
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(EXP_FLOOR, t);
+      gain.gain.exponentialRampToValueAtTime(level, t + 0.008);
+      gain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + duration);
+      osc.connect(bp);
+      bp.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + duration + 0.03);
+      vib.start(t);
+      vib.stop(t + duration + 0.03);
+    };
+    makeVoice(1, 0.045 + 0.03 * d);
+    makeVoice(2.01, 0.016 + 0.01 * d);
   }
 
   riser(final: boolean): void {
     const t = this.ctx.currentTime;
     const duration = final ? 1.1 : 0.8;
-    const osc = this.ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(95, t);
-    osc.frequency.exponentialRampToValueAtTime(final ? 660 : 540, t + duration);
-    const oscGain = this.ctx.createGain();
-    oscGain.gain.setValueAtTime(EXP_FLOOR, t);
-    oscGain.gain.exponentialRampToValueAtTime(0.12, t + duration);
-    oscGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + duration + 0.25);
-    osc.connect(oscGain);
-    oscGain.connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + duration + 0.3);
+    const sweep = this.ctx.createBiquadFilter();
+    sweep.type = 'bandpass';
+    sweep.Q.value = 1.4;
+    sweep.frequency.setValueAtTime(260, t);
+    sweep.frequency.exponentialRampToValueAtTime(final ? 3200 : 2400, t + duration);
+    sweep.connect(this.ctx.destination);
+    for (const detune of [0, 9]) {
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.detune.value = detune;
+      osc.frequency.setValueAtTime(95, t);
+      osc.frequency.exponentialRampToValueAtTime(final ? 660 : 540, t + duration);
+      const oscGain = this.ctx.createGain();
+      oscGain.gain.setValueAtTime(EXP_FLOOR, t);
+      oscGain.gain.exponentialRampToValueAtTime(0.1, t + duration);
+      oscGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + duration + 0.25);
+      osc.connect(oscGain);
+      oscGain.connect(sweep);
+      osc.start(t);
+      osc.stop(t + duration + 0.3);
+    }
+    const shimmerLen = Math.ceil(this.ctx.sampleRate * duration);
+    const shimmerBuf = this.ctx.createBuffer(1, shimmerLen, this.ctx.sampleRate);
+    const shimmerData = shimmerBuf.getChannelData(0);
+    for (let i = 0; i < shimmerLen; i++) {
+      shimmerData[i] = (Math.random() * 2 - 1) * Math.pow(i / shimmerLen, 2);
+    }
+    const shimmer = this.ctx.createBufferSource();
+    shimmer.buffer = shimmerBuf;
+    const shimmerHp = this.ctx.createBiquadFilter();
+    shimmerHp.type = 'highpass';
+    shimmerHp.frequency.value = 5200;
+    const shimmerGain = this.ctx.createGain();
+    shimmerGain.gain.setValueAtTime(EXP_FLOOR, t);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.05, t + duration);
+    shimmerGain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + duration + 0.2);
+    shimmer.connect(shimmerHp);
+    shimmerHp.connect(shimmerGain);
+    shimmerGain.connect(this.ctx.destination);
+    shimmer.start(t);
+    shimmer.stop(t + duration + 0.25);
     const thump = this.ctx.createOscillator();
     thump.type = 'sine';
     thump.frequency.setValueAtTime(170, t + duration);
@@ -301,6 +385,11 @@ class ChickenAudio {
   crackle(): void {
     this.resumeContext();
     this.ensureSynth()?.crackle();
+  }
+
+  squeak(depth: number): void {
+    this.resumeContext();
+    this.ensureSynth()?.squeak(depth);
   }
 
   private ensureSynth(): EffectsSynth | null {

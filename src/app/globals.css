@@ -793,10 +793,117 @@ body.gem-rain-active #header > div:first-child {
   animation: sceneryDrift 120s ease-in-out infinite;
 }
 
+.chicken-rubber {
+  transform-origin: 50% 96%;
+  transform: scaleX(calc(1 + 0.34 * var(--sq, 0))) scaleY(calc(1 - 0.4 * var(--sq, 0)))
+    skewX(calc(var(--sqx, 0) * -7deg));
+  transition: transform 320ms cubic-bezier(0.3, 1.9, 0.42, 1);
+}
+
+.chicken-rubber[data-squashed='1'] {
+  transition: transform 70ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.chicken-sq-head {
+  transform-box: fill-box;
+  transform-origin: 50% 95%;
+  transform: translateY(calc(var(--sq, 0) * 8px)) scaleX(calc(1 + 0.1 * var(--sq, 0)))
+    scaleY(calc(1 - 0.16 * var(--sq, 0)));
+  transition: transform 380ms cubic-bezier(0.3, 2.2, 0.4, 1) 40ms;
+}
+
+.chicken-rubber[data-squashed='1'] .chicken-sq-head {
+  transition: transform 90ms cubic-bezier(0.2, 0.9, 0.3, 1) 20ms;
+}
+
+.chicken-sq-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(1 + 0.55 * var(--sq, 0)));
+  transition: transform 340ms cubic-bezier(0.3, 2.4, 0.4, 1) 20ms;
+}
+
+.chicken-rubber[data-squashed='1'] .chicken-sq-eye {
+  transition: transform 70ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.chicken-sq-wing-left {
+  transform-box: view-box;
+  transform-origin: 24px 92px;
+  transform: rotate(calc(var(--sq, 0) * -15deg));
+  transition: transform 360ms cubic-bezier(0.3, 2, 0.4, 1) 30ms;
+}
+
+.chicken-sq-wing-right {
+  transform-box: view-box;
+  transform-origin: 56px 92px;
+  transform: rotate(calc(var(--sq, 0) * 15deg));
+  transition: transform 360ms cubic-bezier(0.3, 2, 0.4, 1) 30ms;
+}
+
+.chicken-rubber[data-squashed='1'] .chicken-sq-wing-left,
+.chicken-rubber[data-squashed='1'] .chicken-sq-wing-right {
+  transition: transform 80ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.chicken-sq-legs {
+  transform-box: view-box;
+  transform-origin: 40px 158px;
+  transform: scaleY(calc(1 - 0.3 * var(--sq, 0))) scaleX(calc(1 + 0.22 * var(--sq, 0)));
+  transition: transform 300ms cubic-bezier(0.3, 1.9, 0.42, 1);
+}
+
+.chicken-rubber[data-squashed='1'] .chicken-sq-legs {
+  transition: transform 60ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes ghostFade {
+  from { opacity: 0.38; }
+  to { opacity: 0; }
+}
+
+@keyframes ghostPre {
+  0% { opacity: 0; }
+  40% { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+.chicken-ghost {
+  animation: ghostFade 0.76s ease-out forwards;
+  filter: saturate(0.5) brightness(1.5);
+}
+
+.chicken-ghost-pre {
+  animation: ghostPre 0.4s ease-out forwards;
+  filter: saturate(0.4) brightness(1.7);
+}
+
+@keyframes bonusRise {
+  0% { opacity: 0; transform: translate(-50%, 14px) scale(0.8); }
+  18% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(1); }
+}
+
+@keyframes feedbackPopIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .chicken-wing-left,
   .chicken-wing-right,
-  .scenery-drift {
+  .scenery-drift,
+  .chicken-ghost,
+  .chicken-ghost-pre {
     animation: none;
+  }
+
+  .chicken-rubber,
+  .chicken-sq-head,
+  .chicken-sq-eye,
+  .chicken-sq-wing-left,
+  .chicken-sq-wing-right,
+  .chicken-sq-legs {
+    transition: none;
   }
 }
