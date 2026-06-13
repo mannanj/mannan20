@@ -12,9 +12,15 @@ test.describe('mcp page', () => {
   });
 });
 
+async function revealMcp(page: import('@playwright/test').Page) {
+  await page.getByTestId('header-right-stack').hover();
+  await page.waitForTimeout(1100);
+}
+
 test.describe('header mcp popover', () => {
   test('icon opens popover with connect snippets and guide link', async ({ page }) => {
     await page.goto('/');
+    await revealMcp(page);
     const button = page.getByTestId('mcp-header-button');
     await expect(button).toBeVisible();
     await button.click();
@@ -31,6 +37,7 @@ test.describe('header mcp popover', () => {
 
   test('popover closes on outside click', async ({ page }) => {
     await page.goto('/');
+    await revealMcp(page);
     await page.getByTestId('mcp-header-button').click();
     await expect(page.getByTestId('mcp-popover')).toBeVisible();
     await page.mouse.click(400, 400);
@@ -43,6 +50,7 @@ test.describe('header mcp popover on mobile', () => {
 
   test('icon is visible and popover fits the viewport', async ({ page }) => {
     await page.goto('/');
+    await revealMcp(page);
     const button = page.getByTestId('mcp-header-button');
     await expect(button).toBeVisible();
     await button.click();

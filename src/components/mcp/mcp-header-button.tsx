@@ -10,7 +10,11 @@ import {
   MCP_ENDPOINT,
 } from "@/lib/mcp-info";
 
-export function McpHeaderButton() {
+interface McpHeaderButtonProps {
+  gate?: (e: React.MouseEvent<HTMLButtonElement>) => boolean;
+}
+
+export function McpHeaderButton({ gate }: McpHeaderButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -41,8 +45,11 @@ export function McpHeaderButton() {
         data-testid="mcp-header-button"
         aria-label="Connect your AI via MCP"
         aria-expanded={open}
-        onClick={() => setOpen((prev) => !prev)}
-        className="group relative block cursor-pointer border-none bg-transparent p-0 transition-all duration-200 hover:scale-110"
+        onClick={(e) => {
+          if (gate && !gate(e)) return;
+          setOpen((prev) => !prev);
+        }}
+        className="group relative block cursor-pointer border-none bg-transparent p-1.5 transition-all duration-200 hover:scale-110"
       >
         <McpLogoIcon
           className={`h-5 w-5 transition-colors duration-200 ${open ? "text-white" : "text-white/55 group-hover:text-white"}`}

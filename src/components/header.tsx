@@ -11,6 +11,10 @@ import { PlantIcon } from "@/components/icons/plant-icon";
 import { AnimatedText } from "@/components/animated-text";
 import { RubyGemCollectible } from "@/components/garden/article-inventory";
 import { McpHeaderButton } from "@/components/mcp/mcp-header-button";
+import {
+  ExpandingIconStack,
+  StackItem,
+} from "@/components/ui/expanding-icon-stack";
 
 const LINKS: Section[] = ["home", "about", "contact"];
 
@@ -79,8 +83,6 @@ export function Header() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isTransparent = pathname === "/garden/article/seeking-community";
-  const [expanded, setExpanded] = useState(false);
-  const [clicksAllowed, setClicksAllowed] = useState(false);
   const [gardenExpanded, setGardenExpanded] = useState(false);
   const gardenExpandedRef = useRef(false);
   const [rootHovered, setRootHovered] = useState(false);
@@ -89,9 +91,7 @@ export function Header() {
   const [gardenLevel, setGardenLevel] = useState(0);
   const [gardenRetracting, setGardenRetracting] = useState(false);
   const gardenIntervalRef = useRef<ReturnType<typeof setInterval>>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const gardenRef = useRef<HTMLDivElement>(null);
-  const gateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const gardenCloseTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const openGarden = useCallback(() => {
@@ -109,42 +109,6 @@ export function Header() {
       gardenCloseTimerRef.current = null;
     }, 180);
   }, []);
-
-  const CLICK_GATE_MS = 1000;
-
-  useEffect(() => {
-    if (expanded) {
-      setClicksAllowed(false);
-      gateTimerRef.current = setTimeout(
-        () => setClicksAllowed(true),
-        CLICK_GATE_MS,
-      );
-    } else {
-      setClicksAllowed(false);
-      if (gateTimerRef.current) clearTimeout(gateTimerRef.current);
-    }
-    return () => {
-      if (gateTimerRef.current) clearTimeout(gateTimerRef.current);
-    };
-  }, [expanded]);
-
-  useEffect(() => {
-    if (!expanded) return;
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setExpanded(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [expanded]);
 
   useEffect(() => {
     if (!gardenExpanded) return;
@@ -521,17 +485,6 @@ export function Header() {
     }
   };
 
-  const gatedClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>) => {
-      if (!clicksAllowed) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!expanded) setExpanded(true);
-      }
-    },
-    [clicksAllowed, expanded],
-  );
-
   if (pathname === "/garden") return null;
 
   return (
@@ -540,89 +493,100 @@ export function Header() {
         isTransparent ? "" : "bg-[#0b0b0b]"
       }`}
     >
-      <div
-        ref={containerRef}
+      <ExpandingIconStack
         data-testid="header-controls"
         className="relative flex items-center pr-[60px]"
-        onMouseEnter={() => setExpanded(true)}
-        onMouseLeave={() => setExpanded(false)}
       >
-        <button
-          type="button"
-          data-testid="header-home-button"
-          onClick={() => {
-            setExpanded((prev) => !prev);
-            if (isHome) scrollToSection("home");
-            else window.location.href = "/";
-          }}
-          className="group relative z-30 bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
-        >
-          <Image
-            src="/mannan.jpg"
-            width={48}
-            height={48}
-            alt="Mannan"
-            className="rounded-full"
-          />
-          {pathname === "/garden/article/seeking-community" && (
-            <span
-              className="absolute pointer-events-auto block"
-              style={{
-                left: "62%",
-                top: "45%",
-                width: 3,
-                height: 3,
-                marginLeft: -1.5,
-                marginTop: -1.5,
-                lineHeight: 0,
+        {({ toggle, gatedClick }) => (
+          <>
+            <button
+              type="button"
+              data-testid="header-home-button"
+              onClick={() => {
+                toggle();
+                if (isHome) scrollToSection("home");
+                else window.location.href = "/";
               }}
+              className="group relative z-30 bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
             >
-              <RubyGemCollectible />
-            </span>
-          )}
-          <div className="absolute top-full left-0 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-40">
-            <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-            <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
-              Return to Home
-            </div>
-          </div>
-        </button>
-        <a
-          href="https://www.linkedin.com/in/mannanjavid/"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="header-linkedin-link"
-          onClick={gatedClick}
-          className={`group absolute z-20 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? "left-[56px] max-md:left-[60px] max-md:scale-[1.3]" : "left-[44px]"}`}
-        >
-          <LinkedInIcon />
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-            <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
-              View my LinkedIn
-            </div>
-          </div>
-        </a>
-        <a
-          href="https://github.com/mannanj"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="header-github-link"
-          onClick={gatedClick}
-          className={`group absolute z-10 top-1/2 -translate-y-1/2 transition-all duration-300 ease-out hover:scale-[1.35] active:scale-110 ${expanded ? "left-[80px] max-md:left-[90px] max-md:scale-[1.3]" : "left-[57px]"}`}
-        >
-          <GitHubIcon />
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-            <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
-              View my GitHub
-            </div>
-          </div>
-        </a>
-      </div>
-      <div
-        className={`relative flex items-center gap-2 md:gap-4 md:pr-[15px] md:pl-[15px] transition-all duration-300 ease-out ${gardenExpanded ? "mr-[63px]" : "mr-[22px]"}`}
-      >
+              <Image
+                src="/mannan.jpg"
+                width={48}
+                height={48}
+                alt="Mannan"
+                className="rounded-full"
+              />
+              {pathname === "/garden/article/seeking-community" && (
+                <span
+                  className="absolute pointer-events-auto block"
+                  style={{
+                    left: "62%",
+                    top: "45%",
+                    width: 3,
+                    height: 3,
+                    marginLeft: -1.5,
+                    marginTop: -1.5,
+                    lineHeight: 0,
+                  }}
+                >
+                  <RubyGemCollectible />
+                </span>
+              )}
+              <div className="absolute top-full left-0 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-40">
+                <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
+                <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
+                  Return to Home
+                </div>
+              </div>
+            </button>
+            <StackItem
+              z={20}
+              collapsed="left-[44px]"
+              expanded="left-[56px] max-md:left-[60px] max-md:scale-[1.3]"
+            >
+              <a
+                href="https://www.linkedin.com/in/mannanjavid/"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="header-linkedin-link"
+                onClick={gatedClick}
+                className="group block transition-transform duration-300 ease-out hover:scale-[1.35] active:scale-110"
+              >
+                <LinkedInIcon />
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
+                  <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
+                    View my LinkedIn
+                  </div>
+                </div>
+              </a>
+            </StackItem>
+            <StackItem
+              z={10}
+              collapsed="left-[57px]"
+              expanded="left-[80px] max-md:left-[90px] max-md:scale-[1.3]"
+            >
+              <a
+                href="https://github.com/mannanj"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="header-github-link"
+                onClick={gatedClick}
+                className="group block transition-transform duration-300 ease-out hover:scale-[1.35] active:scale-110"
+              >
+                <GitHubIcon />
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
+                  <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
+                    View my GitHub
+                  </div>
+                </div>
+              </a>
+            </StackItem>
+          </>
+        )}
+      </ExpandingIconStack>
+      <div className="relative flex items-center gap-2 md:gap-4 md:pl-[15px]">
         {LINKS.map((link) => (
           <div key={link} className="pl-[10px] md:pl-[15px]">
             <a
@@ -635,20 +599,23 @@ export function Header() {
             </a>
           </div>
         ))}
-        <div className="md:pl-[15px]">
-          <McpHeaderButton />
-        </div>
-      </div>
-      <div
-        ref={gardenRef}
-        data-testid="garden-wrapper"
-        className={`group/garden absolute top-1/2 -translate-y-[calc(50%+2px)] z-10 transition-all duration-300 ease-out py-5 pl-7 pr-1 ${gardenExpanded ? "right-[20px]" : "right-[-2px]"}`}
-        onMouseEnter={openGarden}
-        onMouseLeave={closeGarden}
-      >
+        <ExpandingIconStack
+          data-testid="header-right-stack"
+          className="relative flex items-center pl-[10px] md:pl-[15px] pr-[11px]"
+        >
+          {({ gatedClick }) => (
+            <>
+              <div
+                ref={gardenRef}
+                data-testid="garden-wrapper"
+                className="group/garden relative z-30 py-3"
+                onMouseEnter={openGarden}
+                onMouseLeave={closeGarden}
+              >
         <Link
           href="/garden"
           data-testid="header-garden-link"
+          onClick={gatedClick}
           className="group relative block"
         >
           <PlantIcon
@@ -2357,8 +2324,19 @@ export function Header() {
           </div>
         </Link>
         <div
-          className={`absolute left-1/2 -translate-x-[calc(50%-13px)] bottom-[1.5px] h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith("/garden") ? "w-9" : "group-hover/garden:w-9 w-0"}`}
+          className={`absolute left-1/2 -translate-x-1/2 bottom-[6px] h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith("/garden") ? "w-9" : "group-hover/garden:w-9 w-0"}`}
         />
+              </div>
+              <StackItem
+                z={20}
+                collapsed="left-[30px]"
+                expanded="left-[40px] max-md:left-[38px]"
+              >
+                <McpHeaderButton gate={gatedClick} />
+              </StackItem>
+            </>
+          )}
+        </ExpandingIconStack>
       </div>
       {rootHovered && (
         <div

@@ -127,3 +127,70 @@ test.describe('header controls', () => {
     await page.screenshot({ path: 'e2e/screenshots/header-mobile.png' });
   });
 });
+
+test.describe('header right stack (garden + mcp)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('garden and mcp icons render together in the right stack', async ({ page }) => {
+    await expect(page.getByTestId('header-right-stack')).toBeVisible();
+    await expect(page.getByTestId('garden-wrapper')).toBeVisible();
+    await expect(page.getByTestId('mcp-header-button')).toBeVisible();
+  });
+
+  test('hovering the right stack fans the mcp icon out to the right', async ({ page }) => {
+    const stack = page.getByTestId('header-right-stack');
+    const mcp = page.getByTestId('mcp-header-button');
+
+    const before = await mcp.boundingBox();
+    await stack.hover();
+    await page.waitForTimeout(400);
+    const after = await mcp.boundingBox();
+
+    expect(after!.x).toBeGreaterThan(before!.x);
+    await page.screenshot({ path: 'e2e/screenshots/right-stack-expanded.png' });
+  });
+
+  test('garden anchor stays horizontally in place when the stack opens', async ({ page }) => {
+    const garden = page.getByTestId('header-garden-link');
+
+    const before = await garden.boundingBox();
+    await page.getByTestId('header-right-stack').hover();
+    await page.waitForTimeout(500);
+    const after = await garden.boundingBox();
+
+    expect(Math.abs(after!.x - before!.x)).toBeLessThan(6);
+  });
+
+  test('plant grows on the garden, not when hovering only the mcp', async ({ page }) => {
+    const garden = page.getByTestId('garden-wrapper');
+    const mcp = page.getByTestId('mcp-header-button');
+
+    await garden.hover();
+    await page.waitForTimeout(400);
+    await expect(page.getByText('View my Garden')).toBeVisible();
+
+    const box = await mcp.boundingBox();
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await page.waitForTimeout(500);
+
+    const mcpTipOpacity = await page
+      .getByText('Connect your AI')
+      .evaluate((el) => getComputedStyle(el.parentElement!).opacity);
+    expect(Number(mcpTipOpacity)).toBeGreaterThan(0.5);
+
+    const gardenTipOpacity = await page
+      .getByText('View my Garden')
+      .evaluate((el) => getComputedStyle(el.parentElement!).opacity);
+    expect(Number(gardenTipOpacity)).toBeLessThan(0.1);
+  });
+
+  test('first click on the garden reveals the stack instead of navigating (tap gate)', async ({ page }) => {
+    await page.getByTestId('header-garden-link').click();
+    await page.waitForTimeout(200);
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId('mcp-popover')).toHaveCount(0);
+  });
+});
