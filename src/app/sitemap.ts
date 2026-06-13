@@ -5,7 +5,7 @@ import { EPISODES } from "@/lib/episodes";
 const SITE = "https://mannan.is";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const articles = [...GARDEN_ARTICLES.filter((a) => !a.unavailable), JOYFUL_FRUSTRATIONS].map(
+  const articles = [...GARDEN_ARTICLES.filter((a) => !a.unavailable && !a.hidden), JOYFUL_FRUSTRATIONS].map(
     (a) => ({
       url: `${SITE}${a.href}`,
       ...("date" in a && a.date ? { lastModified: new Date(a.date) } : {}),

@@ -51,7 +51,9 @@ export function AdditionalReading({
     [updateArrows],
   );
 
-  const articles = GARDEN_ARTICLES.filter((a) => a.href !== currentHref);
+  const articles = GARDEN_ARTICLES.filter(
+    (a) => a.href !== currentHref && !a.hidden,
+  );
 
   if (articles.length === 0) return null;
 

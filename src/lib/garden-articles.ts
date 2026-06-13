@@ -6,6 +6,7 @@ export interface GardenArticle {
   readingTime?: string;
   wordCount?: number;
   unavailable?: boolean;
+  hidden?: boolean;
 }
 
 export const GARDEN_ARTICLES: GardenArticle[] = [
@@ -45,7 +46,7 @@ export const GARDEN_ARTICLES: GardenArticle[] = [
     readingTime: "3 min read",
     wordCount: 480,
     href: "/garden/article/self-parenting",
-    unavailable: true,
+    hidden: true,
   },
 ];
 

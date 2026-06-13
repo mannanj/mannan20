@@ -264,8 +264,9 @@ function WritingCard({
 }
 
 function WritingsPanel() {
-  const available = GARDEN_ARTICLES.filter((a) => !a.unavailable);
-  const unavailable = GARDEN_ARTICLES.filter((a) => a.unavailable);
+  const visible = GARDEN_ARTICLES.filter((a) => !a.hidden);
+  const available = visible.filter((a) => !a.unavailable);
+  const unavailable = visible.filter((a) => a.unavailable);
   return (
     <div className="flex flex-col gap-2">
       {available.map((article) => (

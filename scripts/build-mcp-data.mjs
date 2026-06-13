@@ -89,7 +89,7 @@ const extracurriculars = Object.entries(about.activities).map(([id, a]) => {
   };
 });
 
-const writing = [...GARDEN_ARTICLES.filter((a) => !a.unavailable), JOYFUL_FRUSTRATIONS].map(
+const writing = [...GARDEN_ARTICLES.filter((a) => !a.unavailable && !a.hidden), JOYFUL_FRUSTRATIONS].map(
   (a) => ({
     title: a.title,
     description: a.description,
