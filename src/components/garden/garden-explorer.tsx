@@ -150,10 +150,12 @@ const PRODUCT_THUMBS: Record<string, ReactNode> = {
   "Meal Fairy": <MealFairyThumb />,
 };
 
-const PRODUCTS: GardenProduct[] = GARDEN_PRODUCTS.map((p) => ({
-  ...p,
-  thumb: PRODUCT_THUMBS[p.title],
-}));
+const PRODUCTS: GardenProduct[] = GARDEN_PRODUCTS.filter((p) => !p.hidden).map(
+  (p) => ({
+    ...p,
+    thumb: PRODUCT_THUMBS[p.title],
+  }),
+);
 
 function ProductCard({ product }: { product: GardenProduct }) {
   const className =

@@ -29,12 +29,12 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('selecting Products swivels to the seven product cards', async ({ page }) => {
+  test('selecting Products swivels to the six product cards', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-products').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="products"] a')).toHaveCount(7);
+    await expect(page.locator('[data-panel="products"] a')).toHaveCount(6);
   });
 
   test('product cards link to the correct destinations', async ({ page }) => {
@@ -42,19 +42,10 @@ test.describe('Garden carousel', () => {
     await page.getByTestId('garden-tab-products').click();
     const cards = page.locator('[data-panel="products"] a');
 
-    const mannan = cards.filter({ has: page.getByText('Mannan', { exact: true }) });
-    await expect(mannan).toHaveAttribute('href', '/');
-    await expect(mannan).not.toHaveAttribute('target', /.+/);
-
     const sunSignal = cards.filter({ hasText: 'Sun Signal' });
     await expect(sunSignal).toHaveAttribute('href', 'https://sunsignal.app');
     await expect(sunSignal).toHaveAttribute('target', '_blank');
     await expect(sunSignal).toHaveAttribute('rel', /noopener/);
-
-    const mcp = cards.filter({ hasText: 'Mannan MCP' });
-    await expect(mcp).toHaveAttribute('href', 'https://mcp.mannanteam.workers.dev');
-    await expect(mcp).toHaveAttribute('target', '_blank');
-    await expect(mcp).toHaveAttribute('rel', /noopener/);
 
     const readAlong = cards.filter({ hasText: 'Read Along' });
     await expect(readAlong).toHaveAttribute('href', 'https://tryreadalong.com');
@@ -70,6 +61,11 @@ test.describe('Garden carousel', () => {
     await expect(skillguard).toHaveAttribute('href', 'https://skillguard.sh');
     await expect(skillguard).toHaveAttribute('target', '_blank');
     await expect(skillguard).toHaveAttribute('rel', /noopener/);
+
+    const claudeCues = cards.filter({ hasText: 'claude-cues' });
+    await expect(claudeCues).toHaveAttribute('href', 'https://claude-cues.pages.dev');
+    await expect(claudeCues).toHaveAttribute('target', '_blank');
+    await expect(claudeCues).toHaveAttribute('rel', /noopener/);
 
     const mealFairy = cards.filter({ hasText: 'Meal Fairy' });
     await expect(mealFairy).toHaveAttribute('href', 'https://meal-fairy-ce3bf.web.app');
@@ -92,12 +88,11 @@ test.describe('Garden carousel', () => {
       .locator('a')
       .evaluateAll((els) => els.map((el) => el.querySelector('span')?.textContent?.trim() ?? ''));
     expect(orderedTitles).toEqual([
-      'Mannan',
       'Sun Signal',
       'Read Along',
       'SkillGuard',
+      'claude-cues',
       'Summon It',
-      'Mannan MCP',
       'Meal Fairy (retired)',
     ]);
   });

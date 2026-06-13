@@ -5,6 +5,7 @@ export interface GardenProductData {
   external: boolean;
   year: number;
   retired?: boolean;
+  hidden?: boolean;
 }
 
 export const GARDEN_PRODUCTS: GardenProductData[] = [
@@ -14,6 +15,7 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     href: "/",
     external: false,
     year: 2026,
+    hidden: true,
   },
   {
     title: "Sun Signal",
@@ -56,6 +58,7 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     href: "https://mcp.mannanteam.workers.dev",
     external: true,
     year: 2026,
+    hidden: true,
   },
   {
     title: "Meal Fairy",
