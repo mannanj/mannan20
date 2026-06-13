@@ -1,12 +1,25 @@
 import type { Metadata } from 'next';
-import { Geist, EB_Garamond } from 'next/font/google';
+import { Fraunces, Geist, Geist_Mono, EB_Garamond } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-fraunces',
+  display: 'swap',
+});
+
 const geistSans = Geist({
   subsets: ['latin'],
   variable: '--font-geist-sans',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
 });
 
 const ebGaramond = EB_Garamond({
@@ -15,21 +28,24 @@ const ebGaramond = EB_Garamond({
   variable: '--font-caption',
 });
 
+const description =
+  'Multi-disciplinary engineer and founder. I build technology in service of people — from non-profits and government to products used by millions.';
+
 export const metadata: Metadata = {
   title: { default: 'Mannan Javid', template: '%s | Mannan Javid' },
-  description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
-  keywords: 'Mannan Javid, Software Engineer, Portfolio',
+  description,
+  keywords: 'Mannan Javid, multi-disciplinary engineer, founder, software engineer, portfolio',
   authors: [{ name: 'Mannan Javid' }],
   openGraph: {
     title: 'Mannan Javid',
-    description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
+    description,
     type: 'website',
     url: 'https://mannan.is',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Mannan Javid',
-    description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
+    description,
   },
   icons: {
     icon: [
@@ -42,7 +58,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${ebGaramond.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${geistSans.variable} ${geistMono.variable} ${ebGaramond.variable}`}
+    >
       <body>
         {children}
         <Analytics />

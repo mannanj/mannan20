@@ -325,7 +325,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
             maxLength={NAME_MAX}
             placeholder="Your name"
             data-testid="leaderboard-name-input"
-            className="w-44 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+            className="w-44 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#b1442c]/50"
           />
           <label className="flex cursor-pointer items-center gap-2 text-xs text-white/50">
             <input
@@ -333,7 +333,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
               checked={isAgent}
               onChange={(e) => setIsAgent(e.target.checked)}
               data-testid="leaderboard-agent-checkbox"
-              className="h-3.5 w-3.5 cursor-pointer accent-[#4FC3F7]"
+              className="h-3.5 w-3.5 cursor-pointer accent-[#b1442c]"
             />
             I’m an agent/AI
           </label>
@@ -371,7 +371,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
                   setRenameError(null);
                 }}
                 data-testid="leaderboard-rename-toggle"
-                className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
+                className="cursor-pointer text-[#b1442c] underline-offset-2 hover:underline"
               >
                 Rename all
               </button>
@@ -381,7 +381,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
               type="button"
               onClick={() => setClaimFormOpen((v) => !v)}
               data-testid="leaderboard-claim-toggle"
-              className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
+              className="cursor-pointer text-[#b1442c] underline-offset-2 hover:underline"
             >
               Take your name with you — link your email
             </button>
@@ -397,7 +397,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
               maxLength={NAME_MAX}
               placeholder="New name for all entries"
               data-testid="leaderboard-rename-input"
-              className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+              className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#b1442c]/50"
             />
             <button
               type="button"
@@ -425,7 +425,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
                 onChange={(e) => setClaimEmail(e.target.value)}
                 placeholder="you@example.com"
                 data-testid="leaderboard-claim-email"
-                className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+                className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#b1442c]/50"
               />
               <button
                 type="button"
@@ -444,7 +444,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
                   <a
                     href={devLink}
                     data-testid="leaderboard-claim-devlink"
-                    className="text-[#4FC3F7] underline-offset-2 hover:underline"
+                    className="text-[#b1442c] underline-offset-2 hover:underline"
                   >
                     Open sign-in link
                   </a>
@@ -461,7 +461,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
               type="button"
               onClick={() => setFeedbackOpen(true)}
               data-testid="leaderboard-feedback-toggle"
-              className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
+              className="cursor-pointer text-[#b1442c] underline-offset-2 hover:underline"
             >
               Send feedback
             </button>

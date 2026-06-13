@@ -44,59 +44,98 @@ export function Contact() {
   };
 
   return (
-    <div className="pb-[100px] relative">
-      <h1 className="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">
-        Contact
-      </h1>
-      <hr className="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5" />
-      <div className="contact-grid">
+    <div className="section-rule pt-16 relative">
+      <p className="eyebrow">Contact</p>
+
+      <div className="contact-grid mt-5">
         <div className="flex flex-col">
-          {state.contactRevealed ? (
-            <>
-              <div className="group flex items-center gap-2">
-                <a data-testid="contact-email-revealed" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" href={`mailto:${EMAIL}`}>
-                  {EMAIL}
-                </a>
-                <button
-                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-transparent !border-0 !shadow-none p-1 cursor-pointer text-[#999] hover:text-white !mt-0"
-                  onClick={handleCopyEmail}
-                  title={copiedEmail ? 'Copied!' : 'Copy email'}
-                >
-                  {copiedEmail ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                </button>
+          <h2 className="font-display font-normal text-ink m-0 text-[clamp(28px,4vw,40px)] leading-[1.15] max-w-[18ch]">
+            Building something that <em className="italic text-accent">matters</em>?
+          </h2>
+
+          <div className="font-mono text-[13px] text-ink-2 mt-6 leading-relaxed">
+            {state.contactRevealed ? (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="group inline-flex items-center gap-1.5">
+                  <a
+                    data-testid="contact-email-revealed"
+                    className="text-accent no-underline hover:text-accent-deep transition-colors"
+                    href={`mailto:${EMAIL}`}
+                  >
+                    {EMAIL}
+                  </a>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-transparent !border-0 !shadow-none p-0.5 cursor-pointer text-faint hover:text-ink !mt-0"
+                    onClick={handleCopyEmail}
+                    title={copiedEmail ? 'Copied' : 'Copy email'}
+                  >
+                    {copiedEmail ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
+                  </button>
+                </span>
+                <span className="text-faint" aria-hidden="true">·</span>
+                <span className="group inline-flex items-center gap-1.5">
+                  <a
+                    className="text-accent no-underline hover:text-accent-deep transition-colors"
+                    href={getPhoneLink(PHONE)}
+                  >
+                    {PHONE}
+                  </a>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-transparent !border-0 !shadow-none p-0.5 cursor-pointer text-faint hover:text-ink !mt-0"
+                    onClick={handleCopyPhone}
+                    title={copiedPhone ? 'Copied' : 'Copy phone'}
+                  >
+                    {copiedPhone ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
+                  </button>
+                </span>
+                <span className="text-faint" aria-hidden="true">·</span>
+                <span>Alexandria, VA</span>
               </div>
-              <div className="group flex items-center gap-2">
-                <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" href={getPhoneLink(PHONE)}>
-                  {PHONE}
-                </a>
-                <button
-                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-transparent !border-0 !shadow-none p-1 cursor-pointer text-[#999] hover:text-white !mt-0"
-                  onClick={handleCopyPhone}
-                  title={copiedPhone ? 'Copied!' : 'Copy phone'}
-                >
-                  {copiedPhone ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <a data-testid="contact-email-masked" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
-                *****&#64;mannan.is
-              </a>
-              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
-                +1 (***) *** 8302
-              </a>
-            </>
-          )}
-          <span className="text-base text-white">Alexandria, Virginia</span>
-          <button onClick={() => scrollToSection('home')} className="nav-button mt-[25px]">
-            Back to Top
-          </button>
+            ) : (
+              <button
+                type="button"
+                data-testid="contact-email-masked"
+                onClick={handleOpenContact}
+                title="Request contact info"
+                className="block text-left bg-transparent border-0 p-0 m-0 cursor-pointer font-mono text-[13px] text-ink-2 hover:text-ink transition-colors"
+              >
+                <span className="text-accent">•••••@mannan.is</span>
+                <span className="text-faint"> · </span>
+                <span className="text-accent">+1 (•••) ••• 8302</span>
+                <span className="text-faint"> · </span>
+                <span>Alexandria, VA</span>
+              </button>
+            )}
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            {!state.contactRevealed && (
+              <button onClick={handleOpenContact} className="nav-button">
+                Request contact
+              </button>
+            )}
+            <button
+              onClick={() => scrollToSection('home')}
+              className="font-sans text-sm text-ink-2 hover:text-accent transition-colors cursor-pointer bg-transparent border-0 p-0"
+            >
+              Back to top ↑
+            </button>
+          </div>
         </div>
-        <div data-testid="contact-ripple" className="ripple-container" onClick={handleOpenContact} title="Request contact info" />
+
+        <div
+          data-testid="contact-ripple"
+          className="ripple-container"
+          onClick={handleOpenContact}
+          title="Request contact info"
+        />
       </div>
+
       {toast && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1100] bg-[#222] border border-[#333] text-white text-xs px-4 py-2 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.4)] animate-[fadeIn_0.2s_ease]">
+        <div
+          role="status"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1100] bg-card border border-line text-ink font-mono text-xs px-4 py-2 rounded-lg shadow-paper animate-[fadeIn_0.2s_ease]"
+        >
           {toast}
         </div>
       )}

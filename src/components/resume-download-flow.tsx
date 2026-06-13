@@ -12,7 +12,7 @@ import { CursorHide } from '@/components/guided-flow/cursor-hide';
 
 const RESUME_PATH = '/api/download/resume';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
-const DEFAULT_BODY = 'Would you like to download this resume?';
+const DEFAULT_BODY = 'Download this resume?';
 
 interface GemSource {
   x: number;
@@ -323,26 +323,9 @@ export function ResumeDownloadFlow() {
       <CursorHide active={cursorHideActive} />
 
       {phase === 'waiting' && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 10000,
-            cursor: 'none',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <div className="fixed inset-0 z-[10000] cursor-none flex justify-center items-center">
           <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              border: '2.5px solid rgba(255,255,255,0.15)',
-              borderTopColor: 'white',
-              animation: 'spin 0.8s linear infinite',
-            }}
+            className="w-7 h-7 rounded-full border-[2.5px] border-line border-t-accent animate-[spin_0.8s_linear_infinite]"
           />
         </div>
       )}
@@ -390,7 +373,7 @@ export function ResumeDownloadFlow() {
               <path
                 d="M 0 4 Q 8 0, 16 4 T 32 4 T 48 4 T 64 4 T 80 4 T 100 4"
                 fill="none"
-                stroke="#ffd166"
+                stroke="#b1442c"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray="120"
@@ -417,7 +400,7 @@ export function ResumeDownloadFlow() {
             >
               <path
                 d="M 85 10 C 60 8, 30 16, 8 27"
-                stroke="white"
+                stroke="#17130d"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="95"
@@ -426,7 +409,7 @@ export function ResumeDownloadFlow() {
               />
               <path
                 d="M 8 27 L 14 20 M 8 27 L 15 32"
-                stroke="white"
+                stroke="#17130d"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="20"
@@ -435,7 +418,7 @@ export function ResumeDownloadFlow() {
               />
               <path
                 d="M 85 40 C 60 40, 30 40, 8 40"
-                stroke="white"
+                stroke="#17130d"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="80"
@@ -444,7 +427,7 @@ export function ResumeDownloadFlow() {
               />
               <path
                 d="M 8 40 L 15 34 M 8 40 L 15 46"
-                stroke="white"
+                stroke="#17130d"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="20"
@@ -453,7 +436,7 @@ export function ResumeDownloadFlow() {
               />
               <path
                 d="M 85 56 C 60 58, 30 56, 8 50.2"
-                stroke="white"
+                stroke="#17130d"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="95"
@@ -462,7 +445,7 @@ export function ResumeDownloadFlow() {
               />
               <path
                 d="M 8 50.2 L 15 44.2 M 8 50.2 L 14 57.2"
-                stroke="white"
+                stroke="#17130d"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeDasharray="20"

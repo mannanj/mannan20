@@ -8,7 +8,6 @@ import type { Section } from '@/lib/types';
 interface CommandOption {
   id: string;
   label: string;
-  description: string;
   action: () => void;
   keywords: string[];
 }
@@ -37,35 +36,30 @@ export function KeyboardCommandsModal() {
     {
       id: 'home',
       label: 'Home',
-      description: 'Navigate to home section',
       action: () => navigateToSection('home'),
       keywords: ['home', 'main', 'start'],
     },
     {
       id: 'about',
       label: 'About',
-      description: 'Navigate to about section',
       action: () => navigateToSection('about'),
       keywords: ['about', 'info', 'information'],
     },
     {
       id: 'contact',
       label: 'Contact',
-      description: 'Navigate to contact section',
       action: () => navigateToSection('contact'),
       keywords: ['contact', 'email', 'reach'],
     },
     {
       id: 'contact-modal',
-      label: 'Request contact information',
-      description: 'Ready to collaborate',
+      label: 'Get contact info',
       action: handleOpenContact,
       keywords: ['contact', 'collaborate', 'reach out', 'email', 'form'],
     },
     {
       id: 'download-resume',
-      label: 'Download Resume',
-      description: 'Download resume as PDF',
+      label: 'Download résumé',
       action: () => {
         toggleCommandsModal();
         setSearchQuery('');
@@ -82,7 +76,6 @@ export function KeyboardCommandsModal() {
     return commandOptions.filter(
       (option) =>
         option.label.toLowerCase().includes(query) ||
-        option.description.toLowerCase().includes(query) ||
         option.keywords.some((keyword) => keyword.includes(query))
     );
   }, [searchQuery, commandOptions]);
@@ -142,9 +135,9 @@ export function KeyboardCommandsModal() {
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-start justify-center pt-[20vh] px-4">
-      <div className="absolute inset-0 bg-black/75" onClick={close} />
+      <div className="absolute inset-0 bg-ink/30" onClick={close} />
 
-      <div className="relative w-full max-w-2xl bg-[#141414] border border-[#222] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
+      <div className="relative w-full max-w-2xl bg-card border border-line rounded-xl shadow-paper overflow-hidden">
         <input
           ref={inputRef}
           type="text"
@@ -153,45 +146,46 @@ export function KeyboardCommandsModal() {
             setSearchQuery(e.target.value);
             setSelectedIndex(0);
           }}
-          placeholder="Search commands..."
-          className="w-full px-6 py-4 text-lg border-b border-[#222] focus:outline-none bg-transparent text-gray-100 placeholder-gray-500"
+          placeholder="Search commands…"
+          className="w-full px-6 py-4 text-lg border-b border-line focus:outline-none bg-transparent text-ink placeholder:text-faint"
           onKeyDown={handleInputKeydown}
         />
 
         <div className="max-h-[400px] overflow-y-auto">
           {filteredOptions.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500">No results found</div>
+            <div className="px-6 py-8 text-center text-faint">No results</div>
           ) : (
             <div className="py-2">
               {filteredOptions.map((option, index) => (
                 <button
                   key={option.id}
                   onClick={() => option.action()}
-                  className={`w-full px-6 py-3 text-left transition-colors ${
-                    index === selectedIndex ? 'bg-[#039be5]/20' : 'hover:bg-white/5'
+                  className={`w-full px-6 py-3 text-left transition-colors border-l-2 ${
+                    index === selectedIndex
+                      ? 'bg-accent/10 border-accent'
+                      : 'border-transparent hover:bg-paper-2'
                   }`}
                 >
-                  <div className="font-medium text-gray-100">{option.label}</div>
-                  <div className="text-sm text-gray-400">{option.description}</div>
+                  <div className={`font-medium ${index === selectedIndex ? 'text-accent' : 'text-ink'}`}>{option.label}</div>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <div className="px-6 py-3 border-t border-[#222] text-xs text-gray-500 flex items-center justify-between">
+        <div className="px-6 py-3 border-t border-line text-xs text-faint flex items-center justify-between">
           <div className="flex gap-3">
             <div>
-              <kbd className="px-2 py-1 bg-[#039be5]/20 border border-[#039be5]/40 rounded text-[#4fc3f7]">↑↓</kbd>
+              <kbd className="font-mono px-2 py-1 bg-paper-2 border border-line rounded text-ink-2">↑↓</kbd>
               <span className="ml-1.5">Navigate</span>
             </div>
             <div>
-              <kbd className="px-2 py-1 bg-[#039be5]/20 border border-[#039be5]/40 rounded text-[#4fc3f7]">Enter</kbd>
+              <kbd className="font-mono px-2 py-1 bg-paper-2 border border-line rounded text-ink-2">Enter</kbd>
               <span className="ml-1.5">Select</span>
             </div>
           </div>
           <div>
-            <kbd className="px-2 py-1 bg-[#039be5]/20 border border-[#039be5]/40 rounded text-[#4fc3f7]">Esc</kbd>
+            <kbd className="font-mono px-2 py-1 bg-paper-2 border border-line rounded text-ink-2">Esc</kbd>
             <span className="ml-1.5">Close</span>
           </div>
         </div>

@@ -14,10 +14,10 @@ interface NarrativeDeepDiveProps {
 }
 
 const CHAPTER_COLORS = [
-  new THREE.Color('#039be5'),
-  new THREE.Color('#4fc3f7'),
-  new THREE.Color('#0277bd'),
-  new THREE.Color('#00acc1'),
+  new THREE.Color('#b1442c'),
+  new THREE.Color('#c9663a'),
+  new THREE.Color('#8f3420'),
+  new THREE.Color('#b8923f'),
 ];
 
 function Particles({ count, chapterIndex }: { count: number; chapterIndex: number }) {
@@ -125,7 +125,7 @@ function Scene({ chapterIndex }: { chapterIndex: number }) {
       <pointLight
         position={[-3, -3, 2]}
         intensity={0.5}
-        color="#4fc3f7"
+        color="#b8923f"
       />
       <group ref={groupRef}>
         <FloatingShape position={[-3, 2, -2]} shape="icosahedron" chapterIndex={chapterIndex} />
@@ -246,7 +246,7 @@ export default function NarrativeDeepDive({ chapters, downloads, onClose }: Narr
             {chapter.content}
           </p>
           {chapter.highlight && (
-            <p className="text-[#4fc3f7] text-xs md:text-sm italic">
+            <p className="text-[#b8923f] text-xs md:text-sm italic">
               {chapter.highlight}
             </p>
           )}
@@ -259,7 +259,7 @@ export default function NarrativeDeepDive({ chapters, downloads, onClose }: Narr
                     key={dl.filename}
                     type="button"
                     onClick={() => downloadFile(dl.path, dl.filename)}
-                    className="text-[#039be5] hover:text-[#4fc3f7] text-sm border border-[#039be5]/40 hover:border-[#4fc3f7]/60 px-4 py-2 rounded transition-all duration-200 no-underline bg-transparent cursor-pointer"
+                    className="text-[#c9663a] hover:text-[#b8923f] text-sm border border-[#c9663a]/40 hover:border-[#b8923f]/60 px-4 py-2 rounded transition-all duration-200 no-underline bg-transparent cursor-pointer"
                   >
                     {dl.label}
                   </button>
@@ -270,7 +270,7 @@ export default function NarrativeDeepDive({ chapters, downloads, onClose }: Narr
                 onClick={handleContactClick}
                 className="nav-button mt-2 pointer-events-auto"
               >
-                Get In Touch
+                Get in touch
               </button>
             </div>
           )}
@@ -293,7 +293,7 @@ export default function NarrativeDeepDive({ chapters, downloads, onClose }: Narr
                 onClick={() => setChapterIndex(i)}
                 className={`w-2 h-2 rounded-full border-none cursor-pointer transition-all duration-300 ${
                   i === chapterIndex
-                    ? 'bg-[#039be5] scale-125'
+                    ? 'bg-[#c9663a] scale-125'
                     : 'bg-white/30 hover:bg-white/50'
                 }`}
               />

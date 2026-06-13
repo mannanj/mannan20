@@ -6,7 +6,6 @@ import { useAnimatedScroll } from '@/hooks/use-animated-scroll';
 import { GuidedCursor } from '@/components/guided-flow/guided-cursor';
 import { Spotlight } from '@/components/guided-flow/spotlight';
 import { CursorHide } from '@/components/guided-flow/cursor-hide';
-import { AnimatedText } from '@/components/animated-text';
 import { FlowActionItem } from '@/components/guided-flow/flow-action-item';
 
 const ARCHR_DEMO_BASE = 'https://www.youtube.com/embed/GSx22ggePHw';
@@ -434,41 +433,14 @@ export function RobotsGuidedFlow() {
       <CursorHide active={cursorHideActive} />
 
       <div
-        style={{
-          position: 'fixed',
-          top: 105,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 10001,
-          padding: '12px 24px',
-          background: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          borderRadius: 12,
-          fontFamily: 'var(--font-geist-sans), system-ui, -apple-system, sans-serif',
-        }}
+        className="fixed top-[105px] left-1/2 -translate-x-1/2 z-[10001] px-6 py-3 bg-card border border-line rounded-xl shadow-paper font-sans"
         data-testid="guided-flow-banner"
       >
         {autoQuitCancelled && (
           <button
             type="button"
             onClick={cleanup}
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              background: 'none',
-              border: 'none',
-              color: 'rgba(255, 255, 255, 0.4)',
-              fontSize: 14,
-              lineHeight: 1,
-              cursor: 'pointer',
-              padding: '2px 4px',
-              transition: 'color 0.15s ease',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)'; }}
+            className="absolute top-2 right-2 bg-transparent border-0 text-faint hover:text-ink text-sm leading-none cursor-pointer px-1 py-0.5 transition-colors"
           >
             ✕
           </button>
@@ -476,49 +448,24 @@ export function RobotsGuidedFlow() {
         {showHeader && (
           <span
             data-testid="guided-flow-header"
-            style={{
-              color: 'rgba(255, 255, 255, 0.75)',
-              fontSize: 15,
-              letterSpacing: '0.02em',
-              whiteSpace: 'nowrap',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
+            className="flex items-center gap-2 text-[15px] tracking-[0.02em] whitespace-nowrap text-ink-2"
           >
             {autoQuitCancelled
-              ? <span style={{ color: 'white' }}>Guided flow complete</span>
+              ? <span className="text-ink">Guided flow complete</span>
               : autoQuitCountdown !== null
                 ? <>
                     <span>Closing in {autoQuitCountdown}s</span>
                     <button
                       type="button"
                       onClick={() => setAutoQuitCancelled(true)}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.06)',
-                        border: '1px solid rgba(255, 255, 255, 0.12)',
-                        borderRadius: 6,
-                        color: 'rgba(255, 255, 255, 0.45)',
-                        fontSize: 13,
-                        lineHeight: 1,
-                        padding: '4px 8px',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        transition: 'color 0.15s ease, background 0.15s ease',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+                      className="bg-paper-2 border border-line rounded-md text-faint hover:text-ink hover:bg-paper text-[13px] leading-none px-2 py-1 cursor-pointer transition-colors"
                     >
                       ✕
                     </button>
                   </>
                 : phase === 'edu-done' && eduCompleted
-                  ? <AnimatedText text="Guided flow complete" />
-                  : phase === 'waiting' || phase === 'cursor-appear' || phase === 'scroll-move'
-                    ? <AnimatedText text="Entering guided flow..." />
-                    : navTextActive
-                      ? <AnimatedText text="Navigating to section..." />
-                      : <AnimatedText text="In guided flow..." />}
+                  ? <span>Guided flow complete</span>
+                  : <span>Guided flow</span>}
           </span>
         )}
 
@@ -551,26 +498,9 @@ export function RobotsGuidedFlow() {
       </div>
 
       {phase === 'waiting' && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 10000,
-            cursor: 'none',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <div className="fixed inset-0 z-[10000] cursor-none flex justify-center items-center">
           <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              border: '2.5px solid rgba(255,255,255,0.15)',
-              borderTopColor: 'white',
-              animation: 'spin 0.8s linear infinite',
-            }}
+            className="w-7 h-7 rounded-full border-[2.5px] border-line border-t-accent animate-[spin_0.8s_linear_infinite]"
           />
         </div>
       )}

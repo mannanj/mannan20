@@ -1,6 +1,6 @@
 {
   "aboutIntro": {
-    "primary": "I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me."
+    "primary": "Multi-disciplinary engineer, leader, and student. I've shipped products across non-profits, government, and commercial teams — and I measure success by the strength of the people around me."
   },
   "jobs": [
     {
@@ -8,8 +8,8 @@
       "dates": "2025-Present",
       "position": "Founder",
       "skills": "TypeScript, React, Next.js, Python, FastAPI, Vercel AI SDK, Claude, MCP, Cloudflare",
-      "description": "AI product studio &amp; consulting agency shipping production-grade full-stack AI platforms.",
-      "expandedContent": "▸ Shipped a full-stack AI circadian-health platform that turns any US zip code into real-time daily timing guidance, backed by an AI chat, a 50K-LOC FastAPI engine, dynamically-rendered Vercel AI UI components, and an MCP server exposing 14 tools to LLMs.<br>\n▸ Engineered offline-first, agent-editable apps on Cloudflare Workers with local-first sync, conflict resolution, and custom HMAC magic-link auth, all controllable through SSE-streaming AI chat with full undo.<br>\n▸ Architected end-to-end AI video pipelines that convert audio and transcripts into animated 1080p videos, replacing manual editing with automated scene segmentation, illustration, cinematography, and multilingual dubbing.<br>\n▸ Built a YouTube intelligence platform with a multi-provider LLM abstraction and enrichment to improve the player experience.<br>\n▸ Designed and built a complete personal-brand platform — blog, newsletter, lead capture, and his 'Unbinding' program — for relationship coach <a href=\"https://hansmorningstar.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #039be5;\">Hans Morningstar</a>, handed off on Lovable so he can update the live site himself through plain-English AI prompts instead of code.<br>\n▸ Embedded as an AI engineering consultant for <a href=\"https://intruex.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #039be5;\">Intruex</a> — architecting full-stack web application features, standing up the team's end-to-end AI agent harness (agent orchestration, MCP server integration, and skills configuration) for LLM-driven workflows in production, and building Playwright test coverage to catch regressions before release."
+      "description": "AI product studio &amp; consulting agency — production-grade, full-stack AI platforms.",
+      "expandedContent": "▸ Shipped a full-stack AI circadian-health platform that turns any US zip code into real-time daily timing guidance, backed by an AI chat, a 50K-LOC FastAPI engine, dynamically-rendered Vercel AI UI components, and an MCP server exposing 14 tools to LLMs.<br>\n▸ Engineered offline-first, agent-editable apps on Cloudflare Workers with local-first sync, conflict resolution, and custom HMAC magic-link auth, all controllable through SSE-streaming AI chat with full undo.<br>\n▸ Architected end-to-end AI video pipelines that turn audio and transcripts into animated 1080p videos — automated scene segmentation, illustration, cinematography, and multilingual dubbing replacing manual editing.<br>\n▸ Built a YouTube intelligence platform with a multi-provider LLM abstraction and enrichment to improve the player experience.<br>\n▸ Built a complete personal-brand platform — blog, newsletter, lead capture, and the 'Unbinding' program — for relationship coach <a href=\"https://hansmorningstar.com\" target=\"_blank\" rel=\"noopener noreferrer\">Hans Morningstar</a>, handed off on Lovable so he edits the live site himself via plain-English AI prompts, not code.<br>\n▸ Embedded as AI engineering consultant for <a href=\"https://intruex.com\" target=\"_blank\" rel=\"noopener noreferrer\">Intruex</a> — building full-stack features, standing up the team's end-to-end AI agent harness (agent orchestration, MCP integration, skills config) for production LLM workflows, and adding Playwright coverage to catch regressions before release."
     },
     {
       "title": "Capital One",
@@ -17,8 +17,8 @@
       "dates": "2024-2025, 2021-2022",
       "position": "Principal Software Engineer",
       "skills": "Security, Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps",
-      "description": "Led security operations, remediation, and engineering for high-scale applications serving 3m+ DAU, achieving zero security incidents while delivering secure microservices and customer-facing features.",
-      "expandedContent": "▸ Engineered high-traffic microservices and customer-facing features (Trade-In, Auto Loan Rates, SEO) using modern frameworks (Astro, SolidJS, Node.js), architecting scalable solutions serving millions of daily users with robust performance and zero production vulnerabilities.<br>\n▸ Led production security monitoring and incident response operations using Splunk and New Relic, creating custom SPL queries for threat detection, building real-time alerting dashboards, and providing 24/7 on-call support via PagerDuty to ensure rapid response to security events.<br>\n▸ Drove platform reliability and security remediation initiatives across 3M+ DAU applications, leading Springboot upgrades and vulnerability patching programs, enhancing CI/CD pipelines to strengthen cloud security posture, and reducing API failures by 100K through systematic infrastructure improvements.<br>\n▸ Won internal hackathon for innovative developer tooling, accelerating code review velocity by 40% across the engineering organization."
+      "description": "Security &amp; platform engineering for apps serving 3M+ daily users. Zero incidents.",
+      "expandedContent": "▸ Built high-traffic microservices and customer-facing features (Trade-In, Auto Loan Rates, SEO) in Astro, SolidJS, and Node.js — serving millions of daily users with zero production vulnerabilities.<br>\n▸ Ran production security monitoring and incident response in Splunk and New Relic: custom SPL threat-detection queries, real-time alerting dashboards, and 24/7 PagerDuty on-call.<br>\n▸ Drove reliability and security remediation across 3M+ DAU apps — Springboot upgrades, vulnerability patching, hardened CI/CD — cutting API failures by 100K.<br>\n▸ Won the internal hackathon for developer tooling that sped up code review by 40% org-wide."
     },
     {
       "title": "Publicis Sapient",
@@ -26,8 +26,8 @@
       "dates": "2022-2023",
       "position": "Senior Software Engineer",
       "skills": "Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership",
-      "description": "Led implementation and oversight of developers to deliver features ahead of schedule and improve company-wide velocity. Initiated and introduced major feature rewrites.",
-      "expandedContent": "▸ Built interactive healthcare facility mapping using ArcGIS and Angular, enabling healthcare officials to map out providers across regions — increasing healthcare access by 20% across underserved regions.<br>\n▸ Led code review standardization and mentorship programs, reducing defect rates by 33% and establishing quality benchmarks adopted company-wide.<br>\n▸ Designed and implemented Angular Material UI component library for consistent cross-team design patterns, accelerating feature delivery timelines."
+      "description": "Led developers and feature rewrites — shipped ahead of schedule, raised company-wide velocity.",
+      "expandedContent": "▸ Built interactive healthcare-facility mapping in ArcGIS and Angular, letting officials map providers by region — increasing healthcare access 20% across underserved areas.<br>\n▸ Led code-review standardization and mentorship, cutting defect rates 33% and setting quality benchmarks adopted company-wide.<br>\n▸ Built an Angular Material UI component library for consistent cross-team patterns, accelerating delivery."
     },
     {
       "title": "Radiant (now Maxar)",
@@ -35,8 +35,8 @@
       "dates": "2018-2022",
       "position": "Software Engineer II",
       "skills": "Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture",
-      "description": "Mid-level frontend engineer on mapping systems that informed national security needs. Champion and advocate for company culture.",
-      "expandedContent": "▸ Developed geospatial mapping and probability simulation tools using Cesium and LeafletJS for real-time intelligence visualization, directly supporting national security decision-making.<br>\n▸ Built interactive data visualization dashboards processing large-scale geospatial datasets, enabling analysts to identify patterns across multi-dimensional threat landscapes.<br>\n▸ Championed engineering culture initiatives including mentorship programs, knowledge-sharing sessions, and cross-team collaboration frameworks."
+      "description": "Frontend engineer on mapping systems for national security. Culture champion.",
+      "expandedContent": "▸ Built geospatial mapping and probability-simulation tools in Cesium and LeafletJS for real-time intelligence visualization, supporting national-security decisions.<br>\n▸ Built data-visualization dashboards over large-scale geospatial datasets, helping analysts spot patterns across multi-dimensional threat landscapes.<br>\n▸ Championed engineering culture — mentorship, knowledge-sharing, and cross-team collaboration."
     },
     {
       "title": "MITRE Corporation",
@@ -44,8 +44,8 @@
       "dates": "2016-2018",
       "position": "Software Engineer I",
       "skills": "Javascript, Typescript, Angular, Python, Python Django, AWS, research",
-      "description": "Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages.",
-      "expandedContent": "▸ Contributed to IRS tax system modernization through cloud migration R&D, implementing OAuth2/JWT authentication patterns and automated testing frameworks using Python Django and AWS.<br>\n▸ Researched and prototyped cyber security tooling for federal cloud infrastructure, developing monitoring solutions for threat detection across distributed systems.<br>\n▸ Built internal research platforms enabling cross-team collaboration on national security and public interest technology initiatives."
+      "description": "Engineer and researcher on national cloud, cyber-security, and tax-system initiatives.",
+      "expandedContent": "▸ Contributed to IRS tax-system modernization via cloud-migration R&D — OAuth2/JWT auth patterns and automated testing in Python Django and AWS.<br>\n▸ Prototyped cyber-security tooling for federal cloud infrastructure, building threat-detection monitoring across distributed systems.<br>\n▸ Built internal research platforms for cross-team work on national-security and public-interest technology."
     },
     {
       "title": "Meal Fairy, LLC",
@@ -53,7 +53,7 @@
       "dates": "2018 (self-employed)",
       "position": "Founder",
       "skills": "Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing",
-      "description": "Founder for a plate to door food delivery startup in the greater Washington DC area."
+      "description": "Founder of a plate-to-door food delivery startup in the greater Washington DC area."
     },
     {
       "title": "America's Electric Cooperatives",
@@ -61,24 +61,24 @@
       "dates": "2014-2016 (contract)",
       "position": "Software Engineer",
       "skills": "Javascript, jQuery, Python, Python-Flask, research",
-      "description": "Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and <a href=\"/api/download/omf-dr\" download=\"OMF-Energy-Demand-Response\" style=\"color: #039be5;\">cutting edge research.</a>"
+      "description": "Fullstack engineer for America's cooperatives — sustainable energy generation and <a href=\"/api/download/omf-dr\" download=\"OMF-Energy-Demand-Response\">cutting-edge research</a>."
     }
   ],
   "activities": {
     "teaching": {
       "position": "Substitute Teacher",
       "dates": "2024",
-      "description": "Public school teacher and instructional assistant for elementary, middle and high schools across Fairfax County and Southern Bethesda in Maryland and Virginia across English, Math, for emotionally limited and special needs students."
+      "description": "Taught and assisted across elementary, middle, and high schools in Fairfax County and Southern Bethesda — English and Math, including emotionally limited and special-needs students."
     },
     "volunteering": {
       "position": "Volunteering",
       "dates": "2013-present",
-      "description": "Volunteering and service across a variety of initiatives including: Food distribution and drives, STEM Students Lego Mindstorm & ARCHR robotics demo, Local community initiatives for the underserved and more."
+      "description": "Service across many initiatives: food drives, STEM students' Lego Mindstorm &amp; ARCHR robotics demos, and local efforts for the underserved."
     },
     "travel": {
       "position": "Nomadic Travel",
       "dates": "2020-2023",
-      "description": "Travel and living in a variety of locations from the West Coast, California, stewarding sustainability in ecovillages in California and Hawaii, to car camping across national parks across Washington, Oregon and California,"
+      "description": "Lived nomadically from the West Coast to Hawaii — stewarding sustainability in California and Hawaii ecovillages, car-camping across national parks in Washington, Oregon, and California."
     },
     "jung": {
       "title": "Applied Jung,",
@@ -86,37 +86,37 @@
       "position": "Community Building",
       "dates": "2021-present",
       "skills": "Analytical psychology, community men's work, embodiment & mindfulness",
-      "description": "Training and application of community building and Jungian individuation techniques, holding <a href=\"https://thebeingman.com\" target=\"_blank\">a community space</a> for men to learn healthy models of masculinity."
+      "description": "Community building and Jungian individuation work — holding <a href=\"https://thebeingman.com\" target=\"_blank\">a space</a> for men to learn healthy models of masculinity."
     }
   },
   "educationProjects": {
     "archr": {
       "title": "Apparatus for Remote Control of Humanoid Robots",
-      "description": "Lead developer for an intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Published and submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. One-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots.",
+      "description": "Lead developer of a haptic teleoperation system for high-DOF humanoid robots, letting untrained operators control complex robots for disaster response. One-to-one hand-puppeteered mimicry over Oculus VR streaming, driving ARCHR, Mini-Hubo, and Baxter. Published to IEEE/RSJ IROS 2015; taken to the DARPA Robotics Challenge.",
       "downloadLink": "/api/download/gmu-archr",
       "downloadFilename": "ARCHR-Apparatus-for-Remote-Control-of-Humanoid-Robot",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
     "solar": {
       "title": "Solar Workspace",
-      "description": "Lead CAD designer for wiring schematics and 3D mechanical designs in Solidworks for a solar-powered outdoor collaborative study hub. The university's first multi-disciplinary engineering project, bringing together electrical, mechanical, and civil engineering students to deliver a sustainable campus installation."
+      "description": "Lead CAD designer (Solidworks wiring schematics and 3D mechanicals) for a solar-powered outdoor study hub — the university's first multi-disciplinary engineering project, uniting electrical, mechanical, and civil students on a sustainable campus installation."
     },
     "dome": {
       "title": "DC Dome Light",
-      "description": "Extracurricular research project designing a portable dome light in Solidworks 3D with wiring schematics for the travel industry."
+      "description": "Research project designing a portable dome light in Solidworks 3D, with wiring schematics, for the travel industry."
     }
   },
   "publishedWorks": [
     {
       "title": "Apparatus for Remote Control of Humanoid Robots",
-      "description": "An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge.",
+      "description": "A haptic teleoperation system for high-DOF humanoid robots, letting untrained operators control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015; taken to the DARPA Robotics Challenge.",
       "downloadPath": "/api/download/gmu-archr",
       "downloadFilename": "ARCHR-Apparatus-for-Remote-Control of-Humanoid-Robot",
       "demoUrl": "https://www.youtube.com/embed/GSx22ggePHw"
     },
     {
       "title": "Open Modeling Framework Demand Response",
-      "description": "Cost-benefit analysis model for demand response programs built for rural electric cooperatives using NRECA's Open Modeling Framework, simulating TOU, CPP, PTR, and DLC programs.",
+      "description": "A cost-benefit model for demand-response programs at rural electric cooperatives, built on NRECA's Open Modeling Framework — simulating TOU, CPP, PTR, and DLC programs.",
       "downloadPath": "/api/download/omf-dr",
       "downloadFilename": "OMF-Energy-Demand-Response"
     }
@@ -125,7 +125,7 @@
     "institution": "George Mason University",
     "dates": "2009-2015",
     "degree": "Electrical Engineering, B.S.",
-    "description": "Hands-on engineer leading innovation in the university. Published robotics research, won pitch competitions, and delivered the university's first multi-disciplinary engineering project."
+    "description": "Hands-on engineer and campus innovator — published robotics research, won pitch competitions, and delivered the university's first multi-disciplinary engineering project."
   },
   "narrative": [
     {

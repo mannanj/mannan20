@@ -52,12 +52,11 @@ function LinkedInIcon() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      className="w-5 h-5"
+      className="w-5 h-5 text-ink-2 transition-colors duration-200 group-hover:text-accent"
     >
-      <circle cx="12" cy="12" r="12" fill="#0b0b0b" />
       <path
-        fill="white"
-        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452z"
+        fill="currentColor"
+        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
       />
     </svg>
   );
@@ -68,10 +67,10 @@ function GitHubIcon() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      className="w-5 h-5"
+      className="w-5 h-5 text-ink-2 transition-colors duration-200 group-hover:text-accent"
     >
       <path
-        fill="white"
+        fill="currentColor"
         d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"
       />
     </svg>
@@ -455,7 +454,7 @@ export function Header() {
     return slots;
   }, [gardenStartTime]);
 
-  const PARTICLE_COLORS = ["#ff2222", "#22dd22", "#2266ff"];
+  const PARTICLE_COLORS = ["#b1442c", "#b8923f", "#8f3420"];
   const gardenLightOpacity = gardenExpanded
     ? Math.min(0.161 + gardenLevel * 0.04, 0.5)
     : 0.084;
@@ -489,10 +488,11 @@ export function Header() {
 
   return (
     <div
-      className={`flex justify-between items-center fixed top-0 w-screen border-b border-white h-[66px] z-[99] px-4 ${
-        isTransparent ? "" : "bg-[#0b0b0b]"
+      className={`flex justify-between items-center fixed top-0 w-screen border-b border-line h-[66px] z-[99] px-4 ${
+        isTransparent ? "" : "bg-paper/80 backdrop-blur-md"
       }`}
     >
+      <div className="flex items-center">
       <ExpandingIconStack
         data-testid="header-controls"
         className="relative flex items-center pr-[60px]"
@@ -533,8 +533,8 @@ export function Header() {
                 </span>
               )}
               <div className="absolute top-full left-0 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-40">
-                <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-                <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
+                <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-ink" />
+                <div className="bg-ink text-paper text-xs px-4 py-2 rounded-full whitespace-nowrap">
                   Return to Home
                 </div>
               </div>
@@ -554,8 +554,8 @@ export function Header() {
               >
                 <LinkedInIcon />
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-                  <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
+                  <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-ink" />
+                  <div className="bg-ink text-paper text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
                     View my LinkedIn
                   </div>
                 </div>
@@ -576,8 +576,8 @@ export function Header() {
               >
                 <GitHubIcon />
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-                  <div className="bg-[#333] text-white text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
+                  <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-ink" />
+                  <div className="bg-ink text-paper text-[10px] px-3 py-1.5 rounded-full whitespace-nowrap">
                     View my GitHub
                   </div>
                 </div>
@@ -586,6 +586,18 @@ export function Header() {
           </>
         )}
       </ExpandingIconStack>
+        <button
+          type="button"
+          data-testid="header-wordmark"
+          onClick={() => {
+            if (isHome) scrollToSection("home");
+            else window.location.href = "/";
+          }}
+          className="hidden sm:block ml-1 font-display text-base leading-none text-ink cursor-pointer border-none bg-transparent p-0 transition-colors duration-200 hover:text-accent"
+        >
+          Mannan Javid
+        </button>
+      </div>
       <div className="relative flex items-center gap-2 md:gap-4 md:pl-[15px]">
         {LINKS.map((link) => (
           <div key={link} className="pl-[10px] md:pl-[15px]">
@@ -630,46 +642,46 @@ export function Header() {
               className="absolute left-[5px] -top-[25px] w-[26px] h-[30px] opacity-[0.084]"
               style={{
                 background:
-                  "linear-gradient(to bottom, transparent 0%, #f5e642 25%, #f5e642 75%, transparent 100%)",
+                  "linear-gradient(to bottom, transparent 0%, #d8b25a 25%, #d8b25a 75%, transparent 100%)",
                 clipPath: "polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)",
               }}
             />
             <div
-              className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[15px] -top-[23px]"
+              className="absolute w-[2px] h-[2px] rounded-full bg-[#d8b25a] left-[15px] -top-[23px]"
               style={{ animation: "gardenParticleFall1 10.8s linear infinite" }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[18px] -top-[27px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e0c068] left-[18px] -top-[27px]"
               style={{
                 animation: "gardenParticleFall2 10.8s linear 1.8s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[16px] -top-[21px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#d8b25a] left-[16px] -top-[21px]"
               style={{
                 animation: "gardenParticleFall3 10.8s linear 3.6s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[19px] -top-[25px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e0c068] left-[19px] -top-[25px]"
               style={{
                 animation: "gardenParticleFall1 10.8s linear 5.4s infinite",
               }}
             />
             <div
-              className="absolute w-[2px] h-[2px] rounded-full bg-[#e8d44d] left-[14px] -top-[20px]"
+              className="absolute w-[2px] h-[2px] rounded-full bg-[#d8b25a] left-[14px] -top-[20px]"
               style={{
                 animation: "gardenParticleFall2 10.8s linear 7.2s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e8d44d] left-[17px] -top-[24px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#d8b25a] left-[17px] -top-[24px]"
               style={{
                 animation: "gardenParticleFall3 10.8s linear 9.0s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#f0e060] left-[17px] top-[20px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#e0c068] left-[17px] top-[20px]"
               style={{
                 animation: "gardenParticleTravel1 10s ease-in-out 1s infinite",
               }}
@@ -683,84 +695,84 @@ export function Header() {
               style={{
                 opacity: gardenLightOpacity,
                 background:
-                  "linear-gradient(to bottom, transparent 0%, #ffe033 20%, #ffe033 80%, transparent 100%)",
+                  "linear-gradient(to bottom, transparent 0%, #d8b25a 20%, #d8b25a 80%, transparent 100%)",
                 clipPath: "polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)",
               }}
             />
             <div
-              className="absolute w-[2px] h-[2px] rounded-full bg-[#ff2222] left-[15px] -top-[22px]"
+              className="absolute w-[2px] h-[2px] rounded-full bg-[#b1442c] left-[15px] -top-[22px]"
               style={{
                 animation: "gardenParticleFall1 1.5s linear 0s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#22dd22] left-[17px] -top-[23px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#b8923f] left-[17px] -top-[23px]"
               style={{
                 animation: "gardenParticleFall2 1.5s linear 0.125s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[16px] -top-[21px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#8f3420] left-[16px] -top-[21px]"
               style={{
                 animation: "gardenParticleFall3 1.5s linear 0.25s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#ff2222] left-[18px] -top-[24px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#b1442c] left-[18px] -top-[24px]"
               style={{
                 animation: "gardenParticleFall1 1.5s linear 0.375s infinite",
               }}
             />
             <div
-              className="absolute w-[2px] h-[2px] rounded-full bg-[#22dd22] left-[14px] -top-[22px]"
+              className="absolute w-[2px] h-[2px] rounded-full bg-[#b8923f] left-[14px] -top-[22px]"
               style={{
                 animation: "gardenParticleFall2 1.5s linear 0.5s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[16px] -top-[23px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#8f3420] left-[16px] -top-[23px]"
               style={{
                 animation: "gardenParticleFall3 1.5s linear 0.625s infinite",
               }}
             />
             <div
-              className="absolute w-[2px] h-[2px] rounded-full bg-[#ff2222] left-[15px] -top-[21px]"
+              className="absolute w-[2px] h-[2px] rounded-full bg-[#b1442c] left-[15px] -top-[21px]"
               style={{
                 animation: "gardenParticleFall1 1.5s linear 0.75s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#22dd22] left-[17px] -top-[24px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#b8923f] left-[17px] -top-[24px]"
               style={{
                 animation: "gardenParticleFall2 1.5s linear 0.875s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[18px] -top-[22px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#8f3420] left-[18px] -top-[22px]"
               style={{
                 animation: "gardenParticleFall3 1.5s linear 1.0s infinite",
               }}
             />
             <div
-              className="absolute w-[2px] h-[2px] rounded-full bg-[#ff2222] left-[16px] -top-[23px]"
+              className="absolute w-[2px] h-[2px] rounded-full bg-[#b1442c] left-[16px] -top-[23px]"
               style={{
                 animation: "gardenParticleFall1 1.5s linear 1.125s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#22dd22] left-[15px] -top-[21px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#b8923f] left-[15px] -top-[21px]"
               style={{
                 animation: "gardenParticleFall2 1.5s linear 1.25s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#2266ff] left-[17px] -top-[24px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#8f3420] left-[17px] -top-[24px]"
               style={{
                 animation: "gardenParticleFall3 1.5s linear 1.375s infinite",
               }}
             />
             <div
-              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#ff2222] left-[16px] top-[20px]"
+              className="absolute w-[1.5px] h-[1.5px] rounded-full bg-[#b1442c] left-[16px] top-[20px]"
               style={{
                 animation: "gardenParticleTravel1 1.5s ease-in-out 0s infinite",
               }}
@@ -789,7 +801,7 @@ export function Header() {
           >
             <path
               d="M10 0C10 1.5 10.5 3 10 5C9.8 6 10 6.5 10 7"
-              stroke="#8B6914"
+              stroke="#a8843a"
               strokeWidth="1"
               strokeLinecap="round"
               fill="none"
@@ -833,46 +845,46 @@ export function Header() {
             >
               <defs>
                 <radialGradient id="hibiscusCenter" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ffee55" />
-                  <stop offset="30%" stopColor="#cc1144" />
-                  <stop offset="70%" stopColor="#990033" />
+                  <stop offset="0%" stopColor="#e0b34d" />
+                  <stop offset="30%" stopColor="#b1442c" />
+                  <stop offset="70%" stopColor="#8f3420" />
                   <stop offset="100%" stopColor="transparent" />
                 </radialGradient>
                 <radialGradient id="iridescentCenter" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ffee55" />
-                  <stop offset="30%" stopColor="#dd3388" />
-                  <stop offset="70%" stopColor="#8833aa" />
+                  <stop offset="0%" stopColor="#e0b34d" />
+                  <stop offset="30%" stopColor="#c2693a" />
+                  <stop offset="70%" stopColor="#8f3420" />
                   <stop offset="100%" stopColor="transparent" />
                 </radialGradient>
               </defs>
               <path
                 d="M10 0C10 5 13 8 11 14C9 20 14 24 12 30C10 36 13 40 11 46C9.5 50 10 53 10 55"
-                stroke="#8B6914"
+                stroke="#a8843a"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 fill="none"
               />
               <path
                 d="M10 10C7 12 5 11 4 13"
-                stroke="#8B6914"
+                stroke="#a8843a"
                 strokeWidth="0.8"
                 strokeLinecap="round"
               />
               <path
                 d="M11 22C14 24 16 23 17 25"
-                stroke="#8B6914"
+                stroke="#a8843a"
                 strokeWidth="0.8"
                 strokeLinecap="round"
               />
               <path
                 d="M10 35C7 37 5 36 4 38"
-                stroke="#8B6914"
+                stroke="#a8843a"
                 strokeWidth="0.8"
                 strokeLinecap="round"
               />
               <path
                 d="M11 46C14 48 15 47 16 49"
-                stroke="#8B6914"
+                stroke="#a8843a"
                 strokeWidth="0.8"
                 strokeLinecap="round"
               />
@@ -886,7 +898,7 @@ export function Header() {
                       cy={13}
                       rx={1.6 * stage1LeafScale}
                       ry={2.66 * stage1LeafScale}
-                      fill="#3a8a2e"
+                      fill="#6b7a36"
                       opacity={stage1LeafOpacity}
                       transform="rotate(-30, 4, 13)"
                     />
@@ -899,7 +911,7 @@ export function Header() {
                       cy={25}
                       rx={1.6 * stage1LeafScale}
                       ry={2.66 * stage1LeafScale}
-                      fill="#2d7a22"
+                      fill="#5c6b2e"
                       opacity={stage1LeafOpacity}
                       transform="rotate(30, 17, 25)"
                     />
@@ -912,7 +924,7 @@ export function Header() {
                       cy={38}
                       rx={1.6 * stage1LeafScale}
                       ry={2.66 * stage1LeafScale}
-                      fill="#3a8a2e"
+                      fill="#6b7a36"
                       opacity={stage1LeafOpacity}
                       transform="rotate(-25, 4, 38)"
                     />
@@ -925,7 +937,7 @@ export function Header() {
                       cy={49}
                       rx={1.6 * stage1LeafScale}
                       ry={2.66 * stage1LeafScale}
-                      fill="#2d7a22"
+                      fill="#5c6b2e"
                       opacity={stage1LeafOpacity}
                       transform="rotate(35, 16, 49)"
                     />
@@ -936,7 +948,7 @@ export function Header() {
                 <>
                   <path
                     d="M10.5 16C13 17 15.5 16.5 18 18.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -946,7 +958,7 @@ export function Header() {
                   />
                   <path
                     d="M10 28C7 29 4.5 28 2 30.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -959,7 +971,7 @@ export function Header() {
                   />
                   <path
                     d="M11 41C14 42 16.5 41.5 19 43.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -972,7 +984,7 @@ export function Header() {
                   />
                   <path
                     d="M10 52C7 53 4 52 1 54"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -993,7 +1005,7 @@ export function Header() {
                           cy={18.5}
                           rx={1.06 * stage2LeafScale}
                           ry={1.86 * stage2LeafScale}
-                          fill="#45a035"
+                          fill="#7d8c44"
                           opacity={stage2LeafOpacity}
                           transform="rotate(25, 18, 18.5)"
                         />
@@ -1006,7 +1018,7 @@ export function Header() {
                           cy={30.5}
                           rx={1.06 * stage2LeafScale}
                           ry={1.86 * stage2LeafScale}
-                          fill="#3a8a2e"
+                          fill="#6b7a36"
                           opacity={stage2LeafOpacity}
                           transform="rotate(-35, 2, 30.5)"
                         />
@@ -1019,7 +1031,7 @@ export function Header() {
                           cy={43.5}
                           rx={1.06 * stage2LeafScale}
                           ry={1.86 * stage2LeafScale}
-                          fill="#45a035"
+                          fill="#7d8c44"
                           opacity={stage2LeafOpacity}
                           transform="rotate(20, 19, 43.5)"
                         />
@@ -1032,7 +1044,7 @@ export function Header() {
                           cy={54}
                           rx={1.06 * stage2LeafScale}
                           ry={1.86 * stage2LeafScale}
-                          fill="#3a8a2e"
+                          fill="#6b7a36"
                           opacity={stage2LeafOpacity}
                           transform="rotate(-30, 1, 54)"
                         />
@@ -1045,7 +1057,7 @@ export function Header() {
                 <>
                   <path
                     d="M10 7C7.5 6 5 6.5 3 8"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1055,7 +1067,7 @@ export function Header() {
                   />
                   <path
                     d="M10.5 19C13.5 18 16 18.5 18 20.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1068,7 +1080,7 @@ export function Header() {
                   />
                   <path
                     d="M10 32C7 31 4 31.5 2 33.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1081,7 +1093,7 @@ export function Header() {
                   />
                   <path
                     d="M11 38C14 37 16.5 37.5 19 39.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1094,7 +1106,7 @@ export function Header() {
                   />
                   <path
                     d="M10 48C7 47 4.5 47.5 2.5 49.5"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1115,7 +1127,7 @@ export function Header() {
                           cy={8}
                           rx={0.93 * stage3LeafScale}
                           ry={1.6 * stage3LeafScale}
-                          fill="#45a035"
+                          fill="#7d8c44"
                           opacity={stage3LeafOpacity}
                           transform="rotate(-20, 3, 8)"
                         />
@@ -1128,7 +1140,7 @@ export function Header() {
                           cy={20.5}
                           rx={0.93 * stage3LeafScale}
                           ry={1.6 * stage3LeafScale}
-                          fill="#3a8a2e"
+                          fill="#6b7a36"
                           opacity={stage3LeafOpacity}
                           transform="rotate(25, 18, 20.5)"
                         />
@@ -1141,7 +1153,7 @@ export function Header() {
                           cy={33.5}
                           rx={0.93 * stage3LeafScale}
                           ry={1.6 * stage3LeafScale}
-                          fill="#45a035"
+                          fill="#7d8c44"
                           opacity={stage3LeafOpacity}
                           transform="rotate(-30, 2, 33.5)"
                         />
@@ -1154,7 +1166,7 @@ export function Header() {
                           cy={39.5}
                           rx={0.93 * stage3LeafScale}
                           ry={1.6 * stage3LeafScale}
-                          fill="#3a8a2e"
+                          fill="#6b7a36"
                           opacity={stage3LeafOpacity}
                           transform="rotate(20, 19, 39.5)"
                         />
@@ -1167,7 +1179,7 @@ export function Header() {
                           cy={49.5}
                           rx={0.93 * stage3LeafScale}
                           ry={1.6 * stage3LeafScale}
-                          fill="#45a035"
+                          fill="#7d8c44"
                           opacity={stage3LeafOpacity}
                           transform="rotate(-25, 2.5, 49.5)"
                         />
@@ -1180,7 +1192,7 @@ export function Header() {
                 <>
                   <path
                     d="M10 4C13 2.5 16 3 19 6"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1190,7 +1202,7 @@ export function Header() {
                   />
                   <path
                     d="M10 13C7.5 11.5 5 12 3 15"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1203,7 +1215,7 @@ export function Header() {
                   />
                   <path
                     d="M10.5 25C14 23.5 17 24 20 27"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1216,7 +1228,7 @@ export function Header() {
                   />
                   <path
                     d="M10 44C6.5 43 3.5 43.5 0.5 46"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1229,7 +1241,7 @@ export function Header() {
                   />
                   <path
                     d="M11 50C13.5 48.5 15 49 17.5 52"
-                    stroke="#8B6914"
+                    stroke="#a8843a"
                     strokeWidth="0.8"
                     strokeLinecap="round"
                     fill="none"
@@ -1268,7 +1280,7 @@ export function Header() {
                               cy={cy - 4.5}
                               rx={2.5}
                               ry={4}
-                              fill="#fff5f8"
+                              fill="#fdf1e6"
                               opacity={0.92}
                               transform={`rotate(0, ${cx}, ${cy})`}
                             />
@@ -1277,7 +1289,7 @@ export function Header() {
                               cy={cy - 2}
                               rx={2.5}
                               ry={4}
-                              fill="#fff0f5"
+                              fill="#f7e3cf"
                               opacity={0.88}
                               transform={`rotate(72, ${cx}, ${cy})`}
                             />
@@ -1286,7 +1298,7 @@ export function Header() {
                               cy={cy + 3}
                               rx={2.5}
                               ry={4}
-                              fill="#ffe8ef"
+                              fill="#f0d4b8"
                               opacity={0.88}
                               transform={`rotate(144, ${cx}, ${cy})`}
                             />
@@ -1295,7 +1307,7 @@ export function Header() {
                               cy={cy + 3}
                               rx={2.5}
                               ry={4}
-                              fill="#ffe8ef"
+                              fill="#f0d4b8"
                               opacity={0.92}
                               transform={`rotate(216, ${cx}, ${cy})`}
                             />
@@ -1304,7 +1316,7 @@ export function Header() {
                               cy={cy - 2}
                               rx={2.5}
                               ry={4}
-                              fill="#fff0f5"
+                              fill="#f7e3cf"
                               opacity={0.88}
                               transform={`rotate(288, ${cx}, ${cy})`}
                             />
@@ -1318,26 +1330,26 @@ export function Header() {
                               cx={cx}
                               cy={cy}
                               r={0.7}
-                              fill="#ffee55"
+                              fill="#e0b34d"
                               opacity={0.9}
                             />
                             <circle
                               cx={cx - 0.5}
                               cy={cy - 0.7}
                               r={0.2}
-                              fill="#cc4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx + 0.2}
                               cy={cy - 0.9}
                               r={0.2}
-                              fill="#cc4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx + 0.7}
                               cy={cy - 0.4}
                               r={0.2}
-                              fill="#cc4400"
+                              fill="#8f3420"
                             />
                           </g>
                         </g>
@@ -1356,7 +1368,7 @@ export function Header() {
                             cy={cy - 4.5}
                             rx={2.8}
                             ry={4.3}
-                            fill="#88aaff"
+                            fill="#c98a4a"
                             opacity={0.85}
                             transform={`rotate(5, ${cx}, ${cy})`}
                           />
@@ -1365,7 +1377,7 @@ export function Header() {
                             cy={cy - 2}
                             rx={2.8}
                             ry={4.3}
-                            fill="#bb88ff"
+                            fill="#b1442c"
                             opacity={0.8}
                             transform={`rotate(77, ${cx}, ${cy})`}
                           />
@@ -1374,7 +1386,7 @@ export function Header() {
                             cy={cy + 3}
                             rx={2.8}
                             ry={4.3}
-                            fill="#ff88cc"
+                            fill="#cf6a4a"
                             opacity={0.8}
                             transform={`rotate(149, ${cx}, ${cy})`}
                           />
@@ -1383,7 +1395,7 @@ export function Header() {
                             cy={cy + 3}
                             rx={2.8}
                             ry={4.3}
-                            fill="#77ccff"
+                            fill="#d8a85a"
                             opacity={0.85}
                             transform={`rotate(221, ${cx}, ${cy})`}
                           />
@@ -1392,7 +1404,7 @@ export function Header() {
                             cy={cy - 2}
                             rx={2.8}
                             ry={4.3}
-                            fill="#88ddee"
+                            fill="#c98a4a"
                             opacity={0.8}
                             transform={`rotate(293, ${cx}, ${cy})`}
                           />
@@ -1406,32 +1418,32 @@ export function Header() {
                             cx={cx}
                             cy={cy}
                             r={0.8}
-                            fill="#ffee55"
+                            fill="#e0b34d"
                             opacity={0.9}
                           />
                           <circle
                             cx={cx - 0.5}
                             cy={cy - 0.8}
                             r={0.25}
-                            fill="#ee4400"
+                            fill="#8f3420"
                           />
                           <circle
                             cx={cx + 0.1}
                             cy={cy - 1}
                             r={0.25}
-                            fill="#ee4400"
+                            fill="#8f3420"
                           />
                           <circle
                             cx={cx + 0.7}
                             cy={cy - 0.6}
                             r={0.25}
-                            fill="#ee4400"
+                            fill="#8f3420"
                           />
                           <circle
                             cx={cx - 0.7}
                             cy={cy - 0.4}
                             r={0.25}
-                            fill="#ee4400"
+                            fill="#8f3420"
                           />
                         </g>
                       </g>
@@ -1452,7 +1464,7 @@ export function Header() {
                       <g key={`p2-branch-${slot.key}`}>
                         <path
                           d={`M${mainX} ${slot.branchStartY}C${slot.midX} ${slot.midY} ${slot.midX} ${slot.midY} ${slot.x} ${slot.y}`}
-                          stroke="#8B6914"
+                          stroke="#a8843a"
                           strokeWidth="0.7"
                           strokeLinecap="round"
                           fill="none"
@@ -1482,7 +1494,7 @@ export function Header() {
                               cy={slot.y - 2}
                               rx={2}
                               ry={4}
-                              fill="#3a8a2e"
+                              fill="#6b7a36"
                               opacity={0.8}
                               transform={`rotate(-15, ${slot.x}, ${slot.y})`}
                             />
@@ -1491,7 +1503,7 @@ export function Header() {
                               cy={slot.y}
                               rx={1.73}
                               ry={3.33}
-                              fill="#45a035"
+                              fill="#7d8c44"
                               opacity={0.75}
                               transform={`rotate(25, ${slot.x}, ${slot.y})`}
                             />
@@ -1500,7 +1512,7 @@ export function Header() {
                               cy={slot.y + 1}
                               rx={1.6}
                               ry={2.93}
-                              fill="#2d7a22"
+                              fill="#5c6b2e"
                               opacity={0.75}
                               transform={`rotate(-35, ${slot.x}, ${slot.y})`}
                             />
@@ -1537,7 +1549,7 @@ export function Header() {
                                 cy={cy - 4.5}
                                 rx={2.5}
                                 ry={4}
-                                fill="#fff5f8"
+                                fill="#fdf1e6"
                                 opacity={0.92}
                                 transform={`rotate(0, ${cx}, ${cy})`}
                               />
@@ -1546,7 +1558,7 @@ export function Header() {
                                 cy={cy - 2}
                                 rx={2.5}
                                 ry={4}
-                                fill="#fff0f5"
+                                fill="#f7e3cf"
                                 opacity={0.88}
                                 transform={`rotate(72, ${cx}, ${cy})`}
                               />
@@ -1555,7 +1567,7 @@ export function Header() {
                                 cy={cy + 3}
                                 rx={2.5}
                                 ry={4}
-                                fill="#ffe8ef"
+                                fill="#f0d4b8"
                                 opacity={0.88}
                                 transform={`rotate(144, ${cx}, ${cy})`}
                               />
@@ -1564,7 +1576,7 @@ export function Header() {
                                 cy={cy + 3}
                                 rx={2.5}
                                 ry={4}
-                                fill="#ffe8ef"
+                                fill="#f0d4b8"
                                 opacity={0.92}
                                 transform={`rotate(216, ${cx}, ${cy})`}
                               />
@@ -1573,7 +1585,7 @@ export function Header() {
                                 cy={cy - 2}
                                 rx={2.5}
                                 ry={4}
-                                fill="#fff0f5"
+                                fill="#f7e3cf"
                                 opacity={0.88}
                                 transform={`rotate(288, ${cx}, ${cy})`}
                               />
@@ -1587,26 +1599,26 @@ export function Header() {
                                 cx={cx}
                                 cy={cy}
                                 r={0.7}
-                                fill="#ffee55"
+                                fill="#e0b34d"
                                 opacity={0.9}
                               />
                               <circle
                                 cx={cx - 0.5}
                                 cy={cy - 0.7}
                                 r={0.2}
-                                fill="#cc4400"
+                                fill="#8f3420"
                               />
                               <circle
                                 cx={cx + 0.2}
                                 cy={cy - 0.9}
                                 r={0.2}
-                                fill="#cc4400"
+                                fill="#8f3420"
                               />
                               <circle
                                 cx={cx + 0.7}
                                 cy={cy - 0.4}
                                 r={0.2}
-                                fill="#cc4400"
+                                fill="#8f3420"
                               />
                             </g>
                           </g>
@@ -1625,7 +1637,7 @@ export function Header() {
                               cy={cy - 4.5}
                               rx={2.8}
                               ry={4.3}
-                              fill="#88aaff"
+                              fill="#c98a4a"
                               opacity={0.85}
                               transform={`rotate(5, ${cx}, ${cy})`}
                             />
@@ -1634,7 +1646,7 @@ export function Header() {
                               cy={cy - 2}
                               rx={2.8}
                               ry={4.3}
-                              fill="#bb88ff"
+                              fill="#b1442c"
                               opacity={0.8}
                               transform={`rotate(77, ${cx}, ${cy})`}
                             />
@@ -1643,7 +1655,7 @@ export function Header() {
                               cy={cy + 3}
                               rx={2.8}
                               ry={4.3}
-                              fill="#ff88cc"
+                              fill="#cf6a4a"
                               opacity={0.8}
                               transform={`rotate(149, ${cx}, ${cy})`}
                             />
@@ -1652,7 +1664,7 @@ export function Header() {
                               cy={cy + 3}
                               rx={2.8}
                               ry={4.3}
-                              fill="#77ccff"
+                              fill="#d8a85a"
                               opacity={0.85}
                               transform={`rotate(221, ${cx}, ${cy})`}
                             />
@@ -1661,7 +1673,7 @@ export function Header() {
                               cy={cy - 2}
                               rx={2.8}
                               ry={4.3}
-                              fill="#88ddee"
+                              fill="#c98a4a"
                               opacity={0.8}
                               transform={`rotate(293, ${cx}, ${cy})`}
                             />
@@ -1675,32 +1687,32 @@ export function Header() {
                               cx={cx}
                               cy={cy}
                               r={0.8}
-                              fill="#ffee55"
+                              fill="#e0b34d"
                               opacity={0.9}
                             />
                             <circle
                               cx={cx - 0.5}
                               cy={cy - 0.8}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx + 0.1}
                               cy={cy - 1}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx + 0.7}
                               cy={cy - 0.6}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx - 0.7}
                               cy={cy - 0.4}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                           </g>
                         </g>
@@ -1721,7 +1733,7 @@ export function Header() {
                       <g key={`p2b-branch-${slot.key}`}>
                         <path
                           d={`M${mainX} ${slot.branchStartY}C${slot.midX} ${slot.midY} ${slot.midX} ${slot.midY} ${slot.x} ${slot.y}`}
-                          stroke="#8B6914"
+                          stroke="#a8843a"
                           strokeWidth="0.7"
                           strokeLinecap="round"
                           fill="none"
@@ -1751,7 +1763,7 @@ export function Header() {
                               cy={slot.y - 2}
                               rx={2}
                               ry={4}
-                              fill="#3a8a2e"
+                              fill="#6b7a36"
                               opacity={0.8}
                               transform={`rotate(-15, ${slot.x}, ${slot.y})`}
                             />
@@ -1760,7 +1772,7 @@ export function Header() {
                               cy={slot.y}
                               rx={1.73}
                               ry={3.33}
-                              fill="#45a035"
+                              fill="#7d8c44"
                               opacity={0.75}
                               transform={`rotate(25, ${slot.x}, ${slot.y})`}
                             />
@@ -1769,7 +1781,7 @@ export function Header() {
                               cy={slot.y + 1}
                               rx={1.6}
                               ry={2.93}
-                              fill="#2d7a22"
+                              fill="#5c6b2e"
                               opacity={0.75}
                               transform={`rotate(-35, ${slot.x}, ${slot.y})`}
                             />
@@ -1806,7 +1818,7 @@ export function Header() {
                                 cy={cy - 4.5}
                                 rx={2.5}
                                 ry={4}
-                                fill="#fff5f8"
+                                fill="#fdf1e6"
                                 opacity={0.92}
                                 transform={`rotate(0, ${cx}, ${cy})`}
                               />
@@ -1815,7 +1827,7 @@ export function Header() {
                                 cy={cy - 2}
                                 rx={2.5}
                                 ry={4}
-                                fill="#fff0f5"
+                                fill="#f7e3cf"
                                 opacity={0.88}
                                 transform={`rotate(72, ${cx}, ${cy})`}
                               />
@@ -1824,7 +1836,7 @@ export function Header() {
                                 cy={cy + 3}
                                 rx={2.5}
                                 ry={4}
-                                fill="#ffe8ef"
+                                fill="#f0d4b8"
                                 opacity={0.88}
                                 transform={`rotate(144, ${cx}, ${cy})`}
                               />
@@ -1833,7 +1845,7 @@ export function Header() {
                                 cy={cy + 3}
                                 rx={2.5}
                                 ry={4}
-                                fill="#ffe8ef"
+                                fill="#f0d4b8"
                                 opacity={0.92}
                                 transform={`rotate(216, ${cx}, ${cy})`}
                               />
@@ -1842,7 +1854,7 @@ export function Header() {
                                 cy={cy - 2}
                                 rx={2.5}
                                 ry={4}
-                                fill="#fff0f5"
+                                fill="#f7e3cf"
                                 opacity={0.88}
                                 transform={`rotate(288, ${cx}, ${cy})`}
                               />
@@ -1856,26 +1868,26 @@ export function Header() {
                                 cx={cx}
                                 cy={cy}
                                 r={0.7}
-                                fill="#ffee55"
+                                fill="#e0b34d"
                                 opacity={0.9}
                               />
                               <circle
                                 cx={cx - 0.5}
                                 cy={cy - 0.7}
                                 r={0.2}
-                                fill="#cc4400"
+                                fill="#8f3420"
                               />
                               <circle
                                 cx={cx + 0.2}
                                 cy={cy - 0.9}
                                 r={0.2}
-                                fill="#cc4400"
+                                fill="#8f3420"
                               />
                               <circle
                                 cx={cx + 0.7}
                                 cy={cy - 0.4}
                                 r={0.2}
-                                fill="#cc4400"
+                                fill="#8f3420"
                               />
                             </g>
                           </g>
@@ -1894,7 +1906,7 @@ export function Header() {
                               cy={cy - 4.5}
                               rx={2.8}
                               ry={4.3}
-                              fill="#88aaff"
+                              fill="#c98a4a"
                               opacity={0.85}
                               transform={`rotate(5, ${cx}, ${cy})`}
                             />
@@ -1903,7 +1915,7 @@ export function Header() {
                               cy={cy - 2}
                               rx={2.8}
                               ry={4.3}
-                              fill="#bb88ff"
+                              fill="#b1442c"
                               opacity={0.8}
                               transform={`rotate(77, ${cx}, ${cy})`}
                             />
@@ -1912,7 +1924,7 @@ export function Header() {
                               cy={cy + 3}
                               rx={2.8}
                               ry={4.3}
-                              fill="#ff88cc"
+                              fill="#cf6a4a"
                               opacity={0.8}
                               transform={`rotate(149, ${cx}, ${cy})`}
                             />
@@ -1921,7 +1933,7 @@ export function Header() {
                               cy={cy + 3}
                               rx={2.8}
                               ry={4.3}
-                              fill="#77ccff"
+                              fill="#d8a85a"
                               opacity={0.85}
                               transform={`rotate(221, ${cx}, ${cy})`}
                             />
@@ -1930,7 +1942,7 @@ export function Header() {
                               cy={cy - 2}
                               rx={2.8}
                               ry={4.3}
-                              fill="#88ddee"
+                              fill="#c98a4a"
                               opacity={0.8}
                               transform={`rotate(293, ${cx}, ${cy})`}
                             />
@@ -1944,32 +1956,32 @@ export function Header() {
                               cx={cx}
                               cy={cy}
                               r={0.8}
-                              fill="#ffee55"
+                              fill="#e0b34d"
                               opacity={0.9}
                             />
                             <circle
                               cx={cx - 0.5}
                               cy={cy - 0.8}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx + 0.1}
                               cy={cy - 1}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx + 0.7}
                               cy={cy - 0.6}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                             <circle
                               cx={cx - 0.7}
                               cy={cy - 0.4}
                               r={0.25}
-                              fill="#ee4400"
+                              fill="#8f3420"
                             />
                           </g>
                         </g>
@@ -1997,7 +2009,7 @@ export function Header() {
                   <g key={`p3-${slot.key}`}>
                     <path
                       d={`M${mainX} ${slot.branchStartY}C${slot.midX} ${slot.midY} ${slot.midX} ${slot.midY} ${cx} ${cy}`}
-                      stroke="#8B6914"
+                      stroke="#a8843a"
                       strokeWidth={0.7 * Math.max(gardenRootScale / 5, 1)}
                       strokeLinecap="round"
                       fill="none"
@@ -2017,7 +2029,7 @@ export function Header() {
                             cy={cy - 2}
                             rx={2}
                             ry={4}
-                            fill="#3a8a2e"
+                            fill="#6b7a36"
                             opacity={0.8}
                             transform={`rotate(-15, ${cx}, ${cy})`}
                           />
@@ -2026,7 +2038,7 @@ export function Header() {
                             cy={cy}
                             rx={1.73}
                             ry={3.33}
-                            fill="#45a035"
+                            fill="#7d8c44"
                             opacity={0.75}
                             transform={`rotate(25, ${cx}, ${cy})`}
                           />
@@ -2035,7 +2047,7 @@ export function Header() {
                             cy={cy + 1}
                             rx={1.6}
                             ry={2.93}
-                            fill="#2d7a22"
+                            fill="#5c6b2e"
                             opacity={0.75}
                             transform={`rotate(-35, ${cx}, ${cy})`}
                           />
@@ -2077,7 +2089,7 @@ export function Header() {
                           cy={cy - 4.5}
                           rx={2.5}
                           ry={4}
-                          fill="#fff5f8"
+                          fill="#fdf1e6"
                           opacity={0.92}
                           transform={`rotate(0, ${cx}, ${cy})`}
                         />
@@ -2086,7 +2098,7 @@ export function Header() {
                           cy={cy - 2}
                           rx={2.5}
                           ry={4}
-                          fill="#fff0f5"
+                          fill="#f7e3cf"
                           opacity={0.88}
                           transform={`rotate(72, ${cx}, ${cy})`}
                         />
@@ -2095,7 +2107,7 @@ export function Header() {
                           cy={cy + 3}
                           rx={2.5}
                           ry={4}
-                          fill="#ffe8ef"
+                          fill="#f0d4b8"
                           opacity={0.88}
                           transform={`rotate(144, ${cx}, ${cy})`}
                         />
@@ -2104,7 +2116,7 @@ export function Header() {
                           cy={cy + 3}
                           rx={2.5}
                           ry={4}
-                          fill="#ffe8ef"
+                          fill="#f0d4b8"
                           opacity={0.92}
                           transform={`rotate(216, ${cx}, ${cy})`}
                         />
@@ -2113,7 +2125,7 @@ export function Header() {
                           cy={cy - 2}
                           rx={2.5}
                           ry={4}
-                          fill="#fff0f5"
+                          fill="#f7e3cf"
                           opacity={0.88}
                           transform={`rotate(288, ${cx}, ${cy})`}
                         />
@@ -2127,26 +2139,26 @@ export function Header() {
                           cx={cx}
                           cy={cy}
                           r={0.7}
-                          fill="#ffee55"
+                          fill="#e0b34d"
                           opacity={0.9}
                         />
                         <circle
                           cx={cx - 0.5}
                           cy={cy - 0.7}
                           r={0.2}
-                          fill="#cc4400"
+                          fill="#8f3420"
                         />
                         <circle
                           cx={cx + 0.2}
                           cy={cy - 0.9}
                           r={0.2}
-                          fill="#cc4400"
+                          fill="#8f3420"
                         />
                         <circle
                           cx={cx + 0.7}
                           cy={cy - 0.4}
                           r={0.2}
-                          fill="#cc4400"
+                          fill="#8f3420"
                         />
                       </g>
                     </g>
@@ -2165,7 +2177,7 @@ export function Header() {
                         cy={cy - 4.5}
                         rx={2.8}
                         ry={4.3}
-                        fill="#88aaff"
+                        fill="#c98a4a"
                         opacity={0.85}
                         transform={`rotate(5, ${cx}, ${cy})`}
                       />
@@ -2174,7 +2186,7 @@ export function Header() {
                         cy={cy - 2}
                         rx={2.8}
                         ry={4.3}
-                        fill="#bb88ff"
+                        fill="#b1442c"
                         opacity={0.8}
                         transform={`rotate(77, ${cx}, ${cy})`}
                       />
@@ -2183,7 +2195,7 @@ export function Header() {
                         cy={cy + 3}
                         rx={2.8}
                         ry={4.3}
-                        fill="#ff88cc"
+                        fill="#cf6a4a"
                         opacity={0.8}
                         transform={`rotate(149, ${cx}, ${cy})`}
                       />
@@ -2192,7 +2204,7 @@ export function Header() {
                         cy={cy + 3}
                         rx={2.8}
                         ry={4.3}
-                        fill="#77ccff"
+                        fill="#d8a85a"
                         opacity={0.85}
                         transform={`rotate(221, ${cx}, ${cy})`}
                       />
@@ -2201,7 +2213,7 @@ export function Header() {
                         cy={cy - 2}
                         rx={2.8}
                         ry={4.3}
-                        fill="#88ddee"
+                        fill="#c98a4a"
                         opacity={0.8}
                         transform={`rotate(293, ${cx}, ${cy})`}
                       />
@@ -2215,32 +2227,32 @@ export function Header() {
                         cx={cx}
                         cy={cy}
                         r={0.8}
-                        fill="#ffee55"
+                        fill="#e0b34d"
                         opacity={0.9}
                       />
                       <circle
                         cx={cx - 0.5}
                         cy={cy - 0.8}
                         r={0.25}
-                        fill="#ee4400"
+                        fill="#8f3420"
                       />
                       <circle
                         cx={cx + 0.1}
                         cy={cy - 1}
                         r={0.25}
-                        fill="#ee4400"
+                        fill="#8f3420"
                       />
                       <circle
                         cx={cx + 0.7}
                         cy={cy - 0.6}
                         r={0.25}
-                        fill="#ee4400"
+                        fill="#8f3420"
                       />
                       <circle
                         cx={cx - 0.7}
                         cy={cy - 0.4}
                         r={0.25}
-                        fill="#ee4400"
+                        fill="#8f3420"
                       />
                     </g>
                   </g>
@@ -2256,23 +2268,23 @@ export function Header() {
           >
             <path
               d="M8 14V9"
-              stroke="#4a7c3f"
+              stroke="#6b7a3a"
               strokeWidth="1"
               strokeLinecap="round"
             />
             <path
               d="M8 11C6 9.5 4 7.5 5.5 5C7 2.5 8 6 8 8"
-              stroke="#4a7c3f"
+              stroke="#6b7a3a"
               strokeWidth="1"
               strokeLinecap="round"
-              fill="#4a7c3f"
+              fill="#6b7a3a"
             />
             <path
               d="M8 10C10 8.5 12 6.5 10.5 4C9 1.5 8 5 8 7"
-              stroke="#2d5a27"
+              stroke="#566329"
               strokeWidth="1"
               strokeLinecap="round"
-              fill="#2d5a27"
+              fill="#566329"
             />
             <ellipse cx="8" cy="14.5" rx="3" ry="0.8" fill="#6b4423" />
             <polygon points="5.5,14.5 6.5,18 9.5,18 10.5,14.5" fill="#6b4423" />
@@ -2289,23 +2301,23 @@ export function Header() {
           >
             <path
               d="M8 14V10"
-              stroke="#5a9c4f"
+              stroke="#7d8c44"
               strokeWidth="1.2"
               strokeLinecap="round"
             />
             <path
               d="M8 12C6.5 10.5 5 8.5 6.5 6.5C8 4.5 8 7.5 8 9"
-              stroke="#5a9c4f"
+              stroke="#7d8c44"
               strokeWidth="1"
               strokeLinecap="round"
-              fill="#5a9c4f"
+              fill="#7d8c44"
             />
             <path
               d="M8 11C9.5 9.5 11 7.5 9.5 5.5C8 3.5 8 6.5 8 8"
-              stroke="#3d7a32"
+              stroke="#5c6b2e"
               strokeWidth="1"
               strokeLinecap="round"
-              fill="#3d7a32"
+              fill="#5c6b2e"
             />
             <ellipse cx="8" cy="14.5" rx="2.5" ry="0.7" fill="#6b4423" />
             <polygon points="6,14.5 7,17.5 9,17.5 10,14.5" fill="#6b4423" />
@@ -2317,14 +2329,14 @@ export function Header() {
           <div
             className={`absolute top-full right-0 mt-3 transition-opacity duration-200 pointer-events-none ${gardenExpanded ? "opacity-100" : "opacity-0"}`}
           >
-            <div className="absolute -top-[6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-            <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
+            <div className="absolute -top-[6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-ink" />
+            <div className="bg-ink text-paper text-xs px-4 py-2 rounded-full whitespace-nowrap">
               View my Garden
             </div>
           </div>
         </Link>
         <div
-          className={`absolute left-1/2 -translate-x-1/2 bottom-[6px] h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith("/garden") ? "w-9" : "group-hover/garden:w-9 w-0"}`}
+          className={`absolute left-1/2 -translate-x-1/2 bottom-[6px] h-[2px] bg-accent transition-all duration-300 pointer-events-none ${pathname.startsWith("/garden") ? "w-9" : "group-hover/garden:w-9 w-0"}`}
         />
               </div>
               <StackItem
@@ -2343,7 +2355,7 @@ export function Header() {
           className="fixed pointer-events-none z-[200]"
           style={{ left: rootCursorPos.x + 20, top: rootCursorPos.y + 20 }}
         >
-          <div className="text-[10px] font-medium whitespace-nowrap">
+          <div className="text-[10px] font-medium whitespace-nowrap text-ink">
             <AnimatedText text="The plants growing" />
           </div>
         </div>

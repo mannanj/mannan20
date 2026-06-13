@@ -10,21 +10,24 @@ export function ExtracurricularsSection({ activities, count }: ExtracurricularsS
   const display = count > 0;
 
   return (
-    <>
-      <h2 id="extracurriculars" className="scroll-mt-[75px] text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
-        Extracurriculars
+    <section className="section-rule pt-16 mt-16">
+      <h2 id="extracurriculars" className="scroll-mt-[88px] font-display font-normal text-ink text-[clamp(28px,4vw,38px)] leading-tight m-0">
+        Beyond work
       </h2>
-      <ContentCard data={activities['teaching']} applyMarginTop />
 
-      <div id="more-extracurriculars">
-        {display && (
-          <div>
-            {count >= 1 && <ContentCard data={activities['volunteering']} applyMarginTop />}
-            {count >= 1 && <ContentCard data={activities['travel']} applyMarginTop />}
-            {count === 2 && <ContentCard data={activities['jung']} applyMarginTop />}
-          </div>
-        )}
+      <div className="mt-8 flex flex-col gap-8">
+        <ContentCard data={activities['teaching']} />
+
+        <div id="more-extracurriculars" className="contents">
+          {display && (
+            <>
+              {count >= 1 && <ContentCard data={activities['volunteering']} />}
+              {count >= 1 && <ContentCard data={activities['travel']} />}
+              {count === 2 && <ContentCard data={activities['jung']} />}
+            </>
+          )}
+        </div>
       </div>
-    </>
+    </section>
   );
 }

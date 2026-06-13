@@ -36,24 +36,24 @@ function PortfolioInner({ data }: PortfolioInnerProps) {
   }, []);
 
   return (
-    <div className="font-[Lucida_Grande]">
+    <div className="font-sans">
       <div id="header">
         <Header />
       </div>
 
-      <div id="body" className="my-[20vh] md:my-[10vh] w-full max-w-[321px] mx-auto px-5">
-        <div id="home" className="mt-[33vh]">
+      <main id="body" className="mx-auto w-full max-w-[880px] px-6 md:px-8 pt-28 pb-32">
+        <section id="home" className="scroll-mt-[88px]">
           <Hero />
-        </div>
+        </section>
 
-        <div id="about" className="mt-[66vh]">
+        <section id="about" className="scroll-mt-[88px] mt-24 md:mt-32">
           <About data={data} />
-        </div>
+        </section>
 
-        <div id="contact" className="mt-[33vh] h-[44vh]">
+        <section id="contact" className="scroll-mt-[88px] mt-24 md:mt-32">
           <Contact />
-        </div>
-      </div>
+        </section>
+      </main>
 
       <KeyboardCommandsModal />
       <ContactModal />

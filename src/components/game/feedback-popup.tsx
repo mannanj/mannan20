@@ -203,7 +203,7 @@ export function FeedbackPopup({ open, onClose }: FeedbackPopupProps) {
                     }}
                     placeholder="Your feedback…"
                     data-testid="feedback-input"
-                    className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-3 pr-9 text-sm text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+                    className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-3 pr-9 text-sm text-white outline-none transition-colors focus:border-[#b1442c]/50"
                   />
                   {visited && (
                     <button
@@ -241,7 +241,7 @@ export function FeedbackPopup({ open, onClose }: FeedbackPopupProps) {
                         }}
                         placeholder={VALIDATION_PLACEHOLDER}
                         data-testid="feedback-validation-input"
-                        className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+                        className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-9 pr-3 text-sm text-white outline-none transition-colors focus:border-[#b1442c]/50"
                       />
                     </>
                   )}

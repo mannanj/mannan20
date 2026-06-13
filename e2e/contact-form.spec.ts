@@ -212,12 +212,12 @@ test('drag moves modal position', async ({ page }) => {
   await page.screenshot({ path: 'e2e/screenshots/contact-form-drag-modal.png' });
 });
 
-test('partial name detected shows amber "Keep going..."', async ({ page }) => {
+test('partial name detected shows amber "Keep going…"', async ({ page }) => {
   await mockApi(page, PARTIAL_NAME);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('My name is');
   const feedback = page.getByTestId('contact-feedback');
-  await expect(feedback).toContainText('Keep going...', { timeout: 10000 });
+  await expect(feedback).toContainText('Keep going', { timeout: 10000 });
   const status = page.getByTestId('contact-status');
   await expect(status).toHaveAttribute('data-status', 'insufficient');
   await page.screenshot({ path: 'e2e/screenshots/contact-form-partial-name.png' });
@@ -228,7 +228,7 @@ test('nothing found shows amber fallback', async ({ page }) => {
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('asdf');
   const feedback = page.getByTestId('contact-feedback');
-  await expect(feedback).toContainText('Include your name, email, or why you\'re here.', { timeout: 10000 });
+  await expect(feedback).toContainText('Add your name, email, or reason.', { timeout: 10000 });
   const status = page.getByTestId('contact-status');
   await expect(status).toHaveAttribute('data-status', 'insufficient');
   await page.screenshot({ path: 'e2e/screenshots/contact-form-nothing-found.png' });

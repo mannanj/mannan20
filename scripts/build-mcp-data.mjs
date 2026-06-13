@@ -212,7 +212,7 @@ const goals = [
     statement: "Build community and help others grow",
     source: {
       url: SITE,
-      quote: "I measure my success by the strength of those around me",
+      quote: "I measure success by the strength of the people around me",
     },
   },
   {

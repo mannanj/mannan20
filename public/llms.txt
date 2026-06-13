@@ -2,7 +2,7 @@
 
 > Multi-disciplinary engineer, founder, and student. Personal portfolio at mannan.is — security, geospatial, healthcare, and AI-forward product engineering, with a long-running practice in health, community, and applied psychology. This file gives AI agents a structured summary so you don't have to scrape the rendered site.
 
-I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
+Multi-disciplinary engineer, leader, and student. I've shipped products across non-profits, government, and commercial teams — and I measure success by the strength of the people around me. Based in Alexandria, Virginia.
 
 This file is generated from the same data that powers the MCP server below (updated 2026-06-13). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
 
@@ -29,26 +29,26 @@ This file is generated from the same data that powers the MCP server below (upda
 - [Goal — Treat health and longevity as a personal north star](https://mannan.is/garden/article/health-longevity): "A decade of health optimization, reversing prediabetes, and why wellbeing became my north star."
 - [Goal — Measure impact in lives improved, at scale](https://mannan.is): "Measured not by lines shipped, but by lives improved."
 - [Goal — Ship AI products as a founder](https://mannan.is): "AI product studio"
-- [Goal — Build community and help others grow](https://mannan.is): "I measure my success by the strength of those around me"
+- [Goal — Build community and help others grow](https://mannan.is): "I measure success by the strength of the people around me"
 - [Goal — Stay in the arena — multi-disciplinary by practice](https://mannan.is): "I ship products, teach students, volunteer in communities, found startups, build robots, and hold space for others to grow."
 - [Goal — Find people to build with](https://mannan.is): "Ready to build something that matters?"
 
 ## Employment
 
-- [Spirit & Hammer — Founder, 2025-Present](https://mannan.is/#about): AI product studio & consulting agency shipping production-grade full-stack AI platforms. Skills: TypeScript, React, Next.js, Python, FastAPI, Vercel AI SDK, Claude, MCP, Cloudflare.
-- [Capital One — Principal Software Engineer, 2024-2025, 2021-2022](https://www.capitalone.com/): Led security operations, remediation, and engineering for high-scale applications serving 3m+ DAU, achieving zero security incidents while delivering secure microservices and customer-facing features. Skills: Security, Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps.
-- [Publicis Sapient — Senior Software Engineer, 2022-2023](https://www.publicissapient.com/): Led implementation and oversight of developers to deliver features ahead of schedule and improve company-wide velocity. Initiated and introduced major feature rewrites. Skills: Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership.
-- [Radiant (now Maxar) — Software Engineer II, 2018-2022](https://www.maxar.com/): Mid-level frontend engineer on mapping systems that informed national security needs. Champion and advocate for company culture. Skills: Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture.
-- [MITRE Corporation — Software Engineer I, 2016-2018](https://www.mitre.org/): Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages. Skills: Javascript, Typescript, Angular, Python, Python Django, AWS, research.
-- [Meal Fairy, LLC — Founder, 2018 (self-employed)](https://meal-fairy-ce3bf.web.app/): Founder for a plate to door food delivery startup in the greater Washington DC area. Skills: Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing.
-- [America's Electric Cooperatives — Software Engineer, 2014-2016 (contract)](https://www.electric.coop/): Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and cutting edge research. Skills: Javascript, jQuery, Python, Python-Flask, research.
+- [Spirit & Hammer — Founder, 2025-Present](https://mannan.is/#about): AI product studio & consulting agency — production-grade, full-stack AI platforms. Skills: TypeScript, React, Next.js, Python, FastAPI, Vercel AI SDK, Claude, MCP, Cloudflare.
+- [Capital One — Principal Software Engineer, 2024-2025, 2021-2022](https://www.capitalone.com/): Security & platform engineering for apps serving 3M+ daily users. Zero incidents. Skills: Security, Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps.
+- [Publicis Sapient — Senior Software Engineer, 2022-2023](https://www.publicissapient.com/): Led developers and feature rewrites — shipped ahead of schedule, raised company-wide velocity. Skills: Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership.
+- [Radiant (now Maxar) — Software Engineer II, 2018-2022](https://www.maxar.com/): Frontend engineer on mapping systems for national security. Culture champion. Skills: Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture.
+- [MITRE Corporation — Software Engineer I, 2016-2018](https://www.mitre.org/): Engineer and researcher on national cloud, cyber-security, and tax-system initiatives. Skills: Javascript, Typescript, Angular, Python, Python Django, AWS, research.
+- [Meal Fairy, LLC — Founder, 2018 (self-employed)](https://meal-fairy-ce3bf.web.app/): Founder of a plate-to-door food delivery startup in the greater Washington DC area. Skills: Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing.
+- [America's Electric Cooperatives — Software Engineer, 2014-2016 (contract)](https://www.electric.coop/): Fullstack engineer for America's cooperatives — sustainable energy generation and cutting-edge research . Skills: Javascript, jQuery, Python, Python-Flask, research.
 
 ## Extracurriculars
 
-- [Substitute Teacher — Substitute Teacher, 2024](https://mannan.is/#about): Public school teacher and instructional assistant for elementary, middle and high schools across Fairfax County and Southern Bethesda in Maryland and Virginia across English, Math, for emotionally limited and special needs students.
-- [Volunteering — Volunteering, 2013-present](https://mannan.is/#about): Volunteering and service across a variety of initiatives including: Food distribution and drives, STEM Students Lego Mindstorm & ARCHR robotics demo, Local community initiatives for the underserved and more.
-- [Nomadic Travel — Nomadic Travel, 2020-2023](https://mannan.is/#about): Travel and living in a variety of locations from the West Coast, California, stewarding sustainability in ecovillages in California and Hawaii, to car camping across national parks across Washington, Oregon and California,
-- [Applied Jung — Community Building, 2021-present](https://appliedjung.com): Training and application of community building and Jungian individuation techniques, holding a community space for men to learn healthy models of masculinity.
+- [Substitute Teacher — Substitute Teacher, 2024](https://mannan.is/#about): Taught and assisted across elementary, middle, and high schools in Fairfax County and Southern Bethesda — English and Math, including emotionally limited and special-needs students.
+- [Volunteering — Volunteering, 2013-present](https://mannan.is/#about): Service across many initiatives: food drives, STEM students' Lego Mindstorm & ARCHR robotics demos, and local efforts for the underserved.
+- [Nomadic Travel — Nomadic Travel, 2020-2023](https://mannan.is/#about): Lived nomadically from the West Coast to Hawaii — stewarding sustainability in California and Hawaii ecovillages, car-camping across national parks in Washington, Oregon, and California.
+- [Applied Jung — Community Building, 2021-present](https://appliedjung.com): Community building and Jungian individuation work — holding a space for men to learn healthy models of masculinity.
 
 ## Writing by Mannan
 
@@ -75,11 +75,11 @@ This file is generated from the same data that powers the MCP server below (upda
 
 ## Research and publications
 
-- [Apparatus for Remote Control of Humanoid Robots](https://mcp.mannanteam.workers.dev/files/gmu-archr): An intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. (publication)
-- [Open Modeling Framework Demand Response](https://mcp.mannanteam.workers.dev/files/omf-dr): Cost-benefit analysis model for demand response programs built for rural electric cooperatives using NRECA's Open Modeling Framework, simulating TOU, CPP, PTR, and DLC programs. (publication)
-- [Apparatus for Remote Control of Humanoid Robots](https://mcp.mannanteam.workers.dev/files/gmu-archr): Lead developer for an intuitive teleoperation system for high degree of freedom humanoid robots with haptic feedback, enabling untrained operators to control complex robots for disaster response. Published and submitted to IEEE/RSJ IROS 2015 and taken to DARPA Robotics Challenge. One-to-one hand-puppetered mimickry with Oculus VR streaming, controllers for ARCHR, Mini-Hubo, and Baxter robots. (university-project)
-- [Solar Workspace](https://mannan.is/#about): Lead CAD designer for wiring schematics and 3D mechanical designs in Solidworks for a solar-powered outdoor collaborative study hub. The university's first multi-disciplinary engineering project, bringing together electrical, mechanical, and civil engineering students to deliver a sustainable campus installation. (university-project)
-- [DC Dome Light](https://mannan.is/#about): Extracurricular research project designing a portable dome light in Solidworks 3D with wiring schematics for the travel industry. (university-project)
+- [Apparatus for Remote Control of Humanoid Robots](https://mcp.mannanteam.workers.dev/files/gmu-archr): A haptic teleoperation system for high-DOF humanoid robots, letting untrained operators control complex robots for disaster response. Submitted to IEEE/RSJ IROS 2015; taken to the DARPA Robotics Challenge. (publication)
+- [Open Modeling Framework Demand Response](https://mcp.mannanteam.workers.dev/files/omf-dr): A cost-benefit model for demand-response programs at rural electric cooperatives, built on NRECA's Open Modeling Framework — simulating TOU, CPP, PTR, and DLC programs. (publication)
+- [Apparatus for Remote Control of Humanoid Robots](https://mcp.mannanteam.workers.dev/files/gmu-archr): Lead developer of a haptic teleoperation system for high-DOF humanoid robots, letting untrained operators control complex robots for disaster response. One-to-one hand-puppeteered mimicry over Oculus VR streaming, driving ARCHR, Mini-Hubo, and Baxter. Published to IEEE/RSJ IROS 2015; taken to the DARPA Robotics Challenge. (university-project)
+- [Solar Workspace](https://mannan.is/#about): Lead CAD designer (Solidworks wiring schematics and 3D mechanicals) for a solar-powered outdoor study hub — the university's first multi-disciplinary engineering project, uniting electrical, mechanical, and civil students on a sustainable campus installation. (university-project)
+- [DC Dome Light](https://mannan.is/#about): Research project designing a portable dome light in Solidworks 3D, with wiring schematics, for the travel industry. (university-project)
 
 ## Documents
 

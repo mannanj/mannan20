@@ -80,32 +80,21 @@ export function ContactModal() {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-      }}
+      className="fixed inset-0 z-[1000]"
       onClick={closeContactModal}
       data-testid="contact-modal-backdrop"
     >
       <div
         ref={popoutRef}
         data-testid="contact-modal"
+        className={`fixed font-sans bg-card border border-line rounded-2xl shadow-paper p-3 select-none ${
+          dragOffset ? 'cursor-grabbing' : 'cursor-grab'
+        }`}
         style={{
-          position: 'fixed',
           left: position.x,
           top: position.y,
           width: POPOUT_WIDTH,
           maxWidth: 'calc(100vw - 24px)',
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: '20px',
-          padding: '10px',
-          fontFamily: 'var(--font-geist-sans), system-ui, -apple-system, sans-serif',
-          cursor: dragOffset ? 'grabbing' : 'grab',
-          userSelect: 'none',
         }}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={handleMouseDown}
@@ -115,19 +104,9 @@ export function ContactModal() {
           onClick={closeContactModal}
           onMouseEnter={() => setCloseHover(true)}
           onMouseLeave={() => setCloseHover(false)}
-          style={{
-            position: 'absolute',
-            top: '16px',
-            right: '18px',
-            zIndex: 1,
-            background: 'none',
-            border: 'none',
-            color: closeHover ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)',
-            fontSize: '18px',
-            cursor: 'pointer',
-            padding: '0 4px',
-            lineHeight: 1,
-          }}
+          className={`absolute top-4 right-[18px] z-[1] bg-transparent border-0 text-[18px] cursor-pointer px-1 leading-none transition-colors ${
+            closeHover ? 'text-ink' : 'text-faint'
+          }`}
           data-testid="contact-modal-close"
         >
           ×
