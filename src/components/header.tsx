@@ -601,7 +601,7 @@ export function Header() {
         ))}
         <ExpandingIconStack
           data-testid="header-right-stack"
-          className="relative flex items-center pl-[10px] md:pl-[15px] pr-[11px]"
+          className="relative flex items-center"
         >
           {({ gatedClick }) => (
             <>
@@ -2329,8 +2329,8 @@ export function Header() {
               </div>
               <StackItem
                 z={20}
-                collapsed="left-[30px]"
-                expanded="left-[40px] max-md:left-[38px]"
+                collapsed="right-[12px]"
+                expanded="right-[26px]"
               >
                 <McpHeaderButton gate={gatedClick} />
               </StackItem>

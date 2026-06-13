@@ -139,7 +139,7 @@ test.describe('header right stack (garden + mcp)', () => {
     await expect(page.getByTestId('mcp-header-button')).toBeVisible();
   });
 
-  test('hovering the right stack fans the mcp icon out to the right', async ({ page }) => {
+  test('hovering the right stack fans the mcp icon out to the left (into the page)', async ({ page }) => {
     const stack = page.getByTestId('header-right-stack');
     const mcp = page.getByTestId('mcp-header-button');
 
@@ -148,8 +148,16 @@ test.describe('header right stack (garden + mcp)', () => {
     await page.waitForTimeout(400);
     const after = await mcp.boundingBox();
 
-    expect(after!.x).toBeGreaterThan(before!.x);
+    expect(after!.x).toBeLessThan(before!.x);
     await page.screenshot({ path: 'e2e/screenshots/right-stack-expanded.png' });
+  });
+
+  test('mcp stays on-screen when revealed (anchored to the right, fans inward)', async ({ page }) => {
+    await page.getByTestId('header-right-stack').hover();
+    await page.waitForTimeout(400);
+    const mcp = await page.getByTestId('mcp-header-button').boundingBox();
+    expect(mcp!.x + mcp!.width).toBeLessThanOrEqual(1280);
+    expect(mcp!.x).toBeGreaterThan(0);
   });
 
   test('garden anchor stays horizontally in place when the stack opens', async ({ page }) => {
