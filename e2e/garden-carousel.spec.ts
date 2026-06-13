@@ -52,10 +52,10 @@ test.describe('Garden carousel', () => {
     await expect(readAlong).toHaveAttribute('target', '_blank');
     await expect(readAlong).toHaveAttribute('rel', /noopener/);
 
-    const summon = cards.filter({ hasText: 'Summon It' });
-    await expect(summon).toHaveAttribute('href', 'https://summonit.app');
-    await expect(summon).toHaveAttribute('target', '_blank');
-    await expect(summon).toHaveAttribute('rel', /noopener/);
+    const eventEvery = cards.filter({ hasText: 'Event Every' });
+    await expect(eventEvery).toHaveAttribute('href', 'https://eventevery.com');
+    await expect(eventEvery).toHaveAttribute('target', '_blank');
+    await expect(eventEvery).toHaveAttribute('rel', /noopener/);
 
     const skillguard = cards.filter({ hasText: 'SkillGuard' });
     await expect(skillguard).toHaveAttribute('href', 'https://skillguard.sh');
@@ -90,9 +90,9 @@ test.describe('Garden carousel', () => {
     expect(orderedTitles).toEqual([
       'Sun Signal',
       'Read Along',
+      'Event Every',
       'SkillGuard',
       'claude-cues',
-      'Summon It',
       'Meal Fairy (retired)',
     ]);
   });

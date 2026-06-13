@@ -71,11 +71,11 @@ function ReadAlongThumb() {
   );
 }
 
-function SummonThumb() {
+function EventEveryThumb() {
   return (
     <Image
-      src="/summon.png"
-      alt="Summon It app"
+      src="/eventevery.png"
+      alt="Event Every app"
       fill
       sizes="220px"
       className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
@@ -145,7 +145,7 @@ const PRODUCT_THUMBS: Record<string, ReactNode> = {
   "Read Along": <ReadAlongThumb />,
   SkillGuard: <SkillGuardThumb />,
   "claude-cues": <ClaudeCuesThumb />,
-  "Summon It": <SummonThumb />,
+  "Event Every": <EventEveryThumb />,
   "Mannan MCP": <McpThumb />,
   "Meal Fairy": <MealFairyThumb />,
 };

@@ -289,6 +289,12 @@
       "year": 2026
     },
     {
+      "name": "Event Every",
+      "description": "Turn image or text into calendar events.",
+      "url": "https://eventevery.com",
+      "year": 2026
+    },
+    {
       "name": "SkillGuard",
       "description": "Scan Claude Code skills for prompt injection before they run.",
       "url": "https://skillguard.sh",
@@ -298,12 +304,6 @@
       "name": "claude-cues",
       "description": "Gentle sounds that tell you what Claude Code is doing.",
       "url": "https://claude-cues.pages.dev",
-      "year": 2026
-    },
-    {
-      "name": "Summon It",
-      "description": "Turn image or text into calendar events.",
-      "url": "https://summonit.app",
       "year": 2026
     },
     {

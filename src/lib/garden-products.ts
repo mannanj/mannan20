@@ -32,6 +32,13 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     year: 2026,
   },
   {
+    title: "Event Every",
+    description: "Turn image or text into calendar events.",
+    href: "https://eventevery.com",
+    external: true,
+    year: 2026,
+  },
+  {
     title: "SkillGuard",
     description: "Scan Claude Code skills for prompt injection before they run.",
     href: "https://skillguard.sh",
@@ -42,13 +49,6 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     title: "claude-cues",
     description: "Gentle sounds that tell you what Claude Code is doing.",
     href: "https://claude-cues.pages.dev",
-    external: true,
-    year: 2026,
-  },
-  {
-    title: "Summon It",
-    description: "Turn image or text into calendar events.",
-    href: "https://summonit.app",
     external: true,
     year: 2026,
   },

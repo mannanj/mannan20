@@ -77,7 +77,7 @@ export function createServer() {
     {
       title: "List apps",
       description:
-        "Apps and products Mannan built — name, one-line description, URL, year. Includes Sun Signal, Read Along, SkillGuard, Summon It, and more.",
+        "Apps and products Mannan built — name, one-line description, URL, year. Includes Sun Signal, Read Along, SkillGuard, Event Every, and more.",
       annotations: READ_ONLY,
     },
     async () => text({ apps: data.apps }),
