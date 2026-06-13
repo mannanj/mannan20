@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { AboutData } from '@/lib/types';
+import { scrollToSection } from '@/lib/utils';
 import { EmploymentSection } from './about/employment-section';
 import { PublishedWorksSection } from './about/published-works-section';
 import { ExtracurricularsSection } from './about/extracurriculars-section';
@@ -46,22 +47,24 @@ export function About({ data }: AboutProps) {
     totalJobs
   );
 
-  const moreButtonClass = 'group cursor-pointer mt-6 bg-transparent border-none p-0';
-  const iconClass = '!text-ink-2 hover:!text-accent group-hover:!text-accent !border-line hover:!border-accent group-hover:!border-accent';
+  const buttonClass = "group cursor-pointer mt-[25px] ml-0 bg-transparent border-none pl-0 pr-3 py-3 -ml-px";
 
   return (
     <div>
-      <p className="eyebrow">About</p>
-      <h2 className="font-display font-normal text-ink text-[clamp(34px,6vw,52px)] leading-[1.05] tracking-[-0.01em] m-0 mt-3">
-        The work.
-      </h2>
+      <h1 className="text-end uppercase text-[4em] [text-shadow:0_0_10px_rgba(3,155,229,0.5)] hover:[text-shadow:0_0_20px_rgba(3,155,229,0.8)] transition-[text-shadow] duration-300 ease-in-out m-0 leading-[1.2]">
+        About
+      </h1>
+      <hr className="border-0 h-0.5 bg-gradient-to-r from-transparent via-[#039be5] to-transparent my-5" />
+      <p className="m-0 text-sm leading-[1.6] text-white">
+        {data.aboutIntro.primary}
+      </p>
 
       <div>
         <EmploymentSection jobs={data.jobs} jobsToShow={jobsToShow} />
         {employmentStep < employmentSteps ? (
-          <button type="button" className={moreButtonClass} onClick={() => setEmploymentStep((prev) => prev + 1)} aria-label="Show more roles"><PlusMinusIcon expanded={false} border size="lg" className={iconClass} /></button>
+          <button type="button" className={buttonClass} onClick={() => setEmploymentStep((prev) => prev + 1)}><PlusMinusIcon expanded={false} border size="lg" /></button>
         ) : employmentStep > 0 ? (
-          <button type="button" className={moreButtonClass} onClick={() => setEmploymentStep(0)} aria-label="Show fewer roles"><PlusMinusIcon expanded border size="lg" className={iconClass} /></button>
+          <button type="button" className={buttonClass} onClick={() => setEmploymentStep(0)}><PlusMinusIcon expanded border size="lg" /></button>
         ) : null}
       </div>
 
@@ -72,20 +75,24 @@ export function About({ data }: AboutProps) {
       <div>
         <ExtracurricularsSection activities={data.activities} count={extracurricularsStep} />
         {extracurricularsStep < EXTRACURRICULARS_MAX ? (
-          <button type="button" className={moreButtonClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)} aria-label="Show more activities"><PlusMinusIcon expanded={false} border size="lg" className={iconClass} /></button>
+          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep((prev) => prev + 1)}><PlusMinusIcon expanded={false} border size="lg" /></button>
         ) : (
-          <button type="button" className={moreButtonClass} onClick={() => setExtracurricularsStep(0)} aria-label="Show fewer activities"><PlusMinusIcon expanded border size="lg" className={iconClass} /></button>
+          <button type="button" className={buttonClass} onClick={() => setExtracurricularsStep(0)}><PlusMinusIcon expanded border size="lg" /></button>
         )}
       </div>
 
       <div>
         <EducationSection education={data.education} projects={data.educationProjects} certifications={data.certifications} count={educationStep} />
         {educationStep < EDUCATION_MAX ? (
-          <button type="button" className={moreButtonClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)} aria-label="Show more projects"><PlusMinusIcon expanded={false} border size="lg" className={iconClass} /></button>
+          <button type="button" className={buttonClass} data-education-more onClick={() => setEducationStep((prev) => prev + 1)}><PlusMinusIcon expanded={false} border size="lg" /></button>
         ) : (
-          <button type="button" className={moreButtonClass} onClick={() => setEducationStep(0)} aria-label="Show fewer projects"><PlusMinusIcon expanded border size="lg" className={iconClass} /></button>
+          <button type="button" className={buttonClass} onClick={() => setEducationStep(0)}><PlusMinusIcon expanded border size="lg" /></button>
         )}
       </div>
+
+      <button onClick={() => scrollToSection('contact')} className="nav-button mt-[30px]">
+        Get In Touch
+      </button>
 
       {videoUrl && (
         <VideoPopout url={videoUrl} onClose={() => { setVideoUrl(null); window.dispatchEvent(new CustomEvent('close-video-popout')); }} />

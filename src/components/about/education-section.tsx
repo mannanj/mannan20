@@ -12,40 +12,42 @@ export function EducationSection({ education, projects, certifications, count }:
   const display = count > 0;
 
   return (
-    <section className="section-rule pt-16 mt-16">
-      <h2 id="education" className="scroll-mt-[88px] font-display font-normal text-ink text-[clamp(28px,4vw,38px)] leading-tight m-0">
+    <>
+      <h2 id="education" className="scroll-mt-[75px] text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
         Education
       </h2>
 
       {certifications.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-2">
           {certifications.map((cert) => (
-            <span key={cert.name} className="pill">
+            <p key={cert.name} className="leading-[1.6] m-0 text-white text-sm">
               {cert.name}
-            </span>
+            </p>
           ))}
         </div>
       )}
 
-      <div className="mt-8">
-        <ContentCard
-          data={{
-            title: education.institution,
-            position: education.degree,
-            description: education.description,
-          }}
-        />
-      </div>
+      <ContentCard
+        data={{
+          title: education.institution,
+          position: education.degree,
+          description: education.description,
+        }}
+        applyMarginTop
+      />
 
-      <div id="more-education">
-        {display && (
-          <div className="mt-6 flex flex-col gap-6 rounded-lg border border-line bg-paper-2 p-5">
-            {count >= 1 && <ContentCard data={projects['archr']} />}
-            {count >= 1 && <ContentCard data={projects['solar']} />}
-            {count === 2 && <ContentCard data={projects['dome']} />}
-          </div>
-        )}
+      <div>
+        <div id="more-education">
+          {display && (
+            <div className="bg-[#f1f1f1] text-black p-1.5 rounded-md mt-1.5">
+              {count >= 1 && <ContentCard data={projects['archr']} nested />}
+              {count >= 1 && <ContentCard data={projects['solar']} applyMarginTop nested />}
+              {count === 2 && <ContentCard data={projects['dome']} applyMarginTop nested />}
+            </div>
+          )}
+        </div>
       </div>
-    </section>
+    </>
   );
 }
+

@@ -121,11 +121,11 @@ describe("mcp protocol", () => {
     expect(jung?.link).toBe("https://appliedjung.com");
   });
 
-  it("list_writing returns 3 public articles with site URLs", async () => {
+  it("list_writing returns 4 public articles with site URLs", async () => {
     const { writing } = toolJson<{ writing: Array<{ title: string; url: string }> }>(
       await client.callTool({ name: "list_writing", arguments: {} }),
     );
-    expect(writing).toHaveLength(3);
+    expect(writing).toHaveLength(4);
     expect(writing.map((w) => w.title)).toContain("Health is an Artform");
     for (const w of writing) {
       expect(w.url).toMatch(/^https:\/\/mannan\.is\/garden\/article\//);

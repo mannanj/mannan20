@@ -184,7 +184,7 @@ test.describe('header right stack (garden + mcp)', () => {
     await page.waitForTimeout(500);
 
     const mcpTipOpacity = await page
-      .getByText('Connect via MCP')
+      .getByText('Connect your AI')
       .evaluate((el) => getComputedStyle(el.parentElement!).opacity);
     expect(Number(mcpTipOpacity)).toBeGreaterThan(0.5);
 

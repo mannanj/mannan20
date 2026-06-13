@@ -6,7 +6,7 @@ async function openModal(page: Page) {
   await page.evaluate(() => {
     window.dispatchEvent(new CustomEvent('open-resume-modal'));
   });
-  await expect(page.locator('text=Download this resume')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('text=Would you like to download')).toBeVisible({ timeout: 5000 });
 }
 
 async function clockSetup(page: Page) {
@@ -66,7 +66,7 @@ test.describe('Gem Rain Easter Egg', () => {
     test('#41 open-resume-modal event triggers download flow', async ({ page }) => {
       await page.goto('/');
       await openModal(page);
-      await expect(page.locator('text=Download this resume')).toBeVisible();
+      await expect(page.locator('text=Would you like to download')).toBeVisible();
     });
   });
 
@@ -142,7 +142,7 @@ test.describe('Gem Rain Easter Egg', () => {
       await flushReact(page);
       await expect(page.getByTestId('gem-canvas')).not.toBeVisible();
       expect(await page.evaluate(() => document.body.classList.contains('gem-rain-active'))).toBe(false);
-      await expect(page.locator('text=Download this resume')).not.toBeVisible();
+      await expect(page.locator('text=Would you like to download')).not.toBeVisible();
     });
 
     test('#20 modal close button stops gems', async ({ page }) => {
@@ -213,7 +213,7 @@ test.describe('Gem Rain Easter Egg', () => {
         { timeout: 85000 }
       );
       await page.keyboard.press('Escape');
-      await expect(page.locator('text=Download this resume')).not.toBeVisible();
+      await expect(page.locator('text=Would you like to download')).not.toBeVisible();
       await expect(page.getByTestId('gem-canvas')).toBeVisible();
       await page.screenshot({ path: 'e2e/screenshots/gem-rain-locked-dismissed.png' });
     });

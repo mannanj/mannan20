@@ -27,19 +27,19 @@ export function CopySnippet({ value, label }: { value: string; label?: string })
   return (
     <div data-testid="mcp-copy-snippet" className="group/snippet">
       {label && (
-        <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-faint">{label}</div>
+        <div className="mb-1 text-[10px] uppercase tracking-widest text-white/35">{label}</div>
       )}
-      <div className="flex items-center gap-2 rounded-lg border border-line bg-paper-2 px-3 py-2">
-        <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs text-ink-2">
+      <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+        <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs text-white/75">
           {value}
         </code>
         <button
           type="button"
           aria-label={copied ? "Copied" : "Copy"}
           onClick={handleCopy}
-          className="shrink-0 cursor-pointer border-none bg-transparent p-1 text-faint transition-colors hover:text-accent"
+          className="shrink-0 cursor-pointer border-none bg-transparent p-1 text-white/40 transition-colors hover:text-white"
         >
-          {copied ? <CheckIcon className="h-4 w-4 text-accent" /> : <CopyIcon className="h-4 w-4" />}
+          {copied ? <CheckIcon className="h-4 w-4 text-green-400" /> : <CopyIcon className="h-4 w-4" />}
         </button>
       </div>
     </div>

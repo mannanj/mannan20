@@ -1,18 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('robots guided flow', () => {
-  test('flow starts via hash and shows the guided-flow banner', async ({ page }) => {
+  test('flow starts via hash and shows entering text', async ({ page }) => {
     await page.goto('/#robots-flow');
     const banner = page.getByTestId('guided-flow-banner');
     await expect(banner).toBeVisible({ timeout: 5000 });
     const header = page.getByTestId('guided-flow-header');
-    await expect(header).toContainText('Guided flow');
+    await expect(header).toContainText('Entering guided flow...');
     await page.screenshot({ path: 'e2e/screenshots/guided-flow-entering.png' });
   });
 
-  test('flow scrolls to the published works section', async ({ page }) => {
+  test('banner transitions to navigating text', async ({ page }) => {
     await page.goto('/#robots-flow');
-    await expect(page.locator('#published-works')).toBeInViewport({ timeout: 12000 });
+    const header = page.getByTestId('guided-flow-header');
+    await expect(header).toContainText('Navigating to section...', { timeout: 10000 });
     await page.screenshot({ path: 'e2e/screenshots/guided-flow-navigating.png' });
   });
 
@@ -48,7 +49,7 @@ test.describe('robots guided flow', () => {
 
     const header = page.getByTestId('guided-flow-header');
     await expect(header).toBeVisible();
-    await expect(header).toContainText('Guided flow');
+    await expect(header).toContainText('In guided flow...');
 
     const banner = page.getByTestId('guided-flow-banner');
     await expect(banner.getByRole('button', { name: /robot video/ })).toBeVisible();
@@ -78,7 +79,7 @@ test.describe('robots guided flow', () => {
 
     const indicator = page.getByTestId('flow-action-indicator');
     await expect(indicator).toBeVisible();
-    await expect(indicator).toHaveCSS('color', 'rgb(167, 158, 140)');
+    await expect(indicator).toHaveCSS('color', 'rgba(255, 255, 255, 0.3)');
     await page.screenshot({ path: 'e2e/screenshots/guided-flow-gray-checkmark.png' });
   });
 
@@ -97,6 +98,9 @@ test.describe('robots guided flow', () => {
     await page.goto('/#robots-flow');
     const banner = page.getByTestId('guided-flow-banner');
     await expect(banner).toBeVisible({ timeout: 5000 });
+
+    const header = page.getByTestId('guided-flow-header');
+    await expect(header).toContainText('Navigating to section...', { timeout: 10000 });
 
     const actionItem = page.getByTestId('flow-action-item');
     await expect(actionItem).toBeVisible({ timeout: 15000 });

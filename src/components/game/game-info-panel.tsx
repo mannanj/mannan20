@@ -77,7 +77,7 @@ export function GameInfoPanel({ open, onToggle, onClose }: GameInfoPanelProps) {
         <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-5">
           {SECTIONS.map((section) => (
             <div key={section.title}>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#b1442c]">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-[#4FC3F7]">
                 {section.title}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-white/60">{section.body}</p>

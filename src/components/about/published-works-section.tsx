@@ -8,32 +8,20 @@ interface PublishedWorksSectionProps {
 
 export function PublishedWorksSection({ publishedWorks }: PublishedWorksSectionProps) {
   return (
-    <section className="section-rule pt-16 mt-16">
-      <h2
-        id="published-works"
-        className="scroll-mt-[88px] font-display font-normal text-ink text-[clamp(28px,4vw,38px)] leading-tight m-0"
-      >
-        Publications
+    <>
+      <h2 id="published-works" className="scroll-mt-[75px] text-[2em] mt-[30px] mb-0 text-white [text-shadow:0_0_5px_rgba(3,155,229,0.3)] hover:[text-shadow:0_0_10px_rgba(3,155,229,0.6)] transition-[text-shadow] duration-300 ease-in-out leading-[1.3]">
+        Published Works
       </h2>
-
-      <div className="mt-8 flex flex-col gap-6">
-        {publishedWorks.map((work, i) => (
-          <div
-            key={i}
-            data-published-work={i === 0 ? 'archr' : undefined}
-            className="card-paper p-6"
-          >
-            <h3 className="font-display font-medium text-ink text-[20px] leading-snug m-0">
-              {work.title}
-            </h3>
-            <div className="flex items-center gap-4 mt-2">
-              <DownloadPaperLink title={work.title} path={work.downloadPath} filename={work.downloadFilename} />
-              {work.demoUrl && <WatchDemoLink url={work.demoUrl} />}
-            </div>
-            <p className="font-sans text-ink-2 text-[14.5px] leading-relaxed mt-3 m-0">{work.description}</p>
+      {publishedWorks.map((work, i) => (
+        <div key={i} data-published-work={i === 0 ? 'archr' : undefined} className="p-0 m-0 text-inherit mt-[15px]">
+          <b>{work.title}</b>
+          <div className="flex items-center gap-3">
+            <DownloadPaperLink title={work.title} path={work.downloadPath} filename={work.downloadFilename} />
+            {work.demoUrl && <WatchDemoLink url={work.demoUrl} />}
           </div>
-        ))}
-      </div>
-    </section>
+          <p className="text-xs mt-0 leading-[1.6] m-0 text-white">{work.description}</p>
+        </div>
+      ))}
+    </>
   );
 }

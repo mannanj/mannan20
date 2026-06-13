@@ -6,8 +6,8 @@ import type { LLMValidationResult } from "@/lib/types";
 import { FEATURES } from "@/lib/feature-flags";
 
 
-const PLACEHOLDER = "Your name, email, or why you're here";
-const CHALLENGE_PLACEHOLDER = "Mention something from my portfolio…";
+const PLACEHOLDER = "Share your name, email, and/or why you're here";
+const CHALLENGE_PLACEHOLDER = "Mention something from my portfolio...";
 const DEBOUNCE_MS = 1200;
 const MAX_PENDING_MS = 3000;
 const MAX_INPUT_LENGTH = 1000;
@@ -16,7 +16,6 @@ const BOT_CHARS_PER_SEC = 15;
 const BOT_PASTE_MIN_CHARS = 20;
 const BOT_PASTE_MAX_ELAPSED = 3;
 const CHALLENGE_QUESTION = "What's one project of mine that caught your eye?";
-const INSUFFICIENT_TEXT = "Add your name, email, or reason.";
 
 type FormStatus = "idle" | "pending" | "validating" | "success" | "error" | "network-error" | "insufficient" | "rate-limited" | "challenge";
 
@@ -27,13 +26,13 @@ type DisplayPhase =
 
 const FALLBACK_TEXT: Record<FormStatus, string> = {
   idle: "",
-  pending: "Typing",
-  validating: "Checking",
-  success: "",
-  error: "Server error — try again.",
-  "network-error": "Network error — check your connection.",
-  insufficient: INSUFFICIENT_TEXT,
-  "rate-limited": "Too many attempts — try again later.",
+  pending: "Waiting for typing to finish",
+  validating: "Checking response",
+  success: "Received response",
+  error: "Server error. Please try again.",
+  "network-error": "Network error. Check your connection.",
+  insufficient: "Include your name, email, or why you're here.",
+  "rate-limited": "Too many attempts. Please try again later.",
   challenge: CHALLENGE_QUESTION,
 };
 
@@ -81,8 +80,8 @@ function buildFeedback(result: LLMValidationResult): { text: string; isSuccess: 
     return { text: `Thanks, ${display}!`, isSuccess: true };
   }
   if (hasEmail || hasReason) return { text: "Got it!", isSuccess: true };
-  if (hasPartial) return { text: "Keep going…", isSuccess: false };
-  return { text: INSUFFICIENT_TEXT, isSuccess: false };
+  if (hasPartial) return { text: "Keep going...", isSuccess: false };
+  return { text: "Include your name, email, or why you're here.", isSuccess: false };
 }
 
 interface ContactFormProps {
@@ -142,7 +141,7 @@ export function ContactForm({ onReveal }: ContactFormProps) {
 
   const passChallengeMode = useCallback(() => {
     challengeModeRef.current = false;
-    const text = "Thanks!";
+    const text = "Nice, thanks for that!";
     setStatus("success");
     triggerSuccess(text);
   }, [triggerSuccess]);
@@ -324,11 +323,10 @@ export function ContactForm({ onReveal }: ContactFormProps) {
   })();
 
   const isAmber = status === 'insufficient' || status === 'challenge';
-  const isError = status === 'error' || status === 'network-error' || status === 'rate-limited';
 
   return (
     <div>
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <textarea
           data-testid="contact-textarea"
           value={userInput}
@@ -338,22 +336,51 @@ export function ContactForm({ onReveal }: ContactFormProps) {
           onCompositionEnd={handleCompositionEnd}
           maxLength={MAX_INPUT_LENGTH}
           rows={6}
-          className="w-full px-3.5 pt-3 pb-7 border border-line rounded-lg text-sm text-ink bg-paper-2 resize-y font-sans leading-relaxed box-border outline-none transition-colors focus:border-accent placeholder:text-faint"
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            paddingBottom: '28px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '10px',
+            fontSize: '14px',
+            color: 'white',
+            background: 'rgba(0,0,0,0.3)',
+            resize: 'vertical',
+            fontFamily: 'inherit',
+            lineHeight: 1.5,
+            boxSizing: 'border-box',
+            outline: 'none',
+            transition: 'border-color 0.2s',
+          }}
           placeholder={isChallenge ? CHALLENGE_PLACEHOLDER : PLACEHOLDER}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(3,155,229,0.5)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+          }}
         />
 
-        <div className="absolute bottom-2 right-3.5 flex items-center gap-1.5 pointer-events-none">
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          right: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          pointerEvents: 'none',
+        }}>
           <span data-testid="contact-status" data-status={status} />
           {status !== "idle" && (
             <>
               {status === "validating" && (
                 <svg
-                  className="w-[11px] h-[11px] text-faint animate-[spin_1s_linear_infinite]"
+                  style={{ animation: 'spin 1s linear infinite', width: '11px', height: '11px', color: 'rgba(255,255,255,0.5)' }}
                   viewBox="0 0 24 24"
                   fill="none"
                 >
                   <circle
-                    className="opacity-25"
+                    style={{ opacity: 0.25 }}
                     cx="12"
                     cy="12"
                     r="10"
@@ -361,27 +388,48 @@ export function ContactForm({ onReveal }: ContactFormProps) {
                     strokeWidth="4"
                   />
                   <path
-                    className="opacity-75"
+                    style={{ opacity: 0.75 }}
                     fill="currentColor"
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
               )}
-              <span
-                data-testid="contact-feedback"
-                className={`font-mono text-[11px] ${
-                  isError ? 'text-accent' : isAmber ? 'text-accent-deep' : 'text-ink-2'
-                }`}
-              >
-                {isError || isAmber || status === 'success' ? displayText : displayText + '…'}
+              <span data-testid="contact-feedback" style={{ fontSize: '11px' }}>
+                {status === 'error' || status === 'network-error' || status === 'rate-limited' ? (
+                  <span style={{ color: 'rgba(239,68,68,0.7)' }}>{displayText}</span>
+                ) : isAmber ? (
+                  <span style={{ color: 'rgba(251,191,36,0.8)' }}>{displayText}</span>
+                ) : status === 'success' ? (
+                  <span style={{ color: 'rgba(74,222,128,0.8)' }}>{displayText}</span>
+                ) : (
+                  (displayText + '...').split('').map((char, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        animation: 'dotColor 1.5s infinite',
+                        animationDelay: `${i * 0.04}s`,
+                      }}
+                    >
+                      {char}
+                    </span>
+                  ))
+                )}
               </span>
             </>
           )}
         </div>
       </div>
 
-      <p className="-mt-1 -mb-0.5 px-1 text-[10px] leading-tight text-faint font-light text-center">
-        No spam, ever.
+      <p style={{
+        margin: '-4px 0 -2px',
+        padding: '0 4px',
+        fontSize: '10px',
+        lineHeight: 1.3,
+        color: 'rgba(255,255,255,0.25)',
+        fontWeight: 300,
+        textAlign: 'center',
+      }}>
+        I will never send you unsolicited communication.
       </p>
     </div>
   );

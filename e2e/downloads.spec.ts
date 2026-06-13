@@ -67,7 +67,7 @@ test.describe('Rate-limited downloads served from R2', () => {
 
   test('downloading the resume through the modal saves the PDF', async ({ page }) => {
     await page.goto('/#download-resume');
-    await expect(page.locator('text=Download this resume')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Would you like to download')).toBeVisible({ timeout: 10000 });
     const downloadPromise = page.waitForEvent('download');
     await page.locator('[data-modal-primary]').click();
     const download = await downloadPromise;
