@@ -45,6 +45,7 @@ export const GARDEN_ARTICLES: GardenArticle[] = [
     readingTime: "3 min read",
     wordCount: 480,
     href: "/garden/article/self-parenting",
+    unavailable: true,
   },
 ];
 
