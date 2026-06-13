@@ -68,7 +68,7 @@ This file is generated from the same data that powers the MCP server below (upda
 - [Sun Signal](https://sunsignal.app): Turn any US ZIP into real-time circadian timing.
 - [Read Along](https://tryreadalong.com): Turn text into AI-narrated audiobooks.
 - [SkillGuard](https://skillguard.sh): Scan Claude Code skills for prompt injection before they run.
-- [claude-cues](https://claude-cues.pages.dev): Gentle sound cues that tell you what Claude Code is doing.
+- [claude-cues](https://claude-cues.pages.dev): Gentle sounds that tell you what Claude Code is doing.
 - [Summon It](https://summonit.app): Turn image or text into calendar events.
 - [Mannan MCP](https://mcp.mannanteam.workers.dev): Connect any AI agent to my site's public data.
 - [Meal Fairy (retired)](https://meal-fairy-ce3bf.web.app): Chef-cooked, healthy meals delivered to your door.

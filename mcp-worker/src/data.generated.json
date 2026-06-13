@@ -304,7 +304,7 @@
     },
     {
       "name": "claude-cues",
-      "description": "Gentle sound cues that tell you what Claude Code is doing.",
+      "description": "Gentle sounds that tell you what Claude Code is doing.",
       "url": "https://claude-cues.pages.dev",
       "year": 2026
     },

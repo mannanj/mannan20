@@ -38,7 +38,7 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
   },
   {
     title: "claude-cues",
-    description: "Gentle sound cues that tell you what Claude Code is doing.",
+    description: "Gentle sounds that tell you what Claude Code is doing.",
     href: "https://claude-cues.pages.dev",
     external: true,
     year: 2026,
