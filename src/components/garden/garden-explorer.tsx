@@ -31,7 +31,7 @@ const PANEL_TRANSITION_MS = 700;
 
 const TABS: { key: Category; label: string }[] = [
   { key: "writings", label: "Writings" },
-  { key: "products", label: "Products" },
+  { key: "products", label: "Tools" },
   { key: "readings", label: "Readings" },
 ];
 
@@ -119,6 +119,18 @@ function SunSignalThumb() {
   );
 }
 
+function ClaudeCuesThumb() {
+  return (
+    <Image
+      src="/claude-cues.png"
+      alt="claude-cues"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
 function McpThumb() {
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#16161f] to-[#0b0b12] transition-transform duration-300 group-hover:scale-105">
@@ -132,6 +144,7 @@ const PRODUCT_THUMBS: Record<string, ReactNode> = {
   "Sun Signal": <SunSignalThumb />,
   "Read Along": <ReadAlongThumb />,
   SkillGuard: <SkillGuardThumb />,
+  "claude-cues": <ClaudeCuesThumb />,
   "Summon It": <SummonThumb />,
   "Mannan MCP": <McpThumb />,
   "Meal Fairy": <MealFairyThumb />,

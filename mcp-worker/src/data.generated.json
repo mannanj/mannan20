@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11",
+  "generatedAt": "2026-06-13",
   "site": "https://mannan.is",
   "profile": {
     "name": "Mannan Javid",
@@ -300,6 +300,12 @@
       "name": "SkillGuard",
       "description": "Scan Claude Code skills for prompt injection before they run.",
       "url": "https://skillguard.sh",
+      "year": 2026
+    },
+    {
+      "name": "claude-cues",
+      "description": "Gentle sound cues that tell you what Claude Code is doing.",
+      "url": "https://claude-cues.pages.dev",
       "year": 2026
     },
     {

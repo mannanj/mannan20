@@ -37,6 +37,13 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     year: 2026,
   },
   {
+    title: "claude-cues",
+    description: "Gentle sound cues that tell you what Claude Code is doing.",
+    href: "https://claude-cues.pages.dev",
+    external: true,
+    year: 2026,
+  },
+  {
     title: "Summon It",
     description: "Turn image or text into calendar events.",
     href: "https://summonit.app",
