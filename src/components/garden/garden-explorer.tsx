@@ -31,7 +31,7 @@ const PANEL_TRANSITION_MS = 700;
 
 const TABS: { key: Category; label: string }[] = [
   { key: "writings", label: "Writings" },
-  { key: "products", label: "Tools" },
+  { key: "products", label: "Products" },
   { key: "readings", label: "Readings" },
 ];
 
@@ -207,8 +207,43 @@ function ProductGrid({ products }: { products: GardenProduct[] }) {
   );
 }
 
+function ProductsSubsection({
+  label,
+  products,
+  muted,
+}: {
+  label: string;
+  products: GardenProduct[];
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-2.5">
+      <h3
+        className={`text-xs font-medium uppercase tracking-wider ${
+          muted ? "text-white/40" : "text-white"
+        }`}
+      >
+        {label}
+      </h3>
+      <ProductGrid products={products} />
+    </div>
+  );
+}
+
 function ProductsPanel() {
-  return <ProductGrid products={PRODUCTS} />;
+  const active = PRODUCTS.filter((p) => !p.retired);
+  const retired = PRODUCTS.filter((p) => p.retired);
+  const products = active.slice(0, 3);
+  const tools = active.slice(3);
+  return (
+    <div className="flex flex-col gap-8">
+      <ProductGrid products={products} />
+      {tools.length > 0 && <ProductsSubsection label="Tools" products={tools} />}
+      {retired.length > 0 && (
+        <ProductsSubsection label="Retired" products={retired} muted />
+      )}
+    </div>
+  );
 }
 
 function WritingCard({
