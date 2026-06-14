@@ -171,34 +171,73 @@ test.describe('header right stack (garden + mcp)', () => {
     expect(Math.abs(after!.x - before!.x)).toBeLessThan(6);
   });
 
-  test('plant grows on the garden, not when hovering only the mcp', async ({ page }) => {
+  test('garden stays expanded when moving from the plant onto the mcp icon', async ({ page }) => {
     const garden = page.getByTestId('garden-wrapper');
     const mcp = page.getByTestId('mcp-header-button');
 
     await garden.hover();
     await page.waitForTimeout(400);
-    await expect(page.getByText('View my Garden')).toBeVisible();
+    const gardenTipBefore = await page
+      .getByText('View my Garden')
+      .evaluate((el) => getComputedStyle(el.parentElement!).opacity);
+    expect(Number(gardenTipBefore)).toBeGreaterThan(0.5);
 
     const box = await mcp.boundingBox();
     await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
     await page.waitForTimeout(500);
 
-    const mcpTipOpacity = await page
-      .getByText('Connect your AI')
-      .evaluate((el) => getComputedStyle(el.parentElement!).opacity);
-    expect(Number(mcpTipOpacity)).toBeGreaterThan(0.5);
-
-    const gardenTipOpacity = await page
+    const gardenTipAfter = await page
       .getByText('View my Garden')
       .evaluate((el) => getComputedStyle(el.parentElement!).opacity);
-    expect(Number(gardenTipOpacity)).toBeLessThan(0.1);
+    expect(Number(gardenTipAfter)).toBeGreaterThan(0.5);
+
+    const after = await mcp.boundingBox();
+    expect(Math.abs(after!.x - box!.x)).toBeLessThan(6);
   });
 
-  test('first click on the garden reveals the stack instead of navigating (tap gate)', async ({ page }) => {
-    await page.getByTestId('header-garden-link').click();
-    await page.waitForTimeout(200);
+  test('clicking the garden plant navigates to the garden', async ({ page }) => {
+    const garden = page.getByTestId('header-garden-link');
+    await garden.hover();
+    await page.waitForTimeout(150);
+    await garden.click();
+    await expect(page).toHaveURL(/\/garden/);
+  });
+});
 
+test.describe('garden + mcp tap gate on touch (no hover available)', () => {
+  test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true });
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+  });
+
+  test('mcp is collapsed and inert until the cluster is revealed', async ({ page }) => {
+    const reveal = page.getByTestId('mcp-reveal');
+    await expect(reveal).toHaveCSS('opacity', '0');
+    await expect(reveal).toHaveCSS('pointer-events', 'none');
+    expect((await reveal.boundingBox())!.width).toBe(0);
+  });
+
+  test('first tap on the plant reveals the mcp instead of navigating', async ({ page }) => {
+    const plant = page.getByTestId('header-garden-link');
+    await plant.tap();
+    await expect(page.getByTestId('mcp-reveal')).toHaveCSS('opacity', '1');
+    expect((await page.getByTestId('mcp-reveal').boundingBox())!.width).toBeGreaterThan(20);
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByTestId('mcp-popover')).toHaveCount(0);
+  });
+
+  test('the revealed mcp icon opens its popover on tap', async ({ page }) => {
+    await page.getByTestId('header-garden-link').tap();
+    await expect(page.getByTestId('mcp-header-button')).toBeVisible();
+    await page.getByTestId('mcp-header-button').tap();
+    await expect(page.getByTestId('mcp-popover')).toBeVisible();
+  });
+
+  test('second tap on the plant navigates to the garden', async ({ page }) => {
+    const plant = page.getByTestId('header-garden-link');
+    await plant.tap();
+    await expect(page.getByTestId('mcp-header-button')).toBeVisible();
+    await plant.tap();
+    await expect(page).toHaveURL(/\/garden/);
   });
 });

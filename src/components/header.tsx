@@ -587,35 +587,46 @@ export function Header() {
         )}
       </ExpandingIconStack>
       <div className="relative flex items-center gap-2 md:gap-4 md:pl-[15px]">
-        {LINKS.map((link) => (
-          <div key={link} className="pl-[10px] md:pl-[15px]">
-            <a
-              id={`${link}-link`}
-              data-testid={`header-nav-${link}`}
-              className={`header-link ${isHome && state.activeSection === link ? "header-link-selected" : ""}`}
-              onClick={() => goTo(link)}
-            >
-              {link.charAt(0).toUpperCase() + link.slice(1)}
-            </a>
-          </div>
-        ))}
-        <ExpandingIconStack
+        <div className="flex items-center">
+          {LINKS.map((link) => (
+            <div key={link} className="pl-[10px] md:pl-[15px]">
+              <a
+                id={`${link}-link`}
+                data-testid={`header-nav-${link}`}
+                className={`header-link ${isHome && state.activeSection === link ? "header-link-selected" : ""}`}
+                onClick={() => goTo(link)}
+              >
+                {link.charAt(0).toUpperCase() + link.slice(1)}
+              </a>
+            </div>
+          ))}
+        </div>
+        <div
           data-testid="header-right-stack"
           className="relative flex items-center"
         >
-          {({ gatedClick }) => (
-            <>
-              <div
-                ref={gardenRef}
-                data-testid="garden-wrapper"
-                className="group/garden relative z-30 py-3"
-                onMouseEnter={openGarden}
-                onMouseLeave={closeGarden}
-              >
+          <div
+            ref={gardenRef}
+            data-testid="garden-wrapper"
+            className="group/garden relative z-30 flex items-center py-3"
+            onMouseEnter={openGarden}
+            onMouseLeave={closeGarden}
+          >
+            <div
+              data-testid="mcp-reveal"
+              className={`flex items-center overflow-visible transition-[width,opacity] duration-300 ease-out ${gardenExpanded ? "w-8 opacity-100" : "w-0 opacity-0 pointer-events-none"}`}
+            >
+              <McpHeaderButton />
+            </div>
         <Link
           href="/garden"
           data-testid="header-garden-link"
-          onClick={gatedClick}
+          onClick={(e) => {
+            if (!gardenExpandedRef.current) {
+              e.preventDefault();
+              openGarden();
+            }
+          }}
           className="group relative block"
         >
           <PlantIcon
@@ -2322,21 +2333,12 @@ export function Header() {
               View my Garden
             </div>
           </div>
+          <div
+            className={`absolute left-1/2 -translate-x-1/2 bottom-[-6px] h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith("/garden") ? "w-9" : "group-hover/garden:w-9 w-0"}`}
+          />
         </Link>
-        <div
-          className={`absolute left-1/2 -translate-x-1/2 bottom-[6px] h-[2px] bg-red-500 transition-all duration-300 pointer-events-none ${pathname.startsWith("/garden") ? "w-9" : "group-hover/garden:w-9 w-0"}`}
-        />
-              </div>
-              <StackItem
-                z={20}
-                collapsed="right-[12px]"
-                expanded="right-[26px]"
-              >
-                <McpHeaderButton gate={gatedClick} />
-              </StackItem>
-            </>
-          )}
-        </ExpandingIconStack>
+          </div>
+        </div>
       </div>
       {rootHovered && (
         <div
