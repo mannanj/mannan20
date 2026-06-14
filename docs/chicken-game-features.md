@@ -28,6 +28,72 @@ The chicken develops emotional states based on gameplay:
 - ✅ Cosmetic skins shipped in Task 236 (2026-06-11): 5 free League-style skins (Classic Yard, Void Walker, Mecha Cluck, Magma Core, Frostfall) with a top-right picker, localStorage persistence, tier colors tinting through each skin
 - Still open: skins *unlocked* by score thresholds / leaderboard status, displayed as prizes, tied to progression
 
+## Escape Vehicles & Scene Escalation
+
+> **Raw idea dump (verbatim):** [`chicken-game-escape-scenes-raw.md`](./chicken-game-escape-scenes-raw.md)
+> — the unedited original discussion (2026-06-12). This section is the cleaned-up version.
+> Future-work task: [`tasks/task-244.md`](../tasks/task-244.md).
+
+The big swing: the chase stops being a chicken on a static backdrop and becomes an
+**escalating escape narrative**. As the player keeps catching (or fails to catch) the chicken,
+the *world* changes around it — new backdrop scenes, new vehicles, new comedy beats — while the
+core mechanic stays the same: **the target dodges the cursor with the same escalating escape
+speeds we already have.** Each scene is just a new skin over that dodge loop, with the comedy
+ramping up and getting funnier as you progress.
+
+### Stage 1 — Surfing
+
+- Background shifts to an **ocean / surfing scene**: rolling waves, horizon.
+- Chicken **gets on a surfboard**; the board moves and the **waves push it around**.
+- We click it; it dodges by riding the wave. **Surfing intensifies as it tries to escape** —
+  bigger waves, faster carving, more dramatic spray — reusing the current escape-speed curve.
+
+### Stage 2 — Pilot / Airplane
+
+- Comedy intro beat: chicken puts on **swim/aviator goggles first**. Little **stick-figure
+  hands magically grow out** for the effect, **giggles and lols**, **flexes the goggles** like
+  you snap-stretch swim goggles before a dive, then **pulls them onto its head**.
+- An **airplane** flies in; chicken hops in and **flies around to escape clicks**. Now you're
+  chasing/clicking a flying plane.
+- The progression keeps getting **more and more, and funnier**.
+
+### Stage 3 — Rocket / Space (zoom-out mechanic)
+
+- Chicken escalates into a **rocket to space**; **camera follows it up**.
+- The **scene zooms out** — the chicken gets **smaller and harder to see/click**, until all you
+  can practically click is the **rocket itself**. The shrinking target *is* the difficulty.
+- **Normal (default) outcome:** the rocket just keeps going and **lands on the Moon** — deploys
+  **little landing legs**, the chicken **slowly emerges**. As it lands, the **camera zooms in**
+  (lean into the camera/zoom play here), and we **continue the game in space.** New space arena.
+
+### Rare Easter Egg — "Break into the rocket" (inventory-gated)
+
+- While the rocket is **in flight**, a mini-game to **break in**: a **shovel / pick-axe** tool —
+  hitting the hull **opens a little notch** (it does **NOT explode** — gentle, comedic). Through
+  the notch you can see the **chicken's butt** (clickable) or its **head** (clickable) as
+  alternate hit targets.
+- **Gated:** this only unlocks if the player **picked up the shovel** elsewhere on the site.
+  See **Cross-app inventory** below.
+
+### Cross-app inventory (shared items)
+
+- The site's **articles pages** already feature pickup-able items: **ID cards, eggs, bags, and
+  other objects**, with a **little bag/inventory shown bottom-right** on those pages.
+- Idea: make those items **usable inside the game** — carry the same **bottom-right bag** into
+  `/game`, and let held items (e.g. the **shovel**) unlock interactions like the rocket break-in.
+- This stitches the game into the broader site rather than keeping it a sealed sandbox.
+
+### Open questions / things to figure out later
+
+- **Trigger model:** what advances stages — score thresholds, time-untouched, or a scripted
+  sequence? (Mirrors the existing difficulty/personality escalation.)
+- **Rendering approach:** these scenes (waves, camera zoom-out, Moon landing) are heavier than
+  the current 2D float — decide between staying in the existing canvas/DOM approach vs. a
+  camera/parallax layer, and watch the bundle budget (deep-dive is already lazy-loaded).
+- **Reset/loop:** after the Moon/space arena, does it loop, branch, or end?
+- More "**other fun ideas of how to continue**" welcome — this list is a starting point, not a
+  closed spec.
+
 ## Chicken Friends
 
 - At certain thresholds, additional chickens can join the screen
