@@ -9,12 +9,18 @@ import {
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
 import { GARDEN_PRODUCTS, type GardenProductData } from "@/lib/garden-products";
 import { EPISODES } from "@/lib/episodes";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
+
+const ProductsGallery = dynamic(
+  () => import("@/components/garden/products-gallery"),
+  { ssr: false, loading: () => null },
+);
 
 type Category = "products" | "writings" | "readings";
 
@@ -408,7 +414,8 @@ export function GardenExplorer() {
   } as CSSProperties;
 
   return (
-    <div className="relative z-10 flex min-h-screen flex-col items-center px-6 py-24">
+    <>
+      <div className="relative z-10 flex min-h-screen flex-col items-center px-6 py-24">
       <div className="w-full max-w-2xl">
         <p className="mb-6 text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
           Garden
@@ -472,6 +479,10 @@ export function GardenExplorer() {
           </>
         )}
       </div>
-    </div>
+      </div>
+      {ready && active === "products" && (
+        <ProductsGallery onSelectCategory={select} />
+      )}
+    </>
   );
 }

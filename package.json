@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test:e2e": "bunx playwright test",
+    "test:unit": "bun test src",
     "unicorn:build": "node scripts/apply-unicorn-transforms.mjs",
     "postinstall": "node scripts/apply-unicorn-transforms.mjs",
     "visits:recent": "cd visits-worker && bun run db:recent",
