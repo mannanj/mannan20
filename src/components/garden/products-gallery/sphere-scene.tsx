@@ -4,15 +4,12 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { ProductCardMesh, type SceneEnv } from "./product-card-mesh";
-import { BlackHole } from "./black-hole";
 import { setCardAnisotropy } from "./card-texture";
 import type { SphereTile } from "./gallery-data";
 import type { OrbitState } from "./use-orbit-controls";
 
 const BASE_RADIUS = 6.3;
-const INTRO_START_Z = 6;
-const INTRO_END_Z = 0.3;
-const INTRO_SECONDS = 2;
+const FADE_SECONDS = 0.7;
 const STAR_COUNT = 600;
 
 interface SphereSceneProps {
@@ -22,10 +19,6 @@ interface SphereSceneProps {
   introActiveRef: React.RefObject<boolean>;
   reducedMotion: boolean;
   onOpen: (tile: SphereTile) => void;
-}
-
-function easeInCubic(t: number) {
-  return t * t * t;
 }
 
 function Starfield({ reducedMotion }: { reducedMotion: boolean }) {
@@ -94,7 +87,7 @@ export function SphereScene({
     }
 
     if (introActiveRef.current && introStart.current < 0) {
-      if (warmup.current >= 4 && delta < 0.05) {
+      if (warmup.current >= 2 && delta < 0.05) {
         introStart.current = state.clock.elapsedTime;
       } else {
         warmup.current += 1;
@@ -102,7 +95,7 @@ export function SphereScene({
       }
     } else if (introActiveRef.current) {
       const p = THREE.MathUtils.clamp(
-        (state.clock.elapsedTime - introStart.current) / INTRO_SECONDS,
+        (state.clock.elapsedTime - introStart.current) / FADE_SECONDS,
         0,
         1,
       );
@@ -110,21 +103,11 @@ export function SphereScene({
       if (p >= 1) introActiveRef.current = false;
     }
 
-    const progress = THREE.MathUtils.clamp(introRef.current, 0, 1);
-    const reveal = THREE.MathUtils.smoothstep(progress, 0.66, 1);
+    const reveal = THREE.MathUtils.clamp(introRef.current, 0, 1);
     envRef.current.reveal = reveal;
-    envRef.current.radius = THREE.MathUtils.lerp(7.6, BASE_RADIUS, reveal);
+    envRef.current.radius = THREE.MathUtils.lerp(6.9, BASE_RADIUS, reveal);
 
     const cam = camera as THREE.PerspectiveCamera;
-    if (progress < 0.62) {
-      const t = easeInCubic(progress / 0.62);
-      cam.position.set(0, 0, THREE.MathUtils.lerp(INTRO_START_Z, INTRO_END_Z, t));
-      cam.lookAt(0, 0, -2);
-    } else if (cam.position.lengthSq() > 1e-6) {
-      cam.position.set(0, 0, 0);
-      cam.lookAt(0, 0, -1);
-    }
-
     if (Math.abs(cam.fov - o.fov) > 0.001) {
       cam.fov = o.fov;
       cam.updateProjectionMatrix();
@@ -136,7 +119,6 @@ export function SphereScene({
       <color attach="background" args={["#050507"]} />
       <fog attach="fog" args={["#050507", 14, 30]} />
       <Starfield reducedMotion={reducedMotion} />
-      <BlackHole introRef={introRef} />
       <group ref={worldRef}>
         {tiles.map((tile) => (
           <ProductCardMesh

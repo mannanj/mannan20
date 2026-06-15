@@ -24,7 +24,7 @@ interface GalleryHudProps {
   onFilter: (filter: GalleryFilter) => void;
   onSelectCategory: (category: GalleryCategory) => void;
   onOpenLetsTalk: () => void;
-  onOpenGrid: () => void;
+  onShowList: () => void;
   onStepZoom: () => void;
   zoomIndex: number;
   zoomLevels: number;
@@ -37,7 +37,7 @@ export function GalleryHud({
   onFilter,
   onSelectCategory,
   onOpenLetsTalk,
-  onOpenGrid,
+  onShowList,
   onStepZoom,
   zoomIndex,
   zoomLevels,
@@ -62,7 +62,7 @@ export function GalleryHud({
         </span>
       </a>
 
-      <div className="pointer-events-auto absolute left-1/2 top-5 flex -translate-x-1/2 items-center gap-2">
+      <div className="pill-morph-up pointer-events-auto absolute left-1/2 top-5 flex -translate-x-1/2 items-center gap-2">
         <div
           role="tablist"
           aria-label="Garden categories"
@@ -157,8 +157,8 @@ export function GalleryHud({
       <button
         type="button"
         data-testid="gallery-grid"
-        aria-label="Browse as grid"
-        onClick={onOpenGrid}
+        aria-label="Switch to list view"
+        onClick={onShowList}
         className={`pointer-events-auto absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-2xl ${GLASS}`}
       >
         <GridIcon className="h-[18px] w-[18px]" />

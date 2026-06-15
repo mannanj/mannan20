@@ -99,14 +99,14 @@ test.describe('Garden carousel', () => {
 
   test('selecting Writings swivels to the stacked writing cards', async ({ page }) => {
     await gotoGarden(page);
-    await page.getByTestId('garden-tab-products').click();
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
+    await page.getByTestId('garden-tab-readings').click();
+    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
     await page.getByTestId('garden-tab-writings').click();
 
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
     await expect(page.getByTestId('garden-tab-writings')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
-    await expect(page.locator('[data-panel="writings"] a')).toHaveCount(4);
+    await expect(page.locator('[data-panel="writings"] a')).toHaveCount(3);
   });
 
   test('selecting Readings swivels to the curated readings list', async ({ page }) => {

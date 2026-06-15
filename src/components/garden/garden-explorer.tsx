@@ -369,12 +369,36 @@ function GardenSkeleton() {
   );
 }
 
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <ellipse cx="12" cy="12" rx="4" ry="9" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+    </svg>
+  );
+}
+
 export function GardenExplorer() {
   const [active, setActive] = useState<Category>("writings");
   const [prev, setPrev] = useState<Category | null>(null);
   const [dir, setDir] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [ready, setReady] = useState(false);
+  const [globeOpen, setGlobeOpen] = useState(false);
+  const [listEntering, setListEntering] = useState(false);
+  const [tabsRising, setTabsRising] = useState(false);
+  const [listHidden, setListHidden] = useState(false);
+  const [mockTop, setMockTop] = useState(96);
+  const tabAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (prev === null) return;
@@ -384,10 +408,33 @@ export function GardenExplorer() {
 
   const select = (next: Category) => {
     if (next === active) return;
-    setDir(ORDER[next] > ORDER[active] ? 1 : -1);
-    setPrev(active);
+    setListHidden(false);
+    const swivel = active !== "products" && next !== "products";
+    if (swivel) {
+      setDir(ORDER[next] > ORDER[active] ? 1 : -1);
+      setPrev(active);
+    } else {
+      setPrev(null);
+    }
+    if (next === "products") setGlobeOpen(false);
     setActive(next);
     window.history.replaceState(null, "", `#${next}`);
+  };
+
+  const showList = () => {
+    setListHidden(false);
+    setListEntering(true);
+    window.setTimeout(() => setGlobeOpen(false), 300);
+    window.setTimeout(() => setListEntering(false), 820);
+  };
+
+  const showGlobe = () => {
+    const rect = tabAreaRef.current?.getBoundingClientRect();
+    if (rect) setMockTop(rect.top);
+    setListHidden(true);
+    setGlobeOpen(true);
+    setTabsRising(true);
+    window.setTimeout(() => setTabsRising(false), 360);
   };
 
   const selectRef = useRef(select);
@@ -415,7 +462,11 @@ export function GardenExplorer() {
 
   return (
     <>
-      <div className="relative z-10 flex min-h-screen flex-col items-center px-6 py-24">
+      <div
+        className={`relative z-10 min-h-screen flex-col items-center px-6 py-24${
+          listHidden ? " hidden" : " flex"
+        }`}
+      >
       <div className="w-full max-w-2xl">
         <p className="mb-6 text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
           Garden
@@ -426,9 +477,12 @@ export function GardenExplorer() {
         ) : (
           <>
             <div
+              ref={tabAreaRef}
               role="tablist"
               aria-label="Garden categories"
-              className="mb-10 flex items-center justify-center gap-7 sm:gap-10"
+              className={`mb-10 flex items-center justify-center gap-7 sm:gap-10${
+                listEntering ? " tab-morph-in" : ""
+              }`}
             >
               {TABS.map((tab) => (
                 <button
@@ -480,8 +534,43 @@ export function GardenExplorer() {
         )}
       </div>
       </div>
-      {ready && active === "products" && (
-        <ProductsGallery onSelectCategory={select} />
+      {ready && active === "products" && !globeOpen && (
+        <button
+          type="button"
+          data-testid="garden-globe-toggle"
+          aria-label="Globe view"
+          onClick={showGlobe}
+          className="group fixed left-5 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-2xl border border-white/12 bg-white/[0.08] text-white/85 backdrop-blur-md transition-colors duration-200 hover:bg-white/15 hover:text-white"
+        >
+          <GlobeIcon className="h-[18px] w-[18px]" />
+          <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md border border-white/10 bg-black/85 px-2 py-1 text-[11px] font-medium text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            Globe view
+          </span>
+        </button>
+      )}
+      {ready && active === "products" && globeOpen && (
+        <ProductsGallery onSelectCategory={select} onShowList={showList} />
+      )}
+      {tabsRising && (
+        <div
+          data-testid="garden-tabs-rising"
+          style={{ top: mockTop }}
+          className="tab-morph-out-up pointer-events-none fixed inset-x-0 z-[80] flex items-center justify-center gap-7 sm:gap-10"
+        >
+          {TABS.map((tab) => (
+            <span
+              key={tab.key}
+              className={`relative pb-1.5 text-lg sm:text-xl ${
+                tab.key === active ? "font-bold text-white" : "font-normal text-white/45"
+              }`}
+            >
+              {tab.label}
+              {tab.key === active && (
+                <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500" />
+              )}
+            </span>
+          ))}
+        </div>
       )}
     </>
   );

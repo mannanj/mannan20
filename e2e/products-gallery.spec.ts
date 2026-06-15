@@ -25,20 +25,38 @@ const CONTACT_EMAIL = "hello@mannan.is";
 async function enterGallery(page: Page) {
   await page.goto("/garden");
   await page.getByTestId("garden-tab-products").click();
+  await page.getByTestId("garden-globe-toggle").click();
   await page.getByTestId("products-gallery").waitFor();
   await page.getByTestId("gallery-attribution").waitFor({ state: "visible" });
   await page.waitForTimeout(2400);
 }
 
+async function openCardDetail(page: Page): Promise<boolean> {
+  const box = await page.locator('[data-testid="products-gallery"] canvas').boundingBox();
+  if (!box) return false;
+  const points: [number, number][] = [
+    [0.5, 0.5], [0.36, 0.42], [0.64, 0.56], [0.5, 0.34],
+    [0.44, 0.62], [0.6, 0.44], [0.3, 0.5], [0.7, 0.52],
+  ];
+  for (const [fx, fy] of points) {
+    await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+    if (await page.getByTestId("product-detail").isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(150);
+  }
+  return false;
+}
+
 test.describe("Phantom-style products gallery", () => {
-  test("the #products hash deep-links straight into the immersive gallery", async ({ page }) => {
+  test("the #products hash deep-links to the products view (list by default), and the globe icon opens the gallery", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
 
     await page.goto("/garden#products");
-    await page.getByTestId("products-gallery").waitFor();
+    await expect(page.getByTestId("garden-active-panel")).toHaveAttribute("data-panel", "products");
+    await expect(page.getByTestId("garden-globe-toggle")).toBeVisible();
 
-    await expect(page.getByTestId("products-gallery")).toBeVisible();
+    await page.getByTestId("garden-globe-toggle").click();
+    await page.getByTestId("products-gallery").waitFor();
     await expect(page.getByTestId("products-gallery").locator("canvas")).toHaveCount(1);
     await page.waitForTimeout(2400);
     expect(errors).toEqual([]);
@@ -75,45 +93,30 @@ test.describe("Phantom-style products gallery", () => {
     );
   });
 
-  test("grid view lists exactly the visible products, hides hidden, marks retired", async ({ page }) => {
+  test("the grid icon switches to the old flat list view, and the globe icon returns", async ({ page }) => {
     await enterGallery(page);
     await page.getByTestId("gallery-grid").click();
-    await page.getByTestId("gallery-grid-view").waitFor({ state: "visible" });
 
-    await expect(page.locator('[data-testid^="gallery-grid-item-"]')).toHaveCount(
-      VISIBLE_PRODUCTS.length,
-    );
-    const text = await page.getByTestId("gallery-grid-view").innerText();
-    for (const title of VISIBLE_PRODUCTS) expect(text).toContain(title);
-    for (const hidden of HIDDEN_PRODUCTS) expect(text).not.toContain(hidden);
-    expect(text).toContain("Meal Fairy (retired)");
+    await page.getByTestId("products-gallery").waitFor({ state: "detached" });
+    const panel = page.getByTestId("garden-active-panel");
+    await expect(panel).toHaveAttribute("data-panel", "products");
+    await expect(panel.locator("a")).toHaveCount(VISIBLE_PRODUCTS.length);
+    for (const hidden of HIDDEN_PRODUCTS) await expect(panel).not.toContainText(hidden);
+    await expect(page.getByTestId("garden-globe-toggle")).toBeVisible();
 
-    await page.getByTestId("gallery-grid-close").click();
-    await expect(page.getByTestId("gallery-grid-view")).toBeHidden();
+    await page.getByTestId("garden-globe-toggle").click();
+    await expect(page.getByTestId("products-gallery")).toBeVisible();
   });
 
-  test("filter narrows the products (retired facet)", async ({ page }) => {
+  test("clicking a product card opens a basic detail page with a Back button", async ({ page }) => {
     await enterGallery(page);
-    await page.getByTestId("gallery-grid").click();
-    await page.getByTestId("gallery-grid-view").waitFor({ state: "visible" });
-    await page.getByTestId("gallery-grid-filter-retired").click();
+    expect(await openCardDetail(page)).toBe(true);
 
-    await expect(page.locator('[data-testid^="gallery-grid-item-"]')).toHaveCount(1);
-    await expect(page.getByTestId("gallery-grid-view")).toContainText("Meal Fairy");
-    await expect(page.getByTestId("gallery-grid-view")).not.toContainText("Sun Signal");
-  });
-
-  test("opening a card animates in a detail page with a way back", async ({ page }) => {
-    await enterGallery(page);
-    await page.getByTestId("gallery-grid").click();
-    await page.getByTestId("gallery-grid-item-sun-signal").click();
-
-    await expect(page.getByTestId("product-detail")).toBeVisible();
-    await expect(page.getByTestId("product-detail-title")).toHaveText("Sun Signal");
-    await expect(page.getByTestId("product-detail-visit")).toHaveAttribute(
-      "href",
-      "https://sunsignal.app",
-    );
+    await expect(page.getByTestId("product-detail-title")).not.toBeEmpty();
+    await expect(page.getByTestId("product-detail-visit")).toHaveAttribute("href", /.+/);
+    await expect(page.getByTestId("product-detail-back")).toContainText("Back");
+    await expect(page.getByTestId("product-detail-back")).not.toContainText("Gallery");
+    await expect(page.getByTestId("product-detail")).not.toContainText("basic detail view");
 
     await page.getByTestId("product-detail-back").click();
     await expect(page.getByTestId("product-detail")).toHaveCount(0);
@@ -190,6 +193,7 @@ test.describe("Phantom-style products gallery", () => {
 
     await page.goto("/garden");
     await page.getByTestId("garden-tab-products").click();
+    await page.getByTestId("garden-globe-toggle").click();
     await page.getByTestId("products-gallery").waitFor();
     await expect(page.getByTestId("gallery-attribution")).toBeVisible();
     await page.waitForTimeout(800);

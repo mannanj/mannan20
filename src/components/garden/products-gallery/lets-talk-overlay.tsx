@@ -10,38 +10,14 @@ interface LetsTalkOverlayProps {
   onClose: () => void;
 }
 
-type Intent = "collaboration" | "hiring" | "other";
-
-const OPTIONS: { key: Intent; label: string; blurb: string; subject: string }[] = [
-  {
-    key: "collaboration",
-    label: "Collaboration",
-    blurb: "Build something together — products, prototypes, experiments.",
-    subject: "Collaboration",
-  },
-  {
-    key: "hiring",
-    label: "Hiring",
-    blurb: "A role, a contract, or a team that needs an engineer.",
-    subject: "Hiring",
-  },
-  {
-    key: "other",
-    label: "Anything else",
-    blurb: "Questions, ideas, or just saying hello.",
-    subject: "Hello",
-  },
-];
-
 export function LetsTalkOverlay({ onClose }: LetsTalkOverlayProps) {
   const { state, openContactModal } = useApp();
   const [shown, setShown] = useState(false);
-  const [intent, setIntent] = useState<Intent>("collaboration");
   const [copied, setCopied] = useState(false);
 
   const revealed = state.contactRevealed;
   const phoneDigits = CONTACT_DATA.phone.replace(/[^\d]/g, "");
-  const subject = OPTIONS.find((o) => o.key === intent)?.subject ?? "Hello";
+  const subject = "Hello";
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true));
@@ -99,34 +75,8 @@ export function LetsTalkOverlay({ onClose }: LetsTalkOverlayProps) {
         </p>
         <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Let&apos;s talk.</h2>
         <p className="mt-2 max-w-md text-sm text-white/55">
-          Tell me what you&apos;re building, or just say hi. Pick a lane and I&apos;ll get the
-          right details in front of you.
+          Tell me what you&apos;re building, or just say hi.
         </p>
-
-        <div className="mt-7 grid gap-3 sm:grid-cols-3">
-          {OPTIONS.map((option) => {
-            const active = option.key === intent;
-            return (
-              <button
-                key={option.key}
-                type="button"
-                data-testid={`lets-talk-option-${option.key}`}
-                aria-pressed={active}
-                onClick={() => setIntent(option.key)}
-                className={`group flex h-full cursor-pointer flex-col rounded-2xl border p-4 text-left transition-all duration-200 ${
-                  active
-                    ? "border-white/30 bg-white/[0.09]"
-                    : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.05]"
-                }`}
-              >
-                <span className="text-[15px] font-medium text-white">{option.label}</span>
-                <span className="mt-1.5 text-xs leading-relaxed text-white/45">
-                  {option.blurb}
-                </span>
-              </button>
-            );
-          })}
-        </div>
 
         <div className="mt-7 rounded-2xl border border-white/10 bg-black/30 p-5">
           {revealed ? (

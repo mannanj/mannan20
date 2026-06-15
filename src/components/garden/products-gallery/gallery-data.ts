@@ -101,17 +101,6 @@ export function buildTiles(products: GalleryProduct[]): SphereTile[] {
   return tiles;
 }
 
-export function uniqueProducts(tiles: SphereTile[]): GalleryProduct[] {
-  const seen = new Set<string>();
-  const out: GalleryProduct[] = [];
-  for (const tile of tiles) {
-    if (seen.has(tile.product.title)) continue;
-    seen.add(tile.product.title);
-    out.push(tile.product);
-  }
-  return out;
-}
-
 export function productDomain(href: string): string {
   if (href.startsWith("/")) return "mannan.is";
   try {

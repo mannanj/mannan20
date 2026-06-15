@@ -44,7 +44,7 @@ export function ProductDetail({ product, onClose }: ProductDetailProps) {
         onClick={onClose}
         className="absolute left-5 top-5 z-10 flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-black/40 px-4 py-2 text-sm text-white/75 backdrop-blur-md transition-colors duration-200 hover:border-white/40 hover:text-white"
       >
-        ← Gallery
+        ← Back
       </button>
 
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center gap-10 px-6 py-24 md:flex-row md:gap-16 md:py-0">
@@ -101,8 +101,6 @@ export function ProductDetail({ product, onClose }: ProductDetailProps) {
               </Link>
             )}
           </div>
-
-          <p className="mt-6 text-xs text-white/30">A basic detail view — the gallery is the main event.</p>
         </div>
       </div>
     </div>
