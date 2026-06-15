@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { BlueprintPopout } from "./blueprint-popout";
 import { AdditionalReading } from "./additional-reading";
+import { ArticleViews } from "./article-views";
 import { ArticleBody } from "../article-body";
 
 export function HealthArticleBody() {
@@ -98,6 +99,8 @@ export function HealthArticleBody() {
           be discovered.
         </p>
       </ArticleBody>
+
+      <ArticleViews slug="health-longevity" />
 
       <AdditionalReading currentHref="/garden/article/health-longevity" />
 

@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { ArticleBody } from "../article-body";
 import { AdditionalReading } from "./additional-reading";
+import { ArticleViews } from "./article-views";
 
 const IFS_URL = "https://ifs-institute.com";
 const SOURCE_URL =
@@ -202,6 +203,8 @@ export function SelfParentingBody() {
           disabled
         />
       </div>
+
+      <ArticleViews slug="self-parenting" align="center" />
 
       <AdditionalReading currentHref="/garden/article/self-parenting" />
     </>

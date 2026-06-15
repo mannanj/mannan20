@@ -9,6 +9,7 @@ import { copyToClipboard } from "@/lib/utils";
 import { TakenStatsFooter } from "./taken-stats-footer";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
+import { ArticleViews } from "./article-views";
 
 interface DetectionState {
   ready: boolean;
@@ -1046,6 +1047,8 @@ export function TakenBody() {
             </section>
 
             <TellSomeone />
+
+            <ArticleViews slug="taken" />
 
             <AdditionalReading currentHref="/garden/article/taken" />
           </>

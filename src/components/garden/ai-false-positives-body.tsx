@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useCallback, useEffect } from "react";
 import { ArticleBody } from "../article-body";
+import { ArticleViews } from "./article-views";
 
 interface Shot {
   src: string;
@@ -137,6 +138,8 @@ export function AiFalsePositivesBody() {
           {CAPTION}
         </figcaption>
       </figure>
+
+      <ArticleViews slug="ai-false-positives" align="center" />
     </ArticleBody>
   );
 }

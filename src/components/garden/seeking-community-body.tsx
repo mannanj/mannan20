@@ -5,6 +5,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { DraggablePopout } from "./draggable-popout";
 import { AdditionalReading } from "./additional-reading";
+import { ArticleViews } from "./article-views";
 import { ArticleBody } from "../article-body";
 import {
   EasterEgg,
@@ -304,6 +305,7 @@ export function SeekingCommunityBody() {
               My dream for community evolution is strong. The moment for its
               mainstream adoption is never better than now.
             </p>
+            <ArticleViews slug="seeking-community" />
             <div className="flex justify-center mt-4">
               <CommunityConstellation />
             </div>

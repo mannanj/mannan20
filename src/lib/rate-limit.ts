@@ -8,6 +8,8 @@ const MAGIC_WINDOW_SECONDS = 900;
 const MAX_MAGIC_PER_WINDOW = 3;
 const FEEDBACK_WINDOW_SECONDS = 600;
 const MAX_FEEDBACK_PER_WINDOW = 4;
+const GARDEN_VIEW_WINDOW_SECONDS = 60;
+const MAX_GARDEN_VIEWS_PER_WINDOW = 20;
 const MEMORY_KEYS_MAX = 5000;
 
 export interface LimitResult {
@@ -56,6 +58,19 @@ const feedbackUpstash =
         redis: new Redis({ url, token }),
         limiter: Ratelimit.slidingWindow(MAX_FEEDBACK_PER_WINDOW, `${FEEDBACK_WINDOW_SECONDS} s`),
         prefix: 'ratelimit:game-feedback',
+        analytics: false,
+      })
+    : null;
+
+const gardenViewUpstash =
+  url && token
+    ? new Ratelimit({
+        redis: new Redis({ url, token }),
+        limiter: Ratelimit.slidingWindow(
+          MAX_GARDEN_VIEWS_PER_WINDOW,
+          `${GARDEN_VIEW_WINDOW_SECONDS} s`,
+        ),
+        prefix: 'ratelimit:garden-view',
         analytics: false,
       })
     : null;
@@ -113,6 +128,18 @@ export async function limitMagicEmail(key: string): Promise<LimitResult> {
     return { success, limit, remaining, reset };
   } catch {
     return memoryLimit(`magic:${key}`, MAX_MAGIC_PER_WINDOW, MAGIC_WINDOW_SECONDS);
+  }
+}
+
+export async function limitGardenView(ip: string): Promise<LimitResult> {
+  if (!gardenViewUpstash) {
+    return memoryLimit(`gv:${ip}`, MAX_GARDEN_VIEWS_PER_WINDOW, GARDEN_VIEW_WINDOW_SECONDS);
+  }
+  try {
+    const { success, limit, remaining, reset } = await gardenViewUpstash.limit(ip);
+    return { success, limit, remaining, reset };
+  } catch {
+    return memoryLimit(`gv:${ip}`, MAX_GARDEN_VIEWS_PER_WINDOW, GARDEN_VIEW_WINDOW_SECONDS);
   }
 }
 
