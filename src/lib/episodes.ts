@@ -8,6 +8,12 @@ export interface Episode {
 
 export const EPISODES: Episode[] = [
   {
+    title: '[AI GENERATED] MCP Intent Spike',
+    author: 'Mannan Javid',
+    date: 'June 17, 2026',
+    href: '/episodes/mcp-intent-spike',
+  },
+  {
     title: 'Affiliate Attribution, Reset',
     author: 'Mannan Javid',
     date: 'May 8, 2026',

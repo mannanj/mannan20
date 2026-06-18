@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13",
+  "generatedAt": "2026-06-18",
   "site": "https://mannan.is",
   "profile": {
     "name": "Mannan Javid",
@@ -254,6 +254,14 @@
   ],
   "readings": [
     {
+      "title": "[AI GENERATED] MCP Intent Spike",
+      "author": "Mannan Javid",
+      "date": "June 17, 2026",
+      "url": "https://mannan.is/episodes/mcp-intent-spike",
+      "note": "Reading on mannan.is; authored by Mannan Javid.",
+      "agentUrl": "https://mcp.mannanteam.workers.dev/files/mcp-intent-spike"
+    },
+    {
       "title": "Be Courageously You",
       "author": "Faizan Ishaq",
       "date": "March 28, 2026",
@@ -409,6 +417,13 @@
       "filename": "immortalism-manifesto.pdf",
       "contentType": "application/pdf",
       "label": "Immortalism Manifesto (curated reading PDF)"
+    },
+    {
+      "slug": "mcp-intent-spike",
+      "key": "portfolio/documents/mcp-intent-spike.pdf",
+      "filename": "mcp-intent-spike.pdf",
+      "contentType": "application/pdf",
+      "label": "MCP Intent Spike (reading PDF)"
     }
   ],
   "contact": {

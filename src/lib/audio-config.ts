@@ -20,3 +20,9 @@ export const AFFILIATE_LEADS_CHUNKS: AudioChunk[] = [
   { url: `${AUDIO_BASE}/affiliate-leads/chunk-3.wav`, key: 'affiliate-leads/chunk-3', label: 'Part 3' },
   { url: `${AUDIO_BASE}/affiliate-leads/chunk-4.wav`, key: 'affiliate-leads/chunk-4', label: 'Summary' },
 ];
+
+export const MCP_INTENT_SPIKE_CHUNKS: AudioChunk[] = [
+  { url: `${AUDIO_BASE}/mcp-intent-spike/chunk-1.wav`, key: 'mcp-intent-spike/chunk-1', label: 'Part 1' },
+  { url: `${AUDIO_BASE}/mcp-intent-spike/chunk-2.wav`, key: 'mcp-intent-spike/chunk-2', label: 'Part 2' },
+  { url: `${AUDIO_BASE}/mcp-intent-spike/chunk-3.wav`, key: 'mcp-intent-spike/chunk-3', label: 'Part 3' },
+];

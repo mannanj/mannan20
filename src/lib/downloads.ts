@@ -30,6 +30,11 @@ export const DOWNLOADS: Record<string, DownloadEntry> = {
     filename: 'immortalism-manifesto.pdf',
     contentType: 'application/pdf',
   },
+  'mcp-intent-spike': {
+    key: 'portfolio/documents/mcp-intent-spike.pdf',
+    filename: 'mcp-intent-spike.pdf',
+    contentType: 'application/pdf',
+  },
   'affiliate-leads-redesign': {
     key: 'portfolio/documents/affiliate-leads-redesign.md',
     filename: 'affiliate-leads-redesign.md',

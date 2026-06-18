@@ -4,7 +4,7 @@
 
 I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
 
-This file is generated from the same data that powers the MCP server below (updated 2026-06-13). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
+This file is generated from the same data that powers the MCP server below (updated 2026-06-18). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
 
 ## MCP server
 
@@ -56,8 +56,9 @@ This file is generated from the same data that powers the MCP server below (upda
 - [Health is an Artform](https://mannan.is/garden/article/health-longevity): A decade of health optimization, reversing prediabetes, and why wellbeing became my north star. (2026-03-15)
 - [Joyful Frustrations](https://mannan.is/garden/article/funny-frustrations): Can frustration be joyful? Yes it sure can
 
-## Curated readings (authored by others)
+## Garden readings
 
+- [[AI GENERATED] MCP Intent Spike — Mannan Javid](https://mannan.is/episodes/mcp-intent-spike): Reading on mannan.is; authored by Mannan Javid.
 - [Be Courageously You — Faizan Ishaq](https://mannan.is/episodes/be-courageously-you): Curated reading on mannan.is; authored by Faizan Ishaq, not by Mannan Javid.
 - [Immortalism Manifesto — Bryan Johnson](https://mannan.is/episodes/immortalism-manifesto): Curated reading on mannan.is; authored by Bryan Johnson, not by Mannan Javid.
 

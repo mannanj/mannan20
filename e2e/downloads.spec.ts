@@ -6,6 +6,7 @@ const DOWNLOAD_SLUGS = [
   { slug: 'gmu-archr', contentType: 'application/pdf', filename: 'GMU-ARCHR.pdf', minBytes: 1000000 },
   { slug: 'omf-dr', contentType: 'application/pdf', filename: 'OMF-DR.pdf', minBytes: 300000 },
   { slug: 'immortalism-manifesto', contentType: 'application/pdf', filename: 'immortalism-manifesto.pdf', minBytes: 200000 },
+  { slug: 'mcp-intent-spike', contentType: 'application/pdf', filename: 'mcp-intent-spike.pdf', minBytes: 40000 },
   { slug: 'affiliate-leads-redesign', contentType: 'text/markdown', filename: 'affiliate-leads-redesign.md', minBytes: 5000 },
 ];
 

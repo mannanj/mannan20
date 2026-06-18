@@ -18,6 +18,7 @@ const PUBLIC_FILE_SLUGS = {
   "gmu-archr": "ARCHR humanoid robotics research (GMU)",
   "omf-dr": "Open Modeling Framework demand response research",
   "immortalism-manifesto": "Immortalism Manifesto (curated reading PDF)",
+  "mcp-intent-spike": "MCP Intent Spike (reading PDF)",
 };
 
 const abs = (p) => (p.startsWith("http") ? p : `${SITE}${p}`);
@@ -102,12 +103,15 @@ const writing = [...GARDEN_ARTICLES.filter((a) => !a.unavailable && !a.hidden), 
 
 const readings = EPISODES.filter((e) => !e.hidden).map((e) => {
   const slug = slugFromPath(e.href);
+  const authoredByMannan = e.author.toLowerCase().includes("mannan");
   return {
     title: e.title,
     author: e.author,
     date: e.date,
     url: abs(e.href),
-    note: `Curated reading on mannan.is; authored by ${e.author}, not by Mannan Javid.`,
+    note: authoredByMannan
+      ? `Reading on mannan.is; authored by ${e.author}.`
+      : `Curated reading on mannan.is; authored by ${e.author}, not by Mannan Javid.`,
     ...(PUBLIC_FILE_SLUGS[slug] ? { agentUrl: agentFileUrl(slug) } : {}),
   };
 });
@@ -373,7 +377,7 @@ const buildLlmsTxt = (d) => {
     lines.push(llmsLink(w.title, w.url, `${w.description}${w.date ? ` (${w.date})` : ""}`));
   }
   lines.push("");
-  lines.push("## Curated readings (authored by others)");
+  lines.push("## Garden readings");
   lines.push("");
   for (const r of d.readings) {
     lines.push(llmsLink(`${r.title} — ${r.author}`, r.url, r.note));

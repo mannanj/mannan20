@@ -114,6 +114,6 @@ test.describe('Garden carousel', () => {
     await page.getByTestId('garden-tab-readings').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
     await expect(page.getByTestId('garden-tab-readings')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(2);
+    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(3);
   });
 });
