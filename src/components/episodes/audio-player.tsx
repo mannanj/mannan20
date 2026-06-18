@@ -114,7 +114,7 @@ export default function AudioPlayer({ chunks, onClose, onStatusChange }: AudioPl
             {formatTime(player.totalElapsed)} / {formatTime(player.totalDuration)}
           </span>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex max-w-[34vw] shrink-0 items-center gap-1 overflow-x-auto sm:max-w-[220px]">
             {chunks.map((chunk, i) => (
               <button
                 key={chunk.key}

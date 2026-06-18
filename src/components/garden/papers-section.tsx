@@ -1,26 +1,40 @@
 "use client";
 
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
+import {
+  PdfActionRow,
+  PdfDownloadAction,
+  PdfListenAction,
+} from "@/components/pdf-action-row";
+import {
+  GMU_ARCHR_CHUNKS,
+  OMF_DR_CHUNKS,
+  type AudioChunk,
+} from "@/lib/audio-config";
 import aboutData from "../../../public/data/about.json";
 import type { PublishedWork } from "@/lib/types";
 
+const AudioPlayer = lazy(() => import("@/components/episodes/audio-player"));
+
 const PDF_PARAMS = "#toolbar=0&navpanes=0&view=FitH";
-const DOWNLOADING_LABEL_MS = 900;
-const DOWNLOAD_AGAIN_DELAY_MS = 5000;
+type PlayerStatus = "loading" | "playing" | "paused";
+type PaperListenStatus = "idle" | "loading" | "playing";
 
 const PAPER_PREVIEWS: Record<
   string,
-  { id: string; pdfPath: string; filename: string }
+  { id: string; pdfPath: string; filename: string; audioChunks: AudioChunk[] }
 > = {
   "/api/download/gmu-archr": {
     id: "gmu-archr",
     pdfPath: `/data/documents/GMU-ARCHR.pdf${PDF_PARAMS}`,
     filename: "GMU-ARCHR.pdf",
+    audioChunks: GMU_ARCHR_CHUNKS,
   },
   "/api/download/omf-dr": {
     id: "omf-dr",
     pdfPath: `/data/documents/OMF-DR.pdf${PDF_PARAMS}`,
     filename: "OMF-DR.pdf",
+    audioChunks: OMF_DR_CHUNKS,
   },
 };
 
@@ -28,6 +42,7 @@ interface PaperPreview extends PublishedWork {
   id: string;
   pdfPath: string;
   filename: string;
+  audioChunks: AudioChunk[];
 }
 
 const PAPERS: PaperPreview[] = aboutData.publishedWorks.flatMap((work) => {
@@ -95,8 +110,6 @@ function PaperFrame({ paper }: { paper: PaperPreview }) {
   );
 }
 
-type DownloadState = "idle" | "downloading" | "downloaded" | "again";
-
 function ChevronDownIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg
@@ -119,104 +132,19 @@ function ChevronDownIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-function PaperDownloadLink({ paper }: { paper: PaperPreview }) {
-  const [state, setState] = useState<DownloadState>("idle");
-  const lockedRef = useRef(false);
-  const downloadedTimerRef = useRef<number | null>(null);
-  const resetTimerRef = useRef<number | null>(null);
-
-  const clearTimers = () => {
-    if (downloadedTimerRef.current) window.clearTimeout(downloadedTimerRef.current);
-    if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
-    downloadedTimerRef.current = null;
-    resetTimerRef.current = null;
-  };
-
-  useEffect(() => clearTimers, []);
-
-  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (lockedRef.current) {
-      event.preventDefault();
-      return;
-    }
-
-    lockedRef.current = true;
-    clearTimers();
-    setState("downloading");
-
-    downloadedTimerRef.current = window.setTimeout(() => {
-      setState("downloaded");
-      resetTimerRef.current = window.setTimeout(() => {
-        lockedRef.current = false;
-        setState("again");
-      }, DOWNLOAD_AGAIN_DELAY_MS);
-    }, DOWNLOADING_LABEL_MS);
-  };
-
-  const locked = state === "downloading" || state === "downloaded";
-
-  return (
-    <a
-      href={paper.downloadPath}
-      download={paper.filename}
-      data-testid={`paper-download-${paper.id}`}
-      aria-disabled={locked}
-      aria-live="polite"
-      onClick={handleClick}
-      className={`inline-flex shrink-0 items-center rounded-sm bg-transparent p-0 text-[11px] font-normal no-underline transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-95 whitespace-nowrap ${
-        locked
-          ? "cursor-default text-white/55 hover:scale-100 hover:text-white/55 active:scale-100"
-          : "text-[#039be5] hover:text-[#4fc3f7]"
-      }`}
-    >
-      {state === "downloading" && (
-        <>
-          <span
-            data-testid={`paper-download-spinner-${paper.id}`}
-            aria-hidden="true"
-            className="mr-1 h-3 w-3 rounded-full border border-white/25 border-t-[#4fc3f7] animate-spin motion-reduce:animate-none"
-          />
-          <span>Downloading</span>
-        </>
-      )}
-      {state === "downloaded" && (
-        <>
-          <span
-            data-testid={`paper-download-check-${paper.id}`}
-            aria-hidden="true"
-            className="mr-1"
-          >
-            ✓
-          </span>
-          <span>Downloaded</span>
-        </>
-      )}
-      {state === "again" && (
-        <>
-          <span
-            data-testid={`paper-download-refresh-${paper.id}`}
-            aria-hidden="true"
-            className="mr-1"
-          >
-            ↻
-          </span>
-          <span>Download again</span>
-        </>
-      )}
-      {state === "idle" && (
-        <span>Download</span>
-      )}
-    </a>
-  );
-}
-
 function PaperItem({
   paper,
   expanded,
+  listening,
+  listenStatus,
+  onListenToggle,
   onToggle,
 }: {
   paper: PaperPreview;
   expanded: boolean;
+  listening: boolean;
+  listenStatus: PaperListenStatus;
+  onListenToggle: () => void;
   onToggle: () => void;
 }) {
   return (
@@ -249,7 +177,22 @@ function PaperItem({
             </span>
           </button>
           <div className="flex shrink-0 items-center gap-3">
-            <PaperDownloadLink paper={paper} />
+            <PdfActionRow data-testid={`paper-actions-${paper.id}`}>
+              <PdfDownloadAction
+                href={paper.downloadPath}
+                download={paper.filename}
+                testId={`paper-download-${paper.id}`}
+                label="Download"
+                showArrow={false}
+              />
+              <PdfListenAction
+                active={listening}
+                status={listenStatus}
+                testId={`paper-listen-${paper.id}`}
+                aria-label={`${listening ? "Stop listening to" : "Listen to"} ${paper.title} PDF`}
+                onClick={onListenToggle}
+              />
+            </PdfActionRow>
             <button
               type="button"
               data-testid={`paper-caret-${paper.id}`}
@@ -275,35 +218,74 @@ function PaperItem({
 
 export function PapersSection() {
   const [expandedPaperId, setExpandedPaperId] = useState<string | null>(null);
+  const [listeningPaperId, setListeningPaperId] = useState<string | null>(null);
+  const [playerStatus, setPlayerStatus] = useState<PlayerStatus>("loading");
+  const handleStatusChange = useCallback((status: PlayerStatus) => {
+    setPlayerStatus(status);
+  }, []);
 
   if (PAPERS.length === 0) return null;
 
+  const listeningPaper = PAPERS.find((paper) => paper.id === listeningPaperId);
+
   return (
-    <section
-      data-testid="garden-papers"
-      className="mt-12 flex flex-col gap-4"
-      aria-labelledby="garden-papers-heading"
-    >
-      <h3
-        id="garden-papers-heading"
-        className="text-xs font-medium uppercase tracking-wider text-white"
+    <>
+      <section
+        data-testid="garden-papers"
+        className="mt-12 flex flex-col gap-4"
+        aria-labelledby="garden-papers-heading"
       >
-        Papers
-      </h3>
-      <div className="flex flex-col gap-3">
-        {PAPERS.map((paper) => (
-          <PaperItem
-            key={paper.id}
-            paper={paper}
-            expanded={expandedPaperId === paper.id}
-            onToggle={() =>
-              setExpandedPaperId((current) =>
-                current === paper.id ? null : paper.id,
-              )
-            }
+        <h3
+          id="garden-papers-heading"
+          className="text-xs font-medium uppercase tracking-wider text-white"
+        >
+          Papers
+        </h3>
+        <div className="flex flex-col gap-3">
+          {PAPERS.map((paper) => {
+            const listening = listeningPaperId === paper.id;
+            const listenStatus: PaperListenStatus = !listening
+              ? "idle"
+              : playerStatus === "loading"
+                ? "loading"
+                : "playing";
+
+            return (
+              <PaperItem
+                key={paper.id}
+                paper={paper}
+                expanded={expandedPaperId === paper.id}
+                listening={listening}
+                listenStatus={listenStatus}
+                onListenToggle={() => {
+                  setPlayerStatus("loading");
+                  setListeningPaperId((current) =>
+                    current === paper.id ? null : paper.id,
+                  );
+                }}
+                onToggle={() =>
+                  setExpandedPaperId((current) =>
+                    current === paper.id ? null : paper.id,
+                  )
+                }
+              />
+            );
+          })}
+        </div>
+      </section>
+      {listeningPaper && (
+        <Suspense fallback={null}>
+          <AudioPlayer
+            key={listeningPaper.id}
+            chunks={listeningPaper.audioChunks}
+            onClose={() => {
+              setListeningPaperId(null);
+              setPlayerStatus("loading");
+            }}
+            onStatusChange={handleStatusChange}
           />
-        ))}
-      </div>
-    </section>
+        </Suspense>
+      )}
+    </>
   );
 }

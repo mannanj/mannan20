@@ -1,8 +1,43 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('garden papers', () => {
+  test('paper Listen opens the audio player with paper audio chunks', async ({ page }) => {
+    const audioRequests: string[] = [];
+
+    await page.route('**/portfolio/audio/gmu-archr/chunk-*.wav', (route) => {
+      audioRequests.push(route.request().url());
+      route.fulfill({
+        path: 'public/data/audio/mcp-intent-spike/chunk-1.wav',
+        contentType: 'audio/wav',
+      });
+    });
+
+    await page.goto('/garden');
+    const papers = page.getByTestId('garden-papers');
+    await papers.scrollIntoViewIfNeeded();
+
+    const archr = papers.getByTestId('garden-paper-gmu-archr');
+    const archrListen = archr.getByTestId('paper-listen-gmu-archr');
+
+    await archrListen.click();
+
+    await expect(page.getByTestId('audio-player-bar')).toBeVisible({ timeout: 10000 });
+    await expect(archrListen).toContainText(/Downloading|Listening/, { timeout: 10000 });
+    await expect(page.getByTestId('audio-chunk-0')).toContainText('Part 1');
+    await expect
+      .poll(() => audioRequests.some((url) => url.includes('/portfolio/audio/gmu-archr/chunk-1.wav')))
+      .toBe(true);
+  });
+
   test('keeps paper PDFs unloaded until a paper is expanded', async ({ page }) => {
     const pdfRequests: string[] = [];
+
+    await page.route('**/portfolio/audio/*/chunk-*.wav', (route) => {
+      route.fulfill({
+        path: 'public/data/audio/mcp-intent-spike/chunk-1.wav',
+        contentType: 'audio/wav',
+      });
+    });
 
     page.on('request', (request) => {
       const url = request.url();
@@ -32,22 +67,47 @@ test.describe('garden papers', () => {
     await expect(papers.locator('iframe')).toHaveCount(0);
     expect(pdfRequests).toEqual([]);
 
+    const archrActions = archr.getByTestId('paper-actions-gmu-archr');
+    const omfActions = omf.getByTestId('paper-actions-omf-dr');
+    await expect(archrActions).toBeVisible();
+    await expect(omfActions).toBeVisible();
+
     const archrDownload = archr.getByTestId('paper-download-gmu-archr');
     await expect(archrDownload).toContainText('Download');
     await expect(archr.locator('[data-testid="paper-download-arrow-gmu-archr"]')).toHaveCount(0);
     await expect(archrDownload).toHaveAttribute('href', /\/api\/download\/gmu-archr/);
     await archrDownload.click();
     await expect(archrDownload).toContainText('Downloading');
-    await expect(archrDownload.getByTestId('paper-download-spinner-gmu-archr')).toHaveCount(1);
+    await expect(archrDownload.getByTestId('paper-download-gmu-archr-spinner')).toHaveCount(1);
     await expect(archrDownload).toHaveAttribute('aria-disabled', 'true');
     await expect(archrDownload).toContainText('Downloaded', { timeout: 3000 });
-    await expect(archrDownload.getByTestId('paper-download-check-gmu-archr')).toHaveCount(1);
+    await expect(archrDownload.getByTestId('paper-download-gmu-archr-check')).toHaveCount(1);
     await archrDownload.click();
     await page.waitForTimeout(250);
     await expect(archrDownload).toContainText('Downloaded');
     await expect(archrDownload).toContainText('Download again', { timeout: 7000 });
-    await expect(archrDownload.getByTestId('paper-download-refresh-gmu-archr')).toHaveCount(1);
+    await expect(archrDownload.getByTestId('paper-download-gmu-archr-refresh')).toHaveCount(1);
     await expect(archrDownload).toHaveAttribute('aria-disabled', 'false');
+
+    const archrListen = archr.getByTestId('paper-listen-gmu-archr');
+    const omfListen = omf.getByTestId('paper-listen-omf-dr');
+    await expect(archrListen).toContainText('Listen');
+    await expect(omfListen).toContainText('Listen');
+    await expect(archrListen).toHaveAttribute('aria-pressed', 'false');
+    await expect(omfListen).toHaveAttribute('aria-pressed', 'false');
+
+    await archrListen.click();
+    await expect(archrListen).toHaveAttribute('aria-pressed', 'true');
+    await expect(archrListen).toContainText(/Downloading|Listening/);
+    await expect(omfListen).toHaveAttribute('aria-pressed', 'false');
+    await expect(omfListen).toContainText('Listen');
+    await expect(page.getByTestId('audio-player-bar')).toBeVisible();
+
+    await omfListen.click();
+    await expect(archrListen).toHaveAttribute('aria-pressed', 'false');
+    await expect(archrListen).toContainText('Listen');
+    await expect(omfListen).toHaveAttribute('aria-pressed', 'true');
+    await expect(omfListen).toContainText(/Downloading|Listening/);
 
     const archrToggle = archr.getByTestId('paper-toggle-gmu-archr');
     const archrCaret = archr.getByTestId('paper-caret-gmu-archr');

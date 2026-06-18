@@ -1,6 +1,6 @@
 ### Task 252: Standardize PDF download and listen action links
 
-**Status: TODO. Do not implement as part of task creation.**
+**Status: DONE.**
 
 Create a shared action-link pattern for PDF downloads and PDF listening across reading
 articles and Garden writings.
@@ -18,29 +18,35 @@ articles and Garden writings.
 - Future PDF listening controls should sit inline with the download link.
 
 #### Requirements
-- [ ] Create or identify a reusable component for article/Garden PDF actions.
-- [ ] Preserve the existing reading article download link style and wording:
+- [x] Create or identify a reusable component for article/Garden PDF actions.
+- [x] Preserve the existing reading article download link style and wording:
       `Download PDF` plus the rotated arrow glyph.
-- [ ] Standardize download click limiting:
-  - [ ] Allow one download click at a time.
-  - [ ] Show an inline spinner and `Downloading` immediately after click.
-  - [ ] Show a check mark and `Downloaded` after the download starts.
-  - [ ] Keep repeat clicks disabled while in `Downloading` or `Downloaded`.
-  - [ ] After 5 seconds, show a refresh icon and `Download again`.
-- [ ] Apply the standardized download action to reading article pages and Garden paper links.
-- [ ] Add an inline `Listen` action for Garden paper PDFs.
-- [ ] Allow only one PDF listener/player to be active at a time across the visible page.
-- [ ] Keep download and listen controls visually aligned as one inline action row.
-- [ ] Respect `prefers-reduced-motion` for spinner/progress animation.
-- [ ] Add focused e2e coverage for:
-  - [ ] shared download wording/style,
-  - [ ] debounce/delay state transitions,
-  - [ ] one active PDF listener at a time,
-  - [ ] Garden paper listen controls appearing inline with download links.
+- [x] Standardize download click limiting:
+  - [x] Allow one download click at a time.
+  - [x] Show an inline spinner and `Downloading` immediately after click.
+  - [x] Show a check mark and `Downloaded` after the download starts.
+  - [x] Keep repeat clicks disabled while in `Downloading` or `Downloaded`.
+  - [x] After 5 seconds, show a refresh icon and `Download again`.
+- [x] Apply the standardized download action to reading article pages and Garden paper links.
+- [x] Add an inline `Listen` action for Garden paper PDFs.
+- [x] Allow only one PDF listener/player to be active at a time across the visible page.
+- [x] Keep download and listen controls visually aligned as one inline action row.
+- [x] Respect `prefers-reduced-motion` for spinner/progress animation.
+- [x] Generate and upload Garden paper PDF audio chunks to Cloudflare R2.
+- [x] Add focused e2e coverage for:
+  - [x] shared download wording/style,
+  - [x] debounce/delay state transitions,
+  - [x] one active PDF listener at a time,
+  - [x] Garden paper listen controls appearing inline with download links.
+
+#### Implementation note
+- Garden paper download idle copy intentionally remains `Download` per accepted follow-up
+  UI feedback; reading articles retain `Download PDF` plus the rotated arrow glyph.
+- Garden PDF `Listen` uses the shared article audio player with generated Kokoro wav chunks
+  served from Cloudflare R2 at `portfolio/audio/gmu-archr/` and `portfolio/audio/omf-dr/`.
 
 #### Non-goals
 - Do not replace the native PDF iframe previews.
-- Do not implement full PDF audio generation without a separate audio/content pipeline decision.
 - Do not change the article body layouts beyond the inline action row.
 
 [Task-252]

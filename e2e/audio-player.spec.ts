@@ -221,6 +221,30 @@ test.describe('Episodes Audio Player', () => {
       const pdfLink = page.getByTestId('audio-download-pdf');
       await expect(pdfLink).toHaveAttribute('href', '/api/download/immortalism-manifesto');
       await expect(pdfLink).toHaveAttribute('target', '_blank');
+      await expect(pdfLink).toContainText('Download PDF');
+      await expect(pdfLink.getByTestId('audio-download-pdf-arrow')).toHaveCount(1);
+    });
+
+    test('Download PDF link shows shared feedback states', async ({ page }) => {
+      await navigateToArticle(page);
+      const pdfLink = page.getByTestId('audio-download-pdf');
+      const popupPromise = page.waitForEvent('popup', { timeout: 1000 }).catch(() => null);
+
+      await pdfLink.click();
+      await expect(pdfLink).toContainText('Downloading');
+      await expect(pdfLink.getByTestId('audio-download-pdf-spinner')).toHaveCount(1);
+      await expect(pdfLink).toHaveAttribute('aria-disabled', 'true');
+      const popup = await popupPromise;
+      await popup?.close();
+      await expect(pdfLink).toContainText('Downloaded', { timeout: 3000 });
+      await expect(pdfLink.getByTestId('audio-download-pdf-check')).toHaveCount(1);
+
+      await pdfLink.click();
+      await page.waitForTimeout(250);
+      await expect(pdfLink).toContainText('Downloaded');
+      await expect(pdfLink).toContainText('Download again', { timeout: 7000 });
+      await expect(pdfLink.getByTestId('audio-download-pdf-refresh')).toHaveCount(1);
+      await expect(pdfLink).toHaveAttribute('aria-disabled', 'false');
     });
 
     test('Bryan Johnson X link is correct', async ({ page }) => {
@@ -230,10 +254,10 @@ test.describe('Episodes Audio Player', () => {
       await expect(xLink).toHaveAttribute('target', '_blank');
     });
 
-    test('back link navigates to episodes', async ({ page }) => {
+    test('back link navigates to Garden episodes section', async ({ page }) => {
       await navigateToArticle(page);
-      await page.click('text=Episodes');
-      await expect(page).toHaveURL(/\/episodes$/);
+      await page.locator('article a[href="/garden#episodes"]').click();
+      await expect(page).toHaveURL(/\/garden#episodes$/);
     });
 
     test('article footer has X link', async ({ page }) => {

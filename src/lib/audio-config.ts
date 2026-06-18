@@ -8,6 +8,17 @@ export interface AudioChunk {
 
 const AUDIO_BASE = `${R2_PUBLIC_BASE}/portfolio/audio`;
 
+function buildAudioChunks(slug: string, count: number): AudioChunk[] {
+  return Array.from({ length: count }, (_, index) => {
+    const part = index + 1;
+    return {
+      url: `${AUDIO_BASE}/${slug}/chunk-${part}.wav`,
+      key: `${slug}/chunk-${part}`,
+      label: `Part ${part}`,
+    };
+  });
+}
+
 export const MANIFESTO_CHUNKS: AudioChunk[] = [
   { url: `${AUDIO_BASE}/manifesto/chunk-1.wav`, key: 'manifesto/chunk-1', label: 'Part 1' },
   { url: `${AUDIO_BASE}/manifesto/chunk-2.wav`, key: 'manifesto/chunk-2', label: 'Part 2' },
@@ -26,3 +37,7 @@ export const MCP_INTENT_SPIKE_CHUNKS: AudioChunk[] = [
   { url: `${AUDIO_BASE}/mcp-intent-spike/chunk-2.wav`, key: 'mcp-intent-spike/chunk-2', label: 'Part 2' },
   { url: `${AUDIO_BASE}/mcp-intent-spike/chunk-3.wav`, key: 'mcp-intent-spike/chunk-3', label: 'Part 3' },
 ];
+
+export const GMU_ARCHR_CHUNKS: AudioChunk[] = buildAudioChunks('gmu-archr', 10);
+
+export const OMF_DR_CHUNKS: AudioChunk[] = buildAudioChunks('omf-dr', 6);
