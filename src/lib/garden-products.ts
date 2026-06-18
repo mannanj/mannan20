@@ -32,6 +32,13 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     year: 2026,
   },
   {
+    title: "Greenlights",
+    description: "Find the best time to drive in your window.",
+    href: "https://www.gogo.green",
+    external: true,
+    year: 2026,
+  },
+  {
     title: "Event Every",
     description: "Turn image or text into calendar events.",
     href: "https://eventevery.com",

@@ -14,6 +14,7 @@ test.use({
 const VISIBLE_PRODUCTS = [
   "Sun Signal",
   "Read Along",
+  "Greenlights",
   "Event Every",
   "SkillGuard",
   "claude-cues",
@@ -35,8 +36,10 @@ async function openCardDetail(page: Page): Promise<boolean> {
   const box = await page.locator('[data-testid="products-gallery"] canvas').boundingBox();
   if (!box) return false;
   const points: [number, number][] = [
-    [0.5, 0.5], [0.36, 0.42], [0.64, 0.56], [0.5, 0.34],
-    [0.44, 0.62], [0.6, 0.44], [0.3, 0.5], [0.7, 0.52],
+    [0.44, 0.42], [0.58, 0.76], [0.67, 0.18], [0.87, 0.56],
+    [0.16, 0.68], [0.5, 0.5], [0.36, 0.42], [0.64, 0.56],
+    [0.5, 0.34], [0.44, 0.62], [0.6, 0.44], [0.3, 0.5],
+    [0.7, 0.52], [0.18, 0.34], [0.76, 0.34], [0.82, 0.72],
   ];
   for (const [fx, fy] of points) {
     await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);

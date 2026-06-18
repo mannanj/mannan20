@@ -21,6 +21,7 @@ export const FILTER_FACETS: FilterFacet[] = [
 const PRODUCT_IMAGE: Record<string, string> = {
   "Sun Signal": "/sun-signal.png",
   "Read Along": "/read-along.png",
+  Greenlights: "/greenlights.png",
   "Event Every": "/eventevery.png",
   SkillGuard: "/skillguard.png",
   "claude-cues": "/claude-cues.png",
@@ -30,6 +31,7 @@ const PRODUCT_IMAGE: Record<string, string> = {
 const PRODUCT_ACCENT: Record<string, string> = {
   "Sun Signal": "#f5a524",
   "Read Along": "#7c8cff",
+  Greenlights: "#1f8f5a",
   "Event Every": "#3ec5a8",
   SkillGuard: "#ff6b6b",
   "claude-cues": "#c084fc",

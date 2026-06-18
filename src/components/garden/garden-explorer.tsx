@@ -78,6 +78,18 @@ function ReadAlongThumb() {
   );
 }
 
+function GreenlightsThumb() {
+  return (
+    <Image
+      src="/greenlights.png"
+      alt="Greenlights app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
 function EventEveryThumb() {
   return (
     <Image
@@ -150,6 +162,7 @@ const PRODUCT_THUMBS: Record<string, ReactNode> = {
   Mannan: <MannanThumb />,
   "Sun Signal": <SunSignalThumb />,
   "Read Along": <ReadAlongThumb />,
+  Greenlights: <GreenlightsThumb />,
   SkillGuard: <SkillGuardThumb />,
   "claude-cues": <ClaudeCuesThumb />,
   "Event Every": <EventEveryThumb />,

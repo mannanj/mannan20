@@ -67,6 +67,7 @@ This file is generated from the same data that powers the MCP server below (upda
 - [Mannan](https://mannan.is/): Portfolio, writing, and experiments — my corner of the web.
 - [Sun Signal](https://sunsignal.app): Turn any US ZIP into real-time circadian timing.
 - [Read Along](https://tryreadalong.com): Turn text into AI-narrated audiobooks.
+- [Greenlights](https://www.gogo.green): Find the best time to drive in your window.
 - [Event Every](https://eventevery.com): Turn image or text into calendar events.
 - [SkillGuard](https://skillguard.sh): Scan Claude Code skills for prompt injection before they run.
 - [claude-cues](https://claude-cues.pages.dev): Gentle sounds that tell you what Claude Code is doing.
