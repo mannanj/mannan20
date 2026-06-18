@@ -106,7 +106,8 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
     await expect(page.getByTestId('garden-tab-writings')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
-    await expect(page.locator('[data-panel="writings"] a')).toHaveCount(3);
+    await expect(page.locator('[data-panel="writings"] a[href^="/garden/article"]')).toHaveCount(2);
+    await expect(page.locator('[data-panel="writings"] a[href="/garden/article/taken"]')).toHaveCount(0);
   });
 
   test('selecting Readings swivels to the curated readings list', async ({ page }) => {

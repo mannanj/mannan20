@@ -19,6 +19,7 @@ export const GARDEN_ARTICLES: GardenArticle[] = [
     wordCount: 1100,
     href: "/garden/article/taken",
     unavailable: true,
+    hidden: true,
   },
   {
     title: "Seeking Community",

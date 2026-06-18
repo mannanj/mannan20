@@ -81,6 +81,97 @@
   animation: tabMorphIn 520ms cubic-bezier(0.22, 0.7, 0.2, 1) both;
 }
 
+@keyframes paperSwirlSpin {
+  from {
+    transform: rotate(0deg) scale(1.08);
+  }
+  to {
+    transform: rotate(360deg) scale(1.08);
+  }
+}
+
+@keyframes paperSwirlBreath {
+  0%, 100% {
+    opacity: 0.56;
+    filter: blur(22px) saturate(1.25);
+  }
+  50% {
+    opacity: 0.86;
+    filter: blur(28px) saturate(1.75);
+  }
+}
+
+@keyframes paperLineDrift {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -180% 0;
+  }
+}
+
+.paper-swirl-loader {
+  position: absolute;
+  inset: -34%;
+  background:
+    radial-gradient(circle at 18% 30%, rgba(255, 74, 92, 0.55), transparent 24%),
+    radial-gradient(circle at 78% 26%, rgba(79, 195, 247, 0.48), transparent 27%),
+    radial-gradient(circle at 30% 82%, rgba(123, 184, 106, 0.52), transparent 25%),
+    radial-gradient(circle at 76% 76%, rgba(255, 202, 70, 0.5), transparent 24%),
+    conic-gradient(
+      from 28deg at 50% 50%,
+      rgba(255, 74, 92, 0.4),
+      rgba(79, 195, 247, 0.42),
+      rgba(123, 184, 106, 0.38),
+      rgba(255, 202, 70, 0.42),
+      rgba(240, 98, 146, 0.35),
+      rgba(255, 74, 92, 0.4)
+    );
+  animation:
+    paperSwirlSpin 12s linear infinite,
+    paperSwirlBreath 5.5s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.paper-swirl-loader::before,
+.paper-swirl-loader::after {
+  content: "";
+  position: absolute;
+  inset: 11%;
+  border-radius: 45% 55% 48% 52%;
+  background:
+    conic-gradient(
+      from 180deg,
+      transparent,
+      rgba(255, 255, 255, 0.38),
+      transparent,
+      rgba(3, 155, 229, 0.26),
+      transparent
+    );
+}
+
+.paper-swirl-loader::before {
+  transform: rotate(24deg) scaleX(0.82);
+}
+
+.paper-swirl-loader::after {
+  transform: rotate(-34deg) scaleY(0.72);
+}
+
+.paper-skeleton-line {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(17, 17, 17, 0.12),
+    rgba(3, 155, 229, 0.24),
+    rgba(255, 74, 92, 0.18),
+    rgba(17, 17, 17, 0.12)
+  );
+  background-size: 220% 100%;
+  animation: paperLineDrift 2.4s ease-in-out infinite;
+}
+
 @keyframes pillMorphUp {
   from {
     opacity: 0;
@@ -115,9 +206,12 @@
   .swivel-in,
   .swivel-out,
   .tab-morph-in,
+  .paper-swirl-loader,
+  .paper-skeleton-line,
   .pill-morph-up,
   .tab-morph-out-up {
     animation-duration: 1ms;
+    animation-iteration-count: 1;
   }
 }
 

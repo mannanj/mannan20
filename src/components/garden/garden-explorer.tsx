@@ -16,6 +16,7 @@ import { EPISODES } from "@/lib/episodes";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
+import { PapersSection } from "@/components/garden/papers-section";
 
 const ProductsGallery = dynamic(
   () => import("@/components/garden/products-gallery"),
@@ -309,13 +310,16 @@ function WritingsPanel() {
   const available = visible.filter((a) => !a.unavailable);
   const unavailable = visible.filter((a) => a.unavailable);
   return (
-    <div className="flex flex-col gap-2">
-      {available.map((article) => (
-        <WritingCard key={article.href} article={article} muted={false} />
-      ))}
-      {unavailable.map((article) => (
-        <WritingCard key={article.href} article={article} muted />
-      ))}
+    <div className="flex flex-col">
+      <div className="flex flex-col gap-2">
+        {available.map((article) => (
+          <WritingCard key={article.href} article={article} muted={false} />
+        ))}
+        {unavailable.map((article) => (
+          <WritingCard key={article.href} article={article} muted />
+        ))}
+      </div>
+      <PapersSection />
     </div>
   );
 }
