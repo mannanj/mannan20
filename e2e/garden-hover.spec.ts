@@ -40,6 +40,25 @@ test.describe('garden icon hover', () => {
     await page.screenshot({ path: 'e2e/screenshots/garden-hover-within.png' });
   });
 
+  test('garden stays open when moving upward through the plant icon', async ({ page }) => {
+    const gardenLink = page.getByTestId('header-garden-link');
+
+    const box = await gardenLink.boundingBox();
+    expect(box).not.toBeNull();
+
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height - 4);
+    await page.waitForTimeout(300);
+    await expect(page.getByText('View my Garden')).toBeVisible();
+
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + 4, { steps: 8 });
+    await page.waitForTimeout(400);
+
+    const opacity = await page.getByText('View my Garden').evaluate(
+      el => getComputedStyle(el.parentElement!).opacity
+    );
+    expect(Number(opacity)).toBeGreaterThan(0.5);
+  });
+
   test('garden collapses when mouse moves away', async ({ page }) => {
     const garden = page.getByTestId('garden-wrapper');
 

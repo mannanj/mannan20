@@ -8,6 +8,7 @@ import { useApp } from "@/context/app-context";
 import { scrollToSection } from "@/lib/utils";
 import type { Section } from "@/lib/types";
 import { PlantIcon } from "@/components/icons/plant-icon";
+import { McpLogoIcon } from "@/components/icons/mcp-logo-icon";
 import { AnimatedText } from "@/components/animated-text";
 import { RubyGemCollectible } from "@/components/garden/article-inventory";
 import { McpHeaderButton } from "@/components/mcp/mcp-header-button";
@@ -85,6 +86,9 @@ export function Header() {
   const isTransparent = pathname === "/garden/article/seeking-community";
   const [gardenExpanded, setGardenExpanded] = useState(false);
   const gardenExpandedRef = useRef(false);
+  const [mcpHovered, setMcpHovered] = useState(false);
+  const [mcpPopoverOpen, setMcpPopoverOpen] = useState(false);
+  const mcpPopoverOpenRef = useRef(false);
   const [rootHovered, setRootHovered] = useState(false);
   const rootHoveredRef = useRef(false);
   const [rootCursorPos, setRootCursorPos] = useState({ x: 0, y: 0 });
@@ -103,12 +107,37 @@ export function Header() {
   }, []);
 
   const closeGarden = useCallback(() => {
+    if (mcpPopoverOpenRef.current) return;
     if (gardenCloseTimerRef.current) clearTimeout(gardenCloseTimerRef.current);
     gardenCloseTimerRef.current = setTimeout(() => {
+      if (mcpPopoverOpenRef.current) return;
       setGardenExpanded(false);
       gardenCloseTimerRef.current = null;
     }, 180);
   }, []);
+
+  const handleMcpOpenChange = useCallback(
+    (open: boolean) => {
+      mcpPopoverOpenRef.current = open;
+      setMcpPopoverOpen(open);
+
+      if (open) {
+        openGarden();
+        return;
+      }
+
+      if (!gardenRef.current?.matches(":hover")) {
+        if (gardenCloseTimerRef.current) {
+          clearTimeout(gardenCloseTimerRef.current);
+          gardenCloseTimerRef.current = null;
+        }
+        mcpPopoverOpenRef.current = false;
+        setMcpPopoverOpen(false);
+        setGardenExpanded(false);
+      }
+    },
+    [openGarden],
+  );
 
   useEffect(() => {
     if (!gardenExpanded) return;
@@ -611,12 +640,25 @@ export function Header() {
             className="group/garden relative z-30 flex items-center py-3"
             onMouseEnter={openGarden}
             onMouseLeave={closeGarden}
+            onMouseMove={openGarden}
           >
+            <div
+              data-testid="mcp-collapsed-preview"
+              aria-hidden="true"
+              className={`pointer-events-none absolute top-[20px] left-[-2px] z-0 transition-all duration-300 ease-out ${gardenExpanded ? "-translate-x-2 scale-90 opacity-0" : "translate-x-0 scale-100 opacity-100"}`}
+            >
+              <McpLogoIcon className="h-5 w-5 text-white/50" />
+            </div>
             <div
               data-testid="mcp-reveal"
               className={`flex items-center overflow-visible transition-[width,opacity] duration-300 ease-out ${gardenExpanded ? "w-8 opacity-100" : "w-0 opacity-0 pointer-events-none"}`}
+              onMouseEnter={() => setMcpHovered(true)}
+              onMouseLeave={() => setMcpHovered(false)}
             >
-              <McpHeaderButton />
+              <McpHeaderButton
+                onHoverChange={setMcpHovered}
+                onOpenChange={handleMcpOpenChange}
+              />
             </div>
         <Link
           href="/garden"
@@ -627,7 +669,7 @@ export function Header() {
               openGarden();
             }
           }}
-          className="group relative block"
+          className="group relative z-20 block"
         >
           <PlantIcon
             className={`w-9 h-9 transition-all duration-300 ease-out ${gardenExpanded ? "scale-110 group-hover:scale-[1.25]" : "opacity-80"}`}
@@ -2326,7 +2368,8 @@ export function Header() {
             />
           </svg>
           <div
-            className={`absolute top-full right-0 mt-3 transition-opacity duration-200 pointer-events-none ${gardenExpanded ? "opacity-100" : "opacity-0"}`}
+            data-testid="garden-tooltip"
+            className={`absolute top-full right-0 z-40 mt-3 transition-opacity duration-200 pointer-events-none ${gardenExpanded && !mcpHovered && !mcpPopoverOpen ? "opacity-100" : "opacity-0"}`}
           >
             <div className="absolute -top-[6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
             <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
