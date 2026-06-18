@@ -97,6 +97,28 @@ function PaperFrame({ paper }: { paper: PaperPreview }) {
 
 type DownloadState = "idle" | "downloading" | "downloaded" | "again";
 
+function ChevronDownIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      data-testid="paper-chevron-icon"
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      className={`h-4 w-4 transition-transform duration-200 ${
+        expanded ? "rotate-180" : ""
+      }`}
+    >
+      <path
+        d="M5 7.5L10 12.5L15 7.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function PaperDownloadLink({ paper }: { paper: PaperPreview }) {
   const [state, setState] = useState<DownloadState>("idle");
   const lockedRef = useRef(false);
@@ -141,7 +163,7 @@ function PaperDownloadLink({ paper }: { paper: PaperPreview }) {
       aria-disabled={locked}
       aria-live="polite"
       onClick={handleClick}
-      className={`inline-flex shrink-0 items-center text-[11px] font-normal bg-transparent border-none cursor-pointer p-0 no-underline transition-all duration-200 hover:scale-110 active:scale-95 whitespace-nowrap ${
+      className={`inline-flex shrink-0 items-center rounded-sm bg-transparent p-0 text-[11px] font-normal no-underline transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-95 whitespace-nowrap ${
         locked
           ? "cursor-default text-white/55 hover:scale-100 hover:text-white/55 active:scale-100"
           : "text-[#039be5] hover:text-[#4fc3f7]"
@@ -182,16 +204,7 @@ function PaperDownloadLink({ paper }: { paper: PaperPreview }) {
         </>
       )}
       {state === "idle" && (
-        <>
-          <span>Download PDF</span>
-          <span
-            data-testid={`paper-download-arrow-${paper.id}`}
-            aria-hidden="true"
-            className="inline-block ml-0.5 text-[20px] rotate-180 scale-x-[-1]"
-          >
-            &#10555;
-          </span>
-        </>
+        <span>Download</span>
       )}
     </a>
   );
@@ -216,7 +229,7 @@ function PaperItem({
       }`}
     >
       <div className="px-4 pb-3 pt-4 sm:px-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
           <button
             type="button"
             data-testid={`paper-toggle-${paper.id}`}
@@ -224,7 +237,7 @@ function PaperItem({
             aria-expanded={expanded}
             aria-label={`${expanded ? "Hide" : "Show"} ${paper.title} PDF preview`}
             onClick={onToggle}
-            className="flex min-w-0 flex-1 cursor-pointer items-start justify-between gap-3 text-left"
+            className="min-w-0 cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             <span className="min-w-0">
               <span className="block text-sm font-medium leading-snug text-white transition-colors duration-200 group-hover:text-red-500">
@@ -234,17 +247,25 @@ function PaperItem({
                 {paper.description}
               </span>
             </span>
-            <span
+          </button>
+          <div className="flex shrink-0 items-center gap-3">
+            <PaperDownloadLink paper={paper} />
+            <button
+              type="button"
               data-testid={`paper-caret-${paper.id}`}
-              aria-hidden="true"
-              className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center text-sm text-white/45 transition-transform duration-200 ${
-                expanded ? "rotate-90 text-white/75" : ""
+              aria-controls={`paper-panel-${paper.id}`}
+              aria-expanded={expanded}
+              aria-label={`${expanded ? "Hide" : "Show"} ${paper.title} PDF preview`}
+              onClick={onToggle}
+              className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                expanded
+                  ? "border-white/25 bg-white/[0.08] text-white/80"
+                  : "border-white/10 bg-white/[0.03] text-white/45 hover:border-white/25 hover:bg-white/[0.07] hover:text-white/75"
               }`}
             >
-              &gt;
-            </span>
-          </button>
-          <PaperDownloadLink paper={paper} />
+              <ChevronDownIcon expanded={expanded} />
+            </button>
+          </div>
         </div>
       </div>
       {expanded && <PaperFrame paper={paper} />}

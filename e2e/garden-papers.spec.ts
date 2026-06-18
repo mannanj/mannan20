@@ -33,8 +33,8 @@ test.describe('garden papers', () => {
     expect(pdfRequests).toEqual([]);
 
     const archrDownload = archr.getByTestId('paper-download-gmu-archr');
-    await expect(archrDownload).toContainText('Download PDF');
-    await expect(archrDownload.getByTestId('paper-download-arrow-gmu-archr')).toHaveCount(1);
+    await expect(archrDownload).toContainText('Download');
+    await expect(archr.locator('[data-testid="paper-download-arrow-gmu-archr"]')).toHaveCount(0);
     await expect(archrDownload).toHaveAttribute('href', /\/api\/download\/gmu-archr/);
     await archrDownload.click();
     await expect(archrDownload).toContainText('Downloading');
@@ -50,12 +50,16 @@ test.describe('garden papers', () => {
     await expect(archrDownload).toHaveAttribute('aria-disabled', 'false');
 
     const archrToggle = archr.getByTestId('paper-toggle-gmu-archr');
+    const archrCaret = archr.getByTestId('paper-caret-gmu-archr');
     await expect(archrToggle).toContainText('Apparatus for Remote Control of Humanoid Robots');
     await expect(archrToggle).toContainText('high degree of freedom humanoid robots');
-    await expect(archrToggle.getByTestId('paper-caret-gmu-archr')).toHaveText('>');
+    await expect(archrCaret).toBeVisible();
+    await expect(archrCaret.getByTestId('paper-chevron-icon')).toHaveCount(1);
     await expect(archrToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(archrCaret).toHaveAttribute('aria-expanded', 'false');
     await archrToggle.getByText('high degree of freedom humanoid robots').click();
     await expect(archrToggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(archrCaret).toHaveAttribute('aria-expanded', 'true');
     await expect(archr.getByTestId('paper-skeleton-gmu-archr')).toHaveCount(1);
     await expect(archr.getByTestId('paper-swirl-gmu-archr')).toHaveCount(1);
     await expect(archr.getByTitle('Apparatus for Remote Control of Humanoid Robots PDF preview')).toHaveAttribute('loading', 'lazy');
@@ -67,6 +71,7 @@ test.describe('garden papers', () => {
 
     await archrToggle.getByText('Apparatus for Remote Control of Humanoid Robots').click();
     await expect(archrToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(archrCaret).toHaveAttribute('aria-expanded', 'false');
     await expect(papers.locator('iframe')).toHaveCount(0);
 
     const omfToggle = omf.getByTestId('paper-toggle-omf-dr');
