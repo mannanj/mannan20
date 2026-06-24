@@ -31,8 +31,8 @@ after the reader navigates away from the original article, episode, paper, or re
   - [ ] `Downloading` while loading,
   - [ ] `Playing` or active while playing,
   - [ ] idle when the global player is closed.
-- [ ] Article/listen controls may be visible before assets exist, but must remain disabled and low-opacity
-      until real audio metadata is configured.
+- [ ] Article/listen controls must remain asset-gated: do not render source-specific controls unless real
+      audio metadata is configured.
 - [ ] When the user is no longer on the source page, show a return link flush with the top edge of the
       bottom audio player.
 - [ ] Return link copy must be contextual:

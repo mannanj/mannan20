@@ -24,6 +24,7 @@ export function GardenArticleActions({
   const actions = resolveGardenArticleActions(slug);
   const [showPlayer, setShowPlayer] = useState(false);
   const [playerStatus, setPlayerStatus] = useState<PlayerStatus>("loading");
+  const hasActions = actions.download.enabled || actions.listen.enabled;
 
   const handleStatusChange = useCallback((status: PlayerStatus) => {
     setPlayerStatus(status);
@@ -37,6 +38,8 @@ export function GardenArticleActions({
         : "idle";
   const listening = listenStatus !== "idle";
 
+  if (!hasActions) return null;
+
   return (
     <>
       <PdfActionRow
@@ -44,30 +47,24 @@ export function GardenArticleActions({
         data-testid={`garden-article-actions-${slug}`}
         className={`gap-4 ${className}`}
       >
-        <PdfDownloadAction
-          href={actions.download.href}
-          disabled={!actions.download.enabled}
-          disabledReason="PDF not available yet"
-          label={actions.download.label}
-          target="_blank"
-          rel="noopener noreferrer"
-          testId={`garden-article-download-${slug}`}
-        />
-        <PdfListenAction
-          active={listening}
-          status={listenStatus}
-          disabled={!actions.listen.enabled}
-          aria-label={
-            actions.listen.enabled
-              ? "Listen to this article"
-              : "Article audio not available yet"
-          }
-          onClick={() => {
-            if (!actions.listen.enabled) return;
-            setShowPlayer(true);
-          }}
-          testId={`garden-article-listen-${slug}`}
-        />
+        {actions.download.enabled && (
+          <PdfDownloadAction
+            href={actions.download.href}
+            label={actions.download.label}
+            target="_blank"
+            rel="noopener noreferrer"
+            testId={`garden-article-download-${slug}`}
+          />
+        )}
+        {actions.listen.enabled && (
+          <PdfListenAction
+            active={listening}
+            status={listenStatus}
+            aria-label="Listen to this article"
+            onClick={() => setShowPlayer(true)}
+            testId={`garden-article-listen-${slug}`}
+          />
+        )}
       </PdfActionRow>
 
       {showPlayer && actions.listen.enabled && (

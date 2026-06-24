@@ -35,6 +35,26 @@ export const DOWNLOADS: Record<string, DownloadEntry> = {
     filename: 'mcp-intent-spike.pdf',
     contentType: 'application/pdf',
   },
+  'health-longevity': {
+    key: 'portfolio/documents/health-longevity.pdf',
+    filename: 'health-longevity.pdf',
+    contentType: 'application/pdf',
+  },
+  'seeking-community': {
+    key: 'portfolio/documents/seeking-community.pdf',
+    filename: 'seeking-community.pdf',
+    contentType: 'application/pdf',
+  },
+  'self-parenting': {
+    key: 'portfolio/documents/self-parenting.pdf',
+    filename: 'self-parenting.pdf',
+    contentType: 'application/pdf',
+  },
+  'ai-false-positives': {
+    key: 'portfolio/documents/ai-false-positives.pdf',
+    filename: 'ai-false-positives.pdf',
+    contentType: 'application/pdf',
+  },
   'affiliate-leads-redesign': {
     key: 'portfolio/documents/affiliate-leads-redesign.md',
     filename: 'affiliate-leads-redesign.md',

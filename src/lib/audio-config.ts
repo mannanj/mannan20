@@ -41,3 +41,11 @@ export const MCP_INTENT_SPIKE_CHUNKS: AudioChunk[] = [
 export const GMU_ARCHR_CHUNKS: AudioChunk[] = buildAudioChunks('gmu-archr', 10);
 
 export const OMF_DR_CHUNKS: AudioChunk[] = buildAudioChunks('omf-dr', 6);
+
+export const HEALTH_LONGEVITY_CHUNKS: AudioChunk[] = buildAudioChunks('health-longevity', 2);
+
+export const SEEKING_COMMUNITY_CHUNKS: AudioChunk[] = buildAudioChunks('seeking-community', 4);
+
+export const SELF_PARENTING_CHUNKS: AudioChunk[] = buildAudioChunks('self-parenting', 2);
+
+export const AI_FALSE_POSITIVES_CHUNKS: AudioChunk[] = buildAudioChunks('ai-false-positives', 1);

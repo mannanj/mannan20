@@ -10,7 +10,7 @@ const chunks: AudioChunk[] = [
 ];
 
 describe("garden article actions", () => {
-  test("returns disabled download and listen actions when no assets are configured", () => {
+  test("marks download and listen actions unavailable when no assets are configured", () => {
     const actions = resolveGardenArticleActions("missing-article", {});
 
     expect(actions.download.enabled).toBe(false);

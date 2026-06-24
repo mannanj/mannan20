@@ -1,4 +1,10 @@
 import type { AudioChunk } from "@/lib/audio-config";
+import {
+  AI_FALSE_POSITIVES_CHUNKS,
+  HEALTH_LONGEVITY_CHUNKS,
+  SEEKING_COMMUNITY_CHUNKS,
+  SELF_PARENTING_CHUNKS,
+} from "@/lib/audio-config";
 
 export interface GardenArticleDownloadAsset {
   href: string;
@@ -28,7 +34,24 @@ export interface ResolvedGardenArticleActions {
   };
 }
 
-export const GARDEN_ARTICLE_ACTIONS: GardenArticleActionConfig = {};
+export const GARDEN_ARTICLE_ACTIONS: GardenArticleActionConfig = {
+  "health-longevity": {
+    download: { href: "/api/download/health-longevity" },
+    listen: { chunks: HEALTH_LONGEVITY_CHUNKS },
+  },
+  "seeking-community": {
+    download: { href: "/api/download/seeking-community" },
+    listen: { chunks: SEEKING_COMMUNITY_CHUNKS },
+  },
+  "self-parenting": {
+    download: { href: "/api/download/self-parenting" },
+    listen: { chunks: SELF_PARENTING_CHUNKS },
+  },
+  "ai-false-positives": {
+    download: { href: "/api/download/ai-false-positives" },
+    listen: { chunks: AI_FALSE_POSITIVES_CHUNKS },
+  },
+};
 
 export function resolveGardenArticleActions(
   slug: string,
