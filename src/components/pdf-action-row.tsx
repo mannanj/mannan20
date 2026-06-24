@@ -17,13 +17,17 @@ const DOWNLOAD_AGAIN_DELAY_MS = 5000;
 type DownloadState = "idle" | "downloading" | "downloaded" | "again";
 type ListenStatus = "idle" | "loading" | "playing";
 
-const actionClassName =
-  "inline-flex shrink-0 cursor-pointer items-center rounded-sm bg-transparent p-0 text-[11px] font-normal no-underline transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-95 whitespace-nowrap";
+const actionBaseClassName =
+  "inline-flex shrink-0 items-center rounded-sm bg-transparent p-0 text-[11px] font-normal no-underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black whitespace-nowrap";
+const interactiveActionClassName =
+  "cursor-pointer hover:scale-110 active:scale-95";
 
 const activeActionClassName = "text-white/75 hover:text-white";
 const inactiveActionClassName = "text-[#039be5] hover:text-[#4fc3f7]";
 const lockedActionClassName =
-  "cursor-default text-white/55 hover:scale-100 hover:text-white/55 active:scale-100";
+  "cursor-default text-white/55 hover:text-white/55";
+const disabledActionClassName =
+  "cursor-not-allowed text-[#039be5]/45 opacity-45";
 
 interface PdfActionRowProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -32,7 +36,9 @@ interface PdfActionRowProps extends HTMLAttributes<HTMLDivElement> {
 
 interface PdfDownloadActionProps
   extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "children"> {
-  href: string;
+  href?: string | null;
+  disabled?: boolean;
+  disabledReason?: string;
   label?: string;
   showArrow?: boolean;
   testId: string;
@@ -127,6 +133,31 @@ function WaveformIcon() {
   );
 }
 
+function DownloadIdleContent({
+  label,
+  showArrow,
+  testId,
+}: {
+  label: string;
+  showArrow: boolean;
+  testId: string;
+}) {
+  return (
+    <>
+      <span>{label}</span>
+      {showArrow && (
+        <span
+          data-testid={`${testId}-arrow`}
+          aria-hidden="true"
+          className="ml-0.5 inline-block text-[20px] rotate-180 scale-x-[-1]"
+        >
+          &#10555;
+        </span>
+      )}
+    </>
+  );
+}
+
 export function PdfActionRow({
   children,
   className = "",
@@ -144,6 +175,8 @@ export function PdfActionRow({
 
 export function PdfDownloadAction({
   href,
+  disabled = false,
+  disabledReason,
   label = "Download PDF",
   showArrow = true,
   testId,
@@ -189,6 +222,19 @@ export function PdfDownloadAction({
 
   const locked = state === "downloading" || state === "downloaded";
 
+  if (disabled || !href) {
+    return (
+      <span
+        data-testid={testId}
+        aria-disabled="true"
+        title={disabledReason}
+        className={`${actionBaseClassName} ${disabledActionClassName} ${className}`}
+      >
+        <DownloadIdleContent label={label} showArrow={showArrow} testId={testId} />
+      </span>
+    );
+  }
+
   return (
     <a
       {...props}
@@ -197,8 +243,10 @@ export function PdfDownloadAction({
       aria-disabled={locked}
       aria-live="polite"
       onClick={handleClick}
-      className={`${actionClassName} ${
-        locked ? lockedActionClassName : inactiveActionClassName
+      className={`${actionBaseClassName} ${
+        locked
+          ? lockedActionClassName
+          : `${interactiveActionClassName} ${inactiveActionClassName}`
       } ${className}`}
     >
       {state === "downloading" && (
@@ -220,18 +268,7 @@ export function PdfDownloadAction({
         </>
       )}
       {state === "idle" && (
-        <>
-          <span>{label}</span>
-          {showArrow && (
-            <span
-              data-testid={`${testId}-arrow`}
-              aria-hidden="true"
-              className="ml-0.5 inline-block text-[20px] rotate-180 scale-x-[-1]"
-            >
-              &#10555;
-            </span>
-          )}
-        </>
+        <DownloadIdleContent label={label} showArrow={showArrow} testId={testId} />
       )}
     </a>
   );
@@ -242,6 +279,7 @@ export function PdfListenAction({
   status = active ? "playing" : "idle",
   testId,
   className = "",
+  disabled = false,
   ...props
 }: PdfListenActionProps) {
   const loading = status === "loading";
@@ -253,8 +291,13 @@ export function PdfListenAction({
       type="button"
       data-testid={testId}
       aria-pressed={active}
-      className={`${actionClassName} gap-1 ${
-        active ? activeActionClassName : inactiveActionClassName
+      disabled={disabled}
+      className={`${actionBaseClassName} gap-1 ${
+        disabled
+          ? disabledActionClassName
+          : `${interactiveActionClassName} ${
+              active ? activeActionClassName : inactiveActionClassName
+            }`
       } ${className}`}
     >
       {loading && <SpinnerIcon testId={`${testId}-loading-spinner`} />}
@@ -299,7 +342,7 @@ export function ArticleListenAction({
       type="button"
       onClick={onClick}
       data-testid={testId}
-      className={`${actionClassName} gap-1 ${inactiveActionClassName}`}
+      className={`${actionBaseClassName} ${interactiveActionClassName} gap-1 ${inactiveActionClassName}`}
     >
       <PlayIcon />
       Listen

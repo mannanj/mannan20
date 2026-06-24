@@ -6,7 +6,9 @@ import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
 import { ArticleCaption } from "@/components/article-caption";
 import { ArticleTitle } from "@/components/article-title";
+import { ArticleTitleRow } from "@/components/article-title-row";
 import { ArticleMeta } from "@/components/article-meta";
+import { GardenArticleActions } from "@/components/garden/garden-article-actions";
 
 export const metadata: Metadata = {
   title: "On Seeking Community",
@@ -45,7 +47,13 @@ export default function SeekingCommunityArticle() {
           the beauty. It was the most fascinating, engrossing thing I&apos;d
           ever witnessed.
         </ArticleCaption>
-        <ArticleTitle variant="community">On Seeking Community</ArticleTitle>
+        <ArticleTitleRow
+          actions={<GardenArticleActions slug="seeking-community" />}
+        >
+          <ArticleTitle variant="community" className="!mb-0">
+            On Seeking Community
+          </ArticleTitle>
+        </ArticleTitleRow>
         <ArticleMeta
           variant="inline"
           date="April 7, 2026"

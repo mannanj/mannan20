@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
 import { ArticleTitle } from "@/components/article-title";
+import { ArticleTitleRow } from "@/components/article-title-row";
 import { ArticleCaption } from "@/components/article-caption";
 import { SelfParentingFigures } from "@/components/garden/self-parenting-figures";
 import { SelfParentingBody } from "@/components/garden/self-parenting-body";
+import { GardenArticleActions } from "@/components/garden/garden-article-actions";
 
 const TITLE = "Here are some things I've learned about parenting";
 const DESCRIPTION = "From self application and observation.";
@@ -32,7 +34,14 @@ export default function SelfParentingArticle() {
     <ArticleLayout topPadding="pt-32">
       <ArticleHeader align="center">
         <SelfParentingFigures className="mb-7 h-auto w-56 max-w-full" />
-        <ArticleTitle variant="editorial">{TITLE}</ArticleTitle>
+        <ArticleTitleRow
+          align="center"
+          actions={<GardenArticleActions slug="self-parenting" />}
+        >
+          <ArticleTitle variant="editorial" className="!mb-0">
+            {TITLE}
+          </ArticleTitle>
+        </ArticleTitleRow>
         <ArticleCaption className="text-center mx-auto" marginBottom="mb-10">
           {DESCRIPTION}
         </ArticleCaption>

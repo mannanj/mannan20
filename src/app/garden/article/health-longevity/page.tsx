@@ -6,7 +6,9 @@ import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
 import { ArticleCaption } from "@/components/article-caption";
 import { ArticleTitle } from "@/components/article-title";
+import { ArticleTitleRow } from "@/components/article-title-row";
 import { ArticleMeta } from "@/components/article-meta";
+import { GardenArticleActions } from "@/components/garden/garden-article-actions";
 
 export const metadata: Metadata = {
   title: "Health is an Artform",
@@ -42,7 +44,14 @@ export default function HealthLongevityArticle() {
             I recently had this insight, after 10 years of obsession optimizing
             my health.
           </ArticleCaption>
-          <ArticleTitle variant="editorial">Health is an Artform</ArticleTitle>
+          <ArticleTitleRow
+            align="center"
+            actions={<GardenArticleActions slug="health-longevity" />}
+          >
+            <ArticleTitle variant="editorial" className="!mb-0">
+              Health is an Artform
+            </ArticleTitle>
+          </ArticleTitleRow>
           <ArticleMeta
             variant="pill"
             date="March 15, 2026"

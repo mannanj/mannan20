@@ -3,7 +3,8 @@ import { AiFalsePositivesBody } from "@/components/garden/ai-false-positives-bod
 import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
 import { ArticleTitle } from "@/components/article-title";
-import { ArticleMeta } from "@/components/article-meta";
+import { ArticleTitleRow } from "@/components/article-title-row";
+import { GardenArticleActions } from "@/components/garden/garden-article-actions";
 
 export const metadata: Metadata = {
   title: "AI false positives",
@@ -31,8 +32,14 @@ export default function AiFalsePositivesArticle() {
   return (
     <ArticleLayout topPadding="pt-32">
       <ArticleHeader>
-        <ArticleTitle variant="editorial">AI false positives</ArticleTitle>
-        <br></br>
+        <ArticleTitleRow
+          align="center"
+          actions={<GardenArticleActions slug="ai-false-positives" />}
+        >
+          <ArticleTitle variant="editorial" className="!mb-0">
+            AI false positives
+          </ArticleTitle>
+        </ArticleTitleRow>
       </ArticleHeader>
       <AiFalsePositivesBody />
     </ArticleLayout>
