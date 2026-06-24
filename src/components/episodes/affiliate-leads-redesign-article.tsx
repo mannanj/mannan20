@@ -3,9 +3,9 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import {
   ArticleListenAction,
-  PdfActionRow,
   PdfDownloadAction,
 } from '@/components/pdf-action-row';
+import { EpisodeArticleHeader } from '@/components/episodes/episode-article-header';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { AFFILIATE_LEADS_CHUNKS } from '@/lib/audio-config';
@@ -26,26 +26,26 @@ export default function AffiliateLeadsRedesignArticle({ content }: Props) {
 
   return (
     <>
-      <header className="mb-16">
-        <h1 className="mb-4 text-4xl font-light tracking-tight">Affiliate Attribution, Reset</h1>
-        <p className="mb-6 text-sm text-neutral-500">
-          May 8, 2026 &middot; Mannan Javid
-        </p>
-        <PdfActionRow className="gap-4">
-          <PdfDownloadAction
-            href="/api/download/affiliate-leads-redesign"
-            target="_blank"
-            rel="noopener noreferrer"
-            label="Download .md"
-            testId="audio-download-md"
-          />
-          <ArticleListenAction
-            onClick={() => setShowPlayer(true)}
-            status={listenStatus}
-            testId="audio-listen-btn"
-          />
-        </PdfActionRow>
-      </header>
+      <EpisodeArticleHeader
+        title="Affiliate Attribution, Reset"
+        meta={<>May 8, 2026 &middot; Mannan Javid</>}
+        actions={
+          <>
+            <PdfDownloadAction
+              href="/api/download/affiliate-leads-redesign"
+              target="_blank"
+              rel="noopener noreferrer"
+              label="Download .md"
+              testId="audio-download-md"
+            />
+            <ArticleListenAction
+              onClick={() => setShowPlayer(true)}
+              status={listenStatus}
+              testId="audio-listen-btn"
+            />
+          </>
+        }
+      />
 
       <div className="article-md text-[15px] leading-relaxed text-neutral-300">
         <ReactMarkdown

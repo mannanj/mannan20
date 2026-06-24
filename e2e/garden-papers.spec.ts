@@ -1,6 +1,44 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('garden papers', () => {
+  test('paper action links align with the paper title row on desktop', async ({ page }) => {
+    await page.goto('/garden');
+
+    const papers = page.getByTestId('garden-papers');
+    await papers.scrollIntoViewIfNeeded();
+
+    const omf = papers.getByTestId('garden-paper-omf-dr');
+    const title = omf.getByText('Open Modeling Framework Demand Response');
+    const actions = omf.getByTestId('paper-actions-omf-dr');
+    const download = omf.getByTestId('paper-download-omf-dr');
+    const listen = omf.getByTestId('paper-listen-omf-dr');
+
+    await expect(title).toBeVisible();
+    await expect(actions).toBeVisible();
+    await expect(download).toBeVisible();
+    await expect(listen).toBeVisible();
+
+    const titleBox = await title.boundingBox();
+    const actionsBox = await actions.boundingBox();
+    const downloadBox = await download.boundingBox();
+    const listenBox = await listen.boundingBox();
+
+    expect(titleBox).not.toBeNull();
+    expect(actionsBox).not.toBeNull();
+    expect(downloadBox).not.toBeNull();
+    expect(listenBox).not.toBeNull();
+    expect(actionsBox!.x).toBeGreaterThan(titleBox!.x + titleBox!.width);
+    expect(Math.abs(actionsBox!.y - titleBox!.y)).toBeLessThanOrEqual(4);
+    expect(
+      Math.abs(
+        downloadBox!.y +
+          downloadBox!.height / 2 -
+          (listenBox!.y + listenBox!.height / 2),
+      ),
+    ).toBeLessThanOrEqual(3);
+    expect(listenBox!.x).toBeGreaterThan(downloadBox!.x + downloadBox!.width);
+  });
+
   test('paper Listen opens the audio player with paper audio chunks', async ({ page }) => {
     const audioRequests: string[] = [];
 

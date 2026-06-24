@@ -11,25 +11,67 @@ async function expectActionsInlineWithHeading(
   await expect(heading).toBeVisible();
   await expect(actions).toBeVisible();
 
+  const lastLineBox = await heading.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const rects = Array.from(range.getClientRects()).filter(
+      (rect) => rect.width > 1 && rect.height > 1,
+    );
+    range.detach();
+    const last = rects.sort(
+      (a, b) => a.bottom - b.bottom || a.right - b.right,
+    )[rects.length - 1] ?? element.getBoundingClientRect();
+
+    return {
+      x: last.x,
+      y: last.y,
+      width: last.width,
+      height: last.height,
+      right: last.right,
+    };
+  });
+
   await expect
     .poll(async () => {
-      const headingBox = await heading.boundingBox();
       const actionsBox = await actions.boundingBox();
-      if (!headingBox || !actionsBox) return Number.POSITIVE_INFINITY;
+      if (!actionsBox) return Number.POSITIVE_INFINITY;
       return Math.abs(
         actionsBox.y +
           actionsBox.height / 2 -
-          (headingBox.y + headingBox.height / 2),
+          (lastLineBox.y + lastLineBox.height / 2),
       );
     })
     .toBeLessThanOrEqual(6);
 
-  const headingBox = await heading.boundingBox();
   const actionsBox = await actions.boundingBox();
 
-  expect(headingBox).not.toBeNull();
   expect(actionsBox).not.toBeNull();
-  expect(actionsBox!.x).toBeGreaterThan(headingBox!.x + headingBox!.width - 4);
+  expect(actionsBox!.x).toBeGreaterThan(lastLineBox.right - 4);
+}
+
+async function expectArticleActionLinksOnOneLine(
+  page: import("@playwright/test").Page,
+  slug: string,
+) {
+  const download = page.getByTestId(`garden-article-download-${slug}`);
+  const listen = page.getByTestId(`garden-article-listen-${slug}`);
+
+  await expect(download).toBeVisible();
+  await expect(listen).toBeVisible();
+
+  const downloadBox = await download.boundingBox();
+  const listenBox = await listen.boundingBox();
+
+  expect(downloadBox).not.toBeNull();
+  expect(listenBox).not.toBeNull();
+  expect(
+    Math.abs(
+      downloadBox!.y +
+        downloadBox!.height / 2 -
+        (listenBox!.y + listenBox!.height / 2),
+    ),
+  ).toBeLessThanOrEqual(3);
+  expect(listenBox!.x).toBeGreaterThan(downloadBox!.x + downloadBox!.width);
 }
 
 test.describe("garden article header actions", () => {
@@ -75,15 +117,18 @@ test.describe("garden article header actions", () => {
         path: "/garden/article/health-longevity",
         heading: "Health is an Artform",
         actions: "garden-article-actions-health-longevity",
+        slug: "health-longevity",
       },
       {
         path: "/garden/article/ai-false-positives",
         heading: "AI false positives",
         actions: "garden-article-actions-ai-false-positives",
+        slug: "ai-false-positives",
       },
     ]) {
       await page.goto(article.path);
       await expectActionsInlineWithHeading(page, article.heading, article.actions);
+      await expectArticleActionLinksOnOneLine(page, article.slug);
     }
   });
 
@@ -150,23 +195,14 @@ test.describe("garden article header actions", () => {
     expect(actionsBox!.y - (headingBox!.y + headingBox!.height)).toBeLessThanOrEqual(4);
   });
 
-  test("long desktop titles fall back below without adding loose vertical space", async ({ page }) => {
+  test("long desktop titles keep actions inline when there is viewport room", async ({ page }) => {
     await page.goto("/garden/article/self-parenting");
 
-    const heading = page.getByRole("heading", {
-      name: "Here are some things I've learned about parenting",
-    });
-    const actions = page.getByTestId("garden-article-actions-self-parenting");
-
-    await expect(heading).toBeVisible();
-    await expect(actions).toBeVisible();
-
-    const headingBox = await heading.boundingBox();
-    const actionsBox = await actions.boundingBox();
-
-    expect(headingBox).not.toBeNull();
-    expect(actionsBox).not.toBeNull();
-    expect(actionsBox!.y).toBeGreaterThanOrEqual(headingBox!.y + headingBox!.height - 2);
-    expect(actionsBox!.y - (headingBox!.y + headingBox!.height)).toBeLessThanOrEqual(4);
+    await expectActionsInlineWithHeading(
+      page,
+      "Here are some things I've learned about parenting",
+      "garden-article-actions-self-parenting",
+    );
+    await expectArticleActionLinksOnOneLine(page, "self-parenting");
   });
 });

@@ -31,6 +31,7 @@ const disabledActionClassName =
 
 interface PdfActionRowProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
+  wrap?: boolean;
   [key: `data-${string}`]: string | boolean | undefined;
 }
 
@@ -160,13 +161,16 @@ function DownloadIdleContent({
 
 export function PdfActionRow({
   children,
+  wrap = false,
   className = "",
   ...props
 }: PdfActionRowProps) {
   return (
     <div
       {...props}
-      className={`inline-flex flex-wrap items-center gap-3 ${className}`}
+      className={`inline-flex ${
+        wrap ? "flex-wrap" : "flex-nowrap"
+      } items-center gap-3 whitespace-nowrap ${className}`}
     >
       {children}
     </div>

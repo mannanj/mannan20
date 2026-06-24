@@ -3,9 +3,9 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import {
   ArticleListenAction,
-  PdfActionRow,
   PdfDownloadAction,
 } from '@/components/pdf-action-row';
+import { EpisodeArticleHeader } from '@/components/episodes/episode-article-header';
 import { MANIFESTO_CHUNKS } from '@/lib/audio-config';
 
 const AudioPlayer = lazy(() => import('./audio-player'));
@@ -26,34 +26,34 @@ export default function ImmortalismManifestoArticle() {
 
   return (
     <>
-      <header className="mb-16">
-        <h1 className="mb-4 text-4xl font-light tracking-tight">Immortalism Manifesto</h1>
-        <p className="mb-6 text-sm text-neutral-500">
-          March 20th, 7:46 am &middot; Spring Equinox
-        </p>
-        <PdfActionRow className="gap-4">
-          <a
-            href="https://x.com/bryan_johnson/status/2035005465109963115"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-white"
-          >
-            {X_ICON}
-            Bryan Johnson
-          </a>
-          <PdfDownloadAction
-            href="/api/download/immortalism-manifesto"
-            target="_blank"
-            rel="noopener noreferrer"
-            testId="audio-download-pdf"
-          />
-          <ArticleListenAction
-            onClick={() => setShowPlayer(true)}
-            status={listenStatus}
-            testId="audio-listen-btn"
-          />
-        </PdfActionRow>
-      </header>
+      <EpisodeArticleHeader
+        title="Immortalism Manifesto"
+        meta={<>March 20th, 7:46 am &middot; Spring Equinox</>}
+        actions={
+          <>
+            <a
+              href="https://x.com/bryan_johnson/status/2035005465109963115"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-white"
+            >
+              {X_ICON}
+              Bryan Johnson
+            </a>
+            <PdfDownloadAction
+              href="/api/download/immortalism-manifesto"
+              target="_blank"
+              rel="noopener noreferrer"
+              testId="audio-download-pdf"
+            />
+            <ArticleListenAction
+              onClick={() => setShowPlayer(true)}
+              status={listenStatus}
+              testId="audio-listen-btn"
+            />
+          </>
+        }
+      />
 
       <div className="space-y-6 text-[15px] leading-relaxed text-neutral-300">
         <p>For most of the history of life on Earth, death has been treated as inevitable. Every organism is born, struggles briefly against decay, and eventually dissolves back into the disorder from which it emerged. Civilizations have accepted this pattern as a law of existence. Bodies age. Systems fail. Entropy wins. Yet humanity has never truly accepted this conclusion. Across thousands of years and across nearly every civilization, the idea of immortality has appeared again and again. The dream that life might continue indefinitely has haunted the imagination of our species since the beginning of recorded history.</p>

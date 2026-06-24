@@ -2,10 +2,10 @@
 
 import { lazy, Suspense, useCallback, useState } from "react";
 import {
-  PdfActionRow,
   PdfDownloadAction,
   PdfListenAction,
 } from "@/components/pdf-action-row";
+import { HeaderActionRow } from "@/components/header-action-row";
 import {
   GMU_ARCHR_CHUNKS,
   OMF_DR_CHUNKS,
@@ -176,8 +176,11 @@ function PaperItem({
               </span>
             </span>
           </button>
-          <div className="flex shrink-0 items-center gap-3">
-            <PdfActionRow data-testid={`paper-actions-${paper.id}`}>
+          <div className="flex shrink-0 items-start gap-3">
+            <HeaderActionRow
+              data-testid={`paper-actions-${paper.id}`}
+              className="pt-0.5"
+            >
               <PdfDownloadAction
                 href={paper.downloadPath}
                 download={paper.filename}
@@ -192,7 +195,7 @@ function PaperItem({
                 aria-label={`${listening ? "Stop listening to" : "Listen to"} ${paper.title} PDF`}
                 onClick={onListenToggle}
               />
-            </PdfActionRow>
+            </HeaderActionRow>
             <button
               type="button"
               data-testid={`paper-caret-${paper.id}`}

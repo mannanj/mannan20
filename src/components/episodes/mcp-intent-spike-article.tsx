@@ -3,9 +3,9 @@
 import { lazy, Suspense, useCallback, useState } from 'react';
 import {
   ArticleListenAction,
-  PdfActionRow,
   PdfDownloadAction,
 } from '@/components/pdf-action-row';
+import { EpisodeArticleHeader } from '@/components/episodes/episode-article-header';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { MCP_INTENT_SPIKE_CHUNKS } from '@/lib/audio-config';
@@ -26,28 +26,30 @@ export default function McpPublisherIntentProofArticle({ content }: Props) {
 
   return (
     <>
-      <header className="mb-16">
-        <h1 className="mb-4 text-4xl font-light tracking-tight">
-          <span className="mr-2 text-2xl text-neutral-500 sm:text-3xl">[AI GENERATED]</span>
-          MCP Intent Spike
-        </h1>
-        <p className="mb-6 text-sm text-neutral-500">
-          June 17, 2026 &middot; Mannan Javid
-        </p>
-        <PdfActionRow data-no-pdf className="gap-4">
-          <PdfDownloadAction
-            href="/api/download/mcp-intent-spike"
-            target="_blank"
-            rel="noopener noreferrer"
-            testId="audio-download-pdf"
-          />
-          <ArticleListenAction
-            onClick={() => setShowPlayer(true)}
-            status={listenStatus}
-            testId="audio-listen-btn"
-          />
-        </PdfActionRow>
-      </header>
+      <EpisodeArticleHeader
+        title={
+          <>
+            <span className="mr-2 text-2xl text-neutral-500 sm:text-3xl">[AI GENERATED]</span>
+            MCP Intent Spike
+          </>
+        }
+        meta={<>June 17, 2026 &middot; Mannan Javid</>}
+        actions={
+          <>
+            <PdfDownloadAction
+              href="/api/download/mcp-intent-spike"
+              target="_blank"
+              rel="noopener noreferrer"
+              testId="audio-download-pdf"
+            />
+            <ArticleListenAction
+              onClick={() => setShowPlayer(true)}
+              status={listenStatus}
+              testId="audio-listen-btn"
+            />
+          </>
+        }
+      />
 
       <div className="article-md text-[15px] leading-relaxed text-neutral-300">
         <ReactMarkdown

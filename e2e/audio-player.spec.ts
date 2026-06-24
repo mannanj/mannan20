@@ -30,6 +30,35 @@ test.describe('Episodes Audio Player', () => {
       await expect(listenBtn).toHaveCSS('cursor', 'pointer');
     });
 
+    test('reading header actions sit close under metadata and stay on one line', async ({ page }) => {
+      await page.goto('/episodes/mcp-intent-spike');
+
+      const meta = page.getByText('June 17, 2026 · Mannan Javid');
+      const download = page.getByTestId('audio-download-pdf');
+      const listen = page.getByTestId('audio-listen-btn');
+
+      await expect(meta).toBeVisible();
+      await expect(download).toBeVisible();
+      await expect(listen).toBeVisible();
+
+      const metaBox = await meta.boundingBox();
+      const downloadBox = await download.boundingBox();
+      const listenBox = await listen.boundingBox();
+
+      expect(metaBox).not.toBeNull();
+      expect(downloadBox).not.toBeNull();
+      expect(listenBox).not.toBeNull();
+      expect(downloadBox!.y - (metaBox!.y + metaBox!.height)).toBeLessThanOrEqual(18);
+      expect(
+        Math.abs(
+          downloadBox!.y +
+            downloadBox!.height / 2 -
+            (listenBox!.y + listenBox!.height / 2),
+        ),
+      ).toBeLessThanOrEqual(3);
+      expect(listenBox!.x).toBeGreaterThan(downloadBox!.x + downloadBox!.width);
+    });
+
     test('episodes index page links to article', async ({ page }) => {
       await page.goto('/episodes');
       await expect(page.locator('text=Immortalism Manifesto')).toBeVisible();

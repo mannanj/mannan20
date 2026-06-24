@@ -9,6 +9,9 @@ import {
 } from "react";
 
 type ArticleTitleRowAlign = "left" | "center";
+type ArticleTitleActionPlacement =
+  | { mode: "inline"; left: number | null; top: number | null }
+  | { mode: "below"; left: null; top: null };
 
 interface ArticleTitleRowProps {
   children: ReactNode;
@@ -26,10 +29,16 @@ export function ArticleTitleRow({
   const containerRef = useRef<HTMLDivElement>(null);
   const titleWrapRef = useRef<HTMLDivElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
-  const [fitsInline, setFitsInline] = useState(false);
+  const [actionPlacement, setActionPlacement] =
+    useState<ArticleTitleActionPlacement>({
+      mode: "inline",
+      left: null,
+      top: null,
+    });
   const alignClass = align === "center" ? "text-center" : "";
   const mobileActionAlign = align === "center" ? "justify-center" : "justify-start";
-  const marginClass = actions && !fitsInline ? "mb-1" : "mb-2";
+  const actionsInline = actionPlacement.mode === "inline";
+  const marginClass = actions && !actionsInline ? "mb-1" : "mb-2";
 
   const updateFit = useCallback(() => {
     const container = containerRef.current;
@@ -37,25 +46,41 @@ export function ArticleTitleRow({
     const actionsEl = actionsRef.current;
 
     if (!container || !titleWrap || !actionsEl || !actions) {
-      setFitsInline(false);
+      setActionPlacement({ mode: "inline", left: null, top: null });
       return;
     }
 
-    const titleEl = titleWrap.querySelector("h1,h2");
-    const viewportWidth = window.innerWidth;
-    const titleWidth = (
-      titleEl ?? titleWrap
-    ).getBoundingClientRect().width;
-    const titleRight = (
-      titleEl ?? titleWrap
-    ).getBoundingClientRect().right;
-    const actionsWidth = actionsEl.scrollWidth;
+    const titleEl = titleWrap.querySelector("h1,h2") ?? titleWrap;
+    const titleWrapBox = titleWrap.getBoundingClientRect();
+    const titleBox = titleEl.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(titleEl);
+    const lineRects = Array.from(range.getClientRects()).filter(
+      (rect) => rect.width > 1 && rect.height > 1,
+    );
+    range.detach();
+    const lastLine =
+      lineRects.sort((a, b) => a.bottom - b.bottom || a.right - b.right).at(-1) ??
+      titleBox;
+    const actionRow = actionsEl.firstElementChild as HTMLElement | null;
+    const actionsWidth = Math.ceil(
+      actionRow?.scrollWidth ?? actionsEl.scrollWidth,
+    );
     const gap = 12;
     const pageGutter = 24;
-    const available = viewportWidth - titleRight - pageGutter;
+    const available = window.innerWidth - lastLine.right - pageGutter;
 
-    setFitsInline(titleWidth > 0 && actionsWidth + gap <= available);
-  }, [actions, align]);
+    if (titleBox.width > 0 && actionsWidth + gap <= available) {
+      setActionPlacement({
+        mode: "inline",
+        left: lastLine.right - titleWrapBox.left,
+        top: lastLine.top - titleWrapBox.top + lastLine.height / 2,
+      });
+      return;
+    }
+
+    setActionPlacement({ mode: "below", left: null, top: null });
+  }, [actions]);
 
   useLayoutEffect(() => {
     updateFit();
@@ -93,10 +118,20 @@ export function ArticleTitleRow({
         {actions && (
           <div
             ref={actionsRef}
+            style={
+              actionsInline &&
+              actionPlacement.left !== null &&
+              actionPlacement.top !== null
+                ? {
+                    left: `${actionPlacement.left}px`,
+                    top: `${actionPlacement.top}px`,
+                  }
+                : undefined
+            }
             className={
-              fitsInline
-                ? "absolute left-full top-1/2 ml-3 flex -translate-y-1/2 justify-start"
-                : `mt-0 flex ${mobileActionAlign}`
+              actionsInline
+                ? "absolute left-full top-1/2 ml-3 flex w-max max-w-[calc(100vw-2rem)] -translate-y-1/2 justify-start"
+                : `mt-0 flex w-full ${mobileActionAlign}`
             }
           >
             {actions}

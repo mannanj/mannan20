@@ -2,10 +2,10 @@
 
 import { lazy, Suspense, useCallback, useState } from "react";
 import {
-  PdfActionRow,
   PdfDownloadAction,
   PdfListenAction,
 } from "@/components/pdf-action-row";
+import { HeaderActionRow } from "@/components/header-action-row";
 import { resolveGardenArticleActions } from "@/lib/garden-article-actions";
 
 const AudioPlayer = lazy(() => import("@/components/episodes/audio-player"));
@@ -42,10 +42,10 @@ export function GardenArticleActions({
 
   return (
     <>
-      <PdfActionRow
+      <HeaderActionRow
         data-no-pdf
         data-testid={`garden-article-actions-${slug}`}
-        className={`gap-4 ${className}`}
+        className={className}
       >
         {actions.download.enabled && (
           <PdfDownloadAction
@@ -65,7 +65,7 @@ export function GardenArticleActions({
             testId={`garden-article-listen-${slug}`}
           />
         )}
-      </PdfActionRow>
+      </HeaderActionRow>
 
       {showPlayer && actions.listen.enabled && (
         <Suspense fallback={null}>
