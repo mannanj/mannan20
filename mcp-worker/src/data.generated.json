@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18",
+  "generatedAt": "2026-06-28",
   "site": "https://mannan.is",
   "profile": {
     "name": "Mannan Javid",
@@ -297,6 +297,19 @@
       "year": 2026
     },
     {
+      "name": "Meal Fairy",
+      "description": "Chef-cooked, healthy meals delivered to your door.",
+      "url": "https://meal-fairy-ce3bf.web.app",
+      "year": 2018,
+      "retired": true
+    },
+    {
+      "name": "Poppy",
+      "description": "Pop any web page or video out of Safari.",
+      "url": "https://getpoppy.io",
+      "year": 2026
+    },
+    {
       "name": "Greenlights",
       "description": "Find the best time to drive in your window.",
       "url": "https://www.gogo.green",
@@ -325,13 +338,6 @@
       "description": "Connect any AI agent to my site's public data.",
       "url": "https://mcp.mannanteam.workers.dev",
       "year": 2026
-    },
-    {
-      "name": "Meal Fairy",
-      "description": "Chef-cooked, healthy meals delivered to your door.",
-      "url": "https://meal-fairy-ce3bf.web.app",
-      "year": 2018,
-      "retired": true
     },
     {
       "name": "Floating Chicken Game",

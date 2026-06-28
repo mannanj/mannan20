@@ -6,6 +6,7 @@ const SHOTS = [
     url: "https://www.gogo.green",
     out: "public/greenlights.png",
   },
+  { name: "Poppy", url: "https://getpoppy.io", out: "public/poppy.png" },
   { url: "https://meal-fairy-ce3bf.web.app", out: "public/meal-fairy.png" },
   { url: "https://skillguard.sh", out: "public/skillguard.png" },
 ];

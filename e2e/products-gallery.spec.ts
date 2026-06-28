@@ -14,11 +14,12 @@ test.use({
 const VISIBLE_PRODUCTS = [
   "Sun Signal",
   "Read Along",
+  "Meal Fairy",
+  "Poppy",
   "Greenlights",
   "Event Every",
   "SkillGuard",
   "claude-cues",
-  "Meal Fairy",
 ];
 const HIDDEN_PRODUCTS = ["Mannan MCP"];
 const CONTACT_EMAIL = "hello@mannan.is";

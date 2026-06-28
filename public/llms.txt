@@ -4,7 +4,7 @@
 
 I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
 
-This file is generated from the same data that powers the MCP server below (updated 2026-06-18). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
+This file is generated from the same data that powers the MCP server below (updated 2026-06-28). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
 
 ## MCP server
 
@@ -67,12 +67,13 @@ This file is generated from the same data that powers the MCP server below (upda
 - [Mannan](https://mannan.is/): Portfolio, writing, and experiments — my corner of the web.
 - [Sun Signal](https://sunsignal.app): Turn any US ZIP into real-time circadian timing.
 - [Read Along](https://tryreadalong.com): Turn text into AI-narrated audiobooks.
+- [Meal Fairy (retired)](https://meal-fairy-ce3bf.web.app): Chef-cooked, healthy meals delivered to your door.
+- [Poppy](https://getpoppy.io): Pop any web page or video out of Safari.
 - [Greenlights](https://www.gogo.green): Find the best time to drive in your window.
 - [Event Every](https://eventevery.com): Turn image or text into calendar events.
 - [SkillGuard](https://skillguard.sh): Scan Claude Code skills for prompt injection before they run.
 - [claude-cues](https://claude-cues.pages.dev): Gentle sounds that tell you what Claude Code is doing.
 - [Mannan MCP](https://mcp.mannanteam.workers.dev): Connect any AI agent to my site's public data.
-- [Meal Fairy (retired)](https://meal-fairy-ce3bf.web.app): Chef-cooked, healthy meals delivered to your door.
 - [Floating Chicken Game](https://mannan.is/game): Floating chicken game — click it, it screams; keep clicking and it evolves through five saiyan-style forms.
 
 ## Research and publications

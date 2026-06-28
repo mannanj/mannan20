@@ -126,6 +126,18 @@ function MealFairyThumb() {
   );
 }
 
+function PoppyThumb() {
+  return (
+    <Image
+      src="/poppy.png"
+      alt="Poppy app"
+      fill
+      sizes="220px"
+      className="object-cover object-top transition-transform duration-300 group-hover:scale-105"
+    />
+  );
+}
+
 function SunSignalThumb() {
   return (
     <Image
@@ -162,6 +174,7 @@ const PRODUCT_THUMBS: Record<string, ReactNode> = {
   Mannan: <MannanThumb />,
   "Sun Signal": <SunSignalThumb />,
   "Read Along": <ReadAlongThumb />,
+  Poppy: <PoppyThumb />,
   Greenlights: <GreenlightsThumb />,
   SkillGuard: <SkillGuardThumb />,
   "claude-cues": <ClaudeCuesThumb />,
@@ -230,19 +243,13 @@ function ProductGrid({ products }: { products: GardenProduct[] }) {
 function ProductsSubsection({
   label,
   products,
-  muted,
 }: {
   label: string;
   products: GardenProduct[];
-  muted?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-2.5">
-      <h3
-        className={`text-xs font-medium uppercase tracking-wider ${
-          muted ? "text-white/40" : "text-white"
-        }`}
-      >
+      <h3 className="text-xs font-medium uppercase tracking-wider text-white">
         {label}
       </h3>
       <ProductGrid products={products} />
@@ -251,17 +258,12 @@ function ProductsSubsection({
 }
 
 function ProductsPanel() {
-  const active = PRODUCTS.filter((p) => !p.retired);
-  const retired = PRODUCTS.filter((p) => p.retired);
-  const products = active.slice(0, 3);
-  const tools = active.slice(3);
+  const products = PRODUCTS.slice(0, 3);
+  const tools = PRODUCTS.slice(3);
   return (
     <div className="flex flex-col gap-8">
       <ProductGrid products={products} />
       {tools.length > 0 && <ProductsSubsection label="Tools" products={tools} />}
-      {retired.length > 0 && (
-        <ProductsSubsection label="Retired" products={retired} muted />
-      )}
     </div>
   );
 }

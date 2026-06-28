@@ -5,7 +5,7 @@ export interface GalleryProduct extends GardenProductData {
   accent: string;
 }
 
-export type GalleryFilter = "all" | "tools" | "retired";
+export type GalleryFilter = "all" | "tools";
 
 export interface FilterFacet {
   key: GalleryFilter;
@@ -15,12 +15,12 @@ export interface FilterFacet {
 export const FILTER_FACETS: FilterFacet[] = [
   { key: "all", label: "All" },
   { key: "tools", label: "Tools" },
-  { key: "retired", label: "Retired" },
 ];
 
 const PRODUCT_IMAGE: Record<string, string> = {
   "Sun Signal": "/sun-signal.png",
   "Read Along": "/read-along.png",
+  Poppy: "/poppy.png",
   Greenlights: "/greenlights.png",
   "Event Every": "/eventevery.png",
   SkillGuard: "/skillguard.png",
@@ -31,6 +31,7 @@ const PRODUCT_IMAGE: Record<string, string> = {
 const PRODUCT_ACCENT: Record<string, string> = {
   "Sun Signal": "#f5a524",
   "Read Along": "#7c8cff",
+  Poppy: "#f5923e",
   Greenlights: "#1f8f5a",
   "Event Every": "#3ec5a8",
   SkillGuard: "#ff6b6b",
@@ -52,9 +53,7 @@ export function filterProducts(
   products: GalleryProduct[],
   filter: GalleryFilter,
 ): GalleryProduct[] {
-  const active = products.filter((p) => !p.retired);
-  if (filter === "retired") return products.filter((p) => p.retired);
-  if (filter === "tools") return active.slice(3);
+  if (filter === "tools") return products.slice(3);
   return products;
 }
 

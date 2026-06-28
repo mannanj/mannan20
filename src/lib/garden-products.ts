@@ -32,6 +32,21 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     year: 2026,
   },
   {
+    title: "Meal Fairy",
+    description: "Chef-cooked, healthy meals delivered to your door.",
+    href: "https://meal-fairy-ce3bf.web.app",
+    external: true,
+    year: 2018,
+    retired: true,
+  },
+  {
+    title: "Poppy",
+    description: "Pop any web page or video out of Safari.",
+    href: "https://getpoppy.io",
+    external: true,
+    year: 2026,
+  },
+  {
     title: "Greenlights",
     description: "Find the best time to drive in your window.",
     href: "https://www.gogo.green",
@@ -66,13 +81,5 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     external: true,
     year: 2026,
     hidden: true,
-  },
-  {
-    title: "Meal Fairy",
-    description: "Chef-cooked, healthy meals delivered to your door.",
-    href: "https://meal-fairy-ce3bf.web.app",
-    external: true,
-    year: 2018,
-    retired: true,
   },
 ];

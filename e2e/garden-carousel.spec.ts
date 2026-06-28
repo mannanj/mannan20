@@ -29,12 +29,12 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('selecting Products swivels to the six product cards', async ({ page }) => {
+  test('selecting Products swivels to the eight product cards', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-products').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="products"] a')).toHaveCount(6);
+    await expect(page.locator('[data-panel="products"] a')).toHaveCount(8);
   });
 
   test('product cards link to the correct destinations', async ({ page }) => {
@@ -51,6 +51,16 @@ test.describe('Garden carousel', () => {
     await expect(readAlong).toHaveAttribute('href', 'https://tryreadalong.com');
     await expect(readAlong).toHaveAttribute('target', '_blank');
     await expect(readAlong).toHaveAttribute('rel', /noopener/);
+
+    const poppy = cards.filter({ hasText: 'Poppy' });
+    await expect(poppy).toHaveAttribute('href', 'https://getpoppy.io');
+    await expect(poppy).toHaveAttribute('target', '_blank');
+    await expect(poppy).toHaveAttribute('rel', /noopener/);
+
+    const greenlights = cards.filter({ hasText: 'Greenlights' });
+    await expect(greenlights).toHaveAttribute('href', 'https://www.gogo.green');
+    await expect(greenlights).toHaveAttribute('target', '_blank');
+    await expect(greenlights).toHaveAttribute('rel', /noopener/);
 
     const eventEvery = cards.filter({ hasText: 'Event Every' });
     await expect(eventEvery).toHaveAttribute('href', 'https://eventevery.com');
@@ -73,7 +83,7 @@ test.describe('Garden carousel', () => {
     await expect(mealFairy).toContainText('(retired)');
   });
 
-  test('products render as a single grid in the configured order with no filters or headers', async ({ page }) => {
+  test('products render as a main grid plus a Tools subsection, with Meal Fairy retired in the main grid and no Retired header', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-products').click();
     const panel = page.getByTestId('garden-active-panel');
@@ -84,16 +94,23 @@ test.describe('Garden carousel', () => {
     await expect(panel).not.toContainText('2026');
     await expect(panel).not.toContainText('2018');
 
+    const headers = await panel
+      .locator('h3')
+      .evaluateAll((els) => els.map((el) => el.textContent?.trim() ?? ''));
+    expect(headers).toEqual(['Tools']);
+
     const orderedTitles = await panel
       .locator('a')
       .evaluateAll((els) => els.map((el) => el.querySelector('span')?.textContent?.trim() ?? ''));
     expect(orderedTitles).toEqual([
       'Sun Signal',
       'Read Along',
+      'Meal Fairy (retired)',
+      'Poppy',
+      'Greenlights',
       'Event Every',
       'SkillGuard',
       'claude-cues',
-      'Meal Fairy (retired)',
     ]);
   });
 
