@@ -7,7 +7,8 @@
   "observability": { "enabled": true },
   "vars": {
     "RESEND_FROM": "Mannan <cloud@mannan.is>",
-    "PUBLIC_BASE_URL": "https://cloud-worker.mannanteam.workers.dev"
+    "PUBLIC_BASE_URL": "https://cloud-worker.mannanteam.workers.dev",
+    "SITE_AUTH_RETURN_URL": "https://mannan.is/api/auth/cloudflare-callback"
   },
   "d1_databases": [
     {

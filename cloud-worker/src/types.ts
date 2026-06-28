@@ -13,4 +13,6 @@ export interface Env {
   RESEND_API_KEY: string;
   RESEND_FROM: string;
   PUBLIC_BASE_URL: string;
+  SITE_AUTH_RETURN_URL: string;
+  SITE_AUTH_EXCHANGE_SECRET: string;
 }

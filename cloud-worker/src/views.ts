@@ -72,13 +72,13 @@ const SHELL_HEAD = raw(`
 `);
 
 export const signInPage = (msg?: string) => html`<!doctype html>
-<html><head><title>Cloud — sign in</title>${SHELL_HEAD}</head>
+<html><head><title>Cloud — continue</title>${SHELL_HEAD}</head>
 <body><div class="card">
   <h1>Cloud</h1>
-  <p class="lede">Sign in with your invited email. We'll send a one-time link.</p>
+  <p class="lede">Continue with email. We'll send a one-time link.</p>
   <form method="post" action="/auth/request">
     <input type="email" name="email" required autofocus placeholder="you@example.com" autocomplete="email">
-    <button type="submit">Send link</button>
+    <button type="submit">Continue with email</button>
   </form>
   ${msg ? html`<p class="msg">${msg}</p>` : ''}
 </div></body></html>`;
@@ -87,8 +87,8 @@ export const sentPage = () => html`<!doctype html>
 <html><head><title>Check your inbox</title>${SHELL_HEAD}</head>
 <body><div class="card">
   <h1>Check your inbox</h1>
-  <p class="lede">If that email is on the list, a sign-in link is on its way. The link expires in 15 minutes.</p>
-  <p class="msg">Don't see it? Check spam, then check if you're invited.</p>
+  <p class="lede">A one-time link is on its way. The link expires in 15 minutes.</p>
+  <p class="msg">Don't see it? Check spam, then try again.</p>
 </div></body></html>`;
 
 const FOLDER_ICON = raw(`<span class="folder-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 4.25a1 1 0 0 1 1-1h3l1.5 1.5h6a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H2.75a1 1 0 0 1-1-1v-8Z"/></svg></span>`);

@@ -30,7 +30,9 @@ export function stripFolderPrefix(folder: Folder, key: string): string {
 
 const SESSION_TTL_SEC = 60 * 60 * 24 * 30;
 const TOKEN_TTL_MS = 15 * 60 * 1000;
+const SITE_CODE_TTL_MS = 2 * 60 * 1000;
 const COOKIE_NAME = '__Host-session';
+const ADMIN_EMAIL = 'hello@mannan.is';
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
@@ -81,6 +83,14 @@ export interface Session {
   exp: number;
 }
 
+export function dbRoleForEmail(email: string): 'admin' | 'client' {
+  return normalizeEmail(email) === ADMIN_EMAIL ? 'admin' : 'client';
+}
+
+export function siteRoleFromDbRole(role: string): 'admin' | 'user' {
+  return role === 'admin' ? 'admin' : 'user';
+}
+
 export async function createSessionCookie(env: Env, email: string): Promise<string> {
   const payload: Session = {
     email,
@@ -121,6 +131,26 @@ export async function getUser(env: Env, email: string): Promise<{ email: string;
     .first<{ email: string; role: string }>();
 }
 
+export async function ensureUser(env: Env, email: string): Promise<{ email: string; role: string }> {
+  const normalized = normalizeEmail(email);
+  const role = dbRoleForEmail(normalized);
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO users (email, role, created_at)
+     VALUES (?, ?, ?)
+     ON CONFLICT(email) DO UPDATE SET
+       role = CASE
+         WHEN excluded.role = 'admin' THEN 'admin'
+         ELSE users.role
+       END`,
+  )
+    .bind(normalized, role, now)
+    .run();
+  const user = await getUser(env, normalized);
+  if (!user) throw new Error('failed to ensure user');
+  return user;
+}
+
 export async function canAccess(env: Env, email: string, folder: Folder): Promise<boolean> {
   const user = await getUser(env, email);
   if (!user) return false;
@@ -145,27 +175,66 @@ export async function listAllowedFolders(env: Env, email: string): Promise<Folde
     .filter((f): f is Folder => isFolder(f));
 }
 
-export async function mintMagicToken(env: Env, email: string): Promise<string> {
+export async function hashSecret(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', enc.encode(value));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function mintMagicToken(
+  env: Env,
+  email: string,
+  purpose: 'cloud' | 'site' = 'cloud',
+): Promise<string> {
   const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
   const expires = Date.now() + TOKEN_TTL_MS;
   await env.DB.prepare(
-    'INSERT INTO magic_tokens (token, email, expires_at) VALUES (?, ?, ?)',
+    'INSERT INTO magic_tokens (token, email, expires_at, purpose) VALUES (?, ?, ?, ?)',
   )
-    .bind(token, email, expires)
+    .bind(await hashSecret(token), normalizeEmail(email), expires, purpose)
     .run();
   return token;
 }
 
-export async function consumeMagicToken(env: Env, token: string): Promise<string | null> {
+export async function consumeMagicToken(
+  env: Env,
+  token: string,
+  purpose: 'cloud' | 'site' = 'cloud',
+): Promise<string | null> {
   const row = await env.DB.prepare(
-    'SELECT email, expires_at FROM magic_tokens WHERE token = ?',
+    'SELECT email, expires_at FROM magic_tokens WHERE token = ? AND purpose = ?',
   )
-    .bind(token)
+    .bind(await hashSecret(token), purpose)
     .first<{ email: string; expires_at: number }>();
   if (!row) return null;
-  await env.DB.prepare('DELETE FROM magic_tokens WHERE token = ?').bind(token).run();
+  await env.DB.prepare('DELETE FROM magic_tokens WHERE token = ?').bind(await hashSecret(token)).run();
   if (row.expires_at < Date.now()) return null;
   return row.email;
+}
+
+export async function mintSiteSessionCode(env: Env, email: string): Promise<string> {
+  const code = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
+  await env.DB.prepare(
+    'INSERT INTO site_session_codes (code_hash, email, expires_at) VALUES (?, ?, ?)',
+  )
+    .bind(await hashSecret(code), normalizeEmail(email), Date.now() + SITE_CODE_TTL_MS)
+    .run();
+  return code;
+}
+
+export async function consumeSiteSessionCode(
+  env: Env,
+  code: string,
+): Promise<{ email: string; role: string } | null> {
+  const codeHash = await hashSecret(code);
+  const row = await env.DB.prepare(
+    'SELECT email, expires_at FROM site_session_codes WHERE code_hash = ?',
+  )
+    .bind(codeHash)
+    .first<{ email: string; expires_at: number }>();
+  if (!row) return null;
+  await env.DB.prepare('DELETE FROM site_session_codes WHERE code_hash = ?').bind(codeHash).run();
+  if (row.expires_at < Date.now()) return null;
+  return getUser(env, row.email);
 }
 
 export function normalizeEmail(email: string): string {
