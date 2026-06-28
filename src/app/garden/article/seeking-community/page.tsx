@@ -47,9 +47,7 @@ export default function SeekingCommunityArticle() {
           the beauty. It was the most fascinating, engrossing thing I&apos;d
           ever witnessed.
         </ArticleCaption>
-        <ArticleTitleRow
-          actions={<GardenArticleActions slug="seeking-community" />}
-        >
+        <ArticleTitleRow>
           <ArticleTitle variant="community" className="!mb-0">
             On Seeking Community
           </ArticleTitle>
@@ -59,6 +57,7 @@ export default function SeekingCommunityArticle() {
           date="April 7, 2026"
           readTime="8 min read"
           wordCount="1,800 words"
+          actions={<GardenArticleActions slug="seeking-community" />}
         />
       </ArticleHeader>
       <SeekingCommunityBody />

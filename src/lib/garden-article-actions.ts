@@ -65,7 +65,7 @@ export function resolveGardenArticleActions(
     download: {
       enabled: Boolean(downloadHref),
       href: downloadHref,
-      label: assets?.download?.label ?? "Download PDF",
+      label: assets?.download?.label ?? "Download",
     },
     listen: {
       enabled: chunks.length > 0,

@@ -7,7 +7,6 @@ import { ArticleCaption } from "@/components/article-caption";
 import { ArticleTitle } from "@/components/article-title";
 import { ArticleTitleRow } from "@/components/article-title-row";
 import { ArticleMeta } from "@/components/article-meta";
-import { GardenArticleActions } from "@/components/garden/garden-article-actions";
 
 export const metadata: Metadata = {
   title: "Taken",
@@ -38,7 +37,7 @@ export default function TakenArticle() {
           You opened a page. The page kept a receipt. Here is what was on it
           — read live, in the milliseconds before you saw the title.
         </ArticleCaption>
-        <ArticleTitleRow actions={<GardenArticleActions slug="taken" />}>
+        <ArticleTitleRow>
           <ArticleTitle variant="community" className="!mb-0">
             Taken
           </ArticleTitle>

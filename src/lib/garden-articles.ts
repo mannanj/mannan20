@@ -22,6 +22,16 @@ export const GARDEN_ARTICLES: GardenArticle[] = [
     hidden: true,
   },
   {
+    title: "AI false positives",
+    description:
+      "When safety tuning trips on benign curiosity — a small collection of overzealous AI refusals.",
+    date: "2026-04-29",
+    readingTime: "1 min read",
+    wordCount: 120,
+    href: "/garden/article/ai-false-positives",
+    hidden: true,
+  },
+  {
     title: "Seeking Community",
     description:
       "From Cosmos to car camping to Hawaii — a journey through spirituality, community, and finding guiding principles.",

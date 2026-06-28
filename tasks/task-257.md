@@ -41,7 +41,8 @@ after the reader navigates away from the original article, episode, paper, or re
   - [ ] `Return to paper` for Garden papers,
   - [ ] allow future source types through typed metadata instead of string checks in the UI.
 - [ ] The return link must navigate back to the source route or section that started the audio.
-- [ ] The return link must use the same cyan inline-action visual language as `Download PDF` and `Listen`.
+- [ ] The return link must use the same cyan inline-action visual language as the article
+      `Download`/reading `Download PDF` links and `Listen`.
 - [ ] Hovering/focusing the return link must enlarge it slightly, matching the existing action feedback
       pattern.
 - [ ] The return link must not appear while the user is already on the source page.

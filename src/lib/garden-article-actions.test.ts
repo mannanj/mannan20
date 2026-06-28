@@ -31,6 +31,7 @@ describe("garden article actions", () => {
 
     expect(actions.download.enabled).toBe(true);
     expect(actions.download.href).toBe("/api/download/health-longevity");
+    expect(actions.download.label).toBe("Download");
     expect(actions.listen.enabled).toBe(true);
     expect(actions.listen.chunks).toEqual(chunks);
   });

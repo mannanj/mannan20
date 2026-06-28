@@ -4,6 +4,7 @@ import { ArticleLayout } from "@/components/article-layout";
 import { ArticleHeader } from "@/components/article-header";
 import { ArticleTitle } from "@/components/article-title";
 import { ArticleTitleRow } from "@/components/article-title-row";
+import { ArticleMeta } from "@/components/article-meta";
 import { GardenArticleActions } from "@/components/garden/garden-article-actions";
 
 export const metadata: Metadata = {
@@ -32,14 +33,18 @@ export default function AiFalsePositivesArticle() {
   return (
     <ArticleLayout topPadding="pt-32">
       <ArticleHeader>
-        <ArticleTitleRow
-          align="center"
-          actions={<GardenArticleActions slug="ai-false-positives" />}
-        >
+        <ArticleTitleRow align="center">
           <ArticleTitle variant="editorial" className="!mb-0">
             AI false positives
           </ArticleTitle>
         </ArticleTitleRow>
+        <ArticleMeta
+          date="April 29, 2026"
+          readTime="1 min read"
+          wordCount="120 words"
+          align="center"
+          actions={<GardenArticleActions slug="ai-false-positives" />}
+        />
       </ArticleHeader>
       <AiFalsePositivesBody />
     </ArticleLayout>

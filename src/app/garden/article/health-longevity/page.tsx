@@ -44,10 +44,7 @@ export default function HealthLongevityArticle() {
             I recently had this insight, after 10 years of obsession optimizing
             my health.
           </ArticleCaption>
-          <ArticleTitleRow
-            align="center"
-            actions={<GardenArticleActions slug="health-longevity" />}
-          >
+          <ArticleTitleRow align="center">
             <ArticleTitle variant="editorial" className="!mb-0">
               Health is an Artform
             </ArticleTitle>
@@ -56,6 +53,8 @@ export default function HealthLongevityArticle() {
             variant="pill"
             date="March 15, 2026"
             readTime="3 min read"
+            align="center"
+            actions={<GardenArticleActions slug="health-longevity" />}
           />
         </ArticleHeader>
         <HealthArticleBody />
