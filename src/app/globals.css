@@ -258,6 +258,310 @@
   background-color: #000 !important;
   color: rgba(255, 255, 255, 0.85) !important;
 }
+
+.taste-prototype {
+  --taste-bg: #edf2ef;
+  --taste-panel: rgb(250 252 248 / 0.88);
+  --taste-panel-solid: #fbfcf8;
+  --taste-panel-strong: #dce7df;
+  --taste-ink: #111614;
+  --taste-muted: #5b6862;
+  --taste-line: rgb(17 22 20 / 0.16);
+  --taste-accent: #2f6f4e;
+  --taste-accent-ink: #f8fff8;
+  --taste-hero-text: #ffffff;
+  --taste-shadow: rgb(15 28 24 / 0.12);
+  --taste-contact-muted: rgb(17 22 20 / 0.66);
+  color-scheme: light;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+}
+
+.taste-prototype::before {
+  background-image:
+    linear-gradient(rgb(17 22 20 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(17 22 20 / 0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 0;
+}
+
+.taste-prototype > * {
+  position: relative;
+  z-index: 1;
+}
+
+.taste-nav {
+  color: var(--taste-ink);
+}
+
+.taste-logo,
+.taste-nav-link,
+.taste-subtle-link {
+  color: inherit;
+  outline: none;
+  text-decoration: none;
+}
+
+.taste-logo {
+  background: rgb(255 255 255 / 0.42);
+  border: 1px solid var(--taste-line);
+  box-shadow: 0 10px 30px var(--taste-shadow);
+}
+
+.taste-nav-link,
+.taste-subtle-link {
+  opacity: 0.78;
+  transition:
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+.taste-nav-link:hover,
+.taste-subtle-link:hover {
+  color: var(--taste-accent);
+  opacity: 1;
+}
+
+.taste-logo:focus-visible,
+.taste-nav-link:focus-visible,
+.taste-subtle-link:focus-visible,
+.taste-work-tile:focus-visible,
+.taste-button:focus-visible {
+  outline: 3px solid rgb(47 111 78 / 0.42);
+  outline-offset: 4px;
+}
+
+.taste-hero-media {
+  background: var(--taste-panel-solid);
+  box-shadow: 0 28px 90px var(--taste-shadow);
+}
+
+.taste-hero-media::after {
+  background:
+    linear-gradient(90deg, rgb(0 0 0 / 0.78), rgb(0 0 0 / 0.38) 48%, rgb(0 0 0 / 0.12)),
+    linear-gradient(0deg, rgb(0 0 0 / 0.38), transparent 42%);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.taste-button {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 1.25rem;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+  white-space: nowrap;
+}
+
+.taste-button:hover {
+  transform: translateY(-2px);
+}
+
+.taste-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.taste-button-primary {
+  background: var(--taste-accent);
+  color: var(--taste-accent-ink);
+}
+
+.taste-button-secondary {
+  background: rgb(255 255 255 / 0.24);
+  border: 1px solid rgb(255 255 255 / 0.58);
+  color: #ffffff;
+}
+
+.taste-panel,
+.taste-work-tile,
+.taste-principle,
+.taste-timeline-item {
+  background: var(--taste-panel);
+  border: 1px solid var(--taste-line);
+  box-shadow: 0 18px 60px var(--taste-shadow);
+}
+
+.taste-panel,
+.taste-principle,
+.taste-timeline-item {
+  border-radius: 28px;
+}
+
+.taste-kicker {
+  color: var(--taste-accent);
+  font-size: 0.94rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.taste-metric {
+  color: var(--taste-ink);
+  font-size: clamp(2.5rem, 6vw, 5.8rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 0.92;
+}
+
+.taste-metric-label,
+.taste-timeline-label {
+  color: var(--taste-muted);
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.taste-work-tile {
+  border-radius: 28px;
+  color: inherit;
+  display: block;
+  overflow: hidden;
+  text-decoration: none;
+  transition:
+    border-color 180ms ease,
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.taste-work-tile:hover {
+  border-color: rgb(47 111 78 / 0.38);
+  box-shadow: 0 24px 84px rgb(15 28 24 / 0.16);
+  transform: translateY(-4px);
+}
+
+.taste-principles-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.taste-principle {
+  min-height: 220px;
+  padding: 1.5rem;
+}
+
+.taste-principle:nth-child(3) {
+  background:
+    repeating-linear-gradient(135deg, rgb(47 111 78 / 0.08) 0 1px, transparent 1px 18px),
+    var(--taste-panel-solid);
+}
+
+.taste-principle:nth-child(4) {
+  background: var(--taste-panel-strong);
+}
+
+.taste-timeline-item {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(64px, 0.22fr) 1fr;
+  padding: 1.5rem;
+}
+
+.taste-contact {
+  background:
+    linear-gradient(135deg, rgb(47 111 78 / 0.12), transparent 48%),
+    var(--taste-panel-strong);
+  border: 1px solid var(--taste-line);
+  box-shadow: 0 18px 70px var(--taste-shadow);
+}
+
+.taste-contact .taste-subtle-link {
+  color: var(--taste-contact-muted);
+}
+
+@media (min-width: 768px) {
+  .taste-principles-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .taste-principle-lead {
+    grid-column: span 7;
+    grid-row: span 2;
+    min-height: 460px;
+  }
+
+  .taste-principle:nth-child(2),
+  .taste-principle:nth-child(3) {
+    grid-column: span 5;
+  }
+
+  .taste-principle:nth-child(4),
+  .taste-principle:nth-child(5) {
+    grid-column: span 6;
+  }
+}
+
+@keyframes tasteRise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .taste-rise {
+    animation: tasteRise 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--delay, 0ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .taste-button,
+  .taste-nav-link,
+  .taste-subtle-link,
+  .taste-work-tile,
+  .taste-work-tile img {
+    transition-duration: 1ms;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .taste-prototype {
+    --taste-bg: #0f1514;
+    --taste-panel: rgb(21 29 27 / 0.82);
+    --taste-panel-solid: #151d1b;
+    --taste-panel-strong: #1a2521;
+    --taste-ink: #eef5ef;
+    --taste-muted: #aebbb3;
+    --taste-line: rgb(238 245 239 / 0.14);
+    --taste-accent: #7fd8a7;
+    --taste-accent-ink: #0b1510;
+    --taste-shadow: rgb(0 0 0 / 0.32);
+    --taste-contact-muted: rgb(238 245 239 / 0.68);
+    color-scheme: dark;
+  }
+
+  .taste-prototype::before {
+    background-image:
+      linear-gradient(rgb(238 245 239 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(238 245 239 / 0.035) 1px, transparent 1px);
+  }
+
+  .taste-logo {
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  .taste-work-tile:hover {
+    box-shadow: 0 24px 84px rgb(0 0 0 / 0.36);
+  }
+}
 .canvas-md-editor .w-md-editor-bar {
   display: none !important;
 }
