@@ -126,6 +126,39 @@ test.describe('header controls', () => {
     await expect(page.getByTestId('header-home-button')).toBeVisible();
     await page.screenshot({ path: 'e2e/screenshots/header-mobile.png' });
   });
+
+  test('holding the head image opens the continue with email menu', async ({ page }) => {
+    await page.route('**/api/auth/me', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ user: null }),
+      }),
+    );
+    await page.route('**/api/auth/request', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true }),
+      }),
+    );
+
+    const homeBtn = page.getByTestId('header-home-button');
+    const box = await homeBtn.boundingBox();
+    expect(box).not.toBeNull();
+
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(800);
+    await page.mouse.up();
+
+    await expect(page.getByTestId('auth-easter-egg-menu')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue with email' })).toBeVisible();
+
+    await page.getByLabel('Email').fill('person@example.com');
+    await page.getByRole('button', { name: 'Continue with email' }).click();
+    await expect(page.getByText('Check your email')).toBeVisible();
+  });
 });
 
 test.describe('header right stack (garden + mcp)', () => {

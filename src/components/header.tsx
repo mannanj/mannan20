@@ -12,6 +12,7 @@ import { McpLogoIcon } from "@/components/icons/mcp-logo-icon";
 import { AnimatedText } from "@/components/animated-text";
 import { RubyGemCollectible } from "@/components/garden/article-inventory";
 import { McpHeaderButton } from "@/components/mcp/mcp-header-button";
+import { ContinueWithEmailMenu } from "@/components/auth/continue-with-email-menu";
 import {
   ExpandingIconStack,
   StackItem,
@@ -85,7 +86,10 @@ export function Header() {
   const isHome = pathname === "/";
   const isTransparent = pathname === "/garden/article/seeking-community";
   const [gardenExpanded, setGardenExpanded] = useState(false);
+  const [authMenuOpen, setAuthMenuOpen] = useState(false);
   const gardenExpandedRef = useRef(false);
+  const headHoldTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const headHoldTriggeredRef = useRef(false);
   const [mcpHovered, setMcpHovered] = useState(false);
   const [mcpPopoverOpen, setMcpPopoverOpen] = useState(false);
   const mcpPopoverOpenRef = useRef(false);
@@ -514,6 +518,32 @@ export function Header() {
     }
   };
 
+  const clearHeadHoldTimer = useCallback(() => {
+    if (headHoldTimerRef.current) {
+      clearTimeout(headHoldTimerRef.current);
+      headHoldTimerRef.current = null;
+    }
+  }, []);
+
+  const startHeadHold = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      clearHeadHoldTimer();
+      headHoldTriggeredRef.current = false;
+      headHoldTimerRef.current = setTimeout(() => {
+        headHoldTriggeredRef.current = true;
+        setAuthMenuOpen(true);
+      }, 650);
+    },
+    [clearHeadHoldTimer],
+  );
+
+  const stopHeadHold = useCallback(() => {
+    clearHeadHoldTimer();
+  }, [clearHeadHoldTimer]);
+
+  useEffect(() => clearHeadHoldTimer, [clearHeadHoldTimer]);
+
   if (pathname === "/garden") return null;
 
   return (
@@ -528,46 +558,68 @@ export function Header() {
       >
         {({ toggle, gatedClick }) => (
           <>
-            <button
-              type="button"
-              data-testid="header-home-button"
-              onClick={() => {
-                toggle();
-                if (isHome) scrollToSection("home");
-                else window.location.href = "/";
-              }}
-              className="group relative z-30 bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
-            >
-              <Image
-                src="/mannan.jpg"
-                width={48}
-                height={48}
-                alt="Mannan"
-                className="rounded-full"
-              />
-              {pathname === "/garden/article/seeking-community" && (
-                <span
-                  className="absolute pointer-events-auto block"
-                  style={{
-                    left: "62%",
-                    top: "45%",
-                    width: 3,
-                    height: 3,
-                    marginLeft: -1.5,
-                    marginTop: -1.5,
-                    lineHeight: 0,
-                  }}
-                >
-                  <RubyGemCollectible />
-                </span>
-              )}
-              <div className="absolute top-full left-0 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-40">
-                <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
-                <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
-                  Return to Home
+            <div className="relative z-30">
+              <button
+                type="button"
+                data-testid="header-home-button"
+                aria-haspopup="dialog"
+                aria-expanded={authMenuOpen}
+                onPointerDown={startHeadHold}
+                onPointerUp={stopHeadHold}
+                onPointerCancel={stopHeadHold}
+                onPointerLeave={stopHeadHold}
+                onClick={(event) => {
+                  if (headHoldTriggeredRef.current) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    headHoldTriggeredRef.current = false;
+                    return;
+                  }
+                  setAuthMenuOpen(false);
+                  toggle();
+                  if (isHome) scrollToSection("home");
+                  else window.location.href = "/";
+                }}
+                onContextMenu={(event) => {
+                  if (authMenuOpen) event.preventDefault();
+                }}
+                className="group relative bg-transparent border-none cursor-pointer p-0 transition-transform duration-200 hover:scale-110 active:scale-100"
+              >
+                <Image
+                  src="/mannan.jpg"
+                  width={48}
+                  height={48}
+                  alt="Mannan"
+                  className="rounded-full"
+                />
+                {pathname === "/garden/article/seeking-community" && (
+                  <span
+                    className="absolute pointer-events-auto block"
+                    style={{
+                      left: "62%",
+                      top: "45%",
+                      width: 3,
+                      height: 3,
+                      marginLeft: -1.5,
+                      marginTop: -1.5,
+                      lineHeight: 0,
+                    }}
+                  >
+                    <RubyGemCollectible />
+                  </span>
+                )}
+                <div className="absolute top-full left-0 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-40">
+                  <div className="absolute -top-[6px] left-[18px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-[#333]" />
+                  <div className="bg-[#333] text-white text-xs px-4 py-2 rounded-full whitespace-nowrap">
+                    Return to Home
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              <ContinueWithEmailMenu
+                open={authMenuOpen}
+                onClose={() => setAuthMenuOpen(false)}
+              />
+            </div>
             <StackItem
               z={20}
               collapsed="left-[44px]"
