@@ -76,3 +76,6 @@ wants/kick-the-can/
 # Redesign exploration artifacts (local only)
 .claude/redesign/
 .claude/redesign-shots/
+
+# Brainstorming visual-companion mockups (local only)
+.superpowers/
