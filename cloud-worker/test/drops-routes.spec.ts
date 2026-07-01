@@ -96,7 +96,7 @@ describe('drops routes — auth + create/list/get', () => {
   });
 
   it('commit reads the TRUE size from R2 and rejects a spoofed oversize object, deleting it', async () => {
-    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1_000_000, hold_for_approval: false })).json<{ id: string }>();
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1_000_000, hold_for_approval: false, notify_on_activity: false })).json<{ id: string }>();
     const { token, participant_id } = await joinOpen(id);
     const key = `drops/${id}/${participant_id}/spoof.bin`;
     await env.FILES_DROPS.put(key, new Uint8Array(2_000_000));
@@ -107,7 +107,7 @@ describe('drops routes — auth + create/list/get', () => {
     expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(0);
   });
   it('commit on a hold-for-approval drop records the upload as PENDING and counts its bytes', async () => {
-    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true })).json<{ id: string }>();
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true, notify_on_activity: false })).json<{ id: string }>();
     const { token, participant_id } = await joinOpen(id);
     const key = `drops/${id}/${participant_id}/ok.bin`;
     await env.FILES_DROPS.put(key, new Uint8Array(500_000));
@@ -119,10 +119,39 @@ describe('drops routes — auth + create/list/get', () => {
     expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(500_000);
   });
   it('commit auto-accepts when hold_for_approval is off', async () => {
-    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: false })).json<{ id: string }>();
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: false, notify_on_activity: false })).json<{ id: string }>();
     const { token, participant_id } = await joinOpen(id);
     const key = `drops/${id}/${participant_id}/auto.bin`;
     await env.FILES_DROPS.put(key, new Uint8Array(1000));
     expect((await (await post(`/${id}/commit`, { key, filename: 'auto.bin' }, { 'x-drop-participant': token })).json<{ status: string }>()).status).toBe('accepted');
+  });
+
+  it('commit is idempotent by object key — a second commit of the same key does not double-count', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true, notify_on_activity: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/dup.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(500));
+    const first = await post(`/${id}/commit`, { key, filename: 'dup.bin' }, { 'x-drop-participant': token });
+    expect(first.status).toBe(200);
+    const firstEventId = (await first.json<{ event_id: string }>()).event_id;
+
+    const second = await post(`/${id}/commit`, { key, filename: 'dup.bin' }, { 'x-drop-participant': token });
+    expect(second.status).toBe(200);
+    const secondEventId = (await second.json<{ event_id: string }>()).event_id;
+
+    const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM share_events WHERE share_id = ?').bind(id).first<{ n: number }>();
+    expect(count?.n).toBe(1);
+    const used = await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>();
+    expect(used?.used_bytes).toBe(500);
+    expect(secondEventId).toBe(firstEventId);
+  });
+
+  it('commit rejects a non-string filename with 400', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: false, notify_on_activity: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/badname.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(100));
+    const res = await post(`/${id}/commit`, { key, filename: 123 }, { 'x-drop-participant': token });
+    expect(res.status).toBe(400);
   });
 });

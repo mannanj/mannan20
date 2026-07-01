@@ -88,6 +88,11 @@ export async function getEvent(env: Env, id: string): Promise<EventRow | null> {
   return env.DB.prepare('SELECT * FROM share_events WHERE id = ?').bind(id).first<EventRow>();
 }
 
+export async function findUploadByKey(env: Env, shareId: string, objectKey: string): Promise<EventRow | null> {
+  return env.DB.prepare("SELECT * FROM share_events WHERE share_id = ? AND object_key = ? AND kind = 'upload' LIMIT 1")
+    .bind(shareId, objectKey).first<EventRow>();
+}
+
 export async function listEvents(env: Env, shareId: string): Promise<EventRow[]> {
   const { results } = await env.DB.prepare('SELECT * FROM share_events WHERE share_id = ? ORDER BY created_at DESC').bind(shareId).all<EventRow>();
   return results;

@@ -173,6 +173,7 @@ drops.post('/:id/commit', async (c) => {
 
   const body = (await c.req.json().catch(() => null)) as { key?: string; filename?: string } | null;
   if (!body?.key || !body.key.startsWith(`drops/${id}/${claims.pid}/`)) return c.json({ error: 'bad-key' }, 400);
+  if (body.filename !== undefined && typeof body.filename !== 'string') return c.json({ error: 'bad-filename' }, 400);
 
   const share = await store.getShare(c.env, id);
   if (!share) return c.json({ error: 'not found' }, 404);
@@ -182,16 +183,19 @@ drops.post('/:id/commit', async (c) => {
   const trueSize = head.size;
 
   const fileCount = await store.countParticipantFiles(c.env, id, claims.pid);
-  const filename = body.filename ?? body.key.split('/').pop() ?? 'file';
+  const filename = (body.filename ?? body.key.split('/').pop() ?? 'file').slice(0, 200);
   const verdict = evaluatePolicy(
     share,
     { filename, size: trueSize, type: head.httpMetadata?.contentType ?? 'application/octet-stream' },
     { now: Date.now(), participantFileCount: fileCount },
   );
   if (!verdict.ok) {
-    await c.env.FILES_DROPS.delete(body.key);
+    try { await c.env.FILES_DROPS.delete(body.key); } catch {}
     return c.json({ error: verdict.code, reason: verdict.reason }, 422);
   }
+
+  const existing = await store.findUploadByKey(c.env, id, body.key);
+  if (existing) return c.json({ status: existing.status, event_id: existing.id });
 
   const accepted = share.hold_for_approval === 0;
   const eventId = newId();
