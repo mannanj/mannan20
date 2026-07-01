@@ -215,3 +215,27 @@ drops.post('/:id/commit', async (c) => {
   );
   return c.json({ status: accepted ? 'accepted' : 'pending', event_id: eventId });
 });
+
+drops.post('/:id/approve', async (c) => {
+  const id = c.req.param('id');
+  const body = (await c.req.json().catch(() => null)) as { event_id?: string } | null;
+  if (!body?.event_id) return c.json({ error: 'event_id required' }, 400);
+  const ev = await store.getEvent(c.env, body.event_id);
+  if (!ev || ev.share_id !== id || ev.kind !== 'upload') return c.json({ error: 'not found' }, 404);
+  if (ev.status !== 'pending') return c.json({ status: ev.status });
+  await store.setEventStatus(c.env, ev.id, 'accepted');
+  return c.json({ status: 'accepted' });
+});
+
+drops.post('/:id/reject', async (c) => {
+  const id = c.req.param('id');
+  const body = (await c.req.json().catch(() => null)) as { event_id?: string } | null;
+  if (!body?.event_id) return c.json({ error: 'event_id required' }, 400);
+  const ev = await store.getEvent(c.env, body.event_id);
+  if (!ev || ev.share_id !== id || ev.kind !== 'upload') return c.json({ error: 'not found' }, 404);
+  if (ev.status === 'rejected') return c.json({ status: 'rejected' });
+  await store.setEventStatus(c.env, ev.id, 'rejected');
+  if (ev.object_key) await c.env.FILES_DROPS.delete(ev.object_key);
+  if (ev.bytes) await store.addUsedBytes(c.env, id, -ev.bytes);
+  return c.json({ status: 'rejected' });
+});

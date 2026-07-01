@@ -154,4 +154,26 @@ describe('drops routes — auth + create/list/get', () => {
     const res = await post(`/${id}/commit`, { key, filename: 123 }, { 'x-drop-participant': token });
     expect(res.status).toBe(400);
   });
+
+  it('approve flips a pending upload to accepted (bytes already counted)', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true, notify_on_activity: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/a.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(700));
+    const { event_id } = await (await post(`/${id}/commit`, { key, filename: 'a.bin' }, { 'x-drop-participant': token })).json<{ event_id: string }>();
+    expect((await post(`/${id}/approve`, { event_id })).status).toBe(200);
+    expect((await env.DB.prepare('SELECT status FROM share_events WHERE id = ?').bind(event_id).first<{ status: string }>())?.status).toBe('accepted');
+    expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(700);
+  });
+  it('reject deletes the R2 object and refunds its bytes from used_bytes', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true, notify_on_activity: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/r.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(900));
+    const { event_id } = await (await post(`/${id}/commit`, { key, filename: 'r.bin' }, { 'x-drop-participant': token })).json<{ event_id: string }>();
+    expect((await post(`/${id}/reject`, { event_id })).status).toBe(200);
+    expect((await env.DB.prepare('SELECT status FROM share_events WHERE id = ?').bind(event_id).first<{ status: string }>())?.status).toBe('rejected');
+    expect(await env.FILES_DROPS.head(key)).toBeNull();
+    expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(0);
+  });
 });
