@@ -61,4 +61,31 @@ describe('drops routes — auth + create/list/get', () => {
     expect((await post(`/${id}/join`, {})).status).toBe(200);
     expect((await post(`/${id}/join`, {})).status).toBe(409);
   });
+
+  async function joinOpen(id: string) {
+    const r = await post(`/${id}/join`, { name: 'Ann' });
+    return (await r.json<{ token: string; participant_id: string }>());
+  }
+
+  it('presign signs a PUT URL when policy passes and scopes the key to the participant', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: true, max_file_bytes: 1024 ** 3 })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const res = await post(`/${id}/presign`, { filename: 'photo.jpg', size: 5_000_000, type: 'image/jpeg' }, { 'x-drop-participant': token });
+    expect(res.status).toBe(200);
+    const out = await res.json<{ url: string; key: string }>();
+    expect(out.key.endsWith('-photo.jpg')).toBe(true);
+    expect(out.key.startsWith(`drops/${id}/${participant_id}/`)).toBe(true);
+    expect(new URL(out.url).searchParams.get('X-Amz-Signature')).toMatch(/^[0-9a-f]{64}$/);
+  });
+  it('presign refuses an oversize file (policy: too-large) without signing', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1_000_000 })).json<{ id: string }>();
+    const { token } = await joinOpen(id);
+    const res = await post(`/${id}/presign`, { filename: 'big.bin', size: 2_000_000, type: 'application/octet-stream' }, { 'x-drop-participant': token });
+    expect(res.status).toBe(422);
+    expect((await res.json<{ error: string }>()).error).toBe('too-large');
+  });
+  it('presign rejects a request with no/invalid participant token', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false })).json<{ id: string }>();
+    expect((await post(`/${id}/presign`, { filename: 'a', size: 1, type: 't' })).status).toBe(401);
+  });
 });

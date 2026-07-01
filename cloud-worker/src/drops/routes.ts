@@ -140,3 +140,28 @@ drops.post('/:id/join', async (c) => {
   const token = await mintParticipantToken(c.env, id, pid);
   return c.json({ token, participant_id: pid });
 });
+
+drops.post('/:id/presign', async (c) => {
+  const id = c.req.param('id');
+  const claims = await verifyParticipantToken(c.env, c.req.header('x-drop-participant') ?? null);
+  if (!claims || claims.sid !== id) return c.json({ error: 'unauthorized' }, 401);
+  if (!(await tryLimit(c.env.DROP_PRESIGN_LIMITER, `presign:${claims.pid}:${ipOf(c)}`))) return c.json({ error: 'rate-limited' }, 429);
+
+  const share = await store.getShare(c.env, id);
+  if (!share) return c.json({ error: 'not found' }, 404);
+  const body = (await c.req.json().catch(() => null)) as { filename?: string; size?: number; type?: string } | null;
+  if (!body?.filename || typeof body.size !== 'number' || body.size < 0) return c.json({ error: 'bad-request' }, 400);
+
+  const fileCount = await store.countParticipantFiles(c.env, id, claims.pid);
+  const verdict = evaluatePolicy(
+    share,
+    { filename: body.filename, size: body.size, type: body.type ?? 'application/octet-stream' },
+    { now: Date.now(), participantFileCount: fileCount },
+  );
+  if (!verdict.ok) return c.json({ error: verdict.code, reason: verdict.reason }, 422);
+
+  const safeName = body.filename.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120);
+  const key = `drops/${id}/${claims.pid}/${newId()}-${safeName}`;
+  const url = await presignPutUrl(c.env, key, 600);
+  return c.json({ url, key, expires_in: 600 });
+});
