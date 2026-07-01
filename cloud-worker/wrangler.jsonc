@@ -57,5 +57,8 @@
       "namespace_id": "1004",
       "simple": { "limit": 8, "period": 60 }
     }
-  ]
+  ],
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  }
 }

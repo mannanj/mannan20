@@ -32,6 +32,8 @@ import {
 import { admin } from './admin';
 import { listingCacheKey } from './cache';
 import { streamZip, type ZipSource } from './zip';
+import { drops } from './drops/routes';
+import { runCleanup } from './drops/cleanup';
 
 interface AppCtx {
   Bindings: Env;
@@ -355,6 +357,7 @@ app.get('/files/:folder/:name{.+}', async (c) => {
 });
 
 app.route('/admin', admin);
+app.route('/drops', drops);
 
 app.notFound((c) => c.html(messagePage('Not found', 'No page here.'), 404));
 
@@ -363,6 +366,11 @@ app.onError((err, c) => {
   return c.html(messagePage('Error', 'Something went wrong.'), 500);
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  scheduled: async (_controller: ScheduledController, env: Env, ctx: ExecutionContext) => {
+    ctx.waitUntil(runCleanup(env, Date.now()));
+  },
+};
 
 export type { Env };
