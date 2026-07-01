@@ -75,6 +75,16 @@ const gardenViewUpstash =
       })
     : null;
 
+const dropJoinUpstash =
+  url && token
+    ? new Ratelimit({
+        redis: new Redis({ url, token }),
+        limiter: Ratelimit.slidingWindow(8, '60 s'),
+        prefix: 'ratelimit:dropjoin',
+        analytics: false,
+      })
+    : null;
+
 const memoryHits = new Map<string, number[]>();
 
 function memoryLimit(key: string, max: number, windowSeconds = WINDOW_SECONDS): LimitResult {
@@ -152,5 +162,15 @@ export async function limitFeedback(ip: string): Promise<LimitResult> {
     return { success, limit, remaining, reset };
   } catch {
     return memoryLimit(`fb:${ip}`, MAX_FEEDBACK_PER_WINDOW, FEEDBACK_WINDOW_SECONDS);
+  }
+}
+
+export async function limitDropJoin(identifier: string): Promise<LimitResult> {
+  if (!dropJoinUpstash) return memoryLimit(`dropjoin:${identifier}`, 8);
+  try {
+    const { success, limit, remaining, reset } = await dropJoinUpstash.limit(identifier);
+    return { success, limit, remaining, reset };
+  } catch {
+    return memoryLimit(`dropjoin:${identifier}`, 8);
   }
 }
