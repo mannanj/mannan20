@@ -15,4 +15,10 @@ export interface Env {
   PUBLIC_BASE_URL: string;
   SITE_AUTH_RETURN_URL: string;
   SITE_AUTH_EXCHANGE_SECRET: string;
+  FILES_DROPS: R2Bucket;
+  DROP_PRESIGN_LIMITER: RateLimit;
+  DROP_JOIN_LIMITER: RateLimit;
+  R2_ACCOUNT_ID: string;
+  R2_ACCESS_KEY_ID: string;
+  R2_SECRET_ACCESS_KEY: string;
 }

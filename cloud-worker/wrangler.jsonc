@@ -30,6 +30,10 @@
     {
       "binding": "FILES_BACKUPS",
       "bucket_name": "deep-calm-weave-backups"
+    },
+    {
+      "binding": "FILES_DROPS",
+      "bucket_name": "mannan-drops"
     }
   ],
   "ratelimits": [
@@ -42,6 +46,16 @@
       "name": "VERIFY_LIMITER",
       "namespace_id": "1002",
       "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "DROP_PRESIGN_LIMITER",
+      "namespace_id": "1003",
+      "simple": { "limit": 30, "period": 60 }
+    },
+    {
+      "name": "DROP_JOIN_LIMITER",
+      "namespace_id": "1004",
+      "simple": { "limit": 8, "period": 60 }
     }
   ]
 }

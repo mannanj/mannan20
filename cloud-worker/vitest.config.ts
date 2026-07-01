@@ -8,7 +8,17 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: './wrangler.jsonc' },
-        miniflare: { bindings: { TEST_MIGRATIONS: migrations } },
+        miniflare: {
+          bindings: {
+            TEST_MIGRATIONS: migrations,
+            SESSION_SECRET: 'test-session-secret',
+            SITE_AUTH_EXCHANGE_SECRET: 'test-bearer-secret',
+            RESEND_API_KEY: 'test-resend-key',
+            R2_ACCOUNT_ID: 'testacct',
+            R2_ACCESS_KEY_ID: 'testkeyid',
+            R2_SECRET_ACCESS_KEY: 'testsecretkey',
+          },
+        },
       }),
     ],
     test: {
