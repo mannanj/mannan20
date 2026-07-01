@@ -176,4 +176,19 @@ describe('drops routes — auth + create/list/get', () => {
     expect(await env.FILES_DROPS.head(key)).toBeNull();
     expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(0);
   });
+  it('reject is idempotent (no double refund) and approve cannot resurrect a rejected upload', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true, notify_on_activity: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/dup.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(400));
+    const { event_id } = await (await post(`/${id}/commit`, { key, filename: 'dup.bin' }, { 'x-drop-participant': token })).json<{ event_id: string }>();
+
+    expect((await post(`/${id}/reject`, { event_id })).status).toBe(200);
+    expect((await post(`/${id}/reject`, { event_id })).status).toBe(200);
+    expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(0);
+
+    const resurrect = await post(`/${id}/approve`, { event_id });
+    expect((await resurrect.json<{ status: string }>()).status).toBe('rejected');
+    expect((await env.DB.prepare('SELECT status FROM share_events WHERE id = ?').bind(event_id).first<{ status: string }>())?.status).toBe('rejected');
+  });
 });
