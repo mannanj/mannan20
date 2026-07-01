@@ -1,12 +1,13 @@
 import { Hono, type Context } from 'hono';
 import type { Env } from '../types';
 import type { Session } from '../auth';
+import { consumeMagicToken, mintMagicToken } from '../auth';
 import { buildShareConfig, type DropConfigInput } from './config';
 import { newId, newShareId } from './ids';
 import { hashPasscode, newSalt, verifyPasscode } from './passcode';
 import { evaluatePolicy, type ShareRow } from './policy';
 import { presignPutUrl } from './presign';
-import { sendDropUploadNotification } from './notify';
+import { sendDropInvite, sendDropUploadNotification } from './notify';
 import { mintParticipantToken, verifyParticipantToken } from './tokens';
 import type { EventRow } from './store';
 import * as store from './store';
@@ -70,6 +71,13 @@ drops.post('/', async (c) => {
     created_at: now,
   };
   await store.createShare(c.env, share);
+  if (built.share.access_mode === 'named' && Array.isArray((body as { invite_emails?: string[] }).invite_emails)) {
+    const siteOrigin = new URL(c.env.SITE_AUTH_RETURN_URL).origin;
+    for (const email of (body as { invite_emails: string[] }).invite_emails.slice(0, 50)) {
+      const token = await mintMagicToken(c.env, email, 'share');
+      c.executionCtx.waitUntil(sendDropInvite(c.env, email, built.share.title, `${siteOrigin}/drop/${id}?token=${token}`));
+    }
+  }
   return c.json({ id });
 });
 
@@ -122,7 +130,15 @@ drops.post('/:id/join', async (c) => {
       (await verifyPasscode(body.passcode, share.passcode_salt, share.passcode_hash));
     if (!ok) return c.json({ error: 'bad-passcode' }, 403);
   }
-  if (share.access_mode === 'named') return c.json({ error: 'use-magic-link' }, 400);
+  if (share.access_mode === 'named') {
+    const raw = (body as { magic_token?: string } | null)?.magic_token;
+    const email = raw ? await consumeMagicToken(c.env, raw, 'share') : null;
+    if (!email) return c.json({ error: 'bad-token' }, 403);
+    if (share.max_participants !== null && (await store.countParticipants(c.env, id)) >= share.max_participants) return c.json({ error: 'full' }, 409);
+    const pid = newId();
+    await store.insertParticipant(c.env, { id: pid, share_id: id, email, name: body?.name?.trim().slice(0, 100) ?? null, joined_at: now });
+    return c.json({ token: await mintParticipantToken(c.env, id, pid), participant_id: pid });
+  }
 
   if (share.require_name === 1 && !body?.name?.trim()) return c.json({ error: 'name-required' }, 400);
   if (share.max_participants !== null && (await store.countParticipants(c.env, id)) >= share.max_participants) {

@@ -55,3 +55,24 @@ export async function sendDropUploadNotification(
     console.error('resend_drop_throw', err);
   }
 }
+
+export function buildDropInviteText(title: string | null, link: string): string {
+  return `You've been invited to a drop${title ? `: "${title}"` : ''}.\n\nOpen it to upload your files:\n${link}\n\nThis link is personal — don't forward it.`;
+}
+
+export async function sendDropInvite(env: Env, to: string, title: string | null, link: string): Promise<void> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `drop-invite/${link.slice(-32)}`,
+      },
+      body: JSON.stringify({ from: env.RESEND_FROM, to: [to], subject: `You've got a drop${title ? `: ${title}` : ''}`, text: buildDropInviteText(title, link) }),
+    });
+    if (!res.ok) console.error('resend_invite_error', res.status, await res.text());
+  } catch (err) {
+    console.error('resend_invite_throw', err);
+  }
+}

@@ -191,4 +191,15 @@ describe('drops routes — auth + create/list/get', () => {
     expect((await resurrect.json<{ status: string }>()).status).toBe('rejected');
     expect((await env.DB.prepare('SELECT status FROM share_events WHERE id = ?').bind(event_id).first<{ status: string }>())?.status).toBe('rejected');
   });
+
+  it('named drop: a valid share magic-token joins as the invited email; a bad token is refused', async () => {
+    const { id } = await (await post('/', { access_mode: 'named', require_name: false })).json<{ id: string }>();
+    const { mintMagicToken } = await import('../src/auth');
+    const raw = await mintMagicToken(env, 'guest@example.com', 'share');
+    const res = await post(`/${id}/join`, { magic_token: raw });
+    expect(res.status).toBe(200);
+    const { participant_id } = await res.json<{ participant_id: string }>();
+    expect((await env.DB.prepare('SELECT email FROM share_participants WHERE id = ?').bind(participant_id).first<{ email: string }>())?.email).toBe('guest@example.com');
+    expect((await post(`/${id}/join`, { magic_token: 'garbage' })).status).toBe(403);
+  });
 });
