@@ -1,10 +1,16 @@
-import { env } from 'cloudflare:test';
+import { createExecutionContext, env } from 'cloudflare:test';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { drops } from '../src/drops/routes';
 
 const BEARER = { authorization: 'Bearer test-bearer-secret', 'content-type': 'application/json' };
+let requestSeq = 0;
 const post = (path: string, body: unknown, headers: Record<string, string> = {}) =>
-  drops.request(path, { method: 'POST', headers: { ...BEARER, ...headers }, body: JSON.stringify(body) }, env);
+  drops.request(
+    path,
+    { method: 'POST', headers: { ...BEARER, 'x-site-auth-ip': `10.0.0.${requestSeq++}`, ...headers }, body: JSON.stringify(body) },
+    env,
+    createExecutionContext(),
+  );
 const get = (path: string, headers: Record<string, string> = {}) =>
   drops.request(path, { method: 'GET', headers: { ...BEARER, ...headers } }, env);
 
@@ -87,5 +93,36 @@ describe('drops routes — auth + create/list/get', () => {
   it('presign rejects a request with no/invalid participant token', async () => {
     const { id } = await (await post('/', { access_mode: 'open', require_name: false })).json<{ id: string }>();
     expect((await post(`/${id}/presign`, { filename: 'a', size: 1, type: 't' })).status).toBe(401);
+  });
+
+  it('commit reads the TRUE size from R2 and rejects a spoofed oversize object, deleting it', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1_000_000, hold_for_approval: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/spoof.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(2_000_000));
+    const res = await post(`/${id}/commit`, { key, filename: 'spoof.bin' }, { 'x-drop-participant': token });
+    expect(res.status).toBe(422);
+    expect((await res.json<{ error: string }>()).error).toBe('too-large');
+    expect(await env.FILES_DROPS.head(key)).toBeNull();
+    expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(0);
+  });
+  it('commit on a hold-for-approval drop records the upload as PENDING and counts its bytes', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: true })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/ok.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(500_000));
+    const res = await post(`/${id}/commit`, { key, filename: 'ok.bin' }, { 'x-drop-participant': token });
+    expect(res.status).toBe(200);
+    expect((await res.json<{ status: string }>()).status).toBe('pending');
+    const ev = await env.DB.prepare("SELECT status, bytes FROM share_events WHERE share_id = ?").bind(id).first<{ status: string; bytes: number }>();
+    expect(ev).toEqual({ status: 'pending', bytes: 500_000 });
+    expect((await env.DB.prepare('SELECT used_bytes FROM shares WHERE id = ?').bind(id).first<{ used_bytes: number }>())?.used_bytes).toBe(500_000);
+  });
+  it('commit auto-accepts when hold_for_approval is off', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_file_bytes: 1024 ** 3, hold_for_approval: false })).json<{ id: string }>();
+    const { token, participant_id } = await joinOpen(id);
+    const key = `drops/${id}/${participant_id}/auto.bin`;
+    await env.FILES_DROPS.put(key, new Uint8Array(1000));
+    expect((await (await post(`/${id}/commit`, { key, filename: 'auto.bin' }, { 'x-drop-participant': token })).json<{ status: string }>()).status).toBe('accepted');
   });
 });

@@ -165,3 +165,49 @@ drops.post('/:id/presign', async (c) => {
   const url = await presignPutUrl(c.env, key, 600);
   return c.json({ url, key, expires_in: 600 });
 });
+
+drops.post('/:id/commit', async (c) => {
+  const id = c.req.param('id');
+  const claims = await verifyParticipantToken(c.env, c.req.header('x-drop-participant') ?? null);
+  if (!claims || claims.sid !== id) return c.json({ error: 'unauthorized' }, 401);
+
+  const body = (await c.req.json().catch(() => null)) as { key?: string; filename?: string } | null;
+  if (!body?.key || !body.key.startsWith(`drops/${id}/${claims.pid}/`)) return c.json({ error: 'bad-key' }, 400);
+
+  const share = await store.getShare(c.env, id);
+  if (!share) return c.json({ error: 'not found' }, 404);
+
+  const head = await c.env.FILES_DROPS.head(body.key);
+  if (!head) return c.json({ error: 'no-object' }, 400);
+  const trueSize = head.size;
+
+  const fileCount = await store.countParticipantFiles(c.env, id, claims.pid);
+  const filename = body.filename ?? body.key.split('/').pop() ?? 'file';
+  const verdict = evaluatePolicy(
+    share,
+    { filename, size: trueSize, type: head.httpMetadata?.contentType ?? 'application/octet-stream' },
+    { now: Date.now(), participantFileCount: fileCount },
+  );
+  if (!verdict.ok) {
+    await c.env.FILES_DROPS.delete(body.key);
+    return c.json({ error: verdict.code, reason: verdict.reason }, 422);
+  }
+
+  const accepted = share.hold_for_approval === 0;
+  const eventId = newId();
+  const event: EventRow = {
+    id: eventId, share_id: id, participant_id: claims.pid, kind: 'upload',
+    object_key: body.key, filename, bytes: trueSize, status: accepted ? 'accepted' : 'pending', created_at: Date.now(),
+  };
+  await store.insertEvent(c.env, event);
+  await store.addUsedBytes(c.env, id, trueSize);
+  if (share.single_use === 1) await store.markShareStatus(c.env, id, 'closed');
+
+  const participant = await store.getParticipant(c.env, claims.pid);
+  c.executionCtx.waitUntil(
+    sendDropUploadNotification(c.env, share, {
+      eventId, filename, bytes: trueSize, participantName: participant?.name ?? null, status: accepted ? 'accepted' : 'pending',
+    }),
+  );
+  return c.json({ status: accepted ? 'accepted' : 'pending', event_id: eventId });
+});
