@@ -37,13 +37,13 @@ const ADMIN_EMAIL = 'hello@mannan.is';
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-function b64urlEncode(bytes: Uint8Array): string {
+export function b64urlEncode(bytes: Uint8Array): string {
   let s = '';
   for (const b of bytes) s += String.fromCharCode(b);
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function b64urlDecode(s: string): Uint8Array {
+export function b64urlDecode(s: string): Uint8Array {
   s = s.replace(/-/g, '+').replace(/_/g, '/');
   const pad = s.length % 4;
   if (pad) s += '='.repeat(4 - pad);
@@ -77,6 +77,8 @@ async function verify(secret: string, payload: string, sig: string): Promise<boo
     return false;
   }
 }
+
+export { sign as signHmac, verify as verifyHmac };
 
 export interface Session {
   email: string;
@@ -183,7 +185,7 @@ export async function hashSecret(value: string): Promise<string> {
 export async function mintMagicToken(
   env: Env,
   email: string,
-  purpose: 'cloud' | 'site' = 'cloud',
+  purpose: 'cloud' | 'site' | 'share' = 'cloud',
 ): Promise<string> {
   const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
   const expires = Date.now() + TOKEN_TTL_MS;
@@ -198,7 +200,7 @@ export async function mintMagicToken(
 export async function consumeMagicToken(
   env: Env,
   token: string,
-  purpose: 'cloud' | 'site' = 'cloud',
+  purpose: 'cloud' | 'site' | 'share' = 'cloud',
 ): Promise<string | null> {
   const row = await env.DB.prepare(
     'SELECT email, expires_at FROM magic_tokens WHERE token = ? AND purpose = ?',
