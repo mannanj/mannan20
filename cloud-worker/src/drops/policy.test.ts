@@ -30,6 +30,9 @@ describe('evaluatePolicy', () => {
   test('allows at exactly one ms before expiry', () => {
     expect(evaluatePolicy(share({ expires_at: 2_000_000_000_001 }), file(), ctx({ now: 2_000_000_000_000 }))).toEqual({ ok: true });
   });
+  test('rejects at the exact expiry boundary (now === expires_at)', () => {
+    expect(evaluatePolicy(share({ expires_at: 2_000_000_000_000 }), file(), ctx({ now: 2_000_000_000_000 }))).toMatchObject({ ok: false, code: 'expired' });
+  });
   test('rejects upload to a distribute (download-only) drop', () => {
     expect(evaluatePolicy(share({ direction: 'distribute' }), file(), ctx())).toMatchObject({ ok: false, code: 'no-upload' });
   });
@@ -46,7 +49,7 @@ describe('evaluatePolicy', () => {
     expect(evaluatePolicy(share({ max_file_bytes: GB }), file({ size: GB }), ctx())).toEqual({ ok: true });
   });
   test('rejects when this file would exceed the total quota', () => {
-    expect(evaluatePolicy(share({ max_total_bytes: 10 * GB, used_bytes: 9 * GB }), file({ size: 2 * GB }), ctx())).toMatchObject({ ok: false, code: 'quota' });
+    expect(evaluatePolicy(share({ max_total_bytes: 10 * GB, used_bytes: 9.5 * GB }), file({ size: GB }), ctx())).toMatchObject({ ok: false, code: 'quota' });
   });
   test('allows when this file exactly fills the remaining quota', () => {
     expect(evaluatePolicy(share({ max_total_bytes: 10 * GB, used_bytes: 9 * GB }), file({ size: GB }), ctx())).toEqual({ ok: true });
@@ -58,8 +61,37 @@ describe('evaluatePolicy', () => {
   });
   test('always blocks denylisted executable extensions regardless of allowlist', () => {
     const s = share({ allowed_types: null });
-    for (const name of ['malware.exe', 'run.BAT', 'x.sh', 'y.cmd', 'z.msi']) {
+    for (const name of ['malware.exe', 'run.BAT', 'x.sh', 'y.cmd', 'z.msi', 'x.scr', 'y.com', 'z.ps1']) {
       expect(evaluatePolicy(s, file({ filename: name, type: 'application/octet-stream' }), ctx())).toMatchObject({ ok: false, code: 'blocked-type' });
     }
+  });
+  test('blocks denylisted extensions with trailing dots (Windows strips them)', () => {
+    const s = share({ allowed_types: null });
+    for (const name of ['malware.exe.', 'evil.bat..']) {
+      expect(evaluatePolicy(s, file({ filename: name, type: 'application/octet-stream' }), ctx())).toMatchObject({ ok: false, code: 'blocked-type' });
+    }
+  });
+  test('blocks a denylisted extension with a trailing space (Windows strips it)', () => {
+    const s = share({ allowed_types: null });
+    expect(evaluatePolicy(s, file({ filename: 'malware.exe ', type: 'application/octet-stream' }), ctx())).toMatchObject({ ok: false, code: 'blocked-type' });
+  });
+  test('uses the final extension: x.exe.jpg is allowed, malware.jpg.exe is blocked', () => {
+    const s = share({ allowed_types: null });
+    expect(evaluatePolicy(s, file({ filename: 'x.exe.jpg', type: 'image/jpeg' }), ctx())).toEqual({ ok: true });
+    expect(evaluatePolicy(s, file({ filename: 'malware.jpg.exe', type: 'application/octet-stream' }), ctx())).toMatchObject({ ok: false, code: 'blocked-type' });
+  });
+  test('does not allow a substring of an allowlisted type (no substring bypass)', () => {
+    const s = share({ allowed_types: '"image/jpeg"' });
+    expect(evaluatePolicy(s, file({ type: 'image/jp' }), ctx())).toMatchObject({ ok: false, code: 'type' });
+  });
+  test('fails closed when allowed_types is valid JSON but not an array', () => {
+    const s = share({ allowed_types: '{}' });
+    expect(evaluatePolicy(s, file(), ctx())).toMatchObject({ ok: false, code: 'type' });
+  });
+  test('allows upload to an exchange-direction drop', () => {
+    expect(evaluatePolicy(share({ direction: 'exchange' }), file(), ctx())).toEqual({ ok: true });
+  });
+  test('a reject returns exactly ok, code, and reason with no stray fields', () => {
+    expect(evaluatePolicy(share({ status: 'closed' }), file(), ctx())).toEqual({ ok: false, code: 'inactive', reason: 'This drop is no longer open.' });
   });
 });

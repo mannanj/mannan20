@@ -42,8 +42,9 @@ export type PolicyResult = { ok: true } | { ok: false; code: string; reason: str
 const BLOCKED_EXT = new Set(['exe', 'bat', 'sh', 'cmd', 'msi', 'com', 'scr', 'ps1']);
 
 function extOf(filename: string): string {
-  const dot = filename.lastIndexOf('.');
-  return dot === -1 ? '' : filename.slice(dot + 1).toLowerCase();
+  const cleaned = filename.replace(/[.\s]+$/, '');
+  const dot = cleaned.lastIndexOf('.');
+  return dot === -1 ? '' : cleaned.slice(dot + 1).toLowerCase();
 }
 
 function deny(code: string, reason: string): PolicyResult {
@@ -65,7 +66,8 @@ export function evaluatePolicy(share: ShareRow, file: FileMeta, ctx: PolicyConte
   if (share.allowed_types !== null) {
     let allowed: string[] = [];
     try {
-      allowed = JSON.parse(share.allowed_types);
+      const parsed = JSON.parse(share.allowed_types);
+      allowed = Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : [];
     } catch {
       allowed = [];
     }
