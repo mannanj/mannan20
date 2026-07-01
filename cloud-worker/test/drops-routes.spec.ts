@@ -42,4 +42,23 @@ describe('drops routes — auth + create/list/get', () => {
   it('rejects an invalid create (passcode mode, empty passcode)', async () => {
     expect((await post('/', { access_mode: 'passcode', passcode: '' })).status).toBe(400);
   });
+  it('join rejects a wrong passcode and accepts the right one, issuing a token', async () => {
+    const { id } = await (await post('/', { access_mode: 'passcode', passcode: 'right-code', require_name: true })).json<{ id: string }>();
+    expect((await post(`/${id}/join`, { name: 'Ann', passcode: 'wrong-code' })).status).toBe(403);
+    const ok = await post(`/${id}/join`, { name: 'Ann', passcode: 'right-code' });
+    expect(ok.status).toBe(200);
+    const { token, participant_id } = await ok.json<{ token: string; participant_id: string }>();
+    expect(token).toContain('.');
+    const p = await env.DB.prepare('SELECT name FROM share_participants WHERE id = ?').bind(participant_id).first<{ name: string }>();
+    expect(p?.name).toBe('Ann');
+  });
+  it('join enforces require_name', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: true })).json<{ id: string }>();
+    expect((await post(`/${id}/join`, {})).status).toBe(400);
+  });
+  it('join is refused once the participant cap is full', async () => {
+    const { id } = await (await post('/', { access_mode: 'open', require_name: false, max_participants: 1 })).json<{ id: string }>();
+    expect((await post(`/${id}/join`, {})).status).toBe(200);
+    expect((await post(`/${id}/join`, {})).status).toBe(409);
+  });
 });

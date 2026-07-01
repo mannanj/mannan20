@@ -103,3 +103,40 @@ drops.get('/:id', async (c) => {
     status: isExpired(share, now) ? 'expired' : 'active',
   });
 });
+
+drops.post('/:id/join', async (c) => {
+  const id = c.req.param('id');
+  if (!(await tryLimit(c.env.DROP_JOIN_LIMITER, `join:${ipOf(c)}`))) return c.json({ error: 'rate-limited' }, 429);
+  const share = await store.getShare(c.env, id);
+  if (!share) return c.json({ error: 'not found' }, 404);
+  const now = Date.now();
+  if (isExpired(share, now)) return c.json({ error: 'expired' }, 410);
+
+  const body = (await c.req.json().catch(() => null)) as { name?: string; passcode?: string } | null;
+
+  if (share.access_mode === 'passcode') {
+    const ok =
+      !!share.passcode_hash &&
+      !!share.passcode_salt &&
+      !!body?.passcode &&
+      (await verifyPasscode(body.passcode, share.passcode_salt, share.passcode_hash));
+    if (!ok) return c.json({ error: 'bad-passcode' }, 403);
+  }
+  if (share.access_mode === 'named') return c.json({ error: 'use-magic-link' }, 400);
+
+  if (share.require_name === 1 && !body?.name?.trim()) return c.json({ error: 'name-required' }, 400);
+  if (share.max_participants !== null && (await store.countParticipants(c.env, id)) >= share.max_participants) {
+    return c.json({ error: 'full' }, 409);
+  }
+
+  const pid = newId();
+  await store.insertParticipant(c.env, {
+    id: pid,
+    share_id: id,
+    email: null,
+    name: body?.name?.trim().slice(0, 100) ?? null,
+    joined_at: now,
+  });
+  const token = await mintParticipantToken(c.env, id, pid);
+  return c.json({ token, participant_id: pid });
+});
