@@ -111,60 +111,63 @@ export function GlassModal({
 
         <div style={{ display: 'flex', gap: `${8 * s}px`, alignItems: 'center' }}>
           {buttons.map((button, index) => (
-            <div key={button.label} style={{ position: 'relative', flex: 1 }}>
-              <button
-                type="button"
-                onClick={button.onClick}
-                data-modal-primary={button.primary || undefined}
-                onMouseEnter={() => setButtonHoverIndex(index)}
-                onMouseLeave={() => setButtonHoverIndex(null)}
-                style={{
-                  width: '100%',
-                  padding: `${5 * s}px 0`,
-                  background: buttonHoverIndex === index ? 'rgba(255,255,255,0.08)' : 'none',
-                  border: 'none',
-                  color: button.primary ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)',
-                  fontSize: `${12 * s}px`,
-                  fontWeight: button.primary ? 600 : 400,
-                  cursor: 'pointer',
-                  borderRadius: `${6 * s}px`,
-                  fontFamily: 'inherit',
-                }}
-              >
-                {button.label}
-              </button>
-              {button.primary && onViewInstead && (
-                <button
-                  type="button"
-                  onClick={onViewInstead}
-                  data-testid="glass-modal-view-instead"
-                  onMouseEnter={() => setViewInsteadHover(true)}
-                  onMouseLeave={() => setViewInsteadHover(false)}
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    marginTop: `${4 * s}px`,
-                    padding: 0,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    fontSize: `${10 * s}px`,
-                    lineHeight: 1,
-                    whiteSpace: 'nowrap',
-                    textDecoration: 'none',
-                    color: viewInsteadHover ? '#4fc3f7' : '#039be5',
-                    transition: 'color 0.15s ease',
-                  }}
-                >
-                  {viewInsteadLabel}
-                </button>
-              )}
-            </div>
+            <button
+              key={button.label}
+              type="button"
+              onClick={button.onClick}
+              data-modal-primary={button.primary || undefined}
+              onMouseEnter={() => setButtonHoverIndex(index)}
+              onMouseLeave={() => setButtonHoverIndex(null)}
+              style={{
+                flex: 1,
+                padding: `${5 * s}px 0`,
+                background: buttonHoverIndex === index ? 'rgba(255,255,255,0.08)' : 'none',
+                border: 'none',
+                color: button.primary ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)',
+                fontSize: `${12 * s}px`,
+                fontWeight: button.primary ? 600 : 400,
+                cursor: 'pointer',
+                borderRadius: `${6 * s}px`,
+                fontFamily: 'inherit',
+              }}
+            >
+              {button.label}
+            </button>
           ))}
         </div>
+
+        {onViewInstead && (
+          <div style={{ position: 'relative', height: `${11 * s}px`, marginTop: `${3 * s}px` }}>
+            <button
+              type="button"
+              onClick={onViewInstead}
+              data-testid="glass-modal-view-instead"
+              spellCheck={false}
+              onMouseEnter={() => setViewInsteadHover(true)}
+              onMouseLeave={() => setViewInsteadHover(false)}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                padding: 0,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: `${8 * s}px`,
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+                textDecoration: 'none',
+                color: viewInsteadHover ? '#4fc3f7' : '#039be5',
+                transform: viewInsteadHover ? 'scale(1.08)' : 'scale(1)',
+                transformOrigin: 'left center',
+                transition: 'color 0.15s ease, transform 0.15s ease',
+              }}
+            >
+              {viewInsteadLabel}
+            </button>
+          </div>
+        )}
 
         {showSizeToggle && (
           <div style={{

@@ -11,6 +11,7 @@ const TOTAL_DURATION_S = 213;
 const GUESS_APPEAR_S = 30;
 const LOCK_TIME_S = 71;
 const GRAVITY = 0.12;
+const FALL_SPEED_SCALE = 0.5;
 const HEADER_HEIGHT = 66;
 const BURST_DELAY_MS = 500;
 const INITIAL_BURST_PER_SOURCE = 40;
@@ -641,13 +642,13 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
 
       for (let i = 0; i < active.length; i++) {
         const gem = active[i];
-        gem.vy += GRAVITY;
-        gem.x += gem.vx;
-        gem.y += gem.vy;
+        gem.vy += GRAVITY * FALL_SPEED_SCALE;
+        gem.x += gem.vx * FALL_SPEED_SCALE;
+        gem.y += gem.vy * FALL_SPEED_SCALE;
 
         if (!gem.isDecor) {
           const dx = gem.targetX + SETTLED_SIZE / 2 - gem.x;
-          gem.vx += Math.sign(dx) * 0.08;
+          gem.vx += Math.sign(dx) * 0.08 * FALL_SPEED_SCALE;
           gem.vx *= 0.97;
 
           if (gem.y >= gem.targetY) {
