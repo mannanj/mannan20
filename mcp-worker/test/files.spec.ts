@@ -10,7 +10,7 @@ beforeAll(async () => {
 
 describe("file serving", () => {
   it("serves every allowlisted public file with download headers", async () => {
-    expect(data.files.length).toBe(5);
+    expect(data.files.length).toBe(6);
     for (const file of data.files) {
       const res = await SELF.fetch(`https://example.com/files/${file.slug}`);
       expect(res.status, file.slug).toBe(200);

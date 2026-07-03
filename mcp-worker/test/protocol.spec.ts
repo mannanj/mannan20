@@ -121,25 +121,34 @@ describe("mcp protocol", () => {
     expect(jung?.link).toBe("https://appliedjung.com");
   });
 
-  it("list_writing returns 4 public articles with site URLs", async () => {
+  it("list_writing returns 3 public articles with site URLs", async () => {
     const { writing } = toolJson<{ writing: Array<{ title: string; url: string }> }>(
       await client.callTool({ name: "list_writing", arguments: {} }),
     );
-    expect(writing).toHaveLength(4);
+    expect(writing).toHaveLength(3);
     expect(writing.map((w) => w.title)).toContain("Health is an Artform");
     for (const w of writing) {
       expect(w.url).toMatch(/^https:\/\/mannan\.is\/garden\/article\//);
     }
   });
 
-  it("list_readings returns 2 public readings attributed to other authors", async () => {
+  it("list_readings returns 3 public readings, self-authored ones clearly labeled", async () => {
     const { readings } = toolJson<{
       readings: Array<{ author: string; note: string; url: string }>;
     }>(await client.callTool({ name: "list_readings", arguments: {} }));
-    expect(readings).toHaveLength(2);
-    expect(readings.map((r) => r.author).sort()).toEqual(["Bryan Johnson", "Faizan Ishaq"]);
+    expect(readings).toHaveLength(3);
+    expect(readings.map((r) => r.author).sort()).toEqual([
+      "Bryan Johnson",
+      "Faizan Ishaq",
+      "Mannan Javid",
+    ]);
     for (const r of readings) {
-      expect(r.note).toContain("not by Mannan Javid");
+      if (r.author === "Mannan Javid") {
+        expect(r.note).toContain("authored by Mannan Javid");
+        expect(r.note).not.toContain("not by Mannan Javid");
+      } else {
+        expect(r.note).toContain("not by Mannan Javid");
+      }
     }
   });
 
