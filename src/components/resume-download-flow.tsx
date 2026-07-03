@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { downloadFile } from '@/lib/utils';
 import { GlassModal } from '@/components/glass-modal';
+import { PdfPreviewModal } from '@/components/pdf-preview-modal';
 import { GemRain } from '@/components/gem-rain';
 import { useStepSequence } from '@/hooks/use-step-sequence';
 import { useAnimatedScroll } from '@/hooks/use-animated-scroll';
 import { GuidedCursor } from '@/components/guided-flow/guided-cursor';
 import { Spotlight } from '@/components/guided-flow/spotlight';
 import { CursorHide } from '@/components/guided-flow/cursor-hide';
+import { getPdfPreviewPath } from '@/lib/pdf-preview';
 
 const RESUME_PATH = '/api/download/resume';
 const RESUME_FILENAME = 'Mannan_Javid_Resume.pdf';
@@ -65,6 +67,7 @@ export function ResumeDownloadFlow() {
   const [dlBtnRect, setDlBtnRect] = useState<DOMRect | null>(null);
   const [gemActive, setGemActive] = useState(false);
   const [gemSources, setGemSources] = useState<GemSource[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const gemLockedRef = useRef(false);
   const scrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -87,6 +90,7 @@ export function ResumeDownloadFlow() {
     setCursorHideActive(false);
     setTransitionDuration(0);
     setGemActive(false);
+    setPreviewOpen(false);
     gemLockedRef.current = false;
     if (btnRef.current) btnRef.current.style.pointerEvents = '';
     history.replaceState(null, '', window.location.pathname);
@@ -107,12 +111,17 @@ export function ResumeDownloadFlow() {
       setDlBtnRect(null);
       setCursorHideActive(false);
       setTransitionDuration(0);
+      setPreviewOpen(false);
       if (btnRef.current) btnRef.current.style.pointerEvents = '';
       history.replaceState(null, '', window.location.pathname);
     } else {
       fullCleanup();
     }
   }, [fullCleanup, sequence, scroll]);
+
+  const handleViewInstead = useCallback(() => {
+    setPreviewOpen(true);
+  }, []);
 
   const handleDownload = useCallback(() => {
     if (gemLockedRef.current) {
@@ -142,6 +151,8 @@ export function ResumeDownloadFlow() {
     { label: 'Cancel', onClick: handleClose },
     { label: 'Download', onClick: handleDownload, primary: true },
   ], [handleClose, handleDownload]);
+
+  const previewPath = getPdfPreviewPath(modalConfig.path);
 
   const startFlow = useCallback(() => {
     const el = document.getElementById('employment-history');
@@ -362,15 +373,26 @@ export function ResumeDownloadFlow() {
       />
 
       <GlassModal
-        isOpen={phase === 'modal'}
+        isOpen={phase === 'modal' && !previewOpen}
         onClose={handleClose}
         body={modalConfig.body}
         buttons={modalButtons}
         defaultSize={isMobileRef.current ? 'small' : 'medium'}
         showSizeToggle={false}
+        onViewInstead={previewPath ? handleViewInstead : undefined}
       />
 
-      {phase === 'modal' && dlBtnRect && (
+      {previewPath && (
+        <PdfPreviewModal
+          isOpen={phase === 'modal' && previewOpen}
+          onClose={handleClose}
+          src={previewPath}
+          title={`${modalConfig.filename} preview`}
+          documentId="resume-preview"
+        />
+      )}
+
+      {phase === 'modal' && !previewOpen && dlBtnRect && (
         <>
           {celebrations.squiggly && (
             <svg
@@ -474,7 +496,7 @@ export function ResumeDownloadFlow() {
         </>
       )}
 
-      {gemActive && gemSources.length > 0 && (
+      {gemActive && gemSources.length > 0 && !previewOpen && (
         <GemRain
           sources={gemSources}
           onLockChange={handleGemLockChange}

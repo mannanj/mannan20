@@ -98,4 +98,6 @@ export interface GlassModalProps {
   buttons: GlassModalButton[];
   defaultSize?: GlassModalSize;
   showSizeToggle?: boolean;
+  viewInsteadLabel?: string;
+  onViewInstead?: () => void;
 }

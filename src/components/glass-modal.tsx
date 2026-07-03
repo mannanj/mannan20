@@ -17,11 +17,14 @@ export function GlassModal({
   buttons,
   defaultSize = 'small',
   showSizeToggle = true,
+  viewInsteadLabel = 'View instead?',
+  onViewInstead,
 }: GlassModalProps) {
   const [modalSize, setModalSize] = useState<GlassModalSize>(defaultSize);
   const [closeHover, setCloseHover] = useState(false);
   const [buttonHoverIndex, setButtonHoverIndex] = useState<number | null>(null);
   const [sizeHover, setSizeHover] = useState<GlassModalSize | null>(null);
+  const [viewInsteadHover, setViewInsteadHover] = useState(false);
 
   useEffect(() => {
     setModalSize(defaultSize);
@@ -108,28 +111,58 @@ export function GlassModal({
 
         <div style={{ display: 'flex', gap: `${8 * s}px`, alignItems: 'center' }}>
           {buttons.map((button, index) => (
-            <button
-              key={button.label}
-              type="button"
-              onClick={button.onClick}
-              data-modal-primary={button.primary || undefined}
-              onMouseEnter={() => setButtonHoverIndex(index)}
-              onMouseLeave={() => setButtonHoverIndex(null)}
-              style={{
-                flex: 1,
-                padding: `${5 * s}px 0`,
-                background: buttonHoverIndex === index ? 'rgba(255,255,255,0.08)' : 'none',
-                border: 'none',
-                color: button.primary ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)',
-                fontSize: `${12 * s}px`,
-                fontWeight: button.primary ? 600 : 400,
-                cursor: 'pointer',
-                borderRadius: `${6 * s}px`,
-                fontFamily: 'inherit',
-              }}
-            >
-              {button.label}
-            </button>
+            <div key={button.label} style={{ position: 'relative', flex: 1 }}>
+              <button
+                type="button"
+                onClick={button.onClick}
+                data-modal-primary={button.primary || undefined}
+                onMouseEnter={() => setButtonHoverIndex(index)}
+                onMouseLeave={() => setButtonHoverIndex(null)}
+                style={{
+                  width: '100%',
+                  padding: `${5 * s}px 0`,
+                  background: buttonHoverIndex === index ? 'rgba(255,255,255,0.08)' : 'none',
+                  border: 'none',
+                  color: button.primary ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.5)',
+                  fontSize: `${12 * s}px`,
+                  fontWeight: button.primary ? 600 : 400,
+                  cursor: 'pointer',
+                  borderRadius: `${6 * s}px`,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {button.label}
+              </button>
+              {button.primary && onViewInstead && (
+                <button
+                  type="button"
+                  onClick={onViewInstead}
+                  data-testid="glass-modal-view-instead"
+                  onMouseEnter={() => setViewInsteadHover(true)}
+                  onMouseLeave={() => setViewInsteadHover(false)}
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    marginTop: `${4 * s}px`,
+                    padding: 0,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: `${10 * s}px`,
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                    textDecoration: 'none',
+                    color: viewInsteadHover ? '#4fc3f7' : '#039be5',
+                    transition: 'color 0.15s ease',
+                  }}
+                >
+                  {viewInsteadLabel}
+                </button>
+              )}
+            </div>
           ))}
         </div>
 
