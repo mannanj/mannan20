@@ -2,18 +2,6 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   devIndicators: false,
-  outputFileTracingExcludes: {
-    "/api/tts": [
-      "./scripts/**/*",
-      "./public/data/audio/**/*",
-      "./wants/kick-the-can/**/*",
-    ],
-    "/api/tts/route": [
-      "./scripts/**/*",
-      "./public/data/audio/**/*",
-      "./wants/kick-the-can/**/*",
-    ],
-  },
   images: {
     remotePatterns: [
       {
