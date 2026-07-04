@@ -10,14 +10,14 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 |------|-------------|-------|--------|------------|--------|
 | [001](001-tts-command-injection.md) | SEC-01 | Delete/lock down the unauthenticated command injection in `/api/tts` | S | — | DONE |
 | [002](002-jordan-server-side-auth.md) | SEC-02, CORRECTNESS-02, TEST-01 | Give `/api/jordan/*` real server-side session auth | M | — | TODO |
-| [003](003-dependency-cve-upgrade.md) | SEC-03, DEP-07 | Update Next.js + PostCSS off versions with active CVEs | S | — | TODO |
+| [003](003-dependency-cve-upgrade.md) | SEC-03, DEP-07 | Update Next.js + PostCSS off versions with active CVEs | S | — | BLOCKED (next fully fixed 15.5.20; postcss advisory persists via nested `@tailwindcss/postcss`/`next` copies not covered by `bun update postcss` — STOP condition, see `tasks/task-265.md`) |
 
 ## P1 — high leverage
 
 | Plan | Finding IDs | Title | Effort | Depends on | Status |
 |------|-------------|-------|--------|------------|--------|
 | [004](004-auth-token-double-redeem-race.md) | CORRECTNESS-01 | Fix magic-token / site-session-code double-redeem race | S | — | TODO |
-| [005](005-repo-identity-docs-refresh.md) | DOCS-02, DX-03, DX-06 | Rewrite README, retire the dead git hook, fix `.vscode/` | M | — | TODO |
+| [005](005-repo-identity-docs-refresh.md) | DOCS-02, DX-03, DX-06 | Rewrite README, retire the dead git hook, fix `.vscode/` | M | — | DONE |
 | — | SEC-08 | Add CSRF state/nonce to the login callback | M | — | TODO |
 | — | SEC-09 | Make sign-out actually invalidate sessions server-side | M | — | TODO |
 | — | SEC-05 | Require a real gameplay-proof token before a leaderboard score counts | M | — | TODO |

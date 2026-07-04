@@ -201,12 +201,11 @@ export async function consumeMagicToken(
   purpose: 'cloud' | 'site' = 'cloud',
 ): Promise<string | null> {
   const row = await env.DB.prepare(
-    'SELECT email, expires_at FROM magic_tokens WHERE token = ? AND purpose = ?',
+    'DELETE FROM magic_tokens WHERE token = ? AND purpose = ? RETURNING email, expires_at',
   )
     .bind(await hashSecret(token), purpose)
     .first<{ email: string; expires_at: number }>();
   if (!row) return null;
-  await env.DB.prepare('DELETE FROM magic_tokens WHERE token = ?').bind(await hashSecret(token)).run();
   if (row.expires_at < Date.now()) return null;
   return row.email;
 }
@@ -227,12 +226,11 @@ export async function consumeSiteSessionCode(
 ): Promise<{ email: string; role: string } | null> {
   const codeHash = await hashSecret(code);
   const row = await env.DB.prepare(
-    'SELECT email, expires_at FROM site_session_codes WHERE code_hash = ?',
+    'DELETE FROM site_session_codes WHERE code_hash = ? RETURNING email, expires_at',
   )
     .bind(codeHash)
     .first<{ email: string; expires_at: number }>();
   if (!row) return null;
-  await env.DB.prepare('DELETE FROM site_session_codes WHERE code_hash = ?').bind(codeHash).run();
   if (row.expires_at < Date.now()) return null;
   return getUser(env, row.email);
 }
