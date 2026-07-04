@@ -138,7 +138,7 @@ Privacy rules are enforced by build guards and tests: gated/hidden content (Take
 
 ### Post-Commit Hook
 
-`.githooks/post-commit` auto-generates task tracking data.
+`.githooks/post-commit` exists but is **not wired up** — `core.hooksPath` is unset and `.git/hooks/post-commit` doesn't exist, so it has never run. Treat it as dead until someone deliberately wires it up (`git config core.hooksPath .githooks`); don't assume task tracking data is being auto-generated.
 
 ### Task Workflow
 
@@ -158,30 +158,14 @@ Privacy rules are enforced by build guards and tests: gated/hidden content (Take
 - Review files in Location field
 - If complete but unmarked:
   - Mark subtasks `[x]` in tasks/task-N.md
-  - Commit with `[Task-N]` tag
   - Push and skip to next task
 
 **3. Complete subtasks, mark `[x]` in tasks/task-N.md**
 
-**4. Commit:**
-```bash
-git add .
-git commit -m "Task N: Task Title
-
-- [x] Subtask 1
-- [x] Subtask 2
-- Location: \`path/to/files\`
-
-[Task-N]
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-```
+**4. Commit** with a plain descriptive message (subject + body as needed). The `[Task-N]` commit-tag convention this section previously described as required is **not actually practiced** — recent commits carry no such tag, and there's no hook consuming it — so don't bother adding it.
 
 **Requirements:**
 - Each task gets its own file: `tasks/task-N.md`
-- Complete task entry in commit message
-- All subtasks with status
-- `[Task-N]` tag for tracking
-- One task per commit
+- Mark subtasks complete as they're done
 
 **5. Push:** `git push`
