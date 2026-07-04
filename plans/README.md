@@ -9,14 +9,14 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 | Plan | Finding IDs | Title | Effort | Depends on | Status |
 |------|-------------|-------|--------|------------|--------|
 | [001](001-tts-command-injection.md) | SEC-01 | Delete/lock down the unauthenticated command injection in `/api/tts` | S | — | DONE |
-| [002](002-jordan-server-side-auth.md) | SEC-02, CORRECTNESS-02, TEST-01 | Give `/api/jordan/*` real server-side session auth | M | — | TODO |
-| [003](003-dependency-cve-upgrade.md) | SEC-03, DEP-07 | Update Next.js + PostCSS off versions with active CVEs | S | — | BLOCKED (next fully fixed 15.5.20; postcss advisory persists via nested `@tailwindcss/postcss`/`next` copies not covered by `bun update postcss` — STOP condition, see `tasks/task-265.md`) |
+| [002](002-jordan-server-side-auth.md) | SEC-02, CORRECTNESS-02, TEST-01 | ~~Give `/api/jordan/*` real server-side session auth~~ | M | — | REJECTED (superseded 2026-07-04 — Mannan decided to disable jordan entirely instead of fixing its auth, since it's no longer in active use; see decision trail below and `tasks/task-268.md`) |
+| [003](003-dependency-cve-upgrade.md) | SEC-03, DEP-07 | Update Next.js + PostCSS off versions with active CVEs | S | — | DONE (partial, accepted) — next's 9 HIGH advisories fully closed (15.5.10 → 15.5.20); the postcss moderate advisory persists via nested `@tailwindcss/postcss`/`next`-vendored copies not reachable by `bun update postcss` alone (needs an `overrides` field or an upstream Next.js release). Residual risk is low (only processes this repo's own authored CSS at build time, not user input, per the plan's own risk note). Tracked as new finding `DEP-08` below. See `tasks/task-265.md`. |
 
 ## P1 — high leverage
 
 | Plan | Finding IDs | Title | Effort | Depends on | Status |
 |------|-------------|-------|--------|------------|--------|
-| [004](004-auth-token-double-redeem-race.md) | CORRECTNESS-01 | Fix magic-token / site-session-code double-redeem race | S | — | TODO |
+| [004](004-auth-token-double-redeem-race.md) | CORRECTNESS-01 | Fix magic-token / site-session-code double-redeem race | S | — | DONE |
 | [005](005-repo-identity-docs-refresh.md) | DOCS-02, DX-03, DX-06 | Rewrite README, retire the dead git hook, fix `.vscode/` | M | — | DONE |
 | — | SEC-08 | Add CSRF state/nonce to the login callback | M | — | TODO |
 | — | SEC-09 | Make sign-out actually invalidate sessions server-side | M | — | TODO |
@@ -34,16 +34,17 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 
 | Finding IDs | Title | Effort | Depends on | Status |
 |---|---|---|---|---|
-| SEC-06 | Add content-type/extension allowlist to jordan upload | S | plan 002 | TODO |
+| SEC-06 | ~~Add content-type/extension allowlist to jordan upload~~ | S | plan 002 | MOOT (jordan disabled 2026-07-04, see decision trail) |
 | SEC-07 | Make MCP privacy filter an explicit allowlist, not opt-out | M | — | TODO |
 | SEC-04 | Fix `validate-contact`'s spoofable rate-limit header (match the other 6 routes) | S | — | TODO |
 | SEC-10 | Stop returning raw exception messages to API clients (~10 routes) | S | — | TODO |
 | SEC-11 | Fix visits-worker CORS origin-reflection; add baseline security headers | S | — | TODO |
-| CORRECTNESS-03 | Add conflict detection to jordan document/canvas state saves | L | plan 002 | TODO |
-| CORRECTNESS-05 | Fix jordan upload daily-quota check-then-act race | S | plan 002 | TODO |
+| CORRECTNESS-03 | ~~Add conflict detection to jordan document/canvas state saves~~ | L | plan 002 | MOOT (jordan disabled 2026-07-04, see decision trail) |
+| CORRECTNESS-05 | ~~Fix jordan upload daily-quota check-then-act race~~ | S | plan 002 | MOOT (jordan disabled 2026-07-04, see decision trail) |
 | CORRECTNESS-07 | Add TTL/cap to leaderboard identity hashes | M | — | TODO |
 | CORRECTNESS-08 | Check `payment_status` before showing "Payment Successful" | S | — | TODO |
-| CORRECTNESS-09 | Flush pending canvas events on unmount, not just on interval | S | plan 002 (same files) | TODO |
+| CORRECTNESS-09 | ~~Flush pending canvas events on unmount, not just on interval~~ | S | plan 002 (same files) | MOOT (jordan disabled 2026-07-04, see decision trail) |
+| CORRECTNESS-13 | Fix pre-existing `cloud-worker/src/admin.ts` type errors (14 errors: implicit `any`, property access on a union that includes `{}`) — discovered as a side effect of plan 004; confirmed pre-existing via empty `git diff` against baseline `04dbc8e`, not introduced by any remediation work. cloud-worker has its own tsconfig excluded from the root, so the original audit's "0 errors" baseline never covered it. | S | — | TODO |
 | TEST-07 | Add unit tests for Stripe checkout route | S | — | TODO |
 | TEST-05 | Add tests for cloud-worker's untested routes/admin surface/ZIP writer | M | — | TODO |
 | TEST-06 | Unit-test `validate-contact`'s response parsing + the 4 `auth/*` routes | S | — | TODO |
@@ -56,6 +57,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 | DEP-01 | Pin Stripe `apiVersion`; consolidate the 2 client instantiations into 1 | S | — | TODO |
 | DEP-03 | Re-align wrangler/workers-types versions across the 3 workers | S | — | TODO |
 | DEP-04 | Bump root TypeScript off its Angular-era pin | S | — | TODO |
+| DEP-08 | Close the residual postcss moderate advisory (GHSA-qx2v-qp2m-jg93) via nested `@tailwindcss/postcss`/`next`-vendored copies — needs a package.json `overrides` field or an upstream Next.js release; left open by plan 003 | S | plan 003 | TODO |
 | DX-04 | Add root `.env.example` documenting all 18 vars | S | — | TODO |
 
 ## P3 / investigate (low priority)
@@ -67,7 +69,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 | CORRECTNESS-10 | `TextNode` never resyncs if content changes externally (latent until CORRECTNESS-03 ships) | TODO |
 | CORRECTNESS-11 | Checkout amount validation doesn't reject non-finite input (Stripe is the real backstop) | TODO |
 | CORRECTNESS-12 | cloud-worker cache-invalidation key ignores subpath (likely unreachable today) | TODO |
-| TEST-04 | Fix jordan page-title metadata leak (`title: { absolute: ... }`) | TODO |
+| TEST-04 | ~~Fix jordan page-title metadata leak~~ | MOOT (jordan disabled 2026-07-04, see decision trail) |
 | TEST-09 | Add a test script + first smoke test to `visits-worker` | TODO |
 | TEST-10 | Port `gem-rain`'s 3 real-timer tests to the `page.clock` pattern already proven in the same file | TODO |
 | TEST-11 | Investigate whether `downloads.spec.ts`'s rate-limit test undercounts due to shared external Upstash state | TODO |
@@ -98,8 +100,15 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 Do not start any of these without checking with Mannan first — priority/taste calls, not engineering judgment calls.
 
 1. **Ship "Drops"** (inbound file-sharing) — fully designed across `docs/superpowers/plans/2026-06-30-drops-m1-collect.md` and related docs; zero code exists yet.
-2. **Jordan CRUD gaps** — every jordan resource can be created/read/updated but the only delete is the reset route's total wipe; versions already store full snapshots, restore is mostly reusing the existing write path.
+2. **Jordan CRUD gaps** — ~~every jordan resource can be created/read/updated but the only delete is the reset route's total wipe; versions already store full snapshots, restore is mostly reusing the existing write path.~~ **MOOT as of 2026-07-04**: jordan is disabled (see decision trail below). Revisit only if jordan is revived.
 3. **Garden articles → Markdown/MDX** — the repo already proves this pattern for episodes (`readFileSync` + `ReactMarkdown`); garden articles are still hand-coded TSX per piece.
 4. **MCP "Publisher Intent" layer** — a completed research spike (`research/mcp-publisher-intent-proof-spike.md`) already designed a data model + 3-phase roadmap; none of it is implemented.
 5. **Reuse the leaderboard's lightweight-identity primitive** (`src/lib/leaderboard-store.ts`'s cookie + magic-email pattern) for any future feature that needs no-signup identity.
 6. **Chicken game escape-vehicles escalation** — fully spec'd in `tasks/task-244.md` + `docs/chicken-game-escape-scenes-raw.md`, 0-of-7 built.
+
+## Decision trail (coordinator log — engineering calls decided unilaterally, and direct authorizations from Mannan)
+
+- **2026-07-04 — jordan disabled instead of authed (Mannan's call, not a coordinator judgment)**: plan 002's executor correctly stopped before writing any code when it found that adding the required auth check to `reset` would break all 33 tests in `e2e/jordan-workspace.spec.ts` (the shared `resetJordanState()` helper calls the route through an unauthenticated Playwright `request` fixture with no cookie). Asked Mannan directly; his answer: disable jordan entirely rather than fix its auth, since he no longer uses it, and keep everything reversible so the feature can come back later. Executed as a mechanical, zero-deletion change: `src/app/jordan/` → `src/app/_jordan/`, `src/app/api/jordan/` → `src/app/api/_jordan/` (Next.js App Router treats underscore-prefixed folders as private/unroutable — the route becomes an ordinary 404 with no code changes inside either folder), and `e2e/jordan-workspace.spec.ts` → `e2e/jordan-workspace.spec.ts.disabled` (falls outside Playwright's default test-match pattern, so it's simply not discovered — nothing deleted). `src/components/jordan/`, `src/components/canvas/` (the generic canvas tree jordan was the only consumer of), and the e2e spec's actual test content are all untouched and intact. No nav ever linked to `/jordan` (confirmed by repo-wide grep), so no other file needed touching. **To revive jordan in the future**: rename both folders and the spec file back, then still land plan 002's real auth fix before putting it back in front of real users — the underlying "no server-side auth" security gap this was originally about was never fixed, only made unreachable by removing the route. Full detail: `tasks/task-268.md`.
+- **2026-07-04 — plan 003 accepted as a partial fix (coordinator judgment call)**: `bun update next postcss` fully closed all 9 `next` HIGH CVEs (including the two classes directly relevant to this app's live `middleware.ts`) but couldn't reach a nested/vendored postcss copy inside `next` itself (exact-pinned, not resolvable via `bun update` on our end) or a second nested copy under `@tailwindcss/postcss`. The plan's own STOP condition covers "an advisory still shows after the update," which technically fired — but the residual is a moderate XSS advisory that (per the plan's own risk note) only matters against untrusted CSS input, and this repo only ever processes its own authored CSS at build time. Closing 9 HIGH CVEs now and tracking the low-risk residual as a new backlog item (`DEP-08`) rather than blocking the whole plan on an upstream fix was a reasonable engineering call, not a taste/authorization question — decided unilaterally, logged here for visibility.
+- **2026-07-04 — dev server found down mid-session (not caused by any remediation work)**: the persistent `bun run dev` server on port 3847 (confirmed running, PID 21982, at session start) was found already unreachable by plan 003's executor partway through the run, and confirmed still down by the coordinator later. No subagent was authorized to kill it and none reported doing so — all five explicitly avoided `bun run dev`/`next build` per the standing constraint. Most likely it exited independently for a reason unrelated to this session (e.g. the human's own terminal/session ended). The coordinator cleared the resulting stale `.next/` build cache (gitignored, fully regenerated on next `dev`/`build`, safe to delete with no server running) to resolve phantom `tsc` errors referencing old jordan paths. Flagging for Mannan: the dev server is not currently running — start a fresh one when you're back if you want live verification.
+- **2026-07-04 — `cloud-worker/src/admin.ts` pre-existing type errors (new finding, not a regression)**: plan 004's executor found 14 `tsc` errors in `admin.ts` after its own changes; confirmed via `git diff 04dbc8e -- cloud-worker/src/admin.ts` (empty) that the file was never touched by any remediation work and the errors predate this entire audit cycle. The original audit's "0 errors" baseline only ever covered the root `tsconfig` — `cloud-worker` has its own, separately excluded, and was never actually checked. Logged as new finding `CORRECTNESS-13` above rather than fixed opportunistically inside plan 004's diff, per this project's ground rule against scope creep mid-plan.
