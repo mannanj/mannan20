@@ -17,7 +17,7 @@ export function GlassModal({
   buttons,
   defaultSize = 'small',
   showSizeToggle = true,
-  viewInsteadLabel = 'View instead?',
+  viewInsteadLabel = 'View Instead',
   onViewInstead,
 }: GlassModalProps) {
   const [modalSize, setModalSize] = useState<GlassModalSize>(defaultSize);
@@ -137,35 +137,35 @@ export function GlassModal({
         </div>
 
         {onViewInstead && (
-          <div style={{ position: 'relative', height: `${11 * s}px`, marginTop: `${3 * s}px` }}>
-            <button
-              type="button"
-              onClick={onViewInstead}
-              data-testid="glass-modal-view-instead"
-              spellCheck={false}
-              onMouseEnter={() => setViewInsteadHover(true)}
-              onMouseLeave={() => setViewInsteadHover(false)}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                padding: 0,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                fontSize: `${8 * s}px`,
-                lineHeight: 1,
-                whiteSpace: 'nowrap',
-                textDecoration: 'none',
-                color: viewInsteadHover ? '#4fc3f7' : '#039be5',
-                transform: viewInsteadHover ? 'scale(1.08)' : 'scale(1)',
-                transformOrigin: 'left center',
-                transition: 'color 0.15s ease, transform 0.15s ease',
-              }}
-            >
-              {viewInsteadLabel}
-            </button>
+          <div style={{ display: 'flex', gap: `${8 * s}px`, marginTop: `${3 * s}px` }}>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={onViewInstead}
+                data-testid="glass-modal-view-instead"
+                spellCheck={false}
+                onMouseEnter={() => setViewInsteadHover(true)}
+                onMouseLeave={() => setViewInsteadHover(false)}
+                style={{
+                  padding: 0,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: `${8 * s}px`,
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                  textDecoration: 'none',
+                  color: viewInsteadHover ? '#4fc3f7' : '#039be5',
+                  transform: viewInsteadHover ? 'scale(1.08)' : 'scale(1)',
+                  transformOrigin: 'center',
+                  transition: 'color 0.15s ease, transform 0.15s ease',
+                }}
+              >
+                {viewInsteadLabel}
+              </button>
+            </div>
+            <div style={{ flex: 1 }} />
           </div>
         )}
 
