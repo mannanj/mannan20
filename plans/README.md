@@ -44,7 +44,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 | CORRECTNESS-07 | Add TTL/cap to leaderboard identity hashes | M | — | TODO |
 | CORRECTNESS-08 | Check `payment_status` before showing "Payment Successful" | S | — | TODO |
 | CORRECTNESS-09 | ~~Flush pending canvas events on unmount, not just on interval~~ | S | plan 002 (same files) | MOOT (jordan disabled 2026-07-04, see decision trail) |
-| CORRECTNESS-13 | Fix pre-existing `cloud-worker/src/admin.ts` type errors (15 errors: implicit `any`, property access on a union that includes `{}`, a bad `instanceof` check) — discovered as a side effect of plan 004; confirmed pre-existing via empty `git diff` against baseline `04dbc8e`, not introduced by any remediation work. cloud-worker has its own tsconfig excluded from the root, so the original audit's "0 errors" baseline never covered it. | S | — | TODO |
+| CORRECTNESS-13 | Fix pre-existing `cloud-worker/src/admin.ts` type errors (~14-15 errors depending on count method: implicit `any`, property access on a union that includes `{}`, a bad `instanceof` check) — discovered as a side effect of plan 004; confirmed pre-existing via empty `git diff` against baseline `04dbc8e`, not introduced by any remediation work. cloud-worker has its own tsconfig excluded from the root, so the original audit's "0 errors" baseline never covered it. | S | — | TODO |
 | TEST-07 | Add unit tests for Stripe checkout route | S | — | TODO |
 | TEST-05 | Add tests for cloud-worker's untested routes/admin surface/ZIP writer | M | — | TODO |
 | TEST-06 | Unit-test `validate-contact`'s response parsing + the 4 `auth/*` routes | S | — | TODO |
