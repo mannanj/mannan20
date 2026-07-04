@@ -12,6 +12,7 @@ const GUESS_APPEAR_S = 30;
 const LOCK_TIME_S = 71;
 const GRAVITY = 0.12;
 const FALL_SPEED_SCALE = 0.5;
+const GEM_DENSITY_SCALE = 1 / 3;
 const HEADER_HEIGHT = 66;
 const BURST_DELAY_MS = 500;
 const INITIAL_BURST_PER_SOURCE = 40;
@@ -547,7 +548,7 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
 
     const totalGems = cols * rows;
     const framesTotal = TOTAL_DURATION_S * 60;
-    gemsPerFrameRef.current = totalGems / framesTotal;
+    gemsPerFrameRef.current = (totalGems / framesTotal) * GEM_DENSITY_SCALE;
 
     let burstDelayDone = false;
     const burstTimeout = setTimeout(() => {
@@ -591,7 +592,7 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
       if (FEATURES.GEM_RAIN) {
         let settleSpawn = gemsPerFrameRef.current;
         if (frame < INITIAL_BURST_FRAMES) {
-          settleSpawn += (INITIAL_BURST_PER_SOURCE * sources.length) / INITIAL_BURST_FRAMES;
+          settleSpawn += (INITIAL_BURST_PER_SOURCE * sources.length * GEM_DENSITY_SCALE) / INITIAL_BURST_FRAMES;
         }
 
         const settleInt = Math.floor(settleSpawn);
@@ -619,7 +620,8 @@ export function GemRain({ sources, onLockChange, onStop }: GemRainProps) {
         }
       }
 
-      for (let i = 0; i < DECOR_PER_FRAME; i++) {
+      const decorCount = Math.round(DECOR_PER_FRAME * GEM_DENSITY_SCALE);
+      for (let i = 0; i < decorCount; i++) {
         const src = sources[Math.floor(Math.random() * sources.length)];
         const angle = Math.random() * Math.PI * 2;
         const speed = 1 + Math.random() * 3;
