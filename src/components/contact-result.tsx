@@ -5,6 +5,7 @@ import type { ContactResultData } from '@/lib/types';
 import { getPhoneLink, copyToClipboard } from '@/lib/utils';
 import { CopyIcon } from './icons/copy-icon';
 import { CheckIcon } from './icons/check-icon';
+import { ContactIntentForm } from './contact-intent-form';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
 
@@ -53,6 +54,7 @@ export function ContactResult({ result }: ContactResultProps) {
           {copiedPhone ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
         </button>
       </div>
+      <ContactIntentForm />
     </div>
   );
 }

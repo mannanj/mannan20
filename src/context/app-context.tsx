@@ -12,7 +12,6 @@ interface AppState {
   contactShowResult: boolean;
   contactResult: ContactResultData | null;
   contactRevealed: boolean;
-  contactUserInput: string;
   contactPopoutPosition: { x: number; y: number } | null;
   commandsModalOpen: boolean;
 }
@@ -22,7 +21,6 @@ type AppAction =
   | { type: 'OPEN_CONTACT_MODAL'; position: { x: number; y: number } }
   | { type: 'CLOSE_CONTACT_MODAL' }
   | { type: 'SET_CONTACT_RESULT'; result: ContactResultData }
-  | { type: 'SET_CONTACT_USER_INPUT'; value: string }
   | { type: 'REVEAL_CONTACT' }
   | { type: 'TOGGLE_COMMANDS_MODAL' };
 
@@ -32,7 +30,6 @@ const initialState: AppState = {
   contactShowResult: false,
   contactResult: null,
   contactRevealed: false,
-  contactUserInput: '',
   contactPopoutPosition: null,
   commandsModalOpen: false,
 };
@@ -47,9 +44,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'CLOSE_CONTACT_MODAL':
       return { ...state, contactModalOpen: false, contactShowResult: false, contactResult: null };
     case 'SET_CONTACT_RESULT':
-      return { ...state, contactShowResult: true, contactResult: action.result, contactRevealed: true, contactUserInput: '' };
-    case 'SET_CONTACT_USER_INPUT':
-      return { ...state, contactUserInput: action.value };
+      return { ...state, contactShowResult: true, contactResult: action.result, contactRevealed: true };
     case 'REVEAL_CONTACT':
       return { ...state, contactRevealed: true };
     case 'TOGGLE_COMMANDS_MODAL':
@@ -65,7 +60,6 @@ interface AppContextValue {
   openContactModal: (x: number, y: number) => void;
   closeContactModal: () => void;
   setContactResult: (result: ContactResultData) => void;
-  setContactUserInput: (value: string) => void;
   toggleCommandsModal: () => void;
 }
 
@@ -87,7 +81,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.cookie = `${COOKIE_NAME}=1;path=/;max-age=${COOKIE_MAX_AGE_SECONDS};SameSite=Lax`;
     dispatch({ type: 'SET_CONTACT_RESULT', result });
   }, []);
-  const setContactUserInput = useCallback((value: string) => dispatch({ type: 'SET_CONTACT_USER_INPUT', value }), []);
   const toggleCommandsModal = useCallback(() => dispatch({ type: 'TOGGLE_COMMANDS_MODAL' }), []);
 
   const value: AppContextValue = useMemo(() => ({
@@ -96,9 +89,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     openContactModal,
     closeContactModal,
     setContactResult,
-    setContactUserInput,
     toggleCommandsModal,
-  }), [state, setActiveSection, openContactModal, closeContactModal, setContactResult, setContactUserInput, toggleCommandsModal]);
+  }), [state, setActiveSection, openContactModal, closeContactModal, setContactResult, toggleCommandsModal]);
 
   return <AppContext value={value}>{children}</AppContext>;
 }
@@ -112,7 +104,6 @@ export function useApp(): AppContextValue {
       openContactModal: () => {},
       closeContactModal: () => {},
       setContactResult: () => {},
-      setContactUserInput: () => {},
       toggleCommandsModal: () => {},
     };
   }

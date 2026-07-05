@@ -1,259 +1,174 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { openModal, openRevealedModal, stubTurnstile } from './helpers/contact-form';
 
-const FOUND_SUCCESS = JSON.stringify({
-  name: { found: true, partial: false, value: 'John' },
-  email: { found: true, partial: false, value: 'john@test.com' },
-  reason: { found: true, partial: false, value: 'looking for work' },
-  feedback: 'Thanks John!',
-});
-
-const EMPTY_RESULT = JSON.stringify({
-  name: { found: false, partial: false, value: '' },
-  email: { found: false, partial: false, value: '' },
-  reason: { found: false, partial: false, value: '' },
-  feedback: '',
-});
-
-async function openModal(page: import('@playwright/test').Page) {
-  await page.goto('/');
-  const masked = page.getByTestId('contact-email-masked');
-  await masked.scrollIntoViewIfNeeded();
-  await masked.click();
-  await expect(page.getByTestId('contact-modal')).toBeVisible();
-}
-
-function mockApi(page: import('@playwright/test').Page, body: string, status = 200) {
-  return page.route('**/api/validate-contact', (route) =>
-    route.fulfill({ status, contentType: 'application/json', body })
-  );
-}
-
-function stubTurnstile(page: import('@playwright/test').Page, verifyResult: { success: boolean } = { success: true }) {
-  return Promise.all([
-    page.route('**/turnstile/v0/api.js', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/javascript',
-        body: `window.turnstile = {
-  render: (container, options) => {
-    setTimeout(() => options.callback('e2e-fake-token'), 10);
-    return 'e2e-fake-widget-id';
-  },
+function stubTurnstileNeverResolves(page: Page) {
+  return page.route('**/turnstile/v0/api.js', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: `window.turnstile = {
+  render: () => 'e2e-fake-widget-id',
   reset: () => {},
   remove: () => {},
 };`,
-      })
-    ),
-    page.route('**/turnstile-siteverify-mannan20**', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(verifyResult),
-      })
-    ),
-  ]);
+    })
+  );
 }
 
+const THANKS_RESPONSE = JSON.stringify({ categories: [], message: 'Thanks!' });
+
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
-  test('challenge mode resets after close/reopen', async ({ page }) => {
-    await mockApi(page, FOUND_SUCCESS);
-    await stubTurnstile(page);
+  test('close while verifying resets cleanly on reopen', async ({ page }) => {
+    await stubTurnstileNeverResolves(page);
     await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.fill('Hi I am Bot at bot@spam.com here to spam you with unsolicited messages');
     const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'challenge', { timeout: 10000 });
+    await expect(status).toHaveAttribute('data-status', 'verifying');
 
     await page.getByTestId('contact-modal-close').click();
     await expect(page.getByTestId('contact-modal')).not.toBeVisible();
 
-    const masked = page.getByTestId('contact-email-masked');
-    await masked.click();
+    await page.getByTestId('contact-email-masked').click();
     await expect(page.getByTestId('contact-modal')).toBeVisible();
-    await expect(status).toHaveAttribute('data-status', 'idle');
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-challenge-resets.png' });
+    await expect(status).toHaveAttribute('data-status', 'verifying');
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-verifying-resets.png' });
   });
 
-  test('input persists but debounce resets after close/reopen', async ({ page }) => {
-    let callCount = 0;
-    await page.route('**/api/validate-contact', async (route) => {
-      callCount++;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: FOUND_SUCCESS });
-    });
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.pressSequentially('Hello there', { delay: 80 });
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'pending');
+  test('post-reveal intent form resets after close/reopen', async ({ page }) => {
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: THANKS_RESPONSE })
+    );
+    const textarea = page.getByTestId('contact-intent-textarea');
+    await textarea.fill('Hello there');
 
     await page.getByTestId('contact-modal-close').click();
     await expect(page.getByTestId('contact-modal')).not.toBeVisible();
 
-    const masked = page.getByTestId('contact-email-masked');
-    await masked.click();
+    await page.getByTestId('contact-ripple').click();
     await expect(page.getByTestId('contact-modal')).toBeVisible();
-    await expect(textarea).toHaveValue('Hello there');
-    await expect(status).toHaveAttribute('data-status', 'idle');
-    const savedCount = callCount;
-    await page.waitForTimeout(3000);
-    expect(callCount).toBe(savedCount);
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-input-persists-debounce-resets.png' });
+    await expect(page.getByTestId('contact-intent-textarea')).toHaveValue('');
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-intent-form-resets.png' });
   });
 
-  test('close during validating, reopen shows idle', async ({ page }) => {
-    await page.route('**/api/validate-contact', async (route) => {
-      await new Promise((r) => setTimeout(r, 10000));
-      await route.fulfill({ status: 200, contentType: 'application/json', body: FOUND_SUCCESS });
+  test('close during intent sending does not crash', async ({ page }) => {
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', async (route) => {
+      await new Promise((r) => setTimeout(r, 5000));
+      await route.fulfill({ status: 200, contentType: 'application/json', body: THANKS_RESPONSE });
     });
-    await openModal(page);
-    await page.getByTestId('contact-textarea').fill('Hi I am John');
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'validating', { timeout: 10000 });
-
+    await page.getByTestId('contact-intent-textarea').fill('Hi I am John');
+    const status = page.getByTestId('contact-intent-status');
+    await expect(status).toHaveAttribute('data-status', 'sending', { timeout: 10000 });
     await page.getByTestId('contact-modal-close').click();
     await expect(page.getByTestId('contact-modal')).not.toBeVisible();
-
-    const masked = page.getByTestId('contact-email-masked');
-    await masked.click();
-    await expect(page.getByTestId('contact-modal')).toBeVisible();
-    await expect(status).toHaveAttribute('data-status', 'idle');
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-close-during-validating.png' });
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-close-while-sending.png' });
   });
 
   test('rapid open/close/open is stable', async ({ page }) => {
+    await stubTurnstile(page);
     await openModal(page);
     for (let i = 0; i < 3; i++) {
       await page.getByTestId('contact-modal-close').click();
       await expect(page.getByTestId('contact-modal')).not.toBeVisible();
-      const masked = page.getByTestId('contact-email-masked');
-      await masked.click();
+      await page.getByTestId('contact-ripple').click();
       await expect(page.getByTestId('contact-modal')).toBeVisible();
     }
-    const textarea = page.getByTestId('contact-textarea');
-    await expect(textarea).toBeVisible();
-    await expect(textarea).toBeEnabled();
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-open-close.png' });
   });
 });
 
-test.describe('Group B: Bot Detection Boundaries', () => {
-  test('exactly 15 chars/sec is NOT flagged', async ({ page }) => {
-    await mockApi(page, FOUND_SUCCESS);
-    await stubTurnstile(page);
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    const message = 'Hi I am John at john@test.com looking for work';
-    const targetSpeed = 15;
-    const delayPerChar = Math.floor(1000 / targetSpeed);
-    await textarea.pressSequentially(message, { delay: delayPerChar });
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-15-chars-sec.png' });
+test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
+  test('whitespace-only input stays idle, no API call', async ({ page }) => {
+    let apiCalled = false;
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', async (route) => {
+      apiCalled = true;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: THANKS_RESPONSE });
+    });
+    await page.getByTestId('contact-intent-textarea').fill('   ');
+    await page.waitForTimeout(3000);
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'idle');
+    expect(apiCalled).toBe(false);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-whitespace-idle.png' });
   });
 
-  test('paste 19 chars does not trigger challenge', async ({ page }) => {
-    await mockApi(page, FOUND_SUCCESS);
-    await stubTurnstile(page);
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.fill('John at john@t.com');
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-paste-19-chars.png' });
+  test('newlines-only input stays idle, no API call', async ({ page }) => {
+    let apiCalled = false;
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', async (route) => {
+      apiCalled = true;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: THANKS_RESPONSE });
+    });
+    await page.getByTestId('contact-intent-textarea').fill('\n\n\n');
+    await page.waitForTimeout(3000);
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'idle');
+    expect(apiCalled).toBe(false);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-newlines-idle.png' });
   });
 
-  test('slow type then fast paste bypasses detection', async ({ page }) => {
-    await mockApi(page, FOUND_SUCCESS);
-    await stubTurnstile(page);
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.pressSequentially('Hi my name is John', { delay: 200 });
+  test('rapid re-typing only triggers one API call', async ({ page }) => {
+    let callCount = 0;
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', async (route) => {
+      callCount++;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: THANKS_RESPONSE });
+    });
+    const textarea = page.getByTestId('contact-intent-textarea');
+    await textarea.fill('a');
     await page.waitForTimeout(500);
-    await textarea.fill('Hi my name is John and my email is john@test.com');
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-slow-type-fast-paste.png' });
+    await textarea.fill('ab');
+    await page.waitForTimeout(500);
+    await textarea.fill('abc');
+    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 10000 });
+    expect(callCount).toBe(1);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-retype.png' });
   });
 
-  test('challenge mode: empty then valid answer', async ({ page }) => {
-    await mockApi(page, FOUND_SUCCESS);
-    await stubTurnstile(page);
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.fill('Hi I am Bot at bot@spam.com here to spam you with unsolicited messages');
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'challenge', { timeout: 10000 });
-    await textarea.fill('   ');
-    await expect(status).toHaveAttribute('data-status', 'challenge');
-    await textarea.fill('MITRE');
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 5000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-challenge-empty-then-valid.png' });
+  test('retyping while sending shows only the latest response', async ({ page }) => {
+    let callCount = 0;
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', async (route) => {
+      callCount++;
+      if (callCount === 1) {
+        await new Promise((r) => setTimeout(r, 3000));
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ categories: [], message: 'STALE' }) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ categories: [], message: 'FRESH' }) });
+      }
+    });
+    const textarea = page.getByTestId('contact-intent-textarea');
+    await textarea.fill('first attempt');
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'sending', { timeout: 10000 });
+    await textarea.fill('second attempt with more detail');
+    await expect(page.getByTestId('contact-intent-message')).toHaveText('FRESH', { timeout: 15000 });
+    await page.waitForTimeout(3500);
+    await expect(page.getByTestId('contact-intent-message')).toHaveText('FRESH');
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-retype-shows-latest.png' });
   });
 });
 
-test.describe('Group C: API Response Edge Cases', () => {
-  test('API returns error field AND valid data', async ({ page }) => {
-    const responseWithError = JSON.stringify({
-      name: { found: true, partial: false, value: 'John' },
-      email: { found: true, partial: false, value: 'john@test.com' },
-      reason: { found: true, partial: false, value: 'work' },
-      feedback: 'Thanks!',
-      error: 'something went wrong',
-    });
-    await mockApi(page, responseWithError);
-    await openModal(page);
-    await page.getByTestId('contact-textarea').fill('test input');
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'error', { timeout: 10000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-error-with-data.png' });
-  });
-
-  test('API returns response missing feedback field', async ({ page }) => {
-    const noFeedback = JSON.stringify({
-      name: { found: true, partial: false, value: 'John' },
-      email: { found: false, partial: false, value: '' },
-      reason: { found: false, partial: false, value: '' },
-    });
-    await mockApi(page, noFeedback);
-    await stubTurnstile(page);
-    await openModal(page);
-    await page.getByTestId('contact-textarea').fill('test input');
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-missing-feedback.png' });
-  });
-
-  test('re-typing while validating cancels previous request', async ({ page }) => {
-    let callCount = 0;
-    await page.route('**/api/validate-contact', async (route) => {
-      callCount++;
-      if (callCount === 1) {
-        await new Promise((r) => setTimeout(r, 5000));
-        await route.fulfill({ status: 200, contentType: 'application/json', body: EMPTY_RESULT });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: FOUND_SUCCESS });
-      }
-    });
-    await stubTurnstile(page);
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.fill('first attempt');
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'validating', { timeout: 10000 });
-    await textarea.fill('second attempt with John john@test.com');
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 15000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-retype-cancels-request.png' });
-  });
-
-  test('API returns empty choices array', async ({ page }) => {
-    await page.route('**/api/validate-contact', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ choices: [] }),
-      })
+test.describe('Group C: Intent API Response Edge Cases', () => {
+  test('response missing message field does not crash, stays idle', async ({ page }) => {
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ categories: [] }) })
     );
-    await openModal(page);
-    await page.getByTestId('contact-textarea').fill('test input');
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'insufficient', { timeout: 10000 });
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-empty-choices.png' });
+    await page.getByTestId('contact-intent-textarea').fill('test input');
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'idle', { timeout: 10000 });
+    await expect(page.getByTestId('contact-intent-message')).not.toBeVisible();
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-missing-message-field.png' });
+  });
+
+  test('malformed JSON response shows error status', async ({ page }) => {
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '{invalid json' })
+    );
+    await page.getByTestId('contact-intent-textarea').fill('test input');
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'error', { timeout: 10000 });
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-malformed-json.png' });
   });
 });
 
@@ -271,11 +186,7 @@ test.describe('Group D: Viewport & Layout', () => {
 
   test('modal position clamped near bottom of viewport', async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 400 });
-    await page.goto('/');
-    const masked = page.getByTestId('contact-email-masked');
-    await masked.scrollIntoViewIfNeeded();
-    await masked.click();
-    await expect(page.getByTestId('contact-modal')).toBeVisible();
+    await openModal(page);
     const modal = page.getByTestId('contact-modal');
     const box = await modal.boundingBox();
     expect(box).not.toBeNull();
@@ -317,21 +228,5 @@ test.describe('Group E: Keyboard & Interaction', () => {
     const maskedVisible = await masked.isVisible();
     expect(modalVisible || maskedVisible).toBe(true);
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-spam-click.png' });
-  });
-
-  test('input with only newlines stays idle', async ({ page }) => {
-    let apiCalled = false;
-    await page.route('**/api/validate-contact', async (route) => {
-      apiCalled = true;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: EMPTY_RESULT });
-    });
-    await openModal(page);
-    const textarea = page.getByTestId('contact-textarea');
-    await textarea.fill('\n\n\n');
-    await page.waitForTimeout(3000);
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'idle');
-    expect(apiCalled).toBe(false);
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-newlines-idle.png' });
   });
 });

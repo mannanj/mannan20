@@ -1,10 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
+import { openModal, stubTurnstile } from './helpers/contact-form';
 
-const FOUND_REASON = JSON.stringify({
-  name: { found: false, partial: false, value: '' },
-  email: { found: false, partial: false, value: '' },
-  reason: { found: true, partial: false, value: 'dealer job inquiry' },
-  feedback: 'Got it!',
+const INTENT_RESPONSE = JSON.stringify({
+  categories: [{ key: 'job_opportunity', detected: true }],
+  message: 'Thanks — I would love to hear more about the dealer role!',
 });
 
 const MESSAGE = 'I want to reach out for the dealer job';
@@ -18,51 +17,23 @@ const IPHONE = {
   deviceScaleFactor: 3,
 } as const;
 
-async function openModal(page: Page) {
-  await page.goto('/');
-  const masked = page.getByTestId('contact-email-masked');
-  await masked.scrollIntoViewIfNeeded();
-  await masked.click();
-  await expect(page.getByTestId('contact-modal')).toBeVisible();
-}
-
-function mockApi(page: Page, body: string, counter?: { n: number }, delayMs = 0) {
-  return page.route('**/api/validate-contact', async (route) => {
+function mockIntentApi(page: Page, body: string, counter?: { n: number }, delayMs = 0) {
+  return page.route('**/api/contact-intent', async (route) => {
     if (counter) counter.n += 1;
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
     await route.fulfill({ status: 200, contentType: 'application/json', body });
   });
 }
 
-function stubTurnstile(page: Page, verifyResult: { success: boolean } = { success: true }) {
-  return Promise.all([
-    page.route('**/turnstile/v0/api.js', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/javascript',
-        body: `window.turnstile = {
-  render: (container, options) => {
-    setTimeout(() => options.callback('e2e-fake-token'), 10);
-    return 'e2e-fake-widget-id';
-  },
-  reset: () => {},
-  remove: () => {},
-};`,
-      })
-    ),
-    page.route('**/turnstile-siteverify-mannan20**', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(verifyResult),
-      })
-    ),
-  ]);
+async function openRevealedModal(page: Page) {
+  await stubTurnstile(page);
+  await openModal(page);
+  await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
 }
 
 async function fireSoftKeyboardEdit(page: Page) {
   await page.evaluate(() => {
-    const el = document.querySelector('[data-testid="contact-textarea"]') as HTMLTextAreaElement | null;
+    const el = document.querySelector('[data-testid="contact-intent-textarea"]') as HTMLTextAreaElement | null;
     if (!el) return;
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!;
     const base = el.value.replace(/\s+$/, '');
@@ -73,7 +44,7 @@ async function fireSoftKeyboardEdit(page: Page) {
 
 async function commitViaComposition(page: Page, text: string) {
   await page.evaluate((value) => {
-    const el = document.querySelector('[data-testid="contact-textarea"]') as HTMLTextAreaElement | null;
+    const el = document.querySelector('[data-testid="contact-intent-textarea"]') as HTMLTextAreaElement | null;
     if (!el) return;
     const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!;
     el.focus();
@@ -91,13 +62,12 @@ async function runStorm(page: Page, intervalMs: number, flag: { stop: boolean })
   }
 }
 
-test.describe('contact form — mobile soft-keyboard resilience', () => {
-  test('continuous soft-keyboard events still trigger validation (max-wait ceiling)', async ({ page }) => {
+test.describe('post-reveal intent capture — mobile soft-keyboard resilience', () => {
+  test('continuous soft-keyboard events still trigger the intent parse call', async ({ page }) => {
     const counter = { n: 0 };
-    await mockApi(page, FOUND_REASON, counter);
-    await stubTurnstile(page);
-    await openModal(page);
-    await page.getByTestId('contact-textarea').fill(MESSAGE);
+    await openRevealedModal(page);
+    await mockIntentApi(page, INTENT_RESPONSE, counter);
+    await page.getByTestId('contact-intent-textarea').fill(MESSAGE);
 
     const flag = { stop: false };
     const storm = runStorm(page, 500, flag);
@@ -105,25 +75,24 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
     await expect
       .poll(() => counter.n, {
         timeout: 6000,
-        message: 'validation never fired while soft-keyboard events kept streaming in',
+        message: 'intent parse never fired while soft-keyboard events kept streaming in',
       })
       .toBeGreaterThanOrEqual(1);
 
     flag.stop = true;
     await storm.catch(() => {});
 
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
   });
 
-  test('continuous events under iPhone emulation still trigger validation', async ({ browser }) => {
+  test('continuous events under iPhone emulation still trigger the intent parse call', async ({ browser }) => {
     const context = await browser.newContext(IPHONE);
     const page = await context.newPage();
     try {
       const counter = { n: 0 };
-      await mockApi(page, FOUND_REASON, counter);
-      await stubTurnstile(page);
-      await openModal(page);
-      await page.getByTestId('contact-textarea').fill(MESSAGE);
+      await openRevealedModal(page);
+      await mockIntentApi(page, INTENT_RESPONSE, counter);
+      await page.getByTestId('contact-intent-textarea').fill(MESSAGE);
 
       const flag = { stop: false };
       const storm = runStorm(page, 500, flag);
@@ -134,42 +103,39 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
 
       flag.stop = true;
       await storm.catch(() => {});
-      await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
     } finally {
       await context.close();
     }
   });
 
-  test('soft-keyboard event during validating does not strand the request', async ({ page }) => {
-    await mockApi(page, FOUND_REASON, undefined, 700);
-    await stubTurnstile(page);
-    await openModal(page);
-    await page.getByTestId('contact-textarea').fill(MESSAGE);
-    await expect(page.getByTestId('contact-status')).toHaveAttribute('data-status', 'validating', { timeout: 8000 });
+  test('soft-keyboard event during sending does not strand the request', async ({ page }) => {
+    await openRevealedModal(page);
+    await mockIntentApi(page, INTENT_RESPONSE, undefined, 700);
+    await page.getByTestId('contact-intent-textarea').fill(MESSAGE);
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'sending', { timeout: 8000 });
     await fireSoftKeyboardEdit(page);
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
   });
 
-  test('word committed via IME composition validates and succeeds', async ({ page }) => {
-    await mockApi(page, FOUND_REASON);
-    await stubTurnstile(page);
-    await openModal(page);
-    await page.getByTestId('contact-textarea').click();
+  test('word committed via IME composition parses and succeeds', async ({ page }) => {
+    await openRevealedModal(page);
+    await mockIntentApi(page, INTENT_RESPONSE);
+    await page.getByTestId('contact-intent-textarea').click();
     await commitViaComposition(page, MESSAGE);
-    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
   });
 
-  test('normal typing on iPhone reaches success', async ({ browser }) => {
+  test('normal typing on iPhone reaches a rendered response', async ({ browser }) => {
     const context = await browser.newContext(IPHONE);
     const page = await context.newPage();
     try {
-      await mockApi(page, FOUND_REASON);
-      await stubTurnstile(page);
-      await openModal(page);
-      const ta = page.getByTestId('contact-textarea');
+      await openRevealedModal(page);
+      await mockIntentApi(page, INTENT_RESPONSE);
+      const ta = page.getByTestId('contact-intent-textarea');
       await ta.click();
       await ta.pressSequentially(MESSAGE, { delay: 60 });
-      await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
     } finally {
       await context.close();
     }
