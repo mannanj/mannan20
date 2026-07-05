@@ -39,6 +39,7 @@
     "scripts",
     "cloud-worker",
     "visits-worker",
-    "mcp-worker"
+    "mcp-worker",
+    "turnstile-worker"
   ]
 }

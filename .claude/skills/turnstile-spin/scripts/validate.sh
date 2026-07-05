@@ -34,7 +34,8 @@ done
 
 # Check 1: health endpoint
 health=$(curl -sSf "${WORKER_URL}/health" 2>/dev/null || echo "")
-if [ -z "$health" ] || ! echo "$health" | grep -q '"ok":true'; then
+health_ok=$(echo "$health" | (jq -r '.ok // false' 2>/dev/null || echo "false"))
+if [ -z "$health" ] || [ "$health_ok" != "true" ]; then
   echo "validate: health check failed; $WORKER_URL/health did not return {ok:true,version:...}" >&2
   echo "{\"status\":\"error\",\"check\":\"health\",\"detail\":\"worker /health did not respond ok:true\"}"
   exit 1
@@ -45,7 +46,7 @@ dummy=$(curl -sS -X POST "${WORKER_URL}/" \
   -H "Content-Type: application/json" \
   -d '{"token":"XXXX.DUMMY.TOKEN.XXXX"}' 2>/dev/null || echo "")
 
-success=$(echo "$dummy" | (jq -r '.success // "missing"' 2>/dev/null || echo "missing"))
+success=$(echo "$dummy" | (jq -r 'if has("success") then (.success | tostring) else "missing" end' 2>/dev/null || echo "missing"))
 errors=$(echo "$dummy" | (jq -r '.["error-codes"] | length // 0' 2>/dev/null || echo "0"))
 
 if [ "$success" != "false" ] || [ "$errors" = "0" ]; then

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useApp } from "@/context/app-context";
+import { useTurnstile } from "@/hooks/use-turnstile";
 import type { LLMValidationResult } from "@/lib/types";
 import { FEATURES } from "@/lib/feature-flags";
 
@@ -16,6 +17,9 @@ const BOT_CHARS_PER_SEC = 15;
 const BOT_PASTE_MIN_CHARS = 20;
 const BOT_PASTE_MAX_ELAPSED = 3;
 const CHALLENGE_QUESTION = "What's one project of mine that caught your eye?";
+const TURNSTILE_TOKEN_WAIT_MS = 3000;
+const TURNSTILE_TOKEN_POLL_MS = 100;
+const TURNSTILE_FAIL_TEXT = "Verification failed. Please try again.";
 
 type FormStatus = "idle" | "pending" | "validating" | "success" | "error" | "network-error" | "insufficient" | "rate-limited" | "challenge";
 
@@ -67,6 +71,33 @@ function matchesPortfolio(input: string): boolean {
   return KNOWN_TERMS.some(term => lower.includes(term));
 }
 
+async function waitForTurnstileToken(getToken: () => string | null): Promise<string | null> {
+  const deadline = Date.now() + TURNSTILE_TOKEN_WAIT_MS;
+  while (Date.now() < deadline) {
+    const token = getToken();
+    if (token) return token;
+    await new Promise(resolve => setTimeout(resolve, TURNSTILE_TOKEN_POLL_MS));
+  }
+  return getToken();
+}
+
+async function verifyTurnstileToken(token: string): Promise<boolean> {
+  const workerUrl = process.env.NEXT_PUBLIC_TURNSTILE_WORKER_URL;
+  if (!workerUrl) return false;
+  try {
+    const res = await fetch(workerUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data?.success === true;
+  } catch {
+    return false;
+  }
+}
+
 function buildFeedback(result: LLMValidationResult): { text: string; isSuccess: boolean } {
   const hasName = result.name?.found;
   const hasEmail = result.email?.found;
@@ -102,6 +133,12 @@ export function ContactForm({ onReveal }: ContactFormProps) {
   const inFlightTextRef = useRef<string | null>(null);
   const isComposingRef = useRef(false);
   const pendingSinceRef = useRef<number | null>(null);
+  const { token: turnstileToken, reset: resetTurnstile, containerRef: turnstileContainerRef } = useTurnstile();
+  const turnstileTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    turnstileTokenRef.current = turnstileToken;
+  }, [turnstileToken]);
 
   const cancelDebounce = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -190,6 +227,19 @@ export function ContactForm({ onReveal }: ContactFormProps) {
         const { text: feedbackText, isSuccess } = buildFeedback(result);
 
         if (isSuccess) {
+          const turnstileToken = await waitForTurnstileToken(() => turnstileTokenRef.current);
+          if (!isCurrent()) return;
+
+          const verified = turnstileToken ? await verifyTurnstileToken(turnstileToken) : false;
+          if (!isCurrent()) return;
+
+          if (!verified) {
+            resetTurnstile();
+            setStatus("error");
+            setDisplayPhase({ kind: 'feedback', text: TURNSTILE_FAIL_TEXT });
+            return;
+          }
+
           if (FEATURES.CONTACT_CHALLENGE && isSuspiciousBehavior(text.length)) {
             enterChallengeMode();
             return;
@@ -212,7 +262,7 @@ export function ContactForm({ onReveal }: ContactFormProps) {
         if (inFlightTextRef.current === text) inFlightTextRef.current = null;
       }
     },
-    [cancelRequest, triggerSuccess, isSuspiciousBehavior, enterChallengeMode]
+    [cancelRequest, triggerSuccess, isSuspiciousBehavior, enterChallengeMode, resetTurnstile]
   );
 
   const scheduleValidation = useCallback(
@@ -431,6 +481,8 @@ export function ContactForm({ onReveal }: ContactFormProps) {
       }}>
         I will never send you unsolicited communication.
       </p>
+
+      <div ref={turnstileContainerRef} style={{ display: 'flex', justifyContent: 'center' }} />
     </div>
   );
 }
