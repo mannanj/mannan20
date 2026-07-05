@@ -14,6 +14,32 @@ function mockApi(page: import('@playwright/test').Page, body: string, status = 2
   );
 }
 
+function stubTurnstile(page: import('@playwright/test').Page, verifyResult: { success: boolean } = { success: true }) {
+  return Promise.all([
+    page.route('**/turnstile/v0/api.js', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/javascript',
+        body: `window.turnstile = {
+  render: (container, options) => {
+    setTimeout(() => options.callback('e2e-fake-token'), 10);
+    return 'e2e-fake-widget-id';
+  },
+  reset: () => {},
+  remove: () => {},
+};`,
+      })
+    ),
+    page.route('**/turnstile-siteverify-mannan20**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(verifyResult),
+      })
+    ),
+  ]);
+}
+
 function makeResponse(overrides: Record<string, unknown> = {}) {
   return JSON.stringify({
     name: { found: false, partial: false, value: '' },
@@ -29,6 +55,7 @@ test.describe('client-side: XSS payloads in API response', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '<script>window.__xss_fired=true</script>' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -40,6 +67,7 @@ test.describe('client-side: XSS payloads in API response', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '<img src=x onerror=alert(1)>' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -52,6 +80,7 @@ test.describe('client-side: XSS payloads in API response', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '" onmouseover="alert(1)" data-x="' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -67,6 +96,7 @@ test.describe('client-side: overflow and boundary values', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: longName },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -77,6 +107,7 @@ test.describe('client-side: overflow and boundary values', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '日本語テスト' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -87,6 +118,7 @@ test.describe('client-side: overflow and boundary values', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '🔥💀👻' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -97,6 +129,7 @@ test.describe('client-side: overflow and boundary values', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -107,6 +140,7 @@ test.describe('client-side: overflow and boundary values', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '   ' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -219,6 +253,7 @@ test.describe('client-side: prompt injection in LLM response', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: 'John [click here](javascript:alert(1))' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -231,6 +266,7 @@ test.describe('client-side: prompt injection in LLM response', () => {
     await mockApi(page, makeResponse({
       name: { found: true, partial: false, value: '&lt;b&gt;bold&lt;/b&gt;' },
     }));
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -249,6 +285,7 @@ const FOUND_SUCCESS = makeResponse({
 test.describe('bot detection: challenge question', () => {
   test('fast paste triggers challenge mode', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     const longMessage = 'Hi I am Bot at bot@spam.com here to spam you with unsolicited messages';
@@ -262,6 +299,7 @@ test.describe('bot detection: challenge question', () => {
 
   test('challenge mode clears textarea and changes placeholder', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     const longMessage = 'Hi I am Bot at bot@spam.com here to spam you with unsolicited messages';
@@ -276,6 +314,7 @@ test.describe('bot detection: challenge question', () => {
 
   test('correct challenge answer reveals result', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     const longMessage = 'Hi I am Bot at bot@spam.com here to spam you with unsolicited messages';
@@ -289,6 +328,7 @@ test.describe('bot detection: challenge question', () => {
 
   test('wrong challenge answer stays in challenge mode', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     const longMessage = 'Hi I am Bot at bot@spam.com here to spam you with unsolicited messages';
@@ -304,6 +344,7 @@ test.describe('bot detection: challenge question', () => {
   for (const term of ['MITRE', 'archr robot', 'meal fairy', 'publicis sapient', 'geospatial mapping']) {
     test(`challenge accepts "${term}"`, async ({ page }) => {
       await mockApi(page, FOUND_SUCCESS);
+      await stubTurnstile(page);
       await openModal(page);
       const textarea = page.getByTestId('contact-textarea');
       const longMessage = 'Hi I am Bot at bot@spam.com here to spam you with unsolicited messages';
@@ -318,6 +359,7 @@ test.describe('bot detection: challenge question', () => {
 
   test('normal typing speed does not trigger challenge', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.pressSequentially('Hi I am John at john@test.com looking for work', { delay: 50 });
@@ -327,6 +369,7 @@ test.describe('bot detection: challenge question', () => {
 
   test('challenge followed by correct answer reveals result', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     const longMessage = 'Hi I am Bot at bot@spam.com here to spam you with unsolicited messages';

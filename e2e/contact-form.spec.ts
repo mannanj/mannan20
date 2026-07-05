@@ -63,6 +63,32 @@ function mockApi(page: import('@playwright/test').Page, body: string, status = 2
   );
 }
 
+function stubTurnstile(page: import('@playwright/test').Page, verifyResult: { success: boolean } = { success: true }) {
+  return Promise.all([
+    page.route('**/turnstile/v0/api.js', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/javascript',
+        body: `window.turnstile = {
+  render: (container, options) => {
+    setTimeout(() => options.callback('e2e-fake-token'), 10);
+    return 'e2e-fake-widget-id';
+  },
+  reset: () => {},
+  remove: () => {},
+};`,
+      })
+    ),
+    page.route('**/turnstile-siteverify-mannan20**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(verifyResult),
+      })
+    ),
+  ]);
+}
+
 test('open modal via masked email', async ({ page }) => {
   await openModal(page);
   await expect(page.getByTestId('contact-modal')).toBeVisible();
@@ -91,6 +117,7 @@ test('debounce triggers validating then reveals result', async ({ page }) => {
     await gate;
     await route.fulfill({ status: 200, contentType: 'application/json', body: FOUND_ALL });
   });
+  await stubTurnstile(page);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('Hi');
   const status = page.getByTestId('contact-status');
@@ -102,6 +129,7 @@ test('debounce triggers validating then reveals result', async ({ page }) => {
 
 test('success immediately reveals contact result', async ({ page }) => {
   await mockApi(page, FOUND_ALL);
+  await stubTurnstile(page);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('Hi');
   await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -110,6 +138,7 @@ test('success immediately reveals contact result', async ({ page }) => {
 
 test('name found reveals result', async ({ page }) => {
   await mockApi(page, FOUND_NAME);
+  await stubTurnstile(page);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('John');
   await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -118,6 +147,7 @@ test('name found reveals result', async ({ page }) => {
 
 test('email found reveals result', async ({ page }) => {
   await mockApi(page, FOUND_EMAIL);
+  await stubTurnstile(page);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('j@t.com');
   await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -126,6 +156,7 @@ test('email found reveals result', async ({ page }) => {
 
 test('reason found reveals result', async ({ page }) => {
   await mockApi(page, FOUND_REASON);
+  await stubTurnstile(page);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('job');
   await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -134,6 +165,7 @@ test('reason found reveals result', async ({ page }) => {
 
 test('after success, contact info is revealed on page', async ({ page }) => {
   await mockApi(page, FOUND_ALL);
+  await stubTurnstile(page);
   await openModal(page);
   await page.getByTestId('contact-textarea').fill('Hi');
   await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -286,6 +318,7 @@ test('rapid re-typing only triggers one API call', async ({ page }) => {
     callCount++;
     await route.fulfill({ status: 200, contentType: 'application/json', body: FOUND_ALL });
   });
+  await stubTurnstile(page);
   await openModal(page);
   const textarea = page.getByTestId('contact-textarea');
   await textarea.fill('a');
@@ -325,4 +358,17 @@ test('input persists on manual close and reopen', async ({ page }) => {
   await expect(page.getByTestId('contact-modal')).toBeVisible();
   await expect(textarea).toHaveValue('Hello there');
   await page.screenshot({ path: 'e2e/screenshots/contact-form-input-persists.png' });
+});
+
+test('failed Turnstile verification blocks reveal', async ({ page }) => {
+  await mockApi(page, FOUND_ALL);
+  await stubTurnstile(page, { success: false });
+  await openModal(page);
+  await page.getByTestId('contact-textarea').fill('Hi I am John at john@test.com');
+  const status = page.getByTestId('contact-status');
+  await expect(status).toHaveAttribute('data-status', 'error', { timeout: 10000 });
+  const feedback = page.getByTestId('contact-feedback');
+  await expect(feedback).toContainText('Verification failed', { timeout: 10000 });
+  await expect(page.getByTestId('contact-result')).not.toBeVisible();
+  await page.screenshot({ path: 'e2e/screenshots/contact-form-turnstile-failed.png' });
 });

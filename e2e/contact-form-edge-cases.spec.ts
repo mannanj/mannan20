@@ -28,9 +28,36 @@ function mockApi(page: import('@playwright/test').Page, body: string, status = 2
   );
 }
 
+function stubTurnstile(page: import('@playwright/test').Page, verifyResult: { success: boolean } = { success: true }) {
+  return Promise.all([
+    page.route('**/turnstile/v0/api.js', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/javascript',
+        body: `window.turnstile = {
+  render: (container, options) => {
+    setTimeout(() => options.callback('e2e-fake-token'), 10);
+    return 'e2e-fake-widget-id';
+  },
+  reset: () => {},
+  remove: () => {},
+};`,
+      })
+    ),
+    page.route('**/turnstile-siteverify-mannan20**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(verifyResult),
+      })
+    ),
+  ]);
+}
+
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
   test('challenge mode resets after close/reopen', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.fill('Hi I am Bot at bot@spam.com here to spam you with unsolicited messages');
@@ -112,6 +139,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
 test.describe('Group B: Bot Detection Boundaries', () => {
   test('exactly 15 chars/sec is NOT flagged', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     const message = 'Hi I am John at john@test.com looking for work';
@@ -124,6 +152,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
 
   test('paste 19 chars does not trigger challenge', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.fill('John at john@t.com');
@@ -133,6 +162,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
 
   test('slow type then fast paste bypasses detection', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.pressSequentially('Hi my name is John', { delay: 200 });
@@ -144,6 +174,7 @@ test.describe('Group B: Bot Detection Boundaries', () => {
 
   test('challenge mode: empty then valid answer', async ({ page }) => {
     await mockApi(page, FOUND_SUCCESS);
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.fill('Hi I am Bot at bot@spam.com here to spam you with unsolicited messages');
@@ -181,6 +212,7 @@ test.describe('Group C: API Response Edge Cases', () => {
       reason: { found: false, partial: false, value: '' },
     });
     await mockApi(page, noFeedback);
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill('test input');
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -198,6 +230,7 @@ test.describe('Group C: API Response Edge Cases', () => {
         await route.fulfill({ status: 200, contentType: 'application/json', body: FOUND_SUCCESS });
       }
     });
+    await stubTurnstile(page);
     await openModal(page);
     const textarea = page.getByTestId('contact-textarea');
     await textarea.fill('first attempt');

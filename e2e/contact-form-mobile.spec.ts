@@ -34,6 +34,32 @@ function mockApi(page: Page, body: string, counter?: { n: number }, delayMs = 0)
   });
 }
 
+function stubTurnstile(page: Page, verifyResult: { success: boolean } = { success: true }) {
+  return Promise.all([
+    page.route('**/turnstile/v0/api.js', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/javascript',
+        body: `window.turnstile = {
+  render: (container, options) => {
+    setTimeout(() => options.callback('e2e-fake-token'), 10);
+    return 'e2e-fake-widget-id';
+  },
+  reset: () => {},
+  remove: () => {},
+};`,
+      })
+    ),
+    page.route('**/turnstile-siteverify-mannan20**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(verifyResult),
+      })
+    ),
+  ]);
+}
+
 async function fireSoftKeyboardEdit(page: Page) {
   await page.evaluate(() => {
     const el = document.querySelector('[data-testid="contact-textarea"]') as HTMLTextAreaElement | null;
@@ -69,6 +95,7 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
   test('continuous soft-keyboard events still trigger validation (max-wait ceiling)', async ({ page }) => {
     const counter = { n: 0 };
     await mockApi(page, FOUND_REASON, counter);
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill(MESSAGE);
 
@@ -94,6 +121,7 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
     try {
       const counter = { n: 0 };
       await mockApi(page, FOUND_REASON, counter);
+      await stubTurnstile(page);
       await openModal(page);
       await page.getByTestId('contact-textarea').fill(MESSAGE);
 
@@ -114,6 +142,7 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
 
   test('soft-keyboard event during validating does not strand the request', async ({ page }) => {
     await mockApi(page, FOUND_REASON, undefined, 700);
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').fill(MESSAGE);
     await expect(page.getByTestId('contact-status')).toHaveAttribute('data-status', 'validating', { timeout: 8000 });
@@ -123,6 +152,7 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
 
   test('word committed via IME composition validates and succeeds', async ({ page }) => {
     await mockApi(page, FOUND_REASON);
+    await stubTurnstile(page);
     await openModal(page);
     await page.getByTestId('contact-textarea').click();
     await commitViaComposition(page, MESSAGE);
@@ -134,6 +164,7 @@ test.describe('contact form — mobile soft-keyboard resilience', () => {
     const page = await context.newPage();
     try {
       await mockApi(page, FOUND_REASON);
+      await stubTurnstile(page);
       await openModal(page);
       const ta = page.getByTestId('contact-textarea');
       await ta.click();
