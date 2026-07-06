@@ -6,7 +6,7 @@ import { ContactForm } from './contact-form';
 import { ContactResult } from './contact-result';
 import type { ContactResultData } from '@/lib/types';
 
-const POPOUT_WIDTH = 380;
+const POPOUT_WIDTH = 266;
 
 export const CONTACT_DATA: ContactResultData = {
   email: 'hello@mannan.is',
@@ -117,16 +117,18 @@ export function ContactModal() {
           onMouseLeave={() => setCloseHover(false)}
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '18px',
-            zIndex: 1,
+            top: '14px',
+            right: '16px',
+            zIndex: 2,
             background: 'none',
             border: 'none',
-            color: closeHover ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)',
-            fontSize: '18px',
+            color: closeHover ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)',
+            fontSize: '22px',
             cursor: 'pointer',
-            padding: '0 4px',
+            padding: '4px',
             lineHeight: 1,
+            transition: 'color 0.2s, transform 0.2s',
+            transform: closeHover ? 'scale(1.15)' : 'scale(1)',
           }}
           data-testid="contact-modal-close"
         >

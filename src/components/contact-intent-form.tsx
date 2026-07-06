@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ContactIntentResult } from '@/lib/types';
 
-const INTRO_HEADER = "Want to share more? (optional)";
+const INTRO_HEADER = "(Optional) Share what brought you here today";
 const PLACEHOLDER = "Your name, and/or why you're here";
 const DEBOUNCE_MS = 1200;
 const MAX_PENDING_MS = 3000;
@@ -101,8 +101,8 @@ export function ContactIntentForm() {
   }, [processValue]);
 
   return (
-    <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
         {INTRO_HEADER}
       </p>
       <textarea
@@ -119,7 +119,7 @@ export function ContactIntentForm() {
           padding: '10px 12px',
           border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: '10px',
-          fontSize: '13px',
+          fontSize: '14px',
           color: 'white',
           background: 'rgba(0,0,0,0.3)',
           resize: 'vertical',
