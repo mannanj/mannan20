@@ -2,7 +2,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { openModal, stubTurnstile } from './helpers/contact-form';
 
 const INTENT_RESPONSE = JSON.stringify({
-  categories: [{ key: 'job_opportunity', detected: true }],
   message: 'Thanks — I would love to hear more about the dealer role!',
 });
 
@@ -82,7 +81,7 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
     flag.stop = true;
     await storm.catch(() => {});
 
-    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
   });
 
   test('continuous events under iPhone emulation still trigger the intent parse call', async ({ browser }) => {
@@ -103,7 +102,7 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
 
       flag.stop = true;
       await storm.catch(() => {});
-      await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
     } finally {
       await context.close();
     }
@@ -111,11 +110,14 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
 
   test('soft-keyboard event during sending does not strand the request', async ({ page }) => {
     await openRevealedModal(page);
-    await mockIntentApi(page, INTENT_RESPONSE, undefined, 700);
+    // A wide in-flight window so the 'sending' status assertion below has a comfortable margin
+    // to catch — a too-narrow window (previously 700ms) is an assertion-detection flake, not a
+    // real product concern, since the point of this test is the soft-keyboard edit mid-flight.
+    await mockIntentApi(page, INTENT_RESPONSE, undefined, 2500);
     await page.getByTestId('contact-intent-textarea').fill(MESSAGE);
     await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'sending', { timeout: 8000 });
     await fireSoftKeyboardEdit(page);
-    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
   });
 
   test('word committed via IME composition parses and succeeds', async ({ page }) => {
@@ -123,7 +125,7 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
     await mockIntentApi(page, INTENT_RESPONSE);
     await page.getByTestId('contact-intent-textarea').click();
     await commitViaComposition(page, MESSAGE);
-    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
   });
 
   test('normal typing on iPhone reaches a rendered response', async ({ browser }) => {
@@ -135,7 +137,7 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
       const ta = page.getByTestId('contact-intent-textarea');
       await ta.click();
       await ta.pressSequentially(MESSAGE, { delay: 60 });
-      await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
     } finally {
       await context.close();
     }

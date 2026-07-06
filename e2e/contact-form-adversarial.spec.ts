@@ -3,13 +3,6 @@ import { openRevealedModal, mockIntentApi } from './helpers/contact-form';
 
 function makeIntentResponse(overrides: Record<string, unknown> = {}) {
   return JSON.stringify({
-    categories: [
-      { key: 'job_opportunity', detected: false },
-      { key: 'collaboration', detected: false },
-      { key: 'project_interest', detected: false },
-      { key: 'speaking_media', detected: false },
-      { key: 'networking', detected: false },
-    ],
     message: 'Thanks for reaching out!',
     ...overrides,
   });
@@ -17,7 +10,7 @@ function makeIntentResponse(overrides: Record<string, unknown> = {}) {
 
 async function fillIntentAndAwaitMessage(page: import('@playwright/test').Page, input = 'test input') {
   await page.getByTestId('contact-intent-textarea').fill(input);
-  await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 10000 });
 }
 
 test.describe('client-side: XSS payloads in intent API response', () => {
@@ -81,7 +74,7 @@ test.describe('client-side: overflow and boundary values', () => {
     await mockIntentApi(page, makeIntentResponse({ message: '' }));
     await page.getByTestId('contact-intent-textarea').fill('test input');
     await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'idle', { timeout: 10000 });
-    await expect(page.getByTestId('contact-intent-message')).not.toBeVisible();
+    await expect(page.getByTestId('contact-intent-turn-ai')).not.toBeVisible();
     await page.screenshot({ path: 'e2e/screenshots/adversarial-empty-message.png' });
   });
 });

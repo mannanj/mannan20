@@ -82,21 +82,13 @@ export interface LLMValidationResult {
   feedback: string;
 }
 
-export type ContactIntentCategoryKey =
-  | 'job_opportunity'
-  | 'collaboration'
-  | 'project_interest'
-  | 'speaking_media'
-  | 'networking';
-
-export interface ContactIntentCategory {
-  key: ContactIntentCategoryKey;
-  detected: boolean;
+export interface ContactIntentResult {
+  message: string;
 }
 
-export interface ContactIntentResult {
-  categories: ContactIntentCategory[];
-  message: string;
+export interface ContactIntentTurn {
+  userText: string;
+  aiReply: string;
 }
 
 export type GlassModalSize = 'small' | 'medium' | 'large';

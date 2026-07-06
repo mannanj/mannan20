@@ -15,7 +15,7 @@ function stubTurnstileNeverResolves(page: Page) {
   );
 }
 
-const THANKS_RESPONSE = JSON.stringify({ categories: [], message: 'Thanks!' });
+const THANKS_RESPONSE = JSON.stringify({ message: 'Thanks!' });
 
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
   test('close while verifying resets cleanly on reopen', async ({ page }) => {
@@ -121,31 +121,33 @@ test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
     await textarea.fill('ab');
     await page.waitForTimeout(500);
     await textarea.fill('abc');
-    await expect(page.getByTestId('contact-intent-message')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 10000 });
     expect(callCount).toBe(1);
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-retype.png' });
   });
 
-  test('retyping while sending shows only the latest response', async ({ page }) => {
+  test('turn locks and input disables the instant it sends, preventing overlapping requests', async ({ page }) => {
     let callCount = 0;
     await openRevealedModal(page);
     await page.route('**/api/contact-intent', async (route) => {
       callCount++;
-      if (callCount === 1) {
-        await new Promise((r) => setTimeout(r, 3000));
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ categories: [], message: 'STALE' }) });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ categories: [], message: 'FRESH' }) });
-      }
+      await new Promise((r) => setTimeout(r, 3000));
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'FRESH' }) });
     });
     const textarea = page.getByTestId('contact-intent-textarea');
     await textarea.fill('first attempt');
     await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'sending', { timeout: 10000 });
-    await textarea.fill('second attempt with more detail');
-    await expect(page.getByTestId('contact-intent-message')).toHaveText('FRESH', { timeout: 15000 });
-    await page.waitForTimeout(3500);
-    await expect(page.getByTestId('contact-intent-message')).toHaveText('FRESH');
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-retype-shows-latest.png' });
+
+    // The turn is now locked into view-only history; the active textarea is disabled
+    // for the whole in-flight window, so there is no way to fire a second overlapping request.
+    await expect(page.getByTestId('contact-intent-turn-pending')).toHaveText('> first attempt');
+    await expect(textarea).toBeDisabled();
+    await expect(textarea).toHaveValue('');
+
+    await expect(page.getByTestId('contact-intent-turn-ai')).toHaveText('FRESH', { timeout: 15000 });
+    expect(callCount).toBe(1);
+    await expect(textarea).toBeEnabled();
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-turn-locks-while-sending.png' });
   });
 });
 
@@ -153,11 +155,11 @@ test.describe('Group C: Intent API Response Edge Cases', () => {
   test('response missing message field does not crash, stays idle', async ({ page }) => {
     await openRevealedModal(page);
     await page.route('**/api/contact-intent', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ categories: [] }) })
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({}) })
     );
     await page.getByTestId('contact-intent-textarea').fill('test input');
     await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'idle', { timeout: 10000 });
-    await expect(page.getByTestId('contact-intent-message')).not.toBeVisible();
+    await expect(page.getByTestId('contact-intent-turn-ai')).not.toBeVisible();
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-missing-message-field.png' });
   });
 

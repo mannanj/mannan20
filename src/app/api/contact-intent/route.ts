@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import type { ContactIntentCategory, ContactIntentCategoryKey, ContactIntentResult } from '@/lib/types';
+import type { ContactIntentResult } from '@/lib/types';
+import { MAX_MESSAGE_LENGTH, alreadyAskedQuestion, normalizeResult, parseContentFallback, sanitizeHistory } from '@/lib/contact-intent-logic';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_KV_REST_API_URL!,
@@ -16,85 +17,40 @@ const ratelimit = new Ratelimit({
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'deepseek/deepseek-v3.2';
-const MAX_MESSAGE_LENGTH = 1000;
-const MAX_RESPONSE_MESSAGE_LENGTH = 120;
 
-const CATEGORY_KEYS: ContactIntentCategoryKey[] = [
-  'job_opportunity',
-  'collaboration',
-  'project_interest',
-  'speaking_media',
-  'networking',
-];
+const SYSTEM_PROMPT_BASE = `You are helping Mannan Javid reply to someone chatting with him through his portfolio's contact form. His email and phone have already been shown to them — this is a bonus follow-up, not a gate, so never withhold information or ask for anything before helping.
 
-const SYSTEM_PROMPT = `You are helping Mannan Javid craft a short thank-you for someone who just reached out through his portfolio's contact form. His email and phone number have already been shown to them — this is a bonus follow-up, not a gate, so never withhold or ask for more information.
+Read the conversation so far and their latest message. Reply with ONE short, warm message (max 2 sentences) — thank them and acknowledge what they said, using their name if they gave one. Recognize whatever they're reaching out about — a job, a project, a collaboration, a speaking or media request, just saying hi, or anything else — without trying to sort it into a fixed category.
 
-Read their free-form text and classify which of these categories apply (for internal record-keeping only, not shown to the user). A message can match zero, one, or several:
-- job_opportunity: a full-time or contract job offer, role, or hiring inquiry
-- collaboration: a freelance, consulting, or collaboration proposal
-- project_interest: they mention a specific project or app of his by name
-- speaking_media: a speaking, interview, podcast, or media request
-- networking: general networking, an introduction, or "just saying hi" with no specific ask
+Never ask for more detail than needed, never mention categories or classification, never pad the reply with an unsolicited offer.`;
 
-Then write a "message" that is ONE short sentence: just thank them, using their name if they gave one. Do not ask a question, do not solicit more details, do not reference what they wrote or which category it matched. If no name was given, use a brief generic thank-you.
+const QUESTION_ALLOWED_CLAUSE = `You may ask exactly one brief clarifying question, but only if it would concretely help Mannan act on this (for example: they mention a job with no company named, or a project with no clear ask). Most replies should NOT include a question — default to a plain thank-you, and only ask when it's genuinely useful.`;
 
-Examples:
-- Text includes "I'm John" or similar: "Thanks, John!"
-- No name given: "Thanks for reaching out!"
-
-Use the record_contact_intent tool to return your findings.`;
+const QUESTION_USED_CLAUSE = `You have already asked your one allowed clarifying question earlier in this thread. Do not ask another question of any kind this time — only acknowledge.`;
 
 const INTENT_TOOL = {
   type: 'function' as const,
   function: {
-    name: 'record_contact_intent',
-    description: 'Record the detected intent categories and a personalized reply message',
+    name: 'record_reply',
+    description: 'Record the reply message and whether it asks a clarifying question',
     parameters: {
       type: 'object',
       properties: {
-        categories: {
-          type: 'object',
-          properties: Object.fromEntries(CATEGORY_KEYS.map(key => [key, { type: 'boolean' }])),
-          required: CATEGORY_KEYS,
-        },
         message: {
           type: 'string',
-          description: 'Short, warm, personalized reply (2-4 sentences, no links)',
+          description: 'Short, warm reply (max 2 sentences, no links)',
+        },
+        askedQuestion: {
+          type: 'boolean',
+          description: 'true if `message` itself asks the user a clarifying question',
         },
       },
-      required: ['categories', 'message'],
+      required: ['message', 'askedQuestion'],
     },
   },
 };
 
-const EMPTY_RESULT: ContactIntentResult = {
-  categories: CATEGORY_KEYS.map(key => ({ key, detected: false })),
-  message: '',
-};
-
-function normalizeCategories(raw: unknown): ContactIntentCategory[] {
-  const record = typeof raw === 'object' && raw !== null ? raw as Record<string, unknown> : {};
-  return CATEGORY_KEYS.map(key => ({ key, detected: record[key] === true }));
-}
-
-function normalizeResult(parsed: Record<string, unknown>): ContactIntentResult | null {
-  if (typeof parsed.message !== 'string') return null;
-  return {
-    categories: normalizeCategories(parsed.categories),
-    message: parsed.message.slice(0, MAX_RESPONSE_MESSAGE_LENGTH),
-  };
-}
-
-function parseContentFallback(content: string | null | undefined): ContactIntentResult | null {
-  if (!content) return null;
-  try {
-    const stripped = content.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    const parsed = JSON.parse(stripped);
-    return normalizeResult(parsed);
-  } catch {
-    return null;
-  }
-}
+const EMPTY_RESULT: ContactIntentResult = { message: '' };
 
 export async function POST(request: NextRequest) {
   try {
@@ -110,7 +66,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { message } = await request.json();
+    const body = await request.json();
+    const { message } = body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json(EMPTY_RESULT);
@@ -131,6 +88,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const history = sanitizeHistory(body.history);
+    const askedAlready = alreadyAskedQuestion(history);
+    const systemPrompt = `${SYSTEM_PROMPT_BASE}\n\n${askedAlready ? QUESTION_USED_CLAUSE : QUESTION_ALLOWED_CLAUSE}`;
+
     const response = await fetch(OPENROUTER_URL, {
       method: 'POST',
       headers: {
@@ -140,11 +101,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt },
+          ...history,
           { role: 'user', content: message },
         ],
         tools: [INTENT_TOOL],
-        tool_choice: { type: 'function', function: { name: 'record_contact_intent' } },
+        tool_choice: { type: 'function', function: { name: 'record_reply' } },
       }),
     });
 
@@ -162,13 +124,13 @@ export async function POST(request: NextRequest) {
     if (toolCall?.function?.arguments) {
       try {
         const parsed = JSON.parse(toolCall.function.arguments);
-        const normalized = normalizeResult(parsed);
+        const normalized = normalizeResult(parsed, askedAlready);
         if (normalized) return NextResponse.json(normalized);
       } catch {}
     }
 
     const messageContent = data.choices?.[0]?.message?.content;
-    const fallback = parseContentFallback(messageContent);
+    const fallback = parseContentFallback(messageContent, askedAlready);
     if (fallback) {
       return NextResponse.json(fallback);
     }
