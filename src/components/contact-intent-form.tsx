@@ -3,7 +3,8 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ContactIntentResult } from '@/lib/types';
 
-const PLACEHOLDER = "Why are you here? Your name? (optional)";
+const INTRO_HEADER = "Want to share more? (optional)";
+const PLACEHOLDER = "Your name, and/or why you're here";
 const DEBOUNCE_MS = 1200;
 const MAX_PENDING_MS = 3000;
 const MAX_INPUT_LENGTH = 1000;
@@ -101,6 +102,9 @@ export function ContactIntentForm() {
 
   return (
     <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+        {INTRO_HEADER}
+      </p>
       <textarea
         data-testid="contact-intent-textarea"
         value={text}
@@ -136,9 +140,6 @@ export function ContactIntentForm() {
           {ERROR_TEXT}
         </p>
       )}
-      <p style={{ margin: 0, fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontWeight: 300 }}>
-        Optional — I will never send you unsolicited communication.
-      </p>
     </div>
   );
 }
