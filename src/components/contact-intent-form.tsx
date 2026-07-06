@@ -105,30 +105,56 @@ export function ContactIntentForm() {
       <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
         {INTRO_HEADER}
       </p>
-      <textarea
-        data-testid="contact-intent-textarea"
-        value={text}
-        onChange={handleChange}
-        onCompositionStart={handleCompositionStart}
-        onCompositionEnd={handleCompositionEnd}
-        maxLength={MAX_INPUT_LENGTH}
-        rows={3}
-        placeholder={PLACEHOLDER}
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '10px',
-          fontSize: '14px',
-          color: 'white',
-          background: 'rgba(0,0,0,0.3)',
-          resize: 'vertical',
-          fontFamily: 'inherit',
-          lineHeight: 1.5,
-          boxSizing: 'border-box',
-          outline: 'none',
-        }}
-      />
+      <div style={{ position: 'relative' }}>
+        <textarea
+          data-testid="contact-intent-textarea"
+          value={text}
+          onChange={handleChange}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
+          maxLength={MAX_INPUT_LENGTH}
+          rows={3}
+          placeholder={PLACEHOLDER}
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            paddingBottom: '28px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '10px',
+            fontSize: '14px',
+            color: 'white',
+            background: 'rgba(0,0,0,0.3)',
+            resize: 'vertical',
+            fontFamily: 'inherit',
+            lineHeight: 1.5,
+            boxSizing: 'border-box',
+            outline: 'none',
+          }}
+        />
+        {status === 'sending' && (
+          <svg
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '10px',
+              animation: 'spin 1s linear infinite',
+              width: '14px',
+              height: '14px',
+              color: 'rgba(255,255,255,0.5)',
+              pointerEvents: 'none',
+            }}
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path
+              style={{ opacity: 0.75 }}
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+        )}
+      </div>
       <span data-testid="contact-intent-status" data-status={status} style={{ display: 'none' }} />
       {status === 'done' && message && (
         <p data-testid="contact-intent-message" style={{ margin: 0, fontSize: '12px', lineHeight: 1.5, color: 'rgba(74,222,128,0.8)' }}>

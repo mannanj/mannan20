@@ -17,7 +17,7 @@ const ratelimit = new Ratelimit({
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'deepseek/deepseek-v3.2';
 const MAX_MESSAGE_LENGTH = 1000;
-const MAX_RESPONSE_MESSAGE_LENGTH = 400;
+const MAX_RESPONSE_MESSAGE_LENGTH = 120;
 
 const CATEGORY_KEYS: ContactIntentCategoryKey[] = [
   'job_opportunity',
@@ -27,16 +27,20 @@ const CATEGORY_KEYS: ContactIntentCategoryKey[] = [
   'networking',
 ];
 
-const SYSTEM_PROMPT = `You are helping Mannan Javid craft a warm, personalized reply for someone who just reached out through his portfolio's contact form. His email and phone number have already been shown to them — this is a bonus follow-up, not a gate, so never withhold or ask for more information.
+const SYSTEM_PROMPT = `You are helping Mannan Javid craft a short thank-you for someone who just reached out through his portfolio's contact form. His email and phone number have already been shown to them — this is a bonus follow-up, not a gate, so never withhold or ask for more information.
 
-Read their free-form text (their name and/or why they're reaching out) and classify which of these categories apply. A message can match zero, one, or several:
+Read their free-form text and classify which of these categories apply (for internal record-keeping only, not shown to the user). A message can match zero, one, or several:
 - job_opportunity: a full-time or contract job offer, role, or hiring inquiry
 - collaboration: a freelance, consulting, or collaboration proposal
 - project_interest: they mention a specific project or app of his by name
 - speaking_media: a speaking, interview, podcast, or media request
 - networking: general networking, an introduction, or "just saying hi" with no specific ask
 
-Then write a short "message" (2-4 sentences, warm and specific, no links, no bullet points): thank them by name if given, acknowledge what they mentioned, and if a category was detected, note he'd love to hear more about it. If the text is too short or vague to say anything specific, keep it a brief warm generic thank-you.
+Then write a "message" that is ONE short sentence: just thank them, using their name if they gave one. Do not ask a question, do not solicit more details, do not reference what they wrote or which category it matched. If no name was given, use a brief generic thank-you.
+
+Examples:
+- Text includes "I'm John" or similar: "Thanks, John!"
+- No name given: "Thanks for reaching out!"
 
 Use the record_contact_intent tool to return your findings.`;
 
