@@ -48,6 +48,8 @@ test('reopening after reveal shows result directly, skipping verification', asyn
 
   await page.getByTestId('contact-ripple').click();
   await expect(page.getByTestId('contact-modal')).toBeVisible();
+  const verifyingStatusCount = await page.getByTestId('contact-status').count();
+  expect(verifyingStatusCount).toBe(0);
   await expect(page.getByTestId('contact-result')).toBeVisible();
   await page.screenshot({ path: 'e2e/screenshots/contact-form-reopen-still-revealed.png' });
 });
