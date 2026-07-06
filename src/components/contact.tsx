@@ -54,7 +54,7 @@ export function Contact() {
           {state.contactRevealed ? (
             <>
               <div className="group flex items-center gap-2">
-                <a data-testid="contact-email-revealed" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" href={`mailto:${EMAIL}`}>
+                <a data-testid="contact-email-revealed" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7] whitespace-nowrap" href={`mailto:${EMAIL}`}>
                   {EMAIL}
                 </a>
                 <button
@@ -66,7 +66,7 @@ export function Contact() {
                 </button>
               </div>
               <div className="group flex items-center gap-2">
-                <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" href={getPhoneLink(PHONE)}>
+                <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7] whitespace-nowrap" href={getPhoneLink(PHONE)}>
                   {PHONE}
                 </a>
                 <button
@@ -80,10 +80,10 @@ export function Contact() {
             </>
           ) : (
             <>
-              <a data-testid="contact-email-masked" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
+              <a data-testid="contact-email-masked" className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7] whitespace-nowrap" onClick={handleOpenContact} title="Request contact info">
                 *****&#64;mannan.is
               </a>
-              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]" onClick={handleOpenContact} title="Request contact info">
+              <a className="text-base tracking-wide text-[#039be5] no-underline cursor-pointer transition-colors duration-300 ease-in-out hover:text-[#4fc3f7] whitespace-nowrap" onClick={handleOpenContact} title="Request contact info">
                 +1 (***) *** 8302
               </a>
             </>
