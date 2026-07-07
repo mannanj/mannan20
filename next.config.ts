@@ -2,6 +2,11 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // Type-checked in CI (.github/workflows/ci.yml) before merge — skipping the
+  // redundant re-check here saves ~15s per Vercel build.
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   images: {
     remotePatterns: [
       {
