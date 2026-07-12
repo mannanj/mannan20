@@ -17,19 +17,20 @@ Magic-link gated file sharing, sitting entirely on Cloudflare. The portfolio sit
 |---|---|---|---|
 | HTTP router & handlers | **Workers** (Hono) | Edge JS runtime, per-request V8 isolate | n/a |
 | User / membership tables | **D1** (SQLite) | Tiny relational data; ~3 tables, low writes | `DB` |
-| File storage | **R2** (three buckets) | Free egress, S3-compatible API, no per-GB transit cost | `FILES`, `FILES_HANS`, `FILES_BACKUPS` |
-| Magic-link rate limiting | **Rate Limiting** binding | Protects `/auth/request` & `/auth/verify` from abuse | `REQUEST_LIMITER`, `VERIFY_LIMITER` |
+| File storage | **R2** (four target buckets) | Separate public and authenticated trust boundaries | `FILES`, `FILES_HANS`, `FILES_BACKUPS` |
+| Request rate limiting | **Rate Limiting** binding | Protects auth and authenticated file operations from abuse | `REQUEST_LIMITER`, `VERIFY_LIMITER`, `FILES_LIMITER` |
 | Folder listing cache | **Cache API** (`caches.default`) | Avoids `R2.list()` on every page-load | n/a |
 | Magic-link email delivery | **Resend** (third-party) | CF doesn't ship transactional email; Resend HTTP API is the simplest path | secret `RESEND_API_KEY` |
 | Account-level subdomain | `mannanteam.workers.dev` | Renamed from auto-generated; `.is` TLDs unsupported by CF DNS so a custom `cloud.mannan.is` was not possible | n/a |
 
 ## R2 specifically
 
-**Three buckets, one Cloudflare account:**
+**Four target buckets, one Cloudflare account:**
 
 | Bucket | Binding | Purpose | Who writes |
 |---|---|---|---|
-| `portfolio-files` | `FILES` | General portfolio files (key prefix `general/`) | Worker only (admin via `/admin/upload`) |
+| `portfolio-private-files` | `FILES` after cutover; configured canary target | Authenticated general files (key prefix `general/`); no `r2.dev` URL or custom domain | Worker only (admin via `/admin/upload`) |
+| `portfolio-files` | `FILES` before cutover; public portfolio/MCP bindings remain | Intentionally public media and documents, including the exact six MCP documents | Portfolio/MCP publishing paths |
 | `mannan-hans` | `FILES_HANS` | Hans's portfolio deliverables (whole bucket) | Worker only (admin) |
 | `deep-calm-weave-backups` | `FILES_BACKUPS` | Hans's personal-website backups (DB dumps, code, media) | External Supabase Edge Function + GitHub Actions, via S3-compatible R2 API token scoped to this bucket only |
 
@@ -39,16 +40,16 @@ Magic-link gated file sharing, sitting entirely on Cloudflare. The portfolio sit
 const FOLDER_CONFIG = {
   general: { binding: 'FILES',          keyPrefix: 'general/' },
   hans:    { binding: 'FILES_HANS',     keyPrefix: '' },
-  backups: { binding: 'FILES_BACKUPS',  keyPrefix: '' },
+  'hans-backups': { binding: 'FILES_BACKUPS', keyPrefix: '' },
 };
 ```
 
-`portfolio-files` keeps a `general/` prefix because that bucket may host other prefixes in the future. The two Hans-owned buckets use the whole bucket as the namespace (no prefix), since the bucket *is* the namespace boundary.
+`portfolio-private-files` keeps the existing `general/` prefix so the migration can preserve keys exactly. The two Hans-owned buckets use the whole bucket as the namespace (no prefix), since the bucket *is* the namespace boundary.
 
 **Layouts:**
 
 ```
-portfolio-files/
+portfolio-private-files/
   general/welcome.txt
   general/spaced name.txt    # spaces are fine in keys
 
@@ -62,9 +63,9 @@ deep-calm-weave-backups/     # populated by external app, not the Worker
   media/blog-images/<file>.jpg
 ```
 
-**Why three buckets, not one with prefixes:**
+**Why separate buckets, not only prefixes:**
 
-R2 API tokens scope at the bucket level — there's no native prefix-restricted token. To give Hans's backup app credentials that *cannot* read or write the portfolio's `general/` content, the only mechanism is to put backups in their own bucket. Splitting Hans's deliverables into `mannan-hans` is then a structural cleanup so the bucket layout matches the access boundaries.
+The public `portfolio-files` bucket has an enabled public delivery surface, so a `general/` prefix cannot enforce authentication: a discovered object key can bypass the Worker. `portfolio-private-files` is the storage trust boundary for `general/*` and must have no public URL or custom domain. Separate Hans buckets also preserve bucket-scoped credential and client boundaries.
 
 **Operations and how the Worker triggers them** (each binding behaves identically):
 
@@ -99,13 +100,14 @@ R2 API tokens scope at the bucket level — there's no native prefix-restricted 
   "main": "src/index.ts",
   "d1_databases": [{ "binding": "DB", "database_name": "cloud", "database_id": "…" }],
   "r2_buckets":  [
-    { "binding": "FILES",          "bucket_name": "portfolio-files" },
+    { "binding": "FILES",          "bucket_name": "portfolio-files" }, // pre-cutover production
     { "binding": "FILES_HANS",     "bucket_name": "mannan-hans" },
     { "binding": "FILES_BACKUPS",  "bucket_name": "deep-calm-weave-backups" }
   ],
   "ratelimits":  [
     { "name": "REQUEST_LIMITER", "namespace_id": "1001", "simple": { "limit": 5,  "period": 60 } },
-    { "name": "VERIFY_LIMITER",  "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } }
+    { "name": "VERIFY_LIMITER",  "namespace_id": "1002", "simple": { "limit": 10, "period": 60 } },
+    { "name": "FILES_LIMITER",   "namespace_id": "1003", "simple": { "limit": 120, "period": 60 } }
   ],
   "vars": { "RESEND_FROM": "…", "PUBLIC_BASE_URL": "…" }
 }
@@ -113,7 +115,9 @@ R2 API tokens scope at the bucket level — there's no native prefix-restricted 
 
 Bindings appear on `c.env` inside handlers. They're injected at runtime — no SDK initialization, no credentials in code.
 
-**Secrets:** stored separately from `wrangler.jsonc`, set via `wrangler secret put NAME`. The two used here are `SESSION_SECRET` (HMAC key for the auth cookie) and `RESEND_API_KEY`.
+**Secrets:** stored separately from `wrangler.jsonc`, set via `wrangler secret put NAME`. The required values are `SESSION_SECRET` (HMAC key for the auth cookie), `RESEND_API_KEY`, and `SITE_AUTH_EXCHANGE_SECRET`. The `storage-canary` environment does not inherit them; configure each only in Cloudflare secret storage during the authorized canary gate.
+
+**Canary/cutover:** `env.storage-canary` is a distinct Worker whose `FILES` binding targets `portfolio-private-files`. The top-level production binding deliberately stays on `portfolio-files` during repository work. Copy, canary deployment, production rebinding, observation, deletion of exact source keys, and cleanup are separate approval gates in [`plans/006-private-r2-storage-boundary.md`](../plans/006-private-r2-storage-boundary.md).
 
 **Deploy:** `wrangler deploy` from `cloud-worker/`. Each deploy creates a new immutable version; `wrangler deployments list` shows them. Rollback = `wrangler rollback --version-id <id>`.
 
@@ -141,7 +145,7 @@ folder_members(email, folder, PK(email, folder))
 
 ## Rate Limiting
 
-Native Cloudflare Rate Limiting bindings — not a third-party package. Each binding has a `namespace_id` and a `simple` policy (`limit` requests per `period` seconds). Called from handlers as:
+Native Cloudflare Rate Limiting bindings — not a third-party package. Each binding has a `namespace_id` and a `simple` policy (`limit` requests per `period` seconds). Auth uses IP keys; authenticated GET/HEAD, ZIP, and upload operations use email + connecting IP and fail closed if `FILES_LIMITER` is unavailable. Called from handlers as:
 
 ```ts
 const limit = await c.env.REQUEST_LIMITER.limit({ key: `req:${ip}` });
@@ -217,13 +221,13 @@ Hans's personal-website backup app (a separate Vite/React/Supabase project, depl
 
 **Why R2 dashboard, not wrangler:** wrangler v4's `r2 bucket` subcommand does not expose API token management. Token creation must happen via the dashboard or the raw Cloudflare REST API (`/accounts/:id/r2/api-tokens`). wrangler can manage everything else (bucket creation, lifecycle rules, CORS, event notifications).
 
-**Why the bucket is also bound to the Worker (`FILES_BACKUPS`):** so Hans (the owner) can browse and download his own backups via magic sign-in at `/cloud/backups`. The Worker reads from the same bucket the backup app writes to. Direction matters here:
+**Why the bucket is also bound to the Worker (`FILES_BACKUPS`):** so Hans (the owner) can browse and download his own backups via magic sign-in at `/cloud/hans-backups`. The Worker reads from the same bucket the backup app writes to. Direction matters here:
 
 | Actor | Reach |
 |---|---|
 | Backup app (S3 token) | Only `deep-calm-weave-backups`. Cannot reach `mannan-hans` or `portfolio-files`. |
-| Worker (admin user) | All three buckets. |
-| Worker (Hans, `folder_members` row for `hans` + `backups`) | `mannan-hans` and `deep-calm-weave-backups`. Not `portfolio-files`. |
+| Worker (admin user) | All three authenticated bucket bindings. |
+| Worker (Hans, `folder_members` row for `hans` + `hans-backups`) | `mannan-hans` and `deep-calm-weave-backups`. Not the `general` folder. |
 | Worker (other client with only `hans` row) | `mannan-hans` only. |
 
 The isolation that matters — **a compromise of the backup app's S3 token cannot touch `mannan-hans` or `portfolio-files`** — is preserved by the bucket-level scoping of the token. The Worker's broader reach is fine because the Worker is also where the ACL gating happens.
@@ -273,8 +277,9 @@ wrangler tail cloud-worker --format=pretty
 # List R2 objects (wrangler v4 has no `list` subcommand for r2 objects;
 # use the Worker's /cloud/<folder> view, the dashboard, or an S3 client)
 
-# Bypass-upload (won't purge listing cache; max 5min staleness)
-wrangler r2 object put portfolio-files/general/foo.pdf --file=./foo.pdf --remote
+# Bypass-upload (won't purge listing cache; max 5min staleness).
+# Use the private target only after the authorized cutover; never put general/* in portfolio-files.
+wrangler r2 object put portfolio-private-files/general/foo.pdf --file=./foo.pdf --remote
 wrangler r2 object put mannan-hans/some-deliverable.pdf --file=./x.pdf --remote
 # (Don't put files into deep-calm-weave-backups by hand — that's the backup app's territory)
 

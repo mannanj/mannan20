@@ -92,7 +92,8 @@ export interface FileEntry {
 
 export interface WorkerEnv {
   FILES: R2Bucket;
-  FILES_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
+  FILES_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
+  MCP_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
 }
 
 export interface Contact {

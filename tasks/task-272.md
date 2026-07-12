@@ -1,0 +1,23 @@
+### Task 272: Plan the public/private R2 storage boundary remediation
+
+- [x] Read the canonical handoff, kickoff, remediation plan, and ledger
+- [x] Reconcile live branch/worktree state and preserve user-owned local paths
+- [x] Audit cloud, MCP, visits, and public-site R2 bindings and routes
+- [x] Trace the exact six-file MCP allowlist and generated snapshot
+- [x] Trace key construction, folder authorization, download methods, headers, and rate limits
+- [x] Audit deployment configuration and migration/upload tooling without remote access
+- [x] Run value-blind tracked-state/history secret-pattern scans without printing values
+- [x] Record `portfolio/jordan/*` and hidden/noindex public-object classification as SEC-17 without expanding the `general/*` cutover
+- [x] Write plan 006 with separate repository/production phases, canary verification, human gates, and rollback
+- [x] Promote plan 006 to the immediate canonical remediation priority
+- [x] Review and authorize the repository implementation phase
+- [x] Implement exact six-file MCP/public download invariants and hardening
+- [x] Implement private object validation, denial-equivalent direct access, headers, limits, and resource budgets
+- [x] Add a non-production `storage-canary` config while retaining the production public binding
+- [x] Add checksum-verified/redacted Gitleaks state/history gates and pinned CI scanning
+- [x] Pass root typecheck + 117 tests, cloud-worker 70 tests, MCP drift + 44 tests, canary dry-run, and diff checks
+- [x] Complete independent security review and resolve its upload/bucket/ZIP/MCP coverage findings
+- [ ] Confirm provider-managed secret coverage and authorize removal of ignored local credential-bearing files before Gate A
+- [ ] Authorize a local repository-phase commit
+- [ ] Authorize and execute production gates individually
+- Location: `.gitleaks.toml`, `.github/workflows/ci.yml`, `.gitignore`, `cloud-worker/`, `docs/cloud-cloudflare-architecture.md`, `mcp-worker/`, `scripts/build-mcp-data.mjs`, `src/app/api/download/[slug]/`, `plans/006-private-r2-storage-boundary.md`, `plans/README.md`, `plans/PLAN.md`, `plans/KICKOFF.md`, `tasks/task-272.md`

@@ -21,6 +21,26 @@ const PUBLIC_FILE_SLUGS = {
   "mcp-intent-spike": "MCP Intent Spike (reading PDF)",
 };
 
+const EXPECTED_PUBLIC_FILES = [
+  { slug: "resume", key: "portfolio/resume/Mannan_Javid_Resume.pdf" },
+  { slug: "cover-letter", key: "portfolio/documents/mannan-javid-cover-letter.pdf" },
+  { slug: "gmu-archr", key: "portfolio/documents/GMU-ARCHR.pdf" },
+  { slug: "omf-dr", key: "portfolio/documents/OMF-DR.pdf" },
+  {
+    slug: "immortalism-manifesto",
+    key: "portfolio/documents/immortalism-manifesto.pdf",
+  },
+  { slug: "mcp-intent-spike", key: "portfolio/documents/mcp-intent-spike.pdf" },
+];
+
+const FORBIDDEN_PUBLIC_FILE_PREFIXES = [
+  "general/",
+  "portfolio/jordan/",
+  "hans/",
+  "drops/",
+  "backups/",
+];
+
 const abs = (p) => (p.startsWith("http") ? p : `${SITE}${p}`);
 const agentFileUrl = (slug) => `${WORKER_BASE}/files/${slug}`;
 const slugFromPath = (p) => p.split("/").pop();
@@ -180,6 +200,22 @@ const files = Object.entries(PUBLIC_FILE_SLUGS).map(([slug, label]) => {
     label,
   };
 });
+
+const publicFileMapping = files.map(({ slug, key }) => ({ slug, key }));
+if (JSON.stringify(publicFileMapping) !== JSON.stringify(EXPECTED_PUBLIC_FILES)) {
+  console.error("public file mapping must remain the exact ordered six-file allowlist");
+  process.exit(1);
+}
+for (const { slug, key } of files) {
+  if (!key.startsWith("portfolio/resume/") && !key.startsWith("portfolio/documents/")) {
+    console.error(`public file key uses a disallowed prefix: ${slug}`);
+    process.exit(1);
+  }
+  if (FORBIDDEN_PUBLIC_FILE_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+    console.error(`public file key uses a private or separately classified prefix: ${slug}`);
+    process.exit(1);
+  }
+}
 
 const contact = {
   how: "Email and phone are not published openly. The contact form in the Contact section of mannan.is reveals contact details to humans after a short validated message; agents should direct a human there, or reach out via GitHub.",

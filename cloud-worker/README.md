@@ -1,13 +1,14 @@
 # cloud-worker
 
-Magic-link gated file sharing on Cloudflare. One Worker, one D1 database, one R2 bucket, Resend for email.
+Magic-link gated file sharing on Cloudflare. One production Worker, a named storage-canary configuration, one D1 database, private R2 storage target, and Resend for email.
 
 ## Stack
 
 - Cloudflare Workers + Hono
 - D1 (SQLite) — `users`, `magic_tokens`, `folder_members`
-- R2 (three buckets):
-  - `portfolio-files` (binding `FILES`) — `general/` prefix
+- R2 (four target buckets):
+  - `portfolio-private-files` (production target for binding `FILES`) — authenticated `general/` objects; no public URL or custom domain
+  - `portfolio-files` (current production binding during the pre-cutover repository phase) — intentionally public media and documents, including the exact six-file MCP allowlist
   - `mannan-hans` (binding `FILES_HANS`) — Hans's portfolio deliverables
   - `deep-calm-weave-backups` (binding `FILES_BACKUPS`) — Hans's website backups, written by an external Supabase Edge Function + GitHub Actions; bucket-scoped R2 API token managed in the dashboard
 - Resend HTTP API for magic-link emails
@@ -23,11 +24,12 @@ Magic-link gated file sharing on Cloudflare. One Worker, one D1 database, one R2
 | POST | `/auth/sign-out` | any |
 | GET | `/cloud` | session — folder index |
 | GET | `/cloud/:folder` | session + `canAccess` — file list |
-| GET | `/files/:folder/:name` | session + `canAccess` — streamed download |
+| GET, HEAD | `/files/:folder/:name` | session + `canAccess`, 120/min/email+IP — streamed download/metadata; all other methods return `405` |
+| POST | `/cloud/:folder/download` | session + `canAccess`, 120/min/email+IP — bounded ZIP download |
 | POST | `/admin/invite` | admin — `{ email, folders: ["general","hans"] }` upserts user, grants folders, sends link |
 | POST | `/admin/grant` | admin — `{ email, folder }` |
 | POST | `/admin/revoke` | admin — `{ email, folder }` |
-| POST | `/admin/upload` | admin — multipart `folder`, `file` |
+| POST | `/admin/upload` | admin, 120/min/email+IP — multipart `folder`, `file`, max 100 MiB |
 | GET | `/admin/users` | admin — debug listing |
 
 Folders are an in-code allowlist (`FOLDERS` in `src/auth.ts`) — currently `['general', 'hans', 'hans-backups']`. Each folder maps to a bucket binding + key prefix in `FOLDER_CONFIG`. Adding a folder requires extending the allowlist, choosing a binding (existing or new), and redeploying.
@@ -45,10 +47,12 @@ bun install
 wrangler d1 create cloud
 # copy the database_id into wrangler.jsonc
 
-wrangler r2 bucket create portfolio-files
+wrangler r2 bucket create portfolio-private-files
 wrangler r2 bucket create mannan-hans
 wrangler r2 bucket create deep-calm-weave-backups
 ```
+
+Do not run the R2 command as routine setup for the existing deployment. Creation and configuration of `portfolio-private-files` is production Gate A in [`plans/006-private-r2-storage-boundary.md`](../plans/006-private-r2-storage-boundary.md) and requires explicit authorization. The bucket must have its `r2.dev` URL disabled and no custom domain before any private object is copied.
 
 ### 2. Apply migration
 
@@ -73,6 +77,9 @@ openssl rand -hex 32 | wrangler secret put SESSION_SECRET
 
 # Resend API key from https://resend.com/api-keys
 wrangler secret put RESEND_API_KEY
+
+# shared secret for the portfolio-to-cloud auth exchange
+wrangler secret put SITE_AUTH_EXCHANGE_SECRET
 ```
 
 ### 5. Deploy
@@ -117,10 +124,9 @@ curl -X POST https://cloud-worker.<sub>.workers.dev/admin/upload \
   -F "file=@/path/to/file.pdf"
 ```
 
-You can also bypass the Worker for admin tasks:
+For non-sensitive bucket administration, Wrangler can bypass the Worker. Never upload `general/*` to the public `portfolio-files` bucket after the private cutover:
 
 ```bash
-wrangler r2 object put portfolio-files/general/whatever.pdf --file=./whatever.pdf
 wrangler d1 execute cloud --remote --command \
   "INSERT INTO users VALUES ('hans@example.com','client',unixepoch()*1000); \
    INSERT INTO folder_members VALUES ('hans@example.com','hans');"
@@ -137,4 +143,10 @@ wrangler d1 execute cloud --remote --command \
 - Folders are a code-level allowlist (no folders table). Three tables total.
 - Files stream through the Worker (free egress, simple URLs). Move to presigned URLs only if you start hosting >100 MB items.
 - Sessions are stateless HMAC cookies — revocation = rotate `SESSION_SECRET` (everyone signs in again).
-- File listing hits R2 on every request. Add a `Cache API` layer if listings get slow.
+- File listings use the Cache API for up to five minutes and are invalidated on Worker uploads; out-of-band changes may remain stale until expiry.
+
+## Storage canary and cutover boundary
+
+The top-level `FILES` binding intentionally remains `portfolio-files` until production Gate E. The named `storage-canary` environment binds `FILES` to `portfolio-private-files` so authenticated listing, GET/HEAD, ZIP, ACL denial, and headers can be proven before the production binding changes.
+
+Wrangler environment secrets do not inherit. Before an explicitly authorized canary deploy, set `SESSION_SECRET`, `RESEND_API_KEY`, and `SITE_AUTH_EXCHANGE_SECRET` separately in Cloudflare secret storage for `storage-canary`; never place their values in JSONC, task logs, shell history, or repository files. Copy and deletion operations, canary deployment, the production switch, and cleanup are separately authorized gates in [plan 006](../plans/006-private-r2-storage-boundary.md).

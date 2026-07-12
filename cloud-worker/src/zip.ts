@@ -1,3 +1,5 @@
+import { parseRelativeObjectName } from './storage';
+
 const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
   for (let i = 0; i < 256; i++) {
@@ -31,6 +33,7 @@ export function streamZip(sources: AsyncIterable<ZipSource>, filename: string): 
 
     for await (const src of sources) {
       if (!src.body) continue;
+      if (!parseRelativeObjectName(src.name)) continue;
       const nameBytes = enc.encode(src.name);
       const header = new Uint8Array(30 + nameBytes.length);
       const dv = new DataView(header.buffer);
@@ -134,7 +137,10 @@ export function streamZip(sources: AsyncIterable<ZipSource>, filename: string): 
     headers: {
       'content-type': 'application/zip',
       'content-disposition': `attachment; filename="${safeName}"`,
-      'cache-control': 'no-store',
+      'cache-control': 'private, no-store',
+      'x-content-type-options': 'nosniff',
+      'content-security-policy': "default-src 'none'; sandbox",
+      'referrer-policy': 'no-referrer',
     },
   });
 }

@@ -5,6 +5,9 @@ import { handleFileRequest } from "./files";
 import type { WorkerEnv } from "./types";
 
 const ENDPOINT = "https://mcp.mannanteam.workers.dev/mcp";
+const MCP_RATE_LIMIT = "60";
+const MCP_MAX_BODY_BYTES = 32_768;
+const MCP_MAX_SEARCH_QUERY_LENGTH = 512;
 
 const INFO = JSON.stringify(
   {
@@ -74,6 +77,84 @@ a:hover{text-decoration:underline}
 
 const JSON_HEADERS = { "content-type": "application/json" };
 
+function hasOversizedSearchQuery(body: ArrayBuffer): boolean {
+  try {
+    const parsed = JSON.parse(new TextDecoder().decode(body));
+    const messages = Array.isArray(parsed) ? parsed : [parsed];
+    return messages.some(
+      (message) =>
+        message?.method === "tools/call" &&
+        message?.params?.name === "search" &&
+        typeof message?.params?.arguments?.query === "string" &&
+        message.params.arguments.query.length > MCP_MAX_SEARCH_QUERY_LENGTH,
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function handleMcpRequest(
+  request: Request,
+  env: WorkerEnv,
+  ctx: ExecutionContext,
+): Promise<Response> {
+  if (!env.MCP_LIMITER) {
+    return Response.json({ error: "MCP service unavailable" }, { status: 503 });
+  }
+
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  try {
+    const { success } = await env.MCP_LIMITER.limit({ key: ip });
+    if (!success) {
+      return Response.json(
+        { error: "Too many MCP requests, try again shortly" },
+        {
+          status: 429,
+          headers: {
+            "retry-after": "60",
+            "x-ratelimit-limit": MCP_RATE_LIMIT,
+            "x-ratelimit-policy": `${MCP_RATE_LIMIT};w=60`,
+          },
+        },
+      );
+    }
+  } catch {
+    return Response.json({ error: "MCP service unavailable" }, { status: 503 });
+  }
+
+  const declaredLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MCP_MAX_BODY_BYTES) {
+    return Response.json({ error: "MCP request body too large" }, { status: 413 });
+  }
+
+  let boundedRequest = request;
+  if (request.method === "POST" && request.body) {
+    const forwarded = request.clone();
+    const body = await request.arrayBuffer();
+    if (body.byteLength > MCP_MAX_BODY_BYTES) {
+      return Response.json({ error: "MCP request body too large" }, { status: 413 });
+    }
+    if (hasOversizedSearchQuery(body)) {
+      return Response.json({ error: "Search query too long" }, { status: 400 });
+    }
+    boundedRequest = forwarded;
+  }
+
+  const response = await createMcpHandler(createServer(), {
+    route: "/mcp",
+    corsOptions: { origin: "*" },
+    enableJsonResponse: true,
+  })(boundedRequest, env, ctx);
+  const headers = new Headers(response.headers);
+  headers.set("x-ratelimit-limit", MCP_RATE_LIMIT);
+  headers.set("x-ratelimit-policy", `${MCP_RATE_LIMIT};w=60`);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext) {
     const { pathname } = new URL(request.url);
@@ -93,11 +174,7 @@ export default {
       return handleFileRequest(request, env);
     }
     if (pathname === "/mcp") {
-      return createMcpHandler(createServer(), {
-        route: "/mcp",
-        corsOptions: { origin: "*" },
-        enableJsonResponse: true,
-      })(request, env, ctx);
+      return handleMcpRequest(request, env, ctx);
     }
     return new Response("Not found", { status: 404 });
   },

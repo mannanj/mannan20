@@ -125,6 +125,7 @@ function createFakeEnv(): Env {
     FILES: {} as Env['FILES'],
     FILES_HANS: {} as Env['FILES_HANS'],
     FILES_BACKUPS: {} as Env['FILES_BACKUPS'],
+    FILES_LIMITER: { limit: async () => ({ success: true }) },
     REQUEST_LIMITER: { limit: async () => ({ success: true }) },
     VERIFY_LIMITER: { limit: async () => ({ success: true }) },
     SESSION_SECRET: 'test-session-secret',

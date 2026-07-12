@@ -6,11 +6,11 @@ A full read-only audit of this repo ran 2026-07-04 (Next.js app + the Cloudflare
 
 ## Why this exists
 
-Three findings are live security exposure — not optional, not "when you get to it." Everything past those three is real but discretionary: the point of this document is to work down a prioritized backlog at a sustainable pace, not to treat all 60 findings as equally urgent.
+Four remediation groups are live security exposure — not optional, not "when you get to it." The newly identified shared public/private R2 boundary is plan `006` and is the immediate priority. Everything past P0 is real but discretionary: the point is to work down a prioritized backlog sustainably, not treat every finding as equally urgent.
 
 ## Roadmap / phasing
 
-1. **P0 — fix now.** Live security exposure, 3 items, already written up as `001`-`003`.
+1. **P0 — fix now.** Live security exposure. Plans `001`-`003` are closed; plan `006` has a verified repository phase and remains active because all production gates are unauthorized/open.
 2. **P1 — high leverage.** Real bugs and gaps worth fixing soon. `004` and `005` are written; the rest are queued in `README.md` without a detailed plan yet.
 3. **P2 — real, lower urgency.** Do these as capacity allows.
 4. **P3 / investigate.** Low priority, or needs a cheap investigation step before it's even clear a fix is warranted.
@@ -34,4 +34,4 @@ Work the queue in `README.md` top to bottom within each phase. P0 always before 
 
 ## Full backlog
 
-See `README.md` for the living status table — all findings, priority, category, and status. Detailed, self-contained, executor-ready plans exist today for the first five (`001`-`005`, three P0 + two P1). Everything else in the queue needs its own plan written in the same format (see any of `001`-`005` as the template, or `~/.claude/skills/improve/references/plan-template.md` if that skill is available in the executor's environment) before a subagent starts changing code — don't jump straight from a one-line queue entry to a diff.
+See `README.md` for the living status table — all findings, priority, category, and status. Detailed, self-contained plans exist for `001`-`006`; plan `006` additionally separates repository work from production Gates A-H. Everything else in the queue needs its own plan written in the same format before source changes begin.

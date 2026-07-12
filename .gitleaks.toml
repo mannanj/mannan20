@@ -1,0 +1,12 @@
+title = "mannan20 Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented non-secret SESSION_SECRET placeholder"
+condition = "AND"
+regexTarget = "line"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)cloud-worker/\.dev\.vars\.example$''']
+regexes = ['''^SESSION_SECRET=replace-with-32-bytes-hex$''']

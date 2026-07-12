@@ -7,6 +7,7 @@ export interface Env {
   FILES: R2Bucket;
   FILES_HANS: R2Bucket;
   FILES_BACKUPS: R2Bucket;
+  FILES_LIMITER: RateLimit;
   REQUEST_LIMITER: RateLimit;
   VERIFY_LIMITER: RateLimit;
   SESSION_SECRET: string;

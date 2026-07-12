@@ -4,7 +4,6 @@ import {
   FOLDERS,
   bucketFor,
   isFolder,
-  keyFor,
   normalizeEmail,
   mintMagicToken,
   getUser,
@@ -12,6 +11,7 @@ import {
 } from './auth';
 import { sendMagicLink } from './email';
 import { listingCacheKey } from './cache';
+import { objectKeyFor } from './storage';
 
 interface AdminCtx {
   Bindings: Env;
@@ -19,6 +19,7 @@ interface AdminCtx {
 }
 
 export const admin = new Hono<AdminCtx>();
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
 admin.use('*', async (c, next) => {
   const session = c.get('session');
@@ -87,16 +88,47 @@ admin.post('/revoke', async (c) => {
 });
 
 admin.post('/upload', async (c) => {
+  const rawDeclaredLength = c.req.header('content-length');
+  if (rawDeclaredLength === undefined) {
+    return c.json({ error: 'content-length required' }, 411);
+  }
+  if (!/^\d+$/.test(rawDeclaredLength)) {
+    return c.json({ error: 'invalid content-length' }, 400);
+  }
+  const declaredLength = Number(rawDeclaredLength);
+  if (!Number.isSafeInteger(declaredLength)) {
+    return c.json({ error: 'invalid content-length' }, 400);
+  }
+  if (declaredLength > MAX_UPLOAD_BYTES) {
+    return c.json({ error: 'file exceeds 100 MiB upload limit' }, 413);
+  }
+
+  const limiter = c.env.FILES_LIMITER;
+  if (!limiter || typeof limiter.limit !== 'function') {
+    return c.json({ error: 'service unavailable' }, 503);
+  }
+  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
+  const session = c.get('session');
+  const limit = await limiter.limit({ key: `files:${session.email}:${ip}` });
+  if (!limit.success) return c.json({ error: 'too many requests' }, 429);
+
   const form = await c.req.formData();
   const folder = form.get('folder');
-  const file = form.get('file');
+  const file = form.get('file') as File | string | null;
   if (typeof folder !== 'string' || !isFolder(folder)) {
     return c.json({ error: `folder must be one of ${FOLDERS.join(', ')}` }, 400);
   }
   if (!(file instanceof File)) {
     return c.json({ error: 'file required (multipart)' }, 400);
   }
-  const key = keyFor(folder, file.name);
+  if (declaredLength < file.size) {
+    return c.json({ error: 'content-length smaller than file' }, 400);
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return c.json({ error: 'file exceeds 100 MiB upload limit' }, 413);
+  }
+  const key = objectKeyFor(folder, file.name);
+  if (!key) return c.json({ error: 'invalid file name' }, 400);
   await bucketFor(c.env, folder).put(key, file.stream(), {
     httpMetadata: { contentType: file.type || 'application/octet-stream' },
   });

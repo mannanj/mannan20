@@ -9,7 +9,6 @@ import {
   ensureUser,
   getUser,
   isFolder,
-  keyFor,
   listAllowedFolders,
   mintSiteSessionCode,
   mintMagicToken,
@@ -32,6 +31,11 @@ import {
 import { admin } from './admin';
 import { listingCacheKey } from './cache';
 import { streamZip, type ZipSource } from './zip';
+import {
+  objectKeyFor,
+  parseRelativeObjectName,
+  safeAttachmentDisposition,
+} from './storage';
 
 interface AppCtx {
   Bindings: Env;
@@ -40,11 +44,25 @@ interface AppCtx {
 
 const app = new Hono<AppCtx>();
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const MAX_ZIP_ENTRIES = 1000;
+const MAX_ZIP_BYTES = 1024 * 1024 * 1024;
 
 app.use('*', async (c, next) => {
   const session = await readSession(c.env, c.req.header('cookie') ?? null);
   c.set('session', session);
   await next();
+  if (session || c.req.path.startsWith('/auth/')) {
+    c.header('cache-control', 'private, no-store');
+    const vary = new Set(
+      (c.res.headers.get('vary') ?? '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    );
+    vary.add('Cookie');
+    if (c.req.path.startsWith('/auth/')) vary.add('Authorization');
+    c.header('vary', [...vary].join(', '));
+  }
 });
 
 app.get('/', (c) => {
@@ -213,12 +231,15 @@ async function handleFolderListing(c: Context<AppCtx>, folder: Folder, subpath: 
     const list = await bucket.list({ prefix: fullPrefix, delimiter: '/', limit: 1000 });
     const dirs = (list.delimitedPrefixes ?? [])
       .map((p) => p.slice(fullPrefix.length).replace(/\/$/, ''))
-      .filter((p) => p.length > 0);
-    const files = list.objects.map((o) => ({
-      name: o.key.slice(fullPrefix.length),
-      size: o.size,
-      uploaded: o.uploaded.toISOString().slice(0, 10),
-    }));
+      .filter((p) => parseRelativeObjectName(p) !== null);
+    const files = list.objects
+      .filter((o) => o.key.startsWith(fullPrefix))
+      .map((o) => ({
+        name: o.key.slice(fullPrefix.length),
+        size: o.size,
+        uploaded: o.uploaded.toISOString().slice(0, 10),
+      }))
+      .filter((entry) => parseRelativeObjectName(entry.name) !== null);
     listing = { dirs, files };
     const cacheRes = new Response(JSON.stringify(listing), {
       headers: {
@@ -229,11 +250,25 @@ async function handleFolderListing(c: Context<AppCtx>, folder: Folder, subpath: 
     c.executionCtx.waitUntil(cache.put(cacheKey, cacheRes));
   }
 
+  listing = {
+    dirs: listing.dirs.filter((name) => parseRelativeObjectName(name) !== null),
+    files: listing.files.filter((entry) => parseRelativeObjectName(entry.name) !== null),
+  };
+
   return c.html(folderPage(c.get('session')!.email, folder, subpath, listing.dirs, listing.files));
 }
 
-function normalizeSubpath(raw: string): string {
-  return raw.replace(/^\/+|\/+$/g, '');
+function objectNameFromRequestPath(path: string, prefix: string): string | null {
+  if (!path.startsWith(prefix)) return null;
+  const raw = path.slice(prefix.length);
+  if (!parseRelativeObjectName(raw)) return null;
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  return parseRelativeObjectName(decoded);
 }
 
 app.get('/cloud/:folder', async (c) => {
@@ -255,21 +290,12 @@ app.get('/cloud/:folder/*', async (c) => {
   if (!(await canAccess(c.env, session.email, folder))) {
     return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
   }
-  const subpath = normalizeSubpath(c.req.path.slice(`/cloud/${folder}`.length));
+  const subpath = objectNameFromRequestPath(c.req.path, `/cloud/${folder}/`);
+  if (!subpath) {
+    return c.html(messagePage('Bad request', 'That folder path was invalid.'), 400);
+  }
   return handleFolderListing(c, folder, subpath);
 });
-
-function sanitizeRelativeName(raw: string): string | null {
-  if (!raw) return null;
-  if (raw.length > 1024) return null;
-  if (raw.includes('\0')) return null;
-  if (raw.startsWith('/')) return null;
-  const parts = raw.split('/');
-  for (const p of parts) {
-    if (p === '' || p === '.' || p === '..') return null;
-  }
-  return raw;
-}
 
 app.post('/cloud/:folder/download', async (c) => {
   const session = c.get('session');
@@ -280,22 +306,45 @@ app.post('/cloud/:folder/download', async (c) => {
     return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
   }
 
+  const limiter = c.env.FILES_LIMITER;
+  if (!limiter || typeof limiter.limit !== 'function') {
+    return c.html(messagePage('Unavailable', 'File downloads are temporarily unavailable.'), 503);
+  }
+  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
+  const limit = await limiter.limit({ key: `files:${session.email}:${ip}` });
+  if (!limit.success) {
+    return c.html(messagePage('Too many requests', 'Please try again in a minute.'), 429);
+  }
+
   const form = await c.req.formData();
   const mode = form.get('mode');
-  const subpath = normalizeSubpath(String(form.get('subpath') ?? ''));
+  const rawSubpath = form.get('subpath');
+  if (typeof rawSubpath !== 'string') {
+    return c.html(messagePage('Bad request', 'The folder path was invalid.'), 400);
+  }
+  const subpath = rawSubpath ? parseRelativeObjectName(rawSubpath) : '';
+  if (subpath === null) {
+    return c.html(messagePage('Bad request', 'The folder path was invalid.'), 400);
+  }
   const cfg = FOLDER_CONFIG[folder];
   const basePrefix = subpath ? `${cfg.keyPrefix}${subpath}/` : cfg.keyPrefix;
   const bucket = bucketFor(c.env, folder);
 
-  let keys: string[] = [];
+  let keys: Array<{ key: string; size: number }> = [];
   if (mode === 'selected') {
     const names = form.getAll('name').filter((v): v is string => typeof v === 'string');
+    if (names.length > MAX_ZIP_ENTRIES) {
+      return c.html(messagePage('Too large', 'That archive contains too many files.'), 413);
+    }
     for (const raw of names) {
-      const clean = sanitizeRelativeName(raw);
-      if (!clean) {
+      const clean = parseRelativeObjectName(raw);
+      const combined = clean && subpath ? `${subpath}/${clean}` : clean;
+      const key = combined ? objectKeyFor(folder, combined) : null;
+      if (!clean || !key) {
         return c.html(messagePage('Bad request', 'One or more file names were invalid.'), 400);
       }
-      keys.push(`${basePrefix}${clean}`);
+      const obj = await bucket.head(key);
+      if (obj) keys.push({ key, size: obj.size });
     }
     if (keys.length === 0) {
       return c.html(messagePage('Nothing selected', 'Pick at least one file, then click Download selected.'), 400);
@@ -307,7 +356,12 @@ app.post('/cloud/:folder/download', async (c) => {
       const page = await bucket.list({ prefix: basePrefix, limit: 1000, cursor });
       for (const o of page.objects) {
         if (o.key.endsWith('/')) continue;
-        keys.push(o.key);
+        const relative = o.key.slice(basePrefix.length);
+        if (!o.key.startsWith(basePrefix) || !parseRelativeObjectName(relative)) continue;
+        keys.push({ key: o.key, size: o.size });
+        if (keys.length > MAX_ZIP_ENTRIES) {
+          return c.html(messagePage('Too large', 'That archive contains too many files.'), 413);
+        }
       }
       cursor = page.truncated ? page.cursor : undefined;
       guard++;
@@ -319,11 +373,17 @@ app.post('/cloud/:folder/download', async (c) => {
     return c.html(messagePage('Bad request', 'Missing or invalid mode.'), 400);
   }
 
+  const totalBytes = keys.reduce((sum, entry) => sum + entry.size, 0);
+  if (totalBytes > MAX_ZIP_BYTES) {
+    return c.html(messagePage('Too large', 'That archive is too large to download.'), 413);
+  }
+
   async function* sources(): AsyncIterable<ZipSource> {
-    for (const key of keys) {
-      const obj = await bucket.get(key);
+    for (const entry of keys) {
+      const relative = entry.key.slice(basePrefix.length);
+      if (!entry.key.startsWith(basePrefix) || !parseRelativeObjectName(relative)) continue;
+      const obj = await bucket.get(entry.key);
       if (!obj) continue;
-      const relative = key.slice(basePrefix.length);
       yield { name: relative, body: obj.body };
     }
   }
@@ -334,24 +394,59 @@ app.post('/cloud/:folder/download', async (c) => {
   return streamZip(sources(), zipName);
 });
 
-app.get('/files/:folder/:name{.+}', async (c) => {
+function notFoundFile(): Response {
+  return Response.json({ error: 'not found' }, { status: 404 });
+}
+
+function safeStoredContentType(value: string | undefined): string {
+  if (!value) return 'application/octet-stream';
+  const mime = /^[\w!#$&^.+-]+\/[\w!#$&^.+-]+(?:\s*;\s*[\w!#$&^.+-]+\s*=\s*(?:[\w!#$&^.+-]+|"[^"\r\n]*"))*$/;
+  return mime.test(value) ? value : 'application/octet-stream';
+}
+
+async function handleDirectFile(c: Context<AppCtx>) {
   const session = c.get('session');
-  if (!session) return c.json({ error: 'unauthorized' }, 401);
-  const folder = c.req.param('folder');
-  const name = c.req.param('name');
-  if (!isFolder(folder)) return c.json({ error: 'not found' }, 404);
+  if (!session) return notFoundFile();
+  const folder = c.req.param('folder') ?? '';
+  if (!isFolder(folder)) return notFoundFile();
+  const name = objectNameFromRequestPath(c.req.path, `/files/${folder}/`);
+  if (!name) return notFoundFile();
   if (!(await canAccess(c.env, session.email, folder))) {
-    return c.json({ error: 'forbidden' }, 403);
+    return notFoundFile();
   }
-  const key = keyFor(folder, name);
-  const obj = await bucketFor(c.env, folder).get(key);
-  if (!obj) return c.json({ error: 'not found' }, 404);
-  const headers = new Headers();
-  obj.writeHttpMetadata(headers);
-  headers.set('etag', obj.httpEtag);
-  headers.set('content-length', String(obj.size));
-  headers.set('content-disposition', `attachment; filename="${name.split('/').pop()}"`);
-  return new Response(obj.body, { headers });
+  const key = objectKeyFor(folder, name);
+  if (!key) return notFoundFile();
+
+  const limiter = c.env.FILES_LIMITER;
+  if (!limiter || typeof limiter.limit !== 'function') {
+    return c.json({ error: 'service unavailable' }, 503);
+  }
+  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
+  const limit = await limiter.limit({ key: `files:${session.email}:${ip}` });
+  if (!limit.success) return c.json({ error: 'too many requests' }, 429);
+
+  const bucket = bucketFor(c.env, folder);
+  const obj = c.req.method === 'HEAD' ? await bucket.head(key) : await bucket.get(key);
+  if (!obj) return notFoundFile();
+
+  const headers = new Headers({
+    'content-disposition': safeAttachmentDisposition(name),
+    'cache-control': 'private, no-store',
+    'x-content-type-options': 'nosniff',
+    'content-security-policy': "default-src 'none'; sandbox",
+    'referrer-policy': 'no-referrer',
+    'content-length': String(obj.size),
+    'content-type': safeStoredContentType(obj.httpMetadata?.contentType),
+    etag: obj.httpEtag,
+  });
+
+  return new Response(c.req.method === 'HEAD' ? null : (obj as R2ObjectBody).body, { headers });
+}
+
+app.on(['GET', 'HEAD'], '/files/:folder/:name{.+}', handleDirectFile);
+
+app.all('/files/:folder/:name{.+}', (c) => {
+  return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
 });
 
 app.route('/admin', admin);

@@ -19,10 +19,6 @@ export function bucketFor(env: Env, folder: Folder): R2Bucket {
   return env[FOLDER_CONFIG[folder].binding];
 }
 
-export function keyFor(folder: Folder, name: string): string {
-  return `${FOLDER_CONFIG[folder].keyPrefix}${name}`;
-}
-
 export function stripFolderPrefix(folder: Folder, key: string): string {
   const prefix = FOLDER_CONFIG[folder].keyPrefix;
   return key.startsWith(prefix) ? key.slice(prefix.length) : key;

@@ -6,10 +6,10 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 
 ## Current delivery snapshot (2026-07-12)
 
-- `main` is at `01357a9` and matches the locally known `origin/main` exactly (0 ahead, 0 behind). Production deployment was not re-verified.
+- `main` is at `76d995a`, one local documentation/MCP reconciliation commit ahead of the locally known `origin/main` at `01357a9`. It is not pushed, and production deployment was not re-verified.
 - Since this ledger's last update, Turnstile bot protection and its worker, the Turnstile-only contact reveal, the multi-turn contact-intent thread, resume/R2 maintenance, and root CI for typecheck + unit tests have landed on `main`.
-- `bun run typecheck`, `bun run test:unit` (48 pass), and `bun run mcp:check` all pass at this snapshot. `cloud-worker` tests pass (11), while its separately scoped typecheck still has the 15 known `admin.ts` errors tracked as `CORRECTNESS-13`.
-- The separate local `feat/drops-m1` worktree has 28 feature-only commits through site proxy routes (plan tasks 0–24 in substance), but it is not merged into `main` or present in a locally known remote ref. Recipient/admin UI, E2E/privacy gates, reconciliation with 27 newer `main` commits, and merge/deploy validation remain.
+- Plan 006 repository verification passes: root typecheck + 117 unit tests, 70 cloud-worker tests, MCP drift + 44 tests, checksum-verified/redacted Gitleaks over intended tracked state and 852 reachable commits, and a Wrangler storage-canary dry-run. Cloud-worker's separately scoped typecheck still has exactly 14 pre-existing `admin.ts` JSON-body errors tracked as `CORRECTNESS-13`.
+- The separate local `feat/drops-m1` worktree has 28 feature-only commits through site proxy routes (plan tasks 0–24 in substance), but it is not merged into `main` or present in a locally known remote ref. Recipient/admin UI, E2E/privacy gates, reconciliation with 28 newer `main` commits, and merge/deploy validation remain.
 
 ## P0 — fix now (live security exposure)
 
@@ -18,6 +18,9 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 | [001](001-tts-command-injection.md) | SEC-01 | Delete/lock down the unauthenticated command injection in `/api/tts` | S | — | DONE |
 | [002](002-jordan-server-side-auth.md) | SEC-02, CORRECTNESS-02, TEST-01 | ~~Give `/api/jordan/*` real server-side session auth~~ | M | — | REJECTED (superseded 2026-07-04 — Mannan decided to disable jordan entirely instead of fixing its auth, since it's no longer in active use; see decision trail below and `tasks/task-268.md`) |
 | [003](003-dependency-cve-upgrade.md) | SEC-03, DEP-07 | Update Next.js + PostCSS off versions with active CVEs | S | — | DONE (partial, accepted) — next's 9 HIGH advisories fully closed (15.5.10 → 15.5.20); the postcss moderate advisory persists via nested `@tailwindcss/postcss`/`next`-vendored copies not reachable by `bun update postcss` alone (needs an `overrides` field or an upstream Next.js release). Residual risk is low (only processes this repo's own authored CSS at build time, not user input, per the plan's own risk note). Tracked as new finding `DEP-08` below. See `tasks/task-265.md`. |
+| [006](006-private-r2-storage-boundary.md) | SEC-14, SEC-15, SEC-16 | Separate authenticated `general/*` files from public R2; harden file routes and secret hygiene | L | explicit production authorization | IN PROGRESS — repository phase complete; production authorization required |
+
+Plan 006 remains the immediate priority ahead of the P1 queue. The repository phase is implemented and independently reviewed, but uncommitted. Before Gate A, confirm provider-managed secret coverage and separately authorize removal of ignored local credential-bearing files. Every bucket, copy, canary deploy, binding, deletion, public-access, credential, and cleanup operation remains separately gated.
 
 ## P1 — high leverage
 
@@ -42,7 +45,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 | Finding IDs | Title | Effort | Depends on | Status |
 |---|---|---|---|---|
 | SEC-06 | ~~Add content-type/extension allowlist to jordan upload~~ | S | plan 002 | MOOT (jordan disabled 2026-07-04, see decision trail) |
-| SEC-07 | Make MCP privacy filter an explicit allowlist, not opt-out | M | — | TODO |
+| SEC-07 | Make MCP privacy filter an explicit allowlist, not opt-out | M | — | RESOLVED — the live generator uses an exact six-slug `PUBLIC_FILE_SLUGS` allowlist; plan 006 strengthens its exact key mapping and regression tests |
 | SEC-04 | Fix `validate-contact`'s spoofable rate-limit header (match the other 6 routes) | S | — | TODO |
 | SEC-10 | Stop returning raw exception messages to API clients (~10 routes) | S | — | TODO |
 | SEC-11 | Fix visits-worker CORS origin-reflection; add baseline security headers | S | — | TODO |
@@ -73,6 +76,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 |---|---|---|
 | SEC-13 | "Taken" article gate is a hardcoded client-side password (reads as an intentional easter egg) | TODO |
 | SEC-12 | HIGH lodash advisory, unreachable — resolved once DEP-05's script cleanup lands | TODO |
+| SEC-17 | Inventory/classify public-bucket objects outside the intentional media/browser/MCP set, including `portfolio/jordan/*` and hidden/noindex documents; design authenticated retrieval before moving any dependency. Do not sweep them into plan 006's `general/*` move. | TODO |
 | CORRECTNESS-10 | `TextNode` never resyncs if content changes externally (latent until CORRECTNESS-03 ships) | TODO |
 | CORRECTNESS-11 | Checkout amount validation doesn't reject non-finite input (Stripe is the real backstop) | TODO |
 | CORRECTNESS-12 | cloud-worker cache-invalidation key ignores subpath (likely unreachable today) | TODO |
@@ -114,6 +118,10 @@ Do not start any of these without checking with Mannan first — priority/taste 
 6. **Chicken game escape-vehicles escalation** — fully spec'd in `tasks/task-244.md` + `docs/chicken-game-escape-scenes-raw.md`, 0-of-7 built.
 
 ## Decision trail (coordinator log — engineering calls decided unilaterally, and direct authorizations from Mannan)
+
+- **2026-07-12 — plan 006 repository phase implemented and independently reviewed (Mannan's `continue` direction)**: the diff locks the exact six-file MCP mapping; adds GET/HEAD/405, object-name validation, denial-equivalent private-file 404s, safe attachment/no-store headers, fail-closed rate limiting, ZIP/upload budgets, and public MCP/site download hardening; defines a distinct `storage-canary` whose `FILES` target is `portfolio-private-files` while top-level production and MCP remain on `portfolio-files`; and adds secret-file ignores, an exact placeholder allowlist, and a full-SHA-pinned Gitleaks CI job. Verification passed root typecheck + 117 tests, cloud-worker 70 tests, MCP drift + 44 tests, checksum-verified/redacted intended-state and 852-commit history scans, Wrangler canary dry-run, and diff checks. Independent review found no high/critical issues; its upload-framing and bucket/ZIP/MCP coverage findings were resolved. The repository diff is uncommitted. No bucket, object, binding, access setting, secret, canary, deployment, commit, push, or other production mutation was performed. Provider-secret confirmation/local ignored credential cleanup and every production Gate A-H remain open and require explicit authorization.
+
+- **2026-07-12 — public/private R2 boundary promoted to immediate P0 planning (Mannan's direction)**: live code confirms authenticated `general/*` files share `portfolio-files` with the public MCP and hard-coded public media URLs. Because the public bucket must remain public, plan 006 creates a distinct `portfolio-private-files` target, verifies it through a named authenticated canary before the production binding switch, and defers deletion of public originals until after a proven observation window. The MCP generator already has an exact six-file allowlist, so stale `SEC-07` is resolved and retained as a regression invariant. Other potentially non-public objects, including the separate `portfolio/jordan/*` public-URL dependency and hidden/noindex documents, are recorded for classification as `SEC-17`; they are not safe to sweep into `general/*`. No source code, Cloudflare resource, binding, object, public-access setting, deployment, secret, push, or production state was changed during planning.
 
 - **2026-07-12 — reconciled the ledger with live repository state (coordinator maintenance)**: `main`/local `origin/main` now both point at `01357a9`; root typecheck, 48 unit tests, and the MCP drift check pass. CI is therefore no longer wholly TODO, but remains partial because `.github/workflows/ci.yml` does not run Playwright. The old TEST-03 decision is obsolete because task 269 removed `CONTACT_CHALLENGE` and rewrote the contact suites around Turnstile. Drops is no longer accurately described as "zero code": `feat/drops-m1` has 28 local feature-only commits through the proxy-route layer, but remains unmerged and must not be reported as shipped. MCP generated data is in sync, so no regeneration or deploy was performed.
 

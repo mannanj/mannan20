@@ -47,11 +47,19 @@ testem.log
 Thumbs.db
 
 .vercel
+.env
+.env.*
+!.env.example
+!**/.env.example
 .env.local
 
 # Cloudflare Wrangler local cache (created by any wrangler invocation)
 .wrangler/
 .env*.local
+.dev.vars
+**/.dev.vars
+!.dev.vars.example
+!**/.dev.vars.example
 
 # Playwright
 /test-results/
@@ -59,7 +67,7 @@ Thumbs.db
 /playwright/.cache/
 e2e/screenshots/
 
-# Audio source files (production serves from Vercel Blob)
+# Audio source files (production serves from R2)
 public/data/audio/
 
 # Lock files (using bun.lockb)
