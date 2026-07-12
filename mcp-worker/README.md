@@ -28,8 +28,8 @@ Cursor (`.cursor/mcp.json`):
 | `get_mission_and_goals` | The site's 4 narrative chapters verbatim + goals derived from the site, each with `{statement, source: {url, quote}}` |
 | `list_experience` | 7 jobs (company, position, dates, skills, highlights, links) + 4 extracurriculars (teaching, volunteering, travel, community building) |
 | `list_writing` | Articles written by Mannan on mannan.is/garden — title, summary, date, reading time, URL |
-| `list_readings` | Readings Mannan curated, authored by others — clearly attributed |
-| `list_apps` | Products and experiments: Sun Signal, Read Along, SkillGuard, Summon It, Meal Fairy (retired), the portfolio, the Floating Chicken Game |
+| `list_readings` | Readings published or curated on mannan.is, with explicit author attribution |
+| `list_apps` | Products and experiments from the shared Garden catalog, plus the Floating Chicken Game |
 | `list_research` | Publications and university projects (ARCHR robotics, solar, dome) with demo/download links |
 | `get_downloads` | Resume and cover letter links (browser-oriented; rate-limited by the site) |
 | `how_to_contact` | Contact form pointer + GitHub; email/phone are not published openly |
@@ -37,14 +37,14 @@ Cursor (`.cursor/mcp.json`):
 
 ## How data flows
 
-`scripts/build-mcp-data.mjs` (repo root, run with bun) snapshots `public/data/about.json`, `src/lib/garden-articles.ts`, `src/lib/episodes.ts`, and `src/lib/garden-products.ts` into `src/data.generated.json`, which the worker bundles — nothing is fetched at request time. Never hand-edit the generated file.
+`scripts/build-mcp-data.mjs` (repo root, run with bun) snapshots `public/data/about.json`, `src/lib/garden-articles.ts`, `src/lib/episodes.ts`, `src/lib/garden-products.ts`, and `src/lib/downloads.ts` into `src/data.generated.json`, which the worker bundles — nothing is fetched at request time. It also generates the public `llms.txt` and well-known server cards. Never hand-edit those generated files.
 
 The build script enforces two guards at generation time, and the test suite re-enforces them on the bundled output:
 
 - **Honesty**: every derived goal's `source.quote` must appear verbatim in the site data (`test/goals.spec.ts`)
 - **Privacy**: gated or hidden content can never enter the snapshot — the unavailable *Taken* article, hidden episodes, `/jordan`, access codes, email/phone (`test/privacy.spec.ts`)
 
-The *AI False Positives* article is excluded because its page sets `robots: index:false` — a machine-facing server respects a don't-index signal.
+The *AI False Positives* article is excluded because its `GARDEN_ARTICLES` entry is marked hidden. Its page independently sets `robots: index:false`; the snapshot builder does not inspect Next.js page metadata.
 
 When site content changes: `bun run mcp:build`, commit the regenerated snapshot, then `bun run mcp:deploy` (both from repo root). `bun run mcp:check` detects drift.
 

@@ -1,6 +1,6 @@
 ### Task 254: Anchor Garden article download/listen links to metadata rows
 
-**Status: TODO. Do not implement as part of task creation.**
+**Status: DONE. Shipped in `200bbcd`.**
 
 Add the same compact `Download` and `Listen` action links used by the PDF/reading work to the
 Garden article hero metadata row, anchored to the date/read-time/word-count treatment rather than

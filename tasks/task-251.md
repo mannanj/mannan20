@@ -1,6 +1,6 @@
 ### Task 251: Collapse Garden paper PDFs behind an inline accordion
 
-**Status: TODO. Do not implement as part of task creation.**
+**Status: DONE. Shipped in `dbb9bd5` with follow-up coverage in `44c7bf9`.**
 
 Update the Garden Writings page paper previews so the PDF embeds are not loaded or visible until
 the visitor explicitly expands a paper.

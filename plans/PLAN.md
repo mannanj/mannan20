@@ -2,7 +2,7 @@
 
 ## What this is
 
-A full read-only audit of this repo ran 2026-07-04 (Next.js app + 3 Cloudflare Workers + the E2E suite — 256 files in `src/` alone). It produced ~60 deduplicated findings across security, correctness, test coverage, tech debt, performance, dependencies, and DX/docs, plus a separate "direction" section of grounded feature/roadmap options. Full narrative report with evidence, tables, and a "verified clean" section: https://claude.ai/code/artifact/7bb37a5f-a449-46ba-8bf6-c330a96d4f37. Independent verification of the audit's own claims: `.claude/session-memory/2026-07-04T0114-2c5d02ae-full-repo-audit-plan.md`.
+A full read-only audit of this repo ran 2026-07-04 (Next.js app + the Cloudflare Workers and E2E suite present at that commit — 256 files in `src/` alone). It produced ~60 deduplicated findings across security, correctness, test coverage, tech debt, performance, dependencies, and DX/docs, plus a separate "direction" section of grounded feature/roadmap options. Full narrative report with evidence, tables, and a "verified clean" section: https://claude.ai/code/artifact/7bb37a5f-a449-46ba-8bf6-c330a96d4f37. Independent verification of the audit's own claims: `.claude/session-memory/2026-07-04T0114-2c5d02ae-full-repo-audit-plan.md`.
 
 ## Why this exists
 
@@ -28,7 +28,7 @@ Work the queue in `README.md` top to bottom within each phase. P0 always before 
 ## Standing constraints (never silently violate — escalate instead)
 
 - Never touch production Stripe keys or trigger a real charge. Checkout work is verified via mocks, not a live transaction.
-- `/jordan` is a real, currently-used private workspace, not a test fixture. Any change to its auth model must preserve legitimate collaborator access — coordinate before shipping, don't just deploy and see.
+- `/jordan` is disabled and intentionally unroutable. Reviving it requires Mannan's approval and the server-side auth remediation from rejected plan 002 before its routes are exposed again.
 - The game leaderboard is public and live. Changes to scoring/identity logic affect real recorded scores — don't wipe or renumber existing entries as a side effect of a fix.
 - Never force-push. Never push to `main` without being asked. Follow the existing branch/commit workflow; only create commits when the human asks for one (see the repo's own global git-safety conventions).
 
