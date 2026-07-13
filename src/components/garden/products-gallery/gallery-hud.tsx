@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { ProductViewIcon } from "@/components/garden/product-view-switcher";
+import {
+  GardenCategoryPill,
+  GardenHomeLink,
+  GARDEN_HUD_GLASS,
+} from "@/components/garden/garden-hud-chrome";
 import type { ProductView } from "@/lib/garden-products";
 import {
   FILTER_FACETS,
@@ -12,14 +16,7 @@ import { ZoomInIcon, SoundOnIcon, SoundOffIcon, FilterIcon } from "./hud-icons";
 
 export type GalleryCategory = "writings" | "products" | "readings";
 
-const CATEGORIES: { key: GalleryCategory; label: string }[] = [
-  { key: "writings", label: "Writings" },
-  { key: "products", label: "Products" },
-  { key: "readings", label: "Readings" },
-];
-
-const GLASS =
-  "backdrop-blur-md border border-white/12 bg-white/[0.08] text-white/85 transition-colors duration-200 hover:bg-white/15 hover:text-white";
+const GLASS = GARDEN_HUD_GLASS;
 
 interface GalleryHudProps {
   filter: GalleryFilter;
@@ -50,47 +47,14 @@ export function GalleryHud({
 
   return (
     <div className="pointer-events-none absolute inset-0 z-20 select-none">
-      <a
-        href="/"
-        data-testid="gallery-avatar-home"
-        aria-label="Return to home"
-        className="group pointer-events-auto absolute left-5 top-5 flex items-center gap-2.5"
-      >
-        <span className="relative block h-11 w-11 overflow-hidden rounded-full ring-1 ring-white/20 transition-all duration-200 group-hover:scale-105 group-hover:ring-white/50">
-          <Image src="/mannan.jpg" alt="Mannan" fill sizes="44px" className="object-cover object-center" />
-        </span>
-        <span className="hidden text-[10px] font-medium uppercase tracking-[0.22em] text-white/50 transition-colors duration-200 group-hover:text-white/80 sm:inline">
-          Home
-        </span>
-      </a>
+      <GardenHomeLink />
 
       <div className="pill-morph-up pointer-events-auto absolute left-1/2 top-5 flex -translate-x-1/2 items-center gap-2">
-        <div
-          role="tablist"
-          aria-label="Garden categories"
-          className={`flex items-center rounded-full p-1 ${GLASS}`}
-        >
-          {CATEGORIES.map((category) => {
-            const active = category.key === "products";
-            return (
-              <button
-                key={category.key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                data-testid={`gallery-pill-${category.key}`}
-                onClick={() => onSelectCategory(category.key)}
-                className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-medium tracking-wide transition-colors duration-200 sm:px-4 sm:text-[13px] ${
-                  active
-                    ? "bg-white text-black"
-                    : "text-white/60 hover:text-white"
-                }`}
-              >
-                {category.label}
-              </button>
-            );
-          })}
-        </div>
+        <GardenCategoryPill
+          active="products"
+          onSelect={onSelectCategory}
+          testIdPrefix="gallery-pill"
+        />
 
         <div className="relative">
           <button
