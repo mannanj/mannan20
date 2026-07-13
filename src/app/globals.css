@@ -215,6 +215,85 @@
   }
 }
 
+@keyframes productShowcaseBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes productShowcaseSheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-showcase-field {
+  background:
+    radial-gradient(circle at 14% 7%, rgba(192, 91, 65, 0.14), transparent 31rem),
+    radial-gradient(circle at 91% 48%, rgba(144, 78, 58, 0.08), transparent 27rem),
+    linear-gradient(180deg, rgba(20, 16, 13, 0.68), rgba(11, 11, 11, 0.12)),
+    #0b0b0b;
+}
+
+.product-showcase-backdrop {
+  animation: productShowcaseBackdropIn 320ms ease-out both;
+}
+
+.product-showcase-sheet {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  width: auto;
+  max-height: 85dvh;
+  border-radius: 24px;
+  overscroll-behavior: contain;
+  animation: productShowcaseSheetIn 440ms cubic-bezier(0.22, 0.72, 0.2, 1) both;
+}
+
+@media (min-width: 640px) {
+  @keyframes productShowcaseSheetIn {
+    from {
+      opacity: 0;
+      transform: translateX(28px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .product-showcase-sheet {
+    left: auto;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: min(448px, calc(100vw - 32px));
+    max-height: none;
+    border-radius: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-showcase-backdrop,
+  .product-showcase-sheet {
+    animation-duration: 1ms;
+  }
+
+  .product-showcase-card,
+  .product-showcase-card img {
+    transition-duration: 1ms;
+  }
+
+  .product-showcase-card:hover {
+    transform: none;
+  }
+}
+
 .canvas-md-editor {
   display: flex;
   flex-direction: column;

@@ -11,12 +11,18 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
-import { GARDEN_PRODUCTS, type GardenProductData } from "@/lib/garden-products";
+import {
+  GARDEN_PRODUCTS,
+  type GardenProductData,
+  type ProductView,
+} from "@/lib/garden-products";
 import { EPISODES } from "@/lib/episodes";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
 import { PapersSection } from "@/components/garden/papers-section";
+import { ProductViewSwitcher } from "@/components/garden/product-view-switcher";
+import { ProductShowcase } from "@/components/garden/products-showcase/product-showcase";
 
 const ProductsGallery = dynamic(
   () => import("@/components/garden/products-gallery"),
@@ -362,8 +368,26 @@ function ReadingsPanel({ showAll }: { showAll: boolean }) {
   );
 }
 
-function Panel({ which, showAll }: { which: Category; showAll: boolean }) {
-  if (which === "products") return <ProductsPanel />;
+function Panel({
+  which,
+  showAll,
+  productView,
+}: {
+  which: Category;
+  showAll: boolean;
+  productView: ProductView;
+}) {
+  if (which === "products") {
+    if (productView === "showcase") return <ProductShowcase />;
+    if (productView === "legacy") {
+      return (
+        <div data-testid="products-legacy">
+          <ProductsPanel />
+        </div>
+      );
+    }
+    return null;
+  }
   if (which === "readings") return <ReadingsPanel showAll={showAll} />;
   return <WritingsPanel />;
 }
@@ -388,36 +412,19 @@ function GardenSkeleton() {
   );
 }
 
-function GlobeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <ellipse cx="12" cy="12" rx="4" ry="9" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-    </svg>
-  );
-}
-
 export function GardenExplorer() {
-  const [active, setActive] = useState<Category>("writings");
+  const [active, setActive] = useState<Category>("products");
+  const [productView, setProductView] = useState<ProductView>("showcase");
   const [prev, setPrev] = useState<Category | null>(null);
   const [dir, setDir] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [ready, setReady] = useState(false);
-  const [globeOpen, setGlobeOpen] = useState(false);
-  const [listEntering, setListEntering] = useState(false);
+  const [tabsEntering, setTabsEntering] = useState(false);
   const [tabsRising, setTabsRising] = useState(false);
-  const [listHidden, setListHidden] = useState(false);
   const [mockTop, setMockTop] = useState(96);
   const tabAreaRef = useRef<HTMLDivElement>(null);
+  const tabsEnteringTimeoutRef = useRef<number | null>(null);
+  const tabsRisingTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (prev === null) return;
@@ -425,9 +432,20 @@ export function GardenExplorer() {
     return () => clearTimeout(t);
   }, [prev, active]);
 
+  useEffect(() => {
+    return () => {
+      if (tabsEnteringTimeoutRef.current !== null) {
+        window.clearTimeout(tabsEnteringTimeoutRef.current);
+      }
+      if (tabsRisingTimeoutRef.current !== null) {
+        window.clearTimeout(tabsRisingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const select = (next: Category) => {
     if (next === active) return;
-    setListHidden(false);
+    if (next === "products") setProductView("showcase");
     const swivel = active !== "products" && next !== "products";
     if (swivel) {
       setDir(ORDER[next] > ORDER[active] ? 1 : -1);
@@ -435,25 +453,36 @@ export function GardenExplorer() {
     } else {
       setPrev(null);
     }
-    if (next === "products") setGlobeOpen(false);
     setActive(next);
     window.history.replaceState(null, "", `#${next}`);
   };
 
-  const showList = () => {
-    setListHidden(false);
-    setListEntering(true);
-    window.setTimeout(() => setGlobeOpen(false), 300);
-    window.setTimeout(() => setListEntering(false), 820);
-  };
+  const selectProductView = (next: ProductView) => {
+    if (next === productView) return;
 
-  const showGlobe = () => {
-    const rect = tabAreaRef.current?.getBoundingClientRect();
-    if (rect) setMockTop(rect.top);
-    setListHidden(true);
-    setGlobeOpen(true);
-    setTabsRising(true);
-    window.setTimeout(() => setTabsRising(false), 360);
+    if (next === "globe") {
+      const rect = tabAreaRef.current?.getBoundingClientRect();
+      if (rect) setMockTop(rect.top);
+      setTabsRising(true);
+      if (tabsRisingTimeoutRef.current !== null) {
+        window.clearTimeout(tabsRisingTimeoutRef.current);
+      }
+      tabsRisingTimeoutRef.current = window.setTimeout(() => {
+        tabsRisingTimeoutRef.current = null;
+        setTabsRising(false);
+      }, 360);
+    } else if (productView === "globe") {
+      setTabsEntering(true);
+      if (tabsEnteringTimeoutRef.current !== null) {
+        window.clearTimeout(tabsEnteringTimeoutRef.current);
+      }
+      tabsEnteringTimeoutRef.current = window.setTimeout(() => {
+        tabsEnteringTimeoutRef.current = null;
+        setTabsEntering(false);
+      }, 520);
+    }
+
+    setProductView(next);
   };
 
   const selectRef = useRef(select);
@@ -478,97 +507,108 @@ export function GardenExplorer() {
     gridArea: "1 / 1",
     "--swivel-dir": dir,
   } as CSSProperties;
+  const globeActive = active === "products" && productView === "globe";
+  const showcaseActive = active === "products" && productView === "showcase";
 
   return (
     <>
       <div
         className={`relative z-10 min-h-screen flex-col items-center px-6 py-24${
-          listHidden ? " hidden" : " flex"
+          globeActive ? " hidden" : " flex"
         }`}
       >
-      <div className="w-full max-w-2xl">
-        <p className="mb-6 text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
-          Garden
-        </p>
+        <div className="w-full">
+          <p className="mx-auto mb-6 max-w-2xl text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
+            Garden
+          </p>
 
-        {!ready ? (
-          <GardenSkeleton />
-        ) : (
-          <>
-            <div
-              ref={tabAreaRef}
-              role="tablist"
-              aria-label="Garden categories"
-              className={`mb-10 flex items-center justify-center gap-7 sm:gap-10${
-                listEntering ? " tab-morph-in" : ""
-              }`}
-            >
-              {TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active === tab.key}
-                  data-testid={`garden-tab-${tab.key}`}
-                  onClick={() => select(tab.key)}
-                  className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-                    active === tab.key
-                      ? "font-bold text-white"
-                      : "font-normal text-white/45 hover:text-white/75"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
-                      active === tab.key ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                </button>
-              ))}
+          {!ready ? (
+            <div className="mx-auto w-full max-w-2xl">
+              <GardenSkeleton />
             </div>
-
-            <div className="[perspective:1400px]">
-              <div className="grid">
-                {prev && (
-                  <div
-                    key={`out-${prev}`}
-                    style={layerStyle}
-                    className="swivel-out pointer-events-none [transform-style:preserve-3d]"
+          ) : (
+            <>
+              <div
+                ref={tabAreaRef}
+                role="tablist"
+                aria-label="Garden categories"
+                className={`mx-auto mb-10 flex w-full max-w-2xl items-center justify-center gap-7 sm:gap-10${
+                  tabsEntering ? " tab-morph-in" : ""
+                }`}
+              >
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active === tab.key}
+                    data-testid={`garden-tab-${tab.key}`}
+                    onClick={() => select(tab.key)}
+                    className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
+                      active === tab.key
+                        ? "font-bold text-white"
+                        : "font-normal text-white/45 hover:text-white/75"
+                    }`}
                   >
-                    <Panel which={prev} showAll={showAll} />
+                    {tab.label}
+                    <span
+                      className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
+                        active === tab.key ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <div
+                className={`mx-auto w-full ${prev ? "[perspective:1400px]" : ""} ${
+                  showcaseActive ? "max-w-[1500px]" : "max-w-2xl"
+                }`}
+              >
+                <div className="grid">
+                  {prev && (
+                    <div
+                      key={`out-${prev}`}
+                      style={layerStyle}
+                      className="swivel-out pointer-events-none [transform-style:preserve-3d]"
+                    >
+                      <Panel
+                        which={prev}
+                        showAll={showAll}
+                        productView={productView}
+                      />
+                    </div>
+                  )}
+                  <div
+                    key={`in-${active}`}
+                    style={layerStyle}
+                    className={prev ? "swivel-in [transform-style:preserve-3d]" : ""}
+                    data-testid="garden-active-panel"
+                    data-panel={active}
+                  >
+                    <Panel
+                      which={active}
+                      showAll={showAll}
+                      productView={productView}
+                    />
                   </div>
-                )}
-                <div
-                  key={`in-${active}`}
-                  style={layerStyle}
-                  className={prev ? "swivel-in [transform-style:preserve-3d]" : ""}
-                  data-testid="garden-active-panel"
-                  data-panel={active}
-                >
-                  <Panel which={active} showAll={showAll} />
                 </div>
               </div>
-            </div>
-          </>
+            </>
+          )}
+        </div>
+        {ready && active === "products" && productView !== "globe" && (
+          <ProductViewSwitcher
+            active={productView}
+            onSelect={selectProductView}
+          />
         )}
       </div>
-      </div>
-      {ready && active === "products" && !globeOpen && (
-        <button
-          type="button"
-          data-testid="garden-globe-toggle"
-          aria-label="Globe view"
-          onClick={showGlobe}
-          className="group fixed left-5 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-2xl border border-white/12 bg-white/[0.08] text-white/85 backdrop-blur-md transition-colors duration-200 hover:bg-white/15 hover:text-white"
-        >
-          <GlobeIcon className="h-[18px] w-[18px]" />
-          <span className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md border border-white/10 bg-black/85 px-2 py-1 text-[11px] font-medium text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            Globe view
-          </span>
-        </button>
-      )}
-      {ready && active === "products" && globeOpen && (
-        <ProductsGallery onSelectCategory={select} onShowList={showList} />
+      {ready && globeActive && (
+        <ProductsGallery
+          onSelectCategory={select}
+          onSelectView={selectProductView}
+        />
       )}
       {tabsRising && (
         <div

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { ProductViewIcon } from "@/components/garden/product-view-switcher";
+import type { ProductView } from "@/lib/garden-products";
 import {
   FILTER_FACETS,
   type GalleryFilter,
 } from "./gallery-data";
-import { ZoomInIcon, GridIcon, SoundOnIcon, SoundOffIcon, FilterIcon } from "./hud-icons";
+import { ZoomInIcon, SoundOnIcon, SoundOffIcon, FilterIcon } from "./hud-icons";
 
 export type GalleryCategory = "writings" | "products" | "readings";
 
@@ -24,7 +26,7 @@ interface GalleryHudProps {
   onFilter: (filter: GalleryFilter) => void;
   onSelectCategory: (category: GalleryCategory) => void;
   onOpenLetsTalk: () => void;
-  onShowList: () => void;
+  onSelectView: (view: Exclude<ProductView, "globe">) => void;
   onStepZoom: () => void;
   zoomIndex: number;
   zoomLevels: number;
@@ -37,7 +39,7 @@ export function GalleryHud({
   onFilter,
   onSelectCategory,
   onOpenLetsTalk,
-  onShowList,
+  onSelectView,
   onStepZoom,
   zoomIndex,
   zoomLevels,
@@ -154,15 +156,36 @@ export function GalleryHud({
         <ZoomInIcon className="h-[19px] w-[19px]" />
       </button>
 
-      <button
-        type="button"
-        data-testid="gallery-grid"
-        aria-label="Switch to list view"
-        onClick={onShowList}
-        className={`pointer-events-auto absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-2xl ${GLASS}`}
+      <nav
+        aria-label="Product views"
+        className="pointer-events-auto absolute bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-3 flex flex-col gap-3 sm:bottom-auto sm:left-5 sm:top-1/2 sm:-translate-y-1/2"
       >
-        <GridIcon className="h-[18px] w-[18px]" />
-      </button>
+        {(["showcase", "legacy"] as const).map((view) => {
+          const label = view === "showcase" ? "Showcase view" : "Legacy view";
+          const tooltipId = `gallery-view-${view}-tooltip`;
+
+          return (
+            <button
+              key={view}
+              type="button"
+              data-testid={`gallery-view-${view}`}
+              aria-describedby={tooltipId}
+              aria-label={label}
+              onClick={() => onSelectView(view)}
+              className={`group relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-2xl ${GLASS}`}
+            >
+              <ProductViewIcon view={view} className="h-[18px] w-[18px]" />
+              <span
+                id={tooltipId}
+                role="tooltip"
+                className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md border border-white/10 bg-black/85 px-2 py-1 text-[11px] font-medium text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
+              >
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
 
       <button
         type="button"
