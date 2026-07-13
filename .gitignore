@@ -87,3 +87,4 @@ wants/kick-the-can/
 
 # Brainstorming visual-companion mockups (local only)
 .superpowers/
+.worktrees/
