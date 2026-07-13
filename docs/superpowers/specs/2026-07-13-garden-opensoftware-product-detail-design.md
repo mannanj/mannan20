@@ -42,6 +42,10 @@ collection.
   control in the panel's top-right corner.
 - Reuse canonical Garden product data and existing action URLs. Do not invent
   copy, metadata, icons, or actions that are absent from the registry.
+- Include a `Source` metadata row. When `sourceHref` exists, show a safely linked
+  repository label. When it does not exist because the product source has not
+  been opened, show the plain value `Closed`; do not omit the row or imply that a
+  public repository exists.
 - The surrounding collection dims but remains spatially legible behind the
   frame.
 
@@ -81,7 +85,8 @@ collection.
 - Browser tests cover footer removal, absence of duplicate detail media,
   desktop split geometry, responsive geometry, bounded scrolling, focus trap,
   Escape/backdrop close, focus restoration, action URLs, external-link safety,
-  control layering, and reduced motion.
+  open-source versus `Closed` source metadata, control layering, and reduced
+  motion.
 - Capture desktop and mobile screenshots for direct comparison with the supplied
   OpenSoftware references before commit or deployment.
 - Do not ship until the screenshots show the selected artwork occupying the left
