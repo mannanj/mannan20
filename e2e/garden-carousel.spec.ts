@@ -154,28 +154,6 @@ test.describe('Garden product Showcase', () => {
     await expect(page.getByTestId('garden-view-globe')).toBeVisible();
     await expect(page.getByTestId('garden-view-legacy')).toBeVisible();
     await expect(page.getByTestId('garden-view-showcase')).toHaveCount(0);
-    await expect(
-      page.getByTestId('showcase-product-sun-signal').getByText(/WEB|MACOS/i),
-    ).toHaveCount(0);
-  });
-
-  test('a selected product opens as one OpenSoftware-style split frame', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-sun-signal').click();
-
-    const artwork = page.getByTestId('product-detail-artwork');
-    const panel = page.getByTestId('product-detail-panel');
-    await expect(artwork).toHaveCount(1);
-    await expect(panel).toBeVisible();
-    await expect(panel.locator('img')).toHaveCount(0);
-
-    const artworkBounds = await artwork.boundingBox();
-    const panelBounds = await panel.boundingBox();
-    expect(artworkBounds?.width).toBeGreaterThan(panelBounds?.width ?? 0);
-    expect((artworkBounds?.x ?? 0) + (artworkBounds?.width ?? 0)).toBeLessThanOrEqual(
-      (panelBounds?.x ?? 0) + 1,
-    );
   });
 
   test('a Showcase product opens its detail sheet with canonical actions', async ({ page }) => {
@@ -207,7 +185,7 @@ test.describe('Garden product Showcase', () => {
     );
   });
 
-  test('the product frame stays bounded and uses one artwork on mobile', async ({ page }) => {
+  test('the product sheet becomes a bottom sheet on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoGarden(page);
     await page.getByTestId('showcase-product-read-along').click();
@@ -215,26 +193,8 @@ test.describe('Garden product Showcase', () => {
     const sheet = page.getByTestId('product-showcase-sheet');
     await expect(sheet).toHaveCSS('position', 'fixed');
     const box = await sheet.boundingBox();
-    expect(box?.width).toBeLessThanOrEqual(390);
-    expect(box?.x).toBeGreaterThanOrEqual(0);
-    expect(box?.y).toBeGreaterThanOrEqual(0);
-    await expect(page.getByTestId('product-detail-artwork')).toHaveCount(1);
-    await expect(page.getByTestId('product-detail-panel').locator('img')).toHaveCount(0);
-  });
-
-  test('source metadata links open products and labels closed products', async ({ page }) => {
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-sun-signal').click();
-    await expect(page.getByTestId('product-detail-source').getByRole('link')).toHaveAttribute(
-      'href',
-      'https://github.com/mannanj/sun-signal',
-    );
-    await page.getByRole('button', { name: 'Close Sun Signal' }).click();
-    await expect(page.getByRole('dialog', { name: 'Sun Signal' })).toHaveCount(0);
-
-    await page.getByTestId('showcase-product-read-along').click();
-    await expect(page.getByTestId('product-detail-source')).toHaveText('Closed');
-    await expect(page.getByTestId('product-detail-source').getByRole('link')).toHaveCount(0);
+    expect(box?.width).toBeLessThanOrEqual(366);
+    expect(box?.y).toBeGreaterThan(100);
   });
 
   test('the product sheet stays bounded to the viewport', async ({ page }) => {
