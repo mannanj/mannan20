@@ -144,40 +144,16 @@ test.describe('Garden carousel', () => {
 });
 
 test.describe('Garden product Showcase', () => {
-  test('Products opens in the three-column OpenSoftware Showcase by default', async ({ page }) => {
+  test('Products opens in the four-column Showcase by default', async ({ page }) => {
     await gotoGarden(page);
 
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
     await expect(page.getByTestId('products-showcase')).toBeVisible();
-    await expect(page.getByTestId('products-showcase-grid').first()).toHaveClass(/lg:grid-cols-3/);
+    await expect(page.getByTestId('products-showcase-grid').first()).toHaveClass(/lg:grid-cols-4/);
     await expect(page.getByTestId('products-showcase-grid').first()).toHaveClass(/sm:grid-cols-2/);
-    await expect(page.getByTestId('garden-showcase-hud')).toBeVisible();
-    await expect(page.getByTestId('gallery-avatar-home')).toHaveAttribute('href', '/');
-    await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('garden-view-globe')).toBeVisible();
     await expect(page.getByTestId('garden-view-legacy')).toBeVisible();
     await expect(page.getByTestId('garden-view-showcase')).toHaveCount(0);
-    await expect(page.getByTestId('gallery-filter-toggle')).toHaveCount(0);
-    await expect(page.getByTestId('gallery-lets-talk')).toHaveCount(0);
-    await expect(page.getByTestId('gallery-zoom')).toHaveCount(0);
-    await expect(page.getByTestId('gallery-sound')).toHaveCount(0);
-    await expect(page.getByTestId('showcase-attribution')).toHaveAttribute(
-      'href',
-      'https://www.opensoftware.xyz',
-    );
-  });
-
-  test('OpenSoftware Showcase reveals product copy on hover and keyboard focus', async ({ page }) => {
-    await gotoGarden(page);
-    const tile = page.getByTestId('showcase-product-sun-signal');
-    const copy = tile.getByTestId('showcase-product-copy');
-
-    await expect(copy).toHaveCSS('opacity', '0');
-    await tile.hover();
-    await expect(copy).toHaveCSS('opacity', '1');
-    await page.mouse.move(0, 0);
-    await tile.focus();
-    await expect(copy).toHaveCSS('opacity', '1');
   });
 
   test('a Showcase product opens its detail sheet with canonical actions', async ({ page }) => {

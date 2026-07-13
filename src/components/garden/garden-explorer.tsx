@@ -23,7 +23,6 @@ import { SelfParentingPreview } from "@/components/garden/self-parenting-figures
 import { PapersSection } from "@/components/garden/papers-section";
 import { ProductViewSwitcher } from "@/components/garden/product-view-switcher";
 import { ProductShowcase } from "@/components/garden/products-showcase/product-showcase";
-import { GardenShowcaseHud } from "@/components/garden/garden-hud-chrome";
 
 const ProductsGallery = dynamic(
   () => import("@/components/garden/products-gallery"),
@@ -514,21 +513,14 @@ export function GardenExplorer() {
   return (
     <>
       <div
-        className={`relative z-10 min-h-screen flex-col items-center px-6 ${
-          showcaseActive ? "pb-16 pt-28 sm:pt-32" : "py-24"
-        }${
+        className={`relative z-10 min-h-screen flex-col items-center px-6 py-24${
           globeActive ? " hidden" : " flex"
         }`}
       >
-        {ready && showcaseActive ? (
-          <GardenShowcaseHud onSelectCategory={select} />
-        ) : null}
         <div className="w-full">
-          {!showcaseActive ? (
-            <p className="mx-auto mb-6 max-w-2xl text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
-              Garden
-            </p>
-          ) : null}
+          <p className="mx-auto mb-6 max-w-2xl text-center text-[11px] uppercase tracking-[0.35em] text-white/30">
+            Garden
+          </p>
 
           {!ready ? (
             <div className="mx-auto w-full max-w-2xl">
@@ -536,39 +528,37 @@ export function GardenExplorer() {
             </div>
           ) : (
             <>
-              {!showcaseActive ? (
-                <div
-                  ref={tabAreaRef}
-                  role="tablist"
-                  aria-label="Garden categories"
-                  className={`mx-auto mb-10 flex w-full max-w-2xl items-center justify-center gap-7 sm:gap-10${
-                    tabsEntering ? " tab-morph-in" : ""
-                  }`}
-                >
-                  {TABS.map((tab) => (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={active === tab.key}
-                      data-testid={`garden-tab-${tab.key}`}
-                      onClick={() => select(tab.key)}
-                      className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
-                        active === tab.key
-                          ? "font-bold text-white"
-                          : "font-normal text-white/45 hover:text-white/75"
+              <div
+                ref={tabAreaRef}
+                role="tablist"
+                aria-label="Garden categories"
+                className={`mx-auto mb-10 flex w-full max-w-2xl items-center justify-center gap-7 sm:gap-10${
+                  tabsEntering ? " tab-morph-in" : ""
+                }`}
+              >
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active === tab.key}
+                    data-testid={`garden-tab-${tab.key}`}
+                    onClick={() => select(tab.key)}
+                    className={`relative cursor-pointer pb-1.5 text-lg transition-colors duration-200 sm:text-xl ${
+                      active === tab.key
+                        ? "font-bold text-white"
+                        : "font-normal text-white/45 hover:text-white/75"
+                    }`}
+                  >
+                    {tab.label}
+                    <span
+                      className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
+                        active === tab.key ? "opacity-100" : "opacity-0"
                       }`}
-                    >
-                      {tab.label}
-                      <span
-                        className={`absolute -bottom-px left-0 right-0 h-0.5 rounded-full bg-red-500 transition-opacity duration-300 ${
-                          active === tab.key ? "opacity-100" : "opacity-0"
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              ) : null}
+                    />
+                  </button>
+                ))}
+              </div>
 
               <div
                 className={`mx-auto w-full ${prev ? "[perspective:1400px]" : ""} ${

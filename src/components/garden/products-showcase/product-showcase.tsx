@@ -24,7 +24,7 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
   return (
     <div
       data-testid="products-showcase-grid"
-      className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-12 xl:gap-y-14"
+      className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
     >
       {products.map((product) => (
         <button
@@ -32,16 +32,16 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
           type="button"
           data-testid={`showcase-product-${productSlug(product.title)}`}
           onClick={() => onSelect(product)}
-          className="product-showcase-card group flex cursor-pointer flex-col text-left focus-visible:outline-none"
+          className="product-showcase-card group flex cursor-pointer flex-col overflow-hidden rounded-[1.15rem] border border-white/12 bg-[#1a1512] text-left shadow-[0_20px_60px_rgba(0,0,0,0.24)] transition duration-300 ease-out hover:-translate-y-1 hover:border-[#d07b5e]/45 hover:bg-[#1e1814] hover:shadow-[0_24px_70px_rgba(0,0,0,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d48669] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0b0b]"
         >
-          <span className="product-showcase-media relative block aspect-[4/3] w-full overflow-hidden rounded-[1.35rem] border border-white/[0.08] bg-[#181410] shadow-[0_30px_90px_rgba(0,0,0,0.22)] transition duration-500 ease-out group-hover:-translate-y-1 group-hover:border-white/[0.14] group-hover:shadow-[0_36px_100px_rgba(0,0,0,0.34)] group-focus-visible:-translate-y-1 group-focus-visible:ring-2 group-focus-visible:ring-[#d48669] group-focus-visible:ring-offset-4 group-focus-visible:ring-offset-[#0b0908]">
+          <span className="relative block aspect-[4/3] w-full overflow-hidden border-b border-white/10 bg-[#251e19]">
             {product.image ? (
               <Image
                 src={product.image}
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.018] group-focus-visible:scale-[1.018]"
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
               />
             ) : (
               <span
@@ -54,15 +54,24 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
             )}
           </span>
 
-          <span
-            data-testid="showcase-product-copy"
-            className="product-showcase-copy block px-1 pt-5 opacity-0 transition-[opacity,transform] duration-300 ease-out motion-safe:translate-y-2 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
-          >
-            <span className="block font-[family-name:var(--font-caption)] text-[1.7rem] font-medium leading-none tracking-[-0.03em] text-[#f3ede6]">
-              {product.title}
+          <span className="flex min-h-40 flex-1 flex-col px-5 pb-5 pt-4">
+            <span className="flex items-start justify-between gap-3">
+              <span className="font-[family-name:var(--font-caption)] text-[1.45rem] font-medium leading-none tracking-[-0.025em] text-[#f5ecdf]">
+                {product.title}
+              </span>
+              {product.retired ? (
+                <span className="rounded-full border border-white/12 bg-white/[0.05] px-2 py-1 font-[family-name:var(--font-geist-sans)] text-[0.625rem] font-semibold uppercase tracking-[0.13em] text-[#b9a89a]">
+                  Retired
+                </span>
+              ) : null}
             </span>
-            <span className="mt-2 block font-[family-name:var(--font-geist-sans)] text-sm leading-6 text-[#9f968f]">
+            <span className="mt-3 font-[family-name:var(--font-geist-sans)] text-sm leading-6 text-[#ad9e91]">
               {product.description}
+            </span>
+            <span className="mt-auto flex items-center gap-2 pt-5 font-[family-name:var(--font-geist-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#d38365]">
+              {product.platform}
+              <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+              <span aria-hidden="true">↗</span>
             </span>
           </span>
         </button>
@@ -86,33 +95,19 @@ export function ProductShowcase() {
     <section
       data-testid="products-showcase"
       aria-label="Product showcase"
-      className="product-showcase-field relative min-h-[calc(100dvh-7rem)] px-0 pb-20 text-[#f5ecdf]"
+      className="product-showcase-field relative min-h-full px-4 pb-20 pt-6 text-[#f5ecdf] sm:px-7 sm:pt-8 lg:px-9"
     >
-      <div aria-hidden="true" className="product-showcase-canvas fixed inset-0 z-0" />
-      <div className="relative z-[1] mx-auto w-full max-w-[1380px]">
+      <div className="relative z-[1] mx-auto w-full max-w-[1500px]">
         <ProductCollection
           products={primaryProducts}
           onSelect={setSelectedProduct}
         />
 
-        <h3 className="mb-7 mt-14 font-[family-name:var(--font-caption)] text-[2.2rem] font-medium tracking-[-0.03em] text-[#f3ede6] sm:mt-16">
+        <h3 className="mb-5 mt-12 font-[family-name:var(--font-caption)] text-3xl font-medium tracking-[-0.025em] text-[#f5ecdf] sm:mt-14">
           Tools
         </h3>
         <ProductCollection products={tools} onSelect={setSelectedProduct} />
       </div>
-
-      <a
-        href="https://www.opensoftware.xyz"
-        target="_blank"
-        rel="noopener noreferrer"
-        data-testid="showcase-attribution"
-        className="fixed bottom-4 right-5 z-10 hidden text-[10px] tracking-wide text-white/35 transition-colors duration-200 hover:text-white/70 sm:block"
-      >
-        Inspired by{" "}
-        <span className="underline decoration-white/20 underline-offset-2">
-          OpenSoftware
-        </span>
-      </a>
 
       {selectedProduct ? (
         <ProductDetailSheet
