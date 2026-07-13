@@ -26,7 +26,8 @@ const CONTACT_EMAIL = "hello@mannan.is";
 
 async function enterGallery(page: Page) {
   await page.goto("/garden");
-  await page.getByTestId("garden-view-globe").click();
+  await page.getByTestId("garden-tab-products").click();
+  await page.getByTestId("garden-globe-toggle").click();
   await page.getByTestId("products-gallery").waitFor();
   await page.getByTestId("gallery-attribution").waitFor({ state: "visible" });
   await page.waitForTimeout(2400);
@@ -50,16 +51,15 @@ async function openCardDetail(page: Page): Promise<boolean> {
 }
 
 test.describe("Phantom-style products gallery", () => {
-  test("the #products hash opens Showcase by default, and its Globe control opens the gallery", async ({ page }) => {
+  test("the #products hash deep-links to the products view (list by default), and the globe icon opens the gallery", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
 
     await page.goto("/garden#products");
     await expect(page.getByTestId("garden-active-panel")).toHaveAttribute("data-panel", "products");
-    await expect(page.getByTestId("products-showcase")).toBeVisible();
-    await expect(page.getByTestId("garden-view-globe")).toBeVisible();
+    await expect(page.getByTestId("garden-globe-toggle")).toBeVisible();
 
-    await page.getByTestId("garden-view-globe").click();
+    await page.getByTestId("garden-globe-toggle").click();
     await page.getByTestId("products-gallery").waitFor();
     await expect(page.getByTestId("products-gallery").locator("canvas")).toHaveCount(1);
     await page.waitForTimeout(2400);
@@ -76,8 +76,7 @@ test.describe("Phantom-style products gallery", () => {
       "gallery-filter-toggle",
       "gallery-lets-talk",
       "gallery-zoom",
-      "gallery-view-showcase",
-      "gallery-view-legacy",
+      "gallery-grid",
       "gallery-sound",
       "gallery-attribution",
     ]) {
@@ -98,53 +97,19 @@ test.describe("Phantom-style products gallery", () => {
     );
   });
 
-  test("Globe exposes only its Showcase and Legacy peer views", async ({ page }) => {
+  test("the grid icon switches to the old flat list view, and the globe icon returns", async ({ page }) => {
     await enterGallery(page);
-
-    await expect(page.getByTestId("gallery-view-showcase")).toBeVisible();
-    await expect(page.getByTestId("gallery-view-legacy")).toBeVisible();
-    await expect(page.getByTestId("gallery-view-globe")).toHaveCount(0);
-  });
-
-  test("the Legacy control restores the old flat product cards and inactive view rail", async ({ page }) => {
-    await enterGallery(page);
-    await page.getByTestId("gallery-view-legacy").click();
+    await page.getByTestId("gallery-grid").click();
 
     await page.getByTestId("products-gallery").waitFor({ state: "detached" });
-    const legacy = page.getByTestId("products-legacy");
-    await expect(legacy.locator("a")).toHaveCount(VISIBLE_PRODUCTS.length);
-    for (const hidden of HIDDEN_PRODUCTS) await expect(legacy).not.toContainText(hidden);
-    await expect(page.getByTestId("garden-view-showcase")).toBeVisible();
-    await expect(page.getByTestId("garden-view-globe")).toBeVisible();
-    await expect(page.getByTestId("garden-view-legacy")).toHaveCount(0);
+    const panel = page.getByTestId("garden-active-panel");
+    await expect(panel).toHaveAttribute("data-panel", "products");
+    await expect(panel.locator("a")).toHaveCount(VISIBLE_PRODUCTS.length);
+    for (const hidden of HIDDEN_PRODUCTS) await expect(panel).not.toContainText(hidden);
+    await expect(page.getByTestId("garden-globe-toggle")).toBeVisible();
 
-    await page.getByTestId("garden-view-globe").click();
+    await page.getByTestId("garden-globe-toggle").click();
     await expect(page.getByTestId("products-gallery")).toBeVisible();
-  });
-
-  test("the Showcase control exits Globe back to the default collection", async ({ page }) => {
-    await enterGallery(page);
-    await page.getByTestId("gallery-view-showcase").click();
-
-    await expect(page.getByTestId("products-gallery")).toHaveCount(0);
-    await expect(page.getByTestId("products-showcase")).toBeVisible();
-    await expect(page.getByTestId("garden-view-globe")).toBeVisible();
-    await expect(page.getByTestId("garden-view-legacy")).toBeVisible();
-    await expect(page.getByTestId("garden-view-showcase")).toHaveCount(0);
-  });
-
-  test("WebGL unavailability returns Globe to Showcase", async ({ page }) => {
-    await page.addInitScript(() => {
-      Object.defineProperty(window, "WebGLRenderingContext", {
-        configurable: true,
-        value: undefined,
-      });
-    });
-    await page.goto("/garden");
-    await page.getByTestId("garden-view-globe").click();
-
-    await expect(page.getByTestId("products-gallery")).toHaveCount(0);
-    await expect(page.getByTestId("products-showcase")).toBeVisible();
   });
 
   test("clicking a product card opens a basic detail page with a Back button", async ({ page }) => {
@@ -231,7 +196,8 @@ test.describe("Phantom-style products gallery", () => {
     page.on("pageerror", (e) => errors.push(e.message));
 
     await page.goto("/garden");
-    await page.getByTestId("garden-view-globe").click();
+    await page.getByTestId("garden-tab-products").click();
+    await page.getByTestId("garden-globe-toggle").click();
     await page.getByTestId("products-gallery").waitFor();
     await expect(page.getByTestId("gallery-attribution")).toBeVisible();
     await page.waitForTimeout(800);

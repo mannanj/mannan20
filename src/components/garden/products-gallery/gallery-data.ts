@@ -1,9 +1,9 @@
-import {
-  getVisibleGardenProducts,
-  type GardenProductData,
-} from "@/lib/garden-products";
+import { GARDEN_PRODUCTS, type GardenProductData } from "@/lib/garden-products";
 
-export type GalleryProduct = GardenProductData;
+export interface GalleryProduct extends GardenProductData {
+  image: string | null;
+  accent: string;
+}
 
 export type GalleryFilter = "all" | "tools";
 
@@ -17,7 +17,37 @@ export const FILTER_FACETS: FilterFacet[] = [
   { key: "tools", label: "Tools" },
 ];
 
-export const GALLERY_PRODUCTS: GalleryProduct[] = getVisibleGardenProducts();
+const PRODUCT_IMAGE: Record<string, string> = {
+  "Sun Signal": "/sun-signal.png",
+  "Read Along": "/read-along.png",
+  Poppy: "/poppy.png",
+  Greenlights: "/greenlights.png",
+  "Event Every": "/eventevery.png",
+  SkillGuard: "/skillguard.png",
+  "claude-cues": "/claude-cues.png",
+  "Meal Fairy": "/meal-fairy.png",
+};
+
+const PRODUCT_ACCENT: Record<string, string> = {
+  "Sun Signal": "#f5a524",
+  "Read Along": "#7c8cff",
+  Poppy: "#f5923e",
+  Greenlights: "#1f8f5a",
+  "Event Every": "#3ec5a8",
+  SkillGuard: "#ff6b6b",
+  "claude-cues": "#c084fc",
+  "Meal Fairy": "#8bd450",
+};
+
+const DEFAULT_ACCENT = "#5b9dff";
+
+export const GALLERY_PRODUCTS: GalleryProduct[] = GARDEN_PRODUCTS.filter(
+  (p) => !p.hidden,
+).map((p) => ({
+  ...p,
+  image: PRODUCT_IMAGE[p.title] ?? null,
+  accent: PRODUCT_ACCENT[p.title] ?? DEFAULT_ACCENT,
+}));
 
 export function filterProducts(
   products: GalleryProduct[],

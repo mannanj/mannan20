@@ -22,32 +22,25 @@ test.describe('Garden carousel', () => {
     await expect(page.locator('[data-page-magnifier-root]')).toHaveCount(0);
   });
 
-  test('Products and Showcase are selected by default while every category remains available', async ({ page }) => {
+  test('Writings is the default selected tab', async ({ page }) => {
     await gotoGarden(page);
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
-    await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByTestId('products-showcase')).toBeVisible();
-    await expect(page.getByTestId('garden-tab-writings')).toBeVisible();
-    await expect(page.getByTestId('garden-tab-readings')).toBeVisible();
+    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
+    await expect(page.getByTestId('garden-tab-writings')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
   });
 
-  test('returning to Products resets its view to Showcase', async ({ page }) => {
+  test('selecting Products swivels to the eight product cards', async ({ page }) => {
     await gotoGarden(page);
-    await page.getByTestId('garden-view-legacy').click();
-    await expect(page.getByTestId('products-legacy')).toBeVisible();
-    await page.getByTestId('garden-tab-writings').click();
     await page.getByTestId('garden-tab-products').click();
-
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByTestId('products-showcase')).toBeVisible();
-    await expect(page.getByTestId('products-legacy')).toHaveCount(0);
+    await expect(page.locator('[data-panel="products"] a')).toHaveCount(8);
   });
 
-  test('Legacy product cards link to the correct destinations', async ({ page }) => {
+  test('product cards link to the correct destinations', async ({ page }) => {
     await gotoGarden(page);
-    await page.getByTestId('garden-view-legacy').click();
-    const cards = page.getByTestId('products-legacy').locator('a');
+    await page.getByTestId('garden-tab-products').click();
+    const cards = page.locator('[data-panel="products"] a');
 
     const sunSignal = cards.filter({ hasText: 'Sun Signal' });
     await expect(sunSignal).toHaveAttribute('href', 'https://sunsignal.app');
@@ -90,10 +83,10 @@ test.describe('Garden carousel', () => {
     await expect(mealFairy).toContainText('(retired)');
   });
 
-  test('Legacy preserves the main grid, Tools subsection, and approved product order', async ({ page }) => {
+  test('products render as a main grid plus a Tools subsection, with Meal Fairy retired in the main grid and no Retired header', async ({ page }) => {
     await gotoGarden(page);
-    await page.getByTestId('garden-view-legacy').click();
-    const panel = page.getByTestId('products-legacy');
+    await page.getByTestId('garden-tab-products').click();
+    const panel = page.getByTestId('garden-active-panel');
 
     await expect(panel.getByTestId('products-sort-alpha')).toHaveCount(0);
     await expect(panel.getByTestId('products-sort-date')).toHaveCount(0);
@@ -140,149 +133,5 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
     await expect(page.getByTestId('garden-tab-readings')).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('[data-panel="readings"] a')).toHaveCount(3);
-  });
-});
-
-test.describe('Garden product Showcase', () => {
-  test('Products opens in the four-column Showcase by default', async ({ page }) => {
-    await gotoGarden(page);
-
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
-    await expect(page.getByTestId('products-showcase')).toBeVisible();
-    await expect(page.getByTestId('products-showcase-grid').first()).toHaveClass(/lg:grid-cols-4/);
-    await expect(page.getByTestId('products-showcase-grid').first()).toHaveClass(/sm:grid-cols-2/);
-    await expect(page.getByTestId('garden-view-globe')).toBeVisible();
-    await expect(page.getByTestId('garden-view-legacy')).toBeVisible();
-    await expect(page.getByTestId('garden-view-showcase')).toHaveCount(0);
-  });
-
-  test('a Showcase product opens its detail sheet with canonical actions', async ({ page }) => {
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-sun-signal').click();
-
-    await expect(page.getByRole('dialog', { name: 'Sun Signal' })).toBeVisible();
-    await expect(page.getByTestId('showcase-primary-action')).toHaveAttribute(
-      'href',
-      'https://github.com/mannanj/sun-signal',
-    );
-    await expect(page.getByTestId('showcase-secondary-action')).toHaveAttribute(
-      'href',
-      'https://sunsignal.app',
-    );
-  });
-
-  test('Poppy exposes its direct download and Explore action', async ({ page }) => {
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-poppy').click();
-
-    await expect(page.getByTestId('showcase-primary-action')).toHaveAttribute(
-      'href',
-      'https://getpoppy.io/download',
-    );
-    await expect(page.getByTestId('showcase-secondary-action')).toHaveAttribute(
-      'href',
-      'https://getpoppy.io',
-    );
-  });
-
-  test('the product sheet becomes a bottom sheet on mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-read-along').click();
-
-    const sheet = page.getByTestId('product-showcase-sheet');
-    await expect(sheet).toHaveCSS('position', 'fixed');
-    const box = await sheet.boundingBox();
-    expect(box?.width).toBeLessThanOrEqual(366);
-    expect(box?.y).toBeGreaterThan(100);
-  });
-
-  test('the product sheet stays bounded to the viewport', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-sun-signal').click();
-
-    const bounds = await page.getByTestId('product-showcase-sheet').evaluate((sheet) => {
-      const rect = sheet.getBoundingClientRect();
-      return { top: rect.top, bottom: rect.bottom, height: rect.height };
-    });
-
-    expect(bounds.top).toBeGreaterThanOrEqual(0);
-    expect(bounds.bottom).toBeLessThanOrEqual(900);
-    expect(bounds.height).toBeLessThanOrEqual(868);
-  });
-
-  test('the product sheet blocks the underlying view controls', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-sun-signal').click();
-
-    const globeControl = page.getByTestId('garden-view-globe');
-    const isControlOnTop = await globeControl.evaluate((control) => {
-      const rect = control.getBoundingClientRect();
-      const topmost = document.elementFromPoint(
-        rect.left + rect.width / 2,
-        rect.top + rect.height / 2,
-      );
-      return Boolean(topmost?.closest('[data-testid="garden-view-globe"]'));
-    });
-
-    expect(isControlOnTop).toBe(false);
-  });
-
-  test('Escape closes the sheet and restores focus to its product', async ({ page }) => {
-    await gotoGarden(page);
-    const trigger = page.getByTestId('showcase-product-read-along');
-    await trigger.click();
-
-    await expect(page.getByRole('button', { name: 'Close Read Along' })).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog', { name: 'Read Along' })).toHaveCount(0);
-    await expect(trigger).toBeFocused();
-  });
-
-  test('selecting the backdrop closes the sheet', async ({ page }) => {
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-greenlights').click();
-    await page.getByTestId('product-showcase-backdrop').click({ position: { x: 4, y: 4 } });
-
-    await expect(page.getByRole('dialog', { name: 'Greenlights' })).toHaveCount(0);
-  });
-
-  test('Tools is the only subsection and Meal Fairy is visibly retired', async ({ page }) => {
-    await gotoGarden(page);
-    const showcase = page.getByTestId('products-showcase');
-
-    const subsectionHeaders = await showcase
-      .locator('h3')
-      .evaluateAll((elements) => elements.map((element) => element.textContent?.trim() ?? ''));
-    expect(subsectionHeaders).toEqual(['Tools']);
-
-    await page.getByTestId('showcase-product-meal-fairy').click();
-    await expect(page.getByTestId('product-showcase-status')).toHaveText('Retired');
-  });
-
-  test('Showcase external actions use safe new-tab attributes', async ({ page }) => {
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-sun-signal').click();
-
-    for (const testId of ['showcase-primary-action', 'showcase-secondary-action']) {
-      const action = page.getByTestId(testId);
-      await expect(action).toHaveAttribute('target', '_blank');
-      await expect(action).toHaveAttribute('rel', /noopener/);
-    }
-  });
-
-  test('Showcase sheet respects reduced-motion while opening and closing', async ({ page }) => {
-    const pageErrors: Error[] = [];
-    page.on('pageerror', (error) => pageErrors.push(error));
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await gotoGarden(page);
-    await page.getByTestId('showcase-product-skillguard').click();
-    await expect(page.getByRole('dialog', { name: 'SkillGuard' })).toBeVisible();
-    await page.getByRole('button', { name: 'Close SkillGuard' }).click();
-
-    await expect(page.getByRole('dialog', { name: 'SkillGuard' })).toHaveCount(0);
-    expect(pageErrors).toEqual([]);
   });
 });

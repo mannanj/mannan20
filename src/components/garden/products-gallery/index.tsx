@@ -12,7 +12,6 @@ import {
 import { Canvas } from "@react-three/fiber";
 import { AppProvider } from "@/context/app-context";
 import { ContactModal } from "@/components/contact-modal";
-import type { ProductView } from "@/lib/garden-products";
 import { SphereScene } from "./sphere-scene";
 import { GalleryHud, type GalleryCategory } from "./gallery-hud";
 import { LetsTalkOverlay } from "./lets-talk-overlay";
@@ -30,7 +29,7 @@ import {
 
 interface ProductsGalleryProps {
   onSelectCategory: (category: GalleryCategory) => void;
-  onSelectView: (view: Exclude<ProductView, "globe">) => void;
+  onShowList: () => void;
 }
 
 function prefersReducedMotion() {
@@ -69,10 +68,7 @@ class CanvasErrorBoundary extends Component<
   }
 }
 
-function GalleryExperience({
-  onSelectCategory,
-  onSelectView,
-}: ProductsGalleryProps) {
+function GalleryExperience({ onSelectCategory, onShowList }: ProductsGalleryProps) {
   const [reduced] = useState(prefersReducedMotion);
   const [webglOk] = useState(detectWebGL);
   const [failed, setFailed] = useState(false);
@@ -87,7 +83,6 @@ function GalleryExperience({
   const introRef = useRef(reduced ? 1 : 0);
   const introActiveRef = useRef(!reduced);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const exitTimeoutRef = useRef<number | null>(null);
 
   const usable = webglOk && !failed;
   const tiles = useMemo<SphereTile[]>(
@@ -119,16 +114,8 @@ function GalleryExperience({
   }, []);
 
   useEffect(() => {
-    if (!usable) onSelectView("showcase");
-  }, [usable, onSelectView]);
-
-  useEffect(() => {
-    return () => {
-      if (exitTimeoutRef.current !== null) {
-        window.clearTimeout(exitTimeoutRef.current);
-      }
-    };
-  }, []);
+    if (!usable) onShowList();
+  }, [usable, onShowList]);
 
   useEffect(() => {
     const el = wrapperRef.current;
@@ -149,13 +136,7 @@ function GalleryExperience({
         return;
       }
       setExiting(true);
-      if (exitTimeoutRef.current !== null) {
-        window.clearTimeout(exitTimeoutRef.current);
-      }
-      exitTimeoutRef.current = window.setTimeout(() => {
-        exitTimeoutRef.current = null;
-        action();
-      }, 280);
+      window.setTimeout(action, 280);
     },
     [reduced],
   );
@@ -169,12 +150,10 @@ function GalleryExperience({
     [onSelectCategory, exitTo],
   );
 
-  const requestView = useCallback(
-    (view: Exclude<ProductView, "globe">) => {
-      exitTo(() => onSelectView(view));
-    },
-    [exitTo, onSelectView],
-  );
+  const handleShowList = useCallback(() => {
+    setExiting(true);
+    onShowList();
+  }, [onShowList]);
 
   const openTile = useCallback((tile: SphereTile) => setDetailProduct(tile.product), []);
 
@@ -184,7 +163,7 @@ function GalleryExperience({
     <div
       data-testid="products-gallery"
       role="region"
-      aria-label="Products Globe view — drag to orbit the sphere; use the view controls to open Showcase or Legacy"
+      aria-label="Products gallery — drag to orbit the sphere; the grid icon switches to a list view"
       className={`fixed inset-0 z-[60] overflow-hidden bg-[#050507]${
         reduced ? "" : " transition-[opacity,transform] duration-300 ease-out"
       }`}
@@ -222,7 +201,7 @@ function GalleryExperience({
         onFilter={setFilter}
         onSelectCategory={requestCategory}
         onOpenLetsTalk={() => setLetsTalkOpen(true)}
-        onSelectView={requestView}
+        onShowList={handleShowList}
         onStepZoom={orbit.stepZoom}
         zoomIndex={orbit.zoomIndex}
         zoomLevels={orbit.zoomLevels}
