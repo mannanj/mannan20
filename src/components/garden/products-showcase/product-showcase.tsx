@@ -10,7 +10,14 @@ import { ProductDetailSheet } from "./product-detail-sheet";
 
 type ProductCollectionProps = {
   products: GardenProductData[];
-  onSelect: (product: GardenProductData) => void;
+  onSelect: (product: GardenProductData, triggerRect: ProductTriggerRect) => void;
+};
+
+export type ProductTriggerRect = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
 };
 
 function productSlug(title: string) {
@@ -31,10 +38,21 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
           key={product.title}
           type="button"
           data-testid={`showcase-product-${productSlug(product.title)}`}
-          onClick={() => onSelect(product)}
+          onClick={(event) => {
+            const media = event.currentTarget.querySelector<HTMLElement>(
+              "[data-product-artwork]",
+            );
+            const rect = (media ?? event.currentTarget).getBoundingClientRect();
+            onSelect(product, {
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+            });
+          }}
           className="product-showcase-card group flex cursor-pointer flex-col overflow-hidden rounded-[1.15rem] border border-white/12 bg-[#1a1512] text-left shadow-[0_20px_60px_rgba(0,0,0,0.24)] transition duration-300 ease-out hover:-translate-y-1 hover:border-[#d07b5e]/45 hover:bg-[#1e1814] hover:shadow-[0_24px_70px_rgba(0,0,0,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d48669] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0b0b]"
         >
-          <span className="relative block aspect-[4/3] w-full overflow-hidden border-b border-white/10 bg-[#251e19]">
+          <span data-product-artwork className="relative block aspect-[4/3] w-full overflow-hidden border-b border-white/10 bg-[#251e19]">
             {product.image ? (
               <Image
                 src={product.image}
@@ -54,9 +72,9 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
             )}
           </span>
 
-          <span className="flex min-h-40 flex-1 flex-col px-5 pb-5 pt-4">
+          <span className="flex flex-1 flex-col px-5 pb-5 pt-4 font-[family-name:var(--font-geist-sans)]">
             <span className="flex items-start justify-between gap-3">
-              <span className="font-[family-name:var(--font-caption)] text-[1.45rem] font-medium leading-none tracking-[-0.025em] text-[#f5ecdf]">
+              <span className="text-[1.18rem] font-medium leading-tight tracking-[-0.02em] text-white/95">
                 {product.title}
               </span>
               {product.retired ? (
@@ -65,13 +83,8 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
                 </span>
               ) : null}
             </span>
-            <span className="mt-3 font-[family-name:var(--font-geist-sans)] text-sm leading-6 text-[#ad9e91]">
+            <span className="mt-2 text-sm leading-6 text-white/52">
               {product.description}
-            </span>
-            <span className="mt-auto flex items-center gap-2 pt-5 font-[family-name:var(--font-geist-sans)] text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#d38365]">
-              {product.platform}
-              <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
-              <span aria-hidden="true">↗</span>
             </span>
           </span>
         </button>
@@ -81,15 +94,22 @@ function ProductCollection({ products, onSelect }: ProductCollectionProps) {
 }
 
 export function ProductShowcase() {
-  const [selectedProduct, setSelectedProduct] =
-    useState<GardenProductData | null>(null);
+  const [selection, setSelection] = useState<{
+    product: GardenProductData;
+    triggerRect: ProductTriggerRect;
+  } | null>(null);
   const products = getVisibleGardenProducts();
   const primaryProducts = products.filter(
     (product) => product.group === "products",
   );
   const tools = products.filter((product) => product.group === "tools");
 
-  const closeDetails = useCallback(() => setSelectedProduct(null), []);
+  const closeDetails = useCallback(() => setSelection(null), []);
+  const selectProduct = useCallback(
+    (product: GardenProductData, triggerRect: ProductTriggerRect) =>
+      setSelection({ product, triggerRect }),
+    [],
+  );
 
   return (
     <section
@@ -100,18 +120,19 @@ export function ProductShowcase() {
       <div className="relative z-[1] mx-auto w-full max-w-[1500px]">
         <ProductCollection
           products={primaryProducts}
-          onSelect={setSelectedProduct}
+          onSelect={selectProduct}
         />
 
         <h3 className="mb-5 mt-12 font-[family-name:var(--font-caption)] text-3xl font-medium tracking-[-0.025em] text-[#f5ecdf] sm:mt-14">
           Tools
         </h3>
-        <ProductCollection products={tools} onSelect={setSelectedProduct} />
+        <ProductCollection products={tools} onSelect={selectProduct} />
       </div>
 
-      {selectedProduct ? (
+      {selection ? (
         <ProductDetailSheet
-          product={selectedProduct}
+          product={selection.product}
+          triggerRect={selection.triggerRect}
           onClose={closeDetails}
         />
       ) : null}
