@@ -10,13 +10,19 @@ interface ContentCardProps {
   data: ProfileItem;
   applyMarginTop?: boolean;
   nested?: boolean;
+  id?: string;
+  testId?: string;
 }
 
-export function ContentCard({ data, applyMarginTop, nested }: ContentCardProps) {
+export function ContentCard({ data, applyMarginTop, nested, id, testId }: ContentCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={`p-0 m-0 ${nested ? 'text-black' : 'text-inherit'} ${applyMarginTop ? 'mt-[15px]' : ''}`}>
+    <div
+      id={id}
+      data-testid={testId}
+      className={`scroll-mt-[75px] p-0 m-0 ${nested ? 'text-black' : 'text-inherit'} ${applyMarginTop ? 'mt-[15px]' : ''}`}
+    >
       {data.link && data.title ? (
         <a href={data.link} target="_blank" rel="noopener noreferrer" className="text-[#039be5] no-underline transition-colors duration-300 ease-in-out hover:text-[#4fc3f7]">
           <b>{data.title}</b>

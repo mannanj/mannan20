@@ -40,7 +40,7 @@ export function EducationSection({ education, projects, certifications, count }:
         <div id="more-education">
           {display && (
             <div className="bg-[#f1f1f1] text-black p-1.5 rounded-md mt-1.5">
-              {count >= 1 && <ContentCard data={projects['archr']} nested />}
+              {count >= 1 && <ContentCard id="archr" testId="archr-project" data={projects['archr']} nested />}
               {count >= 1 && <ContentCard data={projects['solar']} applyMarginTop nested />}
               {count === 2 && <ContentCard data={projects['dome']} applyMarginTop nested />}
             </div>
@@ -50,4 +50,3 @@ export function EducationSection({ education, projects, certifications, count }:
     </>
   );
 }
-

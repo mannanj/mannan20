@@ -24,6 +24,8 @@ export function About({ data }: AboutProps) {
   const [extracurricularsStep, setExtracurricularsStep] = useState(0);
   const [educationStep, setEducationStep] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [deepLinkedVideo, setDeepLinkedVideo] = useState<string | null>(null);
+  const archrVideoUrl = data.educationProjects.archr?.demoUrl;
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -38,6 +40,25 @@ export function About({ data }: AboutProps) {
       window.removeEventListener('close-video-popout', closeHandler);
     };
   }, []);
+
+  useEffect(() => {
+    const videoId = new URLSearchParams(window.location.search).get('video');
+    if (videoId !== 'archr' || !archrVideoUrl) return;
+
+    setEducationStep((current) => Math.max(current, 1));
+    setDeepLinkedVideo(videoId);
+  }, [archrVideoUrl]);
+
+  useEffect(() => {
+    if (deepLinkedVideo !== 'archr' || educationStep < 1 || !archrVideoUrl) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('archr')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setVideoUrl(archrVideoUrl);
+      setDeepLinkedVideo(null);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [archrVideoUrl, deepLinkedVideo, educationStep]);
 
   const totalJobs = data.jobs.length;
   const employmentSteps = Math.ceil(Math.max(0, totalJobs - EMPLOYMENT_DEFAULT) / EMPLOYMENT_INCREMENT);
@@ -95,7 +116,11 @@ export function About({ data }: AboutProps) {
       </button>
 
       {videoUrl && (
-        <VideoPopout url={videoUrl} onClose={() => { setVideoUrl(null); window.dispatchEvent(new CustomEvent('close-video-popout')); }} />
+        <VideoPopout
+          url={videoUrl}
+          shareId={archrVideoUrl === videoUrl ? 'archr' : undefined}
+          onClose={() => { setVideoUrl(null); window.dispatchEvent(new CustomEvent('close-video-popout')); }}
+        />
       )}
     </div>
   );

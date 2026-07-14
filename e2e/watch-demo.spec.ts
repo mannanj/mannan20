@@ -81,4 +81,62 @@ test.describe('watch demo', () => {
 
     await page.screenshot({ path: 'e2e/screenshots/watch-demo-popout-open.png', fullPage: true });
   });
+
+  test('ARCHR deep link reveals its resume experience and opens the video', async ({ page }) => {
+    await page.goto('/?video=archr#archr');
+
+    const project = page.getByTestId('archr-project');
+    await expect(project).toBeVisible();
+    await expect(page.getByTestId('video-popout')).toBeVisible();
+    await expect(page.getByTestId('video-popout-iframe')).toHaveAttribute('src', /GSx22ggePHw/);
+    await expect
+      .poll(() => project.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+      }))
+      .toBe(true);
+  });
+
+  test('share control opens the native share sheet with the ARCHR deep link', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => {
+          window.localStorage.setItem('shared-url', data.url?.toString() ?? '');
+        },
+      });
+    });
+    await page.goto('/');
+
+    const watchBtn = page.getByTestId('watch-demo-btn').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
+    await page.getByTestId('video-popout-share').click();
+
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem('shared-url')))
+      .toBe('http://localhost:3847/?video=archr#archr');
+  });
+
+  test('share control copies the ARCHR deep link when native sharing is unavailable', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async (url: string) => window.localStorage.setItem('copied-url', url),
+        },
+      });
+    });
+    await page.goto('/');
+
+    const watchBtn = page.getByTestId('watch-demo-btn').first();
+    await watchBtn.scrollIntoViewIfNeeded();
+    await watchBtn.click();
+    const shareButton = page.getByTestId('video-popout-share');
+    await shareButton.click();
+
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem('copied-url')))
+      .toBe('http://localhost:3847/?video=archr#archr');
+    await expect(shareButton).toHaveAttribute('aria-label', 'Link copied');
+  });
 });

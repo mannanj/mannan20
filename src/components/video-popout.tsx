@@ -1,16 +1,27 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { shareVideoLink, type ShareVideoResult } from '@/lib/video-share';
 
 interface VideoPopoutProps {
   url: string;
   onClose: () => void;
+  shareId?: string;
 }
 
-export function VideoPopout({ url, onClose }: VideoPopoutProps) {
+const SHARE_LABELS: Record<ShareVideoResult | 'idle' | 'sharing', string> = {
+  idle: 'Share video',
+  sharing: 'Sharing',
+  shared: 'Shared',
+  copied: 'Link copied',
+  failed: 'Unable to share',
+};
+
+export function VideoPopout({ url, onClose, shareId }: VideoPopoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [shareStatus, setShareStatus] = useState<ShareVideoResult | 'idle' | 'sharing'>('idle');
 
   useEffect(() => {
     const vw = window.innerWidth;
@@ -61,6 +72,13 @@ export function VideoPopout({ url, onClose }: VideoPopoutProps) {
     dragRef.current = null;
   }, []);
 
+  const onShare = useCallback(async () => {
+    if (!shareId || shareStatus === 'sharing') return;
+    setShareStatus('sharing');
+    const result = await shareVideoLink(shareId, 'Baxter and miniBOT Robot Collaboration at Disaster Response');
+    setShareStatus(result);
+  }, [shareId, shareStatus]);
+
   if (!position) return null;
 
   return (
@@ -70,6 +88,26 @@ export function VideoPopout({ url, onClose }: VideoPopoutProps) {
       style={{ left: position.x, top: position.y, width: '80vw', height: '66vh' }}
       className="fixed z-[9999] rounded-lg overflow-hidden shadow-2xl shadow-black/60 border border-white/10 bg-black"
     >
+      {shareId && (
+        <button
+          data-testid="video-popout-share"
+          type="button"
+          onClick={onShare}
+          aria-label={SHARE_LABELS[shareStatus]}
+          title={SHARE_LABELS[shareStatus]}
+          disabled={shareStatus === 'sharing'}
+          className="absolute top-2 right-[60px] z-[2] flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full bg-black/60 hover:bg-black/80 text-white/70 hover:text-white border-none cursor-pointer disabled:cursor-wait transition-colors duration-150"
+        >
+          <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <path d="m8.6 10.5 6.8-4" />
+            <path d="m8.6 13.5 6.8 4" />
+          </svg>
+        </button>
+      )}
+      <span className="sr-only" aria-live="polite">{shareStatus === 'idle' ? '' : SHARE_LABELS[shareStatus]}</span>
       <button
         data-testid="video-popout-close"
         type="button"
