@@ -243,27 +243,117 @@ function ProductGrid({ products }: { products: GardenProduct[] }) {
 function ProductsSubsection({
   label,
   products,
+  testId,
+  heading,
 }: {
   label: string;
   products: GardenProduct[];
+  testId: string;
+  heading?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2.5">
-      <h3 className="text-xs font-medium uppercase tracking-wider text-white">
-        {label}
-      </h3>
+    <div data-testid={testId} className="flex flex-col gap-2.5">
+      {heading ?? (
+        <h3 className="text-xs font-medium uppercase tracking-wider text-white">
+          {label}
+        </h3>
+      )}
       <ProductGrid products={products} />
+    </div>
+  );
+}
+
+const AI_DESIGNED_DISCLOSURE =
+  "This app's design has been constructed with AI tools and has not been given quality attention by a human. While I try my best to review and give attention to all designs, functionality and code sometimes I generate things fast through AI tools and am unable to review or improve the product. These products fall under that bucket.";
+
+function AiDesignedHeading() {
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const open = hovered || focused || pinned;
+
+  useEffect(() => {
+    const closeFromOutside = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setPinned(false);
+    };
+    const closeFromEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setPinned(false);
+      setFocused(false);
+      setHovered(false);
+      buttonRef.current?.blur();
+    };
+
+    document.addEventListener("pointerdown", closeFromOutside);
+    document.addEventListener("keydown", closeFromEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeFromOutside);
+      document.removeEventListener("keydown", closeFromEscape);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={rootRef}
+      className="relative flex w-fit items-center gap-1.5"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <h3 className="text-xs font-medium uppercase tracking-wider text-white">
+        AI-Designed
+      </h3>
+      <button
+        ref={buttonRef}
+        type="button"
+        data-testid="ai-designed-info"
+        aria-label="About AI-designed products"
+        aria-expanded={open}
+        aria-describedby="ai-designed-disclosure"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onClick={() => setPinned((value) => !value)}
+        className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-white/35 text-[10px] font-medium normal-case leading-none text-white/65 transition-colors hover:border-white/60 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        i
+      </button>
+      {open && (
+        <div
+          id="ai-designed-disclosure"
+          role="tooltip"
+          data-testid="ai-designed-tooltip"
+          className="absolute left-0 top-[calc(100%+0.65rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#171717] p-3.5 text-[11px] font-normal normal-case leading-relaxed tracking-normal text-white/70 shadow-2xl shadow-black/50"
+        >
+          {AI_DESIGNED_DISCLOSURE}
+        </div>
+      )}
     </div>
   );
 }
 
 function ProductsPanel() {
   const products = PRODUCTS.slice(0, 3);
-  const tools = PRODUCTS.slice(3);
+  const tools = PRODUCTS.slice(3, -2);
+  const aiDesigned = PRODUCTS.slice(-2);
   return (
     <div className="flex flex-col gap-8">
       <ProductGrid products={products} />
-      {tools.length > 0 && <ProductsSubsection label="Tools" products={tools} />}
+      {tools.length > 0 && (
+        <ProductsSubsection
+          label="Tools"
+          products={tools}
+          testId="products-subsection-tools"
+        />
+      )}
+      {aiDesigned.length > 0 && (
+        <ProductsSubsection
+          label="AI-Designed"
+          products={aiDesigned}
+          testId="products-subsection-ai-designed"
+          heading={<AiDesignedHeading />}
+        />
+      )}
     </div>
   );
 }

@@ -83,7 +83,7 @@ test.describe('Garden carousel', () => {
     await expect(mealFairy).toContainText('(retired)');
   });
 
-  test('products render as a main grid plus a Tools subsection, with Meal Fairy retired in the main grid and no Retired header', async ({ page }) => {
+  test('products render with separate Tools and AI-Designed subsections', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-products').click();
     const panel = page.getByTestId('garden-active-panel');
@@ -97,7 +97,18 @@ test.describe('Garden carousel', () => {
     const headers = await panel
       .locator('h3')
       .evaluateAll((els) => els.map((el) => el.textContent?.trim() ?? ''));
-    expect(headers).toEqual(['Tools']);
+    expect(headers).toEqual(['Tools', 'AI-Designed']);
+
+    const tools = panel.getByTestId('products-subsection-tools');
+    await expect(tools.locator('a')).toHaveCount(3);
+    await expect(tools).toContainText('Poppy');
+    await expect(tools).toContainText('Greenlights');
+    await expect(tools).toContainText('Event Every');
+
+    const aiDesigned = panel.getByTestId('products-subsection-ai-designed');
+    await expect(aiDesigned.locator('a')).toHaveCount(2);
+    await expect(aiDesigned).toContainText('SkillGuard');
+    await expect(aiDesigned).toContainText('claude-cues');
 
     const orderedTitles = await panel
       .locator('a')
@@ -112,6 +123,29 @@ test.describe('Garden carousel', () => {
       'SkillGuard',
       'claude-cues',
     ]);
+  });
+
+  test('the AI-Designed disclosure opens on hover and click and closes with Escape', async ({ page }) => {
+    await gotoGarden(page);
+    await page.getByTestId('garden-tab-products').click();
+
+    const button = page.getByTestId('ai-designed-info');
+    const tooltip = page.getByTestId('ai-designed-tooltip');
+    const disclosure = "This app's design has been constructed with AI tools and has not been given quality attention by a human. While I try my best to review and give attention to all designs, functionality and code sometimes I generate things fast through AI tools and am unable to review or improve the product. These products fall under that bucket.";
+
+    await expect(tooltip).toBeHidden();
+    await button.hover();
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toHaveText(disclosure);
+
+    await button.click();
+    await page.getByTestId('products-subsection-tools').hover();
+    await expect(tooltip).toBeVisible();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toBeHidden();
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('selecting Writings swivels to the stacked writing cards', async ({ page }) => {

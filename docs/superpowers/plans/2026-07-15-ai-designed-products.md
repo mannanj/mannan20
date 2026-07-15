@@ -15,11 +15,11 @@
 **Files:**
 - Modify: `e2e/garden-carousel.spec.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Update the existing product-grouping test to expect `Tools` and `AI-Designed`, assert that each group contains the requested cards, and add a test that checks the disclosure text opens through hover and click, remains pinned after pointer exit, and closes with Escape.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `bunx playwright test e2e/garden-carousel.spec.ts --grep "AI-Designed"`
 
@@ -30,23 +30,23 @@ Expected: FAIL because the AI-Designed heading and disclosure controls do not ex
 **Files:**
 - Modify: `src/components/garden/garden-explorer.tsx`
 
-- [ ] **Step 1: Write minimal implementation**
+- [x] **Step 1: Write minimal implementation**
 
 Add an `AiDesignedHeading` client component using React state and refs. Render a button inline with the heading, a `role="tooltip"` disclosure panel, document-level pointer and Escape dismissal, and hover/focus/click event handlers. Split the current tools collection so the final two cards render in the new subsection.
 
-- [ ] **Step 2: Run the focused tests to verify they pass**
+- [x] **Step 2: Run the focused tests to verify they pass**
 
 Run: `bunx playwright test e2e/garden-carousel.spec.ts --grep "AI-Designed"`
 
 Expected: PASS.
 
-- [ ] **Step 3: Run static and production verification**
+- [x] **Step 3: Run static and production verification**
 
 Run: `bun run typecheck && bun run build`
 
 Expected: Both commands exit 0.
 
-- [ ] **Step 4: Commit the implementation**
+- [x] **Step 4: Commit the implementation**
 
 Stage only `src/components/garden/garden-explorer.tsx`, `e2e/garden-carousel.spec.ts`, and this plan, then commit with `Add AI-designed product disclosure`.
 
