@@ -16,11 +16,11 @@
 - Modify: `e2e/products-gallery.spec.ts`
 - Modify: `src/components/garden/products-gallery/gallery-sound.test.ts`
 
-- [ ] **Step 1: Add failing coverage**
+- [x] **Step 1: Add failing coverage**
 
 Assert that SkillGuard and claude-cues are flagged as AI-designed while other products are not, and that opening an AI-designed product detail displays the label and disclosure beside its year.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run the focused Bun and Playwright tests. Expect failure because `aiDesigned` and the globe detail label do not exist.
 
@@ -32,15 +32,15 @@ Run the focused Bun and Playwright tests. Expect failure because `aiDesigned` an
 - Modify: `src/components/garden/garden-explorer.tsx`
 - Modify: `src/components/garden/products-gallery/product-detail.tsx`
 
-- [ ] **Step 1: Implement the canonical flag and shared disclosure**
+- [x] **Step 1: Implement the canonical flag and shared disclosure**
 
 Add `aiDesigned?: boolean`, flag SkillGuard and claude-cues, move the approved disclosure and its interactions into a reusable component, and render it after the globe detail year only when flagged.
 
-- [ ] **Step 2: Verify GREEN**
+- [x] **Step 2: Verify GREEN**
 
 Run focused tests, the full affected Playwright specs, typecheck, and the production build. Expect all commands to exit 0.
 
-- [ ] **Step 3: Commit and push**
+- [x] **Step 3: Commit and push**
 
 Stage only feature, test, spec, and plan files; commit the implementation and push `main` to `origin`.
 

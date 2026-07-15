@@ -17,6 +17,7 @@ import { CommunityNodesPreview } from "@/components/garden/community-nodes-previ
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
 import { PapersSection } from "@/components/garden/papers-section";
+import { AiDesignedDisclosure } from "@/components/garden/ai-designed-disclosure";
 
 const ProductsGallery = dynamic(
   () => import("@/components/garden/products-gallery"),
@@ -263,79 +264,10 @@ function ProductsSubsection({
   );
 }
 
-const AI_DESIGNED_DISCLOSURE =
-  "These apps were designed primarily with AI and have received limited human review or refinement.";
-
-function AiDesignedHeading() {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const open = hovered || focused || pinned;
-
-  useEffect(() => {
-    const closeFromOutside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setPinned(false);
-    };
-    const closeFromEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setPinned(false);
-      setFocused(false);
-      setHovered(false);
-      buttonRef.current?.blur();
-    };
-
-    document.addEventListener("pointerdown", closeFromOutside);
-    document.addEventListener("keydown", closeFromEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeFromOutside);
-      document.removeEventListener("keydown", closeFromEscape);
-    };
-  }, []);
-
-  return (
-    <div
-      ref={rootRef}
-      className="relative flex w-fit items-center gap-1.5"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <h3 className="text-xs font-normal uppercase tracking-wider text-white/60">
-        AI-Designed
-      </h3>
-      <button
-        ref={buttonRef}
-        type="button"
-        data-testid="ai-designed-info"
-        aria-label="About AI-designed products"
-        aria-expanded={open}
-        aria-describedby="ai-designed-disclosure"
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        onClick={() => setPinned((value) => !value)}
-        className="flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-white/35 text-[10px] font-medium normal-case leading-none text-white/65 transition-colors hover:border-white/60 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-      >
-        i
-      </button>
-      {open && (
-        <div
-          id="ai-designed-disclosure"
-          role="tooltip"
-          data-testid="ai-designed-tooltip"
-          className="absolute left-0 top-[calc(100%+0.65rem)] z-30 w-[min(20rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-[#171717] p-3.5 text-[11px] font-normal normal-case leading-relaxed tracking-normal text-white/70 shadow-2xl shadow-black/50"
-        >
-          {AI_DESIGNED_DISCLOSURE}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function ProductsPanel() {
   const products = PRODUCTS.slice(0, 3);
-  const tools = PRODUCTS.slice(3, -2);
-  const aiDesigned = PRODUCTS.slice(-2);
+  const tools = PRODUCTS.slice(3).filter((product) => !product.aiDesigned);
+  const aiDesigned = PRODUCTS.filter((product) => product.aiDesigned);
   return (
     <div className="flex flex-col gap-8">
       <ProductGrid products={products} />
@@ -351,7 +283,7 @@ function ProductsPanel() {
           label="AI-Designed"
           products={aiDesigned}
           testId="products-subsection-ai-designed"
-          heading={<AiDesignedHeading />}
+          heading={<AiDesignedDisclosure labelAs="h3" />}
         />
       )}
     </div>

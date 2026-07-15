@@ -6,6 +6,7 @@ export interface GardenProductData {
   year: number;
   retired?: boolean;
   hidden?: boolean;
+  aiDesigned?: boolean;
 }
 
 export const GARDEN_PRODUCTS: GardenProductData[] = [
@@ -66,6 +67,7 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     href: "https://skillguard.sh",
     external: true,
     year: 2026,
+    aiDesigned: true,
   },
   {
     title: "claude-cues",
@@ -73,6 +75,7 @@ export const GARDEN_PRODUCTS: GardenProductData[] = [
     href: "https://claude-cues.pages.dev",
     external: true,
     year: 2026,
+    aiDesigned: true,
   },
   {
     title: "Mannan MCP",

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { productDomain, type GalleryProduct } from "./gallery-data";
+import { AiDesignedDisclosure } from "@/components/garden/ai-designed-disclosure";
 
 interface ProductDetailProps {
   product: GalleryProduct;
@@ -78,6 +79,14 @@ export function ProductDetail({ product, onClose }: ProductDetailProps) {
             <span style={{ color: product.accent }}>{product.retired ? "Retired" : "Product"}</span>
             <span>·</span>
             <span>{product.year}</span>
+            {product.aiDesigned && (
+              <>
+                <span>·</span>
+                <AiDesignedDisclosure
+                  labelClassName="text-[11px] font-normal uppercase tracking-[0.28em] text-white/40"
+                />
+              </>
+            )}
           </div>
           <h1 data-testid="product-detail-title" className="mt-4 text-4xl font-semibold text-white sm:text-5xl">
             {product.title}
