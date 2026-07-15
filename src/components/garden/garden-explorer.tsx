@@ -264,7 +264,7 @@ function ProductsSubsection({
 }
 
 const AI_DESIGNED_DISCLOSURE =
-  "This app's design has been constructed with AI tools and has not been given quality attention by a human. While I try my best to review and give attention to all designs, functionality and code sometimes I generate things fast through AI tools and am unable to review or improve the product. These products fall under that bucket.";
+  "These apps were designed primarily with AI and have received limited human review or refinement.";
 
 function AiDesignedHeading() {
   const [hovered, setHovered] = useState(false);
@@ -301,7 +301,7 @@ function AiDesignedHeading() {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <h3 className="text-xs font-medium uppercase tracking-wider text-white">
+      <h3 className="text-xs font-normal uppercase tracking-wider text-white/60">
         AI-Designed
       </h3>
       <button
