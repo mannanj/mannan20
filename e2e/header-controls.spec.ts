@@ -326,8 +326,44 @@ test.describe('garden + mcp tap gate on touch (no hover available)', () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
+  test('first tap on the collapsed mcp preview only reveals the choices', async ({ page }) => {
+    const preview = page.getByTestId('mcp-collapsed-preview');
+    const box = await preview.boundingBox();
+    expect(box).not.toBeNull();
+
+    await page.touchscreen.tap(box!.x + 2, box!.y + box!.height / 2);
+
+    await expect(page.getByTestId('mcp-reveal')).toHaveCSS('opacity', '1');
+    await expect(page.getByTestId('mcp-popover')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  test('rapid second tap during expansion does not navigate to garden', async ({ page }) => {
+    const plant = page.getByTestId('header-garden-link');
+    await plant.tap();
+    await plant.tap();
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.waitForTimeout(1100);
+    await plant.tap();
+    await expect(page).toHaveURL(/\/garden/);
+  });
+
+  test('rapid mcp tap during expansion does not open its popover', async ({ page }) => {
+    const plant = page.getByTestId('header-garden-link');
+    await plant.tap();
+    await page.getByTestId('mcp-header-button').tap();
+    await expect(page.getByTestId('mcp-popover')).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.waitForTimeout(1100);
+    await page.getByTestId('mcp-header-button').tap();
+    await expect(page.getByTestId('mcp-popover')).toBeVisible();
+  });
+
   test('the revealed mcp icon opens its popover on tap', async ({ page }) => {
     await page.getByTestId('header-garden-link').tap();
+    await page.waitForTimeout(1100);
     await expect(page.getByTestId('mcp-header-button')).toBeVisible();
     await page.getByTestId('mcp-header-button').tap();
     await expect(page.getByTestId('mcp-popover')).toBeVisible();
@@ -336,8 +372,31 @@ test.describe('garden + mcp tap gate on touch (no hover available)', () => {
   test('second tap on the plant navigates to the garden', async ({ page }) => {
     const plant = page.getByTestId('header-garden-link');
     await plant.tap();
+    await page.waitForTimeout(1100);
     await expect(page.getByTestId('mcp-header-button')).toBeVisible();
     await plant.tap();
     await expect(page).toHaveURL(/\/garden/);
+  });
+});
+
+test.describe('social tap gate on touch (reference behavior)', () => {
+  test.use({ viewport: { width: 375, height: 667 }, hasTouch: true, isMobile: true });
+
+  test('github requires a reveal tap before its activation tap', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('header-home-button').tap();
+
+    let popupCount = 0;
+    page.on('popup', () => popupCount += 1);
+
+    await page.getByTestId('header-github-link').tap();
+    expect(popupCount).toBe(0);
+
+    await page.waitForTimeout(1100);
+    const popupPromise = page.waitForEvent('popup');
+    await page.getByTestId('header-github-link').tap();
+    const popup = await popupPromise;
+    expect(popupCount).toBe(1);
+    await popup.close();
   });
 });

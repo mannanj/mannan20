@@ -86,8 +86,11 @@ export function Header() {
   const isHome = pathname === "/";
   const isTransparent = pathname === "/garden/article/seeking-community";
   const [gardenExpanded, setGardenExpanded] = useState(false);
+  const [gardenClicksAllowed, setGardenClicksAllowed] = useState(false);
   const [authMenuOpen, setAuthMenuOpen] = useState(false);
   const gardenExpandedRef = useRef(false);
+  const gardenGateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const gardenPointerTypeRef = useRef<string | null>(null);
   const headHoldTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const headHoldTriggeredRef = useRef(false);
   const [mcpHovered, setMcpHovered] = useState(false);
@@ -119,6 +122,48 @@ export function Header() {
       gardenCloseTimerRef.current = null;
     }, 180);
   }, []);
+
+  useEffect(() => {
+    setGardenClicksAllowed(false);
+
+    if (gardenGateTimerRef.current) {
+      clearTimeout(gardenGateTimerRef.current);
+      gardenGateTimerRef.current = null;
+    }
+
+    if (gardenExpanded) {
+      gardenGateTimerRef.current = setTimeout(() => {
+        setGardenClicksAllowed(true);
+        gardenGateTimerRef.current = null;
+      }, 1000);
+    }
+
+    return () => {
+      if (gardenGateTimerRef.current) {
+        clearTimeout(gardenGateTimerRef.current);
+        gardenGateTimerRef.current = null;
+      }
+    };
+  }, [gardenExpanded]);
+
+  const gateGardenActivation = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
+      const isTouchActivation = gardenPointerTypeRef.current === "touch";
+      gardenPointerTypeRef.current = null;
+
+      if (!isTouchActivation) return true;
+
+      if (!gardenClicksAllowed) {
+        event.preventDefault();
+        event.stopPropagation();
+        openGarden();
+        return false;
+      }
+
+      return true;
+    },
+    [gardenClicksAllowed, openGarden],
+  );
 
   const handleMcpOpenChange = useCallback(
     (open: boolean) => {
@@ -690,17 +735,28 @@ export function Header() {
             ref={gardenRef}
             data-testid="garden-wrapper"
             className="group/garden relative z-30 flex items-center py-3"
+            onPointerDownCapture={(event) => {
+              gardenPointerTypeRef.current = event.pointerType;
+            }}
+            onPointerCancelCapture={() => {
+              gardenPointerTypeRef.current = null;
+            }}
             onMouseEnter={openGarden}
             onMouseLeave={closeGarden}
             onMouseMove={openGarden}
           >
-            <div
+            <button
+              type="button"
               data-testid="mcp-collapsed-preview"
-              aria-hidden="true"
-              className={`pointer-events-none absolute top-[20px] left-[-2px] z-0 transition-all duration-300 ease-out ${gardenExpanded ? "-translate-x-2 scale-90 opacity-0" : "translate-x-0 scale-100 opacity-100"}`}
+              aria-label="Reveal Garden and MCP links"
+              onClick={() => {
+                gardenPointerTypeRef.current = null;
+                openGarden();
+              }}
+              className={`absolute top-[20px] left-[-2px] z-0 border-none bg-transparent p-0 transition-all duration-300 ease-out ${gardenExpanded ? "pointer-events-none -translate-x-2 scale-90 opacity-0" : "translate-x-0 scale-100 opacity-100"}`}
             >
               <McpLogoIcon className="h-5 w-5 text-white/50" />
-            </div>
+            </button>
             <div
               data-testid="mcp-reveal"
               className={`flex items-center overflow-visible transition-[width,opacity] duration-300 ease-out ${gardenExpanded ? "w-8 opacity-100" : "w-0 opacity-0 pointer-events-none"}`}
@@ -708,6 +764,7 @@ export function Header() {
               onMouseLeave={() => setMcpHovered(false)}
             >
               <McpHeaderButton
+                gate={gateGardenActivation}
                 onHoverChange={setMcpHovered}
                 onOpenChange={handleMcpOpenChange}
               />
@@ -716,10 +773,7 @@ export function Header() {
           href="/garden"
           data-testid="header-garden-link"
           onClick={(e) => {
-            if (!gardenExpandedRef.current) {
-              e.preventDefault();
-              openGarden();
-            }
+            gateGardenActivation(e);
           }}
           className="group relative z-20 block"
         >
