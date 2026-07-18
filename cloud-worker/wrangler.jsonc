@@ -101,6 +101,7 @@
     "identity-staging": {
       "name": "cloud-worker-identity-staging",
       "workers_dev": true,
+      "preview_urls": false,
       "vars": {
         "RESEND_FROM": "Mannan <cloud@mannan.is>",
         "PUBLIC_BASE_URL": "https://cloud-worker-identity-staging.mannanteam.workers.dev",

@@ -15,7 +15,7 @@ interface WorkerConfig {
   d1_databases?: Binding[];
   r2_buckets?: Binding[];
   ratelimits?: Binding[];
-  env?: Record<string, WorkerConfig & { name?: string }>;
+  env?: Record<string, WorkerConfig & { name?: string; preview_urls?: boolean }>;
 }
 
 const config = JSON.parse(
@@ -62,6 +62,7 @@ describe('storage boundary configuration', () => {
     const staging = config.env?.['identity-staging'];
 
     expect(staging?.name).toBe('cloud-worker-identity-staging');
+    expect(staging?.preview_urls).toBe(false);
     expect(binding(staging?.d1_databases, 'DB')).toMatchObject({
       database_name: 'cloud',
       database_id: '6aac55fe-a879-40ea-891e-4723cdb60891',
