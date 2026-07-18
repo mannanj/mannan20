@@ -21,6 +21,12 @@ export async function POST(request: Request) {
     body && typeof body === 'object' && typeof (body as Record<string, unknown>).email === 'string'
       ? ((body as Record<string, unknown>).email as string).trim().toLowerCase()
       : '';
+  const returnTo =
+    body &&
+    typeof body === 'object' &&
+    typeof (body as Record<string, unknown>).returnTo === 'string'
+      ? ((body as Record<string, unknown>).returnTo as string)
+      : '/';
 
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
@@ -35,7 +41,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Too many requests, try again later' }, { status: 429 });
   }
 
-  const result = await requestCloudflareContinueEmail({ email, ip });
+  const result = await requestCloudflareContinueEmail({ email, ip, returnTo });
   if (!result.ok) {
     const status = result.status === 429 ? 429 : 503;
     return NextResponse.json({ error: 'Could not send email' }, { status });

@@ -5,6 +5,7 @@ const OLD_SECRET = process.env.MANNAN_SESSION_SECRET;
 process.env.MANNAN_SESSION_SECRET = 'test-secret-with-enough-entropy';
 
 const session = await import('./site-session');
+const ACCOUNT_ID = '0123456789abcdef0123456789abcdef';
 
 describe('site session cookies', () => {
   beforeEach(() => {
@@ -18,6 +19,7 @@ describe('site session cookies', () => {
 
   test('round trips a signed admin session without exposing a writable cookie', async () => {
     const cookie = await session.createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
       email: 'hello@mannan.is',
       role: 'admin',
     });
@@ -30,6 +32,7 @@ describe('site session cookies', () => {
 
     const parsed = await session.readSiteSession(cookie);
     expect(parsed).toMatchObject({
+      accountId: ACCOUNT_ID,
       email: 'hello@mannan.is',
       role: 'admin',
       admin: true,
@@ -38,6 +41,7 @@ describe('site session cookies', () => {
 
   test('rejects a tampered signed session', async () => {
     const cookie = await session.createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
       email: 'reader@example.com',
       role: 'user',
     });

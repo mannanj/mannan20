@@ -1,44 +1,32 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { sanitizeAuthReturnPath } from '@/lib/cloudflare-auth';
+import type { SiteSessionRole } from '@/lib/site-session';
 
-const COOKIE_NAME = '__Host-mannan-session';
-const SESSION_TTL_SEC = 60 * 60 * 24 * 30;
+const COOKIE_NAME = '__Host-mannan-consent';
+const CONSENT_SESSION_TTL_SEC = 60 * 30;
+const ACCOUNT_ID_RE = /^[a-f0-9]{32}$/u;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export type SiteSessionRole = 'admin' | 'user';
-
-export interface SiteSession {
+export interface ConsentSession {
+  purpose: 'legal_consent';
   accountId: string;
   email: string;
   role: SiteSessionRole;
-  admin: boolean;
-  exp: number;
-}
-
-interface SignedSessionPayload {
-  accountId: string;
-  email: string;
-  role: SiteSessionRole;
+  returnTo: string;
   exp: number;
 }
 
 function base64UrlEncode(input: string): string {
-  return Buffer.from(input, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return Buffer.from(input, 'utf8').toString('base64url');
 }
 
 function base64UrlDecode(input: string): string {
-  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
-  return Buffer.from(padded, 'base64').toString('utf8');
+  return Buffer.from(input, 'base64url').toString('utf8');
 }
 
 function sessionSecret(): string {
   const secret = process.env.MANNAN_SESSION_SECRET;
-  if (!secret) {
-    throw new Error('MANNAN_SESSION_SECRET is required for site sessions');
-  }
+  if (!secret) throw new Error('MANNAN_SESSION_SECRET is required for consent sessions');
   return secret;
 }
 
@@ -49,14 +37,7 @@ function sign(payload: string): string {
 function signaturesMatch(a: string, b: string): boolean {
   const left = Buffer.from(a);
   const right = Buffer.from(b);
-  if (left.length !== right.length) return false;
-  return timingSafeEqual(left, right);
-}
-
-function normalizeRole(role: unknown): SiteSessionRole | null {
-  if (role === 'admin') return 'admin';
-  if (role === 'user') return 'user';
-  return null;
+  return left.length === right.length && timingSafeEqual(left, right);
 }
 
 function cookieValue(cookieHeader: string | null): string | null {
@@ -67,32 +48,39 @@ function cookieValue(cookieHeader: string | null): string | null {
   return match ? match.slice(COOKIE_NAME.length + 1) : null;
 }
 
-export async function createSiteSessionCookie(input: {
+function normalizeRole(value: unknown): SiteSessionRole | null {
+  if (value === 'admin' || value === 'user') return value;
+  return null;
+}
+
+export async function createConsentSessionCookie(input: {
   accountId: string;
   email: string;
   role: SiteSessionRole;
+  returnTo: string;
 }): Promise<string> {
-  const payload: SignedSessionPayload = {
+  const payload: ConsentSession = {
+    purpose: 'legal_consent',
     accountId: input.accountId,
     email: input.email.trim().toLowerCase(),
     role: input.role,
-    exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SEC,
+    returnTo: sanitizeAuthReturnPath(input.returnTo),
+    exp: Math.floor(Date.now() / 1000) + CONSENT_SESSION_TTL_SEC,
   };
   const encoded = base64UrlEncode(JSON.stringify(payload));
-  return `${COOKIE_NAME}=${encoded}.${sign(encoded)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SEC}`;
+  return `${COOKIE_NAME}=${encoded}.${sign(encoded)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${CONSENT_SESSION_TTL_SEC}`;
 }
 
-export function clearSiteSessionCookie(): string {
+export function clearConsentSessionCookie(): string {
   return `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
 
-export async function readSiteSession(cookieHeader: string | null): Promise<SiteSession | null> {
+export function readConsentSession(cookieHeader: string | null): ConsentSession | null {
   const value = cookieValue(cookieHeader);
   if (!value) return null;
 
   const [payload, signature] = value.split('.');
-  if (!payload || !signature) return null;
-  if (!signaturesMatch(sign(payload), signature)) return null;
+  if (!payload || !signature || !signaturesMatch(sign(payload), signature)) return null;
 
   let parsed: unknown;
   try {
@@ -100,21 +88,24 @@ export async function readSiteSession(cookieHeader: string | null): Promise<Site
   } catch {
     return null;
   }
-
   if (!parsed || typeof parsed !== 'object') return null;
+
   const record = parsed as Record<string, unknown>;
   const accountId = typeof record.accountId === 'string' ? record.accountId : '';
   const email = typeof record.email === 'string' ? record.email.trim().toLowerCase() : '';
   const role = normalizeRole(record.role);
+  const returnTo = sanitizeAuthReturnPath(record.returnTo);
   const exp = typeof record.exp === 'number' ? record.exp : 0;
-
   if (
-    !/^[a-f0-9]{32}$/u.test(accountId) ||
-    !email ||
+    record.purpose !== 'legal_consent' ||
+    !ACCOUNT_ID_RE.test(accountId) ||
+    !EMAIL_RE.test(email) ||
+    email.length > 254 ||
     !role ||
     exp < Math.floor(Date.now() / 1000)
   ) {
     return null;
   }
-  return { accountId, email, role, admin: role === 'admin', exp };
+
+  return { purpose: 'legal_consent', accountId, email, role, returnTo, exp };
 }

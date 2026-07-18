@@ -2,11 +2,20 @@ import type { SiteSessionRole } from '@/lib/site-session';
 
 const DEFAULT_WORKER_URL = 'https://cloud-worker.mannanteam.workers.dev';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const ACCOUNT_ID_RE = /^[a-f0-9]{32}$/u;
 
-export interface CloudflareSiteUser {
+export type CloudflareAccountStatus = 'active' | 'pending_consent';
+
+export interface CloudflareAccount {
+  accountId: string;
   email: string;
   role: SiteSessionRole;
   admin: boolean;
+  status: CloudflareAccountStatus;
+}
+
+export interface CloudflareSiteUser extends CloudflareAccount {
+  returnTo: string;
 }
 
 interface AuthRequestResult {
@@ -27,19 +36,49 @@ export function cloudflareAuthConfigured(): boolean {
   return Boolean(exchangeSecret());
 }
 
-export function normalizeCloudflareSiteUser(input: unknown): CloudflareSiteUser | null {
+export function sanitizeAuthReturnPath(value: unknown): string {
+  if (
+    typeof value !== 'string' ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.includes('\\') ||
+    /[\u0000-\u001f\u007f]/u.test(value)
+  ) {
+    return '/';
+  }
+  try {
+    const parsed = new URL(value, 'https://mannan.is');
+    if (parsed.origin !== 'https://mannan.is' || parsed.pathname === '/auth/consent') return '/';
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return '/';
+  }
+}
+
+export function normalizeCloudflareAccount(input: unknown): CloudflareAccount | null {
   if (!input || typeof input !== 'object') return null;
   const record = input as Record<string, unknown>;
+  const accountId = typeof record.accountId === 'string' ? record.accountId : '';
   const email = typeof record.email === 'string' ? record.email.trim().toLowerCase() : '';
-  if (!EMAIL_RE.test(email) || email.length > 254) return null;
+  if (!ACCOUNT_ID_RE.test(accountId) || !EMAIL_RE.test(email) || email.length > 254) return null;
   if (typeof record.role !== 'string') return null;
+  if (record.status !== 'active' && record.status !== 'pending_consent') return null;
   const role: SiteSessionRole = record.role === 'admin' ? 'admin' : 'user';
-  return { email, role, admin: role === 'admin' };
+  return { accountId, email, role, admin: role === 'admin', status: record.status };
+}
+
+export function normalizeCloudflareSiteUser(input: unknown): CloudflareSiteUser | null {
+  const account = normalizeCloudflareAccount(input);
+  if (account === null || !input || typeof input !== 'object') return null;
+  const record = input as Record<string, unknown>;
+  if (typeof record.returnTo !== 'string') return null;
+  return { ...account, returnTo: sanitizeAuthReturnPath(record.returnTo) };
 }
 
 export async function requestCloudflareContinueEmail(input: {
   email: string;
   ip: string;
+  returnTo: string;
 }): Promise<AuthRequestResult> {
   const secret = exchangeSecret();
   if (!secret) return { ok: false, status: 503, error: 'not-configured' };
@@ -51,7 +90,10 @@ export async function requestCloudflareContinueEmail(input: {
       'content-type': 'application/json',
       'x-site-auth-ip': input.ip,
     },
-    body: JSON.stringify({ email: input.email }),
+    body: JSON.stringify({
+      email: input.email,
+      returnTo: sanitizeAuthReturnPath(input.returnTo),
+    }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
