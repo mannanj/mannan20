@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import {
+  acceptCloudflareLegalConsent,
   normalizeCloudflareSiteUser,
   requestCloudflareContinueEmail,
   sanitizeAuthReturnPath,
@@ -114,5 +115,63 @@ describe('cloudflare auth bridge', () => {
 
     expect(result).toEqual({ ok: true, status: 202 });
     expect(body).toEqual({ email: 'person@example.com', returnTo: '/' });
+  });
+
+  test('accepts only a current, active consent response', async () => {
+    process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET = 'test-exchange-secret';
+    globalThis.fetch = (async (_input, _init) =>
+      Response.json({
+        accountId: ACCOUNT_ID,
+        email: 'person@example.com',
+        role: 'user',
+        status: 'active',
+        termsVersion: '2026-07-18',
+        privacyVersion: '2026-07-18',
+      })) as typeof fetch;
+
+    expect(
+      await acceptCloudflareLegalConsent({
+        accountId: ACCOUNT_ID,
+        termsVersion: '2026-07-18',
+        privacyVersion: '2026-07-18',
+      }),
+    ).toEqual({
+      accountId: ACCOUNT_ID,
+      email: 'person@example.com',
+      role: 'user',
+      admin: false,
+      status: 'active',
+    });
+  });
+
+  test('rejects a stale or still-pending consent response', async () => {
+    process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET = 'test-exchange-secret';
+    for (const body of [
+      {
+        accountId: ACCOUNT_ID,
+        email: 'person@example.com',
+        role: 'user',
+        status: 'active',
+        termsVersion: 'stale',
+        privacyVersion: '2026-07-18',
+      },
+      {
+        accountId: ACCOUNT_ID,
+        email: 'person@example.com',
+        role: 'user',
+        status: 'pending_consent',
+        termsVersion: '2026-07-18',
+        privacyVersion: '2026-07-18',
+      },
+    ]) {
+      globalThis.fetch = (async (_input, _init) => Response.json(body)) as typeof fetch;
+      expect(
+        await acceptCloudflareLegalConsent({
+          accountId: ACCOUNT_ID,
+          termsVersion: '2026-07-18',
+          privacyVersion: '2026-07-18',
+        }),
+      ).toBeNull();
+    }
   });
 });

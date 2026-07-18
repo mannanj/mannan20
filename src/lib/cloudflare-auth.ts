@@ -121,3 +121,36 @@ export async function exchangeCloudflareCode(code: string): Promise<CloudflareSi
   if (!res.ok) return null;
   return normalizeCloudflareSiteUser(await res.json().catch(() => null));
 }
+
+export async function acceptCloudflareLegalConsent(input: {
+  accountId: string;
+  termsVersion: string;
+  privacyVersion: string;
+}): Promise<CloudflareAccount | null> {
+  const secret = exchangeSecret();
+  if (!secret) return null;
+
+  const res = await fetch(`${workerUrl()}/auth/site/consent`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${secret}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) return null;
+
+  const body: unknown = await res.json().catch(() => null);
+  const account = normalizeCloudflareAccount(body);
+  if (account === null || account.status !== 'active' || !body || typeof body !== 'object') {
+    return null;
+  }
+  const record = body as Record<string, unknown>;
+  if (
+    record.termsVersion !== input.termsVersion ||
+    record.privacyVersion !== input.privacyVersion
+  ) {
+    return null;
+  }
+  return account;
+}

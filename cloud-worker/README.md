@@ -5,7 +5,7 @@ Magic-link gated file sharing on Cloudflare. One production Worker, a named stor
 ## Stack
 
 - Cloudflare Workers + Hono
-- D1 (SQLite) — `users`, `magic_tokens`, `folder_members`
+- D1 (SQLite) — accounts, one-time auth records, folder grants, and append-only legal acceptances
 - R2 (four target buckets):
   - `portfolio-private-files` (production target for binding `FILES`) — authenticated `general/` objects; no public URL or custom domain
   - `portfolio-files` (current production binding during the pre-cutover repository phase) — intentionally public media and documents, including the exact six-file MCP allowlist
@@ -21,6 +21,10 @@ Magic-link gated file sharing on Cloudflare. One production Worker, a named stor
 | GET | `/` | public — sign-in form (or redirects to `/cloud` if signed in) |
 | POST | `/auth/request` | public, rate-limited 5/min/IP — sends magic link if email is in `users` |
 | GET | `/auth/verify?token=…` | public, rate-limited 10/min/IP |
+| POST | `/auth/site/request` | shared service secret, rate-limited by browser IP + email — creates a pending site account when needed and sends a magic link |
+| GET | `/auth/site/verify?token=…` | public, rate-limited — consumes a site magic link and redirects with a one-time exchange code |
+| POST | `/auth/site/exchange` | shared service secret — exchanges the code for stable account identity, status, and safe return path |
+| POST | `/auth/site/consent` | shared service secret — records the current legal versions and activates the account |
 | POST | `/auth/sign-out` | any |
 | GET | `/cloud` | session — folder index |
 | GET | `/cloud/:folder` | session + `canAccess` — file list |
@@ -54,11 +58,22 @@ wrangler r2 bucket create deep-calm-weave-backups
 
 Do not run the R2 command as routine setup for the existing deployment. Creation and configuration of `portfolio-private-files` is production Gate A in [`plans/006-private-r2-storage-boundary.md`](../plans/006-private-r2-storage-boundary.md) and requires explicit authorization. The bucket must have its `r2.dev` URL disabled and no custom domain before any private object is copied.
 
-### 2. Apply migration
+### 2. Apply migrations
 
 ```bash
 wrangler d1 migrations apply cloud --remote
 ```
+
+Migration `0003_account_identity_consent.sql` adds stable random `account_id`
+values, `active`/`pending_consent` account status, return paths on one-time auth
+records, and append-only versioned legal acceptances. Existing rows are
+backfilled as `active`; new accounts created by the site sign-in bridge begin
+as `pending_consent`. This avoids inventing acceptance records for legacy
+accounts while ensuring every new account completes the current consent flow.
+
+The remote migration has **not** been applied as part of this repository work.
+Applying it and deploying the matching Worker are production changes and must
+be performed together in an explicitly authorized release.
 
 ### 3. Seed admin
 
@@ -132,6 +147,26 @@ wrangler d1 execute cloud --remote --command \
    INSERT INTO folder_members VALUES ('hans@example.com','hans');"
 ```
 
+## Shared site identity boundary
+
+`mannan.is` is the browser-facing identity and consent surface. Its server
+calls the `/auth/site/*` routes with `SITE_AUTH_EXCHANGE_SECRET`; that secret is
+never sent to the browser. Site sign-in intentionally creates an account on
+first use. Direct `/cloud` sign-in remains invite-only and sends no email for
+unknown or pending accounts.
+
+Magic tokens and site exchange codes are single-use and short-lived. A return
+path is carried through both records, but only same-site relative paths are
+accepted; absolute URLs, scheme-relative paths, backslashes, and control
+characters fall back to `/`. The site must also validate the returned path
+before redirecting.
+
+Consent completion accepts only the server-selected current Terms and Privacy
+versions. The Worker endpoint requires the same server-to-server bearer secret,
+validates the stable account ID, records the acceptance idempotently, and then
+activates the account. The browser cannot submit an email, role, account status,
+or arbitrary legal version.
+
 ## Adding a third folder
 
 1. Add the name to `FOLDERS` in `src/auth.ts`.
@@ -140,7 +175,7 @@ wrangler d1 execute cloud --remote --command \
 
 ## Tradeoffs / known limits
 
-- Folders are a code-level allowlist (no folders table). Three tables total.
+- Folders are a code-level allowlist (no folders table).
 - Files stream through the Worker (free egress, simple URLs). Move to presigned URLs only if you start hosting >100 MB items.
 - Sessions are stateless HMAC cookies — revocation = rotate `SESSION_SECRET` (everyone signs in again).
 - File listings use the Cache API for up to five minutes and are invalidated on Worker uploads; out-of-band changes may remain stale until expiry.
