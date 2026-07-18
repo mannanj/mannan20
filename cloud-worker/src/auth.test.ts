@@ -10,6 +10,7 @@ import {
   mintMagicToken,
   mintSiteSessionCode,
   ensureUser,
+  sanitizeReturnPath,
 } from './auth';
 import type { Env } from './types';
 
@@ -48,6 +49,40 @@ describe('shared auth helpers', () => {
     expect(hashed).not.toBe('raw-token-value');
     expect(hashed).toMatch(/^[a-f0-9]{64}$/);
   });
+
+  test.each([
+    ['/meet/meeting-1', '/meet/meeting-1'],
+    ['/garden?view=products', '/garden?view=products'],
+    ['https://evil.example/x', '/'],
+    ['//evil.example/x', '/'],
+    ['/\\evil', '/'],
+    ['', '/'],
+  ])('sanitizes auth return path %s', (input, expected) => {
+    expect(sanitizeReturnPath(input)).toBe(expected);
+  });
+
+  test('creates a stable pending account without changing it on repeat', async () => {
+    const env = createFakeEnv();
+    const first = await ensureUser(env, ' Person@Example.com ');
+    const second = await ensureUser(env, 'person@example.com');
+
+    expect(first.accountId).toMatch(/^[a-f0-9]{32}$/);
+    expect(first.status).toBe('pending_consent');
+    expect(second.accountId).toBe(first.accountId);
+    expect(second.status).toBe('pending_consent');
+  });
+
+  test('creates an active invited account without later downgrading it', async () => {
+    const env = createFakeEnv();
+    const invited = await ensureUser(env, 'invite@example.com', {
+      initialStatus: 'active',
+    });
+    const repeated = await ensureUser(env, 'invite@example.com');
+
+    expect(invited.status).toBe('active');
+    expect(repeated.status).toBe('active');
+    expect(repeated.accountId).toBe(invited.accountId);
+  });
 });
 
 interface MagicTokenRow {
@@ -62,8 +97,10 @@ interface SiteSessionCodeRow {
 }
 
 interface UserRow {
+  account_id: string;
   email: string;
   role: string;
+  status: 'active' | 'pending_consent';
   created_at: number;
 }
 
@@ -76,7 +113,7 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
   const siteSessionCodes = new Map<string, SiteSessionCodeRow>();
   const users = new Map<string, UserRow>();
 
-  function run(sql: string, args: unknown[]): Record<string, unknown> | null {
+  function run(sql: string, args: unknown[]): unknown {
     const normalized = normalize(sql);
 
     if (normalized.startsWith('INSERT INTO magic_tokens')) {
@@ -103,16 +140,28 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
       siteSessionCodes.delete(codeHash);
       return { email: row.email, expires_at: row.expires_at };
     }
-    if (normalized.startsWith('SELECT email, role FROM users')) {
+    if (normalized.startsWith('SELECT account_id, email, role, status FROM users')) {
       const [email] = args as [string];
       const row = users.get(email);
-      return row ? { email: row.email, role: row.role } : null;
+      return row ?? null;
     }
     if (normalized.startsWith('INSERT INTO users')) {
-      const [email, role, createdAt] = args as [string, string, number];
+      const [email, role, createdAt, accountId, status] = args as [
+        string,
+        string,
+        number,
+        string,
+        UserRow['status'],
+      ];
       const existing = users.get(email);
       const resolvedRole = existing?.role === 'admin' ? 'admin' : role === 'admin' ? 'admin' : existing?.role ?? role;
-      users.set(email, { email, role: resolvedRole, created_at: existing?.created_at ?? createdAt });
+      users.set(email, {
+        account_id: existing?.account_id ?? accountId,
+        email,
+        role: resolvedRole,
+        status: existing?.status ?? status,
+        created_at: existing?.created_at ?? createdAt,
+      });
       return null;
     }
 

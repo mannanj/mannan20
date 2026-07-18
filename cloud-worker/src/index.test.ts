@@ -10,8 +10,15 @@ function fakeDb(role: 'admin' | 'client' | null = 'admin', hasGrant = false): D1
         bind() {
           return {
             first: async () => {
-              if (sql.includes('SELECT email, role FROM users')) {
-                return role ? { email: 'person@example.com', role } : null;
+              if (sql.includes('SELECT account_id, email, role, status FROM users')) {
+                return role
+                  ? {
+                      account_id: '0123456789abcdef0123456789abcdef',
+                      email: 'person@example.com',
+                      role,
+                      status: 'active',
+                    }
+                  : null;
               }
               if (sql.includes('SELECT 1 FROM folder_members')) return hasGrant ? { 1: 1 } : null;
               throw new Error(`unexpected D1 query: ${sql}`);

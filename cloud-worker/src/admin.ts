@@ -7,6 +7,7 @@ import {
   normalizeEmail,
   mintMagicToken,
   getUser,
+  ensureUser,
   type Session,
 } from './auth';
 import { sendMagicLink } from './email';
@@ -39,12 +40,7 @@ admin.post('/invite', async (c) => {
     return c.json({ error: 'email and folders[] required' }, 400);
   }
 
-  const now = Date.now();
-  await c.env.DB.prepare(
-    "INSERT INTO users (email, role, created_at) VALUES (?, 'client', ?) ON CONFLICT(email) DO NOTHING",
-  )
-    .bind(email, now)
-    .run();
+  await ensureUser(c.env, email, { initialStatus: 'active' });
 
   const stmts = folders.map((folder) =>
     c.env.DB.prepare(

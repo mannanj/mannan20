@@ -79,6 +79,19 @@ export interface Session {
   exp: number;
 }
 
+export type AccountStatus = 'active' | 'pending_consent';
+
+export interface AccountRecord {
+  accountId: string;
+  email: string;
+  role: string;
+  status: AccountStatus;
+}
+
+export interface EnsureUserOptions {
+  initialStatus?: AccountStatus;
+}
+
 export function dbRoleForEmail(email: string): 'admin' | 'client' {
   return normalizeEmail(email) === ADMIN_EMAIL ? 'admin' : 'client';
 }
@@ -121,26 +134,58 @@ export async function readSession(env: Env, cookieHeader: string | null): Promis
   return parsed;
 }
 
-export async function getUser(env: Env, email: string): Promise<{ email: string; role: string } | null> {
-  return env.DB.prepare('SELECT email, role FROM users WHERE email = ?')
+export async function getUser(env: Env, email: string): Promise<AccountRecord | null> {
+  const row = await env.DB.prepare(
+    'SELECT account_id, email, role, status FROM users WHERE email = ?',
+  )
     .bind(email)
-    .first<{ email: string; role: string }>();
+    .first<{
+      account_id: string | null;
+      email: string;
+      role: string;
+      status: string;
+    }>();
+  if (
+    row === null ||
+    typeof row.account_id !== 'string' ||
+    !/^[a-f0-9]{32}$/u.test(row.account_id) ||
+    (row.status !== 'active' && row.status !== 'pending_consent')
+  ) {
+    return null;
+  }
+  return {
+    accountId: row.account_id,
+    email: row.email,
+    role: row.role,
+    status: row.status,
+  };
 }
 
-export async function ensureUser(env: Env, email: string): Promise<{ email: string; role: string }> {
+export async function ensureUser(
+  env: Env,
+  email: string,
+  options: EnsureUserOptions = {},
+): Promise<AccountRecord> {
   const normalized = normalizeEmail(email);
   const role = dbRoleForEmail(normalized);
+  const initialStatus = options.initialStatus ?? 'pending_consent';
   const now = Date.now();
   await env.DB.prepare(
-    `INSERT INTO users (email, role, created_at)
-     VALUES (?, ?, ?)
+    `INSERT INTO users (email, role, created_at, account_id, status)
+     VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(email) DO UPDATE SET
        role = CASE
          WHEN excluded.role = 'admin' THEN 'admin'
          ELSE users.role
        END`,
   )
-    .bind(normalized, role, now)
+    .bind(
+      normalized,
+      role,
+      now,
+      crypto.randomUUID().replaceAll('-', ''),
+      initialStatus,
+    )
     .run();
   const user = await getUser(env, normalized);
   if (!user) throw new Error('failed to ensure user');
@@ -233,4 +278,23 @@ export async function consumeSiteSessionCode(
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+export function sanitizeReturnPath(value: unknown): string {
+  if (
+    typeof value !== 'string' ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.includes('\\') ||
+    /[\u0000-\u001f\u007f]/u.test(value)
+  ) {
+    return '/';
+  }
+  try {
+    const parsed = new URL(value, 'https://mannan.is');
+    if (parsed.origin !== 'https://mannan.is') return '/';
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return '/';
+  }
 }
