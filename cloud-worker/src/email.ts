@@ -11,7 +11,36 @@ interface MagicLinkEmailInput {
   idempotencyKey: string;
 }
 
-async function sendMagicLinkEmail(env: Env, input: MagicLinkEmailInput): Promise<void> {
+export class ResendSendError extends Error {
+  readonly name = 'ResendSendError';
+
+  constructor(readonly status: number) {
+    super(`Resend email request failed with status ${status}`);
+  }
+}
+
+interface SendOptions {
+  wait?: (milliseconds: number) => Promise<void>;
+}
+
+async function wait(milliseconds: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function tokenFingerprint(token: string): Promise<string> {
+  const bytes = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+    .slice(0, 32);
+}
+
+async function sendMagicLinkEmail(
+  env: Env,
+  input: MagicLinkEmailInput,
+  options: SendOptions = {},
+): Promise<void> {
   const url = `${env.PUBLIC_BASE_URL}${input.path}?token=${encodeURIComponent(input.token)}`;
   const html = `<!doctype html>
 <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
@@ -21,7 +50,7 @@ async function sendMagicLinkEmail(env: Env, input: MagicLinkEmailInput): Promise
   <p style="margin:0;color:#666;font-size:12px;line-height:1.5;max-width:380px">If the button doesn't work, paste this URL into your browser:<br><span style="word-break:break-all">${url}</span></p>
 </div>`;
 
-  const res = await fetch('https://api.resend.com/emails', {
+  const request = {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
@@ -35,15 +64,28 @@ async function sendMagicLinkEmail(env: Env, input: MagicLinkEmailInput): Promise
       text: `${input.body}\n\n${url}\n\nThis link expires in 15 minutes. If you didn't request it, ignore this email.`,
       html,
     }),
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    console.error('resend_error', res.status, body);
-    throw new Error(`Resend ${res.status}: ${body}`);
+  } satisfies RequestInit;
+  const pause = options.wait ?? wait;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch('https://api.resend.com/emails', request);
+    if (response.ok) return;
+
+    await response.body?.cancel().catch(() => undefined);
+    const retryable = response.status === 429 || response.status >= 500;
+    if (!retryable || attempt === 2) {
+      throw new ResendSendError(response.status);
+    }
+    await pause(100 * 2 ** attempt);
   }
 }
 
-export async function sendMagicLink(env: Env, to: string, token: string): Promise<void> {
+export async function sendMagicLink(
+  env: Env,
+  to: string,
+  token: string,
+  options: SendOptions = {},
+): Promise<void> {
   return sendMagicLinkEmail(env, {
     to,
     token,
@@ -52,11 +94,16 @@ export async function sendMagicLink(env: Env, to: string, token: string): Promis
     heading: 'Continue to Cloud',
     body: 'Click the button below to continue to Cloud. This link expires in 15 minutes.',
     button: 'Continue with email',
-    idempotencyKey: `cloud-magic/${token.slice(0, 32)}`,
-  });
+    idempotencyKey: `cloud-magic/${await tokenFingerprint(token)}`,
+  }, options);
 }
 
-export async function sendSiteContinueLink(env: Env, to: string, token: string): Promise<void> {
+export async function sendSiteContinueLink(
+  env: Env,
+  to: string,
+  token: string,
+  options: SendOptions = {},
+): Promise<void> {
   return sendMagicLinkEmail(env, {
     to,
     token,
@@ -65,6 +112,6 @@ export async function sendSiteContinueLink(env: Env, to: string, token: string):
     heading: 'Continue to mannan.is',
     body: 'Click the button below to continue with email. This link expires in 15 minutes.',
     button: 'Continue with email',
-    idempotencyKey: `site-magic/${token.slice(0, 32)}`,
-  });
+    idempotencyKey: `site-magic/${await tokenFingerprint(token)}`,
+  }, options);
 }

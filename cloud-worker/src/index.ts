@@ -20,7 +20,11 @@ import {
   type Folder,
   type Session,
 } from './auth';
-import { sendMagicLink, sendSiteContinueLink } from './email';
+import {
+  ResendSendError,
+  sendMagicLink,
+  sendSiteContinueLink,
+} from './email';
 import {
   cloudIndexPage,
   folderPage,
@@ -92,7 +96,8 @@ app.post('/auth/request', async (c) => {
   try {
     await sendMagicLink(c.env, email, token);
   } catch (err) {
-    console.error('send_magic_link_failed', err);
+    const status = err instanceof ResendSendError ? err.status : undefined;
+    console.error('send_magic_link_failed', { status });
   }
   return c.html(sentPage());
 });
@@ -128,12 +133,17 @@ app.post('/auth/site/request', async (c) => {
   }
 
   await ensureUser(c.env, email);
-  const token = await mintMagicToken(c.env, email, 'site',
-    typeof returnTo === 'string' ? returnTo : '/');
+  const token = await mintMagicToken(
+    c.env,
+    email,
+    'site',
+    typeof returnTo === 'string' ? returnTo : '/',
+  );
   try {
     await sendSiteContinueLink(c.env, email, token);
   } catch (err) {
-    console.error('send_site_magic_link_failed', err);
+    const status = err instanceof ResendSendError ? err.status : undefined;
+    console.error('send_site_magic_link_failed', { status });
     return c.json({ error: 'email-unavailable' }, 503);
   }
 
