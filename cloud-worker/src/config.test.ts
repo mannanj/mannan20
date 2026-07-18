@@ -58,9 +58,38 @@ describe('storage boundary configuration', () => {
     });
   });
 
+  test('defines identity staging on the shared account database without production file access', () => {
+    const staging = config.env?.['identity-staging'];
+
+    expect(staging?.name).toBe('cloud-worker-identity-staging');
+    expect(binding(staging?.d1_databases, 'DB')).toMatchObject({
+      database_name: 'cloud',
+      database_id: '6aac55fe-a879-40ea-891e-4723cdb60891',
+    });
+    expect(binding(staging?.r2_buckets, 'FILES')?.bucket_name).toBe(
+      'cloud-identity-staging-files',
+    );
+    expect(binding(staging?.r2_buckets, 'FILES_HANS')?.bucket_name).toBe(
+      'cloud-identity-staging-hans',
+    );
+    expect(binding(staging?.r2_buckets, 'FILES_BACKUPS')?.bucket_name).toBe(
+      'cloud-identity-staging-backups',
+    );
+    expect(staging?.vars?.PUBLIC_BASE_URL).toBe(
+      'https://cloud-worker-identity-staging.mannanteam.workers.dev',
+    );
+    expect(staging?.vars?.SITE_AUTH_RETURN_URL).toBe(
+      'https://meet-staging-mannan20.vercel.app/api/auth/cloudflare-callback',
+    );
+  });
+
   test('never stores Worker secrets in plain-text vars', () => {
     const secretNames = ['SESSION_SECRET', 'RESEND_API_KEY', 'SITE_AUTH_EXCHANGE_SECRET'];
-    for (const vars of [config.vars, config.env?.['storage-canary']?.vars]) {
+    for (const vars of [
+      config.vars,
+      config.env?.['storage-canary']?.vars,
+      config.env?.['identity-staging']?.vars,
+    ]) {
       for (const name of secretNames) expect(vars).not.toHaveProperty(name);
     }
   });
