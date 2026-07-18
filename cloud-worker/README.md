@@ -71,9 +71,11 @@ backfilled as `active`; new accounts created by the site sign-in bridge begin
 as `pending_consent`. This avoids inventing acceptance records for legacy
 accounts while ensuring every new account completes the current consent flow.
 
-The remote migration has **not** been applied as part of this repository work.
-Applying it and deploying the matching Worker are production changes and must
-be performed together in an explicitly authorized release.
+Migration `0003_account_identity_consent.sql` was applied to the remote shared
+`cloud` database on 2026-07-18 after explicit authorization. Existing Cloud
+rows were backfilled with stable account IDs and remained `active`; later site
+sign-in requests reuse those rows by normalized email rather than creating a
+second account.
 
 ### 3. Seed admin
 
@@ -166,6 +168,21 @@ versions. The Worker endpoint requires the same server-to-server bearer secret,
 validates the stable account ID, records the acceptance idempotently, and then
 activates the account. The browser cannot submit an email, role, account status,
 or arbitrary legal version.
+
+## Identity staging
+
+The named `identity-staging` environment is deployed at
+`https://cloud-worker-identity-staging.mannanteam.workers.dev`. It deliberately
+binds the existing `cloud` D1 database so Cloud, site, and meeting entry reuse
+one account row and stable account ID. It binds three isolated empty R2 buckets
+instead of any production file bucket, uses environment-specific secrets, and
+disables per-version preview URLs.
+
+The staging callback is
+`https://meet-staging-mannan20.vercel.app/api/auth/cloudflare-callback`.
+`SITE_AUTH_EXCHANGE_SECRET` must exactly match the branch-scoped Vercel Preview
+value `CLOUDFLARE_AUTH_EXCHANGE_SECRET`. Wrangler environment secrets do not
+inherit.
 
 ## Adding a third folder
 

@@ -100,3 +100,12 @@ No email was sent. No Worker or site was deployed. No D1 resource, remote
 migration, DNS route, or production secret was created or changed. A true
 networked browser-to-site-to-Worker smoke test is blocked until those production
 or staging resources are separately authorized and provisioned.
+
+## Authorized staging follow-on — 2026-07-18
+
+The user subsequently authorized staging infrastructure, remote migrations,
+secret installation, Resend delivery, and end-to-end smoke testing. The release
+record is in
+[`2026-07-18-meeting-staging-release.md`](./2026-07-18-meeting-staging-release.md).
+The original local-only execution boundary above remains an accurate record of
+the earlier implementation cycle.
