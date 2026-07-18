@@ -69,3 +69,34 @@ meeting-scoped cookies. Pending-consent sessions never become account actors.
   `git diff --check`.
 - Record exact evidence and remaining production gates in the cross-repository
   design and handoff. No deployment is part of verification.
+
+---
+
+## Execution record — 2026-07-18
+
+Completed locally on `feat/meeting-consent`:
+
+- `510d06e` — bounded server-only Worker client and exact request-bound account
+  assertions
+- `174acf7` — signed, secure, meeting-scoped admission/candidate/guest cookies
+- `4fa6459` — same-origin account, share-link, guest, entry, and workspace BFF
+  routes
+- `b6abb68` — simple meeting creation, email continuation, guest entry, and
+  durable workspace UI with focused browser coverage
+
+The Worker contract correction `fff5742` on the meeting repository exposes the
+resolved admission version, which the site signs into the pending access cookie
+and uses for safe entry concurrency. Browsers cannot choose or guess it.
+
+Verification:
+
+- 186 site/Worker unit tests passed with 602 assertions
+- TypeScript passed
+- Next.js 15.5.20 production build passed and recognized all meeting routes
+- 2 focused Playwright tests passed; desktop/mobile screenshots were inspected
+- `git diff --check` passed
+
+No email was sent. No Worker or site was deployed. No D1 resource, remote
+migration, DNS route, or production secret was created or changed. A true
+networked browser-to-site-to-Worker smoke test is blocked until those production
+or staging resources are separately authorized and provisioned.
