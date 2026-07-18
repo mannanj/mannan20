@@ -19,6 +19,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/garden`, priority: 0.8 },
     { url: `${SITE}/mcp`, priority: 0.6 },
     { url: `${SITE}/game`, priority: 0.4 },
+    { url: `${SITE}/terms`, priority: 0.2, lastModified: new Date('2026-07-18') },
+    { url: `${SITE}/privacy`, priority: 0.2, lastModified: new Date('2026-07-18') },
     ...articles,
     ...episodes,
   ];
