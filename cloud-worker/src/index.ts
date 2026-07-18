@@ -2,6 +2,7 @@ import { Hono, type Context } from 'hono';
 import type { Env } from './types';
 import {
   bucketFor,
+  acceptCurrentLegalTerms,
   canAccess,
   clearSessionCookie,
   consumeMagicToken,
@@ -20,6 +21,7 @@ import {
   type Folder,
   type Session,
 } from './auth';
+import { isCurrentLegalVersion } from './legal';
 import {
   ResendSendError,
   sendMagicLink,
@@ -229,6 +231,44 @@ app.post('/auth/site/exchange', async (c) => {
     admin: user.role === 'admin',
     status: user.status,
     returnTo: user.returnPath,
+  });
+});
+
+app.post('/auth/site/consent', async (c) => {
+  if (c.req.header('authorization') !== `Bearer ${c.env.SITE_AUTH_EXCHANGE_SECRET}`) {
+    return c.json({ error: 'unauthorized' }, 401);
+  }
+  const body: unknown = await c.req.json().catch(() => null);
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return c.json({ error: 'invalid-consent' }, 400);
+  }
+  const record = body as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  if (
+    keys.length !== 3 ||
+    keys[0] !== 'accountId' ||
+    keys[1] !== 'privacyVersion' ||
+    keys[2] !== 'termsVersion' ||
+    typeof record.accountId !== 'string' ||
+    !/^[a-f0-9]{32}$/u.test(record.accountId) ||
+    !isCurrentLegalVersion({
+      termsVersion: record.termsVersion,
+      privacyVersion: record.privacyVersion,
+    })
+  ) {
+    return c.json({ error: 'invalid-consent' }, 400);
+  }
+
+  const result = await acceptCurrentLegalTerms(c.env, record.accountId);
+  if (result === null) return c.json({ error: 'account-not-found' }, 404);
+  return c.json({
+    accountId: result.accountId,
+    email: result.email,
+    role: siteRoleFromDbRole(result.role),
+    admin: result.role === 'admin',
+    status: result.status,
+    termsVersion: result.termsVersion,
+    privacyVersion: result.privacyVersion,
   });
 });
 

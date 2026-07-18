@@ -11,8 +11,10 @@ import {
   mintSiteSessionCode,
   ensureUser,
   sanitizeReturnPath,
+  acceptCurrentLegalTerms,
 } from './auth';
 import type { Env } from './types';
+import { PRIVACY_VERSION, TERMS_VERSION } from './legal';
 
 describe('shared auth helpers', () => {
   test('migration 0003 defines stable accounts and append-only consent', () => {
@@ -83,6 +85,34 @@ describe('shared auth helpers', () => {
     expect(repeated.status).toBe('active');
     expect(repeated.accountId).toBe(invited.accountId);
   });
+
+  test('records current consent and activates a pending account idempotently', async () => {
+    const env = createFakeEnv();
+    const account = await ensureUser(env, 'person@example.com');
+
+    const first = await acceptCurrentLegalTerms(
+      env,
+      account.accountId,
+      1_752_816_000_000,
+    );
+    const second = await acceptCurrentLegalTerms(
+      env,
+      account.accountId,
+      1_752_816_001_000,
+    );
+
+    expect(first?.status).toBe('active');
+    expect(second).toEqual(first);
+    expect(first?.acceptedAt).toBe(1_752_816_000_000);
+    expect(first?.termsVersion).toBe(TERMS_VERSION);
+    expect(first?.privacyVersion).toBe(PRIVACY_VERSION);
+  });
+
+  test('does not activate an unknown account', async () => {
+    expect(
+      await acceptCurrentLegalTerms(createFakeEnv(), 'missing', Date.now()),
+    ).toBeNull();
+  });
 });
 
 interface MagicTokenRow {
@@ -106,6 +136,14 @@ interface UserRow {
   created_at: number;
 }
 
+interface LegalAcceptanceRow {
+  account_id: string;
+  terms_version: string;
+  privacy_version: string;
+  accepted_at: number;
+  source: 'first_account_sign_in';
+}
+
 function normalize(sql: string): string {
   return sql.replace(/\s+/g, ' ').trim();
 }
@@ -114,6 +152,7 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
   const magicTokens = new Map<string, MagicTokenRow>();
   const siteSessionCodes = new Map<string, SiteSessionCodeRow>();
   const users = new Map<string, UserRow>();
+  const legalAcceptances = new Map<string, LegalAcceptanceRow>();
 
   function run(sql: string, args: unknown[]): unknown {
     const normalized = normalize(sql);
@@ -170,6 +209,9 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
         return_path: row.return_path,
       };
     }
+    if (normalized.startsWith('SELECT account_id, email, role, status FROM users WHERE account_id')) {
+      return [...users.values()].find((row) => row.account_id === args[0]) ?? null;
+    }
     if (normalized.startsWith('SELECT account_id, email, role, status FROM users')) {
       const [email] = args as [string];
       const row = users.get(email);
@@ -194,6 +236,38 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
       });
       return null;
     }
+    if (normalized.startsWith('INSERT OR IGNORE INTO legal_acceptances')) {
+      const [accountId, termsVersion, privacyVersion, acceptedAt, source] = args as [
+        string,
+        string,
+        string,
+        number,
+        'first_account_sign_in',
+      ];
+      const user = [...users.values()].find((row) => row.account_id === accountId);
+      if (!user) return null;
+      const key = `${accountId}:${termsVersion}:${privacyVersion}`;
+      if (!legalAcceptances.has(key)) {
+        legalAcceptances.set(key, {
+          account_id: accountId,
+          terms_version: termsVersion,
+          privacy_version: privacyVersion,
+          accepted_at: acceptedAt,
+          source,
+        });
+      }
+      return null;
+    }
+    if (normalized.startsWith("UPDATE users SET status = 'active'")) {
+      const [accountId] = args as [string];
+      const user = [...users.values()].find((row) => row.account_id === accountId);
+      if (user) user.status = 'active';
+      return null;
+    }
+    if (normalized.startsWith('SELECT terms_version, privacy_version, accepted_at')) {
+      const [accountId, termsVersion, privacyVersion] = args as [string, string, string];
+      return legalAcceptances.get(`${accountId}:${termsVersion}:${privacyVersion}`) ?? null;
+    }
 
     throw new Error(`fake D1: unhandled query: ${normalized}`);
   }
@@ -213,7 +287,11 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
     };
   }
 
-  return { prepare } as unknown as Pick<Env, 'DB'>['DB'];
+  return {
+    prepare,
+    batch: async (statements: D1PreparedStatement[]) =>
+      Promise.all(statements.map((statement) => statement.run())),
+  } as unknown as Pick<Env, 'DB'>['DB'];
 }
 
 function createFakeEnv(): Env {

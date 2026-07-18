@@ -1,4 +1,5 @@
 import type { Env } from './types';
+import { PRIVACY_VERSION, TERMS_VERSION } from './legal';
 
 export const FOLDERS = ['general', 'hans', 'hans-backups'] as const;
 export type Folder = typeof FOLDERS[number];
@@ -92,6 +93,74 @@ export interface EnsureUserOptions {
   initialStatus?: AccountStatus;
 }
 
+export interface LegalAcceptanceResult {
+  accountId: string;
+  email: string;
+  role: string;
+  status: 'active';
+  termsVersion: string;
+  privacyVersion: string;
+  acceptedAt: number;
+}
+
+export async function acceptCurrentLegalTerms(
+  env: Env,
+  accountId: string,
+  now = Date.now(),
+): Promise<LegalAcceptanceResult | null> {
+  const account = await getUserByAccountId(env, accountId);
+  if (account === null) return null;
+
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT OR IGNORE INTO legal_acceptances (
+         account_id, terms_version, privacy_version, accepted_at, source
+       )
+       SELECT ?, ?, ?, ?, ?
+       FROM users
+       WHERE account_id = ?`,
+    ).bind(
+      accountId,
+      TERMS_VERSION,
+      PRIVACY_VERSION,
+      now,
+      'first_account_sign_in',
+      accountId,
+    ),
+    env.DB.prepare(
+      `UPDATE users
+       SET status = 'active'
+       WHERE account_id = ?`,
+    ).bind(accountId),
+  ]);
+
+  const acceptance = await env.DB.prepare(
+    `SELECT terms_version, privacy_version, accepted_at
+     FROM legal_acceptances
+     WHERE account_id = ?
+       AND terms_version = ?
+       AND privacy_version = ?`,
+  )
+    .bind(accountId, TERMS_VERSION, PRIVACY_VERSION)
+    .first<{
+      terms_version: string;
+      privacy_version: string;
+      accepted_at: number;
+    }>();
+  if (acceptance === null) {
+    throw new Error('legal acceptance commit did not persist');
+  }
+  return {
+    accountId,
+    email: account.email,
+    role: account.role,
+    status: 'active',
+    termsVersion: acceptance.terms_version,
+    privacyVersion: acceptance.privacy_version,
+    acceptedAt: acceptance.accepted_at,
+  };
+}
+
 export function dbRoleForEmail(email: string): 'admin' | 'client' {
   return normalizeEmail(email) === ADMIN_EMAIL ? 'admin' : 'client';
 }
@@ -139,6 +208,36 @@ export async function getUser(env: Env, email: string): Promise<AccountRecord | 
     'SELECT account_id, email, role, status FROM users WHERE email = ?',
   )
     .bind(email)
+    .first<{
+      account_id: string | null;
+      email: string;
+      role: string;
+      status: string;
+    }>();
+  if (
+    row === null ||
+    typeof row.account_id !== 'string' ||
+    !/^[a-f0-9]{32}$/u.test(row.account_id) ||
+    (row.status !== 'active' && row.status !== 'pending_consent')
+  ) {
+    return null;
+  }
+  return {
+    accountId: row.account_id,
+    email: row.email,
+    role: row.role,
+    status: row.status,
+  };
+}
+
+async function getUserByAccountId(
+  env: Env,
+  accountId: string,
+): Promise<AccountRecord | null> {
+  const row = await env.DB.prepare(
+    'SELECT account_id, email, role, status FROM users WHERE account_id = ?',
+  )
+    .bind(accountId)
     .first<{
       account_id: string | null;
       email: string;

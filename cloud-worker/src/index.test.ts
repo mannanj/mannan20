@@ -8,6 +8,7 @@ import {
   mintSiteSessionCode,
 } from './auth';
 import type { Env, RateLimit } from './types';
+import { PRIVACY_VERSION, TERMS_VERSION } from './legal';
 
 const originalFetch = globalThis.fetch;
 
@@ -176,6 +177,12 @@ interface AuthDbState {
     expires_at: number;
     return_path: string;
   }>;
+  legalAcceptances: Map<string, {
+    account_id: string;
+    terms_version: string;
+    privacy_version: string;
+    accepted_at: number;
+  }>;
 }
 
 function authDb(): { db: D1Database; state: AuthDbState } {
@@ -183,10 +190,14 @@ function authDb(): { db: D1Database; state: AuthDbState } {
     users: new Map(),
     magicTokens: new Map(),
     siteCodes: new Map(),
+    legalAcceptances: new Map(),
   };
 
   function query(sql: string, args: unknown[]): unknown {
     const normalized = sql.replace(/\s+/gu, ' ').trim();
+    if (normalized.startsWith('SELECT account_id, email, role, status FROM users WHERE account_id')) {
+      return [...state.users.values()].find((row) => row.account_id === args[0]) ?? null;
+    }
     if (normalized.startsWith('SELECT account_id, email, role, status FROM users')) {
       return state.users.get(String(args[0])) ?? null;
     }
@@ -251,6 +262,35 @@ function authDb(): { db: D1Database; state: AuthDbState } {
       state.siteCodes.delete(String(args[0]));
       return row;
     }
+    if (normalized.startsWith('INSERT OR IGNORE INTO legal_acceptances')) {
+      const [accountId, termsVersion, privacyVersion, acceptedAt] = args as [
+        string,
+        string,
+        string,
+        number,
+      ];
+      if (![...state.users.values()].some((row) => row.account_id === accountId)) {
+        return null;
+      }
+      const key = `${accountId}:${termsVersion}:${privacyVersion}`;
+      if (!state.legalAcceptances.has(key)) {
+        state.legalAcceptances.set(key, {
+          account_id: accountId,
+          terms_version: termsVersion,
+          privacy_version: privacyVersion,
+          accepted_at: acceptedAt,
+        });
+      }
+      return null;
+    }
+    if (normalized.startsWith("UPDATE users SET status = 'active'")) {
+      const user = [...state.users.values()].find((row) => row.account_id === args[0]);
+      if (user) user.status = 'active';
+      return null;
+    }
+    if (normalized.startsWith('SELECT terms_version, privacy_version, accepted_at')) {
+      return state.legalAcceptances.get(`${args[0]}:${args[1]}:${args[2]}`) ?? null;
+    }
     throw new Error(`auth fake D1: unexpected query: ${normalized}`);
   }
 
@@ -268,6 +308,8 @@ function authDb(): { db: D1Database; state: AuthDbState } {
         },
       };
     },
+    batch: async (statements: D1PreparedStatement[]) =>
+      Promise.all(statements.map((statement) => statement.run())),
   } as unknown as D1Database;
   return { db, state };
 }
@@ -350,6 +392,57 @@ describe('shared site authentication routes', () => {
     expect(state.users.size).toBe(0);
     expect(state.magicTokens.size).toBe(0);
     expect(sends).toBe(0);
+  });
+
+  test('activates a pending account only for current legal versions', async () => {
+    const { db, state } = authDb();
+    const env = authFlowEnv(db);
+    const account = await ensureUser(env, 'person@example.com');
+
+    const response = await app.request('/auth/site/consent', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.SITE_AUTH_EXCHANGE_SECRET}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        accountId: account.accountId,
+        termsVersion: TERMS_VERSION,
+        privacyVersion: PRIVACY_VERSION,
+      }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(await response.json() as unknown).toMatchObject({
+      accountId: account.accountId,
+      email: 'person@example.com',
+      role: 'user',
+      admin: false,
+      status: 'active',
+      termsVersion: TERMS_VERSION,
+      privacyVersion: PRIVACY_VERSION,
+    });
+    expect(state.users.get('person@example.com')?.status).toBe('active');
+  });
+
+  test.each([
+    ['bad service secret', 'Bearer wrong', TERMS_VERSION, 401],
+    ['stale terms', 'Bearer test-exchange-secret', '2025-01-01', 400],
+  ])('rejects consent with %s', async (_label, authorization, termsVersion, status) => {
+    const { db } = authDb();
+    const env = authFlowEnv(db);
+    const account = await ensureUser(env, 'person@example.com');
+    const response = await app.request('/auth/site/consent', {
+      method: 'POST',
+      headers: { authorization, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        accountId: account.accountId,
+        termsVersion,
+        privacyVersion: PRIVACY_VERSION,
+      }),
+    }, env);
+
+    expect(response.status).toBe(status);
   });
 });
 
