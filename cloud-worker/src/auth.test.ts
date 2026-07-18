@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   dbRoleForEmail,
   siteRoleFromDbRole,
@@ -12,6 +14,22 @@ import {
 import type { Env } from './types';
 
 describe('shared auth helpers', () => {
+  test('migration 0003 defines stable accounts and append-only consent', () => {
+    const sql = readFileSync(
+      join(import.meta.dir, '../migrations/0003_account_identity_consent.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain('ALTER TABLE users ADD COLUMN account_id TEXT');
+    expect(sql).toContain(
+      "ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'",
+    );
+    expect(sql).toContain('CREATE UNIQUE INDEX users_account_id_idx');
+    expect(sql).toContain('CREATE TABLE legal_acceptances');
+    expect(sql).toContain('ALTER TABLE magic_tokens ADD COLUMN return_path TEXT');
+    expect(sql).toContain('ALTER TABLE site_session_codes ADD COLUMN return_path TEXT');
+  });
+
   test('assigns hello@mannan.is as the shared admin account', () => {
     expect(dbRoleForEmail('hello@mannan.is')).toBe('admin');
     expect(dbRoleForEmail(' Hello@Mannan.Is ')).toBe('admin');
