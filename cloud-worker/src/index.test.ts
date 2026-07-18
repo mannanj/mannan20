@@ -1,7 +1,19 @@
-import { describe, expect, test } from 'bun:test';
+import { afterEach, describe, expect, mock, test } from 'bun:test';
 import app from './index';
-import { createSessionCookie } from './auth';
+import {
+  consumeMagicToken,
+  createSessionCookie,
+  ensureUser,
+  mintMagicToken,
+  mintSiteSessionCode,
+} from './auth';
 import type { Env, RateLimit } from './types';
+
+const originalFetch = globalThis.fetch;
+
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
 
 function fakeDb(role: 'admin' | 'client' | null = 'admin', hasGrant = false): D1Database {
   return {
@@ -144,6 +156,202 @@ const executionCtx = {
   passThroughOnException() {},
   props: {},
 } as unknown as ExecutionContext;
+
+interface AuthDbState {
+  users: Map<string, {
+    account_id: string;
+    email: string;
+    role: string;
+    status: 'active' | 'pending_consent';
+    created_at: number;
+  }>;
+  magicTokens: Map<string, {
+    email: string;
+    expires_at: number;
+    purpose: string;
+    return_path: string;
+  }>;
+  siteCodes: Map<string, {
+    email: string;
+    expires_at: number;
+    return_path: string;
+  }>;
+}
+
+function authDb(): { db: D1Database; state: AuthDbState } {
+  const state: AuthDbState = {
+    users: new Map(),
+    magicTokens: new Map(),
+    siteCodes: new Map(),
+  };
+
+  function query(sql: string, args: unknown[]): unknown {
+    const normalized = sql.replace(/\s+/gu, ' ').trim();
+    if (normalized.startsWith('SELECT account_id, email, role, status FROM users')) {
+      return state.users.get(String(args[0])) ?? null;
+    }
+    if (normalized.startsWith('INSERT INTO users')) {
+      const [email, role, createdAt, accountId, status] = args as [
+        string,
+        string,
+        number,
+        string,
+        'active' | 'pending_consent',
+      ];
+      const existing = state.users.get(email);
+      state.users.set(email, existing ?? {
+        account_id: accountId,
+        email,
+        role,
+        status,
+        created_at: createdAt,
+      });
+      return null;
+    }
+    if (normalized.startsWith('INSERT INTO magic_tokens')) {
+      const [token, email, expiresAt, purpose, returnPath] = args as [
+        string,
+        string,
+        number,
+        string,
+        string,
+      ];
+      state.magicTokens.set(token, {
+        email,
+        expires_at: expiresAt,
+        purpose,
+        return_path: returnPath,
+      });
+      return null;
+    }
+    if (normalized.startsWith('DELETE FROM magic_tokens')) {
+      const [token, purpose] = args as [string, string];
+      const row = state.magicTokens.get(token);
+      if (!row || row.purpose !== purpose) return null;
+      state.magicTokens.delete(token);
+      return row;
+    }
+    if (normalized.startsWith('INSERT INTO site_session_codes')) {
+      const [codeHash, email, expiresAt, returnPath] = args as [
+        string,
+        string,
+        number,
+        string,
+      ];
+      state.siteCodes.set(codeHash, {
+        email,
+        expires_at: expiresAt,
+        return_path: returnPath,
+      });
+      return null;
+    }
+    if (normalized.startsWith('DELETE FROM site_session_codes')) {
+      const row = state.siteCodes.get(String(args[0]));
+      if (!row) return null;
+      state.siteCodes.delete(String(args[0]));
+      return row;
+    }
+    throw new Error(`auth fake D1: unexpected query: ${normalized}`);
+  }
+
+  const db = {
+    prepare(sql: string) {
+      return {
+        bind(...args: unknown[]) {
+          return {
+            first: async <T>() => query(sql, args) as T | null,
+            run: async () => {
+              query(sql, args);
+              return { success: true, meta: {} };
+            },
+          };
+        },
+      };
+    },
+  } as unknown as D1Database;
+  return { db, state };
+}
+
+function authFlowEnv(db: D1Database): Env {
+  return { ...fakeEnv().env, DB: db };
+}
+
+describe('shared site authentication routes', () => {
+  test('preserves a sanitized return path for site sign-in', async () => {
+    const { db, state } = authDb();
+    const env = authFlowEnv(db);
+    globalThis.fetch = mock(async () => Response.json({ id: 'email_1' })) as unknown as typeof fetch;
+
+    const response = await app.request('/auth/site/request', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.SITE_AUTH_EXCHANGE_SECRET}`,
+        'content-type': 'application/json',
+        'x-site-auth-ip': '198.51.100.8',
+      },
+      body: JSON.stringify({
+        email: 'person@example.com',
+        returnTo: '/meet/abc?join=1',
+      }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect([...state.magicTokens.values()]).toHaveLength(1);
+    expect([...state.magicTokens.values()][0]?.return_path).toBe('/meet/abc?join=1');
+  });
+
+  test('exchanges a verified code for stable account identity and return path', async () => {
+    const { db } = authDb();
+    const env = authFlowEnv(db);
+    const account = await ensureUser(env, 'person@example.com');
+    const token = await mintMagicToken(env, account.email, 'site', '/meet/abc');
+    const verified = await consumeMagicToken(env, token, 'site');
+    const code = await mintSiteSessionCode(env, account.email, verified!.returnPath);
+
+    const response = await app.request('/auth/site/exchange', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${env.SITE_AUTH_EXCHANGE_SECRET}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ code }),
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(await response.json() as unknown).toEqual({
+      accountId: account.accountId,
+      email: 'person@example.com',
+      role: 'user',
+      admin: false,
+      status: 'pending_consent',
+      returnTo: '/meet/abc',
+    });
+  });
+
+  test('keeps unknown direct Cloud sign-in generic without creating or emailing', async () => {
+    const { db, state } = authDb();
+    const env = authFlowEnv(db);
+    let sends = 0;
+    globalThis.fetch = mock(async () => {
+      sends += 1;
+      return Response.json({ id: 'email_1' });
+    }) as unknown as typeof fetch;
+    const form = new FormData();
+    form.set('email', 'unknown@example.com');
+
+    const response = await app.request('/auth/request', {
+      method: 'POST',
+      headers: { 'cf-connecting-ip': '198.51.100.9' },
+      body: form,
+    }, env);
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('Check your inbox');
+    expect(state.users.size).toBe(0);
+    expect(state.magicTokens.size).toBe(0);
+    expect(sends).toBe(0);
+  });
+});
 
 Object.defineProperty(globalThis, 'caches', {
   configurable: true,

@@ -89,11 +89,13 @@ interface MagicTokenRow {
   email: string;
   expires_at: number;
   purpose: string;
+  return_path: string;
 }
 
 interface SiteSessionCodeRow {
   email: string;
   expires_at: number;
+  return_path: string;
 }
 
 interface UserRow {
@@ -117,8 +119,19 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
     const normalized = normalize(sql);
 
     if (normalized.startsWith('INSERT INTO magic_tokens')) {
-      const [token, email, expiresAt, purpose] = args as [string, string, number, string];
-      magicTokens.set(token, { email, expires_at: expiresAt, purpose });
+      const [token, email, expiresAt, purpose, returnPath = '/'] = args as [
+        string,
+        string,
+        number,
+        string,
+        string?,
+      ];
+      magicTokens.set(token, {
+        email,
+        expires_at: expiresAt,
+        purpose,
+        return_path: returnPath,
+      });
       return null;
     }
     if (normalized.startsWith('DELETE FROM magic_tokens') && normalized.includes('RETURNING')) {
@@ -126,11 +139,24 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
       const row = magicTokens.get(token);
       if (!row || row.purpose !== purpose) return null;
       magicTokens.delete(token);
-      return { email: row.email, expires_at: row.expires_at };
+      return {
+        email: row.email,
+        expires_at: row.expires_at,
+        return_path: row.return_path,
+      };
     }
     if (normalized.startsWith('INSERT INTO site_session_codes')) {
-      const [codeHash, email, expiresAt] = args as [string, string, number];
-      siteSessionCodes.set(codeHash, { email, expires_at: expiresAt });
+      const [codeHash, email, expiresAt, returnPath = '/'] = args as [
+        string,
+        string,
+        number,
+        string?,
+      ];
+      siteSessionCodes.set(codeHash, {
+        email,
+        expires_at: expiresAt,
+        return_path: returnPath,
+      });
       return null;
     }
     if (normalized.startsWith('DELETE FROM site_session_codes') && normalized.includes('RETURNING')) {
@@ -138,7 +164,11 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
       const row = siteSessionCodes.get(codeHash);
       if (!row) return null;
       siteSessionCodes.delete(codeHash);
-      return { email: row.email, expires_at: row.expires_at };
+      return {
+        email: row.email,
+        expires_at: row.expires_at,
+        return_path: row.return_path,
+      };
     }
     if (normalized.startsWith('SELECT account_id, email, role, status FROM users')) {
       const [email] = args as [string];
@@ -211,7 +241,7 @@ describe('consumeMagicToken', () => {
 
     const email = await consumeMagicToken(env, token, 'cloud');
 
-    expect(email).toBe('person@example.com');
+    expect(email).toEqual({ email: 'person@example.com', returnPath: '/' });
   });
 
   test('rejects the same token on a second consumption (double-redeem race)', async () => {
@@ -221,7 +251,7 @@ describe('consumeMagicToken', () => {
     const first = await consumeMagicToken(env, token, 'cloud');
     const second = await consumeMagicToken(env, token, 'cloud');
 
-    expect(first).toBe('person@example.com');
+    expect(first).toEqual({ email: 'person@example.com', returnPath: '/' });
     expect(second).toBeNull();
   });
 
@@ -249,6 +279,35 @@ describe('consumeMagicToken', () => {
 });
 
 describe('consumeSiteSessionCode', () => {
+  test('carries one sanitized return path through token and code consumption', async () => {
+    const env = createFakeEnv();
+    const account = await ensureUser(env, 'person@example.com');
+    const token = await mintMagicToken(
+      env,
+      account.email,
+      'site',
+      '/meet/abc?join=1',
+    );
+    const verified = await consumeMagicToken(env, token, 'site');
+    expect(verified).toEqual({
+      email: account.email,
+      returnPath: '/meet/abc?join=1',
+    });
+
+    const code = await mintSiteSessionCode(
+      env,
+      account.email,
+      verified!.returnPath,
+    );
+    const exchanged = await consumeSiteSessionCode(env, code);
+    expect(exchanged).toMatchObject({
+      accountId: account.accountId,
+      email: account.email,
+      status: 'pending_consent',
+      returnPath: '/meet/abc?join=1',
+    });
+  });
+
   test('consumes a single valid code successfully', async () => {
     const env = createFakeEnv();
     await ensureUser(env, 'person@example.com');

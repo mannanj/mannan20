@@ -225,13 +225,21 @@ export async function mintMagicToken(
   env: Env,
   email: string,
   purpose: 'cloud' | 'site' = 'cloud',
+  returnPath = '/',
 ): Promise<string> {
   const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
   const expires = Date.now() + TOKEN_TTL_MS;
   await env.DB.prepare(
-    'INSERT INTO magic_tokens (token, email, expires_at, purpose) VALUES (?, ?, ?, ?)',
+    `INSERT INTO magic_tokens (token, email, expires_at, purpose, return_path)
+     VALUES (?, ?, ?, ?, ?)`,
   )
-    .bind(await hashSecret(token), normalizeEmail(email), expires, purpose)
+    .bind(
+      await hashSecret(token),
+      normalizeEmail(email),
+      expires,
+      purpose,
+      sanitizeReturnPath(returnPath),
+    )
     .run();
   return token;
 }
@@ -240,23 +248,38 @@ export async function consumeMagicToken(
   env: Env,
   token: string,
   purpose: 'cloud' | 'site' = 'cloud',
-): Promise<string | null> {
+): Promise<{ email: string; returnPath: string } | null> {
   const row = await env.DB.prepare(
-    'DELETE FROM magic_tokens WHERE token = ? AND purpose = ? RETURNING email, expires_at',
+    `DELETE FROM magic_tokens
+     WHERE token = ? AND purpose = ?
+     RETURNING email, expires_at, return_path`,
   )
     .bind(await hashSecret(token), purpose)
-    .first<{ email: string; expires_at: number }>();
+    .first<{ email: string; expires_at: number; return_path: string }>();
   if (!row) return null;
   if (row.expires_at < Date.now()) return null;
-  return row.email;
+  return {
+    email: row.email,
+    returnPath: sanitizeReturnPath(row.return_path),
+  };
 }
 
-export async function mintSiteSessionCode(env: Env, email: string): Promise<string> {
+export async function mintSiteSessionCode(
+  env: Env,
+  email: string,
+  returnPath = '/',
+): Promise<string> {
   const code = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
   await env.DB.prepare(
-    'INSERT INTO site_session_codes (code_hash, email, expires_at) VALUES (?, ?, ?)',
+    `INSERT INTO site_session_codes (code_hash, email, expires_at, return_path)
+     VALUES (?, ?, ?, ?)`,
   )
-    .bind(await hashSecret(code), normalizeEmail(email), Date.now() + SITE_CODE_TTL_MS)
+    .bind(
+      await hashSecret(code),
+      normalizeEmail(email),
+      Date.now() + SITE_CODE_TTL_MS,
+      sanitizeReturnPath(returnPath),
+    )
     .run();
   return code;
 }
@@ -264,16 +287,23 @@ export async function mintSiteSessionCode(env: Env, email: string): Promise<stri
 export async function consumeSiteSessionCode(
   env: Env,
   code: string,
-): Promise<{ email: string; role: string } | null> {
+): Promise<(AccountRecord & { returnPath: string }) | null> {
   const codeHash = await hashSecret(code);
   const row = await env.DB.prepare(
-    'DELETE FROM site_session_codes WHERE code_hash = ? RETURNING email, expires_at',
+    `DELETE FROM site_session_codes
+     WHERE code_hash = ?
+     RETURNING email, expires_at, return_path`,
   )
     .bind(codeHash)
-    .first<{ email: string; expires_at: number }>();
+    .first<{ email: string; expires_at: number; return_path: string }>();
   if (!row) return null;
   if (row.expires_at < Date.now()) return null;
-  return getUser(env, row.email);
+  const account = await getUser(env, row.email);
+  if (account === null) return null;
+  return {
+    ...account,
+    returnPath: sanitizeReturnPath(row.return_path),
+  };
 }
 
 export function normalizeEmail(email: string): string {

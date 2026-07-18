@@ -84,7 +84,10 @@ app.post('/auth/request', async (c) => {
     return c.html(signInPage('Please enter a valid email.'), 400);
   }
 
-  await ensureUser(c.env, email);
+  const user = await getUser(c.env, email);
+  if (!user || user.status !== 'active') {
+    return c.html(sentPage());
+  }
   const token = await mintMagicToken(c.env, email, 'cloud');
   try {
     await sendMagicLink(c.env, email, token);
@@ -107,6 +110,10 @@ app.post('/auth/site/request', async (c) => {
     body && typeof body === 'object' && typeof (body as Record<string, unknown>).email === 'string'
       ? normalizeEmail((body as Record<string, unknown>).email as string)
       : '';
+  const returnTo =
+    body && typeof body === 'object'
+      ? (body as Record<string, unknown>).returnTo
+      : undefined;
 
   if (!email || !EMAIL_RE.test(email) || email.length > 254) {
     return c.json({ error: 'invalid-email' }, 400);
@@ -121,7 +128,8 @@ app.post('/auth/site/request', async (c) => {
   }
 
   await ensureUser(c.env, email);
-  const token = await mintMagicToken(c.env, email, 'site');
+  const token = await mintMagicToken(c.env, email, 'site',
+    typeof returnTo === 'string' ? returnTo : '/');
   try {
     await sendSiteContinueLink(c.env, email, token);
   } catch (err) {
@@ -142,14 +150,21 @@ app.get('/auth/verify', async (c) => {
   if (!token) {
     return c.html(messagePage('Invalid link', 'Missing token.'), 400);
   }
-  const email = await consumeMagicToken(c.env, token, 'cloud');
-  if (!email) {
+  const verified = await consumeMagicToken(c.env, token, 'cloud');
+  if (!verified) {
     return c.html(
       messagePage('Link expired', 'That sign-in link is invalid or expired. Please request a new one.'),
       400,
     );
   }
-  const cookie = await createSessionCookie(c.env, email);
+  const user = await getUser(c.env, verified.email);
+  if (!user || user.status !== 'active') {
+    return c.html(
+      messagePage('Link expired', 'That sign-in link is invalid or expired. Please request a new one.'),
+      400,
+    );
+  }
+  const cookie = await createSessionCookie(c.env, verified.email);
   return new Response(null, {
     status: 302,
     headers: { Location: '/cloud', 'Set-Cookie': cookie },
@@ -166,14 +181,18 @@ app.get('/auth/site/verify', async (c) => {
   if (!token) {
     return c.html(messagePage('Invalid link', 'Missing token.'), 400);
   }
-  const email = await consumeMagicToken(c.env, token, 'site');
-  if (!email) {
+  const verified = await consumeMagicToken(c.env, token, 'site');
+  if (!verified) {
     return c.html(
       messagePage('Link expired', 'That link is invalid or expired. Please request a new one.'),
       400,
     );
   }
-  const code = await mintSiteSessionCode(c.env, email);
+  const code = await mintSiteSessionCode(
+    c.env,
+    verified.email,
+    verified.returnPath,
+  );
   const url = new URL(c.env.SITE_AUTH_RETURN_URL);
   url.searchParams.set('code', code);
   return c.redirect(url.toString(), 302);
@@ -194,9 +213,12 @@ app.post('/auth/site/exchange', async (c) => {
   if (!user) return c.json({ error: 'invalid-code' }, 400);
 
   return c.json({
+    accountId: user.accountId,
     email: user.email,
     role: siteRoleFromDbRole(user.role),
     admin: user.role === 'admin',
+    status: user.status,
+    returnTo: user.returnPath,
   });
 });
 
