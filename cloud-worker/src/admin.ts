@@ -30,7 +30,9 @@ admin.use('*', async (c, next) => {
 });
 
 admin.post('/invite', async (c) => {
-  const body = await c.req.json<{ email?: string; folders?: string[] }>().catch(() => ({}));
+  const body: { email?: string; folders?: string[] } = await c.req
+    .json<{ email?: string; folders?: string[] }>()
+    .catch(() => ({}));
   const email = body.email ? normalizeEmail(body.email) : '';
   const folders = (body.folders ?? []).filter(isFolder);
   if (!email || folders.length === 0) {
@@ -58,7 +60,9 @@ admin.post('/invite', async (c) => {
 });
 
 admin.post('/grant', async (c) => {
-  const body = await c.req.json<{ email?: string; folder?: string }>().catch(() => ({}));
+  const body: { email?: string; folder?: string } = await c.req
+    .json<{ email?: string; folder?: string }>()
+    .catch(() => ({}));
   const email = body.email ? normalizeEmail(body.email) : '';
   if (!email || !body.folder || !isFolder(body.folder)) {
     return c.json({ error: 'email and valid folder required' }, 400);
@@ -74,7 +78,9 @@ admin.post('/grant', async (c) => {
 });
 
 admin.post('/revoke', async (c) => {
-  const body = await c.req.json<{ email?: string; folder?: string }>().catch(() => ({}));
+  const body: { email?: string; folder?: string } = await c.req
+    .json<{ email?: string; folder?: string }>()
+    .catch(() => ({}));
   const email = body.email ? normalizeEmail(body.email) : '';
   if (!email || !body.folder || !isFolder(body.folder)) {
     return c.json({ error: 'email and valid folder required' }, 400);
