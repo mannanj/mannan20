@@ -9,12 +9,17 @@ export async function GET(
   context: { params: Promise<{ secret: string }> },
 ) {
   const { secret } = await context.params;
-  const result = await meetingWorkerRequest<{ meetingId: string }>({
+  const result = await meetingWorkerRequest<{ meetingId: string; version: number }>({
     method: 'POST',
     path: '/v1/admission/resolve',
     body: { secret },
   });
-  if (!result.ok || !validMeetingIdentifier(result.data.meetingId)) {
+  if (
+    !result.ok ||
+    !validMeetingIdentifier(result.data.meetingId) ||
+    !Number.isSafeInteger(result.data.version) ||
+    result.data.version <= 0
+  ) {
     return new Response(null, {
       status: 303,
       headers: { location: new URL('/meet?join=unavailable', request.url).toString() },
@@ -29,7 +34,11 @@ export async function GET(
     });
     response.headers.append(
       'set-cookie',
-      createPendingAccessCookie({ meetingId: result.data.meetingId, secret }),
+      createPendingAccessCookie({
+        meetingId: result.data.meetingId,
+        secret,
+        version: result.data.version,
+      }),
     );
     return response;
   } catch {

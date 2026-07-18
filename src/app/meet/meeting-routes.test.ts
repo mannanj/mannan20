@@ -46,7 +46,7 @@ describe('meeting admission routes', () => {
   test('resolves a raw share URL into a clean meeting URL and scoped cookie', async () => {
     globalThis.fetch = mock(async (_input, init) => {
       expect(init?.body).toBe(JSON.stringify({ secret: ACCESS_SECRET }));
-      return Response.json({ data: { meetingId: MEETING_ID } });
+      return Response.json({ data: { meetingId: MEETING_ID, version: 4 } });
     }) as unknown as typeof fetch;
 
     const response = await resolveShareLink(
@@ -62,7 +62,11 @@ describe('meeting admission routes', () => {
   });
 
   test('enters as a guest candidate and replaces temporary state with the issued credential', async () => {
-    const access = createPendingAccessCookie({ meetingId: MEETING_ID, secret: ACCESS_SECRET });
+    const access = createPendingAccessCookie({
+      meetingId: MEETING_ID,
+      secret: ACCESS_SECRET,
+      version: 1,
+    });
     const candidate = createGuestCandidateCookie({ meetingId: MEETING_ID, displayName: 'River' });
     globalThis.fetch = mock(async (_input, init) => {
       const headers = new Headers(init?.headers);
@@ -101,7 +105,11 @@ describe('meeting admission routes', () => {
   });
 
   test('gives an active account precedence and omits guest candidate data', async () => {
-    const access = createPendingAccessCookie({ meetingId: MEETING_ID, secret: ACCESS_SECRET });
+    const access = createPendingAccessCookie({
+      meetingId: MEETING_ID,
+      secret: ACCESS_SECRET,
+      version: 1,
+    });
     const candidate = createGuestCandidateCookie({ meetingId: MEETING_ID, displayName: 'River' });
     const session = await createSiteSessionCookie({
       accountId: ACCOUNT_ID,

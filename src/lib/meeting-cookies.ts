@@ -109,15 +109,28 @@ function parse(
 export function createPendingAccessCookie(input: {
   meetingId: string;
   secret: string;
+  version: number;
   nowSeconds?: number;
 }): string {
-  if (!validCredential(input.secret)) throw new Error('Invalid access credential');
+  if (
+    !validCredential(input.secret) ||
+    !Number.isSafeInteger(input.version) ||
+    input.version <= 0
+  ) {
+    throw new Error('Invalid access credential');
+  }
   const now = input.nowSeconds ?? Math.floor(Date.now() / 1000);
   return serialize(
     ACCESS_COOKIE,
     'access',
     input.meetingId,
-    { v: 1, meetingId: input.meetingId, secret: input.secret, exp: now + ACCESS_TTL_SECONDS },
+    {
+      v: 1,
+      meetingId: input.meetingId,
+      secret: input.secret,
+      version: input.version,
+      exp: now + ACCESS_TTL_SECONDS,
+    },
     ACCESS_TTL_SECONDS,
   );
 }
@@ -126,10 +139,23 @@ export function readPendingAccess(
   cookieHeader: string | null,
   meetingId: string,
   nowSeconds = Math.floor(Date.now() / 1000),
-): (Omit<SignedPayload, 'v'> & { secret: string }) | null {
+): (Omit<SignedPayload, 'v'> & { secret: string; version: number }) | null {
   const record = parse(cookieHeader, ACCESS_COOKIE, 'access', meetingId, nowSeconds);
-  if (record === null || !validCredential(record.secret)) return null;
-  return { meetingId, secret: record.secret, exp: record.exp as number };
+  if (
+    record === null ||
+    !validCredential(record.secret) ||
+    typeof record.version !== 'number' ||
+    !Number.isSafeInteger(record.version) ||
+    record.version <= 0
+  ) {
+    return null;
+  }
+  return {
+    meetingId,
+    secret: record.secret,
+    version: record.version,
+    exp: record.exp as number,
+  };
 }
 
 export function createGuestCandidateCookie(input: {

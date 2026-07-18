@@ -6,7 +6,6 @@ import {
 } from '@/lib/meeting-cookies';
 import {
   meetingResultResponse,
-  quotedVersion,
   sameOrigin,
   validMeetingIdentifier,
 } from '@/lib/meeting-bff';
@@ -53,7 +52,7 @@ export async function POST(
     },
     ...(session === null ? {} : { accountId: session.accountId }),
     idempotencyKey: request.headers.get('idempotency-key') ?? undefined,
-    ifMatch: quotedVersion(request),
+    ifMatch: access.version,
   });
   const response = meetingResultResponse(result);
   if (!result.ok) return response;

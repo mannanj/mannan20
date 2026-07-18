@@ -26,6 +26,7 @@ describe('meeting-scoped cookies', () => {
     const cookie = createPendingAccessCookie({
       meetingId: MEETING_ID,
       secret: 'access:opaque-secret_1',
+      version: 4,
       nowSeconds: 2_000_000_000,
     });
     expect(cookie).toContain('__Secure-mannan-meeting-access=');
@@ -37,6 +38,7 @@ describe('meeting-scoped cookies', () => {
     expect(readPendingAccess(cookie, MEETING_ID, 2_000_000_100)).toEqual({
       meetingId: MEETING_ID,
       secret: 'access:opaque-secret_1',
+      version: 4,
       exp: 2_000_000_900,
     });
     expect(readPendingAccess(cookie, 'meeting_other', 2_000_000_100)).toBeNull();
@@ -84,6 +86,7 @@ describe('meeting-scoped cookies', () => {
     const cookie = createPendingAccessCookie({
       meetingId: MEETING_ID,
       secret: 'access:opaque-secret_1',
+      version: 1,
     });
     const value = cookie.match(/__Secure-mannan-meeting-access=([^;]+)/u)?.[1];
     expect(value).toBeDefined();
