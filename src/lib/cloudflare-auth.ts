@@ -55,6 +55,14 @@ export function sanitizeAuthReturnPath(value: unknown): string {
   }
 }
 
+export function browserAuthReturnPath(location: {
+  pathname: string;
+  search: string;
+  hash: string;
+}): string {
+  return sanitizeAuthReturnPath(`${location.pathname}${location.search}${location.hash}`);
+}
+
 export function normalizeCloudflareAccount(input: unknown): CloudflareAccount | null {
   if (!input || typeof input !== 'object') return null;
   const record = input as Record<string, unknown>;

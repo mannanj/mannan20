@@ -19,5 +19,8 @@ export default defineConfig({
     command: 'bun run dev',
     port: 3847,
     reuseExistingServer: true,
+    env: {
+      MANNAN_SESSION_SECRET: 'playwright-consent-session-secret',
+    },
   },
 });

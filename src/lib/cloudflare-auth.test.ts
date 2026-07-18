@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import {
   acceptCloudflareLegalConsent,
+  browserAuthReturnPath,
   normalizeCloudflareSiteUser,
   requestCloudflareContinueEmail,
   sanitizeAuthReturnPath,
@@ -97,6 +98,16 @@ describe('cloudflare auth bridge', () => {
     expect(sanitizeAuthReturnPath('//attacker.example/steal')).toBe('/');
     expect(sanitizeAuthReturnPath('/auth/consent')).toBe('/');
     expect(sanitizeAuthReturnPath(null)).toBe('/');
+  });
+
+  test('captures the complete browser path that started sign-in', () => {
+    expect(
+      browserAuthReturnPath({
+        pathname: '/meet/room-123',
+        search: '?from=invite',
+        hash: '#notes',
+      }),
+    ).toBe('/meet/room-123?from=invite#notes');
   });
 
   test('forwards a sanitized return path when requesting an email', async () => {

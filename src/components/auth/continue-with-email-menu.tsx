@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { browserAuthReturnPath } from "@/lib/cloudflare-auth";
 
 interface AuthUser {
   email: string;
@@ -60,7 +61,7 @@ export function ContinueWithEmailMenu({
     const res = await fetch("/api/auth/request", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, returnTo: browserAuthReturnPath(window.location) }),
     }).catch(() => null);
     if (res?.ok) {
       setStatus("sent");

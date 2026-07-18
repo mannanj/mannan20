@@ -9,6 +9,7 @@ interface LegalDocumentViewProps {
   headingTabIndex?: number;
   compact?: boolean;
   showMeta?: boolean;
+  sectionIdPrefix?: string;
 }
 
 export function LegalDocumentView({
@@ -19,6 +20,7 @@ export function LegalDocumentView({
   headingTabIndex,
   compact = false,
   showMeta = true,
+  sectionIdPrefix = '',
 }: LegalDocumentViewProps) {
   const DocumentHeading = headingLevel === 1 ? 'h1' : 'h2';
   const SectionHeading = headingLevel === 1 ? 'h2' : 'h3';
@@ -61,7 +63,7 @@ export function LegalDocumentView({
 
       <div className={compact ? 'space-y-9' : 'space-y-12'}>
         {document.sections.map((section) => (
-          <section key={section.id} id={section.id} className="scroll-mt-8">
+          <section key={section.id} id={`${sectionIdPrefix}${section.id}`} className="scroll-mt-8">
             <SectionHeading
               className={
                 compact
