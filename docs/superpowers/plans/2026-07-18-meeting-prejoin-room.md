@@ -216,7 +216,7 @@ git commit -m "feat(meet): manage browser media lifecycle"
 - Create: `src/components/meet/meeting-media-controls.tsx`
 - Create: `src/components/meet/meeting-media-controls.test.tsx`
 
-- [ ] **Step 1: Write the failing accessibility contract test**
+- [x] **Step 1: Write the failing accessibility contract test**
 
 ```tsx
 test('labels input state without relying on icons', () => {
@@ -237,13 +237,13 @@ test('labels input state without relying on icons', () => {
 });
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `bun test src/components/meet/meeting-media-controls.test.tsx`
 
 Expected: FAIL because the component does not exist.
 
-- [ ] **Step 3: Implement minimal reusable components**
+- [x] **Step 3: Implement minimal reusable components**
 
 `LocalVideo` accepts `stream`, `cameraEnabled`, and `label`. Assign and
 clear `video.srcObject` in an effect. Render a muted, autoplaying, inline,
@@ -255,13 +255,13 @@ visible focus treatment, inline monochrome SVG, and explicit accessible names.
 Accept optional settings and leave actions so pre-join and stage reuse the
 component without sharing page layout.
 
-- [ ] **Step 4: Run GREEN and typecheck**
+- [x] **Step 4: Run GREEN and typecheck**
 
 Run: `bun test src/components/meet/meeting-media-controls.test.tsx && bun run typecheck`
 
 Expected: tests PASS and TypeScript exits 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/meet/local-video.tsx src/components/meet/meeting-media-controls.tsx src/components/meet/meeting-media-controls.test.tsx
