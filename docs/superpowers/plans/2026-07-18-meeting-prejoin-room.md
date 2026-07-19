@@ -29,7 +29,7 @@
 - Create: `src/lib/local-meeting-media.test.ts`
 - Create: `src/lib/local-meeting-media.ts`
 
-- [ ] **Step 1: Write failing acquisition and cleanup tests**
+- [x] **Step 1: Write failing acquisition and cleanup tests**
 
 Define fake audio/video tracks with observable `stop()`. Test:
 
@@ -61,13 +61,13 @@ test('stops every supplied track', () => {
 });
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `bun test src/lib/local-meeting-media.test.ts`
 
 Expected: FAIL because `./local-meeting-media` does not exist.
 
-- [ ] **Step 3: Implement the minimal media boundary**
+- [x] **Step 3: Implement the minimal media boundary**
 
 Export these exact contracts:
 
@@ -112,13 +112,13 @@ requests. Retain either successful track, stop unexpected extra tracks, then
 enumerate and filter `audioinput` and `videoinput` devices. Map denied,
 missing, and unsupported states to stable plain-language issues.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run: `bun test src/lib/local-meeting-media.test.ts`
 
 Expected: all tests PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/local-meeting-media.ts src/lib/local-meeting-media.test.ts
@@ -465,4 +465,3 @@ After this cycle, continue the active goal with the next ready slice. Realtime
 provider selection, new paid-provider spend, new provider credentials, and
 production publication remain genuine escalation points unless separately
 authorized.
-
