@@ -21,11 +21,11 @@
 - Modify: `packages/meeting-application/src/application.ts`
 - Modify: meeting Worker fixtures that construct `MeetingWorkspaceProjection`
 
-- [ ] Add `version: 1` to the exact account workspace projection test.
-- [ ] Run `pnpm --filter @meeting-platform/meeting-application test -- workspace-lookup.test.ts` and verify RED.
-- [ ] Add required `version: number` to `MeetingWorkspaceProjection` and project `meeting.version`.
-- [ ] Update typed Worker fixtures and acceptance assertions to include the version.
-- [ ] Run `pnpm check`, `git diff --check`, and commit `feat(workspace): expose current meeting version`.
+- [x] Add `version: 1` to the exact account workspace projection test.
+- [x] Run `pnpm --filter @meeting-platform/meeting-application test -- workspace-lookup.test.ts` and verify RED.
+- [x] Add required `version: number` to `MeetingWorkspaceProjection` and project `meeting.version`.
+- [x] Update typed Worker fixtures and acceptance assertions to include the version.
+- [x] Run `pnpm check`, `git diff --check`, and commit `feat(workspace): expose current meeting version`.
 
 ### Task 2: Build the tested browser invite client
 
@@ -36,9 +36,9 @@
 - Create: `src/lib/meeting-invite.test.ts`
 - Create: `src/lib/meeting-invite.ts`
 
-- [ ] Write a failing test for `createMeetingInvite` proving exact same-origin path, JSON body with meeting-end expiry, quoted `If-Match`, idempotency key, safe local share URL construction, and returned next version.
-- [ ] Run `bun test src/lib/meeting-invite.test.ts` and verify RED.
-- [ ] Implement:
+- [x] Write a failing test for `createMeetingInvite` proving exact same-origin path, JSON body with meeting-end expiry, quoted `If-Match`, idempotency key, safe local share URL construction, and returned next version.
+- [x] Run `bun test src/lib/meeting-invite.test.ts` and verify RED.
+- [x] Implement:
 
 ```ts
 export interface MeetingInviteResult {
@@ -59,8 +59,8 @@ export async function createMeetingInvite(input: {
 ```
 
 Reject malformed response identifiers, secret, expiry, or version. Never log or persist the returned secret.
-- [ ] Run focused tests and TypeScript.
-- [ ] Commit `feat(meet): add private invite client`.
+- [x] Run focused tests and TypeScript.
+- [x] Commit `feat(meet): add private invite client`.
 
 ### Task 3: Add the persistent invite control
 
@@ -84,4 +84,3 @@ Reject malformed response identifiers, secret, expiry, or version. Never log or 
 - [ ] Smoke the Worker authorization boundary, site home, and staged meeting route.
 - [ ] Append exact commits, checks, deployments, limitations, and next ready work to the staging record and canonical handoff.
 - [ ] Commit and push the release record, leaving both feature worktrees intact for the active goal.
-
