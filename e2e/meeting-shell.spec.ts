@@ -34,10 +34,23 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Ready to join?' })).toBeVisible();
   await expect(page.getByText('owner', { exact: true })).toBeVisible();
-  await page.screenshot({ path: 'test-results/meeting-workspace-desktop.png', fullPage: true });
+  await expect(page.getByRole('button', { name: 'Turn camera off' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Turn microphone off' })).toBeVisible();
+  await page.screenshot({ path: 'test-results/meeting-prejoin-desktop.png', fullPage: true });
+
+  await page.getByRole('button', { name: 'Join meeting' }).click();
+  await expect(page.getByText('1 connected')).toBeVisible();
+  await page.getByRole('button', { name: 'Turn camera off' }).click();
+  await expect(page.getByRole('button', { name: 'Turn camera on' })).toBeVisible();
+  await page.getByRole('button', { name: 'Device settings' }).click();
+  await expect(page.getByRole('complementary').getByText('Device settings', { exact: true })).toBeVisible();
+  await page.screenshot({ path: 'test-results/meeting-stage-desktop.png', fullPage: true });
+  await page.getByRole('button', { name: 'Leave' }).click();
+  await expect(page.getByRole('heading', { name: 'Ready to join?' })).toBeVisible();
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
-  await page.screenshot({ path: 'test-results/meeting-workspace-mobile.png', fullPage: true });
+  await expect(page.getByRole('button', { name: 'Join meeting' })).toBeVisible();
+  await page.screenshot({ path: 'test-results/meeting-prejoin-mobile.png', fullPage: true });
 });

@@ -371,7 +371,7 @@ git commit -m "feat(meet): add local joined stage"
 - Modify: `e2e/meeting-shell.spec.ts`
 - Modify only if rendering reveals a defect: new meeting components
 
-- [ ] **Step 1: Write failing browser assertions**
+- [x] **Step 1: Write failing browser assertions**
 
 Configure Chromium with:
 
@@ -389,20 +389,20 @@ Extend the authorized workspace test to wait for **Ready to join?**, click
 **Leave**, and assert pre-join returns. Repeat critical visibility at
 `390x844`.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `bunx playwright test e2e/meeting-shell.spec.ts --project=chromium`
 
 Expected: FAIL against any incomplete room integration.
 
-- [ ] **Step 3: Refine only observed rendering defects**
+- [x] **Step 3: Refine only observed rendering defects**
 
 Correct clipping, overflow, contrast, focus visibility, select appearance, and
 mobile control placement. Capture `meeting-prejoin-desktop.png`,
 `meeting-stage-desktop.png`, and `meeting-prejoin-mobile.png`. Do not add
 new product features in this task.
 
-- [ ] **Step 4: Run the complete local gate**
+- [x] **Step 4: Run the complete local gate**
 
 ```bash
 bun run test:unit
@@ -414,7 +414,7 @@ git diff --check
 
 Expected: every command exits 0.
 
-- [ ] **Step 5: Inspect and commit**
+- [x] **Step 5: Inspect and commit**
 
 Inspect all three images at original resolution, then:
 

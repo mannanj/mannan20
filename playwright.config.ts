@@ -11,6 +11,12 @@ export default defineConfig({
     baseURL: 'http://localhost:3847',
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 720 },
+    launchOptions: {
+      args: [
+        '--use-fake-device-for-media-stream',
+        '--use-fake-ui-for-media-stream',
+      ],
+    },
   },
   projects: [
     { name: 'chromium', use: { browserName: 'chromium' } },
