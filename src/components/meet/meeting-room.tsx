@@ -23,6 +23,7 @@ import {
   meetingRoomLifecycle,
   serverClockNowMs,
 } from '@/lib/meeting-room-lifecycle';
+import { meetingWorkspaceRefreshDecision } from '@/lib/meeting-workspace-refresh';
 import {
   MeetingParticipantRemovalAttempts,
   applyMeetingParticipantRemoval,
@@ -106,7 +107,7 @@ export function MeetingRoom({
   const [endIssue, setEndIssue] = useState(false);
   const [durationSyncIssue, setDurationSyncIssue] = useState(false);
   const [checkingDuration, setCheckingDuration] = useState(false);
-  const [durationRefreshEpoch, setDurationRefreshEpoch] = useState(0);
+  const [workspaceLoadEpoch, setWorkspaceLoadEpoch] = useState(0);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [visibilityRestored, setVisibilityRestored] = useState(false);
   const [durationModal, dispatchDurationModal] = useReducer(
@@ -233,8 +234,8 @@ export function MeetingRoom({
     workspaceLoad.current = request;
     void request.finally(() => {
       if (workspaceLoad.current === request) workspaceLoad.current = null;
-      if (mode === 'refresh' && activeMeetingId.current === meetingId) {
-        setDurationRefreshEpoch((current) => current + 1);
+      if (activeMeetingId.current === meetingId) {
+        setWorkspaceLoadEpoch((current) => current + 1);
       }
     });
     return request;
@@ -314,7 +315,7 @@ export function MeetingRoom({
     dispatchDurationModal({ type: 'conflict' });
     setDurationSyncIssue(false);
     setCheckingDuration(false);
-    setDurationRefreshEpoch(0);
+    setWorkspaceLoadEpoch(0);
     setCountdownPopoutIssue(false);
   }, [meetingId]);
 
@@ -349,6 +350,30 @@ export function MeetingRoom({
     const timer = window.setInterval(update, 1_000);
     return () => window.clearInterval(timer);
   }, [workspace]);
+
+  useEffect(() => {
+    if (workspace === null) return;
+    const decision = meetingWorkspaceRefreshDecision({
+      live: workspace.session?.state === 'live',
+      visible: documentVisible,
+      visibilityRestored,
+      loadInFlight: workspaceLoad.current !== null,
+    });
+    if (decision === null) return;
+    const timer = window.setTimeout(() => {
+      setVisibilityRestored(false);
+      void load('refresh');
+    }, decision.delayMs);
+    return () => window.clearTimeout(timer);
+  }, [
+    documentVisible,
+    lifecycle?.phase,
+    load,
+    visibilityRestored,
+    workspace?.meetingId,
+    workspace?.session?.state,
+    workspaceLoadEpoch,
+  ]);
 
   useEffect(() => {
     if (
@@ -416,7 +441,7 @@ export function MeetingRoom({
     };
   }, [
     documentVisible,
-    durationRefreshEpoch,
+    workspaceLoadEpoch,
     durationView?.requiresEndVerification,
     durationView?.severity,
     load,

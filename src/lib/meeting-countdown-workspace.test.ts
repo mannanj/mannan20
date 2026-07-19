@@ -75,6 +75,95 @@ describe('meeting countdown workspace snapshot', () => {
     });
   });
 
+  test('validates optional title-editing authority while discarding it from countdown state', () => {
+    const withTitleEditing = {
+      ...workspace,
+      titleEditing: {
+        policy: 'administrators',
+        canEdit: true,
+        canManagePolicy: true,
+      },
+    };
+    expect(parseMeetingCountdownSnapshot(
+      withTitleEditing,
+      meetingId,
+    )).toEqual(snapshot);
+    expect(meetingCountdownSnapshotFromWorkspace(
+      withTitleEditing,
+      meetingId,
+    )).toEqual(snapshot);
+
+    const participantWorkspace = {
+      ...workspace,
+      currentParticipant: {
+        participantId: 'owner-1',
+        role: 'participant',
+      },
+      participants: [{
+        participantId: 'owner-1',
+        role: 'participant',
+        identityKind: 'account',
+      }],
+    };
+    for (const titleEditing of [
+      {
+        policy: 'any_participant',
+        canEdit: true,
+        canManagePolicy: false,
+      },
+      {
+        policy: 'administrators',
+        canEdit: false,
+        canManagePolicy: false,
+      },
+    ]) {
+      expect(parseMeetingCountdownSnapshot({
+        ...participantWorkspace,
+        titleEditing,
+      }, meetingId)).toEqual(snapshot);
+    }
+  });
+
+  test('rejects malformed or role-incoherent optional title-editing authority', () => {
+    for (const titleEditing of [
+      {
+        policy: 'administrators',
+        canEdit: true,
+      },
+      {
+        policy: 'administrators',
+        canEdit: true,
+        canManagePolicy: true,
+        extra: true,
+      },
+      {
+        policy: 'owner',
+        canEdit: true,
+        canManagePolicy: true,
+      },
+      {
+        policy: 'administrators',
+        canEdit: 'yes',
+        canManagePolicy: true,
+      },
+      {
+        policy: 'administrators',
+        canEdit: false,
+        canManagePolicy: true,
+      },
+      {
+        policy: 'administrators',
+        canEdit: true,
+        canManagePolicy: false,
+      },
+    ]) {
+      expect(() => parseMeetingCountdownSnapshot({
+        ...workspace,
+        titleEditing,
+      }, meetingId)).toThrow(MeetingCountdownLoadError);
+    }
+  });
+
   test('rejects mismatched, unknown, unsafe, and incoherent workspace fields', () => {
     const invalid = [
       { ...workspace, meetingId: 'fedcba9876543210fedcba9876543210' },

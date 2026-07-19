@@ -69,6 +69,25 @@ function validRole(value: unknown): boolean {
   return value === 'owner' || value === 'moderator' || value === 'participant';
 }
 
+function validTitleEditing(value: unknown, role: unknown): boolean {
+  const titleEditing = record(value);
+  if (
+    titleEditing === null
+    || !exactKeys(
+      titleEditing,
+      ['policy', 'canEdit', 'canManagePolicy'],
+    )
+    || (titleEditing.policy !== 'administrators'
+      && titleEditing.policy !== 'any_participant')
+    || typeof titleEditing.canEdit !== 'boolean'
+    || typeof titleEditing.canManagePolicy !== 'boolean'
+  ) return false;
+  const canManagePolicy = role === 'owner' || role === 'moderator';
+  return titleEditing.canManagePolicy === canManagePolicy
+    && titleEditing.canEdit
+      === (titleEditing.policy === 'any_participant' || canManagePolicy);
+}
+
 function validParticipant(value: unknown): boolean {
   const participant = record(value);
   if (participant === null || !exactKeys(
@@ -161,7 +180,7 @@ function workspaceSnapshot(
         'currentParticipant',
         'participants',
       ],
-      ['title', 'session', 'duration'],
+      ['title', 'session', 'duration', 'titleEditing'],
     )
     || workspace.meetingId !== expectedMeetingId
     || !Number.isSafeInteger(workspace.version)
@@ -207,6 +226,10 @@ function workspaceSnapshot(
     ) currentParticipantMatches = true;
   }
   if (!currentParticipantMatches) return invalid();
+  if (
+    workspace.titleEditing !== undefined
+    && !validTitleEditing(workspace.titleEditing, currentParticipant.role)
+  ) return invalid();
 
   let liveStartedAt: string | null = null;
   const session = workspace.session === undefined ? null : record(workspace.session);
