@@ -125,3 +125,44 @@ Staged release evidence:
 The final hardware-permission acceptance remains a human browser action because
 automated staging requests cannot operate the tester's physical camera or
 microphone. The local browser suite uses Chromium's deterministic fake devices.
+
+## Private invite update — 2026-07-18
+
+Signed-in owners and moderators now see **Invite people** in the authorized
+workspace header. Creating an invite uses the workspace's authoritative meeting
+version, sends the existing BFF an exact quoted `If-Match`, expires the private
+link when the scheduled meeting ends, and exposes the returned link only in
+browser memory for immediate copying. Guests and ordinary participants do not
+receive the control. The site does not log or persist the one-time secret.
+
+Contract and implementation commits:
+
+- Meeting repository `ab8b2b6` — expose the current aggregate version in the
+  authorized workspace projection and assert it through Worker acceptance
+- Site `a68d587` — validate the private invite request/response boundary
+- Site `b176d21` — add the owner/moderator invite and signed-in browser flow
+
+Fresh verification:
+
+- Meeting repository: 27 domain, 105 application, 68 persistence, and 81
+  Worker tests; all builds and typechecks passed
+- Site repository: 197 tests, 0 failures, 647 assertions
+- Site TypeScript and Next.js 15.5.20 production build: passed
+- Signed-in fake-media Playwright: 2 passed; exact `If-Match`, idempotency key,
+  expiry body, and copy-ready URL asserted
+- `git diff --check`: passed in both repositories
+
+Updated staging:
+
+- Meeting Worker version:
+  `c21c3f4b-d146-4438-8ac7-b3b5490c1f08`
+- Vercel deployment: `dpl_HcjAUKJr9YYZTPPJFXWKDCJKzynv`
+- Immutable preview:
+  `https://mannan20-qpygbvspi-mannanjs-projects.vercel.app`
+- Stable protected alias:
+  `https://meet-staging-mannan20.vercel.app`
+- Worker unauthenticated workspace smoke: `401`
+- Protected meeting home and staged meeting route smokes: `200`, `200`
+
+The meeting repository still has no Git remote, so `ab8b2b6` remains a local
+commit even though its Worker artifact is deployed to staging.

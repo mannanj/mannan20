@@ -79,8 +79,8 @@ Reject malformed response identifiers, secret, expiry, or version. Never log or 
 
 ### Task 4: Stage both sides and preserve continuity
 
-- [ ] Deploy `meeting-platform-worker-staging` with the existing secrets and D1 binding.
-- [ ] Push the site branch, deploy the Vercel branch preview, and update only `meet-staging-mannan20.vercel.app`.
-- [ ] Smoke the Worker authorization boundary, site home, and staged meeting route.
-- [ ] Append exact commits, checks, deployments, limitations, and next ready work to the staging record and canonical handoff.
-- [ ] Commit and push the release record, leaving both feature worktrees intact for the active goal.
+- [x] Deploy `meeting-platform-worker-staging` with the existing secrets and D1 binding.
+- [x] Push the site branch, deploy the Vercel branch preview, and update only `meet-staging-mannan20.vercel.app`.
+- [x] Smoke the Worker authorization boundary, site home, and staged meeting route.
+- [x] Append exact commits, checks, deployments, limitations, and next ready work to the staging record and canonical handoff.
+- [x] Commit and push the release record, leaving both feature worktrees intact for the active goal.
