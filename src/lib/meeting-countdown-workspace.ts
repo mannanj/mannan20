@@ -18,13 +18,18 @@ export interface MeetingCountdownSnapshot {
 
 export class MeetingCountdownLoadError extends Error {
   readonly code: 'unavailable' | 'invalid_response';
+  readonly terminal: boolean;
 
-  constructor(code: 'unavailable' | 'invalid_response') {
+  constructor(
+    code: 'unavailable' | 'invalid_response',
+    terminal = false,
+  ) {
     super(code === 'unavailable'
       ? 'Meeting countdown is unavailable.'
       : 'Meeting countdown response is invalid.');
     this.name = 'MeetingCountdownLoadError';
     this.code = code;
+    this.terminal = terminal;
   }
 }
 
@@ -318,7 +323,15 @@ export async function loadMeetingCountdownSnapshot(input: {
   } catch {
     throw new MeetingCountdownLoadError('unavailable');
   }
-  if (!response.ok) throw new MeetingCountdownLoadError('unavailable');
+  if (!response.ok) {
+    throw new MeetingCountdownLoadError(
+      'unavailable',
+      response.status === 401
+        || response.status === 403
+        || response.status === 404
+        || response.status === 410,
+    );
+  }
   if (
     response.redirected
     || !response.headers.get('content-type')?.toLowerCase().startsWith('application/json')

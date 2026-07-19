@@ -259,4 +259,35 @@ describe('meeting countdown workspace client', () => {
       }
     }
   });
+
+  test('distinguishes access-ending responses from retryable outages without retaining response data', async () => {
+    for (const status of [401, 403, 404, 410]) {
+      try {
+        await loadMeetingCountdownSnapshot({
+          meetingId,
+          fetchImpl: (async () => json({
+            error: { code: 'private_access_detail' },
+          }, { status })) as unknown as typeof fetch,
+        });
+        throw new Error('expected load to fail');
+      } catch (error) {
+        expect(error).toBeInstanceOf(MeetingCountdownLoadError);
+        expect((error as MeetingCountdownLoadError).code).toBe('unavailable');
+        expect((error as MeetingCountdownLoadError).terminal).toBe(true);
+        expect(JSON.stringify(error)).not.toContain('private_access_detail');
+      }
+    }
+    try {
+      await loadMeetingCountdownSnapshot({
+        meetingId,
+        fetchImpl: (async () => json({ error: { code: 'temporary' } }, {
+          status: 503,
+        })) as unknown as typeof fetch,
+      });
+      throw new Error('expected load to fail');
+    } catch (error) {
+      expect(error).toBeInstanceOf(MeetingCountdownLoadError);
+      expect((error as MeetingCountdownLoadError).terminal).toBe(false);
+    }
+  });
 });
