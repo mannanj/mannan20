@@ -224,3 +224,46 @@ both available Cloudflare credentials returned `403` from the RealtimeKit Apps
 API because they lack `Realtime` or `Realtime Admin`. No RealtimeKit App,
 preset, room, participant, token, webhook, or media usage was created in this
 release.
+
+## Local RealtimeKit grant backend — not staged — 2026-07-18
+
+The server-side media-grant path is now implemented and verified locally. It
+reauthorizes the existing single account/guest meeting identity before every
+grant, lazily reconciles provider rooms and participants through token-free D1
+projection mappings, and returns only a no-store RealtimeKit browser token.
+Unknown, removed, early, and ended actors make zero provider calls. Missing
+provider configuration affects only the media-grant endpoint.
+
+Meeting repository commits:
+
+- `1bc0992` — first-party account/guest media authorization
+- `b28d791` — provider-neutral grant coordinator and race cleanup
+- `685b2c0` — bounded, redacted injected-fetch RealtimeKit adapter
+- `90c7076` — local `0002` media projection migration and strict D1 store
+- `29306ba` — authorize-first Worker media-grant route and optional bindings
+
+Release-grade local evidence under Node 22.22.0:
+
+- 27 domain tests
+- 110 application tests
+- 75 real-D1 persistence tests
+- 93 Worker tests
+- 6 provider-neutral coordinator tests
+- 10 exact RealtimeKit HTTP/redaction tests
+- all package builds and typechecks passed
+- Wrangler generated bindings are current
+- `git diff --check` passed
+- secret/token audit found no RealtimeKit credential value, D1 token column,
+  log payload, or raw provider error detail
+
+External staging state is unchanged. Migration `0002_meeting_media.sql` was not
+applied remotely, no new Worker version or Vercel deployment was published,
+and no RealtimeKit secret, App, preset, room, participant, or token was created.
+The latest staged Worker remains version
+`0c41f389-d594-44ff-81e6-fe9f4b3f6b20`.
+
+Live staging requires a Cloudflare credential with `Realtime` or `Realtime
+Admin`, then a dedicated staging App and host/participant presets. Only after
+those exist should `0002` be applied, non-secret IDs/presets and the API-token
+secret be installed, the Worker be deployed, and two-browser media acceptance
+begin.
