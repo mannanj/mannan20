@@ -22,11 +22,11 @@
 - Modify: `packages/meeting-application/src/application.ts`
 - Modify: Worker tests and fixtures that construct `MeetingWorkspaceProjection`
 
-- [ ] **Step 1: Write the failing projection assertion**
+- [x] **Step 1: Write the failing projection assertion**
 
 Add `serverNow: "2026-07-17T13:00:00.000Z"` to the exact owner workspace projection. Keep the existing `version: 1` assertion so both concurrency and clock authority remain contractual.
 
-- [ ] **Step 2: Run the focused application test and verify RED**
+- [x] **Step 2: Run the focused application test and verify RED**
 
 Run:
 
@@ -36,7 +36,7 @@ pnpm --filter @meeting-platform/meeting-application test -- workspace-lookup.tes
 
 Expected: the exact projection fails because `serverNow` is absent.
 
-- [ ] **Step 3: Add the required projection field**
+- [x] **Step 3: Add the required projection field**
 
 Add this field to `MeetingWorkspaceProjection`:
 
@@ -46,7 +46,7 @@ readonly serverNow: string;
 
 Pass `clock.now()` into `projectWorkspace` and serialize that exact value. Do not read `Date` directly inside the projection.
 
-- [ ] **Step 4: Update exact Worker fixtures and run all meeting gates**
+- [x] **Step 4: Update exact Worker fixtures and run all meeting gates**
 
 Run:
 
@@ -57,7 +57,7 @@ git diff --check
 
 Expected: all domain, application, persistence, and Worker tests plus builds/typechecks pass.
 
-- [ ] **Step 5: Commit the contract**
+- [x] **Step 5: Commit the contract**
 
 ```bash
 git add packages/meeting-application packages/meeting-worker
@@ -72,7 +72,7 @@ git commit -m "feat(workspace): expose authoritative server time"
 - Create: `src/lib/meeting-room-lifecycle.test.ts`
 - Create: `src/lib/meeting-room-lifecycle.ts`
 
-- [ ] **Step 1: Write the failing lifecycle table**
+- [x] **Step 1: Write the failing lifecycle table**
 
 Cover these exact states with fixed ISO instants:
 
@@ -103,7 +103,7 @@ expect(meetingRoomLifecycle(endedSession)).toMatchObject({
 
 Also prove an effective live-session end closes media even if a delayed reconciliation still reports `state: "live"`, and prove malformed/non-finite dates fail closed as `ended`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -113,7 +113,7 @@ bun test src/lib/meeting-room-lifecycle.test.ts
 
 Expected: module-not-found or missing-export failure.
 
-- [ ] **Step 3: Implement the pure lifecycle model**
+- [x] **Step 3: Implement the pure lifecycle model**
 
 Export focused types plus:
 
@@ -140,7 +140,7 @@ export function serverClockNowMs(input: {
 
 `serverClockNowMs` must use `serverNow + max(0, currentClientMs - receivedAtMs)` so browser clock skew cannot open the room early. `meetingRoomLifecycle` must be deterministic, return a non-negative `secondsUntilStart` only before start, and fail closed.
 
-- [ ] **Step 4: Run focused tests and TypeScript**
+- [x] **Step 4: Run focused tests and TypeScript**
 
 Run:
 
@@ -151,7 +151,7 @@ bun run typecheck
 
 Expected: both pass.
 
-- [ ] **Step 5: Commit the lifecycle model**
+- [x] **Step 5: Commit the lifecycle model**
 
 ```bash
 git add src/lib/meeting-room-lifecycle.ts src/lib/meeting-room-lifecycle.test.ts
@@ -164,7 +164,7 @@ git commit -m "feat(meet): model authoritative live-room timing"
 - Create: `src/lib/meeting-live-session.test.ts`
 - Create: `src/lib/meeting-live-session.ts`
 
-- [ ] **Step 1: Write a failing exact-request test**
+- [x] **Step 1: Write a failing exact-request test**
 
 Prove `startMeetingLiveSession` sends:
 
@@ -182,7 +182,7 @@ Prove `startMeetingLiveSession` sends:
 
 to `/meet/{meetingId}/api/live-session`, validates the returned session timestamps and next version, and rejects malformed or non-success responses without logging response data.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -192,7 +192,7 @@ bun test src/lib/meeting-live-session.test.ts
 
 Expected: missing module/export failure.
 
-- [ ] **Step 3: Implement the narrow browser client**
+- [x] **Step 3: Implement the narrow browser client**
 
 Export:
 
@@ -212,7 +212,7 @@ export async function startMeetingLiveSession(input: {
 
 Reuse `validMeetingIdentifier`, require a positive safe version, generate the browser idempotency key with `crypto.randomUUID`, require exact safe response fields, and expose a stable public error rather than provider or Worker internals.
 
-- [ ] **Step 4: Run focused tests and TypeScript**
+- [x] **Step 4: Run focused tests and TypeScript**
 
 Run:
 
@@ -223,7 +223,7 @@ bun run typecheck
 
 Expected: both pass.
 
-- [ ] **Step 5: Commit the mutation client**
+- [x] **Step 5: Commit the mutation client**
 
 ```bash
 git add src/lib/meeting-live-session.ts src/lib/meeting-live-session.test.ts
@@ -238,7 +238,7 @@ git commit -m "feat(meet): add owner early-start client"
 - Modify: `src/components/meet/meeting-room.tsx`
 - Modify: `e2e/meeting-shell.spec.ts`
 
-- [ ] **Step 1: Write failing static contracts**
+- [x] **Step 1: Write failing static contracts**
 
 Render the panel for an owner and participant before start and assert:
 
@@ -251,7 +251,7 @@ expect(participantMarkup).not.toContain('Start meeting early');
 
 Render the ended state and assert `Meeting ended` plus the scheduled time, with no `Join meeting` action.
 
-- [ ] **Step 2: Run the component test and verify RED**
+- [x] **Step 2: Run the component test and verify RED**
 
 Run:
 
@@ -261,19 +261,19 @@ bun test src/components/meet/meeting-lifecycle-panel.test.tsx
 
 Expected: missing component/export failure.
 
-- [ ] **Step 3: Implement the lifecycle panel and timer**
+- [x] **Step 3: Implement the lifecycle panel and timer**
 
 The panel receives already-derived lifecycle data, a localized start label, and optional `onStartEarly`. It renders a restrained second-updating countdown from five minutes onward and an hours/minutes label earlier. It must not claim media is connected.
 
-- [ ] **Step 4: Integrate lifecycle state in `MeetingRoom`**
+- [x] **Step 4: Integrate lifecycle state in `MeetingRoom`**
 
 Record `{serverNow, receivedAtMs}` when workspace data arrives, tick once per second while the workspace is before start or live, and derive the lifecycle through the pure helper. Only enable `useLocalMeetingMedia` and render `MeetingPreJoin` when `canJoinMedia` is true. On owner early start, call the tested client with the current version, replace the workspace version/session from its result, and transition to pre-join. On `meeting_conflict`, reload workspace; on other failure, keep the panel and show a concise retryable status.
 
-- [ ] **Step 5: Extend browser acceptance**
+- [x] **Step 5: Extend browser acceptance**
 
 Use a fixed `serverNow` in the workspace fixture. Assert before-start participants never request camera/microphone and cannot see `Join meeting`; assert the owner sees and can activate `Start meeting early`; stub the exact live-session request; then assert `Ready to join?` appears and the existing desktop/mobile pre-join flow remains intact. Add an ended fixture proving no device request and no join action.
 
-- [ ] **Step 6: Run the site gate**
+- [x] **Step 6: Run the site gate**
 
 Run:
 
@@ -287,7 +287,7 @@ git diff --check
 
 Expected: all unit tests, TypeScript, production build, desktop/mobile Playwright flows, and whitespace checks pass.
 
-- [ ] **Step 7: Commit the UI slice**
+- [x] **Step 7: Commit the UI slice**
 
 ```bash
 git add src/components/meet src/lib/meeting-room-lifecycle.ts e2e/meeting-shell.spec.ts
@@ -296,22 +296,22 @@ git commit -m "feat(meet): enforce the live-room lifecycle"
 
 ### Task 5: Stage and preserve continuity
 
-- [ ] **Step 1: Run final cross-repository gates**
+- [x] **Step 1: Run final cross-repository gates**
 
 Run `pnpm check` plus `git diff --check` in the meeting worktree and the full site gate from Task 4 in the site worktree.
 
-- [ ] **Step 2: Deploy the existing staging surfaces**
+- [x] **Step 2: Deploy the existing staging surfaces**
 
 Deploy only `meeting-platform-worker-staging`, push `feat/meeting-consent`, deploy a Vercel Preview, and update only `meet-staging-mannan20.vercel.app`. Do not create production resources or alter production aliases.
 
-- [ ] **Step 3: Smoke lifecycle boundaries**
+- [x] **Step 3: Smoke lifecycle boundaries**
 
 Verify unauthenticated direct Worker access remains `401`, protected `/meet` and a staged meeting route return `200`, and the meeting page does not request media before its authoritative open state.
 
-- [ ] **Step 4: Record exact evidence**
+- [x] **Step 4: Record exact evidence**
 
 Append commits, test counts, deployments, smokes, remaining RealtimeKit credential limitation, and the next ready action to `docs/superpowers/plans/2026-07-18-meeting-staging-release.md` and `/private/tmp/meeting-persistence-handoff.7jgK4U/HANDOFF.md`.
 
-- [ ] **Step 5: Commit and push the release record**
+- [x] **Step 5: Commit and push the release record**
 
 Leave both feature worktrees intact because the active goal continues into the RealtimeKit adapter and media-grant slice.

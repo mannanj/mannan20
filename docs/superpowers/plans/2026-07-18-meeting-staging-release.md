@@ -166,3 +166,61 @@ Updated staging:
 
 The meeting repository still has no Git remote, so `ab8b2b6` remains a local
 commit even though its Worker artifact is deployed to staging.
+
+## Authoritative live-room gate — 2026-07-18
+
+The workspace now uses the meeting application's `serverNow` plus monotonic
+browser elapsed time to decide whether live media is closed, scheduled, open,
+live, or ended. Before the scheduled instant, ordinary participants see a
+countdown and make no camera or microphone requests. The signed-in owner gets
+one explicit **Start meeting early** action backed by the existing versioned
+live-session command. At the scheduled instant the local device room opens
+automatically. Ended or expired live sessions stop media and render a durable
+ended-workspace state.
+
+The lifecycle UI also hides the private-invite control after the meeting ends;
+the current invite policy expires links at the scheduled end, so showing that
+action afterward would create an already-dead link. Post-meeting additions can
+receive a separately designed workspace-access expiry policy later.
+
+Implementation commits:
+
+- Meeting repository `9dd8a57` — expose the authoritative application-clock
+  instant in the authorized workspace projection
+- Site `8fd5fa4` — derive before-start/open/live/ended behavior from server time
+  and monotonic elapsed time, failing closed for malformed state
+- Site `e508ee0` — add the exact versioned owner early-start client
+- Site `6eb95ee` — gate device acquisition, add the lifecycle UI, preserve
+  version changes across invite/early-start controls, and cover desktop/mobile
+
+Fresh verification:
+
+- Meeting repository: 27 domain, 105 application, 68 persistence, and 81
+  Worker tests; all builds/typechecks passed
+- Site repository: 209 tests, 0 failures, 682 assertions
+- Site TypeScript and Next.js 15.5.20 production build: passed
+- Playwright: 3 passed, including zero media requests before start and after
+  end, exact early-start headers/body, desktop stage, and mobile pre-join
+- Original-resolution inspection: before-start desktop, ended desktop, and
+  mobile pre-join showed no clipping, overlap, stale controls, or false media
+  state
+- `git diff --check`: passed in both repositories
+
+Updated staging:
+
+- Meeting Worker version:
+  `0c41f389-d594-44ff-81e6-fe9f4b3f6b20`
+- Vercel deployment: `dpl_6Awhc72AtijdfpBcoJYSkvmTSdhU`
+- Immutable preview:
+  `https://mannan20-or5z7rnyn-mannanjs-projects.vercel.app`
+- Stable protected alias:
+  `https://meet-staging-mannan20.vercel.app`
+- Worker unauthenticated workspace smoke: `401`
+- Protected meeting home and staged meeting route smokes: `200`, `200`
+
+Cloudflare RealtimeKit remains the approved next provider behind the custom
+stage. Official documentation still lists it as Beta and free during Beta, but
+both available Cloudflare credentials returned `403` from the RealtimeKit Apps
+API because they lack `Realtime` or `Realtime Admin`. No RealtimeKit App,
+preset, room, participant, token, webhook, or media usage was created in this
+release.
