@@ -276,16 +276,16 @@ git commit -m "feat(meet): add in-memory room controller"
 
 **Files:**
 - Modify: `package.json`
-- Modify: `pnpm-lock.yaml`
+- Modify: `bun.lock`
 - Create: `src/lib/realtimekit-browser-sdk.ts`
 - Create: `src/lib/realtimekit-browser-sdk.test.ts`
 
-- [ ] **Step 1: Install the exact inspected SDK and write failing adapter tests**
+- [x] **Step 1: Install the exact inspected SDK and write failing adapter tests**
 
 Run:
 
 ```bash
-pnpm add @cloudflare/realtimekit@2.0.1
+bun add @cloudflare/realtimekit@2.0.1
 ```
 
 Write tests against an injected fake Core client loader. Prove initialization
@@ -303,7 +303,7 @@ leaking raw errors, calls `self.setDevice()` before enabling requested media,
 and uses `self.enableAudio/disableAudio`, `self.enableVideo/disableVideo`,
 `meeting.join()`, and `meeting.leave()` exactly once per action.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -313,7 +313,7 @@ bun test src/lib/realtimekit-browser-sdk.test.ts
 
 Expected: module-not-found failure for the adapter.
 
-- [ ] **Step 3: Implement the narrow SDK adapter**
+- [x] **Step 3: Implement the narrow SDK adapter**
 
 Export a default factory with an injectable loader:
 
@@ -339,7 +339,7 @@ sort the local participant first and remote participants by name then ID, and
 emit a new immutable snapshot after each relevant event. Never call console,
 analytics, storage, history, or URL APIs.
 
-- [ ] **Step 4: Run GREEN and bundle checks**
+- [x] **Step 4: Run GREEN and bundle checks**
 
 Run:
 
@@ -351,10 +351,10 @@ bun run build
 
 Expected: adapter tests, TypeScript, and the Next production build pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
-git add package.json pnpm-lock.yaml src/lib/realtimekit-browser-sdk.ts src/lib/realtimekit-browser-sdk.test.ts
+git add package.json bun.lock src/lib/realtimekit-browser-sdk.ts src/lib/realtimekit-browser-sdk.test.ts
 git commit -m "feat(meet): adapt RealtimeKit Core in browser"
 ```
 
