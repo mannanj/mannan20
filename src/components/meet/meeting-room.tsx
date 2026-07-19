@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { MeetingShell } from './meeting-shell';
+import { MeetingPreJoin } from './meeting-prejoin';
+import { MeetingStage } from './meeting-stage';
+import { useLocalMeetingMedia } from './use-local-meeting-media';
 
 interface Workspace {
   meetingId: string;
@@ -26,6 +29,9 @@ export function MeetingRoom({
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [state, setState] = useState<'loading' | 'entry' | 'working' | 'unavailable'>('loading');
+  const [phase, setPhase] = useState<'prejoin' | 'joined'>('prejoin');
+  const media = useLocalMeetingMedia(Boolean(workspace));
+  const participantLabel = signedInEmail ?? 'Guest';
 
   const load = useCallback(async () => {
     const response = await fetch(`/meet/${meetingId}/api/workspace`, { cache: 'no-store' }).catch(() => null);
@@ -72,17 +78,31 @@ export function MeetingRoom({
     <MeetingShell>
       <section className="py-12 sm:py-20">
         {workspace ? (
-          <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-            <div>
+          <div>
+            <div className="border-b border-white/8 pb-7">
               <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/55">{workspace.session?.state === 'live' ? 'Live now' : workspace.status}</p>
-              <h1 className="mt-4 font-[family-name:var(--font-caption)] text-5xl tracking-[-0.04em] sm:text-7xl">{workspace.title ?? 'Untitled meeting'}</h1>
-              <p className="mt-6 text-sm text-white/45">{new Date(workspace.schedule.startsAt).toLocaleString()} · {Math.round(workspace.schedule.durationSeconds / 60)} minutes</p>
+              <h1 className="mt-3 font-[family-name:var(--font-caption)] text-4xl tracking-[-0.04em] sm:text-5xl">{workspace.title ?? 'Untitled meeting'}</h1>
+              <p className="mt-4 text-sm text-white/45">{new Date(workspace.schedule.startsAt).toLocaleString()} · {Math.round(workspace.schedule.durationSeconds / 60)} minutes</p>
             </div>
-            <aside className="rounded-xl border border-white/10 bg-white/[0.035] p-5">
-              <p className="text-xs uppercase tracking-[0.14em] text-white/35">Your access</p>
-              <p className="mt-3 text-sm capitalize text-white/80">{workspace.currentParticipant.role}</p>
-              <p className="mt-6 text-xs leading-5 text-white/40">The durable workspace is ready. Media and realtime presence are the next integration layer.</p>
-            </aside>
+            {phase === 'prejoin' ? (
+              <MeetingPreJoin
+                participantLabel={participantLabel}
+                role={workspace.currentParticipant.role}
+                media={media}
+                onJoin={() => setPhase('joined')}
+              />
+            ) : (
+              <MeetingStage
+                participantLabel={participantLabel}
+                role={workspace.currentParticipant.role}
+                media={media}
+                onLeave={() => {
+                  media.stop();
+                  setPhase('prejoin');
+                  void media.retry();
+                }}
+              />
+            )}
           </div>
         ) : state === 'loading' ? (
           <p className="text-sm text-white/45">Opening meeting…</p>

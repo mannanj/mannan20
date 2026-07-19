@@ -323,7 +323,7 @@ git commit -m "feat(meet): add device prejoin room"
 - Create: `src/components/meet/meeting-stage.test.tsx`
 - Modify: `src/components/meet/meeting-room.tsx`
 
-- [ ] **Step 1: Write the failing truthfulness test**
+- [x] **Step 1: Write the failing truthfulness test**
 
 ```tsx
 expect(markup).toContain('You');
@@ -332,13 +332,13 @@ expect(markup).toContain('Leave');
 expect(markup).not.toContain('participants joined');
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `bun test src/components/meet/meeting-stage.test.tsx`
 
 Expected: FAIL because the stage does not exist.
 
-- [ ] **Step 3: Implement and integrate the stage**
+- [x] **Step 3: Implement and integrate the stage**
 
 Fill the meeting canvas with the same local preview/fallback, anchor the shared
 controls below it, and show a narrow rail containing the current role and
@@ -351,13 +351,13 @@ as the local label. Join changes only local phase. Leave calls `media.stop()`
 and returns to pre-join. Preserve loading, account/guest entry, admission,
 unavailable, and credential-revocation branches exactly.
 
-- [ ] **Step 4: Run the focused gate**
+- [x] **Step 4: Run the focused gate**
 
 Run: `bun test src/lib/local-meeting-media.test.ts src/components/meet src/app/meet && bun run typecheck`
 
 Expected: all focused tests PASS and TypeScript exits 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/meet/meeting-stage.tsx src/components/meet/meeting-stage.test.tsx src/components/meet/meeting-room.tsx

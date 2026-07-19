@@ -32,6 +32,7 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   });
   await page.goto(`/meet/${MEETING_ID}`);
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ready to join?' })).toBeVisible();
   await expect(page.getByText('owner', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/meeting-workspace-desktop.png', fullPage: true });
 
