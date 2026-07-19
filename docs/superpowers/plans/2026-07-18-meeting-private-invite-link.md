@@ -70,12 +70,12 @@ Reject malformed response identifiers, secret, expiry, or version. Never log or 
 - Modify: `src/components/meet/meeting-room.tsx`
 - Modify: `e2e/meeting-shell.spec.ts`
 
-- [ ] Write a failing static contract test proving the control uses “Invite people”, describes expiry, and does not render the raw secret before creation.
-- [ ] Run the component test and verify RED.
-- [ ] Implement a compact workspace-header control shown only when `signedInEmail !== null` and role is `owner` or `moderator`.
-- [ ] On create, use the current workspace version and scheduled end time. Hold the result only in React state, update the workspace version, and expose “Copy private link”. Use `navigator.clipboard` with selected-text fallback and concise copied/error status.
-- [ ] Extend the signed-in Playwright workspace fixture with `version: 1`, stub the access-link response, verify the exact `If-Match` header and expiry body, then verify copy-ready UI on desktop and mobile.
-- [ ] Run all site gates and commit `feat(meet): add private invite control`.
+- [x] Write a failing static contract test proving the control uses “Invite people”, describes expiry, and does not render the raw secret before creation.
+- [x] Run the component test and verify RED.
+- [x] Implement a compact workspace-header control shown only when `signedInEmail !== null` and role is `owner` or `moderator`.
+- [x] On create, use the current workspace version and scheduled end time. Hold the result only in React state, update the workspace version, and expose “Copy private link”. Use `navigator.clipboard` with selected-text fallback and concise copied/error status.
+- [x] Extend the signed-in Playwright workspace fixture with `version: 1`, stub the access-link response, verify the exact `If-Match` header and expiry body, then verify copy-ready UI on desktop and mobile.
+- [x] Run all site gates and commit `feat(meet): add private invite control`.
 
 ### Task 4: Stage both sides and preserve continuity
 

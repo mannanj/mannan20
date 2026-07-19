@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { MeetingShell } from './meeting-shell';
+import { MeetingInviteLink } from './meeting-invite-link';
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
 
 interface Workspace {
   meetingId: string;
+  version: number;
   title?: string;
   status: string;
   schedule: { startsAt: string; endsAt: string; durationSeconds: number };
@@ -79,10 +81,27 @@ export function MeetingRoom({
       <section className="py-12 sm:py-20">
         {workspace ? (
           <div>
-            <div className="border-b border-white/8 pb-7">
-              <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/55">{workspace.session?.state === 'live' ? 'Live now' : workspace.status}</p>
-              <h1 className="mt-3 font-[family-name:var(--font-caption)] text-4xl tracking-[-0.04em] sm:text-5xl">{workspace.title ?? 'Untitled meeting'}</h1>
-              <p className="mt-4 text-sm text-white/45">{new Date(workspace.schedule.startsAt).toLocaleString()} · {Math.round(workspace.schedule.durationSeconds / 60)} minutes</p>
+            <div className="flex flex-col gap-6 border-b border-white/8 pb-7 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/55">{workspace.session?.state === 'live' ? 'Live now' : workspace.status}</p>
+                <h1 className="mt-3 font-[family-name:var(--font-caption)] text-4xl tracking-[-0.04em] sm:text-5xl">{workspace.title ?? 'Untitled meeting'}</h1>
+                <p className="mt-4 text-sm text-white/45">{new Date(workspace.schedule.startsAt).toLocaleString()} · {Math.round(workspace.schedule.durationSeconds / 60)} minutes</p>
+              </div>
+              {signedInEmail !== null &&
+                (workspace.currentParticipant.role === 'owner' ||
+                  workspace.currentParticipant.role === 'moderator') &&
+                Number.isSafeInteger(workspace.version) && (
+                  <MeetingInviteLink
+                    meetingId={workspace.meetingId}
+                    version={workspace.version}
+                    expiresAt={workspace.schedule.endsAt}
+                    onVersionChange={(version) => {
+                      setWorkspace((current) =>
+                        current ? { ...current, version } : current,
+                      );
+                    }}
+                  />
+                )}
             </div>
             {phase === 'prejoin' ? (
               <MeetingPreJoin

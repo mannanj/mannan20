@@ -1,4 +1,4 @@
-import { validMeetingIdentifier } from './meeting-bff';
+import { validMeetingIdentifier } from './meeting-identifier';
 
 const SECRET_RE = /^[A-Za-z0-9_-]{16,256}$/u;
 
@@ -94,4 +94,3 @@ export async function createMeetingInvite(input: {
     version: data.version as number,
   };
 }
-

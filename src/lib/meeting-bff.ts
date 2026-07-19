@@ -1,11 +1,8 @@
 import { meetingWorkerRequest, type MeetingWorkerResult } from './meeting-worker';
+import { validMeetingIdentifier } from './meeting-identifier';
 
 const MAX_BODY_BYTES = 16 * 1024;
-const IDENTIFIER_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u;
-
-export function validMeetingIdentifier(value: unknown): value is string {
-  return typeof value === 'string' && IDENTIFIER_RE.test(value);
-}
+export { validMeetingIdentifier };
 
 export function sameOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
