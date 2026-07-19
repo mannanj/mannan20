@@ -80,6 +80,54 @@ describe('meeting Worker account assertions', () => {
 });
 
 describe('server-only meeting Worker requests', () => {
+  test('forwards exact first and cursor account directory GETs without command data', async () => {
+    const paths = [
+      '/v1/account/meetings/upcoming',
+      '/v1/account/meetings/upcoming/cursor_1',
+    ] as const;
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    globalThis.fetch = mock(async (input, init) => {
+      requests.push({ url: String(input), init });
+      return Response.json({ data: { serverNow: '2026-07-19T12:00:00.000Z', meetings: [] } });
+    }) as unknown as typeof fetch;
+
+    for (const path of paths) {
+      await expect(meetingWorkerRequest({
+        method: 'GET',
+        path,
+        accountId: ACCOUNT_ID,
+      })).resolves.toEqual({
+        ok: true,
+        status: 200,
+        data: { serverNow: '2026-07-19T12:00:00.000Z', meetings: [] },
+      });
+    }
+    expect(requests.map(({ url }) => url)).toEqual(paths.map((path) =>
+      `https://meeting-worker.example.workers.dev${path}`
+    ));
+    for (const [index, request] of requests.entries()) {
+      expect(request.init).toMatchObject({
+        method: 'GET',
+        cache: 'no-store',
+        redirect: 'error',
+      });
+      expect(request.init?.body).toBeUndefined();
+      const headers = new Headers(request.init?.headers);
+      expect(headers.get('authorization')).toBe(`Bearer ${SERVICE_SECRET}`);
+      expect(headers.get('x-account-assertion')).toContain('.');
+      expect(headers.has('content-type')).toBe(false);
+      expect(headers.has('idempotency-key')).toBe(false);
+      expect(headers.has('if-match')).toBe(false);
+      expect(headers.has('x-guest-participant-id')).toBe(false);
+      expect(headers.has('x-guest-credential')).toBe(false);
+      expect(decodePayload(headers.get('x-account-assertion')!)).toMatchObject({
+        method: 'GET',
+        path: paths[index],
+        bodySha256: createHash('sha256').update('').digest('base64url'),
+      });
+    }
+  });
+
   test('forwards only the private contract and preserves safe response metadata', async () => {
     globalThis.fetch = mock(async (input, init) => {
       expect(String(input)).toBe('https://meeting-worker.example.workers.dev/v1/meetings');

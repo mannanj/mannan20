@@ -12,6 +12,7 @@ import {
 } from './[meetingId]/api/[...operation]/route';
 import { POST as enterMeeting } from './[meetingId]/api/entry/route';
 import { GET as resolveShareLink } from './j/[secret]/route';
+import * as meetingCollectionRoute from '../api/meetings/route';
 
 const originalFetch = globalThis.fetch;
 const originalEnv = {
@@ -49,6 +50,168 @@ afterEach(() => {
     if (value === undefined) delete process.env[name];
     else process.env[name] = value;
   }
+});
+
+type DirectoryRouteHandler = (
+  request: Request,
+  context?: { readonly params: Promise<{ readonly cursor: string }> },
+) => Promise<Response>;
+
+function directoryPage() {
+  return {
+    serverNow: '2026-07-19T12:00:00.000Z',
+    meetings: [{
+      meetingId: MEETING_ID,
+      title: 'Planning',
+      status: 'scheduled',
+      role: 'owner',
+      startsAt: '2026-07-20T14:00:00.000Z',
+      endsAt: '2026-07-20T15:00:00.000Z',
+      durationSeconds: 3600,
+      participantCount: 2,
+      version: 3,
+      canonicalPath: `/meet/${MEETING_ID}`,
+    }],
+  };
+}
+
+async function directorySession(): Promise<string> {
+  return createSiteSessionCookie({
+    accountId: ACCOUNT_ID,
+    email: 'person@example.com',
+    role: 'user',
+  });
+}
+
+describe('upcoming account directory BFF routes', () => {
+  test('proxies the first page through one exact signed bodyless GET', async () => {
+    const session = await directorySession();
+    let assertion = '';
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        'https://meeting-worker.example.workers.dev/v1/account/meetings/upcoming',
+      );
+      expect(init?.method).toBe('GET');
+      expect(init?.body).toBeUndefined();
+      const headers = new Headers(init?.headers);
+      assertion = headers.get('x-account-assertion') ?? '';
+      expect(assertion).toContain('.');
+      expect(headers.has('x-guest-participant-id')).toBe(false);
+      expect(headers.has('x-guest-credential')).toBe(false);
+      expect(headers.has('if-match')).toBe(false);
+      expect(headers.has('idempotency-key')).toBe(false);
+      expect(JSON.stringify({ input: String(input), init })).not.toContain(
+        'person@example.com',
+      );
+      return Response.json({ data: directoryPage() });
+    }) as unknown as typeof fetch;
+    const get = (meetingCollectionRoute as typeof meetingCollectionRoute & {
+      readonly GET: DirectoryRouteHandler;
+    }).GET;
+    expect(get).toBeTypeOf('function');
+
+    const response = await get(new Request('https://mannan.is/api/meetings', {
+      headers: { cookie: cookieHeader(session) },
+    }));
+    const text = await response.text();
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(JSON.parse(text)).toEqual({ data: directoryPage() });
+    expect(text).not.toContain('person@example.com');
+    expect(text).not.toContain(process.env.MEETING_SERVICE_SECRET!);
+    expect(text).not.toContain(assertion);
+  });
+
+  test('proxies one validated cursor page through the exact Worker path', async () => {
+    const routePath = '../api/meetings/upcoming/[cursor]/route';
+    const route = await import(routePath) as { readonly GET: DirectoryRouteHandler };
+    const session = await directorySession();
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        'https://meeting-worker.example.workers.dev/v1/account/meetings/upcoming/cursor_1',
+      );
+      expect(init?.method).toBe('GET');
+      expect(init?.body).toBeUndefined();
+      expect(new Headers(init?.headers).get('x-account-assertion')).toContain('.');
+      return Response.json({ data: directoryPage() });
+    }) as unknown as typeof fetch;
+
+    const response = await route.GET(
+      new Request('https://mannan.is/api/meetings/upcoming/cursor_1', {
+        headers: { cookie: cookieHeader(session) },
+      }),
+      { params: Promise.resolve({ cursor: 'cursor_1' }) },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ data: directoryPage() });
+  });
+
+  test('requires the shared account session before Worker fetch', async () => {
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: directoryPage() });
+    }) as unknown as typeof fetch;
+    const get = (meetingCollectionRoute as typeof meetingCollectionRoute & {
+      readonly GET: DirectoryRouteHandler;
+    }).GET;
+    expect(get).toBeTypeOf('function');
+    const response = await get(new Request('https://mannan.is/api/meetings'));
+    expect(response.status).toBe(401);
+    expect(calls).toBe(0);
+  });
+
+  test('rejects query, body, command headers, and invalid cursor before fetch', async () => {
+    const session = await directorySession();
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: directoryPage() });
+    }) as unknown as typeof fetch;
+    const get = (meetingCollectionRoute as typeof meetingCollectionRoute & {
+      readonly GET: DirectoryRouteHandler;
+    }).GET;
+    expect(get).toBeTypeOf('function');
+    const cookie = cookieHeader(session);
+    const ordinary = new Request('https://mannan.is/api/meetings', {
+      headers: { cookie },
+    });
+    const bodyRequest = {
+      method: 'GET',
+      url: ordinary.url,
+      headers: ordinary.headers,
+      body: new Response('{}').body,
+    } as Request;
+    for (const request of [
+      new Request('https://mannan.is/api/meetings?private=1', {
+        headers: { cookie },
+      }),
+      bodyRequest,
+      new Request('https://mannan.is/api/meetings', {
+        headers: { cookie, 'if-match': '"1"' },
+      }),
+      new Request('https://mannan.is/api/meetings', {
+        headers: { cookie, 'idempotency-key': 'unsafe_command' },
+      }),
+    ]) {
+      const response = await get(request);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: { code: 'invalid_request' } });
+    }
+
+    const routePath = '../api/meetings/upcoming/[cursor]/route';
+    const route = await import(routePath) as { readonly GET: DirectoryRouteHandler };
+    for (const cursor of ['bad.cursor', '../unsafe', 'x'.repeat(1025)]) {
+      const response = await route.GET(
+        new Request(`https://mannan.is/api/meetings/upcoming/${encodeURIComponent(cursor)}`, {
+          headers: { cookie },
+        }),
+        { params: Promise.resolve({ cursor }) },
+      );
+      expect(response.status).toBe(404);
+    }
+    expect(calls).toBe(0);
+  });
 });
 
 describe('meeting admission routes', () => {
