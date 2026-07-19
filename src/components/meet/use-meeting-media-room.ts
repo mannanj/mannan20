@@ -13,7 +13,15 @@ import {
   type MeetingMediaSdk,
   type MeetingMediaSnapshot,
 } from '@/lib/meeting-media-controller';
-import { requestMeetingMediaGrant } from '@/lib/meeting-media-grant';
+import {
+  MeetingMediaGrantError,
+  requestMeetingMediaGrant,
+  type RequestMeetingMediaGrantInput,
+} from '@/lib/meeting-media-grant';
+import {
+  MeetingMediaJoinAttempt,
+  type MeetingMediaJoinCommand,
+} from '@/lib/meeting-media-join-attempt';
 import { createRealtimeKitBrowserSdk } from '@/lib/realtimekit-browser-sdk';
 import type { LocalMeetingMediaState } from './use-local-meeting-media';
 
@@ -49,6 +57,40 @@ export function meetingMediaJoinInput(
   };
 }
 
+export function meetingMediaGrantRequestForAttempt(input: {
+  attempt: MeetingMediaJoinAttempt;
+  meetingId: string;
+  version: number | null;
+}): Omit<RequestMeetingMediaGrantInput, 'fetcher'> {
+  if (input.version === null) {
+    throw new MeetingMediaGrantError('invalid_request');
+  }
+  const command: MeetingMediaJoinCommand = input.attempt.begin(input.version);
+  return {
+    meetingId: input.meetingId,
+    expectedVersion: command.expectedVersion,
+    idempotencyKey: command.idempotencyKey,
+  };
+}
+
+export function meetingConnectedRefreshDecision(input: {
+  connection: MeetingMediaSnapshot['connection'];
+  workspace: { version: number; session?: unknown } | null;
+  lastVersion: number | null;
+}): { lastVersion: number | null; shouldRefresh: boolean } {
+  if (input.connection !== 'connected') {
+    return { lastVersion: null, shouldRefresh: false };
+  }
+  if (
+    input.workspace === null ||
+    input.workspace.session !== undefined ||
+    input.lastVersion === input.workspace.version
+  ) {
+    return { lastVersion: input.lastVersion, shouldRefresh: false };
+  }
+  return { lastVersion: input.workspace.version, shouldRefresh: true };
+}
+
 function browserMeetingMediaSdk(): MeetingMediaSdk {
   if (
     typeof window !== 'undefined' &&
@@ -64,9 +106,18 @@ export function useMeetingMediaRoom(input: {
   meetingId: string;
   enabled: boolean;
   media: LocalMeetingMediaState;
+  version: number | null;
+  reloadWorkspace(): Promise<void>;
 }) {
   const mediaRef = useRef(input.media);
   mediaRef.current = input.media;
+  const versionRef = useRef(input.version);
+  versionRef.current = input.version;
+  const reloadWorkspaceRef = useRef(input.reloadWorkspace);
+  reloadWorkspaceRef.current = input.reloadWorkspace;
+  const attemptRef = useRef<MeetingMediaJoinAttempt | null>(null);
+  attemptRef.current ??= new MeetingMediaJoinAttempt();
+  const completedConnectionRef = useRef(false);
   const sdk = useMemo(browserMeetingMediaSdk, []);
   const controllerRef = useRef<MeetingMediaController | null>(null);
   const [snapshot, setSnapshot] = useState<MeetingMediaSnapshot>(INITIAL_SNAPSHOT);
@@ -74,9 +125,36 @@ export function useMeetingMediaRoom(input: {
   const [selectedCameraId, setSelectedCameraId] = useState('');
 
   useEffect(() => {
+    const attempt = attemptRef.current!;
+    attempt.cancel();
+    completedConnectionRef.current = false;
     const controller = new MeetingMediaController({
       meetingId: input.meetingId,
-      grant: () => requestMeetingMediaGrant(input.meetingId),
+      grant: async () => {
+        try {
+          return await requestMeetingMediaGrant(
+            meetingMediaGrantRequestForAttempt({
+              attempt,
+              meetingId: input.meetingId,
+              version: versionRef.current,
+            }),
+          );
+        } catch (error) {
+          if (
+            error instanceof MeetingMediaGrantError &&
+            error.code === 'meeting_conflict'
+          ) {
+            attempt.cancel();
+            try {
+              await reloadWorkspaceRef.current();
+            } finally {
+              throw error;
+            }
+          }
+          attempt.failed();
+          throw error;
+        }
+      },
       sdk,
       stopPreJoin: () => mediaRef.current.stop(),
     });
@@ -84,10 +162,21 @@ export function useMeetingMediaRoom(input: {
     const unsubscribe = controller.subscribe(setSnapshot);
     return () => {
       if (controllerRef.current === controller) controllerRef.current = null;
+      attempt.cancel();
       unsubscribe();
       void controller.dispose();
     };
   }, [input.meetingId, sdk]);
+
+  useEffect(() => {
+    if (snapshot.connection !== 'connected') {
+      completedConnectionRef.current = false;
+      return;
+    }
+    if (completedConnectionRef.current) return;
+    completedConnectionRef.current = true;
+    attemptRef.current?.complete();
+  }, [snapshot.connection]);
 
   useEffect(() => {
     if (!input.enabled) void controllerRef.current?.leave();

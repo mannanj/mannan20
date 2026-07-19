@@ -2,6 +2,7 @@ import { clearMeetingCookies, readGuestCredential } from '@/lib/meeting-cookies'
 import {
   meetingResultResponse,
   proxyAccountMeeting,
+  quotedVersion,
   readMeetingJson,
   sameOrigin,
   validMeetingIdentifier,
@@ -10,6 +11,8 @@ import { meetingWorkerRequest } from '@/lib/meeting-worker';
 import { readSiteSession } from '@/lib/site-session';
 
 export const dynamic = 'force-dynamic';
+
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/u;
 
 interface Context {
   params: Promise<{ meetingId: string; operation: string[] }>;
@@ -86,6 +89,20 @@ async function handle(request: Request, context: Context): Promise<Response> {
     operation.length === 1 &&
     operation[0] === 'media-grant' &&
     request.method === 'POST';
+  const mediaExpectedVersion = mediaGrant ? quotedVersion(request) : undefined;
+  const mediaIdempotencyKey = mediaGrant
+    ? request.headers.get('idempotency-key') ?? undefined
+    : undefined;
+  if (
+    mediaGrant &&
+    (
+      mediaExpectedVersion === undefined ||
+      mediaIdempotencyKey === undefined ||
+      !IDEMPOTENCY_KEY_PATTERN.test(mediaIdempotencyKey)
+    )
+  ) {
+    return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
+  }
   const session = await readSiteSession(request.headers.get('cookie'));
   if (session !== null) {
     const body = request.method === 'POST'
@@ -118,6 +135,12 @@ async function handle(request: Request, context: Context): Promise<Response> {
     method: mediaGrant ? 'POST' : 'GET',
     path,
     ...(mediaGrant ? { body: { displayName: guest.displayName } } : {}),
+    ...(mediaGrant
+      ? {
+          idempotencyKey: mediaIdempotencyKey,
+          ifMatch: mediaExpectedVersion,
+        }
+      : {}),
     guest: { participantId: guest.participantId, credential: guest.credential },
   });
   const response = meetingResultResponse(result);

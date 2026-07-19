@@ -162,12 +162,23 @@ describe('meeting media-grant route', () => {
       const headers = new Headers(init?.headers);
       expect(headers.get('x-account-assertion')).toContain('.');
       expect(headers.has('x-guest-credential')).toBe(false);
+      expect(headers.get('if-match')).toBe('"7"');
+      expect(headers.get('idempotency-key')).toBe('browser_media_account_1');
       expect(JSON.parse(String(init?.body))).toEqual({
         displayName: 'owner@example.com',
       });
       return Response.json({
-        data: { provider: 'realtimekit', authToken: 'test-token' },
-      });
+        data: {
+          provider: 'realtimekit',
+          authToken: 'test-token',
+          meetingVersion: 8,
+          session: {
+            sessionId: 'session_1',
+            actualStartedAt: '2026-07-19T14:00:01.000Z',
+            effectiveEndsAt: '2026-07-19T15:00:00.000Z',
+          },
+        },
+      }, { headers: { etag: '"8"' } });
     }) as unknown as typeof fetch;
 
     const response = await meetingOperation(
@@ -176,9 +187,9 @@ describe('meeting media-grant route', () => {
         headers: {
           origin: 'https://mannan.is',
           cookie: cookieHeader(session),
-          'content-type': 'application/json',
+          'if-match': '"7"',
+          'idempotency-key': 'browser_media_account_1',
         },
-        body: JSON.stringify({ displayName: 'Mallory' }),
       }),
       { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
     );
@@ -186,8 +197,18 @@ describe('meeting media-grant route', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('no-store');
     expect(await response.json()).toEqual({
-      data: { provider: 'realtimekit', authToken: 'test-token' },
+      data: {
+        provider: 'realtimekit',
+        authToken: 'test-token',
+        meetingVersion: 8,
+        session: {
+          sessionId: 'session_1',
+          actualStartedAt: '2026-07-19T14:00:01.000Z',
+          effectiveEndsAt: '2026-07-19T15:00:00.000Z',
+        },
+      },
     });
+    expect(response.headers.get('etag')).toBe('"8"');
   });
 
   test('derives a guest display name without exposing its credential to JavaScript', async () => {
@@ -204,6 +225,8 @@ describe('meeting media-grant route', () => {
         'guest_0123456789abcdef0123456789abcdef',
       );
       expect(headers.get('x-guest-credential')).toBe('guest:issued-credential');
+      expect(headers.get('if-match')).toBe('"7"');
+      expect(headers.get('idempotency-key')).toBe('browser_media_guest_1');
       expect(JSON.parse(String(init?.body))).toEqual({ displayName: 'River' });
       return Response.json({
         data: { provider: 'realtimekit', authToken: 'guest-test-token' },
@@ -216,6 +239,8 @@ describe('meeting media-grant route', () => {
         headers: {
           origin: 'https://mannan.is',
           cookie: cookieHeader(guest),
+          'if-match': '"7"',
+          'idempotency-key': 'browser_media_guest_1',
         },
       }),
       { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
@@ -223,6 +248,59 @@ describe('meeting media-grant route', () => {
 
     expect(response.status).toBe(200);
     expect(await response.text()).not.toContain('guest:issued-credential');
+  });
+
+  test('rejects missing or malformed command headers before identity or Worker fetch', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    const guest = createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
+      credential: 'guest:issued-credential',
+    });
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: {} });
+    }) as unknown as typeof fetch;
+    for (const headers of [
+      new Headers({
+        origin: 'https://mannan.is',
+        cookie: cookieHeader(session),
+        'if-match': '"7"',
+      }),
+      new Headers({
+        origin: 'https://mannan.is',
+        cookie: cookieHeader(session),
+        'if-match': '7',
+        'idempotency-key': 'browser_media_invalid_1',
+      }),
+      new Headers({
+        origin: 'https://mannan.is',
+        cookie: cookieHeader(guest),
+        'idempotency-key': 'browser_media_invalid_2',
+      }),
+      new Headers({
+        origin: 'https://mannan.is',
+        'if-match': '"7"',
+        'idempotency-key': 'browser media invalid',
+      }),
+    ]) {
+      const response = await meetingOperation(
+        new Request(`https://mannan.is/meet/${MEETING_ID}/api/media-grant`, {
+          method: 'POST',
+          headers,
+        }),
+        { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
+      );
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: { code: 'invalid_request' } });
+    }
+    expect(calls).toBe(0);
   });
 
   test('requires same-origin active account or guest identity', async () => {
@@ -238,7 +316,11 @@ describe('meeting media-grant route', () => {
     const anonymous = await meetingOperation(
       new Request(`https://mannan.is/meet/${MEETING_ID}/api/media-grant`, {
         method: 'POST',
-        headers: { origin: 'https://mannan.is' },
+        headers: {
+          origin: 'https://mannan.is',
+          'if-match': '"7"',
+          'idempotency-key': 'browser_media_anonymous_1',
+        },
       }),
       { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
     );

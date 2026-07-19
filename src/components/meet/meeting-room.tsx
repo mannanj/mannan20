@@ -31,7 +31,10 @@ import {
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
-import { useMeetingMediaRoom } from './use-meeting-media-room';
+import {
+  meetingConnectedRefreshDecision,
+  useMeetingMediaRoom,
+} from './use-meeting-media-room';
 
 interface Workspace {
   meetingId: string;
@@ -78,6 +81,7 @@ export function MeetingRoom({
   const [removalIssue, setRemovalIssue] = useState<string | null>(null);
   const [endingMeeting, setEndingMeeting] = useState(false);
   const [endIssue, setEndIssue] = useState(false);
+  const connectedRefreshVersion = useRef<number | null>(null);
   const endAttempt = useRef<MeetingLiveSessionEndAttempt | null>(null);
   if (endAttempt.current === null) {
     endAttempt.current = new MeetingLiveSessionEndAttempt();
@@ -103,10 +107,25 @@ export function MeetingRoom({
     });
   }, [monotonicNowMs, serverClock, workspace]);
   const media = useLocalMeetingMedia(Boolean(lifecycle?.canJoinMedia));
+
+  const load = useCallback(async () => {
+    const response = await fetch(`/meet/${meetingId}/api/workspace`, { cache: 'no-store' }).catch(() => null);
+    if (response?.ok) {
+      const body = (await response.json()) as { data: Workspace };
+      setWorkspace(body.data);
+      const receivedAtMs = performance.now();
+      setServerClock({ serverNow: body.data.serverNow, receivedAtMs });
+      setMonotonicNowMs(receivedAtMs);
+      return;
+    }
+    setState(hasAdmission ? 'entry' : 'unavailable');
+  }, [hasAdmission, meetingId]);
   const room = useMeetingMediaRoom({
     meetingId,
     enabled: Boolean(lifecycle?.canJoinMedia),
     media,
+    version: workspace?.version ?? null,
+    reloadWorkspace: load,
   });
   const stageVisible = [
     'connected',
@@ -121,19 +140,6 @@ export function MeetingRoom({
     ),
     [room.snapshot.participants],
   );
-
-  const load = useCallback(async () => {
-    const response = await fetch(`/meet/${meetingId}/api/workspace`, { cache: 'no-store' }).catch(() => null);
-    if (response?.ok) {
-      const body = (await response.json()) as { data: Workspace };
-      setWorkspace(body.data);
-      const receivedAtMs = performance.now();
-      setServerClock({ serverNow: body.data.serverNow, receivedAtMs });
-      setMonotonicNowMs(receivedAtMs);
-      return;
-    }
-    setState(hasAdmission ? 'entry' : 'unavailable');
-  }, [hasAdmission, meetingId]);
 
   const removeParticipant = useCallback(async (participantId: string) => {
     if (workspace === null || removingParticipantId !== null) return;
@@ -181,6 +187,20 @@ export function MeetingRoom({
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    connectedRefreshVersion.current = null;
+  }, [meetingId]);
+
+  useEffect(() => {
+    const decision = meetingConnectedRefreshDecision({
+      connection: room.snapshot.connection,
+      workspace,
+      lastVersion: connectedRefreshVersion.current,
+    });
+    connectedRefreshVersion.current = decision.lastVersion;
+    if (decision.shouldRefresh) void load();
+  }, [load, room.snapshot.connection, workspace]);
 
   useEffect(() => {
     if (workspace === null) return;
