@@ -150,7 +150,7 @@ git commit -m "feat(meet): proxy identity-bound media grants"
 - Create: `src/lib/meeting-media-controller.ts`
 - Create: `src/lib/meeting-media-controller.test.ts`
 
-- [ ] **Step 1: Write failing grant and controller tests**
+- [x] **Step 1: Write failing grant and controller tests**
 
 Define the wished-for grant API:
 
@@ -190,7 +190,7 @@ Tests must also prove:
   provider session; and
 - a late async completion after dispose cannot resurrect the room.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -200,7 +200,7 @@ bun test src/lib/meeting-media-grant.test.ts src/lib/meeting-media-controller.te
 
 Expected: module-not-found failures for the new grant and controller modules.
 
-- [ ] **Step 3: Implement the public browser contract**
+- [x] **Step 3: Implement the public browser contract**
 
 Use these provider-neutral public shapes:
 
@@ -254,7 +254,7 @@ class closure, publishes frozen token-free snapshots, and accepts injected
 `grant`, `sdk`, and `stopPreJoin` dependencies. Normalize every user-visible
 failure without interpolating thrown messages.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run:
 
@@ -265,7 +265,7 @@ bun run typecheck
 
 Expected: controller and grant tests pass, including order and cleanup.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/meeting-media-grant.ts src/lib/meeting-media-grant.test.ts src/lib/meeting-media-controller.ts src/lib/meeting-media-controller.test.ts
