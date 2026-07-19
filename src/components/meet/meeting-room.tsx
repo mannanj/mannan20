@@ -48,6 +48,10 @@ import {
 } from './meeting-people';
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
+import {
+  MeetingTitleControl,
+  type MeetingTitleControlProps,
+} from './meeting-title-control';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
 import { useMeetingCountdownMainChannel } from './use-meeting-countdown-main-channel';
 import {
@@ -55,11 +59,11 @@ import {
   useMeetingMediaRoom,
 } from './use-meeting-media-room';
 
-interface Workspace {
+export interface Workspace {
   meetingId: string;
   version: number;
   serverNow: string;
-  title?: string;
+  title?: string | null;
   status: string;
   schedule: { startsAt: string; endsAt: string; durationSeconds: number };
   session?: {
@@ -76,7 +80,71 @@ interface Workspace {
     participantId: string;
     role: MeetingParticipantRole;
   };
+  titleEditing?: {
+    policy: 'administrators' | 'any_participant';
+    canEdit: boolean;
+    canManagePolicy: boolean;
+  };
   participants: MeetingRosterParticipant[];
+}
+
+type TitleAuthority = Pick<
+  MeetingTitleControlProps,
+  'title' | 'titleEditPolicy' | 'version'
+>;
+
+export function meetingTitleControlProjection(
+  workspace: Workspace,
+): Omit<
+  MeetingTitleControlProps,
+  'onWorkspaceChange' | 'onConflict'
+> | null {
+  if (workspace.titleEditing === undefined) return null;
+  return {
+    meetingId: workspace.meetingId,
+    title: workspace.title ?? null,
+    titleEditPolicy: workspace.titleEditing.policy,
+    version: workspace.version,
+    canEdit: workspace.titleEditing.canEdit,
+    canManagePolicy: workspace.titleEditing.canManagePolicy,
+    currentParticipantId: workspace.currentParticipant.participantId,
+    currentParticipantIds: workspace.participants.map(
+      (participant) => participant.participantId,
+    ),
+  };
+}
+
+export function applyMeetingTitleWorkspaceChange(
+  workspace: Workspace,
+  update: TitleAuthority,
+): Workspace {
+  if (
+    workspace.titleEditing === undefined
+    || update.version <= workspace.version
+  ) return workspace;
+  return {
+    ...workspace,
+    title: update.title,
+    version: update.version,
+    titleEditing: {
+      ...workspace.titleEditing,
+      policy: update.titleEditPolicy,
+    },
+  };
+}
+
+export async function loadMeetingTitleConflictAuthority(
+  load: () => Promise<Workspace | null>,
+): Promise<TitleAuthority> {
+  const workspace = await load();
+  if (workspace?.titleEditing === undefined) {
+    throw new Error('meeting_title_authority_unavailable');
+  }
+  return {
+    title: workspace.title ?? null,
+    titleEditPolicy: workspace.titleEditing.policy,
+    version: workspace.version,
+  };
 }
 
 export function MeetingRoom({
@@ -689,6 +757,9 @@ export function MeetingRoom({
       )}
     </div>
   );
+  const titleControl = workspace === null
+    ? null
+    : meetingTitleControlProjection(workspace);
 
   return (
     <MeetingShell>
@@ -698,7 +769,22 @@ export function MeetingRoom({
             <div className="flex flex-col gap-6 border-b border-white/8 pb-7 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/55">{lifecycle?.phase === 'live' ? 'Live now' : workspace.status}</p>
-                <h1 className="mt-3 font-[family-name:var(--font-caption)] text-4xl tracking-[-0.04em] sm:text-5xl">{workspace.title ?? 'Untitled meeting'}</h1>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <h1 className="font-[family-name:var(--font-caption)] text-4xl tracking-[-0.04em] sm:text-5xl">{workspace.title ?? 'Untitled meeting'}</h1>
+                  {titleControl !== null && (
+                    <MeetingTitleControl
+                      {...titleControl}
+                      onWorkspaceChange={(update) => {
+                        setWorkspace((current) => current === null
+                          ? current
+                          : applyMeetingTitleWorkspaceChange(current, update));
+                      }}
+                      onConflict={() => loadMeetingTitleConflictAuthority(
+                        () => load('refresh'),
+                      )}
+                    />
+                  )}
+                </div>
                 <p className="mt-4 text-sm text-white/45">{new Date(workspace.schedule.startsAt).toLocaleString()} · {Math.round(workspace.schedule.durationSeconds / 60)} minutes</p>
               </div>
               {lifecycle !== null &&

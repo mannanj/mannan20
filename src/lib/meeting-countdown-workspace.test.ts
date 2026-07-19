@@ -8,6 +8,7 @@ import {
   preferMeetingCountdownSnapshot,
   type MeetingCountdownSnapshot,
 } from './meeting-countdown-workspace';
+import { applyMeetingTitleWorkspaceChange } from '@/components/meet/meeting-room';
 
 const meetingId = '0123456789abcdef0123456789abcdef';
 const workspace = {
@@ -23,12 +24,12 @@ const workspace = {
   },
   currentParticipant: {
     participantId: 'owner-1',
-    role: 'owner',
+    role: 'owner' as const,
   },
   participants: [{
     participantId: 'owner-1',
-    role: 'owner',
-    identityKind: 'account',
+    role: 'owner' as const,
+    identityKind: 'account' as const,
   }],
 };
 
@@ -122,6 +123,34 @@ describe('meeting countdown workspace snapshot', () => {
         titleEditing,
       }, meetingId)).toEqual(snapshot);
     }
+  });
+
+  test('publishes an immediate newer countdown title after a local room mutation', () => {
+    const authoritative = {
+      ...workspace,
+      titleEditing: {
+        policy: 'administrators' as const,
+        canEdit: true,
+        canManagePolicy: true,
+      },
+    };
+    const updated = applyMeetingTitleWorkspaceChange(authoritative, {
+      title: 'Decision review',
+      titleEditPolicy: 'administrators',
+      version: 5,
+    });
+    const current = meetingCountdownSnapshotFromWorkspace(
+      authoritative,
+      meetingId,
+    );
+    const candidate = meetingCountdownSnapshotFromWorkspace(updated, meetingId);
+    expect(candidate).toEqual({
+      ...snapshot,
+      title: 'Decision review',
+      version: 5,
+    });
+    expect(preferMeetingCountdownSnapshot(current, candidate)).toBe(candidate);
+    expect(preferMeetingCountdownSnapshot(candidate, current)).toBe(candidate);
   });
 
   test('rejects malformed or role-incoherent optional title-editing authority', () => {

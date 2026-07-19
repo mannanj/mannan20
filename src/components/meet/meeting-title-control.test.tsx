@@ -10,6 +10,11 @@ import {
   meetingTitleDialogTransition,
   type MeetingTitleDialogState,
 } from './meeting-title-control';
+import {
+  applyMeetingTitleWorkspaceChange,
+  loadMeetingTitleConflictAuthority,
+  meetingTitleControlProjection,
+} from './meeting-room';
 
 const meetingId = 'meeting_0123456789abcdef';
 const currentParticipantId = 'account_0123456789abcdef';
@@ -414,5 +419,92 @@ describe('meeting title dialog transitions', () => {
         version: 9,
       }),
     );
+  });
+});
+
+describe('meeting room title-control boundary', () => {
+  const roomWorkspace = {
+    meetingId,
+    version: 5,
+    serverNow: '2026-07-19T15:00:00.000Z',
+    title: 'Project review',
+    status: 'scheduled',
+    schedule: {
+      startsAt: '2026-07-19T15:30:00.000Z',
+      endsAt: '2026-07-19T16:30:00.000Z',
+      durationSeconds: 3600,
+    },
+    currentParticipant: {
+      participantId: currentParticipantId,
+      role: 'owner' as const,
+    },
+    titleEditing: {
+      policy: 'administrators' as const,
+      canEdit: true,
+      canManagePolicy: true,
+    },
+    participants: [
+      {
+        participantId: currentParticipantId,
+        role: 'owner' as const,
+        identityKind: 'account' as const,
+      },
+      {
+        participantId: 'guest_0123456789abcdef',
+        role: 'participant' as const,
+        identityKind: 'browser_guest' as const,
+        displayName: 'River',
+      },
+    ],
+  };
+
+  test('projects exact authority, capabilities, and current roster identities', () => {
+    expect(meetingTitleControlProjection(roomWorkspace)).toEqual({
+      meetingId,
+      title: 'Project review',
+      titleEditPolicy: 'administrators',
+      version: 5,
+      canEdit: true,
+      canManagePolicy: true,
+      currentParticipantId,
+      currentParticipantIds: [
+        currentParticipantId,
+        'guest_0123456789abcdef',
+      ],
+    });
+    expect(meetingTitleControlProjection({
+      ...roomWorkspace,
+      titleEditing: undefined,
+    })).toBeNull();
+  });
+
+  test('applies only exact title authority and reuses the shared conflict load', async () => {
+    const updated = applyMeetingTitleWorkspaceChange(roomWorkspace, {
+      title: null,
+      titleEditPolicy: 'any_participant',
+      version: 6,
+    });
+    expect(updated).toEqual({
+      ...roomWorkspace,
+      title: null,
+      version: 6,
+      titleEditing: {
+        ...roomWorkspace.titleEditing,
+        policy: 'any_participant',
+      },
+    });
+    expect(updated.schedule).toBe(roomWorkspace.schedule);
+    expect(updated.participants).toBe(roomWorkspace.participants);
+
+    let loads = 0;
+    await expect(loadMeetingTitleConflictAuthority(async () => {
+      loads += 1;
+      return updated;
+    })).resolves.toEqual({
+      title: null,
+      titleEditPolicy: 'any_participant',
+      version: 6,
+    });
+    expect(loads).toBe(1);
   });
 });
