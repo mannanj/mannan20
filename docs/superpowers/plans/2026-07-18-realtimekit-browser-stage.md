@@ -524,7 +524,7 @@ git commit -m "feat(meet): render connected participant stage"
 - Modify: `docs/superpowers/plans/2026-07-18-meeting-staging-release.md`
 - Modify: `/private/tmp/meeting-persistence-handoff.7jgK4U/HANDOFF.md`
 
-- [ ] **Step 1: Write failing desktop/mobile fake-SDK acceptance**
+- [x] **Step 1: Write failing desktop/mobile fake-SDK acceptance**
 
 Install an init script before page load that exposes a test-only injected
 `MeetingMediaSdk` through the existing dependency seam, not through a
@@ -542,7 +542,7 @@ Assert exactly one media-grant request per join attempt, no token in page URL,
 messages, and exactly one fake provider leave on UI leave and on navigation.
 Repeat critical stage visibility at `390x844`.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -553,7 +553,7 @@ bunx playwright test e2e/meeting-shell.spec.ts --project=chromium
 Expected: new remote-participant and memory-only-token assertions fail until
 the full browser dependency seam is connected.
 
-- [ ] **Step 3: Refine only observed integration defects**
+- [x] **Step 3: Refine only observed integration defects**
 
 Fix only defects exposed by acceptance: clipping, overflow, track attachment,
 listener cleanup, status copy, focus order, or mobile controls. Capture:
@@ -566,7 +566,7 @@ test-results/meeting-two-party-mobile.png
 
 Inspect all three at original resolution.
 
-- [ ] **Step 4: Run the complete release-grade gate**
+- [x] **Step 4: Run the complete release-grade gate**
 
 ```bash
 bun run test:unit
@@ -581,7 +581,7 @@ Expected: every command exits 0; the audit finds the token only in the grant
 parser, in-memory controller/adapter input, and explicit test fixtures, with no
 storage, URL, analytics, DOM, or console sink.
 
-- [ ] **Step 5: Record evidence, commit, and preserve the live blocker**
+- [x] **Step 5: Record evidence, commit, and preserve the live blocker**
 
 Update the staging record and canonical handoff with exact commit IDs, test
 counts, screenshots, and the next action. State explicitly that the live

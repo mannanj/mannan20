@@ -49,6 +49,202 @@ async function mediaRequestCount(page: Page) {
       .__meetingMediaRequests);
 }
 
+async function installFakeMeetingSdk(page: Page) {
+  await page.addInitScript(() => {
+    type Connection =
+      | 'idle'
+      | 'connecting'
+      | 'connected'
+      | 'reconnecting'
+      | 'disconnected'
+      | 'kicked'
+      | 'ended'
+      | 'failed'
+      | 'left';
+    type Participant = {
+      id: string;
+      name: string;
+      isLocal: boolean;
+      audioEnabled: boolean;
+      videoEnabled: boolean;
+      audioTrack: MediaStreamTrack | null;
+      videoTrack: MediaStreamTrack | null;
+    };
+    type Snapshot = {
+      connection: Connection;
+      participants: Participant[];
+      issue: string | null;
+    };
+
+    const streams = new Set<MediaStream>();
+    const listeners = new Set<(snapshot: Snapshot) => void>();
+    let connection: Connection = 'idle';
+    let leaveCalls = 0;
+    let participants: Participant[] = [];
+
+    const videoTrack = (color: string) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 640;
+      canvas.height = 360;
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.fillStyle = color;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = 'rgba(255,255,255,.32)';
+        context.beginPath();
+        context.arc(320, 180, 84, 0, Math.PI * 2);
+        context.fill();
+      }
+      const stream = canvas.captureStream(5);
+      streams.add(stream);
+      return stream.getVideoTracks()[0] ?? null;
+    };
+    const snapshot = (): Snapshot => ({
+      connection,
+      participants: participants.map((participant) => ({ ...participant })),
+      issue: connection === 'failed' ? 'Could not connect. Try again.' : null,
+    });
+    const emit = () => {
+      const next = snapshot();
+      for (const listener of listeners) listener(next);
+    };
+    const updateLocal = (update: Partial<Participant>) => {
+      participants = participants.map((participant) =>
+        participant.isLocal ? { ...participant, ...update } : participant);
+      emit();
+    };
+
+    const session = {
+      snapshot,
+      subscribe(listener: (snapshot: Snapshot) => void) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      async prepare(input: {
+        microphoneEnabled: boolean;
+        cameraEnabled: boolean;
+      }) {
+        participants = [{
+          id: 'self_playwright',
+          name: 'Owner',
+          isLocal: true,
+          audioEnabled: input.microphoneEnabled,
+          videoEnabled: input.cameraEnabled,
+          audioTrack: null,
+          videoTrack: input.cameraEnabled ? videoTrack('#344f45') : null,
+        }];
+        emit();
+      },
+      async join() {
+        connection = 'connecting';
+        emit();
+        await new Promise((resolve) => window.setTimeout(resolve, 80));
+        connection = 'connected';
+        emit();
+      },
+      async leave() {
+        leaveCalls += 1;
+        connection = 'left';
+        participants = [];
+        for (const stream of streams) {
+          for (const track of stream.getTracks()) track.stop();
+        }
+        streams.clear();
+        emit();
+      },
+      async setMicrophoneEnabled(enabled: boolean) {
+        updateLocal({ audioEnabled: enabled });
+      },
+      async setCameraEnabled(enabled: boolean) {
+        updateLocal({
+          videoEnabled: enabled,
+          videoTrack: enabled ? videoTrack('#344f45') : null,
+        });
+      },
+      async setDevice() {},
+    };
+
+    const sdk = {
+      async initialize(input: {
+        authToken: string;
+        defaults: { audio: boolean; video: boolean };
+      }) {
+        if (
+          input.authToken !== 'playwright-media-token' ||
+          input.defaults.audio !== false ||
+          input.defaults.video !== false
+        ) {
+          throw new Error('Invalid test media initialization');
+        }
+        return session;
+      },
+    };
+    const control = {
+      joinRemote() {
+        if (participants.some((participant) => participant.id === 'remote_river')) return;
+        participants = [...participants, {
+          id: 'remote_river',
+          name: 'River',
+          isLocal: false,
+          audioEnabled: true,
+          videoEnabled: false,
+          audioTrack: null,
+          videoTrack: null,
+        }];
+        emit();
+      },
+      setRemoteVideo(enabled: boolean) {
+        participants = participants.map((participant) =>
+          participant.id === 'remote_river'
+            ? {
+                ...participant,
+                videoEnabled: enabled,
+                videoTrack: enabled ? videoTrack('#6b493d') : null,
+              }
+            : participant);
+        emit();
+      },
+      setConnection(next: Connection) {
+        connection = next;
+        emit();
+      },
+      leaves() {
+        return leaveCalls;
+      },
+    };
+
+    const browser = window as typeof window & {
+      __MANNAN_MEETING_MEDIA_SDK__: typeof sdk;
+      __MANNAN_MEETING_MEDIA_TEST__: typeof control;
+    };
+    browser.__MANNAN_MEETING_MEDIA_SDK__ = sdk;
+    browser.__MANNAN_MEETING_MEDIA_TEST__ = control;
+  });
+}
+
+async function meetingMediaControl(page: Page, action: 'joinRemote' | 'remoteVideoOn' | 'reconnecting' | 'connected') {
+  await page.evaluate((requested) => {
+    const control = (window as typeof window & {
+      __MANNAN_MEETING_MEDIA_TEST__: {
+        joinRemote(): void;
+        setRemoteVideo(enabled: boolean): void;
+        setConnection(connection: 'reconnecting' | 'connected'): void;
+      };
+    }).__MANNAN_MEETING_MEDIA_TEST__;
+    if (requested === 'joinRemote') control.joinRemote();
+    if (requested === 'remoteVideoOn') control.setRemoteVideo(true);
+    if (requested === 'reconnecting') control.setConnection('reconnecting');
+    if (requested === 'connected') control.setConnection('connected');
+  }, action);
+}
+
+async function fakeLeaveCount(page: Page) {
+  return page.evaluate(() =>
+    (window as typeof window & {
+      __MANNAN_MEETING_MEDIA_TEST__: { leaves(): number };
+    }).__MANNAN_MEETING_MEDIA_TEST__.leaves());
+}
+
 test('offers conventional email continuation on the meeting home', async ({ page }) => {
   await page.goto('/meet');
   await expect(page.getByRole('heading', { name: 'Meet without the account ceremony.' })).toBeVisible();
@@ -60,7 +256,13 @@ test('offers conventional email continuation on the meeting home', async ({ page
 test('renders the authorized durable workspace on desktop and mobile', async ({ page, context }) => {
   await authenticateOwner(context);
   await countMediaRequests(page);
+  await installFakeMeetingSdk(page);
+  const consoleMessages: string[] = [];
+  const pageErrors: string[] = [];
+  page.on('console', (message) => consoleMessages.push(message.text()));
+  page.on('pageerror', (error) => pageErrors.push(error.message));
   let earlyStarted = false;
+  let mediaGrantRequests = 0;
   await page.route(`**/meet/${MEETING_ID}/api/workspace`, async (route) => {
     await route.fulfill({
       status: 200,
@@ -132,6 +334,19 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
       }),
     });
   });
+  await page.route(`**/meet/${MEETING_ID}/api/media-grant`, async (route) => {
+    mediaGrantRequests += 1;
+    expect(route.request().method()).toBe('POST');
+    expect(route.request().postData()).toBeNull();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'cache-control': 'no-store' },
+      body: JSON.stringify({
+        data: { provider: 'realtimekit', authToken: 'playwright-media-token' },
+      }),
+    });
+  });
   await page.goto(`/meet/${MEETING_ID}`);
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Scheduled to start' })).toBeVisible();
@@ -153,20 +368,51 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   await page.screenshot({ path: 'test-results/meeting-prejoin-desktop.png', fullPage: true });
 
   await page.getByRole('button', { name: 'Join meeting' }).click();
+  await expect(page.getByRole('button', { name: 'Connecting…' })).toBeVisible();
   await expect(page.getByText('1 connected')).toBeVisible();
+  expect(mediaGrantRequests).toBe(1);
+  await page.screenshot({ path: 'test-results/meeting-connected-desktop.png', fullPage: true });
+  await meetingMediaControl(page, 'joinRemote');
+  await expect(page.getByText('2 connected')).toBeVisible();
+  await expect(page.getByText('River', { exact: true }).first()).toBeVisible();
+  await meetingMediaControl(page, 'remoteVideoOn');
+  await expect(page.getByLabel('Remote camera for River')).toBeVisible();
+  await page.screenshot({ path: 'test-results/meeting-two-party-desktop.png', fullPage: true });
+  await meetingMediaControl(page, 'reconnecting');
+  await expect(page.getByText('Reconnecting…')).toBeVisible();
+  await meetingMediaControl(page, 'connected');
+  await expect(page.getByText('Reconnecting…')).not.toBeVisible();
   await page.getByRole('button', { name: 'Turn camera off' }).click();
   await expect(page.getByRole('button', { name: 'Turn camera on' })).toBeVisible();
   await page.getByRole('button', { name: 'Device settings' }).click();
   await expect(page.getByRole('complementary').getByText('Device settings', { exact: true })).toBeVisible();
-  await page.screenshot({ path: 'test-results/meeting-stage-desktop.png', fullPage: true });
+  const browserTokenSinks = await page.evaluate(() => ({
+    local: Object.values(localStorage),
+    session: Object.values(sessionStorage),
+    url: location.href,
+    text: document.body.innerText,
+  }));
+  expect(JSON.stringify(browserTokenSinks)).not.toContain('playwright-media-token');
+  expect(consoleMessages.join('\n')).not.toContain('playwright-media-token');
+  expect(pageErrors.join('\n')).not.toContain('playwright-media-token');
   await page.getByRole('button', { name: 'Leave' }).click();
   await expect(page.getByRole('heading', { name: 'Ready to join?' })).toBeVisible();
+  expect(await fakeLeaveCount(page)).toBe(1);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Join meeting' })).toBeVisible();
   await page.screenshot({ path: 'test-results/meeting-prejoin-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Join meeting' }).click();
+  await expect(page.getByText('1 connected')).toBeVisible();
+  expect(mediaGrantRequests).toBe(2);
+  await meetingMediaControl(page, 'joinRemote');
+  await expect(page.getByText('2 connected')).toBeVisible();
+  await page.screenshot({ path: 'test-results/meeting-two-party-mobile.png', fullPage: true });
+  await page.getByRole('link', { name: 'Mannan Meetings' }).click();
+  await expect(page).toHaveURL('/meet');
+  await expect.poll(() => fakeLeaveCount(page)).toBe(1);
 });
 
 test('keeps an ended workspace out of device setup', async ({ page, context }) => {

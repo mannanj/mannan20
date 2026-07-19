@@ -267,3 +267,52 @@ Admin`, then a dedicated staging App and host/participant presets. Only after
 those exist should `0002` be applied, non-secret IDs/presets and the API-token
 secret be installed, the Worker be deployed, and two-browser media acceptance
 begin.
+
+## RealtimeKit browser stage — locally verified, not staged — 2026-07-18
+
+The protected meeting workspace now has a complete provider-backed browser
+path behind the existing custom interface. The same-origin BFF derives the
+display name from the signed shared account session or signed guest cookie,
+requests a no-store grant, and passes the bearer token only through in-memory
+controller and SDK inputs. The browser never chooses its provider identity.
+
+Browser-stage commits:
+
+- `2dc112f` — identity-derived account and guest media-grant BFF
+- `c8299dc` — strict grant client and provider-neutral room controller
+- `07697f2` — pinned `@cloudflare/realtimekit` 2.0.1 Core SDK adapter
+- `cff3da0` — pre-join to provider-room lifecycle and retry/cleanup
+- `a60a9c0` — local/remote participant stage, People rail, and live controls
+- the documentation/acceptance commit containing this section — injected
+  fake-SDK desktop/mobile acceptance and release evidence
+
+Fresh release-grade evidence:
+
+- Unit suite: 245 passed, 0 failed, 828 assertions across 42 files
+- TypeScript: passed
+- Next.js 15.5.20 production build: passed
+- Playwright Chromium: 3 passed, 0 failed in 5.9 seconds
+- Browser acceptance covers connecting, one- and two-person stages, remote
+  join and camera updates, reconnect recovery, local controls, UI leave,
+  navigation cleanup, and exactly one grant per join
+- Token-sink acceptance found no fixture token in the page URL, DOM,
+  `localStorage`, `sessionStorage`, console messages, or uncaught errors
+- Source audit found `authToken` only in strict parsing, in-memory handoff, and
+  explicit tests; it found no storage, URL, analytics, DOM, or console sink
+- `git diff --check`: passed
+- Original-resolution inspection passed for
+  `meeting-connected-desktop.png`, `meeting-two-party-desktop.png`, and
+  `meeting-two-party-mobile.png`; no clipping, overflow, overlap, or false
+  participant state was observed
+
+External staging is deliberately unchanged. The stable protected alias still
+points to the last Worker-compatible frontend. Publishing this browser stage
+alone would expose a Join action that can only fail against the older Worker.
+
+Live RealtimeKit staging remains blocked on a Cloudflare credential with
+`Realtime` or `Realtime Admin`. That credential is required to create the
+RealtimeKit App and presets, apply remote migration
+`0002_meeting_media.sql`, install the Worker configuration and secret, deploy
+the Worker and browser stage together, and complete live two-browser media
+acceptance. No RealtimeKit resource, token, media usage, migration, Worker
+version, Vercel deployment, or stable-alias change was made in this checkpoint.
