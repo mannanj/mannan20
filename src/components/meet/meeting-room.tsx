@@ -12,6 +12,7 @@ import {
   requestMeetingDurationExtension,
 } from '@/lib/meeting-duration-extension';
 import { meetingCountdownSnapshotFromWorkspace } from '@/lib/meeting-countdown-workspace';
+import { openMeetingCountdownPopout } from '@/lib/meeting-countdown-window';
 import {
   MeetingLiveSessionEndAttempt,
   MeetingLiveSessionError,
@@ -98,6 +99,7 @@ export function MeetingRoom({
   const [monotonicNowMs, setMonotonicNowMs] = useState(0);
   const [startingEarly, setStartingEarly] = useState(false);
   const [startError, setStartError] = useState<string | undefined>();
+  const [countdownPopoutIssue, setCountdownPopoutIssue] = useState(false);
   const [removingParticipantId, setRemovingParticipantId] = useState<string | null>(null);
   const [removalIssue, setRemovalIssue] = useState<string | null>(null);
   const [endingMeeting, setEndingMeeting] = useState(false);
@@ -313,6 +315,7 @@ export function MeetingRoom({
     setDurationSyncIssue(false);
     setCheckingDuration(false);
     setDurationRefreshEpoch(0);
+    setCountdownPopoutIssue(false);
   }, [meetingId]);
 
   useEffect(() => {
@@ -460,6 +463,11 @@ export function MeetingRoom({
       setStartingEarly(false);
     }
   };
+
+  const openCountdownPopout = useCallback(() => {
+    const opened = openMeetingCountdownPopout({ meetingId });
+    setCountdownPopoutIssue(!opened);
+  }, [meetingId]);
 
   const openDurationModal = useCallback(() => {
     const first = durationOptions[0];
@@ -742,6 +750,8 @@ export function MeetingRoom({
                       lifecycle={lifecycle}
                       schedule={workspace.schedule}
                       starting={startingEarly}
+                      countdownPopoutIssue={countdownPopoutIssue}
+                      onOpenCountdown={openCountdownPopout}
                       {...(startError === undefined ? {} : { errorMessage: startError })}
                       {...(lifecycle.canStartEarly
                         ? { onStartEarly: () => void startEarly() }

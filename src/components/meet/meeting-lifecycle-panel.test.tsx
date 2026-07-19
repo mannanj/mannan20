@@ -19,6 +19,7 @@ describe('meeting lifecycle panel', () => {
         }}
         schedule={schedule}
         onStartEarly={() => undefined}
+        onOpenCountdown={() => undefined}
       />,
     );
     const participantMarkup = renderToStaticMarkup(
@@ -30,13 +31,18 @@ describe('meeting lifecycle panel', () => {
           secondsUntilStart: 1800,
         }}
         schedule={schedule}
+        onOpenCountdown={() => undefined}
       />,
     );
 
     expect(ownerMarkup).toContain('Start meeting early');
     expect(ownerMarkup).toContain('Scheduled to start');
     expect(ownerMarkup).toContain('Starts in 30 min');
+    expect(ownerMarkup).toContain('aria-label="Open countdown in pop-out"');
+    expect(ownerMarkup).toContain('Open countdown');
     expect(participantMarkup).toContain('Live meeting has not started');
+    expect(participantMarkup).toContain('aria-label="Open countdown in pop-out"');
+    expect(participantMarkup).toContain('Open countdown');
     expect(participantMarkup).not.toContain('Start meeting early');
     expect(participantMarkup).not.toContain('Join meeting');
   });
@@ -71,6 +77,7 @@ describe('meeting lifecycle panel', () => {
           canJoinMedia: false,
         }}
         schedule={schedule}
+        onOpenCountdown={() => undefined}
       />,
     );
 
@@ -78,5 +85,29 @@ describe('meeting lifecycle panel', () => {
     expect(markup).toContain('Scheduled');
     expect(markup).not.toContain('Join meeting');
     expect(markup).not.toContain('Start meeting early');
+    expect(markup).not.toContain('Open countdown');
+  });
+
+  test('shows one quiet blocked-popup issue without replacing early-start errors', () => {
+    const markup = renderToStaticMarkup(
+      <MeetingLifecyclePanel
+        lifecycle={{
+          phase: 'before-start',
+          canStartEarly: true,
+          canJoinMedia: false,
+          secondsUntilStart: 1_800,
+        }}
+        schedule={schedule}
+        countdownPopoutIssue
+        errorMessage="Could not start the meeting. Try again."
+        onStartEarly={() => undefined}
+        onOpenCountdown={() => undefined}
+      />,
+    );
+    expect(markup).toContain(
+      'Could not open the countdown window. Allow pop-ups and try again.',
+    );
+    expect(markup).toContain('Could not start the meeting. Try again.');
+    expect(markup.match(/role="status"/gu)).toHaveLength(2);
   });
 });

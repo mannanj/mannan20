@@ -28,12 +28,16 @@ export function MeetingLifecyclePanel({
   starting = false,
   errorMessage,
   onStartEarly,
+  onOpenCountdown,
+  countdownPopoutIssue = false,
 }: {
   lifecycle: MeetingRoomLifecycle;
   schedule: { startsAt: string; endsAt: string };
   starting?: boolean;
   errorMessage?: string;
   onStartEarly?(): void;
+  onOpenCountdown?(): void;
+  countdownPopoutIssue?: boolean;
 }) {
   if (lifecycle.phase === 'ended') {
     return (
@@ -94,6 +98,34 @@ export function MeetingLifecyclePanel({
       >
         {remainingLabel(lifecycle.secondsUntilStart)}
       </p>
+
+      {onOpenCountdown && (
+        <button
+          type="button"
+          aria-label="Open countdown in pop-out"
+          onClick={onOpenCountdown}
+          className="mx-auto mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border border-white/12 px-3.5 text-xs font-medium text-white/55 transition hover:bg-white/[0.05] hover:text-white/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d79275]"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 16 16"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.35"
+          >
+            <path d="M6 3.5H3.75a1.25 1.25 0 0 0-1.25 1.25v7.5a1.25 1.25 0 0 0 1.25 1.25h7.5a1.25 1.25 0 0 0 1.25-1.25V10" />
+            <path d="M8.5 2.5h5v5M13.25 2.75 7 9" />
+          </svg>
+          Open countdown
+        </button>
+      )}
+
+      {countdownPopoutIssue && (
+        <p role="status" className="mt-3 text-xs leading-5 text-amber-50/60">
+          Could not open the countdown window. Allow pop-ups and try again.
+        </p>
+      )}
 
       {lifecycle.canStartEarly && onStartEarly ? (
         <div className="mx-auto mt-9 max-w-xs">
