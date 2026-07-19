@@ -75,6 +75,13 @@ async function handle(request: Request, context: Context): Promise<Response> {
   if (request.method !== 'GET' && !sameOrigin(request)) {
     return Response.json({ error: { code: 'invalid_origin' } }, { status: 403 });
   }
+  const liveSessionEnd =
+    operation.length === 1 &&
+    operation[0] === 'live-session' &&
+    request.method === 'DELETE';
+  if (liveSessionEnd && request.body !== null) {
+    return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
+  }
   const mediaGrant =
     operation.length === 1 &&
     operation[0] === 'media-grant' &&

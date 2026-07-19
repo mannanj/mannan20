@@ -110,6 +110,11 @@ export function useMeetingMediaRoom(input: {
     if (input.enabled) await mediaRef.current.retry();
   }, [input.enabled]);
 
+  const leaveForEndedMeeting = useCallback(async () => {
+    await controllerRef.current?.leave();
+    mediaRef.current.stop();
+  }, []);
+
   const setMicrophoneEnabled = useCallback(async (enabled: boolean) => {
     await controllerRef.current?.setMicrophoneEnabled(enabled);
   }, []);
@@ -145,6 +150,7 @@ export function useMeetingMediaRoom(input: {
     join,
     retry: join,
     leave,
+    leaveForEndedMeeting,
     toggleMicrophone: () =>
       void setMicrophoneEnabled(!localParticipant?.audioEnabled),
     toggleCamera: () =>

@@ -314,3 +314,129 @@ describe('meeting participant removal route', () => {
     expect(calls).toBe(0);
   });
 });
+
+describe('meeting live-session end route', () => {
+  test('proxies one bodyless same-origin account deletion with concurrency headers', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        `https://meeting-worker.example.workers.dev/v1/meetings/${MEETING_ID}/live-session`,
+      );
+      expect(init?.method).toBe('DELETE');
+      expect(init?.body).toBeUndefined();
+      const headers = new Headers(init?.headers);
+      expect(headers.get('x-account-assertion')).toContain('.');
+      expect(headers.get('if-match')).toBe('"7"');
+      expect(headers.get('idempotency-key')).toBe('browser_end_0123456789abcdef');
+      expect(headers.has('content-type')).toBe(false);
+      return Response.json({
+        data: {
+          sessionId: 'session_0123456789abcdef',
+          actualEndedAt: '2026-07-19T14:30:00.000Z',
+          version: 8,
+        },
+      }, { headers: { etag: '"8"' } });
+    }) as unknown as typeof fetch;
+
+    const response = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session`, {
+        method: 'DELETE',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(session),
+          'if-match': '"7"',
+          'idempotency-key': 'browser_end_0123456789abcdef',
+        },
+      }),
+      { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['live-session'] }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      data: {
+        sessionId: 'session_0123456789abcdef',
+        actualEndedAt: '2026-07-19T14:30:00.000Z',
+        version: 8,
+      },
+    });
+  });
+
+  test('rejects non-account, cross-origin, body-bearing, and extra-path deletion before the Worker', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    const guest = createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
+      credential: 'guest:issued-credential',
+    });
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: {} });
+    }) as unknown as typeof fetch;
+    const context = {
+      params: Promise.resolve({ meetingId: MEETING_ID, operation: ['live-session'] }),
+    };
+
+    const crossOrigin = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session`, {
+        method: 'DELETE',
+        headers: { origin: 'https://attacker.example', cookie: cookieHeader(session) },
+      }),
+      context,
+    );
+    const anonymous = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session`, {
+        method: 'DELETE',
+        headers: { origin: 'https://mannan.is' },
+      }),
+      context,
+    );
+    const guestRequest = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session`, {
+        method: 'DELETE',
+        headers: { origin: 'https://mannan.is', cookie: cookieHeader(guest) },
+      }),
+      context,
+    );
+    const bodyBearing = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session`, {
+        method: 'DELETE',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(session),
+          'content-type': 'application/json',
+        },
+        body: '{}',
+      }),
+      context,
+    );
+    const extraPath = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session/extra`, {
+        method: 'DELETE',
+        headers: { origin: 'https://mannan.is', cookie: cookieHeader(session) },
+      }),
+      {
+        params: Promise.resolve({
+          meetingId: MEETING_ID,
+          operation: ['live-session', 'extra'],
+        }),
+      },
+    );
+
+    expect(crossOrigin.status).toBe(403);
+    expect(anonymous.status).toBe(401);
+    expect(guestRequest.status).toBe(401);
+    expect(bodyBearing.status).toBe(400);
+    expect(extraPath.status).toBe(404);
+    expect(calls).toBe(0);
+  });
+});

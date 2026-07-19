@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  MeetingLiveSessionEndAttempt,
   MeetingLiveSessionError,
+  endMeetingLiveSession,
   startMeetingLiveSession,
 } from '@/lib/meeting-live-session';
 import {
@@ -18,6 +20,7 @@ import {
   removeMeetingParticipant,
 } from '@/lib/meeting-participant-removal';
 import { MeetingShell } from './meeting-shell';
+import { MeetingEndControl } from './meeting-end-control';
 import { MeetingInviteLink } from './meeting-invite-link';
 import { MeetingLifecyclePanel } from './meeting-lifecycle-panel';
 import {
@@ -37,7 +40,12 @@ interface Workspace {
   title?: string;
   status: string;
   schedule: { startsAt: string; endsAt: string; durationSeconds: number };
-  session?: { state: string; actualStartedAt: string; effectiveEndsAt: string };
+  session?: {
+    state: string;
+    actualStartedAt: string;
+    effectiveEndsAt: string;
+    actualEndedAt?: string;
+  };
   currentParticipant: {
     participantId: string;
     role: MeetingParticipantRole;
@@ -68,6 +76,12 @@ export function MeetingRoom({
   const [startError, setStartError] = useState<string | undefined>();
   const [removingParticipantId, setRemovingParticipantId] = useState<string | null>(null);
   const [removalIssue, setRemovalIssue] = useState<string | null>(null);
+  const [endingMeeting, setEndingMeeting] = useState(false);
+  const [endIssue, setEndIssue] = useState(false);
+  const endAttempt = useRef<MeetingLiveSessionEndAttempt | null>(null);
+  if (endAttempt.current === null) {
+    endAttempt.current = new MeetingLiveSessionEndAttempt();
+  }
   const removalAttempts = useRef<MeetingParticipantRemovalAttempts | null>(null);
   if (removalAttempts.current === null) {
     removalAttempts.current = new MeetingParticipantRemovalAttempts();
@@ -238,17 +252,83 @@ export function MeetingRoom({
     await load();
   };
 
+  const endMeeting = useCallback(async () => {
+    if (
+      workspace === null
+      || lifecycle?.phase !== 'live'
+      || endingMeeting
+    ) return;
+    const attempt = endAttempt.current!;
+    const idempotencyKey = attempt.begin();
+    setEndingMeeting(true);
+    setEndIssue(false);
+    try {
+      const result = await endMeetingLiveSession({
+        meetingId: workspace.meetingId,
+        version: workspace.version,
+        idempotencyKey,
+      });
+      attempt.complete();
+      await room.leaveForEndedMeeting();
+      setWorkspace((current) => {
+        if (current === null || current.session === undefined) return current;
+        return {
+          ...current,
+          version: result.version,
+          status: 'ended',
+          session: {
+            ...current.session,
+            state: 'ended',
+            actualEndedAt: result.actualEndedAt,
+          },
+        };
+      });
+    } catch (error) {
+      if (
+        error instanceof MeetingLiveSessionError
+        && error.code === 'meeting_conflict'
+      ) {
+        attempt.cancel();
+        await load();
+      } else {
+        attempt.failed();
+        setEndIssue(true);
+      }
+    } finally {
+      setEndingMeeting(false);
+    }
+  }, [endingMeeting, lifecycle?.phase, load, room, workspace]);
+
+  const cancelMeetingEnd = useCallback(() => {
+    if (endingMeeting) return;
+    endAttempt.current?.cancel();
+    setEndIssue(false);
+  }, [endingMeeting]);
+
   const peoplePanel = workspace === null ? null : (
-    <MeetingPeople
-      participants={workspace.participants}
-      currentParticipantId={workspace.currentParticipant.participantId}
-      currentRole={workspace.currentParticipant.role}
-      connectedParticipantIds={connectedParticipantIds}
-      removingParticipantId={removingParticipantId}
-      issue={removalIssue}
-      onRemove={removeParticipant}
-      onCancel={cancelParticipantRemoval}
-    />
+    <div className="space-y-4">
+      <MeetingPeople
+        participants={workspace.participants}
+        currentParticipantId={workspace.currentParticipant.participantId}
+        currentRole={workspace.currentParticipant.role}
+        connectedParticipantIds={connectedParticipantIds}
+        removingParticipantId={removingParticipantId}
+        issue={removalIssue}
+        onRemove={removeParticipant}
+        onCancel={cancelParticipantRemoval}
+      />
+      {lifecycle !== null && (
+        <MeetingEndControl
+          key={`meeting-end-${workspace.version}`}
+          role={workspace.currentParticipant.role}
+          phase={lifecycle.phase}
+          pending={endingMeeting}
+          issue={endIssue}
+          onEnd={() => void endMeeting()}
+          onCancel={cancelMeetingEnd}
+        />
+      )}
+    </div>
   );
 
   return (
