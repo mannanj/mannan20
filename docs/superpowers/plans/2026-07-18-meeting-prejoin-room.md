@@ -274,7 +274,7 @@ git commit -m "feat(meet): add local preview controls"
 - Create: `src/components/meet/meeting-prejoin.tsx`
 - Create: `src/components/meet/meeting-prejoin.test.tsx`
 
-- [ ] **Step 1: Write the failing surface contract test**
+- [x] **Step 1: Write the failing surface contract test**
 
 Use a serializable ready-media fixture and assert:
 
@@ -288,13 +288,13 @@ expect(markup).toContain(
 );
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `bun test src/components/meet/meeting-prejoin.test.tsx`
 
 Expected: FAIL because the component does not exist.
 
-- [ ] **Step 3: Implement the pre-join surface**
+- [x] **Step 3: Implement the pre-join surface**
 
 Use a desktop two-column composition with a dominant 16:9 preview and compact
 setup panel, collapsing to one column on mobile. Show requesting, ready,
@@ -303,13 +303,13 @@ only for available devices; fall back to “Camera N” and “Microphone N” w
 labels are unavailable. Render an `aria-hidden` microphone activity bar.
 Expose retry when acquisition fails and state plainly that media remains local.
 
-- [ ] **Step 4: Run GREEN and typecheck**
+- [x] **Step 4: Run GREEN and typecheck**
 
 Run: `bun test src/components/meet/meeting-prejoin.test.tsx && bun run typecheck`
 
 Expected: test PASS and TypeScript exits 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/meet/meeting-prejoin.tsx src/components/meet/meeting-prejoin.test.tsx
