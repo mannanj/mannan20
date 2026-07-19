@@ -311,6 +311,7 @@ export function MeetingRoom({
         participants={workspace.participants}
         currentParticipantId={workspace.currentParticipant.participantId}
         currentRole={workspace.currentParticipant.role}
+        moderationEnabled={lifecycle?.phase !== 'ended'}
         connectedParticipantIds={connectedParticipantIds}
         removingParticipantId={removingParticipantId}
         issue={removalIssue}

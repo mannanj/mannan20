@@ -388,3 +388,74 @@ reconciliation, and a moderation audit-event expansion remain explicitly
 deferred to subsequent slices. No RealtimeKit resource, remote migration,
 Worker version, Vercel deployment, stable-alias change, or media usage was
 created in this checkpoint.
+
+## Authoritative session end — locally verified, not staged — 2026-07-19
+
+Live owners and moderators now have a distinct **End meeting** action separate
+from ordinary **Leave**. The first click opens an inline confirmation; the
+browser sends an account-only, same-origin, bodyless versioned DELETE only
+after **End for everyone**. A dependency failure leaves the live stage intact
+and retains one idempotency key for retry. The UI transitions only after the
+Worker confirms both the durable first-party command and provider enforcement.
+
+The Worker commits the application session end first, then lazily resolves the
+mapped media room. RealtimeKit is deactivated before its active session is
+kicked so a participant cannot rejoin through the race. Only a successful or
+idempotently absent provider room permits conditional deletion of that exact D1
+mapping; a provider failure leaves the mapping available for retry through the
+same application receipt. Unauthorized actors fail before provider
+construction.
+
+Meeting repository commits:
+
+- `c999a7f` — strict TDD plan for authoritative session end
+- `68e4baa` — provider-neutral lazy session-end coordinator
+- `edee5bd` — conditional D1 room-mapping cleanup
+- `0edf2c0` — RealtimeKit deactivate-then-kick-all enforcement
+- `910a91f` — first-party-first Worker ordering and retry composition
+- `a6dc002` — verified browser-task plan checkpoint
+
+Site commits:
+
+- `9596fc5` — strict end client, account BFF boundary, inline control, retry
+  identity, and confirmed-only MeetingRoom transition
+- the documentation/acceptance commit containing this section — desktop/mobile
+  end-flow acceptance and the observed terminal-roster moderation fix
+
+Fresh release-grade evidence:
+
+- Meeting monorepo under Node 22.21.1: all six packages built and typechecked;
+  354 tests passed across domain (27), room provider (17), application (111),
+  RealtimeKit provider (21), real-D1 persistence (79), and Worker (99)
+- Wrangler Worker bindings: current
+- Site unit suite: 272 passed, 0 failed, 930 assertions across 46 files
+- Site TypeScript and Next.js 15.5.20 production build: passed
+- Playwright Chromium: 6 passed, 0 failed in 8.6 seconds
+- Browser acceptance proves first-click confirmation without a request, an
+  empty DELETE and absent content type, exact quoted `If-Match`, one stable key
+  across `503` and success, no optimistic stage exit, exactly one local provider
+  leave, durable ended panel plus roster, participant-role action hiding, `409`
+  authoritative reload, and 390x844 no-horizontal-overflow behavior
+- Original-resolution inspection passed
+  `meeting-end-confirm-desktop.png`,
+  `meeting-end-complete-desktop.png`, and `meeting-end-mobile.png`. The first
+  completed-state inspection exposed a stale owner-only **Remove** action in
+  the terminal roster; a failing browser assertion reproduced it, and the
+  verified lifecycle gate now keeps ended rosters read-only.
+- Source audits found only configuration names, provider method names,
+  memory-only token handoff, generated declarations, and explicit fixtures—no
+  credential value, raw provider body, token storage, URL, DOM, analytics,
+  exception, or console sink
+- `git diff --check`: passed in both repositories
+
+External staging remains deliberately unchanged. Migration
+`0002_meeting_media.sql` is not applied remotely, the local Worker and browser
+commits are not deployed, and the protected stable alias remains on the last
+Worker-compatible release. Live rollout still requires a Cloudflare credential
+with `Realtime` or `Realtime Admin` for App/preset creation, configuration,
+migration, coordinated Worker/site deployment, and live two-browser acceptance.
+
+Automatic duration expiry, webhook-confirmed provider cleanup, and durable
+crash recovery remain explicit later slices. No RealtimeKit resource, remote
+migration, Worker version, Vercel deployment, stable-alias change, or media
+usage was created in this checkpoint.

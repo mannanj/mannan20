@@ -58,6 +58,9 @@ describe('meeting people', () => {
       currentRole: 'participant',
     });
     expect(participantMarkup).not.toContain('>Remove</button>');
+
+    const terminalMarkup = render({ moderationEnabled: false });
+    expect(terminalMarkup).not.toContain('>Remove</button>');
   });
 
   test('keeps a failed target visible with stable retry copy and row-local pending state', () => {

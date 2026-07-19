@@ -15,6 +15,7 @@ export interface MeetingPeopleProps {
   participants: readonly MeetingRosterParticipant[];
   currentParticipantId: string;
   currentRole: MeetingParticipantRole;
+  moderationEnabled?: boolean;
   connectedParticipantIds: ReadonlySet<string>;
   removingParticipantId: string | null;
   issue: string | null;
@@ -43,6 +44,7 @@ export function MeetingPeople({
   participants,
   currentParticipantId,
   currentRole,
+  moderationEnabled = true,
   connectedParticipantIds,
   removingParticipantId,
   issue,
@@ -50,7 +52,8 @@ export function MeetingPeople({
   onCancel,
 }: MeetingPeopleProps) {
   const [confirmingParticipantId, setConfirmingParticipantId] = useState<string | null>(null);
-  const canModerate = currentRole === 'owner' || currentRole === 'moderator';
+  const canModerate = moderationEnabled
+    && (currentRole === 'owner' || currentRole === 'moderator');
   const connectedCount = participants.reduce(
     (count, participant) =>
       count + (connectedParticipantIds.has(participant.participantId) ? 1 : 0),

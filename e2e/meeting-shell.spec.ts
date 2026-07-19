@@ -8,6 +8,54 @@ import { createSiteSessionCookie } from '../src/lib/site-session';
 
 const MEETING_ID = 'meeting_0123456789abcdef0123456789abcdef';
 const ENDED_MEETING_ID = 'meeting_fedcba9876543210fedcba9876543210';
+const END_FLOW_MEETING_ID = 'meeting_end0123456789abcdef0123456789ab';
+const END_CONFLICT_MEETING_ID = 'meeting_conflict0123456789abcdef012345';
+const PARTICIPANT_MEETING_ID = 'meeting_participant0123456789abcdef0123';
+
+function liveWorkspace(input: {
+  meetingId: string;
+  version: number;
+  role: 'owner' | 'moderator' | 'participant';
+  ended?: boolean;
+}) {
+  return {
+    meetingId: input.meetingId,
+    version: input.version,
+    serverNow: '2026-07-19T14:00:00.000Z',
+    title: 'Live planning',
+    status: input.ended ? 'ended' : 'scheduled',
+    schedule: {
+      startsAt: '2026-07-19T13:30:00.000Z',
+      endsAt: '2026-07-19T15:00:00.000Z',
+      durationSeconds: 5400,
+    },
+    session: {
+      state: input.ended ? 'ended' : 'live',
+      actualStartedAt: '2026-07-19T13:30:00.000Z',
+      effectiveEndsAt: '2026-07-19T15:00:00.000Z',
+      ...(input.ended
+        ? { actualEndedAt: '2026-07-19T14:15:00.000Z' }
+        : {}),
+    },
+    currentParticipant: {
+      participantId: input.role === 'participant' ? 'guest_1' : 'owner_1',
+      role: input.role,
+    },
+    participants: [
+      {
+        participantId: 'owner_1',
+        role: 'owner',
+        identityKind: 'account',
+      },
+      {
+        participantId: 'guest_1',
+        role: 'participant',
+        identityKind: 'browser_guest',
+        displayName: 'River',
+      },
+    ],
+  };
+}
 
 async function authenticateOwner(context: BrowserContext) {
   process.env.MANNAN_SESSION_SECRET = 'playwright-consent-session-secret';
@@ -560,6 +608,172 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   await page.getByRole('link', { name: 'Mannan Meetings' }).click();
   await expect(page).toHaveURL('/meet');
   await expect.poll(() => fakeLeaveCount(page)).toBe(1);
+});
+
+test('ends a live meeting for everyone only after provider-confirmed retry', async ({ page, context }) => {
+  await authenticateOwner(context);
+  await installFakeMeetingSdk(page);
+  let endAttempts = 0;
+  const endKeys: string[] = [];
+
+  await page.route(`**/meet/${END_FLOW_MEETING_ID}/api/workspace`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: liveWorkspace({
+          meetingId: END_FLOW_MEETING_ID,
+          version: 4,
+          role: 'owner',
+        }),
+      }),
+    });
+  });
+  await page.route(`**/meet/${END_FLOW_MEETING_ID}/api/media-grant`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'cache-control': 'no-store' },
+      body: JSON.stringify({
+        data: { provider: 'realtimekit', authToken: 'playwright-media-token' },
+      }),
+    });
+  });
+  await page.route(`**/meet/${END_FLOW_MEETING_ID}/api/live-session`, async (route) => {
+    const request = route.request();
+    expect(request.method()).toBe('DELETE');
+    expect(request.postData()).toBeNull();
+    expect(await request.headerValue('content-type')).toBeNull();
+    expect(await request.headerValue('if-match')).toBe('"4"');
+    const key = await request.headerValue('idempotency-key');
+    expect(key).toMatch(/^browser_end_[a-f0-9]{32}$/u);
+    endKeys.push(key!);
+    endAttempts += 1;
+    if (endAttempts === 1) {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: { code: 'dependency_unavailable' } }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          sessionId: 'session_end0123456789abcdef',
+          actualEndedAt: '2026-07-19T14:15:00.000Z',
+          version: 5,
+        },
+      }),
+    });
+  });
+
+  await page.goto(`/meet/${END_FLOW_MEETING_ID}`);
+  await expect(page.getByRole('button', { name: 'Join meeting' })).toBeVisible();
+  await page.getByRole('button', { name: 'Join meeting' }).click();
+  await expect(page.getByText('1 connected')).toBeVisible();
+  const leave = page.getByRole('button', { name: 'Leave', exact: true });
+  const end = page.getByRole('button', { name: 'End meeting', exact: true });
+  await expect(leave).toBeVisible();
+  await expect(end).toBeVisible();
+  expect(await leave.getAttribute('class')).not.toBe(await end.getAttribute('class'));
+
+  await end.click();
+  await expect(page.getByText('End the live meeting for everyone?')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'End for everyone' })).toBeVisible();
+  expect(endAttempts).toBe(0);
+  expect(await fakeLeaveCount(page)).toBe(0);
+  await expect(page.getByRole('region', { name: 'Meeting stage' })).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/meeting-end-confirm-desktop.png',
+    fullPage: true,
+  });
+
+  await page.getByRole('button', { name: 'End for everyone' }).click();
+  await expect(page.getByText('Could not finish ending the meeting. Try again.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Meeting ended' })).not.toBeVisible();
+  await expect(page.getByRole('region', { name: 'Meeting stage' })).toBeVisible();
+  expect(await fakeLeaveCount(page)).toBe(0);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByText('End the live meeting for everyone?')).toBeVisible();
+  await expect(page.getByText('Could not finish ending the meeting. Try again.')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/meeting-end-mobile.png', fullPage: true });
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole('button', { name: 'End for everyone' }).click();
+  await expect(page.getByRole('heading', { name: 'Meeting ended' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'People' }).getByText('River')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Remove', exact: true })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Leave', exact: true })).not.toBeVisible();
+  expect(await fakeLeaveCount(page)).toBe(1);
+  expect(endKeys).toHaveLength(2);
+  expect(endKeys[1]).toBe(endKeys[0]);
+  await page.screenshot({
+    path: 'test-results/meeting-end-complete-desktop.png',
+    fullPage: true,
+  });
+});
+
+test('reloads the authoritative workspace after an end conflict', async ({ page, context }) => {
+  await authenticateOwner(context);
+  let endedElsewhere = false;
+  let workspaceReads = 0;
+  await page.route(`**/meet/${END_CONFLICT_MEETING_ID}/api/workspace`, async (route) => {
+    workspaceReads += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: liveWorkspace({
+          meetingId: END_CONFLICT_MEETING_ID,
+          version: endedElsewhere ? 6 : 5,
+          role: 'owner',
+          ended: endedElsewhere,
+        }),
+      }),
+    });
+  });
+  await page.route(`**/meet/${END_CONFLICT_MEETING_ID}/api/live-session`, async (route) => {
+    expect(await route.request().headerValue('if-match')).toBe('"5"');
+    endedElsewhere = true;
+    await route.fulfill({
+      status: 409,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: { code: 'meeting_conflict' } }),
+    });
+  });
+
+  await page.goto(`/meet/${END_CONFLICT_MEETING_ID}`);
+  await page.getByRole('button', { name: 'End meeting', exact: true }).click();
+  await page.getByRole('button', { name: 'End for everyone' }).click();
+  await expect(page.getByRole('heading', { name: 'Meeting ended' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'End meeting', exact: true })).not.toBeVisible();
+  expect(workspaceReads).toBe(2);
+});
+
+test('never offers End meeting to an ordinary live participant', async ({ page, context }) => {
+  await authenticateOwner(context);
+  await page.route(`**/meet/${PARTICIPANT_MEETING_ID}/api/workspace`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: liveWorkspace({
+          meetingId: PARTICIPANT_MEETING_ID,
+          version: 3,
+          role: 'participant',
+        }),
+      }),
+    });
+  });
+
+  await page.goto(`/meet/${PARTICIPANT_MEETING_ID}`);
+  await expect(page.getByRole('heading', { name: 'Ready to join?' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'End meeting', exact: true })).not.toBeVisible();
 });
 
 test('keeps an ended workspace out of device setup', async ({ page, context }) => {
