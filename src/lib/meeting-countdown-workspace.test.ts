@@ -3,6 +3,7 @@ import {
   MeetingCountdownLoadError,
   advanceMeetingCountdownSnapshot,
   loadMeetingCountdownSnapshot,
+  meetingCountdownSnapshotFromWorkspace,
   parseMeetingCountdownSnapshot,
   preferMeetingCountdownSnapshot,
   type MeetingCountdownSnapshot,
@@ -147,6 +148,51 @@ describe('meeting countdown workspace snapshot', () => {
       version: 5,
       serverNow: '2026-07-19T14:00:14.000Z',
     })).toBe(later);
+  });
+
+  test('extracts known optimistic main-window live and terminal transitions', () => {
+    const optimisticLive = {
+      ...workspace,
+      version: 5,
+      session: {
+        state: 'live',
+        actualStartedAt: '2026-07-19T14:30:00.000Z',
+        effectiveEndsAt: '2026-07-19T15:30:00.000Z',
+      },
+    };
+    expect(() => parseMeetingCountdownSnapshot(
+      optimisticLive,
+      meetingId,
+    )).toThrow(MeetingCountdownLoadError);
+    expect(meetingCountdownSnapshotFromWorkspace(
+      optimisticLive,
+      meetingId,
+    )).toMatchObject({
+      version: 5,
+      status: 'scheduled',
+      liveStartedAt: '2026-07-19T14:30:00.000Z',
+    });
+
+    const optimisticEnded = {
+      ...optimisticLive,
+      status: 'ended',
+      session: {
+        ...optimisticLive.session,
+        state: 'ended',
+        actualEndedAt: '2026-07-19T14:45:00.000Z',
+      },
+      duration: {
+        maximumEndsAt: '2026-07-19T17:30:00.000Z',
+        remainingAllowanceSeconds: 7_200,
+      },
+    };
+    expect(meetingCountdownSnapshotFromWorkspace(
+      optimisticEnded,
+      meetingId,
+    )).toMatchObject({
+      status: 'ended',
+      liveStartedAt: null,
+    });
   });
 });
 

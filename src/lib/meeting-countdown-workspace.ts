@@ -136,9 +136,10 @@ export function parseMeetingCountdownSnapshotValue(
   };
 }
 
-export function parseMeetingCountdownSnapshot(
+function workspaceSnapshot(
   value: unknown,
   expectedMeetingId: string,
+  requireDurationProjection: boolean,
 ): MeetingCountdownSnapshot {
   const workspace = record(value);
   if (
@@ -230,7 +231,9 @@ export function parseMeetingCountdownSnapshot(
 
   const duration = workspace.duration === undefined ? null : record(workspace.duration);
   if ((workspace.duration !== undefined && duration === null)
-    || (session?.state === 'live') !== (duration !== null)) return invalid();
+    || (requireDurationProjection
+      && (session?.state === 'live') !== (duration !== null))
+    || (duration !== null && session === null)) return invalid();
   if (duration !== null && (
     !exactKeys(duration, ['maximumEndsAt', 'remainingAllowanceSeconds'])
     || !canonicalInstant(duration.maximumEndsAt)
@@ -249,6 +252,20 @@ export function parseMeetingCountdownSnapshot(
     endsAt: schedule.endsAt,
     liveStartedAt,
   }, expectedMeetingId);
+}
+
+export function parseMeetingCountdownSnapshot(
+  value: unknown,
+  expectedMeetingId: string,
+): MeetingCountdownSnapshot {
+  return workspaceSnapshot(value, expectedMeetingId, true);
+}
+
+export function meetingCountdownSnapshotFromWorkspace(
+  value: unknown,
+  expectedMeetingId: string,
+): MeetingCountdownSnapshot {
+  return workspaceSnapshot(value, expectedMeetingId, false);
 }
 
 async function boundedText(response: Response): Promise<string | null> {

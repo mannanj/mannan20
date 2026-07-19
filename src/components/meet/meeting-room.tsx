@@ -11,6 +11,7 @@ import {
   MeetingDurationExtensionError,
   requestMeetingDurationExtension,
 } from '@/lib/meeting-duration-extension';
+import { meetingCountdownSnapshotFromWorkspace } from '@/lib/meeting-countdown-workspace';
 import {
   MeetingLiveSessionEndAttempt,
   MeetingLiveSessionError,
@@ -46,6 +47,7 @@ import {
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
+import { useMeetingCountdownMainChannel } from './use-meeting-countdown-main-channel';
 import {
   meetingConnectedRefreshDecision,
   useMeetingMediaRoom,
@@ -128,6 +130,21 @@ export function MeetingRoom({
     removalAttempts.current = new MeetingParticipantRemovalAttempts();
   }
   const participantLabel = signedInEmail ?? 'Guest';
+
+  const countdownSnapshot = useMemo(() => {
+    if (workspace === null) return null;
+    try {
+      return meetingCountdownSnapshotFromWorkspace(workspace, meetingId);
+    } catch {
+      return null;
+    }
+  }, [meetingId, workspace]);
+  useMeetingCountdownMainChannel({
+    meetingId,
+    snapshot: countdownSnapshot,
+    receivedAtMs: serverClock?.receivedAtMs ?? null,
+    currentClientMs: monotonicNowMs,
+  });
 
   const clockNowMs = useMemo(() => {
     if (serverClock === null) return Number.NaN;
