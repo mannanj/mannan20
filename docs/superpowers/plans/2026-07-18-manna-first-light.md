@@ -300,11 +300,11 @@ Commit: `feat(manna): exchange site sessions for viewer access`.
 - Modify: `manna-worker/src/index.ts`
 - Create: `manna-worker/test/device-enrollment.spec.ts`
 
-- [ ] **Step 1: Write failing enrollment lifecycle tests**
+- [x] **Step 1: Write failing enrollment lifecycle tests**
 
 Exercise viewer-authenticated creation, ten-minute expiry, single exchange, token hashing, valid ingestion auth, wrong-token rejection, revocation, and generic failure responses that do not reveal which component was wrong.
 
-- [ ] **Step 2: Implement opaque enrollment and device credentials**
+- [x] **Step 2: Implement opaque enrollment and device credentials**
 
 Use these external formats:
 
@@ -315,18 +315,18 @@ mnd1.<account-locator>.<device-id>.<random-secret>
 
 Store SHA-256 hashes of the random secret, never the complete credentials. Parse the account locator only to route the request to the correct account Durable Object; verify the secret inside that object.
 
-- [ ] **Step 3: Add strict routes**
+- [x] **Step 3: Add strict routes**
 
 - `POST /v1/enrollments` — viewer token; returns one ten-minute code.
 - `POST /v1/enrollments/exchange` — one-time code; returns one device token.
 - `GET /v1/devices` — viewer token; returns safe device metadata.
 - `DELETE /v1/devices/:id` — viewer token; revokes immediately.
 
-- [ ] **Step 4: Prove authorization separation**
+- [x] **Step 4: Prove authorization separation**
 
 Add assertions that viewer tokens cannot ingest events and device tokens cannot list/delete devices or open viewer WebSockets.
 
-- [ ] **Step 5: Run and commit**
+- [x] **Step 5: Run and commit**
 
 Run: `cd manna-worker && bun test test/device-enrollment.spec.ts`
 

@@ -110,6 +110,24 @@ export type SocketTicketResponse = {
   expiresAt: string;
 };
 
+export type EnrollmentResponse = {
+  code: string;
+  expiresAt: string;
+};
+
+export type DeviceMetadata = {
+  id: string;
+  name: string;
+  createdAt: string;
+  lastSeenAt: string | null;
+  revokedAt: string | null;
+};
+
+export type DeviceEnrollmentResponse = {
+  deviceToken: string;
+  device: DeviceMetadata;
+};
+
 const TOP_LEVEL_KEYS = [
   'eventId',
   'projectId',

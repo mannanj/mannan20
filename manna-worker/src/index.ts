@@ -1,6 +1,13 @@
 import { Hono } from 'hono';
 import type { ViewerTokenResponse } from '@mannan/manna-protocol';
-import { authenticateViewer, hasServiceAuthorization, readBoundedJson } from './auth';
+import {
+  authenticateViewer,
+  hasServiceAuthorization,
+  parseDeviceToken,
+  parseEnrollmentCode,
+  readBearer,
+  readBoundedJson,
+} from './auth';
 import { mintViewerToken, normalizeEmail } from './crypto';
 import type { MannaEnv } from './env';
 
@@ -46,6 +53,63 @@ app.post('/v1/projects/meet/socket-ticket', async (context) => {
   const ticket = await room.createSocketTicket(claims.accountKey, claims.exp);
   context.header('Cache-Control', 'no-store');
   return context.json(ticket);
+});
+
+app.post('/v1/enrollments', async (context) => {
+  const claims = await authenticateViewer(context.req.raw, context.env.VIEWER_TOKEN_SECRET);
+  if (!claims) return context.json({ error: 'unauthorized' }, 401);
+  const room = context.env.MANNA_ROOM.getByName(claims.accountKey);
+  const enrollment = await room.createEnrollment(claims.accountKey);
+  context.header('Cache-Control', 'no-store');
+  return context.json(enrollment);
+});
+
+app.post('/v1/enrollments/exchange', async (context) => {
+  const body = await readBoundedJson(context.req.raw);
+  if (!body || !hasExactKeys(body, ['code', 'name'])) {
+    return context.json({ error: 'invalid_enrollment' }, 400);
+  }
+  if (typeof body.code !== 'string' || typeof body.name !== 'string') {
+    return context.json({ error: 'invalid_enrollment' }, 400);
+  }
+  const credential = parseEnrollmentCode(body.code);
+  if (!credential) return context.json({ error: 'invalid_enrollment' }, 400);
+  const room = context.env.MANNA_ROOM.getByName(credential.accountKey);
+  const device = await room.exchangeEnrollment(body.code, body.name);
+  if (!device) return context.json({ error: 'invalid_enrollment' }, 400);
+  context.header('Cache-Control', 'no-store');
+  return context.json(device);
+});
+
+app.get('/v1/devices', async (context) => {
+  const claims = await authenticateViewer(context.req.raw, context.env.VIEWER_TOKEN_SECRET);
+  if (!claims) return context.json({ error: 'unauthorized' }, 401);
+  const room = context.env.MANNA_ROOM.getByName(claims.accountKey);
+  context.header('Cache-Control', 'no-store');
+  return context.json({ devices: await room.listDevices() });
+});
+
+app.delete('/v1/devices/:id', async (context) => {
+  const claims = await authenticateViewer(context.req.raw, context.env.VIEWER_TOKEN_SECRET);
+  if (!claims) return context.json({ error: 'unauthorized' }, 401);
+  const deviceId = context.req.param('id');
+  if (!/^[a-f0-9-]{36}$/iu.test(deviceId)) return context.json({ error: 'not_found' }, 404);
+  const room = context.env.MANNA_ROOM.getByName(claims.accountKey);
+  const revoked = await room.revokeDevice(deviceId);
+  return revoked
+    ? new Response(null, { status: 204 })
+    : context.json({ error: 'not_found' }, 404);
+});
+
+app.post('/v1/events', async (context) => {
+  const token = readBearer(context.req.raw);
+  const credential = token ? parseDeviceToken(token) : null;
+  if (!token || !credential) return context.json({ error: 'unauthorized' }, 401);
+  const room = context.env.MANNA_ROOM.getByName(credential.accountKey);
+  if (!(await room.authenticateDevice(token))) {
+    return context.json({ error: 'unauthorized' }, 401);
+  }
+  return context.json({ error: 'not_implemented' }, 501);
 });
 
 app.notFound((context) => context.json({ error: 'not_found' }, 404));

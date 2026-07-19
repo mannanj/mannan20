@@ -24,6 +24,20 @@ export async function authenticateViewer(
   return token ? verifyViewerToken(token, secret, now) : null;
 }
 
+export type ParsedOpaqueCredential = {
+  accountKey: string;
+  id: string;
+  secret: string;
+};
+
+export function parseEnrollmentCode(value: string): ParsedOpaqueCredential | null {
+  return parseOpaqueCredential(value, 'mne1');
+}
+
+export function parseDeviceToken(value: string): ParsedOpaqueCredential | null {
+  return parseOpaqueCredential(value, 'mnd1');
+}
+
 export async function readBoundedJson(
   request: Request,
   maxBytes = 4_096,
@@ -65,4 +79,17 @@ export async function readBoundedJson(
   } catch {
     return null;
   }
+}
+
+function parseOpaqueCredential(
+  value: string,
+  expectedPrefix: 'mne1' | 'mnd1',
+): ParsedOpaqueCredential | null {
+  const parts = value.split('.');
+  if (parts.length !== 4 || parts[0] !== expectedPrefix) return null;
+  const [, accountKey, id, secret] = parts;
+  if (!accountKey || !/^[a-f0-9]{64}$/u.test(accountKey)) return null;
+  if (!id || !/^[a-f0-9-]{36}$/iu.test(id)) return null;
+  if (!secret || !/^[A-Za-z0-9_-]{40,64}$/u.test(secret)) return null;
+  return { accountKey, id, secret };
 }
