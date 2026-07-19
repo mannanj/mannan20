@@ -255,7 +255,7 @@ Commit: `feat(manna): scaffold durable live-state worker`.
 - Create: `src/app/api/manna/session/route.ts`
 - Create: `src/app/api/manna/session/route.test.ts`
 
-- [ ] **Step 1: Write failing token tests**
+- [x] **Step 1: Write failing token tests**
 
 Cover valid admin minting, wrong service bearer, expired viewer token, signature tampering, non-admin rejection at the Next boundary, single-use 30-second socket-ticket minting/consumption, and the guarantee that neither secret appears in a response.
 
@@ -267,25 +267,25 @@ expect(await verifyViewerToken(await mintViewerToken({
 }, secret), secret, 1_800_000_001)).toMatchObject({ projectId: 'meet' });
 ```
 
-- [ ] **Step 2: Implement Web Crypto token primitives**
+- [x] **Step 2: Implement Web Crypto token primitives**
 
 Use HMAC-SHA-256 with base64url payload/signature, constant-time comparison, `iat`, five-minute `exp`, normalized email `sub`, a non-reversible SHA-256 `accountKey`, and fixed project scope `meet`. Reject malformed JSON and unexpected claims. Use `accountKey`—not an email address—as the Durable Object name and external account locator.
 
-- [ ] **Step 3: Implement Worker mint endpoint**
+- [x] **Step 3: Implement Worker mint endpoint**
 
 `POST /v1/viewer-token` must require `Authorization: Bearer ${SERVICE_AUTH_SECRET}`, accept only a normalized email and `projectId: "meet"`, and return `{ token, expiresAt, workerUrl }`.
 
-- [ ] **Step 4: Implement the Next session exchange**
+- [x] **Step 4: Implement the Next session exchange**
 
 Read `__Host-mannan-session` with `readSiteSession()`, require `session.admin`, and call the Worker from the server with `MANNA_WORKER_URL` and `MANNA_SERVICE_AUTH_SECRET`. Return `401`, `403`, or a sanitized `503` without exposing upstream bodies.
 
-- [ ] **Step 5: Verify both runtimes**
+- [x] **Step 5: Verify both runtimes**
 
 Run: `bun test src/app/api/manna/session/route.test.ts && cd manna-worker && bun test test/viewer-auth.spec.ts`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit the viewer boundary**
+- [x] **Step 6: Commit the viewer boundary**
 
 Commit: `feat(manna): exchange site sessions for viewer access`.
 

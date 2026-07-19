@@ -99,6 +99,17 @@ export type ServerMessage =
       code: 'unauthorized' | 'cursor_expired' | 'invalid_message';
     };
 
+export type ViewerTokenResponse = {
+  token: string;
+  expiresAt: string;
+  workerUrl: string;
+};
+
+export type SocketTicketResponse = {
+  ticket: string;
+  expiresAt: string;
+};
+
 const TOP_LEVEL_KEYS = [
   'eventId',
   'projectId',
