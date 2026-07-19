@@ -16,6 +16,7 @@ interface EventTargetLike {
 
 interface RealtimeKitParticipantLike {
   id: string;
+  customParticipantId?: string;
   name?: string;
   audioEnabled?: boolean;
   videoEnabled?: boolean;
@@ -78,9 +79,18 @@ function usableTrack(
 function projectParticipant(
   participant: RealtimeKitParticipantLike,
   isLocal: boolean,
-): MeetingMediaParticipant {
+): MeetingMediaParticipant | null {
+  const firstPartyParticipantId = participant.customParticipantId;
+  if (
+    typeof firstPartyParticipantId !== 'string'
+    || firstPartyParticipantId.length < 1
+    || firstPartyParticipantId.length > 128
+    || firstPartyParticipantId.trim() !== firstPartyParticipantId
+    || /[\u0000-\u001f\u007f]/u.test(firstPartyParticipantId)
+  ) return null;
   return {
     id: participant.id,
+    firstPartyParticipantId,
     name: participant.name?.trim() || (isLocal ? 'You' : 'Guest'),
     isLocal,
     audioEnabled: Boolean(participant.audioEnabled),
@@ -173,15 +183,24 @@ class RealtimeKitBrowserSession implements MeetingMediaSession {
 
   snapshot(): MeetingMediaSnapshot {
     const local = projectParticipant(this.meeting.self, true);
+    const seen = new Set<string>();
+    if (local) seen.add(local.firstPartyParticipantId);
     const remote = this.meeting.participants.joined
       .toArray()
       .filter(visibleParticipant)
       .map((participant) => projectParticipant(participant, false))
+      .filter((participant): participant is MeetingMediaParticipant => {
+        if (participant === null || seen.has(participant.firstPartyParticipantId)) {
+          return false;
+        }
+        seen.add(participant.firstPartyParticipantId);
+        return true;
+      })
       .sort((left, right) =>
         left.name.localeCompare(right.name) || left.id.localeCompare(right.id));
     return {
       connection: this.connection,
-      participants: [local, ...remote],
+      participants: [...(local === null ? [] : [local]), ...remote],
       issue: this.connection === 'failed' ? 'Could not connect. Try again.' : null,
     };
   }

@@ -9,6 +9,7 @@ const snapshot: MeetingMediaSnapshot = {
   participants: [
     {
       id: 'self_1',
+      firstPartyParticipantId: 'owner_1',
       name: 'Owner',
       isLocal: true,
       audioEnabled: true,
@@ -18,6 +19,7 @@ const snapshot: MeetingMediaSnapshot = {
     },
     {
       id: 'remote_1',
+      firstPartyParticipantId: 'guest_1',
       name: 'River',
       isLocal: false,
       audioEnabled: true,
@@ -27,6 +29,7 @@ const snapshot: MeetingMediaSnapshot = {
     },
     {
       id: 'remote_2',
+      firstPartyParticipantId: 'participant_2',
       name: 'Sam',
       isLocal: false,
       audioEnabled: false,

@@ -13,6 +13,7 @@ export type MeetingMediaConnection =
 
 export interface MeetingMediaParticipant {
   id: string;
+  firstPartyParticipantId: string;
   name: string;
   isLocal: boolean;
   audioEnabled: boolean;
@@ -74,7 +75,7 @@ const CONNECTIONS = new Set<MeetingMediaConnection>([
 function publicSnapshot(input: MeetingMediaSnapshot): MeetingMediaSnapshot {
   const participants = new Map<string, MeetingMediaParticipant>();
   for (const participant of input.participants) {
-    if (!participant.id) continue;
+    if (!participant.id || !participant.firstPartyParticipantId) continue;
     participants.set(participant.id, Object.freeze({ ...participant }));
   }
   const connection = CONNECTIONS.has(input.connection) ? input.connection : 'failed';

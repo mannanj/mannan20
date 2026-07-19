@@ -54,6 +54,7 @@ function fakeCore() {
   const calls: string[] = [];
   const self = Object.assign(new FakeEmitter(), {
     id: 'self_1',
+    customParticipantId: 'owner_1',
     name: 'Owner',
     audioEnabled: false,
     videoEnabled: false,
@@ -96,6 +97,7 @@ function fakeCore() {
   });
   const remote = {
     id: 'remote_1',
+    customParticipantId: 'guest_1',
     name: 'River',
     audioEnabled: true,
     videoEnabled: false,
@@ -192,6 +194,7 @@ describe('RealtimeKit browser SDK adapter', () => {
       'River',
     ]);
     expect(session.snapshot().participants[0]).toMatchObject({
+      firstPartyParticipantId: 'owner_1',
       isLocal: true,
       audioEnabled: true,
       videoEnabled: false,
@@ -217,6 +220,7 @@ describe('RealtimeKit browser SDK adapter', () => {
     });
     expect(session.snapshot().participants[1]).toMatchObject({
       id: 'remote_1',
+      firstPartyParticipantId: 'guest_1',
       videoEnabled: true,
     });
     core.meta.emit('socketConnectionUpdate', {
@@ -231,6 +235,26 @@ describe('RealtimeKit browser SDK adapter', () => {
     });
     expect(connections).toContain('reconnecting');
     expect(session.snapshot().connection).toBe('connected');
+  });
+
+  test.each([
+    ['missing', undefined],
+    ['blank', ''],
+    ['surrounding whitespace', ' guest_1'],
+    ['overlong', 'g'.repeat(129)],
+    ['control character', 'guest_1\n'],
+    ['duplicate visible ID', 'owner_1'],
+  ] as const)('omits remote participants with %s first-party IDs', async (_case, value) => {
+    const core = fakeCore();
+    (core.remote as { customParticipantId?: string }).customParticipantId = value;
+    const session = await createRealtimeKitBrowserSdk(core.loader).initialize({
+      authToken: 'memory-only-token',
+      defaults: { audio: false, video: false },
+    });
+
+    expect(session.snapshot().participants.map((participant) => participant.name)).toEqual([
+      'Owner',
+    ]);
   });
 
   test.each([

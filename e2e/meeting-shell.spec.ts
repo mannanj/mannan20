@@ -63,6 +63,7 @@ async function installFakeMeetingSdk(page: Page) {
       | 'left';
     type Participant = {
       id: string;
+      firstPartyParticipantId: string;
       name: string;
       isLocal: boolean;
       audioEnabled: boolean;
@@ -126,6 +127,7 @@ async function installFakeMeetingSdk(page: Page) {
       }) {
         participants = [{
           id: 'self_playwright',
+          firstPartyParticipantId: 'owner_1',
           name: 'Owner',
           isLocal: true,
           audioEnabled: input.microphoneEnabled,
@@ -184,6 +186,7 @@ async function installFakeMeetingSdk(page: Page) {
         if (participants.some((participant) => participant.id === 'remote_river')) return;
         participants = [...participants, {
           id: 'remote_river',
+          firstPartyParticipantId: 'guest_1',
           name: 'River',
           isLocal: false,
           audioEnabled: true,

@@ -61,6 +61,7 @@ class FakeSession implements MeetingMediaSession {
       issue: null,
       participants: [{
         id: 'self_1',
+        firstPartyParticipantId: 'owner_1',
         name: 'You',
         isLocal: true,
         audioEnabled: true,
@@ -159,6 +160,7 @@ describe('meeting media controller', () => {
         participants: [
           {
             id: 'remote_1',
+            firstPartyParticipantId: 'guest_1',
             name: 'River',
             isLocal: false,
             audioEnabled: true,
@@ -168,6 +170,7 @@ describe('meeting media controller', () => {
           },
           {
             id: 'remote_1',
+            firstPartyParticipantId: 'guest_1',
             name: 'River updated',
             isLocal: false,
             audioEnabled: false,

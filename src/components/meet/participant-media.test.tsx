@@ -12,6 +12,7 @@ function participant(
 ): MeetingMediaParticipant {
   return {
     id: 'participant_1',
+    firstPartyParticipantId: 'guest_1',
     name: 'River',
     isLocal: false,
     audioEnabled: false,

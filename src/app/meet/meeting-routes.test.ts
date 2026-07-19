@@ -5,7 +5,10 @@ import {
   createPendingAccessCookie,
 } from '@/lib/meeting-cookies';
 import { createSiteSessionCookie } from '@/lib/site-session';
-import { POST as meetingOperation } from './[meetingId]/api/[...operation]/route';
+import {
+  DELETE as deleteMeetingOperation,
+  POST as meetingOperation,
+} from './[meetingId]/api/[...operation]/route';
 import { POST as enterMeeting } from './[meetingId]/api/entry/route';
 import { GET as resolveShareLink } from './j/[secret]/route';
 
@@ -240,5 +243,74 @@ describe('meeting media-grant route', () => {
       { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
     );
     expect(anonymous.status).toBe(401);
+  });
+});
+
+describe('meeting participant removal route', () => {
+  test('proxies one bodyless same-origin account deletion with concurrency headers', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        `https://meeting-worker.example.workers.dev/v1/meetings/${MEETING_ID}/participants/guest_1`,
+      );
+      expect(init?.method).toBe('DELETE');
+      expect(init?.body).toBeUndefined();
+      const headers = new Headers(init?.headers);
+      expect(headers.get('x-account-assertion')).toContain('.');
+      expect(headers.get('if-match')).toBe('"7"');
+      expect(headers.get('idempotency-key')).toBe('browser_remove_0123456789abcdef');
+      return Response.json({
+        data: { membershipIntervalId: 'membership_1', version: 8 },
+      }, { headers: { etag: '"8"' } });
+    }) as unknown as typeof fetch;
+
+    const response = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/participants/guest_1`, {
+        method: 'DELETE',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(session),
+          'if-match': '"7"',
+          'idempotency-key': 'browser_remove_0123456789abcdef',
+        },
+      }),
+      { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['participants', 'guest_1'] }) },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      data: { membershipIntervalId: 'membership_1', version: 8 },
+    });
+  });
+
+  test('rejects guests and cross-origin participant deletion before the Worker', async () => {
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: {} });
+    }) as unknown as typeof fetch;
+    const context = {
+      params: Promise.resolve({ meetingId: MEETING_ID, operation: ['participants', 'guest_1'] }),
+    };
+    const crossOrigin = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/participants/guest_1`, {
+        method: 'DELETE',
+        headers: { origin: 'https://attacker.example' },
+      }),
+      context,
+    );
+    const anonymous = await deleteMeetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/participants/guest_1`, {
+        method: 'DELETE',
+        headers: { origin: 'https://mannan.is' },
+      }),
+      context,
+    );
+    expect(crossOrigin.status).toBe(403);
+    expect(anonymous.status).toBe(401);
+    expect(calls).toBe(0);
   });
 });
