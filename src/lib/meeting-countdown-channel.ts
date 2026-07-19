@@ -32,6 +32,11 @@ export type MeetingCountdownChannelMessage =
       readonly requestId: string;
     };
 
+type StateRequest = Extract<MeetingCountdownChannelMessage, { type: 'state-request' }>;
+type StateSnapshot = Extract<MeetingCountdownChannelMessage, { type: 'state-snapshot' }>;
+type FocusRequest = Extract<MeetingCountdownChannelMessage, { type: 'focus-request' }>;
+type FocusAck = Extract<MeetingCountdownChannelMessage, { type: 'focus-ack' }>;
+
 function record(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
@@ -64,7 +69,7 @@ export function meetingCountdownChannelName(meetingId: string): string {
 
 export function countdownStateRequest(
   meetingId: string,
-): MeetingCountdownChannelMessage {
+): StateRequest {
   requireMeetingId(meetingId);
   return { protocol: 1, type: 'state-request', meetingId };
 }
@@ -72,7 +77,7 @@ export function countdownStateRequest(
 export function countdownStateSnapshot(
   meetingId: string,
   snapshot: MeetingCountdownSnapshot,
-): MeetingCountdownChannelMessage {
+): StateSnapshot {
   requireMeetingId(meetingId);
   return {
     protocol: 1,
@@ -86,7 +91,7 @@ export function countdownFocusRequest(
   meetingId: string,
   requestId: string,
   reason: 'manual' | 'auto',
-): MeetingCountdownChannelMessage {
+): FocusRequest {
   requireMeetingId(meetingId);
   requireRequestId(requestId);
   if (reason !== 'manual' && reason !== 'auto') {
@@ -98,7 +103,7 @@ export function countdownFocusRequest(
 export function countdownFocusAck(
   meetingId: string,
   requestId: string,
-): MeetingCountdownChannelMessage {
+): FocusAck {
   requireMeetingId(meetingId);
   requireRequestId(requestId);
   return { protocol: 1, type: 'focus-ack', meetingId, requestId };
