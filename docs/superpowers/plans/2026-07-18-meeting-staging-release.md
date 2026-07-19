@@ -76,3 +76,52 @@ domain, DNS change, or production meeting database was created.
 - Production Vercel meeting variables
 - Observability/retention review and alerting
 - Final human browser pass and production rollout authorization
+
+## Pre-join frontend update — 2026-07-18
+
+The authorized meeting workspace now opens a real provider-neutral device
+setup instead of the media placeholder. It requests camera and microphone
+independently, preserves partial success, previews local video, shows local
+microphone activity, exposes device selection and accessible on/off controls,
+and allows entry with either or both inputs disabled. Joining transitions to a
+truthful local stage with one connected browser, device settings, and leave.
+Leaving stops acquired tracks and returns to setup.
+
+No audio or video leaves the browser in this slice. Remote participants,
+published tracks, provider room credentials, reconnection, moderation, and
+provider-confirmed attendance remain the next realtime integration boundary.
+
+Implementation commits:
+
+- `52c5015` — independent local media acquisition and cleanup
+- `4168f8b` — selected-device replacement and React media lifecycle
+- `4aea0cb` — local preview and accessible media controls
+- `c9e188c` — responsive device pre-join room
+- `37d0949` — truthful local joined stage and workspace integration
+- `a3fd94f` — fake-media desktop/mobile browser acceptance
+
+Fresh local evidence:
+
+- Unit suite: 194 passed, 0 failed, 638 assertions
+- TypeScript: passed
+- Next.js 15.5.20 production build: passed
+- Focused Playwright: 2 passed, 0 failed
+- Inspected renders: desktop pre-join, desktop joined stage, and mobile
+  pre-join; no clipping or overlap found
+- `git diff --check`: passed
+
+Staged release evidence:
+
+- Vercel deployment: `dpl_GViLxAjPgW6o91n8zmdCb9zbQ4SA`
+- Immutable preview:
+  `https://mannan20-l5221kl4n-mannanjs-projects.vercel.app`
+- Stable protected alias:
+  `https://meet-staging-mannan20.vercel.app`
+- Protected `/meet` smoke: `200`
+- Protected latest staged meeting route smoke: `200`
+- Latest staged meeting used for the route smoke:
+  `meeting_00e21fc143c54f24960bf8bc659ec5af` (`Test`, scheduled)
+
+The final hardware-permission acceptance remains a human browser action because
+automated staging requests cannot operate the tester's physical camera or
+microphone. The local browser suite uses Chromium's deterministic fake devices.

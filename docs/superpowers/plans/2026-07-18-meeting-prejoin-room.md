@@ -429,31 +429,31 @@ git commit -m "test(meet): verify local prejoin flow"
 - Modify: `docs/superpowers/plans/2026-07-18-meeting-staging-release.md`
 - Modify: `/private/tmp/meeting-persistence-handoff.7jgK4U/HANDOFF.md`
 
-- [ ] **Step 1: Push the verified branch**
+- [x] **Step 1: Push the verified branch**
 
 Run: `git push origin feat/meeting-consent`
 
 Expected: the remote branch advances through all verified commits.
 
-- [ ] **Step 2: Deploy the branch preview**
+- [x] **Step 2: Deploy the branch preview**
 
 Deploy from the existing Vercel project and update only the stable staging
 alias `meet-staging-mannan20.vercel.app`. Do not mutate the production alias.
 
-- [ ] **Step 3: Smoke staging**
+- [x] **Step 3: Smoke staging**
 
 Use Vercel's authenticated request surface to verify `/meet` and the existing
 staging meeting return 200. Record that local hardware permission remains a
 manual browser acceptance check.
 
-- [ ] **Step 4: Record evidence and next work**
+- [x] **Step 4: Record evidence and next work**
 
 Append commit IDs, exact test/build results, deployment URL, smoke status,
 provider-neutral limitations, active-goal status, standing autonomy direction,
 and the next ready meeting-app slice to the staging record and canonical
 handoff.
 
-- [ ] **Step 5: Commit and push documentation**
+- [x] **Step 5: Commit and push documentation**
 
 ```bash
 git add docs/superpowers/plans/2026-07-18-meeting-staging-release.md
