@@ -131,7 +131,7 @@ git commit -m "feat(meet): add local media controller"
 - Modify: `src/lib/local-meeting-media.test.ts`
 - Create: `src/components/meet/use-local-meeting-media.ts`
 
-- [ ] **Step 1: Write the failing replacement test**
+- [x] **Step 1: Write the failing replacement test**
 
 ```ts
 test('requests one selected camera and stops unrelated tracks', async () => {
@@ -154,13 +154,13 @@ test('requests one selected camera and stops unrelated tracks', async () => {
 });
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `bun test src/lib/local-meeting-media.test.ts`
 
 Expected: the selected-device assertion FAILS.
 
-- [ ] **Step 3: Complete replacement and implement the hook**
+- [x] **Step 3: Complete replacement and implement the hook**
 
 The hook returns this public shape:
 
@@ -196,13 +196,13 @@ transition, and unmount. Sample one analyser through `requestAnimationFrame`
 while an enabled microphone exists; normalize to `0..1`, cancel the frame,
 disconnect nodes, and close `AudioContext` during cleanup.
 
-- [ ] **Step 4: Run GREEN and typecheck**
+- [x] **Step 4: Run GREEN and typecheck**
 
 Run: `bun test src/lib/local-meeting-media.test.ts && bun run typecheck`
 
 Expected: tests PASS and TypeScript exits 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/local-meeting-media.test.ts src/components/meet/use-local-meeting-media.ts

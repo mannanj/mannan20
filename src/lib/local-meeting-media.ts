@@ -74,6 +74,28 @@ export function stopTracks(
   for (const track of tracks) track?.stop();
 }
 
+export async function acquireInputTrack(
+  mediaDevices: MediaDevices,
+  kind: InputKind,
+  deviceId?: string,
+): Promise<MediaStreamTrack> {
+  const requestedInput = deviceId ? { deviceId: { exact: deviceId } } : true;
+  const stream = await mediaDevices.getUserMedia({
+    audio: kind === 'audio' ? requestedInput : false,
+    video: kind === 'video' ? requestedInput : false,
+  });
+  const tracks = stream.getTracks();
+  const selected = tracks.find((track) => track.kind === kind);
+  stopTracks(tracks.filter((track) => track !== selected));
+  if (!selected) {
+    throw new DOMException(
+      `The requested ${kind} input did not return a track.`,
+      'NotFoundError',
+    );
+  }
+  return selected;
+}
+
 export async function acquireLocalMeetingMedia(
   mediaDevices: MediaDevices | undefined,
 ): Promise<LocalMediaAcquisition> {
@@ -110,4 +132,3 @@ export async function acquireLocalMeetingMedia(
     issue: failedIssue(audioResult, videoResult) ?? deviceIssue,
   };
 }
-

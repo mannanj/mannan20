@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import {
+  acquireInputTrack,
   acquireLocalMeetingMedia,
   stopTracks,
 } from './local-meeting-media';
@@ -119,5 +120,25 @@ describe('local meeting media', () => {
     expect(audio.stopCalls()).toBe(1);
     expect(video.stopCalls()).toBe(1);
   });
-});
 
+  test('requests one selected camera and stops unrelated tracks', async () => {
+    const camera = fakeTrack('video', 'camera_2');
+    const extra = fakeTrack('audio', 'extra');
+    const requests: MediaStreamConstraints[] = [];
+    const mediaDevices = {
+      async getUserMedia(constraints: MediaStreamConstraints) {
+        requests.push(constraints);
+        return fakeStream([camera.track, extra.track]);
+      },
+    } as unknown as MediaDevices;
+
+    const result = await acquireInputTrack(mediaDevices, 'video', 'camera_2');
+
+    expect(result).toBe(camera.track);
+    expect(extra.stopCalls()).toBe(1);
+    expect(requests.at(-1)).toEqual({
+      audio: false,
+      video: { deviceId: { exact: 'camera_2' } },
+    });
+  });
+});
