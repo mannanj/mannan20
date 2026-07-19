@@ -23,7 +23,7 @@
 - Modify: `src/app/meet/[meetingId]/api/[...operation]/route.ts`
 - Modify: `src/app/meet/meeting-routes.test.ts`
 
-- [ ] **Step 1: Write failing signed-cookie and route tests**
+- [x] **Step 1: Write failing signed-cookie and route tests**
 
 Add a guest credential cookie test proving the signed payload preserves the
 trimmed display name and rejects an empty or over-100-character name:
@@ -68,7 +68,7 @@ Also assert missing identity is `401`, a cross-origin request is `403`, and
 the response is `Cache-Control: no-store` with only
 `{data:{provider:'realtimekit',authToken:'test-token'}}`.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -79,7 +79,7 @@ bun test src/lib/meeting-cookies.test.ts src/app/meet/meeting-routes.test.ts
 Expected: failures because the guest credential has no display name and the
 dynamic route does not allow `media-grant` or guest POST requests.
 
-- [ ] **Step 3: Implement the signed identity projection**
+- [x] **Step 3: Implement the signed identity projection**
 
 Change the public guest credential helpers to require and return:
 
@@ -124,7 +124,7 @@ For a guest, allow only workspace `GET` and media-grant `POST`; derive
 read a browser-provided media-grant body and do not expose the guest credential
 or account assertion in the site response.
 
-- [ ] **Step 4: Run GREEN and focused boundary checks**
+- [x] **Step 4: Run GREEN and focused boundary checks**
 
 Run:
 
@@ -135,7 +135,7 @@ bun run typecheck
 
 Expected: all focused tests pass and TypeScript exits 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/meeting-cookies.ts src/lib/meeting-cookies.test.ts 'src/app/meet/[meetingId]/api/entry/route.ts' 'src/app/meet/[meetingId]/api/[...operation]/route.ts' src/app/meet/meeting-routes.test.ts

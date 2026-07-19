@@ -68,6 +68,7 @@ describe('meeting-scoped cookies', () => {
     const cookie = createGuestCredentialCookie({
       meetingId: MEETING_ID,
       participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
       credential: 'guest:opaque-credential_1',
       nowSeconds: 2_000_000_000,
     });
@@ -76,10 +77,26 @@ describe('meeting-scoped cookies', () => {
     expect(readGuestCredential(cookie, MEETING_ID, 2_000_000_100)).toEqual({
       meetingId: MEETING_ID,
       participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
       credential: 'guest:opaque-credential_1',
       exp: 2_000_086_400,
     });
     expect(readGuestCredential(cookie, 'meeting_other', 2_000_000_100)).toBeNull();
+  });
+
+  test('rejects an invalid guest credential display name', () => {
+    expect(() => createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: '   ',
+      credential: 'guest:opaque-credential_1',
+    })).toThrow('Invalid guest credential');
+    expect(() => createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'x'.repeat(101),
+      credential: 'guest:opaque-credential_1',
+    })).toThrow('Invalid guest credential');
   });
 
   test('rejects tampering and emits scoped deletion cookies', () => {

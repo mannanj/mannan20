@@ -67,6 +67,7 @@ export async function POST(
       createGuestCredentialCookie({
         meetingId,
         participantId: candidate.participantId,
+        displayName: candidate.displayName,
         credential,
       }),
     );

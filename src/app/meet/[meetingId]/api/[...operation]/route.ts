@@ -57,6 +57,9 @@ function workerPath(meetingId: string, operation: string[], method: string): str
   ) {
     return `/v1/meetings/${meetingId}/live-session`;
   }
+  if (operation.length === 1 && operation[0] === 'media-grant' && method === 'POST') {
+    return `/v1/meetings/${meetingId}/media-grant`;
+  }
   return null;
 }
 
@@ -72,9 +75,17 @@ async function handle(request: Request, context: Context): Promise<Response> {
   if (request.method !== 'GET' && !sameOrigin(request)) {
     return Response.json({ error: { code: 'invalid_origin' } }, { status: 403 });
   }
+  const mediaGrant =
+    operation.length === 1 &&
+    operation[0] === 'media-grant' &&
+    request.method === 'POST';
   const session = await readSiteSession(request.headers.get('cookie'));
   if (session !== null) {
-    const body = request.method === 'POST' ? await readMeetingJson(request) : undefined;
+    const body = request.method === 'POST'
+      ? mediaGrant
+        ? { displayName: session.email }
+        : await readMeetingJson(request)
+      : undefined;
     if (request.method === 'POST' && body === null) {
       return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
     }
@@ -85,7 +96,11 @@ async function handle(request: Request, context: Context): Promise<Response> {
       ...(body === undefined || body === null ? {} : { body }),
     });
   }
-  if (request.method !== 'GET' || operation[0] !== 'workspace') {
+  const workspaceRead =
+    request.method === 'GET' &&
+    operation.length === 1 &&
+    operation[0] === 'workspace';
+  if (!workspaceRead && !mediaGrant) {
     return Response.json({ error: { code: 'identity_required' } }, { status: 401 });
   }
   const guest = readGuestCredential(request.headers.get('cookie'), meetingId);
@@ -93,8 +108,9 @@ async function handle(request: Request, context: Context): Promise<Response> {
     return Response.json({ error: { code: 'identity_required' } }, { status: 401 });
   }
   const result = await meetingWorkerRequest({
-    method: 'GET',
+    method: mediaGrant ? 'POST' : 'GET',
     path,
+    ...(mediaGrant ? { body: { displayName: guest.displayName } } : {}),
     guest: { participantId: guest.participantId, credential: guest.credential },
   });
   const response = meetingResultResponse(result);

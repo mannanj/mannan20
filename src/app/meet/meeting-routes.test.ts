@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
-import { createGuestCandidateCookie, createPendingAccessCookie } from '@/lib/meeting-cookies';
+import {
+  createGuestCandidateCookie,
+  createGuestCredentialCookie,
+  createPendingAccessCookie,
+} from '@/lib/meeting-cookies';
 import { createSiteSessionCookie } from '@/lib/site-session';
+import { POST as meetingOperation } from './[meetingId]/api/[...operation]/route';
 import { POST as enterMeeting } from './[meetingId]/api/entry/route';
 import { GET as resolveShareLink } from './j/[secret]/route';
 
@@ -137,5 +142,103 @@ describe('meeting admission routes', () => {
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('set-cookie')).toContain('__Secure-mannan-meeting-guest=;');
+  });
+});
+
+describe('meeting media-grant route', () => {
+  test('derives an account display name from the active site session', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        `https://meeting-worker.example.workers.dev/v1/meetings/${MEETING_ID}/media-grant`,
+      );
+      const headers = new Headers(init?.headers);
+      expect(headers.get('x-account-assertion')).toContain('.');
+      expect(headers.has('x-guest-credential')).toBe(false);
+      expect(JSON.parse(String(init?.body))).toEqual({
+        displayName: 'owner@example.com',
+      });
+      return Response.json({
+        data: { provider: 'realtimekit', authToken: 'test-token' },
+      });
+    }) as unknown as typeof fetch;
+
+    const response = await meetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/media-grant`, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(session),
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ displayName: 'Mallory' }),
+      }),
+      { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(await response.json()).toEqual({
+      data: { provider: 'realtimekit', authToken: 'test-token' },
+    });
+  });
+
+  test('derives a guest display name without exposing its credential to JavaScript', async () => {
+    const guest = createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
+      credential: 'guest:issued-credential',
+    });
+    globalThis.fetch = mock(async (_input, init) => {
+      const headers = new Headers(init?.headers);
+      expect(headers.has('x-account-assertion')).toBe(false);
+      expect(headers.get('x-guest-participant-id')).toBe(
+        'guest_0123456789abcdef0123456789abcdef',
+      );
+      expect(headers.get('x-guest-credential')).toBe('guest:issued-credential');
+      expect(JSON.parse(String(init?.body))).toEqual({ displayName: 'River' });
+      return Response.json({
+        data: { provider: 'realtimekit', authToken: 'guest-test-token' },
+      });
+    }) as unknown as typeof fetch;
+
+    const response = await meetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/media-grant`, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(guest),
+        },
+      }),
+      { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).not.toContain('guest:issued-credential');
+  });
+
+  test('requires same-origin active account or guest identity', async () => {
+    const crossOrigin = await meetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/media-grant`, {
+        method: 'POST',
+        headers: { origin: 'https://attacker.example' },
+      }),
+      { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
+    );
+    expect(crossOrigin.status).toBe(403);
+
+    const anonymous = await meetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/media-grant`, {
+        method: 'POST',
+        headers: { origin: 'https://mannan.is' },
+      }),
+      { params: Promise.resolve({ meetingId: MEETING_ID, operation: ['media-grant'] }) },
+    );
+    expect(anonymous.status).toBe(401);
   });
 });

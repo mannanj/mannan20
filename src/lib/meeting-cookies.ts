@@ -215,10 +215,17 @@ export function readGuestCandidate(
 export function createGuestCredentialCookie(input: {
   meetingId: string;
   participantId: string;
+  displayName: string;
   credential: string;
   nowSeconds?: number;
 }): string {
-  if (!validIdentifier(input.participantId) || !validCredential(input.credential)) {
+  const displayName = input.displayName.trim();
+  if (
+    !validIdentifier(input.participantId) ||
+    displayName.length === 0 ||
+    displayName.length > 100 ||
+    !validCredential(input.credential)
+  ) {
     throw new Error('Invalid guest credential');
   }
   const now = input.nowSeconds ?? Math.floor(Date.now() / 1000);
@@ -230,6 +237,7 @@ export function createGuestCredentialCookie(input: {
       v: 1,
       meetingId: input.meetingId,
       participantId: input.participantId,
+      displayName,
       credential: input.credential,
       exp: now + GUEST_TTL_SECONDS,
     },
@@ -241,11 +249,19 @@ export function readGuestCredential(
   cookieHeader: string | null,
   meetingId: string,
   nowSeconds = Math.floor(Date.now() / 1000),
-): (Omit<SignedPayload, 'v'> & { participantId: string; credential: string }) | null {
+): (Omit<SignedPayload, 'v'> & {
+  participantId: string;
+  displayName: string;
+  credential: string;
+}) | null {
   const record = parse(cookieHeader, GUEST_COOKIE, 'guest', meetingId, nowSeconds);
   if (
     record === null ||
     !validIdentifier(record.participantId) ||
+    typeof record.displayName !== 'string' ||
+    record.displayName.trim() !== record.displayName ||
+    record.displayName.length === 0 ||
+    record.displayName.length > 100 ||
     !validCredential(record.credential)
   ) {
     return null;
@@ -253,6 +269,7 @@ export function readGuestCredential(
   return {
     meetingId,
     participantId: record.participantId,
+    displayName: record.displayName,
     credential: record.credential,
     exp: record.exp as number,
   };
