@@ -218,9 +218,16 @@ export function MeetingRoom({
               />
             ) : (
               <MeetingStage
-                participantLabel={participantLabel}
                 role={workspace.currentParticipant.role}
-                media={media}
+                snapshot={room.snapshot}
+                microphones={media.microphones}
+                cameras={media.cameras}
+                selectedMicrophoneId={room.selectedMicrophoneId || media.selectedMicrophoneId}
+                selectedCameraId={room.selectedCameraId || media.selectedCameraId}
+                onToggleMicrophone={room.toggleMicrophone}
+                onToggleCamera={room.toggleCamera}
+                onSelectMicrophone={room.selectMicrophone}
+                onSelectCamera={room.selectCamera}
                 onLeave={() => void room.leave()}
               />
             )}

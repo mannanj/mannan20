@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { LocalVideo } from './local-video';
+import type {
+  MeetingMediaConnection,
+  MeetingMediaSnapshot,
+} from '@/lib/meeting-media-controller';
 import { MeetingMediaControls } from './meeting-media-controls';
-import type { LocalMeetingMediaState } from './use-local-meeting-media';
+import { ParticipantMedia } from './participant-media';
 
 function StageDeviceSelect({
   label,
@@ -39,77 +42,134 @@ function StageDeviceSelect({
   );
 }
 
+function connectionCopy(connection: MeetingMediaConnection): string | null {
+  if (connection === 'reconnecting') return 'Reconnecting…';
+  if (connection === 'disconnected') return 'Connection lost';
+  if (connection === 'kicked') return 'You were removed';
+  if (connection === 'ended') return 'Meeting ended';
+  if (connection === 'failed') return 'Could not connect';
+  return null;
+}
+
 export function MeetingStage({
-  participantLabel,
   role,
-  media,
+  snapshot,
+  microphones,
+  cameras,
+  selectedMicrophoneId,
+  selectedCameraId,
+  onToggleMicrophone,
+  onToggleCamera,
+  onSelectMicrophone,
+  onSelectCamera,
   onLeave,
 }: {
-  participantLabel: string;
   role: string;
-  media: LocalMeetingMediaState;
+  snapshot: MeetingMediaSnapshot;
+  microphones: MediaDeviceInfo[];
+  cameras: MediaDeviceInfo[];
+  selectedMicrophoneId: string;
+  selectedCameraId: string;
+  onToggleMicrophone(): void;
+  onToggleCamera(): void;
+  onSelectMicrophone(deviceId: string): Promise<void>;
+  onSelectCamera(deviceId: string): Promise<void>;
   onLeave(): void;
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const participants = snapshot.participants;
+  const local = participants.find((participant) => participant.isLocal);
+  const status = connectionCopy(snapshot.connection);
+  const terminal = snapshot.connection === 'kicked' || snapshot.connection === 'ended';
 
   return (
     <section aria-label="Meeting stage" className="py-6 sm:py-8">
+      {status && (
+        <div
+          role="status"
+          className={`mb-4 flex items-center gap-2 rounded-lg border px-3.5 py-2.5 text-xs ${terminal ? 'border-amber-200/15 bg-amber-100/[0.04] text-amber-50/70' : 'border-white/10 bg-white/[0.035] text-white/55'}`}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${snapshot.connection === 'reconnecting' ? 'animate-pulse bg-amber-200/70' : 'bg-white/35'}`} />
+          {status}
+        </div>
+      )}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="relative min-h-[360px]">
-          <LocalVideo
-            stream={media.stream}
-            cameraEnabled={media.cameraEnabled}
-            label={participantLabel}
-            className="min-h-[360px] rounded-xl border border-white/10 lg:min-h-[560px]"
-          />
-          <div className="absolute inset-x-4 bottom-4 flex justify-center">
-            <div className="rounded-full border border-white/10 bg-black/65 p-2 shadow-2xl backdrop-blur-xl">
-              <MeetingMediaControls
-                microphoneEnabled={media.microphoneEnabled}
-                cameraEnabled={media.cameraEnabled}
-                onToggleMicrophone={media.toggleMicrophone}
-                onToggleCamera={media.toggleCamera}
-                onOpenSettings={() => setSettingsOpen((open) => !open)}
-                onLeave={onLeave}
+          <div className={`grid min-h-[360px] gap-2.5 ${participants.length > 1 ? 'lg:grid-cols-2' : ''} lg:min-h-[560px]`}>
+            {participants.map((participant, index) => (
+              <ParticipantMedia
+                key={participant.id}
+                participant={participant}
+                className={`min-h-[260px] rounded-xl border border-white/10 ${participants.length > 2 && participants.length % 2 === 1 && index === participants.length - 1 ? 'lg:col-span-2' : ''}`}
               />
-            </div>
+            ))}
           </div>
+          {!terminal && local && (
+            <div className="absolute inset-x-4 bottom-4 flex justify-center">
+              <div className="rounded-full border border-white/10 bg-black/65 p-2 shadow-2xl backdrop-blur-xl">
+                <MeetingMediaControls
+                  microphoneEnabled={local.audioEnabled}
+                  cameraEnabled={local.videoEnabled}
+                  onToggleMicrophone={onToggleMicrophone}
+                  onToggleCamera={onToggleCamera}
+                  onOpenSettings={() => setSettingsOpen((open) => !open)}
+                  onLeave={onLeave}
+                />
+              </div>
+            </div>
+          )}
+          {terminal && (
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={onLeave}
+                className="min-h-11 rounded-md border border-white/10 bg-white/[0.06] px-4 text-sm text-white/75 transition hover:bg-white/[0.1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d79275]"
+              >
+                Leave meeting
+              </button>
+            </div>
+          )}
         </div>
 
         <aside className="rounded-xl border border-white/10 bg-white/[0.035] p-5">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs uppercase tracking-[0.14em] text-white/35">People</p>
             <span className="rounded-full border border-emerald-200/10 bg-emerald-200/[0.04] px-2.5 py-1 text-[10px] text-emerald-100/55">
-              1 connected
+              {participants.length} connected
             </span>
           </div>
-          <div className="mt-5 flex items-center gap-3 rounded-lg border border-white/8 bg-black/15 p-3">
-            <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.07] font-[family-name:var(--font-caption)] text-lg text-white/75">
-              {participantLabel.trim().charAt(0).toUpperCase() || 'Y'}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm text-white/80">You</p>
-              <p className="mt-0.5 truncate text-[11px] capitalize text-white/35">{role}</p>
-            </div>
+          <div className="mt-5 space-y-2.5">
+            {participants.map((participant) => (
+              <div key={participant.id} className="flex items-center gap-3 rounded-lg border border-white/8 bg-black/15 p-3">
+                <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.07] font-[family-name:var(--font-caption)] text-lg text-white/75">
+                  {participant.name.trim().charAt(0).toUpperCase() || 'G'}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm text-white/80">
+                    {participant.isLocal ? 'You' : participant.name}
+                  </p>
+                  <p className="mt-0.5 truncate text-[11px] capitalize text-white/35">
+                    {participant.isLocal ? role : 'In room'}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-          <p className="mt-5 text-xs leading-5 text-white/35">
-            This browser is connected locally. Remote media is not connected yet.
-          </p>
 
-          {settingsOpen && (
+          {settingsOpen && !terminal && (
             <div className="mt-6 space-y-4 border-t border-white/8 pt-5">
               <p className="text-xs uppercase tracking-[0.14em] text-white/35">Device settings</p>
               <StageDeviceSelect
                 label="Camera"
-                devices={media.cameras}
-                value={media.selectedCameraId}
-                onChange={media.selectCamera}
+                devices={cameras}
+                value={selectedCameraId}
+                onChange={onSelectCamera}
               />
               <StageDeviceSelect
                 label="Microphone"
-                devices={media.microphones}
-                value={media.selectedMicrophoneId}
-                onChange={media.selectMicrophone}
+                devices={microphones}
+                value={selectedMicrophoneId}
+                onChange={onSelectMicrophone}
               />
             </div>
           )}
@@ -118,4 +178,3 @@ export function MeetingStage({
     </section>
   );
 }
-

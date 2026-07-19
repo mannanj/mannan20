@@ -452,7 +452,7 @@ git commit -m "feat(meet): connect prejoin to provider room"
 - Modify: `src/components/meet/meeting-stage.tsx`
 - Modify: `src/components/meet/meeting-stage.test.tsx`
 
-- [ ] **Step 1: Write failing stage projection tests**
+- [x] **Step 1: Write failing stage projection tests**
 
 Render one local and two remote participants and assert:
 
@@ -469,7 +469,7 @@ Test `ParticipantMedia` with live and absent tracks. It must render a muted,
 mirrored local video, an unmuted non-mirrored remote audio/video pair, and a
 name/initial fallback without inventing camera or microphone state.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -479,7 +479,7 @@ bun test src/components/meet/participant-media.test.tsx src/components/meet/meet
 
 Expected: missing component and obsolete local-only stage contract failures.
 
-- [ ] **Step 3: Implement the adaptive stage**
+- [x] **Step 3: Implement the adaptive stage**
 
 Use one responsive media grid: one participant fills the canvas; two use equal
 columns on desktop; three or more use a balanced two-column grid with a single
@@ -498,7 +498,7 @@ Stage controls delegate to the controller. Device selects use the already
 enumerated pre-join device list but call provider `setDevice`; they must not
 restart the old local-preview hook while joined.
 
-- [ ] **Step 4: Run GREEN and accessibility-focused component checks**
+- [x] **Step 4: Run GREEN and accessibility-focused component checks**
 
 Run:
 
@@ -510,7 +510,7 @@ bun run typecheck
 Expected: all focused tests pass; controls retain labels, focus styles, and
 44px minimum targets.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/meet/participant-media.tsx src/components/meet/participant-media.test.tsx src/components/meet/meeting-stage.tsx src/components/meet/meeting-stage.test.tsx

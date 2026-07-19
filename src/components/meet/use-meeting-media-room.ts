@@ -70,6 +70,8 @@ export function useMeetingMediaRoom(input: {
   const sdk = useMemo(browserMeetingMediaSdk, []);
   const controllerRef = useRef<MeetingMediaController | null>(null);
   const [snapshot, setSnapshot] = useState<MeetingMediaSnapshot>(INITIAL_SNAPSHOT);
+  const [selectedMicrophoneId, setSelectedMicrophoneId] = useState('');
+  const [selectedCameraId, setSelectedCameraId] = useState('');
 
   useEffect(() => {
     const controller = new MeetingMediaController({
@@ -95,6 +97,8 @@ export function useMeetingMediaRoom(input: {
     const controller = controllerRef.current;
     if (!controller) return;
     const joinInput = meetingMediaJoinInput(mediaRef.current);
+    setSelectedMicrophoneId(joinInput.microphone?.deviceId ?? '');
+    setSelectedCameraId(joinInput.camera?.deviceId ?? '');
     await controller.join(joinInput);
     if (controller.snapshot().connection === 'failed') {
       await mediaRef.current.retry();
@@ -116,13 +120,19 @@ export function useMeetingMediaRoom(input: {
     const selected = mediaRef.current.microphones.find(
       (device) => device.deviceId === deviceId,
     );
-    if (selected) await controllerRef.current?.setDevice(selected);
+    if (selected) {
+      await controllerRef.current?.setDevice(selected);
+      setSelectedMicrophoneId(deviceId);
+    }
   }, []);
   const selectCamera = useCallback(async (deviceId: string) => {
     const selected = mediaRef.current.cameras.find(
       (device) => device.deviceId === deviceId,
     );
-    if (selected) await controllerRef.current?.setDevice(selected);
+    if (selected) {
+      await controllerRef.current?.setDevice(selected);
+      setSelectedCameraId(deviceId);
+    }
   }, []);
 
   const localParticipant = snapshot.participants.find(
@@ -139,6 +149,8 @@ export function useMeetingMediaRoom(input: {
       void setMicrophoneEnabled(!localParticipant?.audioEnabled),
     toggleCamera: () =>
       void setCameraEnabled(!localParticipant?.videoEnabled),
+    selectedMicrophoneId,
+    selectedCameraId,
     selectMicrophone,
     selectCamera,
   };
