@@ -1,5 +1,10 @@
 import { clearMeetingCookies, readGuestCredential } from '@/lib/meeting-cookies';
 import {
+  parseMeetingDurationExtensionBody,
+  validMeetingDurationExtensionKey,
+  type MeetingDurationExtensionBody,
+} from '@/lib/meeting-duration-extension';
+import {
   meetingResultResponse,
   proxyAccountMeeting,
   quotedVersion,
@@ -60,6 +65,14 @@ function workerPath(meetingId: string, operation: string[], method: string): str
   ) {
     return `/v1/meetings/${meetingId}/live-session`;
   }
+  if (
+    operation.length === 2 &&
+    operation[0] === 'live-session' &&
+    operation[1] === 'extensions' &&
+    method === 'POST'
+  ) {
+    return `/v1/meetings/${meetingId}/live-session/extensions`;
+  }
   if (operation.length === 1 && operation[0] === 'media-grant' && method === 'POST') {
     return `/v1/meetings/${meetingId}/media-grant`;
   }
@@ -89,6 +102,11 @@ async function handle(request: Request, context: Context): Promise<Response> {
     operation.length === 1 &&
     operation[0] === 'media-grant' &&
     request.method === 'POST';
+  const durationExtension =
+    operation.length === 2
+    && operation[0] === 'live-session'
+    && operation[1] === 'extensions'
+    && request.method === 'POST';
   const mediaExpectedVersion = mediaGrant ? quotedVersion(request) : undefined;
   const mediaIdempotencyKey = mediaGrant
     ? request.headers.get('idempotency-key') ?? undefined
@@ -103,12 +121,29 @@ async function handle(request: Request, context: Context): Promise<Response> {
   ) {
     return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
   }
+  let durationBody: MeetingDurationExtensionBody | null = null;
+  const durationExpectedVersion = durationExtension ? quotedVersion(request) : undefined;
+  const durationIdempotencyKey = durationExtension
+    ? request.headers.get('idempotency-key')
+    : null;
+  if (durationExtension) {
+    durationBody = parseMeetingDurationExtensionBody(await readMeetingJson(request));
+    if (
+      durationExpectedVersion === undefined
+      || !validMeetingDurationExtensionKey(durationIdempotencyKey)
+      || durationBody === null
+    ) {
+      return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
+    }
+  }
   const session = await readSiteSession(request.headers.get('cookie'));
   if (session !== null) {
     const body = request.method === 'POST'
       ? mediaGrant
         ? { displayName: session.email }
-        : await readMeetingJson(request)
+        : durationExtension
+          ? { ...durationBody }
+          : await readMeetingJson(request)
       : undefined;
     if (request.method === 'POST' && body === null) {
       return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
@@ -124,7 +159,7 @@ async function handle(request: Request, context: Context): Promise<Response> {
     request.method === 'GET' &&
     operation.length === 1 &&
     operation[0] === 'workspace';
-  if (!workspaceRead && !mediaGrant) {
+  if (!workspaceRead && !mediaGrant && !durationExtension) {
     return Response.json({ error: { code: 'identity_required' } }, { status: 401 });
   }
   const guest = readGuestCredential(request.headers.get('cookie'), meetingId);
@@ -132,13 +167,19 @@ async function handle(request: Request, context: Context): Promise<Response> {
     return Response.json({ error: { code: 'identity_required' } }, { status: 401 });
   }
   const result = await meetingWorkerRequest({
-    method: mediaGrant ? 'POST' : 'GET',
+    method: mediaGrant || durationExtension ? 'POST' : 'GET',
     path,
-    ...(mediaGrant ? { body: { displayName: guest.displayName } } : {}),
     ...(mediaGrant
+      ? { body: { displayName: guest.displayName } }
+      : durationExtension && durationBody !== null
+        ? { body: durationBody }
+        : {}),
+    ...(mediaGrant || durationExtension
       ? {
-          idempotencyKey: mediaIdempotencyKey,
-          ifMatch: mediaExpectedVersion,
+          idempotencyKey: mediaGrant
+            ? mediaIdempotencyKey
+            : durationIdempotencyKey ?? undefined,
+          ifMatch: mediaGrant ? mediaExpectedVersion : durationExpectedVersion,
         }
       : {}),
     guest: { participantId: guest.participantId, credential: guest.credential },

@@ -7,6 +7,7 @@ import {
 import { createSiteSessionCookie } from '@/lib/site-session';
 import {
   DELETE as deleteMeetingOperation,
+  GET as getMeetingOperation,
   POST as meetingOperation,
 } from './[meetingId]/api/[...operation]/route';
 import { POST as enterMeeting } from './[meetingId]/api/entry/route';
@@ -519,6 +520,226 @@ describe('meeting live-session end route', () => {
     expect(guestRequest.status).toBe(401);
     expect(bodyBearing.status).toBe(400);
     expect(extraPath.status).toBe(404);
+    expect(calls).toBe(0);
+  });
+});
+
+describe('meeting duration extension route', () => {
+  const context = {
+    params: Promise.resolve({
+      meetingId: MEETING_ID,
+      operation: ['live-session', 'extensions'],
+    }),
+  };
+
+  test('forwards an exact normalized account command and response metadata', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        `https://meeting-worker.example.workers.dev/v1/meetings/${MEETING_ID}/live-session/extensions`,
+      );
+      expect(init).toMatchObject({ method: 'POST', cache: 'no-store', redirect: 'error' });
+      const headers = new Headers(init?.headers);
+      expect(headers.get('x-account-assertion')).toContain('.');
+      expect(headers.has('x-guest-credential')).toBe(false);
+      expect(headers.get('if-match')).toBe('"7"');
+      expect(headers.get('idempotency-key')).toBe(
+        'browser_extend_0123456789abcdef0123456789abcdef',
+      );
+      expect(JSON.parse(String(init?.body))).toEqual({
+        requestedSeconds: 1800,
+        reason: 'We need time for questions.',
+      });
+      return Response.json({
+        data: {
+          extensionId: 'extension_0123456789abcdef',
+          sessionId: 'session_0123456789abcdef',
+          requestedSeconds: 1800,
+          appliedSeconds: 1800,
+          oldEffectiveEndsAt: '2026-07-19T14:30:00.000Z',
+          effectiveEndsAt: '2026-07-19T15:00:00.000Z',
+          policyDecision: 'applied_full',
+          version: 8,
+        },
+      }, { headers: { etag: '"8"' } });
+    }) as unknown as typeof fetch;
+
+    const response = await meetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session/extensions`, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(session),
+          'content-type': 'application/json',
+          'if-match': '"7"',
+          'idempotency-key': 'browser_extend_0123456789abcdef0123456789abcdef',
+        },
+        body: JSON.stringify({
+          requestedSeconds: 1800,
+          reason: '  We need time for questions.  ',
+        }),
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('etag')).toBe('"8"');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(await response.json()).toEqual({
+      data: {
+        extensionId: 'extension_0123456789abcdef',
+        sessionId: 'session_0123456789abcdef',
+        requestedSeconds: 1800,
+        appliedSeconds: 1800,
+        oldEffectiveEndsAt: '2026-07-19T14:30:00.000Z',
+        effectiveEndsAt: '2026-07-19T15:00:00.000Z',
+        policyDecision: 'applied_full',
+        version: 8,
+      },
+    });
+  });
+
+  test('forwards the exact guest identity server-side without exposing its credential', async () => {
+    const guest = createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
+      credential: 'guest:issued-credential',
+    });
+    globalThis.fetch = mock(async (input, init) => {
+      expect(String(input)).toBe(
+        `https://meeting-worker.example.workers.dev/v1/meetings/${MEETING_ID}/live-session/extensions`,
+      );
+      const headers = new Headers(init?.headers);
+      expect(headers.has('x-account-assertion')).toBe(false);
+      expect(headers.get('x-guest-participant-id')).toBe(
+        'guest_0123456789abcdef0123456789abcdef',
+      );
+      expect(headers.get('x-guest-credential')).toBe('guest:issued-credential');
+      expect(headers.get('if-match')).toBe('"9"');
+      expect(headers.get('idempotency-key')).toBe(
+        'browser_extend_abcdef0123456789abcdef0123456789',
+      );
+      expect(JSON.parse(String(init?.body))).toEqual({
+        requestedSeconds: 900,
+        reason: 'Guest question period',
+      });
+      return Response.json({
+        data: {
+          extensionId: 'extension_abcdef0123456789',
+          sessionId: 'session_0123456789abcdef',
+          requestedSeconds: 900,
+          appliedSeconds: 900,
+          oldEffectiveEndsAt: '2026-07-19T15:00:00.000Z',
+          effectiveEndsAt: '2026-07-19T15:15:00.000Z',
+          policyDecision: 'applied_full',
+          version: 10,
+        },
+      }, { headers: { etag: '"10"' } });
+    }) as unknown as typeof fetch;
+
+    const response = await meetingOperation(
+      new Request(`https://mannan.is/meet/${MEETING_ID}/api/live-session/extensions`, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(guest),
+          'content-type': 'application/json',
+          'if-match': '"9"',
+          'idempotency-key': 'browser_extend_abcdef0123456789abcdef0123456789',
+        },
+        body: JSON.stringify({ requestedSeconds: 900, reason: 'Guest question period' }),
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('etag')).toBe('"10"');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(await response.text()).not.toContain('guest:issued-credential');
+  });
+
+  test('rejects malformed transport before identity and rejects wrong method, path, or origin', async () => {
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: {} });
+    }) as unknown as typeof fetch;
+    const base = `https://mannan.is/meet/${MEETING_ID}/api/live-session/extensions`;
+    const malformed = [
+      new Request(base, {
+        method: 'POST',
+        headers: { origin: 'https://mannan.is', 'content-type': 'application/json' },
+        body: JSON.stringify({ requestedSeconds: 1800, reason: 'Valid' }),
+      }),
+      new Request(base, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          'content-type': 'application/json',
+          'if-match': '"7"',
+          'idempotency-key': 'bad key',
+        },
+        body: JSON.stringify({ requestedSeconds: 1800, reason: 'Valid' }),
+      }),
+      new Request(base, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          'content-type': 'application/json',
+          'if-match': '"7"',
+          'idempotency-key': 'browser_extend_0123456789abcdef0123456789abcdef',
+        },
+        body: JSON.stringify({ requestedSeconds: 901, reason: 'Invalid increment' }),
+      }),
+      new Request(base, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          'content-type': 'application/json',
+          'if-match': '"7"',
+          'idempotency-key': 'browser_extend_0123456789abcdef0123456789abcdef',
+        },
+        body: JSON.stringify({
+          requestedSeconds: 1800,
+          reason: 'Valid',
+          privateExtra: true,
+        }),
+      }),
+    ];
+    for (const request of malformed) {
+      const response = await meetingOperation(request, context);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: { code: 'invalid_request' } });
+    }
+
+    const wrongMethod = await getMeetingOperation(new Request(base), context);
+    const wrongPath = await meetingOperation(
+      new Request(`${base}/extra`, {
+        method: 'POST',
+        headers: { origin: 'https://mannan.is' },
+      }),
+      {
+        params: Promise.resolve({
+          meetingId: MEETING_ID,
+          operation: ['live-session', 'extensions', 'extra'],
+        }),
+      },
+    );
+    const wrongOrigin = await meetingOperation(
+      new Request(base, {
+        method: 'POST',
+        headers: { origin: 'https://attacker.example' },
+      }),
+      context,
+    );
+    expect(wrongMethod.status).toBe(404);
+    expect(wrongPath.status).toBe(404);
+    expect(wrongOrigin.status).toBe(403);
     expect(calls).toBe(0);
   });
 });
