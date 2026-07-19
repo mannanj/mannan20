@@ -44,7 +44,7 @@ describe('meeting stage', () => {
   test('shows truthful connected participants and reconnecting state', () => {
     const markup = renderToStaticMarkup(
       <MeetingStage
-        role="owner"
+        people={<div>Authoritative roster · 3 connected</div>}
         snapshot={snapshot}
         microphones={[]}
         cameras={[]}
@@ -64,6 +64,7 @@ describe('meeting stage', () => {
     expect(markup).toContain('3 connected');
     expect(markup).toContain('Reconnecting…');
     expect(markup).toContain('Leave');
+    expect(markup).toContain('Authoritative roster');
     expect(markup).not.toContain('connected locally');
   });
 
@@ -74,7 +75,7 @@ describe('meeting stage', () => {
   ] as const)('maps %s to plain-language status', (connection, copy) => {
     const markup = renderToStaticMarkup(
       <MeetingStage
-        role="participant"
+        people={<div>Authoritative roster · 3 connected</div>}
         snapshot={{ ...snapshot, connection }}
         microphones={[]}
         cameras={[]}

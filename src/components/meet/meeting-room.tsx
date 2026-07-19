@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   MeetingLiveSessionError,
   startMeetingLiveSession,
@@ -9,9 +9,22 @@ import {
   meetingRoomLifecycle,
   serverClockNowMs,
 } from '@/lib/meeting-room-lifecycle';
+import {
+  MeetingParticipantRemovalAttempts,
+  applyMeetingParticipantRemoval,
+} from '@/lib/meeting-participant-moderation';
+import {
+  MeetingParticipantRemovalError,
+  removeMeetingParticipant,
+} from '@/lib/meeting-participant-removal';
 import { MeetingShell } from './meeting-shell';
 import { MeetingInviteLink } from './meeting-invite-link';
 import { MeetingLifecyclePanel } from './meeting-lifecycle-panel';
+import {
+  MeetingPeople,
+  type MeetingParticipantRole,
+  type MeetingRosterParticipant,
+} from './meeting-people';
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
@@ -25,7 +38,11 @@ interface Workspace {
   status: string;
   schedule: { startsAt: string; endsAt: string; durationSeconds: number };
   session?: { state: string; actualStartedAt: string; effectiveEndsAt: string };
-  currentParticipant: { role: string };
+  currentParticipant: {
+    participantId: string;
+    role: MeetingParticipantRole;
+  };
+  participants: MeetingRosterParticipant[];
 }
 
 export function MeetingRoom({
@@ -49,6 +66,12 @@ export function MeetingRoom({
   const [monotonicNowMs, setMonotonicNowMs] = useState(0);
   const [startingEarly, setStartingEarly] = useState(false);
   const [startError, setStartError] = useState<string | undefined>();
+  const [removingParticipantId, setRemovingParticipantId] = useState<string | null>(null);
+  const [removalIssue, setRemovalIssue] = useState<string | null>(null);
+  const removalAttempts = useRef<MeetingParticipantRemovalAttempts | null>(null);
+  if (removalAttempts.current === null) {
+    removalAttempts.current = new MeetingParticipantRemovalAttempts();
+  }
   const participantLabel = signedInEmail ?? 'Guest';
 
   const lifecycle = useMemo(() => {
@@ -78,6 +101,12 @@ export function MeetingRoom({
     'kicked',
     'ended',
   ].includes(room.snapshot.connection);
+  const connectedParticipantIds = useMemo(
+    () => new Set(
+      room.snapshot.participants.map((participant) => participant.firstPartyParticipantId),
+    ),
+    [room.snapshot.participants],
+  );
 
   const load = useCallback(async () => {
     const response = await fetch(`/meet/${meetingId}/api/workspace`, { cache: 'no-store' }).catch(() => null);
@@ -91,6 +120,49 @@ export function MeetingRoom({
     }
     setState(hasAdmission ? 'entry' : 'unavailable');
   }, [hasAdmission, meetingId]);
+
+  const removeParticipant = useCallback(async (participantId: string) => {
+    if (workspace === null || removingParticipantId !== null) return;
+    const attempt = removalAttempts.current!;
+    const idempotencyKey = attempt.begin(participantId);
+    setRemovingParticipantId(participantId);
+    setRemovalIssue(null);
+    try {
+      const result = await removeMeetingParticipant({
+        meetingId: workspace.meetingId,
+        participantId,
+        version: workspace.version,
+        idempotencyKey,
+      });
+      attempt.complete(participantId);
+      setWorkspace((current) =>
+        current === null
+          ? current
+          : applyMeetingParticipantRemoval(current, participantId, result.version),
+      );
+    } catch (error) {
+      if (
+        error instanceof MeetingParticipantRemovalError
+        && error.code === 'meeting_conflict'
+      ) {
+        attempt.cancel(participantId);
+        await load();
+      } else {
+        attempt.failed(participantId);
+        setRemovalIssue('Could not finish removing this person. Try again.');
+      }
+    } finally {
+      setRemovingParticipantId((current) =>
+        current === participantId ? null : current,
+      );
+    }
+  }, [load, removingParticipantId, workspace]);
+
+  const cancelParticipantRemoval = useCallback((participantId: string) => {
+    if (removingParticipantId === participantId) return;
+    removalAttempts.current?.cancel(participantId);
+    setRemovalIssue(null);
+  }, [removingParticipantId]);
 
   useEffect(() => {
     void load();
@@ -166,6 +238,19 @@ export function MeetingRoom({
     await load();
   };
 
+  const peoplePanel = workspace === null ? null : (
+    <MeetingPeople
+      participants={workspace.participants}
+      currentParticipantId={workspace.currentParticipant.participantId}
+      currentRole={workspace.currentParticipant.role}
+      connectedParticipantIds={connectedParticipantIds}
+      removingParticipantId={removingParticipantId}
+      issue={removalIssue}
+      onRemove={removeParticipant}
+      onCancel={cancelParticipantRemoval}
+    />
+  );
+
   return (
     <MeetingShell>
       <section className="py-12 sm:py-20">
@@ -195,30 +280,9 @@ export function MeetingRoom({
                   />
                 )}
             </div>
-            {lifecycle === null ? (
-              <p className="py-12 text-sm text-white/45">Checking meeting time…</p>
-            ) : lifecycle.phase === 'before-start' || lifecycle.phase === 'ended' ? (
-              <MeetingLifecyclePanel
-                lifecycle={lifecycle}
-                schedule={workspace.schedule}
-                starting={startingEarly}
-                {...(startError === undefined ? {} : { errorMessage: startError })}
-                {...(lifecycle.canStartEarly
-                  ? { onStartEarly: () => void startEarly() }
-                  : {})}
-              />
-            ) : !stageVisible ? (
-              <MeetingPreJoin
-                participantLabel={participantLabel}
-                role={workspace.currentParticipant.role}
-                media={media}
-                joining={room.joining}
-                connectionIssue={room.snapshot.issue}
-                onJoin={() => void room.join()}
-              />
-            ) : (
+            {stageVisible ? (
               <MeetingStage
-                role={workspace.currentParticipant.role}
+                people={peoplePanel}
                 snapshot={room.snapshot}
                 microphones={media.microphones}
                 cameras={media.cameras}
@@ -230,6 +294,34 @@ export function MeetingRoom({
                 onSelectCamera={room.selectCamera}
                 onLeave={() => void room.leave()}
               />
+            ) : (
+              <div className="grid gap-5 py-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+                <div className="min-w-0">
+                  {lifecycle === null ? (
+                    <p className="py-12 text-sm text-white/45">Checking meeting time…</p>
+                  ) : lifecycle.phase === 'before-start' || lifecycle.phase === 'ended' ? (
+                    <MeetingLifecyclePanel
+                      lifecycle={lifecycle}
+                      schedule={workspace.schedule}
+                      starting={startingEarly}
+                      {...(startError === undefined ? {} : { errorMessage: startError })}
+                      {...(lifecycle.canStartEarly
+                        ? { onStartEarly: () => void startEarly() }
+                        : {})}
+                    />
+                  ) : (
+                    <MeetingPreJoin
+                      participantLabel={participantLabel}
+                      role={workspace.currentParticipant.role}
+                      media={media}
+                      joining={room.joining}
+                      connectionIssue={room.snapshot.issue}
+                      onJoin={() => void room.join()}
+                    />
+                  )}
+                </div>
+                <aside>{peoplePanel}</aside>
+              </div>
             )}
           </div>
         ) : state === 'loading' ? (

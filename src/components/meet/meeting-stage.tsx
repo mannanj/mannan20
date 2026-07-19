@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type {
   MeetingMediaConnection,
   MeetingMediaSnapshot,
@@ -52,7 +52,7 @@ function connectionCopy(connection: MeetingMediaConnection): string | null {
 }
 
 export function MeetingStage({
-  role,
+  people,
   snapshot,
   microphones,
   cameras,
@@ -64,7 +64,7 @@ export function MeetingStage({
   onSelectCamera,
   onLeave,
 }: {
-  role: string;
+  people: ReactNode;
   snapshot: MeetingMediaSnapshot;
   microphones: MediaDeviceInfo[];
   cameras: MediaDeviceInfo[];
@@ -131,33 +131,10 @@ export function MeetingStage({
           )}
         </div>
 
-        <aside className="rounded-xl border border-white/10 bg-white/[0.035] p-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs uppercase tracking-[0.14em] text-white/35">People</p>
-            <span className="rounded-full border border-emerald-200/10 bg-emerald-200/[0.04] px-2.5 py-1 text-[10px] text-emerald-100/55">
-              {participants.length} connected
-            </span>
-          </div>
-          <div className="mt-5 space-y-2.5">
-            {participants.map((participant) => (
-              <div key={participant.id} className="flex items-center gap-3 rounded-lg border border-white/8 bg-black/15 p-3">
-                <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/[0.07] font-[family-name:var(--font-caption)] text-lg text-white/75">
-                  {participant.name.trim().charAt(0).toUpperCase() || 'G'}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm text-white/80">
-                    {participant.isLocal ? 'You' : participant.name}
-                  </p>
-                  <p className="mt-0.5 truncate text-[11px] capitalize text-white/35">
-                    {participant.isLocal ? role : 'In room'}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
+        <aside className="space-y-4">
+          {people}
           {settingsOpen && !terminal && (
-            <div className="mt-6 space-y-4 border-t border-white/8 pt-5">
+            <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.035] p-5">
               <p className="text-xs uppercase tracking-[0.14em] text-white/35">Device settings</p>
               <StageDeviceSelect
                 label="Camera"
