@@ -743,3 +743,371 @@ describe('meeting duration extension route', () => {
     expect(calls).toBe(0);
   });
 });
+
+describe('meeting title and private revision-history routes', () => {
+  const REVISION_ID = 'revision_0123456789abcdef';
+  const TITLE_KEY = 'browser_title_0123456789abcdef0123456789abcdef';
+
+  function context(operation: string[]) {
+    return { params: Promise.resolve({ meetingId: MEETING_ID, operation }) };
+  }
+
+  function titleResponse(path: string): Response {
+    if (path.endsWith('/title-policy')) {
+      return Response.json({
+        data: {
+          meetingId: MEETING_ID,
+          title: 'Project review',
+          titleEditPolicy: 'any_participant',
+          version: 5,
+        },
+      }, { headers: { etag: '"5"' } });
+    }
+    if (path.endsWith('/restore')) {
+      return Response.json({
+        data: {
+          meetingId: MEETING_ID,
+          title: 'Planning',
+          titleEditPolicy: 'any_participant',
+          revision: {
+            id: 'revision_abcdef0123456789',
+            meetingId: MEETING_ID,
+            previousTitle: 'Project review',
+            title: 'Planning',
+            editor: {
+              participantId: 'guest_0123456789abcdef0123456789abcdef',
+              identityKind: 'browser_guest',
+              displayName: 'River',
+            },
+            restoredFromRevisionId: REVISION_ID,
+            reason: 'Return to planning',
+            resultingVersion: 5,
+            createdAt: '2026-07-19T14:00:00.000Z',
+          },
+          version: 5,
+        },
+      }, { headers: { etag: '"5"' } });
+    }
+    if (path.includes('/title-revisions')) {
+      return Response.json({
+        data: {
+          revisions: [],
+          ...(path.endsWith(REVISION_ID) ? {} : { nextCursor: REVISION_ID }),
+        },
+      });
+    }
+    return Response.json({
+      data: {
+        meetingId: MEETING_ID,
+        title: 'Project review',
+        titleEditPolicy: 'administrators',
+        revision: {
+          id: REVISION_ID,
+          meetingId: MEETING_ID,
+          previousTitle: 'Planning',
+          title: 'Project review',
+          editor: {
+            participantId: ACCOUNT_ID,
+            identityKind: 'account',
+          },
+          reason: 'Agenda changed',
+          resultingVersion: 5,
+          createdAt: '2026-07-19T14:00:00.000Z',
+        },
+        version: 5,
+      },
+    }, { headers: { etag: '"5"' } });
+  }
+
+  test('proxies every literal title operation for both account and guest identities', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    const guest = createGuestCredentialCookie({
+      meetingId: MEETING_ID,
+      participantId: 'guest_0123456789abcdef0123456789abcdef',
+      displayName: 'River',
+      credential: 'guest:private-title-credential',
+    });
+    const observed: Array<{
+      url: string;
+      method: string | undefined;
+      body: BodyInit | null | undefined;
+      headers: Headers;
+    }> = [];
+    globalThis.fetch = mock(async (input, init) => {
+      const url = String(input);
+      observed.push({
+        url,
+        method: init?.method,
+        body: init?.body,
+        headers: new Headers(init?.headers),
+      });
+      return titleResponse(new URL(url).pathname);
+    }) as unknown as typeof fetch;
+
+    const operations = [
+      {
+        local: ['title'],
+        worker: 'title',
+        method: 'POST',
+        body: { title: 'Project review', reason: 'Agenda changed' },
+      },
+      {
+        local: ['title-policy'],
+        worker: 'title-policy',
+        method: 'POST',
+        body: { policy: 'any_participant' },
+      },
+      {
+        local: ['title-revisions', REVISION_ID, 'restore'],
+        worker: `title-revisions/${REVISION_ID}/restore`,
+        method: 'POST',
+        body: { reason: 'Return to planning' },
+      },
+      {
+        local: ['title-revisions'],
+        worker: 'title-revisions',
+        method: 'GET',
+      },
+      {
+        local: ['title-revisions', REVISION_ID],
+        worker: `title-revisions/${REVISION_ID}`,
+        method: 'GET',
+      },
+    ] as const;
+
+    for (const identityCookie of [session, guest]) {
+      for (const operation of operations) {
+        const url = `https://mannan.is/meet/${MEETING_ID}/api/${operation.local.join('/')}`;
+        const headers = new Headers({ cookie: cookieHeader(identityCookie) });
+        let request: Request;
+        if (operation.method === 'POST') {
+          headers.set('origin', 'https://mannan.is');
+          headers.set('content-type', 'application/json');
+          headers.set('if-match', '"4"');
+          headers.set('idempotency-key', TITLE_KEY);
+          request = new Request(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(operation.body),
+          });
+        } else {
+          request = new Request(url, { headers });
+        }
+        const response = operation.method === 'POST'
+          ? await meetingOperation(request, context([...operation.local]))
+          : await getMeetingOperation(request, context([...operation.local]));
+        const text = await response.text();
+        expect(response.status).toBe(200);
+        expect(response.headers.get('cache-control')).toBe('no-store');
+        expect(text).not.toContain('guest:private-title-credential');
+        if (operation.method === 'POST') {
+          expect(response.headers.get('etag')).toBe('"5"');
+        }
+      }
+    }
+
+    expect(observed).toHaveLength(10);
+    for (let identityIndex = 0; identityIndex < 2; identityIndex += 1) {
+      for (let operationIndex = 0; operationIndex < operations.length; operationIndex += 1) {
+        const operation = operations[operationIndex]!;
+        const request = observed[identityIndex * operations.length + operationIndex]!;
+        expect(request.url).toBe(
+          `https://meeting-worker.example.workers.dev/v1/meetings/${MEETING_ID}/${operation.worker}`,
+        );
+        expect(request.method).toBe(operation.method);
+        expect(request.body).toBe(
+          operation.method === 'POST' ? JSON.stringify(operation.body) : undefined,
+        );
+        expect(request.headers.get('content-type')).toBe(
+          operation.method === 'POST' ? 'application/json' : null,
+        );
+        expect(request.headers.get('if-match')).toBe(
+          operation.method === 'POST' ? '"4"' : null,
+        );
+        expect(request.headers.get('idempotency-key')).toBe(
+          operation.method === 'POST' ? TITLE_KEY : null,
+        );
+        if (identityIndex === 0) {
+          expect(request.headers.get('x-account-assertion')).toContain('.');
+          expect(request.headers.has('x-guest-credential')).toBe(false);
+        } else {
+          expect(request.headers.has('x-account-assertion')).toBe(false);
+          expect(request.headers.get('x-guest-participant-id')).toBe(
+            'guest_0123456789abcdef0123456789abcdef',
+          );
+          expect(request.headers.get('x-guest-credential')).toBe(
+            'guest:private-title-credential',
+          );
+        }
+      }
+    }
+  });
+
+  test('rejects invalid title transport, route shapes, query, bodies, and identity before fetch', async () => {
+    const session = await createSiteSessionCookie({
+      accountId: ACCOUNT_ID,
+      email: 'owner@example.com',
+      role: 'user',
+    });
+    let calls = 0;
+    globalThis.fetch = mock(async () => {
+      calls += 1;
+      return Response.json({ data: {} });
+    }) as unknown as typeof fetch;
+    const titleUrl = `https://mannan.is/meet/${MEETING_ID}/api/title`;
+    const historyUrl = `https://mannan.is/meet/${MEETING_ID}/api/title-revisions`;
+    const titleContext = context(['title']);
+    const historyContext = context(['title-revisions']);
+
+    const crossOrigin = await meetingOperation(
+      new Request(titleUrl, {
+        method: 'POST',
+        headers: {
+          origin: 'https://attacker.example',
+          'content-type': 'application/json',
+          'if-match': '"4"',
+          'idempotency-key': TITLE_KEY,
+        },
+        body: JSON.stringify({ title: 'Private title' }),
+      }),
+      titleContext,
+    );
+    expect(crossOrigin.status).toBe(403);
+
+    for (const headers of [
+      new Headers({
+        origin: 'https://mannan.is',
+        'content-type': 'application/json',
+        'idempotency-key': TITLE_KEY,
+      }),
+      new Headers({
+        origin: 'https://mannan.is',
+        'content-type': 'application/json',
+        'if-match': '4',
+        'idempotency-key': TITLE_KEY,
+      }),
+      new Headers({
+        origin: 'https://mannan.is',
+        'content-type': 'application/json',
+        'if-match': '"4"',
+        'idempotency-key': 'bad key',
+      }),
+    ]) {
+      const response = await meetingOperation(
+        new Request(titleUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ title: 'Private title' }),
+        }),
+        titleContext,
+      );
+      expect(response.status).toBe(400);
+    }
+
+    const anonymous = await meetingOperation(
+      new Request(titleUrl, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          'content-type': 'application/json',
+          'if-match': '"4"',
+          'idempotency-key': TITLE_KEY,
+        },
+        body: JSON.stringify({ title: 'Private title' }),
+      }),
+      titleContext,
+    );
+    expect(anonymous.status).toBe(401);
+
+    const invalidBody = await meetingOperation(
+      new Request(titleUrl, {
+        method: 'POST',
+        headers: {
+          origin: 'https://mannan.is',
+          cookie: cookieHeader(session),
+          'if-match': '"4"',
+          'idempotency-key': TITLE_KEY,
+        },
+        body: '{',
+      }),
+      titleContext,
+    );
+    expect(invalidBody.status).toBe(400);
+
+    for (const response of [
+      await getMeetingOperation(new Request(titleUrl), titleContext),
+      await meetingOperation(
+        new Request(historyUrl, {
+          method: 'POST',
+          headers: { origin: 'https://mannan.is' },
+        }),
+        historyContext,
+      ),
+      await getMeetingOperation(
+        new Request(`${historyUrl}/${REVISION_ID}/restore`),
+        context(['title-revisions', REVISION_ID, 'restore']),
+      ),
+      await meetingOperation(
+        new Request(`${titleUrl}/extra`, {
+          method: 'POST',
+          headers: { origin: 'https://mannan.is' },
+        }),
+        context(['title', 'extra']),
+      ),
+      await getMeetingOperation(
+        new Request(`${historyUrl}/bad%20revision`),
+        context(['title-revisions', 'bad revision']),
+      ),
+    ]) {
+      expect(response.status).toBe(404);
+    }
+
+    const queried = await getMeetingOperation(
+      new Request(`${historyUrl}?before=${REVISION_ID}`, {
+        headers: { cookie: cookieHeader(session) },
+      }),
+      historyContext,
+    );
+    expect(queried.status).toBe(400);
+
+    const bodyCarrier = new Request(historyUrl, {
+      method: 'POST',
+      headers: {
+        origin: 'https://mannan.is',
+        'content-type': 'application/json',
+      },
+      body: '{}',
+    });
+    const getWithBody = new Proxy(bodyCarrier, {
+      get(target, property) {
+        if (property === 'method') return 'GET';
+        const value = Reflect.get(target, property, target);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    expect((await getMeetingOperation(getWithBody, historyContext)).status).toBe(400);
+
+    const credentialedGetWithCommandHeaders = await getMeetingOperation(
+      new Request(historyUrl, {
+        headers: {
+          cookie: cookieHeader(session),
+          'if-match': '"4"',
+          'idempotency-key': TITLE_KEY,
+        },
+      }),
+      historyContext,
+    );
+    expect(credentialedGetWithCommandHeaders.status).toBe(400);
+
+    const anonymousHistory = await getMeetingOperation(
+      new Request(historyUrl),
+      historyContext,
+    );
+    expect(anonymousHistory.status).toBe(401);
+    expect(calls).toBe(0);
+  });
+});

@@ -76,6 +76,36 @@ function workerPath(meetingId: string, operation: string[], method: string): str
   if (operation.length === 1 && operation[0] === 'media-grant' && method === 'POST') {
     return `/v1/meetings/${meetingId}/media-grant`;
   }
+  if (operation.length === 1 && operation[0] === 'title' && method === 'POST') {
+    return `/v1/meetings/${meetingId}/title`;
+  }
+  if (operation.length === 1 && operation[0] === 'title-policy' && method === 'POST') {
+    return `/v1/meetings/${meetingId}/title-policy`;
+  }
+  if (
+    operation.length === 3
+    && operation[0] === 'title-revisions'
+    && validMeetingIdentifier(operation[1])
+    && operation[2] === 'restore'
+    && method === 'POST'
+  ) {
+    return `/v1/meetings/${meetingId}/title-revisions/${operation[1]}/restore`;
+  }
+  if (
+    operation.length === 1
+    && operation[0] === 'title-revisions'
+    && method === 'GET'
+  ) {
+    return `/v1/meetings/${meetingId}/title-revisions`;
+  }
+  if (
+    operation.length === 2
+    && operation[0] === 'title-revisions'
+    && validMeetingIdentifier(operation[1])
+    && method === 'GET'
+  ) {
+    return `/v1/meetings/${meetingId}/title-revisions/${operation[1]}`;
+  }
   return null;
 }
 
@@ -88,8 +118,37 @@ async function handle(request: Request, context: Context): Promise<Response> {
   if (path === null) {
     return Response.json({ error: { code: 'route_not_found' } }, { status: 404 });
   }
+  const titleMutation =
+    request.method === 'POST'
+    && (
+      (operation.length === 1
+        && (operation[0] === 'title' || operation[0] === 'title-policy'))
+      || (operation.length === 3
+        && operation[0] === 'title-revisions'
+        && operation[2] === 'restore')
+    );
+  const titleHistoryRead =
+    request.method === 'GET'
+    && operation[0] === 'title-revisions'
+    && (operation.length === 1 || operation.length === 2);
+  if (
+    (titleMutation || titleHistoryRead)
+    && new URL(request.url).search !== ''
+  ) {
+    return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
+  }
   if (request.method !== 'GET' && !sameOrigin(request)) {
     return Response.json({ error: { code: 'invalid_origin' } }, { status: 403 });
+  }
+  if (
+    titleHistoryRead
+    && (
+      request.body !== null
+      || request.headers.has('if-match')
+      || request.headers.has('idempotency-key')
+    )
+  ) {
+    return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
   }
   const liveSessionEnd =
     operation.length === 1 &&
@@ -136,6 +195,22 @@ async function handle(request: Request, context: Context): Promise<Response> {
       return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
     }
   }
+  let titleBody: Record<string, unknown> | null = null;
+  const titleExpectedVersion = titleMutation ? quotedVersion(request) : undefined;
+  const titleIdempotencyKey = titleMutation
+    ? request.headers.get('idempotency-key')
+    : null;
+  if (titleMutation) {
+    titleBody = await readMeetingJson(request);
+    if (
+      titleExpectedVersion === undefined
+      || titleIdempotencyKey === null
+      || !IDEMPOTENCY_KEY_PATTERN.test(titleIdempotencyKey)
+      || titleBody === null
+    ) {
+      return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
+    }
+  }
   const session = await readSiteSession(request.headers.get('cookie'));
   if (session !== null) {
     const body = request.method === 'POST'
@@ -143,7 +218,9 @@ async function handle(request: Request, context: Context): Promise<Response> {
         ? { displayName: session.email }
         : durationExtension
           ? { ...durationBody }
-          : await readMeetingJson(request)
+          : titleMutation
+            ? titleBody
+            : await readMeetingJson(request)
       : undefined;
     if (request.method === 'POST' && body === null) {
       return Response.json({ error: { code: 'invalid_request' } }, { status: 400 });
@@ -159,7 +236,13 @@ async function handle(request: Request, context: Context): Promise<Response> {
     request.method === 'GET' &&
     operation.length === 1 &&
     operation[0] === 'workspace';
-  if (!workspaceRead && !mediaGrant && !durationExtension) {
+  if (
+    !workspaceRead
+    && !mediaGrant
+    && !durationExtension
+    && !titleMutation
+    && !titleHistoryRead
+  ) {
     return Response.json({ error: { code: 'identity_required' } }, { status: 401 });
   }
   const guest = readGuestCredential(request.headers.get('cookie'), meetingId);
@@ -167,19 +250,27 @@ async function handle(request: Request, context: Context): Promise<Response> {
     return Response.json({ error: { code: 'identity_required' } }, { status: 401 });
   }
   const result = await meetingWorkerRequest({
-    method: mediaGrant || durationExtension ? 'POST' : 'GET',
+    method: mediaGrant || durationExtension || titleMutation ? 'POST' : 'GET',
     path,
     ...(mediaGrant
       ? { body: { displayName: guest.displayName } }
       : durationExtension && durationBody !== null
         ? { body: durationBody }
+        : titleMutation && titleBody !== null
+          ? { body: titleBody }
         : {}),
-    ...(mediaGrant || durationExtension
+    ...(mediaGrant || durationExtension || titleMutation
       ? {
           idempotencyKey: mediaGrant
             ? mediaIdempotencyKey
-            : durationIdempotencyKey ?? undefined,
-          ifMatch: mediaGrant ? mediaExpectedVersion : durationExpectedVersion,
+            : durationExtension
+              ? durationIdempotencyKey ?? undefined
+              : titleIdempotencyKey ?? undefined,
+          ifMatch: mediaGrant
+            ? mediaExpectedVersion
+            : durationExtension
+              ? durationExpectedVersion
+              : titleExpectedVersion,
         }
       : {}),
     guest: { participantId: guest.participantId, credential: guest.credential },
