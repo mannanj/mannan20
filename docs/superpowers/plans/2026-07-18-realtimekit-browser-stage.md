@@ -362,11 +362,12 @@ git commit -m "feat(meet): adapt RealtimeKit Core in browser"
 
 **Files:**
 - Create: `src/components/meet/use-meeting-media-room.ts`
+- Create: `src/components/meet/use-meeting-media-room.test.ts`
 - Modify: `src/components/meet/meeting-prejoin.tsx`
 - Modify: `src/components/meet/meeting-prejoin.test.tsx`
 - Modify: `src/components/meet/meeting-room.tsx`
 
-- [ ] **Step 1: Write failing integration assertions**
+- [x] **Step 1: Write failing integration assertions**
 
 Add component assertions for joining/disabled copy:
 
@@ -388,7 +389,7 @@ expect(joinInput).toEqual({
 expect(stopPreJoin).toHaveBeenCalledTimes(1);
 ```
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -398,7 +399,7 @@ bun test src/components/meet/meeting-prejoin.test.tsx src/lib/meeting-media-cont
 
 Expected: missing connection-state UI/hook behavior.
 
-- [ ] **Step 3: Implement the React lifecycle seam**
+- [x] **Step 3: Implement the React lifecycle seam**
 
 `useMeetingMediaRoom` creates one controller per meeting ID, subscribes in an
 effect, disposes on meeting change/unmount, and exposes:
@@ -425,7 +426,7 @@ pre-join, and reacquires local preview tracks. Kicked and ended states do not
 auto-rejoin; disconnected/reconnecting states remain in the stage with honest
 status copy.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run:
 
@@ -436,10 +437,10 @@ bun run typecheck
 
 Expected: focused tests and TypeScript pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
-git add src/components/meet/use-meeting-media-room.ts src/components/meet/meeting-prejoin.tsx src/components/meet/meeting-prejoin.test.tsx src/components/meet/meeting-room.tsx
+git add src/components/meet/use-meeting-media-room.ts src/components/meet/use-meeting-media-room.test.ts src/components/meet/meeting-prejoin.tsx src/components/meet/meeting-prejoin.test.tsx src/components/meet/meeting-room.tsx
 git commit -m "feat(meet): connect prejoin to provider room"
 ```
 

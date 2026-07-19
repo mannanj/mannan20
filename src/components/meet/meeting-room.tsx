@@ -15,6 +15,7 @@ import { MeetingLifecyclePanel } from './meeting-lifecycle-panel';
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
+import { useMeetingMediaRoom } from './use-meeting-media-room';
 
 interface Workspace {
   meetingId: string;
@@ -41,7 +42,6 @@ export function MeetingRoom({
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [state, setState] = useState<'loading' | 'entry' | 'working' | 'unavailable'>('loading');
-  const [phase, setPhase] = useState<'prejoin' | 'joined'>('prejoin');
   const [serverClock, setServerClock] = useState<{
     serverNow: string;
     receivedAtMs: number;
@@ -66,6 +66,18 @@ export function MeetingRoom({
     });
   }, [monotonicNowMs, serverClock, workspace]);
   const media = useLocalMeetingMedia(Boolean(lifecycle?.canJoinMedia));
+  const room = useMeetingMediaRoom({
+    meetingId,
+    enabled: Boolean(lifecycle?.canJoinMedia),
+    media,
+  });
+  const stageVisible = [
+    'connected',
+    'reconnecting',
+    'disconnected',
+    'kicked',
+    'ended',
+  ].includes(room.snapshot.connection);
 
   const load = useCallback(async () => {
     const response = await fetch(`/meet/${meetingId}/api/workspace`, { cache: 'no-store' }).catch(() => null);
@@ -113,7 +125,6 @@ export function MeetingRoom({
               },
             },
       );
-      setPhase('prejoin');
     } catch (error) {
       if (
         error instanceof MeetingLiveSessionError
@@ -196,23 +207,21 @@ export function MeetingRoom({
                   ? { onStartEarly: () => void startEarly() }
                   : {})}
               />
-            ) : phase === 'prejoin' ? (
+            ) : !stageVisible ? (
               <MeetingPreJoin
                 participantLabel={participantLabel}
                 role={workspace.currentParticipant.role}
                 media={media}
-                onJoin={() => setPhase('joined')}
+                joining={room.joining}
+                connectionIssue={room.snapshot.issue}
+                onJoin={() => void room.join()}
               />
             ) : (
               <MeetingStage
                 participantLabel={participantLabel}
                 role={workspace.currentParticipant.role}
                 media={media}
-                onLeave={() => {
-                  media.stop();
-                  setPhase('prejoin');
-                  void media.retry();
-                }}
+                onLeave={() => void room.leave()}
               />
             )}
           </div>

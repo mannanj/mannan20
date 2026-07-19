@@ -43,5 +43,21 @@ describe('meeting prejoin', () => {
       'Nothing leaves this browser until live media is connected.',
     );
   });
-});
 
+  test('shows a disabled connecting action and safe retry copy', () => {
+    const markup = renderToStaticMarkup(
+      <MeetingPreJoin
+        participantLabel="River"
+        role="participant"
+        media={readyMedia}
+        joining
+        connectionIssue="Could not connect. Try again."
+        onJoin={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Connecting…');
+    expect(markup).toContain('Could not connect. Try again.');
+    expect(markup).toContain('disabled=""');
+  });
+});

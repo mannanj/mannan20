@@ -51,11 +51,15 @@ export function MeetingPreJoin({
   participantLabel,
   role,
   media,
+  joining = false,
+  connectionIssue = null,
   onJoin,
 }: {
   participantLabel: string;
   role: string;
   media: LocalMeetingMediaState;
+  joining?: boolean;
+  connectionIssue?: string | null;
   onJoin(): void;
 }) {
   return (
@@ -131,12 +135,20 @@ export function MeetingPreJoin({
             </div>
           )}
 
+          {connectionIssue && (
+            <div role="alert" className="mt-5 rounded-lg border border-amber-200/15 bg-amber-100/[0.04] p-3">
+              <p className="text-xs leading-5 text-amber-50/65">{connectionIssue}</p>
+            </div>
+          )}
+
           <button
             type="button"
+            disabled={joining}
+            aria-busy={joining}
             onClick={onJoin}
-            className="mt-6 min-h-11 w-full rounded-md bg-[#f1efe8] px-4 text-sm font-medium text-[#10100e] transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d79275]"
+            className="mt-6 min-h-11 w-full rounded-md bg-[#f1efe8] px-4 text-sm font-medium text-[#10100e] transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d79275] disabled:cursor-wait disabled:opacity-60"
           >
-            Join meeting
+            {joining ? 'Connecting…' : 'Join meeting'}
           </button>
           <p className="mt-4 text-center text-[11px] leading-5 text-white/30">
             Nothing leaves this browser until live media is connected.
@@ -146,4 +158,3 @@ export function MeetingPreJoin({
     </section>
   );
 }
-
