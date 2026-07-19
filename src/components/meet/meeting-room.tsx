@@ -1,8 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  MeetingLiveSessionError,
+  startMeetingLiveSession,
+} from '@/lib/meeting-live-session';
+import {
+  meetingRoomLifecycle,
+  serverClockNowMs,
+} from '@/lib/meeting-room-lifecycle';
 import { MeetingShell } from './meeting-shell';
 import { MeetingInviteLink } from './meeting-invite-link';
+import { MeetingLifecyclePanel } from './meeting-lifecycle-panel';
 import { MeetingPreJoin } from './meeting-prejoin';
 import { MeetingStage } from './meeting-stage';
 import { useLocalMeetingMedia } from './use-local-meeting-media';
@@ -10,6 +19,7 @@ import { useLocalMeetingMedia } from './use-local-meeting-media';
 interface Workspace {
   meetingId: string;
   version: number;
+  serverNow: string;
   title?: string;
   status: string;
   schedule: { startsAt: string; endsAt: string; durationSeconds: number };
@@ -32,14 +42,39 @@ export function MeetingRoom({
   const [displayName, setDisplayName] = useState('');
   const [state, setState] = useState<'loading' | 'entry' | 'working' | 'unavailable'>('loading');
   const [phase, setPhase] = useState<'prejoin' | 'joined'>('prejoin');
-  const media = useLocalMeetingMedia(Boolean(workspace));
+  const [serverClock, setServerClock] = useState<{
+    serverNow: string;
+    receivedAtMs: number;
+  } | null>(null);
+  const [monotonicNowMs, setMonotonicNowMs] = useState(0);
+  const [startingEarly, setStartingEarly] = useState(false);
+  const [startError, setStartError] = useState<string | undefined>();
   const participantLabel = signedInEmail ?? 'Guest';
+
+  const lifecycle = useMemo(() => {
+    if (workspace === null || serverClock === null) return null;
+    return meetingRoomLifecycle({
+      nowMs: serverClockNowMs({
+        serverNow: serverClock.serverNow,
+        receivedAtMs: serverClock.receivedAtMs,
+        currentClientMs: monotonicNowMs,
+      }),
+      role: workspace.currentParticipant.role,
+      status: workspace.status,
+      schedule: workspace.schedule,
+      ...(workspace.session === undefined ? {} : { session: workspace.session }),
+    });
+  }, [monotonicNowMs, serverClock, workspace]);
+  const media = useLocalMeetingMedia(Boolean(lifecycle?.canJoinMedia));
 
   const load = useCallback(async () => {
     const response = await fetch(`/meet/${meetingId}/api/workspace`, { cache: 'no-store' }).catch(() => null);
     if (response?.ok) {
       const body = (await response.json()) as { data: Workspace };
       setWorkspace(body.data);
+      const receivedAtMs = performance.now();
+      setServerClock({ serverNow: body.data.serverNow, receivedAtMs });
+      setMonotonicNowMs(receivedAtMs);
       return;
     }
     setState(hasAdmission ? 'entry' : 'unavailable');
@@ -48,6 +83,50 @@ export function MeetingRoom({
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (workspace === null) return;
+    const update = () => setMonotonicNowMs(performance.now());
+    const timer = window.setInterval(update, 1_000);
+    return () => window.clearInterval(timer);
+  }, [workspace]);
+
+  const startEarly = async () => {
+    if (workspace === null || !lifecycle?.canStartEarly || startingEarly) return;
+    setStartingEarly(true);
+    setStartError(undefined);
+    try {
+      const result = await startMeetingLiveSession({
+        meetingId: workspace.meetingId,
+        version: workspace.version,
+      });
+      setWorkspace((current) =>
+        current === null
+          ? current
+          : {
+              ...current,
+              version: result.version,
+              session: {
+                state: 'live',
+                actualStartedAt: result.actualStartedAt,
+                effectiveEndsAt: result.effectiveEndsAt,
+              },
+            },
+      );
+      setPhase('prejoin');
+    } catch (error) {
+      if (
+        error instanceof MeetingLiveSessionError
+        && error.code === 'meeting_conflict'
+      ) {
+        await load();
+      } else {
+        setStartError('Could not start the meeting. Try again.');
+      }
+    } finally {
+      setStartingEarly(false);
+    }
+  };
 
   const enter = async () => {
     setState('working');
@@ -83,11 +162,13 @@ export function MeetingRoom({
           <div>
             <div className="flex flex-col gap-6 border-b border-white/8 pb-7 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/55">{workspace.session?.state === 'live' ? 'Live now' : workspace.status}</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-emerald-200/55">{lifecycle?.phase === 'live' ? 'Live now' : workspace.status}</p>
                 <h1 className="mt-3 font-[family-name:var(--font-caption)] text-4xl tracking-[-0.04em] sm:text-5xl">{workspace.title ?? 'Untitled meeting'}</h1>
                 <p className="mt-4 text-sm text-white/45">{new Date(workspace.schedule.startsAt).toLocaleString()} · {Math.round(workspace.schedule.durationSeconds / 60)} minutes</p>
               </div>
-              {signedInEmail !== null &&
+              {lifecycle !== null &&
+                lifecycle.phase !== 'ended' &&
+                signedInEmail !== null &&
                 (workspace.currentParticipant.role === 'owner' ||
                   workspace.currentParticipant.role === 'moderator') &&
                 Number.isSafeInteger(workspace.version) && (
@@ -103,7 +184,19 @@ export function MeetingRoom({
                   />
                 )}
             </div>
-            {phase === 'prejoin' ? (
+            {lifecycle === null ? (
+              <p className="py-12 text-sm text-white/45">Checking meeting time…</p>
+            ) : lifecycle.phase === 'before-start' || lifecycle.phase === 'ended' ? (
+              <MeetingLifecyclePanel
+                lifecycle={lifecycle}
+                schedule={workspace.schedule}
+                starting={startingEarly}
+                {...(startError === undefined ? {} : { errorMessage: startError })}
+                {...(lifecycle.canStartEarly
+                  ? { onStartEarly: () => void startEarly() }
+                  : {})}
+              />
+            ) : phase === 'prejoin' ? (
               <MeetingPreJoin
                 participantLabel={participantLabel}
                 role={workspace.currentParticipant.role}
