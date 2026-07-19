@@ -19,7 +19,11 @@
     "mcp:check": "bun scripts/build-mcp-data.mjs --check",
     "mcp:test": "cd mcp-worker && bun run test",
     "mcp:deploy": "bun scripts/build-mcp-data.mjs && cd mcp-worker && bun run deploy",
-    "mcp:smoke": "cd mcp-worker && bun run smoke"
+    "mcp:smoke": "cd mcp-worker && bun run smoke",
+    "manna:worker:test": "cd manna-worker && bun run test",
+    "manna:collector:test": "cd manna-collector && bun test",
+    "manna:protocol:test": "cd manna-protocol && bun test",
+    "manna:test": "bun run manna:protocol:test && bun run manna:collector:test && bun run manna:worker:test"
   },
   "dependencies": {
     "@mannan/manna-protocol": "file:./manna-protocol",

@@ -80,7 +80,7 @@
 - Create: `manna-protocol/test/staleness.test.ts`
 - Modify: `package.json`
 
-- [ ] **Step 1: Write failing protocol tests**
+- [x] **Step 1: Write failing protocol tests**
 
 Define a minimal valid event and assert rejection of unknown kinds, raw-output fields, unrelated projects, invalid timestamps, oversized summaries, and payload keys outside the kind-specific allowlist.
 
@@ -102,13 +102,13 @@ expect(parseMannaEvent({ ...event, rawOutput: 'SECRET=abc' })).toBeNull();
 expect(parseMannaEvent({ ...event, projectId: 'unrelated' })).toBeNull();
 ```
 
-- [ ] **Step 2: Run the focused tests and confirm red**
+- [x] **Step 2: Run the focused tests and confirm red**
 
 Run: `cd manna-protocol && bun test`
 
 Expected: FAIL because the three modules do not exist.
 
-- [ ] **Step 3: Implement exact types and parsers**
+- [x] **Step 3: Implement exact types and parsers**
 
 Create a private local package named `@mannan/manna-protocol`, add it to the root app as `"@mannan/manna-protocol": "file:./manna-protocol"`, and define `MannaEventKind`, discriminated payloads, `MannaEvent`, `ProjectSnapshot`, and socket envelopes:
 
@@ -122,7 +122,7 @@ export type ServerMessage =
 
 Build parsed objects field-by-field. Reject extra top-level fields and never spread untrusted input into an accepted event.
 
-- [ ] **Step 4: Implement deterministic projection and staleness**
+- [x] **Step 4: Implement deterministic projection and staleness**
 
 Start from `emptyProjectSnapshot()` and reduce ordered events. Let only `test.finished`, `build.finished`, `commit.observed`, and `deploy.verified` set evidence truth. Let `collector.heartbeat` update liveness without entering the meaningful timeline.
 
@@ -133,13 +133,13 @@ export function deriveConnection(lastSeen: string | null, nowMs: number): Connec
 }
 ```
 
-- [ ] **Step 5: Verify replay, duplicate neutrality, and evidence rules**
+- [x] **Step 5: Verify replay, duplicate neutrality, and evidence rules**
 
 Run: `cd manna-protocol && bun test`
 
 Expected: PASS, including replaying the same ordered set twice to an identical serialized snapshot and proving assistant prose cannot mark tests/builds passed.
 
-- [ ] **Step 6: Commit the contract**
+- [x] **Step 6: Commit the contract**
 
 Stage only `manna-protocol/`, the root package manifest, and the resulting lockfile change, then commit: `feat(manna): define live observatory protocol`.
 
@@ -161,7 +161,7 @@ Stage only `manna-protocol/`, the root package manifest, and the resulting lockf
 - Create: `manna-worker/test/scaffold.spec.ts`
 - Modify: `package.json`
 
-- [ ] **Step 1: Add the Worker-package scripts and dependencies**
+- [x] **Step 1: Add the Worker-package scripts and dependencies**
 
 Use the repository's proven Workers test stack:
 
@@ -179,8 +179,7 @@ Use the repository's proven Workers test stack:
     "hono": "^4.12.15"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.16.15",
-    "@cloudflare/workers-types": "^4.20260426.1",
+    "@cloudflare/vitest-pool-workers": "^0.18.6",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0",
     "wrangler": "^4.112.0"
@@ -192,14 +191,14 @@ Add these root scripts without changing existing commands:
 
 ```json
 {
-  "manna:worker:test": "cd manna-worker && bun test",
+  "manna:worker:test": "cd manna-worker && bun run test",
   "manna:collector:test": "cd manna-collector && bun test",
   "manna:protocol:test": "cd manna-protocol && bun test",
   "manna:test": "bun run manna:protocol:test && bun run manna:collector:test && bun run manna:worker:test"
 }
 ```
 
-- [ ] **Step 2: Declare the Worker and SQLite Durable Object**
+- [x] **Step 2: Declare the Worker and SQLite Durable Object**
 
 Use a current compatibility date at implementation time and this binding shape:
 
@@ -219,23 +218,28 @@ Use a current compatibility date at implementation time and this binding shape:
 
 Declare `SERVICE_AUTH_SECRET`, `VIEWER_TOKEN_SECRET`, and the `MANNA_ROOM` namespace in `Env`.
 
-- [ ] **Step 3: Write the failing real-workerd scaffold test**
+- [x] **Step 3: Write the failing real-workerd scaffold test**
 
 Assert `GET /health` returns `{ ok: true }`, unknown routes return a JSON 404, and the bound Durable Object answers an internal `/health` request.
 
-- [ ] **Step 4: Implement the thin Worker and object shell**
+- [x] **Step 4: Implement the thin Worker and object shell**
 
 Export `MannaRoom` from `src/index.ts`. Initialize the schema once in the object constructor through `ctx.blockConcurrencyWhile()` and `ctx.storage.sql.exec()`.
 
 Create tables for `devices`, `enrollments`, `socket_tickets`, `events`, and `project_snapshots`, with unique `event_id` and an autoincrement server sequence.
 
-- [ ] **Step 5: Generate types and run the Worker tests**
+- [x] **Step 5: Generate types and run the Worker tests**
 
-Run: `cd manna-worker && bun install && bun run types && bun test`
+Run: `cd manna-worker && bun install && bun run types && bun run test`
 
 Expected: generated bindings succeed and scaffold tests pass in workerd.
 
-- [ ] **Step 6: Commit the Worker foundation**
+Implementation note: Wrangler 4.112 generates runtime and binding types directly, superseding
+`@cloudflare/workers-types`. The current Vitest pool is required for the 2026-07-18 workerd
+compatibility date, and the Worker suite must use its Vitest package script rather than Bun's
+native `bun test` runner.
+
+- [x] **Step 6: Commit the Worker foundation**
 
 Commit: `feat(manna): scaffold durable live-state worker`.
 
