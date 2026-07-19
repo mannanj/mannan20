@@ -316,3 +316,75 @@ RealtimeKit App and presets, apply remote migration
 the Worker and browser stage together, and complete live two-browser media
 acceptance. No RealtimeKit resource, token, media usage, migration, Worker
 version, Vercel deployment, or stable-alias change was made in this checkpoint.
+
+## Participant moderation and provider ejection — locally verified, not staged — 2026-07-19
+
+The authorized workspace now projects its current first-party roster before,
+during, and after live media. The reusable People panel uses safe account and
+guest labels, correlates provider presence only through validated first-party
+participant IDs, keeps the owner immutable, and exposes removal only to owners
+and moderators. Removal requires an inline confirmation and retains one
+idempotency key across a dependency retry. The roster changes only after the
+first-party membership closure and provider cleanup both confirm; a version
+conflict reloads the authoritative workspace.
+
+The Worker now closes the first-party membership before provider cleanup,
+retries mapped RealtimeKit ejection through the same command receipt, and
+returns a stable dependency error while cleanup remains incomplete. A second
+authorization check after provider grant provisioning closes the concurrent
+grant/removal race and ejects any newly invalid participant without returning a
+browser token. Conditional D1 cleanup cannot erase a newer mapping winner.
+
+Meeting repository commits:
+
+- `a860339` — safe current-roster workspace projection
+- `6eec46a` — mapped participant ejection and compare-delete cleanup
+- `77b06de` — lazy Worker/provider ejection composition
+- `443d077` — retryable removal ordering and grant-race enforcement
+- `092b616` — verified Task 5–6 execution checkpoint
+
+Site commits:
+
+- `fbb0fde` — strict same-origin removal client and first-party SDK IDs
+- `89fc951` — reusable People panel and moderation state flow
+- the documentation/acceptance commit containing this section — desktop/mobile
+  moderation acceptance and the observed narrow-rail overlap fix
+
+Fresh release-grade evidence:
+
+- Meeting monorepo under Node 22.21.1: all builds and typechecks passed; 333
+  tests passed across domain (27), room provider (12), application (111),
+  RealtimeKit provider (11), real-D1 persistence (76), and Worker (96)
+- Wrangler Worker bindings: current
+- Site unit suite: 264 passed, 0 failed, 886 assertions across 45 files
+- Site TypeScript and Next.js 15.5.20 production build: passed
+- Playwright Chromium: 3 passed, 0 failed in 7.3 seconds
+- Browser acceptance proves an empty DELETE body, exact quoted `If-Match`, one
+  stable retry key across a first `503` then success, no premature roster
+  removal, provider-left connected-count reconciliation, `409` workspace reload,
+  participant-role action hiding, and 390x844 no-horizontal-overflow behavior
+- Original-resolution inspection passed
+  `meeting-moderation-confirm-desktop.png`,
+  `meeting-moderation-complete-desktop.png`, and
+  `meeting-moderation-mobile.png`. The first desktop inspection exposed a real
+  status/action collision; a failing bounding-box assertion reproduced it, and
+  the verified row-layout fix removed the overlap.
+- Source audits found only binding/config names, provider method names,
+  memory-only token handoff, and explicit fixtures—no provider body, credential
+  value, token storage, URL, DOM, analytics, exception, or console sink
+- `git diff --check`: passed in both repositories
+
+External staging remains deliberately unchanged. Migration
+`0002_meeting_media.sql` is not applied remotely, the Worker and browser commits
+are not deployed, and the protected stable alias still points to the last
+Worker-compatible release. Publishing only one side would expose an incomplete
+media/moderation path.
+
+Live staging still requires a Cloudflare credential with `Realtime` or
+`Realtime Admin` to create the App and presets, install the configuration and
+secret, apply migration `0002`, deploy the Worker and site together, and run
+live two-browser acceptance. Webhook-confirmed ejection, durable provider
+reconciliation, and a moderation audit-event expansion remain explicitly
+deferred to subsequent slices. No RealtimeKit resource, remote migration,
+Worker version, Vercel deployment, stable-alias change, or media usage was
+created in this checkpoint.

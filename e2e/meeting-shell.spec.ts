@@ -207,6 +207,10 @@ async function installFakeMeetingSdk(page: Page) {
             : participant);
         emit();
       },
+      leaveRemote() {
+        participants = participants.filter((participant) => participant.id !== 'remote_river');
+        emit();
+      },
       setConnection(next: Connection) {
         connection = next;
         emit();
@@ -225,16 +229,21 @@ async function installFakeMeetingSdk(page: Page) {
   });
 }
 
-async function meetingMediaControl(page: Page, action: 'joinRemote' | 'remoteVideoOn' | 'reconnecting' | 'connected') {
+async function meetingMediaControl(
+  page: Page,
+  action: 'joinRemote' | 'leaveRemote' | 'remoteVideoOn' | 'reconnecting' | 'connected',
+) {
   await page.evaluate((requested) => {
     const control = (window as typeof window & {
       __MANNAN_MEETING_MEDIA_TEST__: {
         joinRemote(): void;
+        leaveRemote(): void;
         setRemoteVideo(enabled: boolean): void;
         setConnection(connection: 'reconnecting' | 'connected'): void;
       };
     }).__MANNAN_MEETING_MEDIA_TEST__;
     if (requested === 'joinRemote') control.joinRemote();
+    if (requested === 'leaveRemote') control.leaveRemote();
     if (requested === 'remoteVideoOn') control.setRemoteVideo(true);
     if (requested === 'reconnecting') control.setConnection('reconnecting');
     if (requested === 'connected') control.setConnection('connected');
@@ -266,6 +275,11 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   page.on('pageerror', (error) => pageErrors.push(error.message));
   let earlyStarted = false;
   let mediaGrantRequests = 0;
+  let serverVersion = 1;
+  let riverPresent = true;
+  let samPresent = true;
+  let riverRemovalAttempts = 0;
+  const riverRemovalKeys: string[] = [];
   await page.route(`**/meet/${MEETING_ID}/api/workspace`, async (route) => {
     await route.fulfill({
       status: 200,
@@ -273,7 +287,7 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
       body: JSON.stringify({
         data: {
           meetingId: MEETING_ID,
-          version: earlyStarted ? 3 : 1,
+          version: serverVersion,
           serverNow: '2026-07-19T13:30:00.000Z',
           title: 'Weekly planning',
           status: 'scheduled',
@@ -291,7 +305,30 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
                 },
               }
             : {}),
-          currentParticipant: { role: 'owner' },
+          currentParticipant: { participantId: 'owner_1', role: 'owner' },
+          participants: [
+            {
+              participantId: 'owner_1',
+              role: 'owner',
+              identityKind: 'account',
+            },
+            ...(riverPresent
+              ? [{
+                  participantId: 'guest_1',
+                  role: 'participant',
+                  identityKind: 'browser_guest',
+                  displayName: 'River',
+                }]
+              : []),
+            ...(samPresent
+              ? [{
+                  participantId: 'guest_2',
+                  role: 'participant',
+                  identityKind: 'browser_guest',
+                  displayName: 'Sam',
+                }]
+              : []),
+          ],
         },
       }),
     });
@@ -324,6 +361,7 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
     );
     expect(route.request().postData()).toBe('{}');
     earlyStarted = true;
+    serverVersion = 3;
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -350,9 +388,57 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
       }),
     });
   });
+  await page.route(`**/meet/${MEETING_ID}/api/participants/*`, async (route) => {
+    const request = route.request();
+    const participantId = new URL(request.url()).pathname.split('/').at(-1);
+    expect(request.method()).toBe('DELETE');
+    expect(request.postData()).toBeNull();
+    const key = await request.headerValue('idempotency-key');
+    expect(key).toMatch(/^browser_remove_[a-f0-9]{32}$/u);
+
+    if (participantId === 'guest_1') {
+      expect(await request.headerValue('if-match')).toBe(`"${serverVersion}"`);
+      riverRemovalAttempts += 1;
+      riverRemovalKeys.push(key!);
+      if (riverRemovalAttempts === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: { code: 'dependency_unavailable' } }),
+        });
+        return;
+      }
+      riverPresent = false;
+      serverVersion += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            membershipIntervalId: 'membership_river',
+            version: serverVersion,
+          },
+        }),
+      });
+      return;
+    }
+
+    expect(participantId).toBe('guest_2');
+    expect(await request.headerValue('if-match')).toBe(`"${serverVersion}"`);
+    samPresent = false;
+    serverVersion += 1;
+    await route.fulfill({
+      status: 409,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: { code: 'meeting_conflict' } }),
+    });
+  });
   await page.goto(`/meet/${MEETING_ID}`);
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Scheduled to start' })).toBeVisible();
+  const people = page.getByRole('region', { name: 'People' });
+  await expect(people.getByText('River', { exact: true })).toBeVisible();
+  await expect(people.getByText('Sam', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Join meeting' })).not.toBeVisible();
   expect(await mediaRequestCount(page)).toBe(0);
   await page.screenshot({ path: 'test-results/meeting-before-start-desktop.png', fullPage: true });
@@ -381,6 +467,52 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   await meetingMediaControl(page, 'remoteVideoOn');
   await expect(page.getByLabel('Remote camera for River')).toBeVisible();
   await page.screenshot({ path: 'test-results/meeting-two-party-desktop.png', fullPage: true });
+
+  const samInitialRow = people
+    .getByText('Sam', { exact: true })
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+  const samStatusBox = await samInitialRow.getByText('Not connected').boundingBox();
+  const samRemoveBox = await samInitialRow
+    .getByRole('button', { name: 'Remove', exact: true })
+    .boundingBox();
+  expect(samStatusBox).not.toBeNull();
+  expect(samRemoveBox).not.toBeNull();
+  expect(
+    samStatusBox!.x + samStatusBox!.width <= samRemoveBox!.x
+      || samRemoveBox!.x + samRemoveBox!.width <= samStatusBox!.x
+      || samStatusBox!.y + samStatusBox!.height <= samRemoveBox!.y
+      || samRemoveBox!.y + samRemoveBox!.height <= samStatusBox!.y,
+  ).toBe(true);
+
+  const riverRow = people
+    .getByText('River', { exact: true })
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+  await riverRow.getByRole('button', { name: 'Remove', exact: true }).click();
+  await expect(riverRow.getByRole('button', { name: 'Remove from meeting' })).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/meeting-moderation-confirm-desktop.png',
+    fullPage: true,
+  });
+  await riverRow.getByRole('button', { name: 'Remove from meeting' }).click();
+  await expect(people.getByText('River', { exact: true })).toBeVisible();
+  await expect(people.getByText('Could not finish removing this person. Try again.')).toBeVisible();
+  await riverRow.getByRole('button', { name: 'Remove from meeting' }).click();
+  await expect(people.getByText('River', { exact: true })).not.toBeVisible();
+  expect(riverRemovalKeys.slice(0, 2)).toHaveLength(2);
+  expect(riverRemovalKeys[1]).toBe(riverRemovalKeys[0]);
+  await meetingMediaControl(page, 'leaveRemote');
+  await expect(people.getByText('1 connected')).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/meeting-moderation-complete-desktop.png',
+    fullPage: true,
+  });
+
+  const samRow = people
+    .getByText('Sam', { exact: true })
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+  await samRow.getByRole('button', { name: 'Remove', exact: true }).click();
+  await samRow.getByRole('button', { name: 'Remove from meeting' }).click();
+  await expect(people.getByText('Sam', { exact: true })).not.toBeVisible();
   await meetingMediaControl(page, 'reconnecting');
   await expect(page.getByText('Reconnecting…')).toBeVisible();
   await meetingMediaControl(page, 'connected');
@@ -403,6 +535,10 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   expect(await fakeLeaveCount(page)).toBe(1);
 
   await page.setViewportSize({ width: 390, height: 844 });
+  serverVersion = 3;
+  riverPresent = true;
+  samPresent = true;
+  riverRemovalAttempts = 0;
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Weekly planning' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Join meeting' })).toBeVisible();
@@ -412,7 +548,15 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   expect(mediaGrantRequests).toBe(2);
   await meetingMediaControl(page, 'joinRemote');
   await expect(page.getByText('2 connected')).toBeVisible();
-  await page.screenshot({ path: 'test-results/meeting-two-party-mobile.png', fullPage: true });
+  const mobilePeople = page.getByRole('region', { name: 'People' });
+  const mobileRiverRow = mobilePeople
+    .getByText('River', { exact: true })
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+  await mobileRiverRow.getByRole('button', { name: 'Remove', exact: true }).click();
+  await mobileRiverRow.getByRole('button', { name: 'Remove from meeting' }).click();
+  await expect(mobilePeople.getByText('Could not finish removing this person. Try again.')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/meeting-moderation-mobile.png', fullPage: true });
   await page.getByRole('link', { name: 'Mannan Meetings' }).click();
   await expect(page).toHaveURL('/meet');
   await expect.poll(() => fakeLeaveCount(page)).toBe(1);
@@ -443,7 +587,20 @@ test('keeps an ended workspace out of device setup', async ({ page, context }) =
             effectiveEndsAt: '2026-07-19T15:00:00.000Z',
             actualEndedAt: '2026-07-19T14:45:00.000Z',
           },
-          currentParticipant: { role: 'owner' },
+          currentParticipant: { participantId: 'guest_1', role: 'participant' },
+          participants: [
+            {
+              participantId: 'owner_1',
+              role: 'owner',
+              identityKind: 'account',
+            },
+            {
+              participantId: 'guest_1',
+              role: 'participant',
+              identityKind: 'browser_guest',
+              displayName: 'River',
+            },
+          ],
         },
       }),
     });
@@ -454,6 +611,8 @@ test('keeps an ended workspace out of device setup', async ({ page, context }) =
   await expect(page.getByRole('button', { name: 'Join meeting' })).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Start meeting early' })).not.toBeVisible();
   await expect(page.getByRole('button', { name: 'Invite people' })).not.toBeVisible();
+  await expect(page.getByRole('region', { name: 'People' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Remove', exact: true })).not.toBeVisible();
   expect(await mediaRequestCount(page)).toBe(0);
   await page.screenshot({ path: 'test-results/meeting-ended-desktop.png', fullPage: true });
 });

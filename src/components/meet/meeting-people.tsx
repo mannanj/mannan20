@@ -98,17 +98,20 @@ export function MeetingPeople({
                     </span>
                   </div>
                 </div>
-                {removable && !confirming && (
+              </div>
+
+              {removable && !confirming && (
+                <div className="mt-2 flex justify-end border-t border-white/8 pt-2">
                   <button
                     type="button"
                     disabled={pending}
                     onClick={() => setConfirmingParticipantId(participant.participantId)}
-                    className="min-h-11 shrink-0 rounded-md px-3 text-xs text-white/50 transition hover:bg-white/[0.06] hover:text-white/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d79275] disabled:cursor-wait disabled:text-white/30"
+                    className="min-h-11 rounded-md px-3 text-xs text-white/50 transition hover:bg-white/[0.06] hover:text-white/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d79275] disabled:cursor-wait disabled:text-white/30"
                   >
                     {pending ? 'Removing…' : 'Remove'}
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
               {removable && confirming && (
                 <div className="mt-3 border-t border-white/8 pt-3">
