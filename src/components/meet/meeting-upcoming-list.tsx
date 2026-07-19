@@ -1,8 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useReducer, useRef } from 'react';
 import type {
   UpcomingMeeting,
   UpcomingMeetingPage,
 } from '@/lib/meeting-directory';
+import { loadUpcomingMeetings } from '@/lib/meeting-directory';
+import { meetingDirectoryRefreshDecision } from '@/lib/meeting-directory-refresh';
 
 export type MeetingUpcomingListState = {
   readonly phase: 'idle' | 'loading' | 'ready' | 'error';
@@ -28,6 +33,131 @@ export type MeetingUpcomingListEvent =
     readonly kind: 'initial' | 'refresh' | 'page';
   }
   | { readonly type: 'retry' };
+
+interface MeetingUpcomingListDocument {
+  readonly visibilityState: 'visible' | 'hidden';
+  addEventListener(type: 'visibilitychange', listener: () => void): void;
+  removeEventListener(type: 'visibilitychange', listener: () => void): void;
+}
+
+interface MeetingUpcomingListControllerDependencies {
+  readonly document: MeetingUpcomingListDocument;
+  readonly inFlight: { current: Promise<void> | null };
+  readonly load: (cursor?: string) => Promise<UpcomingMeetingPage>;
+  readonly dispatch: (event: MeetingUpcomingListEvent) => void;
+  readonly setTimeout: (callback: () => void, delayMs: number) => number;
+  readonly clearTimeout: (handle: number) => void;
+}
+
+export interface MeetingUpcomingListController {
+  readonly start: () => void;
+  readonly stop: () => void;
+  readonly refresh: () => Promise<void>;
+  readonly retry: (
+    issue: NonNullable<MeetingUpcomingListState['issue']>,
+    nextCursor?: string,
+  ) => Promise<void>;
+  readonly showMore: (cursor: string) => Promise<void>;
+}
+
+export function createMeetingUpcomingListController({
+  document: controlledDocument,
+  inFlight,
+  load,
+  dispatch,
+  setTimeout: scheduleTimeout,
+  clearTimeout: cancelTimeout,
+}: MeetingUpcomingListControllerDependencies): MeetingUpcomingListController {
+  let started = false;
+  let active = true;
+  let visible = controlledDocument.visibilityState === 'visible';
+  let timer: number | null = null;
+
+  const clearTimer = () => {
+    if (timer === null) return;
+    cancelTimeout(timer);
+    timer = null;
+  };
+
+  let scheduleRefresh = (_visibilityRestored: boolean): void => undefined;
+
+  const runLoad = (
+    kind: 'initial' | 'refresh' | 'page',
+    cursor?: string,
+  ): Promise<void> => {
+    if (inFlight.current !== null) return inFlight.current;
+    clearTimer();
+    dispatch({ type: 'load_started', kind });
+    let request: Promise<UpcomingMeetingPage>;
+    try {
+      request = load(cursor);
+    } catch {
+      request = Promise.reject(new Error('meeting_directory_load_failed'));
+    }
+    let work!: Promise<void>;
+    work = request
+      .then((page) => {
+        if (active) dispatch({ type: 'load_succeeded', kind, page });
+      })
+      .catch(() => {
+        if (active) dispatch({ type: 'load_failed', kind });
+      })
+      .finally(() => {
+        if (inFlight.current === work) inFlight.current = null;
+        if (active && started) scheduleRefresh(false);
+      });
+    inFlight.current = work;
+    return work;
+  };
+
+  scheduleRefresh = (visibilityRestored: boolean): void => {
+    clearTimer();
+    const decision = meetingDirectoryRefreshDecision({
+      visible: controlledDocument.visibilityState === 'visible',
+      visibilityRestored,
+      loadInFlight: inFlight.current !== null,
+    });
+    if (decision === null) return;
+    timer = scheduleTimeout(() => {
+      timer = null;
+      void runLoad('refresh');
+    }, decision.delayMs);
+  };
+
+  const onVisibilityChange = () => {
+    const nextVisible = controlledDocument.visibilityState === 'visible';
+    if (!nextVisible) clearTimer();
+    else if (!visible) scheduleRefresh(true);
+    visible = nextVisible;
+  };
+
+  return {
+    start: () => {
+      if (started) return;
+      started = true;
+      active = true;
+      visible = controlledDocument.visibilityState === 'visible';
+      controlledDocument.addEventListener('visibilitychange', onVisibilityChange);
+      void runLoad('initial');
+    },
+    stop: () => {
+      if (!started) return;
+      started = false;
+      active = false;
+      clearTimer();
+      controlledDocument.removeEventListener('visibilitychange', onVisibilityChange);
+    },
+    refresh: () => runLoad('refresh'),
+    retry: (issue, nextCursor) => {
+      if (issue === 'initial') return runLoad('initial');
+      if (issue === 'page' && nextCursor !== undefined) {
+        return runLoad('page', nextCursor);
+      }
+      return runLoad('refresh');
+    },
+    showMore: (cursor) => runLoad('page', cursor),
+  };
+}
 
 function pageState(
   state: MeetingUpcomingListState,
@@ -279,5 +409,58 @@ export function MeetingUpcomingListView({
         </div>
       )}
     </section>
+  );
+}
+
+const INITIAL_STATE: MeetingUpcomingListState = {
+  phase: 'loading',
+  meetings: [],
+  refreshing: false,
+  paging: false,
+  issue: null,
+};
+
+export function MeetingUpcomingList(): React.ReactNode {
+  const [state, dispatch] = useReducer(
+    meetingUpcomingListTransition,
+    INITIAL_STATE,
+  );
+  const inFlight = useRef<Promise<void> | null>(null);
+  const controller = useRef<MeetingUpcomingListController | null>(null);
+
+  if (controller.current === null && typeof document !== 'undefined') {
+    controller.current = createMeetingUpcomingListController({
+      document,
+      inFlight,
+      load: (cursor) => loadUpcomingMeetings(cursor),
+      dispatch,
+      setTimeout: (callback, delayMs) => window.setTimeout(callback, delayMs),
+      clearTimeout: (handle) => window.clearTimeout(handle),
+    });
+  }
+
+  useEffect(() => {
+    const runtime = controller.current;
+    if (runtime === null) return;
+    runtime.start();
+    return () => {
+      runtime.stop();
+    };
+  }, []);
+
+  return (
+    <MeetingUpcomingListView
+      state={state}
+      onRetry={() => {
+        if (state.issue !== null) {
+          void controller.current?.retry(state.issue, state.nextCursor);
+        }
+      }}
+      onShowMore={() => {
+        if (state.nextCursor !== undefined) {
+          void controller.current?.showMore(state.nextCursor);
+        }
+      }}
+    />
   );
 }

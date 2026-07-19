@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MeetingShell } from './meeting-shell';
+import { MeetingUpcomingList } from './meeting-upcoming-list';
 
 function defaultStart(): string {
   const date = new Date(Date.now() + 60 * 60 * 1000);
@@ -67,24 +68,16 @@ export function MeetingHome({
 
   return (
     <MeetingShell>
-      <section className="grid gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
-        <div className="max-w-xl">
-          <p className="mb-5 text-xs uppercase tracking-[0.18em] text-white/40">Private workspace</p>
-          <h1 className="font-[family-name:var(--font-caption)] text-5xl leading-[0.94] tracking-[-0.045em] sm:text-7xl">
-            Meet without the account ceremony.
-          </h1>
-          <p className="mt-7 max-w-lg text-base leading-7 text-white/55">
-            Continue with email to create a meeting, or open a private link and enter as a guest.
-          </p>
+      {signedInEmail ? (
+        <section className="py-12 lg:py-20">
           {joinUnavailable && (
-            <p className="mt-6 rounded-md border border-amber-200/20 bg-amber-100/5 px-4 py-3 text-sm text-amber-100/80">
+            <p className="mb-8 rounded-md border border-amber-200/20 bg-amber-100/5 px-4 py-3 text-sm text-amber-100/80">
               That meeting link is unavailable or has expired.
             </p>
           )}
-        </div>
-
-        <div className="rounded-xl border border-white/10 bg-white/[0.035] p-5 sm:p-7">
-          {signedInEmail ? (
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1.55fr)_minmax(17rem,0.75fr)] lg:items-start">
+            <MeetingUpcomingList />
+            <div className="rounded-xl border border-white/10 bg-white/[0.035] p-5 sm:p-6">
             <form onSubmit={createMeeting} className="space-y-5">
               <div>
                 <p className="text-sm font-medium">Create a meeting</p>
@@ -111,7 +104,29 @@ export function MeetingHome({
                 Create meeting
               </button>
             </form>
-          ) : status === 'sent' ? (
+              {status === 'error' && <p className="mt-4 text-xs text-red-200/80">Something went wrong. Try again.</p>}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="grid gap-10 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
+          <div className="max-w-xl">
+            <p className="mb-5 text-xs uppercase tracking-[0.18em] text-white/40">Private workspace</p>
+            <h1 className="font-[family-name:var(--font-caption)] text-5xl leading-[0.94] tracking-[-0.045em] sm:text-7xl">
+              Meet without the account ceremony.
+            </h1>
+            <p className="mt-7 max-w-lg text-base leading-7 text-white/55">
+              Continue with email to create a meeting, or open a private link and enter as a guest.
+            </p>
+            {joinUnavailable && (
+              <p className="mt-6 rounded-md border border-amber-200/20 bg-amber-100/5 px-4 py-3 text-sm text-amber-100/80">
+                That meeting link is unavailable or has expired.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/[0.035] p-5 sm:p-7">
+            {status === 'sent' ? (
             <div className="py-8">
               <p className="text-lg font-medium">Check your email</p>
               <p className="mt-2 text-sm leading-6 text-white/50">The link expires in 15 minutes and brings you back here.</p>
@@ -130,10 +145,11 @@ export function MeetingHome({
                 Continue with email
               </button>
             </form>
-          )}
-          {status === 'error' && <p className="mt-4 text-xs text-red-200/80">Something went wrong. Try again.</p>}
-        </div>
-      </section>
+            )}
+            {status === 'error' && <p className="mt-4 text-xs text-red-200/80">Something went wrong. Try again.</p>}
+          </div>
+        </section>
+      )}
     </MeetingShell>
   );
 }

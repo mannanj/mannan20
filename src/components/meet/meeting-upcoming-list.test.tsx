@@ -9,6 +9,7 @@ import {
   meetingUpcomingListTransition,
   type MeetingUpcomingListState,
 } from './meeting-upcoming-list';
+import * as meetingUpcomingListModule from './meeting-upcoming-list';
 
 const MEETING_ID = 'meeting_0123456789abcdef';
 const SECOND_MEETING_ID = 'meeting_abcdef0123456789';
@@ -265,5 +266,247 @@ describe('meeting upcoming list view', () => {
     const paging = render({ ...base, paging: true });
     expect(paging).toContain('Loading more meetings…');
     expect(paging).not.toContain('Show more meetings');
+  });
+});
+
+type ControllerFactory = (dependencies: {
+  readonly document: {
+    readonly visibilityState: 'visible' | 'hidden';
+    addEventListener(type: 'visibilitychange', listener: () => void): void;
+    removeEventListener(type: 'visibilitychange', listener: () => void): void;
+  };
+  readonly inFlight: { current: Promise<void> | null };
+  readonly load: (cursor?: string) => Promise<UpcomingMeetingPage>;
+  readonly dispatch: (
+    event: Parameters<typeof meetingUpcomingListTransition>[1],
+  ) => void;
+  readonly setTimeout: (callback: () => void, delayMs: number) => number;
+  readonly clearTimeout: (handle: number) => void;
+}) => {
+  readonly start: () => void;
+  readonly stop: () => void;
+  readonly refresh: () => Promise<void>;
+  readonly retry: (
+    issue: NonNullable<MeetingUpcomingListState['issue']>,
+    nextCursor?: string,
+  ) => Promise<void>;
+  readonly showMore: (cursor: string) => Promise<void>;
+};
+
+const createController = (
+  meetingUpcomingListModule as typeof meetingUpcomingListModule & {
+    createMeetingUpcomingListController?: ControllerFactory;
+  }
+).createMeetingUpcomingListController;
+
+class ControlledDocument {
+  visibilityState: 'visible' | 'hidden' = 'visible';
+  readonly #listeners = new Set<() => void>();
+
+  addEventListener(type: 'visibilitychange', listener: () => void): void {
+    if (type === 'visibilitychange') this.#listeners.add(listener);
+  }
+
+  removeEventListener(type: 'visibilitychange', listener: () => void): void {
+    if (type === 'visibilitychange') this.#listeners.delete(listener);
+  }
+
+  setVisibility(visibilityState: 'visible' | 'hidden'): void {
+    this.visibilityState = visibilityState;
+    for (const listener of this.#listeners) listener();
+  }
+
+  get listenerCount(): number {
+    return this.#listeners.size;
+  }
+}
+
+class ControlledTimers {
+  #nextHandle = 1;
+  readonly scheduled = new Map<number, { callback: () => void; delayMs: number }>();
+
+  setTimeout = (callback: () => void, delayMs: number): number => {
+    const handle = this.#nextHandle++;
+    this.scheduled.set(handle, { callback, delayMs });
+    return handle;
+  };
+
+  clearTimeout = (handle: number): void => {
+    this.scheduled.delete(handle);
+  };
+
+  run(delayMs: number): void {
+    const entry = [...this.scheduled.entries()]
+      .find(([, scheduled]) => scheduled.delayMs === delayMs);
+    if (entry === undefined) throw new Error(`missing_timer_${delayMs}`);
+    this.scheduled.delete(entry[0]);
+    entry[1].callback();
+  }
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
+async function settle(): Promise<void> {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
+describe('meeting upcoming list controller', () => {
+  test('loads once on mount and shares one in-flight promise', async () => {
+    expect(createController).toBeFunction();
+    const document = new ControlledDocument();
+    const timers = new ControlledTimers();
+    const first = deferred<UpcomingMeetingPage>();
+    const cursors: Array<string | undefined> = [];
+    const events: Array<Parameters<typeof meetingUpcomingListTransition>[1]> = [];
+    const inFlight = { current: null as Promise<void> | null };
+    const controller = createController!({
+      document,
+      inFlight,
+      load: (cursor) => {
+        cursors.push(cursor);
+        return first.promise;
+      },
+      dispatch: (event) => events.push(event),
+      setTimeout: timers.setTimeout,
+      clearTimeout: timers.clearTimeout,
+    });
+
+    controller.start();
+    controller.start();
+    const refresh = controller.refresh();
+    const retry = controller.retry('refresh');
+    expect(refresh).toBe(retry);
+    controller.stop();
+    controller.start();
+    expect(cursors).toEqual([undefined]);
+    expect(events).toEqual([{ type: 'load_started', kind: 'initial' }]);
+
+    first.resolve(page([meeting()], 'cursor_1'));
+    await refresh;
+    expect(inFlight.current).toBeNull();
+    expect(events.at(-1)).toEqual({
+      type: 'load_succeeded',
+      kind: 'initial',
+      page: page([meeting()], 'cursor_1'),
+    });
+    expect([...timers.scheduled.values()].map(({ delayMs }) => delayMs))
+      .toEqual([30_000]);
+  });
+
+  test('schedules only while visible and refreshes once when visibility returns', async () => {
+    expect(createController).toBeFunction();
+    const document = new ControlledDocument();
+    const timers = new ControlledTimers();
+    const loads: Array<ReturnType<typeof deferred<UpcomingMeetingPage>>> = [];
+    let stateValue = state();
+    const controller = createController!({
+      document,
+      inFlight: { current: null },
+      load: () => {
+        const load = deferred<UpcomingMeetingPage>();
+        loads.push(load);
+        return load.promise;
+      },
+      dispatch: (event) => {
+        stateValue = meetingUpcomingListTransition(stateValue, event);
+      },
+      setTimeout: timers.setTimeout,
+      clearTimeout: timers.clearTimeout,
+    });
+
+    controller.start();
+    loads[0]!.resolve(page([meeting()], 'cursor_1'));
+    await settle();
+    expect(timers.scheduled.size).toBe(1);
+    document.setVisibility('hidden');
+    expect(timers.scheduled.size).toBe(0);
+    document.setVisibility('visible');
+    document.setVisibility('visible');
+    expect([...timers.scheduled.values()].map(({ delayMs }) => delayMs))
+      .toEqual([0]);
+    timers.run(0);
+    expect(loads).toHaveLength(2);
+    expect(stateValue.refreshing).toBeTrue();
+    loads[1]!.resolve(page([meeting({ version: 4 })], 'cursor_2'));
+    await settle();
+    expect(stateValue).toEqual(state({
+      phase: 'ready',
+      meetings: [meeting({ version: 4 })],
+      nextCursor: 'cursor_2',
+    }));
+    expect([...timers.scheduled.values()].map(({ delayMs }) => delayMs))
+      .toEqual([30_000]);
+  });
+
+  test('retains rows after refresh failure and pages through the exact cursor', async () => {
+    expect(createController).toBeFunction();
+    const document = new ControlledDocument();
+    const timers = new ControlledTimers();
+    const calls: Array<string | undefined> = [];
+    let stateValue = state({
+      phase: 'ready',
+      meetings: [meeting()],
+      nextCursor: 'cursor_1',
+    });
+    const controller = createController!({
+      document,
+      inFlight: { current: null },
+      load: async (cursor) => {
+        calls.push(cursor);
+        if (calls.length === 1) throw new Error('private dependency detail');
+        return page([
+          meeting(),
+          meeting({
+            meetingId: SECOND_MEETING_ID,
+            canonicalPath: `/meet/${SECOND_MEETING_ID}`,
+          }),
+        ]);
+      },
+      dispatch: (event) => {
+        stateValue = meetingUpcomingListTransition(stateValue, event);
+      },
+      setTimeout: timers.setTimeout,
+      clearTimeout: timers.clearTimeout,
+    });
+
+    await controller.refresh();
+    expect(stateValue.meetings).toEqual([meeting()]);
+    expect(stateValue.issue).toBe('refresh');
+    await controller.showMore('cursor_1');
+    expect(calls).toEqual([undefined, 'cursor_1']);
+    expect(stateValue.meetings.map(({ meetingId }) => meetingId))
+      .toEqual([MEETING_ID, SECOND_MEETING_ID]);
+    expect(stateValue.nextCursor).toBeUndefined();
+  });
+
+  test('cleans up its one listener and timer', async () => {
+    expect(createController).toBeFunction();
+    const document = new ControlledDocument();
+    const timers = new ControlledTimers();
+    const controller = createController!({
+      document,
+      inFlight: { current: null },
+      load: async () => page([]),
+      dispatch: () => undefined,
+      setTimeout: timers.setTimeout,
+      clearTimeout: timers.clearTimeout,
+    });
+    controller.start();
+    await settle();
+    expect(document.listenerCount).toBe(1);
+    expect(timers.scheduled.size).toBe(1);
+    controller.stop();
+    expect(document.listenerCount).toBe(0);
+    expect(timers.scheduled.size).toBe(0);
   });
 });
