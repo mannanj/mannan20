@@ -181,4 +181,27 @@ test.describe('garden papers', () => {
     );
     await expect.poll(() => pdfRequests.some((url) => url.includes('/data/documents/OMF-DR.pdf'))).toBe(true);
   });
+
+  test('shares a paper deep link and opens that paper when followed', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => {
+          window.localStorage.setItem('shared-paper-url', data.url ?? '');
+        },
+      });
+    });
+
+    await page.goto('/garden');
+    const papers = page.getByTestId('garden-papers');
+    await papers.scrollIntoViewIfNeeded();
+    await papers.getByTestId('paper-share-omf-dr').click();
+
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem('shared-paper-url')))
+      .toBe('http://localhost:3847/garden?paper=omf-dr#writings');
+
+    await page.goto('/garden?paper=omf-dr#writings');
+    const omf = page.getByTestId('garden-paper-omf-dr');
+    await expect(omf.getByTestId('paper-toggle-omf-dr')).toHaveAttribute('aria-expanded', 'true');
+  });
 });

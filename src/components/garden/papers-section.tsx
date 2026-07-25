@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import {
   PdfDownloadAction,
   PdfListenAction,
@@ -14,11 +14,16 @@ import {
 } from "@/lib/audio-config";
 import aboutData from "../../../public/data/about.json";
 import type { PublishedWork } from "@/lib/types";
+import {
+  shareGardenPaperLink,
+  type SharePaperResult,
+} from "@/lib/garden-paper-share";
 
 const AudioPlayer = lazy(() => import("@/components/episodes/audio-player"));
 
 type PlayerStatus = "loading" | "playing" | "paused";
 type PaperListenStatus = "idle" | "loading" | "playing";
+type PaperShareStatus = "idle" | "sharing" | SharePaperResult;
 
 const PAPER_PREVIEWS: Record<
   string,
@@ -86,6 +91,68 @@ function ChevronDownIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
+const SHARE_LABELS: Record<PaperShareStatus, string> = {
+  idle: "Share paper",
+  sharing: "Sharing",
+  shared: "Shared",
+  copied: "Link copied",
+  failed: "Unable to share",
+};
+
+function ShareIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-3 w-3"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.6 10.5 6.8-4" />
+      <path d="m8.6 13.5 6.8 4" />
+    </svg>
+  );
+}
+
+function PaperShareAction({ paper }: { paper: PaperPreview }) {
+  const [status, setStatus] = useState<PaperShareStatus>("idle");
+
+  const handleShare = async () => {
+    if (status === "sharing") return;
+    setStatus("sharing");
+    const result = await shareGardenPaperLink(paper.id, paper.title);
+    setStatus(result);
+  };
+
+  return (
+    <button
+      type="button"
+      data-testid={`paper-share-${paper.id}`}
+      aria-label={SHARE_LABELS[status]}
+      title={SHARE_LABELS[status]}
+      aria-live="polite"
+      disabled={status === "sharing"}
+      onClick={handleShare}
+      className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-sm bg-transparent p-0 text-[11px] font-normal text-[#039be5] transition-all duration-200 hover:scale-110 hover:text-[#4fc3f7] active:scale-95 disabled:cursor-wait disabled:text-white/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4fc3f7]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+    >
+      <ShareIcon />
+      <span>
+        {status === "copied"
+          ? "Copied"
+          : status === "shared"
+            ? "Shared"
+            : "Share"}
+      </span>
+    </button>
+  );
+}
+
 function PaperItem({
   paper,
   expanded,
@@ -103,6 +170,7 @@ function PaperItem({
 }) {
   return (
     <article
+      id={`paper-${paper.id}`}
       data-testid={`garden-paper-${paper.id}`}
       className={`group overflow-hidden rounded-xl border bg-white/[0.025] transition-colors duration-300 ${
         expanded
@@ -135,6 +203,7 @@ function PaperItem({
               data-testid={`paper-actions-${paper.id}`}
               className="pt-0.5"
             >
+              <PaperShareAction paper={paper} />
               <PdfDownloadAction
                 href={paper.downloadPath}
                 download={paper.filename}
@@ -177,6 +246,18 @@ export function PapersSection() {
   const [expandedPaperId, setExpandedPaperId] = useState<string | null>(null);
   const [listeningPaperId, setListeningPaperId] = useState<string | null>(null);
   const [playerStatus, setPlayerStatus] = useState<PlayerStatus>("loading");
+
+  useEffect(() => {
+    const paperId = new URLSearchParams(window.location.search).get("paper");
+    if (paperId && PAPERS.some((paper) => paper.id === paperId)) {
+      setExpandedPaperId(paperId);
+      requestAnimationFrame(() => {
+        document
+          .getElementById(`paper-${paperId}`)
+          ?.scrollIntoView({ block: "center" });
+      });
+    }
+  }, []);
   const handleStatusChange = useCallback((status: PlayerStatus) => {
     setPlayerStatus(status);
   }, []);
