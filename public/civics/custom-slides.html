@@ -1,39 +1,122 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Civic Participation Under Survival Demands and Uncertain Influence — Meet the Pod</title>
-<style>
-:root{--paper:#0d141b;--teal:#22c3cf;--fog:#aeb9bf;--line:rgba(255,255,255,.12);}
-*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
-body{background:var(--paper);color:#eef3f4;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
-.slide{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:8vh 9vw}
-.slide.active{display:flex}
-.slide-inner{max-width:62ch;width:100%}
-.eyebrow{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:18px}
-h1{font-size:clamp(30px,6vw,58px);line-height:1.05;letter-spacing:-.02em;font-weight:800;margin-bottom:22px;text-wrap:balance}
-.body{font-size:clamp(17px,2.3vw,22px);line-height:1.55;color:#dbe4e6}.body p{margin-bottom:12px}.body .muted{color:var(--fog);font-size:.9em}
-ul.themes{list-style:none;display:flex;flex-direction:column;gap:15px}ul.themes li{border-left:2px solid var(--teal);padding-left:16px}
-ul.themes .tier{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:3px}
-ul.themes .tt{display:block;font-weight:700;font-size:1.05em}ul.themes .td{display:block;color:var(--fog);font-size:.82em;margin-top:4px}
-ul.tension-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:6px}ul.tension-list li{border-left:2px solid var(--fog);padding-left:14px;font-size:.85em}
-ul.tension-list .tmeta{display:block;color:var(--fog);font-size:.82em;margin-top:2px}.body .tiny{font-size:.72em;letter-spacing:.03em;margin-top:14px}
-.slide.cover h1{font-size:clamp(38px,8vw,78px)}.slide.join .slide-inner{text-align:center}
-.nav{position:fixed;bottom:22px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:20px;z-index:5}
-.dots{display:flex;gap:9px}.dot{width:9px;height:9px;border-radius:50%;border:none;background:var(--line);cursor:pointer;padding:0}.dot.on{background:var(--teal)}
-.arrow{background:none;border:1px solid var(--line);color:#eef3f4;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1}.arrow:hover{border-color:var(--teal)}
-.brand{position:fixed;top:20px;left:26px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--fog)}.brand b{color:#eef3f4}
-</style></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Civic Participation Under Survival Demands and Uncertain Influence</title>
+  <style>
+    :root {
+      --paper: #f6f3ec;
+      --ink: #111820;
+      --muted: #56616b;
+      --evidence: #006b74;
+      --interpretation: #7445d4;
+      --unknown: #8a5800;
+      --vote: #c51f2a;
+      --line: rgba(17, 24, 32, 0.14);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--ink); }
+    body { color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      position: relative;
+      overflow: hidden;
+      padding: clamp(42px, 7vh, 74px) clamp(46px, 7vw, 100px);
+      background: var(--paper);
+    }
+    .slide.active { display: grid; grid-template-rows: auto 1fr auto; }
+    .label { text-transform: uppercase; letter-spacing: 0.14em; font-size: 13px; font-weight: 800; color: var(--accent); }
+    h1 { max-width: 17ch; margin: 18px 0 28px; font-size: clamp(40px, 6vw, 76px); line-height: 0.98; letter-spacing: -0.04em; }
+    p, li { font-size: clamp(18px, 2vw, 27px); line-height: 1.35; }
+    .statement { max-width: 36ch; font-size: clamp(26px, 3vw, 42px); line-height: 1.2; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-content: center; }
+    .card { border: 1px solid var(--line); border-left: 5px solid var(--accent); border-radius: 14px; padding: 20px 22px; background: rgba(255,255,255,0.55); }
+    .card p { margin: 0; }
+    .card-tag { margin-bottom: 8px; color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+    .source-note, .caveat, footer { color: var(--muted); font-size: 15px; }
+    .question { max-width: 42ch; margin: 0 auto 26px; text-align: center; font-size: clamp(23px, 2.6vw, 37px); font-weight: 800; line-height: 1.22; }
+    .counter-test { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .counter-test p { margin: 4px 0 0; font-size: clamp(15px, 1.45vw, 20px); }
+    .research-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-content: center; }
+    .research-panel h2 { margin: 0 0 10px; font-size: clamp(18px, 1.8vw, 25px); }
+    .research-panel ol, .research-panel ul { margin: 0; padding-left: 1.2em; }
+    .research-panel li { margin-bottom: 9px; font-size: clamp(15px, 1.35vw, 19px); line-height: 1.3; }
+    .nav { position: fixed; right: 24px; bottom: 18px; z-index: 20; padding: 7px 10px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 800; }
+    [data-slide-id="evidence"] { --accent: var(--evidence); }
+    [data-slide-id="interpretation"] { --accent: var(--interpretation); }
+    [data-slide-id="limits"] { --accent: var(--unknown); }
+    [data-slide-id="vote"] { --accent: var(--vote); }
+    [data-slide-id="problem"], [data-slide-id="investigation"] { --accent: var(--ink); }
+    @media print {
+      @page { size: 13.333in 7.5in; margin: 0; }
+      html, body { background: white; }
+      .slide, .slide.active {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        width: 13.333in;
+        height: 7.5in;
+        break-after: page;
+      }
+      [data-slide-id="interpretation"] .question { margin-bottom: 18px; font-size: 30px; }
+      [data-slide-id="interpretation"] .card { padding-block: 16px; }
+      [data-slide-id="vote"] { padding-block: 22px; }
+      .nav { display: none; }
+    }
+  </style>
+</head>
 <body>
-<nav aria-label="Civic slides" style="position:fixed;top:16px;right:26px;z-index:10;font:14px/1.4 system-ui,sans-serif;display:flex;gap:14px;"><a href="/civics/custom-slides.html" style="color:var(--teal)">Custom slides</a><a href="/civics/slides.html" style="color:var(--fog)">Triangle slides</a></nav>
-<div class="brand">The <b>Upskilling Labs</b> · Meet the Pod</div>
-<section class="slide cover active" data-i="0"><div class="slide-inner"><div class="eyebrow">Meet the Pod</div><h1>Civic Participation Under Survival Demands and Uncertain Influence</h1><div class="body"><p>People facing survival demands may find it unclear what matters to them or whether civic options, if any, fit their circumstances and can plausibly influence outcomes they care about. This is a provisional synthesis of four supplied claims, not a prevalence or causal finding.</p></div></div></section>
-<section class="slide para" data-i="1"><div class="slide-inner"><div class="eyebrow">The Paradox</div><h1>Why this stays stuck</h1><div class="body"><p>Working tension hypothesis: civic participation may need to seem possible and worthwhile before a person commits scarce time, while its practical fit and influence may only become clear through participation. The supplied claims do not establish both legs or a self-undoing contradiction.</p><p class="muted"><strong>Who benefits from the status quo:</strong> No beneficiary is established. Investigate whether uncertainty about access or influence creates any repeatable advantage for any actor, and whether that actor also bears costs. Do not infer intent or stable beneficiary status.</p><p class="muted tiny">Sharpness self-check (pod-declared): 0/3</p></div></div></section>
-<section class="slide warrant" data-i="2"><div class="slide-inner"><div class="eyebrow">How we know</div><h1>The evidence is the warrant</h1><div class="body"><p>No client handed us this problem — the evidence did. This paradox was read off <strong>4 source extracts</strong> across <strong>4 named themes</strong>.</p><p class="muted">“Unclear personal priorities” — It is unclear what I care about—how to take the time to figure out what I care about, what values I have, and what I need.</p><p class="muted">“Too busy to participate” — I am so busy focusing on basic survival tasks, and people are too busy with work and necessary chores or errands, to participate in their cities or communities.</p><p class="muted tiny">Full trail: data/extracts.csv in our pod repo.</p></div></div></section>
-<section class="slide themes" data-i="3"><div class="slide-inner"><div class="eyebrow">What we found</div><h1>The themes beneath it</h1><div class="body"><ul class="themes"><li><span class="tier">Theme</span><span class="tt">Meaning</span><span class="td">Interpretation: participation may be difficult to judge when people lack room to clarify priorities or understand the available choice. This is a provisional synthesis.</span></li><li><span class="tier">Theme</span><span class="tt">Practical Fit</span><span class="td">Interpretation: an option may need to fit real capacity and be legible enough to assess before commitment. This is a provisional synthesis.</span></li><li><span class="tier">Theme</span><span class="tt">Plausible Influence</span><span class="td">Interpretation: people may need a plausible account of how participation could matter in order to judge an option. This is a provisional synthesis, not evidence of impact.</span></li></ul></div></div></section>
-<section class="slide field" data-i="4"><div class="slide-inner"><div class="eyebrow">The Field</div><h1>Who this touches</h1><div class="body"><p class="muted"><strong>Voices we still need:</strong> Recent participants; people who chose not to participate; people navigating work, care, survival, disability, language, transport, scheduling, or digital constraints; community and civic opportunity providers; and public staff who receive participation.</p></div></div></section>
-<section class="slide testing" data-i="5"><div class="slide-inner"><div class="eyebrow">What we're still testing</div><h1>This is a live inquiry</h1><div class="body"><p class="muted">We formed around evidence, not a brief — so we bring our open questions with us.</p><ul class="tension-list"><li>What could break this framing: This framing may individualize structural barriers, assume suitable civic options exist, and combine distinct uncertainties into one mechanism. Test cases where people participate without clear expected impact, where options are clear but infeasible, where feasible options lack influence, and where participation is clear, feasible, and consequential.</li><li>Sharpness still unclaimed: it names a contradiction where the fix undoes itself — x requires not-x</li><li>Sharpness still unclaimed: it names who is invested in it persisting</li><li>Sharpness still unclaimed: both legs of the contradiction are evidenced (linked cards / extracts)</li></ul></div></div></section>
-<section class="slide join" data-i="6"><div class="slide-inner"><div class="eyebrow">Join us</div><h1>Build with the Civic Participation Under Survival Demands pod</h1><div class="body"><p>We're forming a pod around this paradox. If it pulls at you, come help us frame it — and find the problem owner who can move it.</p></div></div></section>
-<div class="nav"><button class="arrow" id="prev" aria-label="Previous">‹</button><div class="dots" id="dots"><button class="dot on" data-i="0" aria-label="Slide 1"></button><button class="dot" data-i="1" aria-label="Slide 2"></button><button class="dot" data-i="2" aria-label="Slide 3"></button><button class="dot" data-i="3" aria-label="Slide 4"></button><button class="dot" data-i="4" aria-label="Slide 5"></button><button class="dot" data-i="5" aria-label="Slide 6"></button><button class="dot" data-i="6" aria-label="Slide 7"></button></div><button class="arrow" id="next" aria-label="Next">›</button></div>
-<script>
-(function(){var slides=[].slice.call(document.querySelectorAll(".slide"));var dots=[].slice.call(document.querySelectorAll(".dot"));var i=0;function go(n){i=Math.max(0,Math.min(slides.length-1,n));slides.forEach(function(s,k){s.classList.toggle("active",k===i);});dots.forEach(function(d,k){d.classList.toggle("on",k===i);});}document.getElementById("next").onclick=function(){go(i+1);};document.getElementById("prev").onclick=function(){go(i-1);};dots.forEach(function(d){d.onclick=function(){go(+d.getAttribute("data-i"));};});document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" ")go(i+1);else if(e.key==="ArrowLeft")go(i-1);});})();
-</script>
-</body></html>
+  <main id="deck" aria-live="polite"></main>
+  <div class="nav" id="nav" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script id="deck-data" type="application/json">{"title":"Civic Participation Under Survival Demands and Uncertain Influence","statement":"People facing survival demands may find it unclear what matters to them or whether civic options, if any, fit their circumstances and can plausibly influence outcomes they care about.","caveat":"This synthesis draws on four source claims; it does not establish prevalence, causal relationships, who holds power, or whether suitable options exist.","slides":[{"id":"problem","label":"Problem statement for voting","title":"Civic Participation Under Survival Demands and Uncertain Influence","footer":"A provisional inquiry grounded in four source claims."},{"id":"evidence","label":"Source evidence","title":"Four uncertainties in one account","sourceNote":"Four claims from one source set. Original records and sampling context are unavailable.","excerpts":[{"sourceId":"s1","segments":["It is unclear what impact my actions will make"]},{"sourceId":"s2","segments":["It is unclear what I care about"]},{"sourceId":"s3","segments":["I am so busy focusing on basic survival tasks"]},{"sourceId":"s4","segments":["It is unclear what options are available","how long they will take","how they fit into my schedule"]}]},{"id":"interpretation","label":"Working paradox · interpretive hypothesis","title":"Clarity is required before commitment","workingParadox":"People are asked to commit scarce time before they can know whether participation fits their circumstances or can influence anything—but without that clarity, the commitment is difficult to justify.","dimensions":["Scarce time under survival demands","Unclear personal priorities","Unknown fit and effort","Uncertain influence"],"footer":"A tension to test—not a proven finding."},{"id":"limits","label":"What the evidence cannot establish","title":"The problem is still open","unknowns":["How common this situation is","Which uncertainties affect participation","Whether suitable civic options exist","Who controls access and influence"],"disconfirmingEvidence":"This framing weakens if people under comparable constraints can reliably judge fit and influence before committing, or if these uncertainties do not shape participation decisions."},{"id":"investigation","label":"A researchable problem","title":"Follow real participation decisions","questions":["How do people under survival demands decide whether to participate?","When do fit, effort, and possible influence become clear?","Which uncertainties, if any, shape nonparticipation?"],"evidenceToSeek":["Recent participation and nonparticipation accounts","Real requirements and decision or feedback pathways","Counterexamples where fit and influence were clear beforehand"],"voicesNeeded":["People who participated despite major constraints","People who declined, stopped, or were excluded","People who design participation or control decisions and feedback"]},{"id":"vote","label":"Vote to investigate","title":"Should this problem move forward?","prompt":"Vote for this statement if you want the next stage to investigate how people judge whether civic participation is possible and worthwhile under real-life constraints.","support":"A vote supports the inquiry. It does not endorse a solution or claim that the hypothesis is already proven."}]}</script>
+  <script>
+    const data = JSON.parse(document.getElementById('deck-data').textContent);
+    const deck = document.getElementById('deck');
+    const nav = document.getElementById('nav');
+    const esc = value => String(value ?? '').replace(/[&<>"]/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'
+    })[char]);
+    const list = values => `<div class="grid">${values.map(value =>
+      `<div class="card"><p>${esc(value)}</p></div>`).join('')}</div>`;
+    const excerpt = item => `<div class="card"><p>“${item.segments
+      .map(esc).join('… ')}…”</p><div class="source-note">${esc(item.sourceId.toUpperCase())}</div></div>`;
+    const slideBody = slide => {
+      if (slide.id === 'problem') return `<p class="statement">${esc(data.statement)}</p>`;
+      if (slide.id === 'evidence') {
+        return `<div class="grid">${slide.excerpts.map(excerpt).join('')}</div>
+          <p class="source-note">${esc(slide.sourceNote)}</p>`;
+      }
+      if (slide.id === 'interpretation') return `<p class="question">${esc(slide.workingParadox)}</p>${list(slide.dimensions)}`;
+      if (slide.id === 'limits') {
+        return `<div class="grid">${slide.unknowns.map(value =>
+          `<div class="card"><div class="card-tag">Unknown</div><p>${esc(value)}</p></div>`
+        ).join('')}</div><div class="counter-test"><div class="card-tag">What would change our mind</div><p>${esc(slide.disconfirmingEvidence)}</p></div><p class="caveat">${esc(data.caveat)}</p>`;
+      }
+      if (slide.id === 'investigation') return `<div class="research-grid"><div class="research-panel"><h2>Questions</h2><ol>${slide.questions.map(item => `<li>${esc(item)}</li>`).join('')}</ol></div><div class="research-panel"><h2>Evidence to seek</h2><ul>${slide.evidenceToSeek.map(item => `<li>${esc(item)}</li>`).join('')}</ul></div><div class="research-panel"><h2>Voices needed</h2><ul>${slide.voicesNeeded.map(item => `<li>${esc(item)}</li>`).join('')}</ul></div></div>`;
+      return `<p class="statement">${esc(slide.prompt)}</p><p>${esc(slide.support)}</p>`;
+    };
+    data.slides.forEach((slide, index) => {
+      const section = document.createElement('section');
+      section.className = `slide${index === 0 ? ' active' : ''}`;
+      section.dataset.slideId = slide.id;
+      section.dataset.index = String(index);
+      section.innerHTML = `<header><div class="label">${esc(slide.label)}</div><h1>${esc(slide.title)}</h1></header><div>${slideBody(slide)}</div><footer>${esc(slide.footer || '')}</footer>`;
+      deck.appendChild(section);
+    });
+    const slides = [...document.querySelectorAll('.slide')];
+    let current = 0;
+    function show(index) {
+      current = Math.max(0, Math.min(slides.length - 1, index));
+      slides.forEach((slide, position) => slide.classList.toggle('active', position === current));
+      nav.textContent = `Slide ${current + 1} of ${slides.length}`;
+    }
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowRight' || event.key === ' ') show(current + 1);
+      if (event.key === 'ArrowLeft') show(current - 1);
+    });
+    show(0);
+  </script>
+</body>
+</html>
