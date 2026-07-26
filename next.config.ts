@@ -34,6 +34,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/civics',
+        destination: '/civics/index.html',
+      },
+      {
+        source: '/civics/',
+        destination: '/civics/index.html',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

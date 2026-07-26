@@ -1,0 +1,233 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "tg": "https://theupskillinglabs.github.io/triangles/ns#",
+    "tier": "tg:tier",
+    "x": "tg:x",
+    "y": "tg:y",
+    "w": "tg:w",
+    "h": "tg:h",
+    "verified": "tg:verified",
+    "locked": "tg:locked",
+    "strong": "tg:strong",
+    "source_url": "tg:sourceUrl",
+    "children": {
+      "@id": "tg:hasChild",
+      "@type": "@id"
+    }
+  },
+  "title": "Civic Participation Under Survival Demands",
+  "concept": "People facing survival demands may find it unclear what matters to them or whether civic options, if any, fit their circumstances and can plausibly influence outcomes they care about.",
+  "generatedAt": "2026-07-26T23:36:14.624Z",
+  "@graph": [
+    {
+      "@id": "civic-participation-source-s1",
+      "@type": "tg:SourceExtract",
+      "type": "Source Extract",
+      "tier": 0,
+      "title": "Unclear impact and influence",
+      "description": "It is unclear what impact my actions will make and whether or how I can influence things I care about.",
+      "x": 80,
+      "y": -920,
+      "w": 240,
+      "h": 110,
+      "verified": false,
+      "strong": false,
+      "source_url": "",
+      "children": []
+    },
+    {
+      "@id": "civic-participation-source-s2",
+      "@type": "tg:SourceExtract",
+      "type": "Source Extract",
+      "tier": 0,
+      "title": "Unclear personal priorities",
+      "description": "It is unclear what I care about—how to take the time to figure out what I care about, what values I have, and what I need.",
+      "x": 670,
+      "y": -920,
+      "w": 240,
+      "h": 110,
+      "verified": false,
+      "strong": false,
+      "source_url": "",
+      "children": []
+    },
+    {
+      "@id": "civic-participation-source-s3",
+      "@type": "tg:SourceExtract",
+      "type": "Source Extract",
+      "tier": 0,
+      "title": "Too busy to participate",
+      "description": "I am so busy focusing on basic survival tasks, and people are too busy with work and necessary chores or errands, to participate in their cities or communities.",
+      "x": 1260,
+      "y": -920,
+      "w": 240,
+      "h": 110,
+      "verified": false,
+      "strong": false,
+      "source_url": "",
+      "children": []
+    },
+    {
+      "@id": "civic-participation-source-s4",
+      "@type": "tg:SourceExtract",
+      "type": "Source Extract",
+      "tier": 0,
+      "title": "Unclear participation options",
+      "description": "It is unclear what options are available, in breadth and depth, for how I can participate: events, actions, and so on; how long they will take; how they fit into my schedule; and how they make an impact.",
+      "x": 1850,
+      "y": -920,
+      "w": 240,
+      "h": 110,
+      "verified": false,
+      "strong": false,
+      "source_url": "",
+      "children": []
+    },
+    {
+      "@id": "civic-participation-pattern-values-reflective-space",
+      "@type": "tg:Pattern",
+      "type": "Pattern",
+      "tier": 2,
+      "title": "Values may require reflective space",
+      "description": "Hypothesis: survival demands may reduce room to clarify what matters before choosing how to participate. This is an interpretation of S2 and S3, not a causal finding.",
+      "x": 80,
+      "y": -350,
+      "w": 300,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-source-s2",
+        "civic-participation-source-s3"
+      ]
+    },
+    {
+      "@id": "civic-participation-pattern-real-capacity",
+      "@type": "tg:Pattern",
+      "type": "Pattern",
+      "tier": 2,
+      "title": "Participation must fit real capacity",
+      "description": "Hypothesis: work, care, survival tasks, schedules, and duration demands may make some participation options infeasible. This is an interpretation of S3 and S4, not a causal finding.",
+      "x": 620,
+      "y": -350,
+      "w": 300,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-source-s3",
+        "civic-participation-source-s4"
+      ]
+    },
+    {
+      "@id": "civic-participation-pattern-judgeable-options",
+      "@type": "tg:Pattern",
+      "type": "Pattern",
+      "tier": 2,
+      "title": "Options may be hard to judge before commitment",
+      "description": "Hypothesis: people may need enough detail about demands and possible impact to judge an option before committing scarce time. This is an interpretation of S1 and S4, not a causal finding.",
+      "x": 1160,
+      "y": -350,
+      "w": 300,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-source-s1",
+        "civic-participation-source-s4"
+      ]
+    },
+    {
+      "@id": "civic-participation-pattern-uncertain-influence",
+      "@type": "tg:Pattern",
+      "type": "Pattern",
+      "tier": 2,
+      "title": "Plausible influence remains uncertain",
+      "description": "Hypothesis: unclear impact or influence may affect whether participation appears worthwhile. This is an interpretation of S1 and S4, not a causal finding.",
+      "x": 1700,
+      "y": -350,
+      "w": 300,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-source-s1",
+        "civic-participation-source-s4"
+      ]
+    },
+    {
+      "@id": "civic-participation-theme-meaning",
+      "@type": "tg:Theme",
+      "type": "Theme",
+      "tier": 3,
+      "title": "Meaning",
+      "description": "Interpretation: participation may be difficult to judge when people lack room to clarify priorities or understand the available choice. This is a provisional synthesis.",
+      "x": 300,
+      "y": 230,
+      "w": 340,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-pattern-values-reflective-space",
+        "civic-participation-pattern-judgeable-options"
+      ]
+    },
+    {
+      "@id": "civic-participation-theme-practical-fit",
+      "@type": "tg:Theme",
+      "type": "Theme",
+      "tier": 3,
+      "title": "Practical Fit",
+      "description": "Interpretation: an option may need to fit real capacity and be legible enough to assess before commitment. This is a provisional synthesis.",
+      "x": 980,
+      "y": 230,
+      "w": 340,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-pattern-real-capacity",
+        "civic-participation-pattern-judgeable-options"
+      ]
+    },
+    {
+      "@id": "civic-participation-theme-plausible-influence",
+      "@type": "tg:Theme",
+      "type": "Theme",
+      "tier": 3,
+      "title": "Plausible Influence",
+      "description": "Interpretation: people may need a plausible account of how participation could matter in order to judge an option. This is a provisional synthesis, not evidence of impact.",
+      "x": 1660,
+      "y": 230,
+      "w": 340,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-pattern-judgeable-options",
+        "civic-participation-pattern-uncertain-influence"
+      ]
+    },
+    {
+      "@id": "civic-participation-focus-survival-demands",
+      "@type": "tg:Supertheme",
+      "type": "Super-theme",
+      "tier": 4,
+      "title": "Civic participation under survival demands",
+      "description": "People facing survival demands may find it unclear what matters to them or whether civic options, if any, fit their circumstances and can plausibly influence outcomes they care about.\n\nProvisional synthesis, not a source finding.",
+      "x": 980,
+      "y": 810,
+      "w": 400,
+      "h": 150,
+      "cardType": null,
+      "locked": false,
+      "children": [
+        "civic-participation-theme-meaning",
+        "civic-participation-theme-practical-fit",
+        "civic-participation-theme-plausible-influence"
+      ]
+    }
+  ]
+}
