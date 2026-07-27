@@ -395,7 +395,7 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
       body: JSON.stringify({
         data: {
           accessLinkId: 'link_0123456789abcdef',
-          secret: 'private_guest_secret_0123456789abcdef',
+          secret: 'aaaaaaaaaaaaaaaa',
           expiresAt: '2026-07-19T15:00:00.000Z',
           version: 2,
         },
@@ -494,7 +494,7 @@ test('renders the authorized durable workspace on desktop and mobile', async ({ 
   await page.getByRole('button', { name: 'Invite people' }).click();
   await expect(page.getByRole('button', { name: 'Copy private link' })).toBeVisible();
   await expect(page.getByLabel('Private meeting link')).toHaveValue(
-    'http://localhost:3847/meet/j/private_guest_secret_0123456789abcdef',
+    'http://localhost:3847/meet/j/aaaaaaaaaaaaaaaa',
   );
   await page.getByRole('button', { name: 'Start meeting early' }).click();
   await expect(page.getByRole('heading', { name: 'Ready to join?' })).toBeVisible();

@@ -10,7 +10,7 @@ describe('meeting private invite client', () => {
         {
           data: {
             accessLinkId: 'link_0123456789abcdef',
-            secret: 'private_guest_secret_0123456789abcdef',
+            secret: 'aaaaaaaaaaaaaaaa',
             expiresAt: '2026-07-19T15:00:00.000Z',
             version: 8,
           },
@@ -44,7 +44,7 @@ describe('meeting private invite client', () => {
     expect(result).toEqual({
       accessLinkId: 'link_0123456789abcdef',
       shareUrl:
-        'https://mannan.is/meet/j/private_guest_secret_0123456789abcdef',
+        'https://mannan.is/meet/j/aaaaaaaaaaaaaaaa',
       expiresAt: '2026-07-19T15:00:00.000Z',
       version: 8,
     });

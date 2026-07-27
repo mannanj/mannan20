@@ -1,0 +1,7 @@
+# Verified synthetic test fixtures replaced at the branch tip.
+# Keep these exceptions fingerprint-specific; never allowlist a path or rule broadly.
+b176d21dde2dae8daab0c87fc50fd17e0637798f:e2e/meeting-shell.spec.ts:generic-api-key:67
+a68d587f9fc6b6f8647303c79ae39695d27d03b7:src/lib/meeting-invite.test.ts:generic-api-key:13
+174acf71a05661dde897dc809457830ec444a9f7:src/lib/meeting-cookies.test.ts:generic-api-key:28
+174acf71a05661dde897dc809457830ec444a9f7:src/lib/meeting-cookies.test.ts:generic-api-key:39
+174acf71a05661dde897dc809457830ec444a9f7:src/lib/meeting-cookies.test.ts:generic-api-key:86
