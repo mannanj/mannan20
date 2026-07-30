@@ -17,4 +17,4 @@
 
 - [x] CI installs `cloud-worker/bun.lock` dependencies with the frozen lockfile before tests.
 - [x] The root typecheck and unit-test commands still run unchanged.
-- [ ] The required pull-request check passes on a clean GitHub runner.
+- [x] The required pull-request check passes on a clean GitHub runner.
