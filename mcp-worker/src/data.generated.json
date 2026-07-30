@@ -169,9 +169,9 @@
       "skills": "Javascript, Typescript, Angular, Python, Python Django, AWS, research",
       "description": "Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages.",
       "highlights": [
-        "Contributed to IRS tax system modernization through cloud migration R&D, implementing OAuth2/JWT authentication patterns and automated testing frameworks using Python Django and AWS.",
-        "Researched and prototyped cyber security tooling for federal cloud infrastructure, developing monitoring solutions for threat detection across distributed systems.",
-        "Built internal research platforms enabling cross-team collaboration on national security and public interest technology initiatives."
+        "Built a Python-Django DOJ cyber-incident analysis platform, a million-dollar DoD cost-benefit analysis, and an Angular v2 MEAN-stack web IDE supporting the multiyear IRS legacy tax-system modernization effort.",
+        "Implemented secure JavaScript, TypeScript, and Python-based OAuth2/JWT authentication and automated testing frameworks to strengthen enterprise security, compliance, and release confidence.",
+        "Researched automated testing, software-quality metrics, blockchain, and commercial and government cloud providers to support sponsor decision-making."
       ],
       "link": "https://www.mitre.org/"
     },
