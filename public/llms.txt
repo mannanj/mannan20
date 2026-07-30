@@ -4,7 +4,7 @@
 
 I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
 
-This file is generated from the same data that powers the MCP server below (updated 2026-06-28). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
+This file is generated from the same data that powers the MCP server below (updated 2026-07-30). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
 
 ## MCP server
 
@@ -37,7 +37,7 @@ This file is generated from the same data that powers the MCP server below (upda
 
 - [Spirit & Hammer — Founder, 2025-Present](https://mannan.is/#about): AI product studio & consulting agency shipping production-grade full-stack AI platforms. Skills: TypeScript, React, Next.js, Python, FastAPI, Vercel AI SDK, Claude, MCP, Cloudflare.
 - [Capital One — Principal Software Engineer, 2024-2025, 2021-2022](https://www.capitalone.com/): Led security operations, remediation, and engineering for high-scale applications serving 3m+ DAU, achieving zero security incidents while delivering secure microservices and customer-facing features. Skills: Security, Splunk, New Relic, PagerDuty, Springboot, Astro, SolidJS, Node.js, DevSecOps.
-- [Publicis Sapient — Senior Software Engineer, 2022-2023](https://www.publicissapient.com/): Led implementation and oversight of developers to deliver features ahead of schedule and improve company-wide velocity. Initiated and introduced major feature rewrites. Skills: Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership.
+- [Publicis Sapient — Senior Software Engineer, 2022-2023](https://www.publicissapient.com/): Led implementation and oversight of developers to deliver features ahead of schedule and improve team velocity. Initiated and introduced major feature rewrites. Skills: Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership.
 - [Radiant (now Maxar) — Software Engineer II, 2018-2022](https://www.maxar.com/): Mid-level frontend engineer on mapping systems that informed national security needs. Champion and advocate for company culture. Skills: Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture.
 - [MITRE Corporation — Software Engineer I, 2016-2018](https://www.mitre.org/): Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages. Skills: Javascript, Typescript, Angular, Python, Python Django, AWS, research.
 - [Meal Fairy, LLC — Founder, 2018 (self-employed)](https://meal-fairy-ce3bf.web.app/): Founder for a plate to door food delivery startup in the greater Washington DC area. Skills: Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing.
