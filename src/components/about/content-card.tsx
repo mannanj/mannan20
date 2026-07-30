@@ -51,7 +51,7 @@ export function ContentCard({ data, applyMarginTop, nested, id, testId }: Conten
       {data.skills && <p className={`text-xs italic mt-0 leading-[1.6] m-0 ${nested ? '!text-black' : 'text-white'}`}>{data.skills}</p>}
 
       {data.description && (
-        <p className={`text-xs mt-0 leading-[1.6] m-0 ${nested ? '!text-black' : 'text-white'}`} dangerouslySetInnerHTML={{ __html: data.description }} />
+        <p className={`text-xs mt-0 m-0 ${nested ? '!text-black leading-[1.35]' : 'text-white leading-[1.6]'}`} dangerouslySetInnerHTML={{ __html: data.description }} />
       )}
 
       {data.additionalContent && (
