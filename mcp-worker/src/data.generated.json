@@ -9,7 +9,7 @@
       "institution": "George Mason University",
       "dates": "2009-2015",
       "degree": "Electrical Engineering, B.S.",
-      "description": "Hands-on engineer leading innovation in the university. Published robotics research, won pitch competitions, and delivered the university's first multi-disciplinary engineering project."
+      "description": "Hands-on engineer creating innovation in the university. Published robotics research, won pitch competitions, and completed the university's first multi-disciplinary engineering project."
     },
     "certifications": [
       {
@@ -178,8 +178,8 @@
     {
       "company": "Meal Fairy, LLC",
       "position": "Founder",
-      "dates": "2018 (self-employed)",
-      "skills": "Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing",
+      "dates": "2018",
+      "skills": "Javascript, Typescript, Angular, Firebase, Stripe",
       "description": "Founder for a plate to door food delivery startup in the greater Washington DC area.",
       "highlights": [],
       "link": "https://meal-fairy-ce3bf.web.app/"
@@ -188,7 +188,7 @@
       "company": "America's Electric Cooperatives",
       "position": "Software Engineer",
       "dates": "2014-2016 (contract)",
-      "skills": "Javascript, jQuery, Python, Python-Flask, research",
+      "skills": "Javascript, jQuery, Python, Python-Flask",
       "description": "Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and cutting edge research.",
       "highlights": [],
       "link": "https://www.electric.coop/"

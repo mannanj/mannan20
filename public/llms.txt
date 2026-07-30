@@ -40,8 +40,8 @@ This file is generated from the same data that powers the MCP server below (upda
 - [Publicis Sapient — Senior Software Engineer, 2022-2023](https://www.publicissapient.com/): Led implementation and oversight of developers to deliver features ahead of schedule and improve team velocity. Initiated and introduced major feature rewrites. Skills: Javascript, Typescript, Angular, ArcGIS, AWS, Java, leadership.
 - [Radiant (now Maxar) — Software Engineer II, 2018-2022](https://www.maxar.com/): Mid-level frontend engineer on mapping systems that informed national security needs. Champion and advocate for company culture. Skills: Javascript, Typescript, Angular, Cesium, LeafletJS, ArcGIS, AWS, culture.
 - [MITRE Corporation — Software Engineer I, 2016-2018](https://www.mitre.org/): Engineer, researcher and experimenter in national initiatives addressing cloud, cyber security, and tax system shortages. Skills: Javascript, Typescript, Angular, Python, Python Django, AWS, research.
-- [Meal Fairy, LLC — Founder, 2018 (self-employed)](https://meal-fairy-ce3bf.web.app/): Founder for a plate to door food delivery startup in the greater Washington DC area. Skills: Javascript, Typescript, Angular, Firebase, Stripe, startup, marketing.
-- [America's Electric Cooperatives — Software Engineer, 2014-2016 (contract)](https://www.electric.coop/): Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and cutting edge research. Skills: Javascript, jQuery, Python, Python-Flask, research.
+- [Meal Fairy, LLC — Founder, 2018](https://meal-fairy-ce3bf.web.app/): Founder for a plate to door food delivery startup in the greater Washington DC area. Skills: Javascript, Typescript, Angular, Firebase, Stripe.
+- [America's Electric Cooperatives — Software Engineer, 2014-2016 (contract)](https://www.electric.coop/): Fullstack engineer for America's cooperatives. Committed to stewarding sustainability in energy generation and cutting edge research. Skills: Javascript, jQuery, Python, Python-Flask.
 
 ## Extracurriculars
 
