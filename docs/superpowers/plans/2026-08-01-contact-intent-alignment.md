@@ -184,11 +184,11 @@ Stage only the Task 2 paths, inspect the full staged diff, run the pinned staged
 - Create: `src/lib/contact-request.ts`
 - Create: `src/lib/contact-request.test.ts`
 
-- [ ] **Step 1: Write failing Turnstile verifier tests**
+- [x] **Step 1: Write failing Turnstile verifier tests**
 
 Test blank tokens, missing worker URL, non-OK responses, invalid JSON, `{ success: false }`, thrown network errors, and `{ success: true }`. The verifier receives an injectable `fetcher` in tests and returns only `true` or `false`; it never returns provider details.
 
-- [ ] **Step 2: Write failing callback normalization tests**
+- [x] **Step 2: Write failing callback normalization tests**
 
 Cover:
 
@@ -201,13 +201,13 @@ Cover:
 - fixed email subject/body labels with visitor input only in the body;
 - CRLF normalized to LF so visitor text cannot create mail headers.
 
-- [ ] **Step 3: Run both tests and verify red**
+- [x] **Step 3: Run both tests and verify red**
 
 Run: `bun test src/lib/turnstile-verification.test.ts src/lib/contact-request.test.ts`
 
 Expected: FAIL because both modules are absent.
 
-- [ ] **Step 4: Implement reusable verification**
+- [x] **Step 4: Implement reusable verification**
 
 Create:
 
@@ -220,11 +220,11 @@ export async function verifyTurnstileToken(
 
 Read `NEXT_PUBLIC_TURNSTILE_WORKER_URL`, POST `{ token }`, apply a bounded abort timeout, and return `data.success === true`. Update `src/components/contact-form.tsx` to import this helper; reveal behavior and copy must remain unchanged.
 
-- [ ] **Step 5: Implement callback normalization and email construction**
+- [x] **Step 5: Implement callback normalization and email construction**
 
 Export `normalizeContactRequest(raw): ContactRequestPayload | null` and `buildContactRequestEmail(payload): string`. The email body begins `Portfolio callback request`, labels the contact and reason, then lists each completed turn under fixed `Visitor` and `AI reflection` labels. Do not export any function that accepts recipient/from/subject values from visitor data.
 
-- [ ] **Step 6: Run focused tests and typecheck**
+- [x] **Step 6: Run focused tests and typecheck**
 
 Run: `bun test src/lib/turnstile-verification.test.ts src/lib/contact-request.test.ts`
 
@@ -234,7 +234,7 @@ Run: `bun run typecheck`
 
 Expected: no Task 3 errors and no change to existing contact reveal behavior.
 
-- [ ] **Step 7: Commit Task 3**
+- [x] **Step 7: Commit Task 3**
 
 Stage only the five Task 3 paths, inspect the staged diff, run the pinned staged Gitleaks scan, and commit with `Validate consented contact requests`.
 
