@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import { Geist, EB_Garamond } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 const geistSans = Geist({
@@ -16,6 +14,7 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://mannan.is'),
   title: { default: 'Mannan Javid', template: '%s | Mannan Javid' },
   description: 'Frontend Product Engineer building AI-powered user experiences | React, TypeScript, Next.js | Health & Wellbeing',
   keywords: 'Mannan Javid, Software Engineer, Portfolio',
@@ -45,8 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${ebGaramond.variable}`}>
       <body>
         {children}
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

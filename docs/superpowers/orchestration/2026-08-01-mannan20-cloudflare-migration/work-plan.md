@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 5
+  revision: 6
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -35,17 +35,17 @@ milestones:
   - id: runtime-parity
     priority: 2
     depends_on: [architecture]
-    state: ACTIVE
+    state: PROVEN
     acceptance: An isolated branch builds and previews the current Next.js app through OpenNext/workerd; focused unit, route, asset, middleware, image, and Playwright parity checks pass without production traffic or state mutation.
-    evidence: null
+    evidence: docs/superpowers/orchestration/2026-08-01-mannan20-cloudflare-migration/runtime-parity-evidence.md plus implementation commit
     review_level: ONE_REVIEW
     review_route: OPENAI
-    review_status: NOT_STARTED
+    review_status: RECONCILED
     blocker: null
   - id: state-cutover
     priority: 3
     depends_on: [runtime-parity]
-    state: PENDING
+    state: ACTIVE
     acceptance: Leaderboard, feedback, view counters, magic tokens, and rate limits use Cloudflare-owned state with verified import or expiry, shadow comparison, idempotent writes, rollback coverage, and no live request requiring Upstash.
     evidence: null
     review_level: TWO_REVIEWS
@@ -105,14 +105,14 @@ milestones:
     blocker: User owns each separately authorized Plan 006 production gate; resume when its Gate E-H evidence is complete.
 
 next_task:
-  milestone: runtime-parity
-  id: create-isolated-migration-worktree
-  task: Commit only the reviewed migration plan/task pointer, create feat/cloudflare-full-migration from 2c43676 in an isolated worktree, and produce the Phase 0 route/configuration parity inventory without touching the protected dirty main worktree.
-  expected_evidence: Scoped plan commit; isolated worktree/branch reference; protected-state receipt; route-and-behavior matrix; complete preview/production configuration matrix.
-  workspace: /Users/manblack/Documents/mannan20 on main at 2c43676 with protected pre-existing changes; implementation worktree path must be distinct and clean.
-  attempt: 1
+  milestone: state-cutover
+  id: implement-and-import-portfolio-state
+  task: Finish the authenticated SQLite Durable Object state Worker, integrate the site through its service binding, import the small live Upstash dataset without writing payloads to disk, verify aggregate invariants, deploy state before callers, and remove active Upstash paths.
+  expected_evidence: State Worker tests and deployment version; redacted source/target counts and digests; one-time-token provenance tests; exact rate-limit tests; service-binding preview; zero active Upstash references outside disabled Jordan/archive migration tooling.
+  workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
+  attempt: 2
   last_failure: null
-  updated_at: "2026-08-01T20:52:00Z"
+  updated_at: "2026-08-01T22:58:00Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration

@@ -4,7 +4,7 @@ The canonical proof-carrying work plan is:
 
 `docs/superpowers/orchestration/2026-08-01-mannan20-cloudflare-migration/work-plan.md`
 
-Status: **ACTIVE — architecture strategy PROVEN; revision 5 records full execution authority and activates runtime parity.**
+Status: **ACTIVE — runtime parity PROVEN; revision 6 activates the Cloudflare state cutover.**
 
 The user's 2026-08-01 direction authorizes the complete migration, including the production,
 DNS, state, cleanup, commit, and push operations defined by the canonical plan. Plan 006 retains
