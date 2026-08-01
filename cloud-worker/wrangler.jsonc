@@ -21,7 +21,7 @@
   "r2_buckets": [
     {
       "binding": "FILES",
-      "bucket_name": "portfolio-files"
+      "bucket_name": "portfolio-private-files"
     },
     {
       "binding": "FILES_HANS",

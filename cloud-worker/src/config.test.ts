@@ -27,8 +27,8 @@ function binding(items: Binding[] | undefined, name: string): Binding | undefine
 }
 
 describe('storage boundary configuration', () => {
-  test('keeps the production general-files binding on the public bucket before cutover', () => {
-    expect(binding(config.r2_buckets, 'FILES')?.bucket_name).toBe('portfolio-files');
+  test('keeps the production general-files binding on the private bucket after cutover', () => {
+    expect(binding(config.r2_buckets, 'FILES')?.bucket_name).toBe('portfolio-private-files');
   });
 
   test('declares the authenticated file limiter in production', () => {

@@ -195,35 +195,35 @@ Every gate requires explicit authorization. Record timestamps, action names, cou
 
 ### Gate A — private bucket creation/configuration
 
-- [ ] Create `portfolio-private-files` in the source account/jurisdiction.
-- [ ] Confirm Public Development URL is **Disabled / Not allowed**.
-- [ ] Confirm Custom Domains is empty and no browser CORS is configured.
-- [ ] Capture a redacted configuration receipt containing only bucket name and access states. STOP if any public access exists.
+- [x] Create `portfolio-private-files` in the source account/jurisdiction.
+- [x] Confirm Public Development URL is **Disabled / Not allowed**.
+- [x] Confirm Custom Domains is empty and no browser CORS is configured.
+- [x] Capture a redacted configuration receipt containing only bucket name and access states. STOP if any public access exists.
 
 ### Gate B — source inventory and non-destructive copy
 
 - [ ] Freeze `general` admin uploads for the copy window, or record the start time and require an incremental second pass.
-- [ ] Inventory only `general/`: count, aggregate bytes, per-key size/type/custom metadata. Never select another prefix.
+- [x] Inventory only `general/`: count, aggregate bytes, per-key size/type/custom metadata. Never select another prefix.
 - [ ] Use Cloudflare Super Slurper: Cloudflare R2 source, source prefix `general/`, destination `portfolio-private-files`, **skip existing/no overwrite**. Any migration credential must be temporary, bucket-scoped, created/entered/stored only in Cloudflare, then revoked.
 - [ ] Run the incremental pass if writes were not frozen.
-- [ ] Compare destination count, bytes, per-key sizes/types/metadata. Do not require ETag equality because multipart migration may change it.
+- [x] Compare destination count, bytes, per-key sizes/types/metadata. Do not require ETag equality because multipart migration may change it.
 - [ ] STOP on missing, extra, truncated, overwritten, or metadata-divergent objects. Keep source untouched.
 
 ### Gate C — canary secret setup/deployment
 
-- [ ] Configure canary secrets through Cloudflare secret storage without exporting/printing values.
-- [ ] Deploy only `cloud-worker --env storage-canary`; record version ID.
-- [ ] Prove production Worker version/binding is unchanged.
+- [x] Configure canary secrets through Cloudflare secret storage without exporting/printing values.
+- [x] Deploy only `cloud-worker --env storage-canary`; record version ID.
+- [x] Prove production Worker version/binding is unchanged.
 
 ### Gate D — authenticated pre-switch verification
 
 Use one admin, one client with `general`, and one authenticated client without it:
 
-- [ ] Unauthenticated canary direct object requests return `404`.
-- [ ] Allowed admin/client can list and download every individual object and the complete ZIP.
-- [ ] No-grant client cannot list/retrieve; direct retrieval matches missing-key `404`.
-- [ ] GET/HEAD metadata matches; HEAD body is empty; other direct methods return `405` + `Allow`.
-- [ ] Security/no-store headers and rate limiting work.
+- [x] Unauthenticated canary direct object requests return `404`.
+- [x] Allowed admin/client can list and download every individual object and the complete ZIP.
+- [x] No-grant client cannot list/retrieve; direct retrieval matches missing-key `404`.
+- [x] GET/HEAD metadata matches; HEAD body is empty; other direct methods return `405` + `Allow`.
+- [x] Security/no-store headers and rate limiting work.
 - [ ] Compare source-production and destination-canary ZIP inventories by relative name, size, and SHA-256 for every file in a mode-0700 temporary directory; securely remove temporary copies afterward.
 - [ ] Externally confirm the private bucket has no functioning public/custom-domain URL and the unauthenticated canary route is `404`.
 - [ ] STOP on mismatch. Delete/disable only the canary and repair/re-copy destination; do not touch source.
