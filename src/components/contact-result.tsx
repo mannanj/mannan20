@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ContactResultData } from '@/lib/types';
 import { getPhoneLink, copyToClipboard } from '@/lib/utils';
 import { CopyIcon } from './icons/copy-icon';
@@ -16,6 +16,7 @@ interface ContactResultProps {
 export function ContactResult({ result }: ContactResultProps) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const emailRef = useRef<HTMLAnchorElement>(null);
 
   const handleCopyEmail = () => {
     copyToClipboard(result.email);
@@ -34,7 +35,7 @@ export function ContactResult({ result }: ContactResultProps) {
       <h3 className="m-0 text-base text-white">Contact Info</h3>
       <div className="flex items-center gap-3 text-[0.9375rem]">
         <span className="text-[#555] w-[50px] shrink-0">Email</span>
-        <a className="text-[#039be5] no-underline hover:underline flex-1" href={`mailto:${result.email}`}>{result.email}</a>
+        <a ref={emailRef} className="text-[#039be5] no-underline hover:underline flex-1" href={`mailto:${result.email}`}>{result.email}</a>
         <button
           className="bg-transparent !border-0 !shadow-none p-1 cursor-pointer text-[#555] hover:text-white transition-colors duration-200 !mt-0 focus:outline-none"
           onClick={handleCopyEmail}
@@ -54,7 +55,7 @@ export function ContactResult({ result }: ContactResultProps) {
           {copiedPhone ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
         </button>
       </div>
-      <ContactIntentForm />
+      <ContactIntentForm onContactDirectly={() => emailRef.current?.focus()} />
     </div>
   );
 }

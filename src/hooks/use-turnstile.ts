@@ -33,7 +33,12 @@ function loadScript(): Promise<void> {
   });
 }
 
-export function useTurnstile() {
+/**
+ * Mounts one independent Turnstile widget. The default action is retained for
+ * the existing contact-reveal flow; callers that represent a separate action
+ * should supply their own label so its proof cannot be confused with reveal.
+ */
+export function useTurnstile(action = 'turnstile-spin-v1') {
   const [token, setToken] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
@@ -51,7 +56,7 @@ export function useTurnstile() {
 
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: SITE_KEY,
-        action: 'turnstile-spin-v1',
+        action,
         appearance: 'interaction-only',
         callback: (t: string) => setToken(t),
         'expired-callback': () => setToken(null),
@@ -69,7 +74,7 @@ export function useTurnstile() {
       }
       setToken(null);
     };
-  }, []);
+  }, [action]);
 
   const reset = useCallback(() => {
     setToken(null);
