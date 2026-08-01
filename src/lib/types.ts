@@ -91,6 +91,19 @@ export interface ContactIntentTurn {
   aiReply: string;
 }
 
+export type ContactStreamFrame =
+  | { type: 'meta'; version: 1 }
+  | { type: 'text'; value: string }
+  | { type: 'done' }
+  | { type: 'error'; code: 'upstream' };
+
+export interface ContactRequestPayload {
+  contact: string;
+  reason: string;
+  transcript: ContactIntentTurn[];
+  turnstileToken: string;
+}
+
 export type GlassModalSize = 'small' | 'medium' | 'large';
 
 export interface GlassModalButton {
