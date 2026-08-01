@@ -1,14 +1,15 @@
 import { ImageResponse } from 'next/og';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
-export const runtime = 'edge';
+export const dynamic = 'force-static';
 export const alt = 'Download Resume — Mannan';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 export default async function OGImage() {
-  const bgImage = await fetch(
-    new URL('../../../public/og-bg.jpg', import.meta.url)
-  ).then((res) => res.arrayBuffer());
+  const bytes = await readFile(join(process.cwd(), 'public', 'og-bg.jpg'));
+  const bgImage = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
 
   return new ImageResponse(
     (
