@@ -8,7 +8,7 @@ Magic-link gated file sharing on Cloudflare. One production Worker, a named stor
 - D1 (SQLite) — `users`, `magic_tokens`, `folder_members`
 - R2 (four target buckets):
   - `portfolio-private-files` (production target for binding `FILES`) — authenticated `general/` objects; no public URL or custom domain
-  - `portfolio-files` (current production binding during the pre-cutover repository phase) — intentionally public media and documents, including the exact six-file MCP allowlist
+  - `portfolio-files` (public portfolio/MCP bucket; no authenticated `general/*` writes after cutover) — intentionally public media and documents, including the exact six-file MCP allowlist
   - `mannan-hans` (binding `FILES_HANS`) — Hans's portfolio deliverables
   - `deep-calm-weave-backups` (binding `FILES_BACKUPS`) — Hans's website backups, written by an external Supabase Edge Function + GitHub Actions; bucket-scoped R2 API token managed in the dashboard
 - Resend HTTP API for magic-link emails
@@ -147,6 +147,6 @@ wrangler d1 execute cloud --remote --command \
 
 ## Storage canary and cutover boundary
 
-The top-level `FILES` binding intentionally remains `portfolio-files` until production Gate E. The named `storage-canary` environment binds `FILES` to `portfolio-private-files` so authenticated listing, GET/HEAD, ZIP, ACL denial, and headers can be proven before the production binding changes.
+The top-level production `FILES` binding and the named `storage-canary` environment both target `portfolio-private-files`. The canary remains available through the rollback window for authenticated listing, GET/HEAD, ZIP, ACL-denial, and header verification; public media and MCP documents remain in `portfolio-files`.
 
 Wrangler environment secrets do not inherit. Before an explicitly authorized canary deploy, set `SESSION_SECRET`, `RESEND_API_KEY`, and `SITE_AUTH_EXCHANGE_SECRET` separately in Cloudflare secret storage for `storage-canary`; never place their values in JSONC, task logs, shell history, or repository files. Copy and deletion operations, canary deployment, the production switch, and cleanup are separately authorized gates in [plan 006](../plans/006-private-r2-storage-boundary.md).
