@@ -289,7 +289,7 @@ Stage only the callback route and any explicitly owned helper/test change, inspe
 - Replace: `src/components/contact-intent-form.tsx`
 - Modify only if required by verified focus behavior: `src/components/contact-result.tsx`
 
-- [ ] **Step 1: Preserve the existing terminal shell and define explicit states**
+- [x] **Step 1: Preserve the existing terminal shell and define explicit states**
 
 Use:
 
@@ -308,27 +308,27 @@ type IntentStatus =
 
 Keep the current 900 ms debounce, 3-second mobile ceiling, Enter/Shift+Enter behavior, IME handling, locked transcript, three-turn cap, and monospace visual language. Change the placeholder/examples and render the exact pre-typing AI disclosure. Locally append `Thanks.` immediately when a turn locks; do not wait for or accept a model-authored thank-you.
 
-- [ ] **Step 2: Implement the strict NDJSON client reader**
+- [x] **Step 2: Implement the strict NDJSON client reader**
 
 Read with a streaming `TextDecoder`, preserve split UTF-8, cap incomplete data at 8 KiB, require `meta` first, accept text until one terminal frame, cap displayed output at 480 characters, and reject unknown/duplicate/trailing frames. While waiting show `Looking for possible overlap…`; once text arrives switch to the non-live green reflection. A clean `done` commits the assistant reply to callback transcript history. Error/EOF before `done` keeps partial text as `Incomplete reflection`, excludes it from transcript, preserves the user turn for retry, and announces `Couldn't interpret that just now.` Retrying clears partial output first.
 
-- [ ] **Step 3: Enforce the best-effort question UI rule**
+- [x] **Step 3: Enforce the best-effort question UI rule**
 
 Track whether a completed visible assistant turn contains `?`. If a later streamed response contains another question, treat it as an interpretation error before committing that response. Keep the server history field bounded and derived only from completed visible turns. Do not describe this as tamper-proof.
 
-- [ ] **Step 4: Add distinct direct and callback choices**
+- [x] **Step 4: Add distinct direct and callback choices**
 
 After the first user turn—even if interpretation fails—show `Contact Mannan directly` without an API call and `Ask Mannan to contact me`. The latter expands visible labelled contact/reason inputs, prefilled editable reason, exact transcript disclosure, and a second `useTurnstile` instance. Extend `useTurnstile` only enough to support an optional action label and expose its token/reset; existing reveal callers retain current defaults.
 
-- [ ] **Step 5: Implement accessible validation and callback submission**
+- [x] **Step 5: Implement accessible validation and callback submission**
 
 Validate contact/reason locally with the same bounds, connect field errors through `aria-describedby`, and focus the first error. Disable final submission until a fresh callback Turnstile token exists. POST exactly `{ contact, reason, transcript, turnstileToken }`. On 403, preserve fields, reset the widget, and announce `Human verification expired. Please verify again.` On provider acceptance show `Submitted for delivery to Mannan.` On other failure preserve fields and show `Couldn't submit this. You can retry or contact Mannan directly above.` Prevent duplicate submit while pending or after success.
 
-- [ ] **Step 6: Keep screen-reader output quiet and lifecycle safe**
+- [x] **Step 6: Keep screen-reader output quiet and lifecycle safe**
 
 Use one polite live region for state transitions only; streamed token/sentence text is not live. Abort interpretation/callback requests on unmount, ignore late state updates, preserve keyboard paths, and ensure reopening the modal resets the optional interaction as before.
 
-- [ ] **Step 7: Run typecheck and all focused units**
+- [x] **Step 7: Run typecheck and all focused units**
 
 Run:
 
@@ -339,7 +339,7 @@ bun test src/lib/contact-intent-logic.test.ts src/lib/contact-request.test.ts sr
 
 Expected: PASS.
 
-- [ ] **Step 8: Commit Task 5**
+- [x] **Step 8: Commit Task 5**
 
 Stage only the client-owned paths, inspect the staged diff, run the pinned staged Gitleaks scan, and commit with `Build truthful contact alignment flow`.
 

@@ -1,7 +1,7 @@
 ---
 project:
   id: contact-intent-alignment
-  revision: 6
+  revision: 7
   status: ACTIVE
   final_goal: Deliver an honest, progressive contact-intent experience that surfaces possible mutual alignment and leaves all contact choices with the visitor.
   complete_when: [design, implementation, verification, final-check]
@@ -61,13 +61,13 @@ milestones:
 
 next_task:
   milestone: implementation
-  id: build-client-state-machine
-  task: Execute Task 5 of the accepted implementation plan by replacing the contact intent client with the truthful streamed state machine, explicit contact choices, accessible callback form, and lifecycle-safe request handling.
-  expected_evidence: Focused unit tests and typecheck pass, browser-facing behavior matches the accepted state/copy contract, the diff contains only Task 5's owned files, and the result receives independent review before commit.
-  workspace: isolated contact-intent-alignment worktree on feat/contact-intent-alignment at 7619026
+  id: prove-browser-contract
+  task: Execute Task 6 of the accepted implementation plan by replacing the focused Playwright mocks/assertions for framed streaming, callback consent, accessibility, lifecycle, adversarial, and mobile behavior, then inspect visual evidence.
+  expected_evidence: Focused Playwright suites pass without real provider calls, required desktop/mobile states are visually inspected, staged artifacts contain no private/operational data, and the result receives independent review before commit.
+  workspace: isolated contact-intent-alignment worktree on feat/contact-intent-alignment at 07ab701
   attempt: 1
   last_failure: null
-  updated_at: 2026-08-01T21:16:21Z
+  updated_at: 2026-08-01T21:32:00Z
 ---
 
 # Contact Intent Alignment Work Plan
@@ -85,3 +85,4 @@ Canonical plan for [task 281](../tasks/task-281.md). Live repository and verific
 - Task 2 streaming route committed as `e061f19`; 34 focused tests and 80 assertions, typecheck, diff check, staged Gitleaks, and independent GPT-5.6 Terra review passed.
 - Task 3 callback/Turnstile validation committed as `8f6f975`; 11 focused tests, typecheck, diff check, staged Gitleaks, and independent GPT-5.6 Sol security review passed.
 - Task 4 callback route committed as `7619026`; 20 focused tests and 62 assertions, typecheck, diff check, staged Gitleaks, and independent GPT-5.6 Sol revise/fix/approve review passed.
+- Task 5 client state machine committed as `07ab701`; typecheck, 38 focused tests and 94 assertions, diff check, staged Gitleaks, and independent GPT-5.6 Sol revise/fix/approve review passed.
