@@ -1,8 +1,8 @@
 ---
 project:
   id: contact-intent-alignment
-  revision: 8
-  status: ACTIVE
+  revision: 9
+  status: PROVEN
   final_goal: Deliver an honest, progressive contact-intent experience that surfaces possible mutual alignment and leaves all contact choices with the visitor.
   complete_when: [design, implementation, verification, final-check]
 
@@ -31,43 +31,35 @@ milestones:
   - id: implementation
     priority: 2
     depends_on: [design]
-    state: ACTIVE
+    state: PROVEN
     acceptance: Model migration, progressive streamed interpretation, truthful state machine, and explicit callback path are implemented with focused tests.
-    evidence: null
+    evidence: Tasks 1-6 plus review corrections are committed through 6216848; the final protocol accepts only exact DeepSeek decision codes and maps them to fixed reviewed reflections, while callback submission requires explicit consent and a fresh proof.
     review_level: ONE_REVIEW
     review_route: OPENAI
-    review_status: NOT_STARTED
+    review_status: RECONCILED
     blocker: null
   - id: verification
     priority: 3
     depends_on: [implementation]
-    state: PENDING
+    state: PROVEN
     acceptance: Unit tests, contact e2e, typecheck, relevant build, secret checks, and desktop/mobile visual checks pass with reconciled independent review.
-    evidence: null
+    evidence: Fresh final gates passed with typecheck, 156 unit tests and 397 assertions, production build, 45 focused Playwright tests, desktop/mobile visual inspection, staged and history Gitleaks scans, and independent GPT-5.6 Sol review after all material findings were fixed.
     review_level: ONE_REVIEW
     review_route: OPENAI
-    review_status: NOT_STARTED
+    review_status: RECONCILED
     blocker: null
   - id: final-check
     priority: 4
     depends_on: [verification]
-    state: PENDING
+    state: PROVEN
     acceptance: Final diff inspection finds no false delivery claims, incomplete legacy behavior, leaked data, or unresolved material findings.
-    evidence: null
+    evidence: Full scoped diff inspection confirmed the unrelated validate-contact route is unchanged, only the V4 Flash slug appears in the new intent path, generated public data remains untracked, credential files are ignored, mail headers are server-owned, and provider prose cannot reach the visitor.
     review_level: NONE
     review_route: NONE
-    review_status: NOT_STARTED
+    review_status: NOT_REQUIRED
     blocker: null
 
-next_task:
-  milestone: implementation
-  id: final-verification
-  task: Execute Task 7 of the accepted implementation plan: broad local gates, scoped privacy/diff proof, independent committed-diff review, final completion checks, and durable closeout.
-  expected_evidence: Unit, browser, typecheck, build, secret/privacy, ignore, model, and scoped-diff gates pass or have an exact documented environment-only substitute; independent findings are reconciled before milestones become PROVEN.
-  workspace: isolated contact-intent-alignment worktree on feat/contact-intent-alignment at fe842d3
-  attempt: 1
-  last_failure: null
-  updated_at: 2026-08-01T22:09:59Z
+next_task: null
 ---
 
 # Contact Intent Alignment Work Plan
@@ -87,3 +79,5 @@ Canonical plan for [task 281](../tasks/task-281.md). Live repository and verific
 - Task 4 callback route committed as `7619026`; 20 focused tests and 62 assertions, typecheck, diff check, staged Gitleaks, and independent GPT-5.6 Sol revise/fix/approve review passed.
 - Task 5 client state machine committed as `07ab701`; typecheck, 38 focused tests and 94 assertions, diff check, staged Gitleaks, and independent GPT-5.6 Sol revise/fix/approve review passed.
 - Task 6 modal reachability and browser proof committed as `11320ce` and `fe842d3`; 43 focused Playwright tests, typecheck, diff checks, staged Gitleaks, desktop/mobile visual inspection, and independent GPT-5.6 Sol revise/fix/approve review passed with provider mocks fully offline.
+- Final review corrections committed as `6216848`; callback proof reuse, callback/debounce and IME races, persistent not-sent context, and unrestricted provider prose were resolved. The final independent GPT-5.6 Sol review approved the enum-to-fixed-reflection protocol.
+- Final completion evidence: typecheck passed; 156 unit tests with 397 assertions passed; production build passed; 45 focused Playwright tests passed; the 14-commit feature history passed Gitleaks; scoped privacy/model/ignore/generated-data checks passed.

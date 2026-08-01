@@ -1,6 +1,6 @@
 ### Task 281: Make the contact-intent experience honest, useful, and visitor-directed
 
-Status: active
+Status: proven
 
 #### User intent
 
@@ -45,3 +45,11 @@ Mannan will not be invited to follow up when no reason is given, unless the visi
 
 - Design: `docs/superpowers/specs/2026-08-01-contact-intent-alignment-design.md`
 - Work plan: `plans/007-contact-intent-alignment.md`
+
+#### Completion evidence
+
+- DeepSeek V4 Flash returns one exact internal decision code; the server streams only fixed, reviewed reflection templates, so raw provider prose cannot claim delivery or a reply.
+- The callback path requires explicit submission, bounded contact/reason/transcript data, fresh single-use Turnstile verification, server-owned mail headers, and truthful provider-acceptance/failure wording.
+- Fresh final verification passed: typecheck, 156 unit tests with 397 assertions, production build, and 45 focused Playwright tests, including desktop/mobile, accessibility, streaming, consent, retry, IME, and lifecycle cases.
+- Scoped diff, credential-ignore, generated-data, model-slug, full-history Gitleaks, and privacy checks passed; the unrelated contact-validation route remains unchanged.
+- Independent GPT-5.6 Sol review found and verified fixes for every material issue, then approved the final implementation.
