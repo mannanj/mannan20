@@ -40,7 +40,7 @@
 - Replace: `src/lib/contact-intent-logic.ts`
 - Replace: `src/lib/contact-intent-logic.test.ts`
 
-- [ ] **Step 1: Write failing tests for the exact protocol**
+- [x] **Step 1: Write failing tests for the exact protocol**
 
 Replace the old two-sentence/120-character assumptions with tests for:
 
@@ -74,13 +74,13 @@ export interface ContactRequestPayload {
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify red**
+- [x] **Step 2: Run the focused test and verify red**
 
 Run: `bun test src/lib/contact-intent-logic.test.ts`
 
 Expected: FAIL because the new sentence/protocol exports do not exist.
 
-- [ ] **Step 3: Implement the pure policy functions**
+- [x] **Step 3: Implement the pure policy functions**
 
 Export these constants and functions from `src/lib/contact-intent-logic.ts`:
 
@@ -108,7 +108,7 @@ export function parseFrame(line: string): ContactStreamFrame | null;
 
 Sentence splitting recognizes `.`, `!`, or `?` followed by whitespace/end and keeps any unfinished suffix. If upstream ends with a non-empty suffix and room remains, trim it and append `.` before validation. A sentence is rejected if it would exceed the remaining limit, contains a question when `questionUsed` is true, or causes the response to contain more than one `?`. Error frames expose only `upstream`.
 
-- [ ] **Step 4: Run tests and inspect legacy references**
+- [x] **Step 4: Run tests and inspect legacy references**
 
 Run: `bun test src/lib/contact-intent-logic.test.ts`
 
@@ -118,7 +118,7 @@ Run: `rg -n "alreadyAskedQuestion|normalizeResult|parseContentFallback|MAX_RESPO
 
 Expected: remaining matches are confined to route/component/tests scheduled below.
 
-- [ ] **Step 5: Commit Task 1 after the required staged scan**
+- [x] **Step 5: Commit Task 1 after the required staged scan**
 
 Stage only the three Task 1 files, inspect `git diff --cached --name-status` and `git diff --cached`, run the pinned Gitleaks binary against the staged feature-worktree index, then commit with `Refactor contact intent stream protocol`.
 
@@ -129,21 +129,21 @@ Stage only the three Task 1 files, inspect `git diff --cached --name-status` and
 - Replace: `src/app/api/contact-intent/route.ts`
 - Test: `src/lib/contact-intent-logic.test.ts`
 
-- [ ] **Step 1: Add failing SSE-normalization fixtures**
+- [x] **Step 1: Add failing SSE-normalization fixtures**
 
 Add pure fixtures covering OpenRouter keep-alive comments, `data: [DONE]`, content deltas split across chunks, a top-level mid-stream `error`, malformed JSON, `finish_reason: "error"`, and a normal stop. The parser must ignore comments, extract only `choices[0].delta.content`, and never forward reasoning or provider error text. Add a `buildOpenRouterRequest` assertion proving the exact model is `deepseek/deepseek-v4-flash`, `stream` is `true`, reasoning is disabled, sanitized history is bounded, and the prompt changes after a prior assistant question.
 
-- [ ] **Step 2: Run the focused test and verify red**
+- [x] **Step 2: Run the focused test and verify red**
 
 Run: `bun test src/lib/contact-intent-logic.test.ts`
 
 Expected: FAIL until `consumeOpenRouterSseLine` or the equivalent pure parser exists.
 
-- [ ] **Step 3: Add independent reflection and callback rate limits**
+- [x] **Step 3: Add independent reflection and callback rate limits**
 
 In `src/lib/rate-limit.ts`, follow the existing Upstash/memory fallback pattern. Add `limitContactReflection(ip)` at 10/hour and `limitContactRequest(ip)` at 4/hour with distinct prefixes and memory keys. Do not remove or change existing limiter behavior.
 
-- [ ] **Step 4: Implement the streaming route**
+- [x] **Step 4: Implement the streaming route**
 
 `POST /api/contact-intent` must:
 
@@ -161,7 +161,7 @@ In `src/lib/rate-limit.ts`, follow the existing Upstash/memory fallback pattern.
 
 Do not log prompts, history, deltas, provider response bodies, or generated text. The implementation follows the official OpenRouter streaming contract: SSE comments are ignorable, `delta.content` carries text, and mid-stream errors arrive in-band.
 
-- [ ] **Step 5: Verify route compilation and focused tests**
+- [x] **Step 5: Verify route compilation and focused tests**
 
 Run: `bun test src/lib/contact-intent-logic.test.ts`
 
@@ -171,7 +171,7 @@ Run: `bun run typecheck`
 
 Expected: no errors in the logic, limiter, or route. Temporary component type errors caused by the changed response contract are allowed only until Task 4.
 
-- [ ] **Step 6: Commit Task 2**
+- [x] **Step 6: Commit Task 2**
 
 Stage only the Task 2 paths, inspect the full staged diff, run the pinned staged Gitleaks scan, and commit with `Stream honest contact alignment responses`.
 
