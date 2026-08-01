@@ -11,6 +11,24 @@ export interface ContactIntentHistoryEntry {
   content: string;
 }
 
+export interface OpenRouterRequestMessage {
+  role: 'system' | ContactIntentHistoryEntry['role'];
+  content: string;
+}
+
+export interface OpenRouterRequest {
+  model: 'deepseek/deepseek-v4-flash';
+  stream: true;
+  reasoning: { enabled: false };
+  messages: OpenRouterRequestMessage[];
+}
+
+export type OpenRouterSseEvent =
+  | { type: 'ignore' }
+  | { type: 'content'; value: string }
+  | { type: 'done' }
+  | { type: 'error' };
+
 const encoder = new TextEncoder();
 
 function characterLength(value: string): number {
@@ -41,6 +59,69 @@ export function sanitizeHistory(raw: unknown): ContactIntentHistoryEntry[] {
 
 export function historyUsedQuestion(history: ContactIntentHistoryEntry[]): boolean {
   return history.some(entry => entry.role === 'assistant' && entry.content.includes('?'));
+}
+
+const SYSTEM_PROMPT = `You are a calibrated alignment mirror for a visitor exploring possible mutual interest with Mannan Javid through his portfolio. Produce one concise, useful contribution: reflect a specific plausible overlap only when the conversation supports it, offer one concrete next step that preserves the visitor's choice, or ask one brief clarifying question only when the idea is too vague to act on.
+
+Do not thank the visitor. Do not speak as Mannan. Do not claim delivery, persistence, a reply, or unsupported fit. Do not manufacture enthusiasm, pressure the visitor, classify them, or ask for contact details.`;
+
+const QUESTION_ALLOWED_PROMPT = 'You may use at most one question mark in this response, and only for one genuinely useful clarifying question.';
+const QUESTION_USED_PROMPT = 'Do not ask a question or use a question mark; an assistant question already appears in this conversation.';
+
+export function buildOpenRouterRequest(message: string, rawHistory: unknown): OpenRouterRequest {
+  const history = sanitizeHistory(rawHistory);
+  const questionUsed = historyUsedQuestion(history);
+  return {
+    model: 'deepseek/deepseek-v4-flash',
+    stream: true,
+    reasoning: { enabled: false },
+    messages: [
+      { role: 'system', content: `${SYSTEM_PROMPT}\n\n${questionUsed ? QUESTION_USED_PROMPT : QUESTION_ALLOWED_PROMPT}` },
+      ...history,
+      { role: 'user', content: message },
+    ],
+  };
+}
+
+export function consumeOpenRouterSseLine(line: string): OpenRouterSseEvent {
+  const normalized = line.endsWith('\r') ? line.slice(0, -1) : line;
+  if (!normalized || normalized.startsWith(':') || !normalized.startsWith('data:')) {
+    return { type: 'ignore' };
+  }
+
+  const data = normalized.slice('data:'.length).trimStart();
+  if (data === '[DONE]') return { type: 'done' };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return { type: 'error' };
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    return { type: 'error' };
+  }
+
+  const record = parsed as Record<string, unknown>;
+  if ('error' in record) return { type: 'error' };
+  if (!Array.isArray(record.choices)) {
+    return { type: 'error' };
+  }
+  if (record.choices.length === 0) return { type: 'ignore' };
+
+  const choice = record.choices[0];
+  if (typeof choice !== 'object' || choice === null || Array.isArray(choice)) {
+    return { type: 'error' };
+  }
+  const choiceRecord = choice as Record<string, unknown>;
+  if (choiceRecord.finish_reason === 'error') return { type: 'error' };
+
+  const delta = choiceRecord.delta;
+  if (typeof delta !== 'object' || delta === null || Array.isArray(delta)) {
+    return { type: 'ignore' };
+  }
+  const content = (delta as Record<string, unknown>).content;
+  return typeof content === 'string' ? { type: 'content', value: content } : { type: 'ignore' };
 }
 
 export function validateModelSentence(

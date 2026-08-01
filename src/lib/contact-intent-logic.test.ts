@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import type { ContactStreamFrame } from './types';
 import {
+  buildOpenRouterRequest,
+  consumeOpenRouterSseLine,
   MAX_FRAME_BYTES,
   MAX_HISTORY_ENTRIES,
   MAX_MESSAGE_LENGTH,
@@ -207,5 +209,59 @@ describe('finalizeUpstreamSuffix', () => {
     expect(finalizeUpstreamSuffix('Still unfinished', 5, false, 0)).toBeNull();
     expect(finalizeUpstreamSuffix('What now?', 30, true, 0)).toBeNull();
     expect(finalizeUpstreamSuffix('What now?', 30, false, 1)).toBeNull();
+  });
+});
+
+describe('OpenRouter SSE normalization', () => {
+  test('ignores keep-alive comments and normal stop events', () => {
+    expect(consumeOpenRouterSseLine(': OPENROUTER PROCESSING')).toEqual({ type: 'ignore' });
+    expect(consumeOpenRouterSseLine('data: {"choices":[],"usage":{"total_tokens":12}}')).toEqual({ type: 'ignore' });
+    expect(consumeOpenRouterSseLine('data: {"choices":[{"delta":{"role":"assistant"},"finish_reason":null}]}')).toEqual({ type: 'ignore' });
+    expect(consumeOpenRouterSseLine('data: {"choices":[{"delta":{},"finish_reason":"stop"}]}')).toEqual({ type: 'ignore' });
+  });
+
+  test('extracts only text content from a delta after chunks are reassembled into lines', () => {
+    const chunks = [
+      'data: {"choices":[{"delta":{"content":"First',
+      ' sentence."},"finish_reason":null}]}\n',
+    ];
+    const line = chunks.join('').trimEnd();
+    expect(consumeOpenRouterSseLine(line)).toEqual({ type: 'content', value: 'First sentence.' });
+    expect(consumeOpenRouterSseLine('data: {"choices":[{"delta":{"reasoning":"hidden","content":"Visible."}}]}')).toEqual({
+      type: 'content',
+      value: 'Visible.',
+    });
+  });
+
+  test('recognizes a clean completion marker without emitting provider text', () => {
+    expect(consumeOpenRouterSseLine('data: [DONE]')).toEqual({ type: 'done' });
+  });
+
+  test('fails closed for in-band provider errors, error finishes, and malformed JSON', () => {
+    expect(consumeOpenRouterSseLine('data: {"error":{"message":"provider detail"}}')).toEqual({ type: 'error' });
+    expect(consumeOpenRouterSseLine('data: {"choices":[{"delta":{},"finish_reason":"error"}]}')).toEqual({ type: 'error' });
+    expect(consumeOpenRouterSseLine('data: {not-json}')).toEqual({ type: 'error' });
+  });
+});
+
+describe('buildOpenRouterRequest', () => {
+  test('uses the exact low-latency request with bounded history and a no-second-question prompt', () => {
+    const rawHistory = Array.from({ length: MAX_HISTORY_ENTRIES + 2 }, (_, index) => ({
+      role: index % 2 === 0 ? 'user' : 'assistant',
+      content: index % 2 === 0
+        ? 'u'.repeat(MAX_MESSAGE_LENGTH + 1)
+        : index === 3 ? 'Have you considered the audience?' : 'a'.repeat(MAX_MODEL_TEXT_LENGTH + 1),
+    }));
+
+    const request = buildOpenRouterRequest('A possible collaboration.', rawHistory);
+
+    expect(request.model).toBe('deepseek/deepseek-v4-flash');
+    expect(request.stream).toBe(true);
+    expect(request.reasoning).toEqual({ enabled: false });
+    expect(request).not.toHaveProperty('tools');
+    expect(request.messages).toHaveLength(MAX_HISTORY_ENTRIES + 2);
+    expect(request.messages.slice(1, -1)).toEqual(sanitizeHistory(rawHistory));
+    expect(request.messages.at(-1)).toEqual({ role: 'user', content: 'A possible collaboration.' });
+    expect(request.messages[0].content).toContain('Do not ask a question');
   });
 });

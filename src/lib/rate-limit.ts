@@ -10,6 +10,9 @@ const FEEDBACK_WINDOW_SECONDS = 600;
 const MAX_FEEDBACK_PER_WINDOW = 4;
 const GARDEN_VIEW_WINDOW_SECONDS = 60;
 const MAX_GARDEN_VIEWS_PER_WINDOW = 20;
+const CONTACT_WINDOW_SECONDS = 3600;
+const MAX_CONTACT_REFLECTIONS_PER_WINDOW = 10;
+const MAX_CONTACT_REQUESTS_PER_WINDOW = 4;
 const MEMORY_KEYS_MAX = 5000;
 
 export interface LimitResult {
@@ -71,6 +74,26 @@ const gardenViewUpstash =
           `${GARDEN_VIEW_WINDOW_SECONDS} s`,
         ),
         prefix: 'ratelimit:garden-view',
+        analytics: false,
+      })
+    : null;
+
+const contactReflectionUpstash =
+  url && token
+    ? new Ratelimit({
+        redis: new Redis({ url, token }),
+        limiter: Ratelimit.slidingWindow(MAX_CONTACT_REFLECTIONS_PER_WINDOW, `${CONTACT_WINDOW_SECONDS} s`),
+        prefix: 'ratelimit:contact-reflection',
+        analytics: false,
+      })
+    : null;
+
+const contactRequestUpstash =
+  url && token
+    ? new Ratelimit({
+        redis: new Redis({ url, token }),
+        limiter: Ratelimit.slidingWindow(MAX_CONTACT_REQUESTS_PER_WINDOW, `${CONTACT_WINDOW_SECONDS} s`),
+        prefix: 'ratelimit:contact-request',
         analytics: false,
       })
     : null;
@@ -152,5 +175,29 @@ export async function limitFeedback(ip: string): Promise<LimitResult> {
     return { success, limit, remaining, reset };
   } catch {
     return memoryLimit(`fb:${ip}`, MAX_FEEDBACK_PER_WINDOW, FEEDBACK_WINDOW_SECONDS);
+  }
+}
+
+export async function limitContactReflection(ip: string): Promise<LimitResult> {
+  if (!contactReflectionUpstash) {
+    return memoryLimit(`contact-reflection:${ip}`, MAX_CONTACT_REFLECTIONS_PER_WINDOW, CONTACT_WINDOW_SECONDS);
+  }
+  try {
+    const { success, limit, remaining, reset } = await contactReflectionUpstash.limit(ip);
+    return { success, limit, remaining, reset };
+  } catch {
+    return memoryLimit(`contact-reflection:${ip}`, MAX_CONTACT_REFLECTIONS_PER_WINDOW, CONTACT_WINDOW_SECONDS);
+  }
+}
+
+export async function limitContactRequest(ip: string): Promise<LimitResult> {
+  if (!contactRequestUpstash) {
+    return memoryLimit(`contact-request:${ip}`, MAX_CONTACT_REQUESTS_PER_WINDOW, CONTACT_WINDOW_SECONDS);
+  }
+  try {
+    const { success, limit, remaining, reset } = await contactRequestUpstash.limit(ip);
+    return { success, limit, remaining, reset };
+  } catch {
+    return memoryLimit(`contact-request:${ip}`, MAX_CONTACT_REQUESTS_PER_WINDOW, CONTACT_WINDOW_SECONDS);
   }
 }
