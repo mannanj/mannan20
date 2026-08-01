@@ -10,6 +10,8 @@ export interface TurnstileStubOptions {
   verifyResult?: { success: boolean };
   /** One token per widget render. Omit an entry to leave that widget unverified. */
   tokens?: Array<string | null>;
+  /** Optional single-use proofs issued when an existing widget is reset. */
+  resetTokens?: Array<string | null>;
 }
 
 const explicitlyStubbedTurnstilePages = new WeakSet<Page>();
@@ -89,6 +91,7 @@ export function stubTurnstile(page: Page, options: TurnstileStubOptions | { succ
   const normalized = 'success' in options ? { verifyResult: options } : options;
   const verifyResult = normalized.verifyResult ?? { success: true };
   const tokens = normalized.tokens ?? ['e2e-reveal-token', 'e2e-callback-token'];
+  const resetTokens = normalized.resetTokens ?? [];
   return Promise.all([
     page.route('**/turnstile/v0/api.js', (route) =>
       route.fulfill({
@@ -96,15 +99,24 @@ export function stubTurnstile(page: Page, options: TurnstileStubOptions | { succ
         contentType: 'application/javascript',
         body: `(() => {
   const tokens = ${JSON.stringify(tokens)};
+  const resetTokens = ${JSON.stringify(resetTokens)};
   let renderCount = 0;
+  let resetCount = 0;
+  const widgets = new Map();
   window.turnstile = {
     render: (container, options) => {
       const token = tokens[renderCount++];
+      const widgetId = 'e2e-fake-widget-' + renderCount;
+      widgets.set(widgetId, options);
       if (token) setTimeout(() => options.callback(token), 10);
-      return 'e2e-fake-widget-' + renderCount;
+      return widgetId;
     },
-    reset: () => {},
-    remove: () => {},
+    reset: (widgetId) => {
+      const token = resetTokens[resetCount++];
+      const options = widgets.get(widgetId);
+      if (token && options) setTimeout(() => options.callback(token), 10);
+    },
+    remove: (widgetId) => { widgets.delete(widgetId); },
   };
 })();`,
       })

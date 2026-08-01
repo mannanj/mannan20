@@ -28,6 +28,22 @@ test.describe('callback request consent and verification', () => {
     expect(callbackRequests).toEqual([]);
   });
 
+  test('opening callback cancels a pending interpretation and preserves that draft as the reason', async ({ page }) => {
+    const intentRequests: unknown[] = [];
+    await openRevealedModal(page);
+    await mockIntentApi(page, successfulReflection('A useful next step could be a short note.'), intentRequests);
+    await page.getByTestId('contact-intent-textarea').fill('A completed first thought');
+    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1);
+
+    await page.getByTestId('contact-intent-textarea').fill('A newer callback reason that should not be interpreted');
+    await openCallback(page);
+    await expect(page.getByLabel('Reason')).toHaveValue('A newer callback reason that should not be interpreted');
+    await page.waitForTimeout(1_100);
+
+    await expect(page.getByLabel('Contact')).toBeVisible();
+    expect(intentRequests).toHaveLength(1);
+  });
+
   test('requires a fresh callback proof and sends exactly the completed transcript', async ({ page }) => {
     const callbackRequests: unknown[] = [];
     await openRevealedModal(page, { tokens: ['reveal-token', null] });
@@ -88,7 +104,10 @@ test.describe('callback request consent and verification', () => {
 
   test('shows safe provider failure copy and successful delivery acceptance', async ({ page }) => {
     const callbackRequests: unknown[] = [];
-    await openRevealedModal(page, { tokens: ['reveal-token', 'callback-token'] });
+    await openRevealedModal(page, {
+      tokens: ['reveal-token', 'callback-token'],
+      resetTokens: ['fresh-callback-token'],
+    });
     await mockIntentApi(page, successfulReflection('A brief overview could establish useful context.'));
     await mockCallbackApi(page, 503, { error: 'submission-unavailable' }, callbackRequests);
     await page.getByTestId('contact-intent-textarea').fill('A project discussion');
@@ -98,6 +117,7 @@ test.describe('callback request consent and verification', () => {
     await page.getByLabel('Reason').fill('Please contact me about a scoped project discussion.');
     await page.getByRole('button', { name: 'Send to Mannan' }).click();
     await expect(page.getByTestId('contact-callback-error')).toHaveText("Couldn't submit this. You can retry or contact Mannan directly above.");
+    await expect(page.getByRole('button', { name: 'Send to Mannan' })).toBeEnabled();
     expect(callbackRequests).toHaveLength(1);
 
     await page.unroute('**/api/contact-request');
@@ -105,6 +125,10 @@ test.describe('callback request consent and verification', () => {
     await page.getByRole('button', { name: 'Send to Mannan' }).click();
     await expect(page.getByTestId('contact-callback-success')).toHaveText('Submitted for delivery to Mannan.');
     expect(callbackRequests).toHaveLength(2);
+    expect(callbackRequests).toMatchObject([
+      { turnstileToken: 'callback-token' },
+      { turnstileToken: 'fresh-callback-token' },
+    ]);
   });
 
   test('prevents duplicate submission while a callback request is pending', async ({ page }) => {

@@ -5,6 +5,7 @@ export const MAX_MODEL_TEXT_LENGTH = 480;
 export const MAX_HISTORY_ENTRIES = 6;
 export const MAX_FRAME_BYTES = 4096;
 export const MAX_STREAM_BUFFER_BYTES = 8192;
+export const MAX_DECISION_LENGTH = 32;
 
 export interface ContactIntentHistoryEntry {
   role: 'user' | 'assistant';
@@ -20,6 +21,8 @@ export interface OpenRouterRequest {
   model: 'deepseek/deepseek-v4-flash';
   stream: true;
   reasoning: { enabled: false };
+  temperature: 0;
+  max_tokens: 12;
   messages: OpenRouterRequestMessage[];
 }
 
@@ -37,6 +40,41 @@ function characterLength(value: string): number {
 
 function truncateCharacters(value: string, limit: number): string {
   return [...value].slice(0, limit).join('');
+}
+
+export const ALIGNMENT_REFLECTIONS = {
+  'specific-overlap': [
+    'A possible overlap is visible. ',
+    'A short direct note with the desired outcome and constraints could make it easier to assess.',
+  ],
+  'concrete-next-step': [
+    'There is enough substance for a concrete next step. ',
+    'One example, desired outcome, or constraint could make the possible overlap clearer.',
+  ],
+  'needs-context': [
+    'There is not enough detail to assess a possible overlap yet. ',
+    'One concrete outcome or constraint could make the intent clearer.',
+  ],
+  'clarify-outcome': ['What outcome would make this worth exploring?'],
+} as const;
+
+export type AlignmentDecision = keyof typeof ALIGNMENT_REFLECTIONS;
+
+const SAFE_REFLECTIONS = Object.values(ALIGNMENT_REFLECTIONS).map((chunks) => chunks.join(''));
+
+export function resolveAlignmentDecision(raw: string, questionUsed: boolean): readonly string[] | null {
+  const decision = raw.trim() as AlignmentDecision;
+  if (!Object.prototype.hasOwnProperty.call(ALIGNMENT_REFLECTIONS, decision)) return null;
+  if (questionUsed && decision === 'clarify-outcome') return null;
+  return ALIGNMENT_REFLECTIONS[decision];
+}
+
+export function isSafeReflectionPrefix(value: string): boolean {
+  return Boolean(value) && SAFE_REFLECTIONS.some((reflection) => reflection.startsWith(value));
+}
+
+export function isSafeReflection(value: string): boolean {
+  return SAFE_REFLECTIONS.includes(value);
 }
 
 export function sanitizeHistory(raw: unknown): ContactIntentHistoryEntry[] {
@@ -61,12 +99,16 @@ export function historyUsedQuestion(history: ContactIntentHistoryEntry[]): boole
   return history.some(entry => entry.role === 'assistant' && entry.content.includes('?'));
 }
 
-const SYSTEM_PROMPT = `You are a calibrated alignment mirror for a visitor exploring possible mutual interest with Mannan Javid through his portfolio. Produce one concise, useful contribution: reflect a specific plausible overlap only when the conversation supports it, offer one concrete next step that preserves the visitor's choice, or ask one brief clarifying question only when the idea is too vague to act on.
+const SYSTEM_PROMPT = `Classify the visitor's latest message for a calibrated portfolio alignment mirror. Return exactly one code and no other text:
+- specific-overlap: a plausible overlap is supported
+- concrete-next-step: enough substance exists for a useful next step
+- needs-context: there is not enough substance yet
+- clarify-outcome: one clarifying question would be genuinely useful
 
-Do not thank the visitor. Do not speak as Mannan. Do not claim delivery, persistence, a reply, or unsupported fit. Do not manufacture enthusiasm, pressure the visitor, classify them, or ask for contact details.`;
+Never return prose, JSON, punctuation, or a code outside this list.`;
 
-const QUESTION_ALLOWED_PROMPT = 'You may use at most one question mark in this response, and only for one genuinely useful clarifying question.';
-const QUESTION_USED_PROMPT = 'Do not ask a question or use a question mark; an assistant question already appears in this conversation.';
+const QUESTION_ALLOWED_PROMPT = 'The clarify-outcome code is permitted only when one genuinely useful clarification is needed.';
+const QUESTION_USED_PROMPT = 'Do not return clarify-outcome because a clarification already appears in the conversation. Return specific-overlap, concrete-next-step, or needs-context.';
 
 export function buildOpenRouterRequest(message: string, rawHistory: unknown): OpenRouterRequest {
   const history = sanitizeHistory(rawHistory);
@@ -75,6 +117,8 @@ export function buildOpenRouterRequest(message: string, rawHistory: unknown): Op
     model: 'deepseek/deepseek-v4-flash',
     stream: true,
     reasoning: { enabled: false },
+    temperature: 0,
+    max_tokens: 12,
     messages: [
       { role: 'system', content: `${SYSTEM_PROMPT}\n\n${questionUsed ? QUESTION_USED_PROMPT : QUESTION_ALLOWED_PROMPT}` },
       ...history,
@@ -132,7 +176,9 @@ export function validateModelSentence(
   const sentenceQuestionCount = [...sentence].filter(char => char === '?').length;
   const questionCount = responseQuestionCount + sentenceQuestionCount;
   return {
-    valid: characterLength(sentence) <= MAX_MODEL_TEXT_LENGTH && !(questionUsed && sentenceQuestionCount > 0) && questionCount <= 1,
+    valid: characterLength(sentence) <= MAX_MODEL_TEXT_LENGTH
+      && !(questionUsed && sentenceQuestionCount > 0)
+      && questionCount <= 1,
     questionCount,
   };
 }

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { ContactStreamFrame } from './types';
 import {
   buildOpenRouterRequest,
+  ALIGNMENT_REFLECTIONS,
   consumeOpenRouterSseLine,
   MAX_FRAME_BYTES,
   MAX_HISTORY_ENTRIES,
@@ -11,8 +12,11 @@ import {
   encodeFrame,
   finalizeUpstreamSuffix,
   historyUsedQuestion,
+  isSafeReflection,
+  isSafeReflectionPrefix,
   parseFrame,
   parseFrames,
+  resolveAlignmentDecision,
   sanitizeHistory,
   takeCompleteSentences,
   validateModelSentence,
@@ -86,6 +90,20 @@ describe('validateModelSentence', () => {
 
   test('accounts for questions already emitted in this response', () => {
     expect(validateModelSentence('What matters most?', false, 1)).toEqual({ valid: false, questionCount: 2 });
+  });
+
+  test('maps only exact model decisions to fixed reviewed reflections', () => {
+    for (const [decision, chunks] of Object.entries(ALIGNMENT_REFLECTIONS)) {
+      expect(resolveAlignmentDecision(` ${decision}\n`, false)).toEqual(chunks);
+      expect(isSafeReflectionPrefix(chunks[0])).toBe(true);
+      expect(isSafeReflection(chunks.join(''))).toBe(true);
+    }
+    expect(resolveAlignmentDecision('Mannan received this and will reply.', false)).toBeNull();
+    expect(resolveAlignmentDecision('specific-overlap extra', false)).toBeNull();
+    expect(resolveAlignmentDecision('{"decision":"specific-overlap"}', false)).toBeNull();
+    expect(resolveAlignmentDecision('clarify-outcome', true)).toBeNull();
+    expect(isSafeReflectionPrefix('Expect a response soon.')).toBe(false);
+    expect(isSafeReflection('A possible overlap is visible.')).toBe(false);
   });
 });
 
@@ -258,10 +276,14 @@ describe('buildOpenRouterRequest', () => {
     expect(request.model).toBe('deepseek/deepseek-v4-flash');
     expect(request.stream).toBe(true);
     expect(request.reasoning).toEqual({ enabled: false });
+    expect(request.temperature).toBe(0);
+    expect(request.max_tokens).toBe(12);
     expect(request).not.toHaveProperty('tools');
     expect(request.messages).toHaveLength(MAX_HISTORY_ENTRIES + 2);
     expect(request.messages.slice(1, -1)).toEqual(sanitizeHistory(rawHistory));
     expect(request.messages.at(-1)).toEqual({ role: 'user', content: 'A possible collaboration.' });
-    expect(request.messages[0].content).toContain('Do not ask a question');
+    expect(request.messages[0].content).toContain('Do not return clarify-outcome');
+    expect(request.messages[0].content).toContain('Return specific-overlap, concrete-next-step, or needs-context');
+    expect(request.messages[0].content).toContain('Return exactly one code');
   });
 });

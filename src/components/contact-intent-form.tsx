@@ -123,19 +123,28 @@ function CallbackRequestForm({
       });
       if (!mountedRef.current || controllerRef.current !== controller) return;
 
+      // Turnstile proofs are single-use once submitted, regardless of whether a
+      // downstream rate-limit or email boundary accepts the request.
+      reset();
+
       if (response.status === 403) {
-        reset();
         setSubmissionError('Human verification expired. Please verify again.');
         onStatusChange('callback_editing');
         announce('Human verification expired. Please verify again.');
         return;
       }
-      if (!response.ok) throw new Error('callback request failed');
+      if (!response.ok) {
+        setSubmissionError("Couldn't submit this. You can retry or contact Mannan directly above.");
+        onStatusChange('callback_error');
+        announce("Couldn't submit this. You can retry or contact Mannan directly above.");
+        return;
+      }
 
       onStatusChange('callback_sent');
       announce('Submitted for delivery to Mannan.');
     } catch (error) {
       if (!mountedRef.current || controllerRef.current !== controller || (error instanceof DOMException && error.name === 'AbortError')) return;
+      reset();
       setSubmissionError("Couldn't submit this. You can retry or contact Mannan directly above.");
       onStatusChange('callback_error');
       announce("Couldn't submit this. You can retry or contact Mannan directly above.");
@@ -411,6 +420,11 @@ export function ContactIntentForm({ onContactDirectly }: ContactIntentFormProps)
   }, [interpret, pendingText]);
 
   const openCallback = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    pendingSinceRef.current = null;
     if (status === 'interpreting' || status === 'reflecting') interpretationControllerRef.current?.abort();
     setStatus('callback_editing');
     announce('Callback form opened. Human verification is required before submission.');
@@ -418,7 +432,7 @@ export function ContactIntentForm({ onContactDirectly }: ContactIntentFormProps)
 
   const showHistory = turns.length > 0 || pendingText !== null;
   const showInput = !capped && !interactionLocked && status !== 'interpretation_error';
-  const callbackReason = pendingText ?? turns[turns.length - 1]?.userText ?? '';
+  const callbackReason = text.trim() || (pendingText ?? turns[turns.length - 1]?.userText ?? '');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -426,23 +440,26 @@ export function ContactIntentForm({ onContactDirectly }: ContactIntentFormProps)
         style={{ position: 'relative', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', background: 'rgba(0,0,0,0.3)', padding: '10px 12px', boxSizing: 'border-box', fontFamily: MONO_FONT }}
       >
         {showHistory && (
-          <div ref={historyRef} data-testid="contact-intent-history" style={{ maxHeight: HISTORY_MAX_HEIGHT, overflowY: 'auto', marginBottom: showInput ? '8px' : 0 }}>
-            {turns.map((turn, index) => (
-              <div key={`${turn.userText}-${index}`} data-testid="contact-intent-turn">
-                <p data-testid="contact-intent-turn-user" style={userStyle}><span aria-hidden="true" style={promptStyle}>{'>'}</span> {turn.userText}</p>
-                <p data-testid="contact-intent-turn-ai" style={aiStyle}>{turn.aiReply}</p>
-              </div>
-            ))}
-            {pendingText !== null && (
-              <div data-testid="contact-intent-turn-pending">
-                <p style={userStyle}><span aria-hidden="true" style={promptStyle}>{'>'}</span> {pendingText}</p>
-                <p data-testid="contact-intent-local-thanks" style={{ ...aiStyle, color: 'rgba(255,255,255,0.57)', marginBottom: '4px' }}>Thanks.</p>
-                {status === 'interpreting' && <p data-testid="contact-intent-loading" style={{ ...aiStyle, color: 'rgba(255,255,255,0.58)' }}>{spinnerFrame} Looking for possible overlap…</p>}
-                {streamText && <p data-testid="contact-intent-stream" style={aiStyle}>{streamText}</p>}
-                {incompleteReflection && <p data-testid="contact-intent-incomplete" style={{ ...aiStyle, color: 'rgba(255,255,255,0.5)' }}>Incomplete reflection</p>}
-              </div>
-            )}
-          </div>
+          <>
+            <p data-testid="contact-intent-ai-label" style={{ ...aiStyle, color: 'rgba(255,255,255,0.45)', marginBottom: '6px' }}>AI reflection · not sent to Mannan</p>
+            <div ref={historyRef} data-testid="contact-intent-history" style={{ maxHeight: HISTORY_MAX_HEIGHT, overflowY: 'auto', marginBottom: showInput ? '8px' : 0 }}>
+              {turns.map((turn, index) => (
+                <div key={`${turn.userText}-${index}`} data-testid="contact-intent-turn">
+                  <p data-testid="contact-intent-turn-user" style={userStyle}><span aria-hidden="true" style={promptStyle}>{'>'}</span> {turn.userText}</p>
+                  <p data-testid="contact-intent-turn-ai" style={aiStyle}>{turn.aiReply}</p>
+                </div>
+              ))}
+              {pendingText !== null && (
+                <div data-testid="contact-intent-turn-pending">
+                  <p style={userStyle}><span aria-hidden="true" style={promptStyle}>{'>'}</span> {pendingText}</p>
+                  <p data-testid="contact-intent-local-thanks" style={{ ...aiStyle, color: 'rgba(255,255,255,0.57)', marginBottom: '4px' }}>Thanks.</p>
+                  {status === 'interpreting' && <p data-testid="contact-intent-loading" style={{ ...aiStyle, color: 'rgba(255,255,255,0.58)' }}>{spinnerFrame} Looking for possible overlap…</p>}
+                  {streamText && <p data-testid="contact-intent-stream" style={aiStyle}>{streamText}</p>}
+                  {incompleteReflection && <p data-testid="contact-intent-incomplete" style={{ ...aiStyle, color: 'rgba(255,255,255,0.5)' }}>Incomplete reflection</p>}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {showInput && (
@@ -454,7 +471,7 @@ export function ContactIntentForm({ onContactDirectly }: ContactIntentFormProps)
               value={text}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              onCompositionStart={() => { isComposingRef.current = true; }}
+              onCompositionStart={() => { isComposingRef.current = true; if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; } }}
               onCompositionEnd={(event) => { isComposingRef.current = false; const value = event.currentTarget.value; setText(value); if (value.trim()) scheduleInterpret(value); else pendingSinceRef.current = null; }}
               maxLength={MAX_INPUT_LENGTH}
               rows={3}

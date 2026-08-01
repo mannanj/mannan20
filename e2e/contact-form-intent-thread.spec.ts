@@ -69,6 +69,7 @@ test.describe('contact alignment thread', () => {
     }
 
     await expect(page.getByTestId('contact-intent-textarea')).toHaveCount(0);
+    await expect(page.getByTestId('contact-intent-ai-label')).toBeInViewport();
     await expect(page.getByTestId('contact-modal')).not.toContainText(/conversation (has )?ended|thread (has )?closed/i);
   });
 

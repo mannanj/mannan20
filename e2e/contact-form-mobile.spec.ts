@@ -60,6 +60,29 @@ test.describe('mobile contact alignment', () => {
     expect(requests).toHaveLength(1);
   });
 
+  test('starting IME composition cancels a previously scheduled Latin draft', async ({ page }) => {
+    const requests: Array<{ message?: string }> = [];
+    await openRevealedModal(page);
+    await mockIntentApi(page, RESPONSE, requests);
+    await page.getByTestId('contact-intent-textarea').fill('Latin draft');
+    await page.getByTestId('contact-intent-textarea').evaluate((element, text) => {
+      const textarea = element as HTMLTextAreaElement;
+      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!;
+      textarea.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
+      setter.call(textarea, text);
+      textarea.dispatchEvent(new InputEvent('input', { bubbles: true, data: text, inputType: 'insertCompositionText' }));
+    }, MESSAGE);
+    await page.waitForTimeout(1_100);
+    expect(requests).toHaveLength(0);
+    await page.getByTestId('contact-intent-textarea').evaluate((element, text) => {
+      element.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: text }));
+    }, MESSAGE);
+
+    await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible();
+    expect(requests).toHaveLength(1);
+    expect(requests[0]?.message).toBe(MESSAGE);
+  });
+
   test('iPhone layout keeps the modal and callback controls reachable inside the viewport', async ({ browser }) => {
     const context = await browser.newContext(IPHONE);
     const page = await context.newPage();

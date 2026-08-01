@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { NextRequest } from 'next/server';
+import { ALIGNMENT_REFLECTIONS } from '@/lib/contact-intent-logic';
 import { handleContactIntent } from './route';
 
 const encoder = new TextEncoder();
@@ -27,8 +28,10 @@ function successLimit() {
 }
 
 describe('contact intent streaming route', () => {
-  test('emits meta, normalized text, and done after split UTF-8, usage, and DONE events', async () => {
-    const source = 'data: {"choices":[{"delta":{"content":"Café reflection."},"finish_reason":null}]}\n'
+  test('maps an exact decision to reviewed text after split UTF-8, usage, and DONE events', async () => {
+    const source = ': Café keep-alive\n'
+      + 'data: {"choices":[{"delta":{"content":"specific-"},"finish_reason":null}]}\n'
+      + 'data: {"choices":[{"delta":{"content":"overlap"},"finish_reason":null}]}\n'
       + 'data: {"choices":[],"usage":{"total_tokens":8}}\n'
       + 'data: [DONE]\n';
     const bytes = encoder.encode(source);
@@ -41,7 +44,7 @@ describe('contact intent streaming route', () => {
 
     expect(await response.text()).toBe(
       '{"type":"meta","version":1}\n'
-      + '{"type":"text","value":"Café reflection."}\n'
+      + ALIGNMENT_REFLECTIONS['specific-overlap'].map((value) => `${JSON.stringify({ type: 'text', value })}\n`).join('')
       + '{"type":"done"}\n',
     );
   });
@@ -56,7 +59,7 @@ describe('contact intent streaming route', () => {
       fetcher: async () => responseFromChunks([encoder.encode(source)]),
     });
 
-    expect(await response.text()).toBe('{"type":"meta","version":1}\n{"type":"done"}\n');
+    expect(await response.text()).toBe('{"type":"meta","version":1}\n{"type":"error","code":"upstream"}\n');
   });
 
   test('emits only a safe error after an in-band provider error', async () => {
@@ -98,9 +101,23 @@ describe('contact intent streaming route', () => {
     }), {
       apiKey: 'test-key',
       limit: successLimit,
-      fetcher: async () => responseFromChunks([encoder.encode('data: {"choices":[{"delta":{"content":"What outcome matters?"}}]}\n')]),
+      fetcher: async () => responseFromChunks([encoder.encode('data: {"choices":[{"delta":{"content":"clarify-outcome"}}]}\ndata: [DONE]\n')]),
     });
     expect(await question.text()).toBe('{"type":"meta","version":1}\n{"type":"error","code":"upstream"}\n');
+  });
+
+  test('never forwards arbitrary provider prose to the client', async () => {
+    const response = await handleContactIntent(request({ message: 'A project idea.' }), {
+      apiKey: 'test-key',
+      limit: successLimit,
+      fetcher: async () => responseFromChunks([encoder.encode(
+        'data: {"choices":[{"delta":{"content":"The portfolio owner has your message and plans to call."}}]}\ndata: [DONE]\n',
+      )]),
+    });
+
+    const output = await response.text();
+    expect(output).toBe('{"type":"meta","version":1}\n{"type":"error","code":"upstream"}\n');
+    expect(output).not.toContain('portfolio owner');
   });
 
   test('aborts the upstream request when the client cancels the stream', async () => {

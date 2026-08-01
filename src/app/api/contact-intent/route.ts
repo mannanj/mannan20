@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   MAX_MESSAGE_LENGTH,
-  MAX_MODEL_TEXT_LENGTH,
+  MAX_DECISION_LENGTH,
   MAX_STREAM_BUFFER_BYTES,
   buildOpenRouterRequest,
   consumeOpenRouterSseLine,
   encodeFrame,
-  finalizeUpstreamSuffix,
   historyUsedQuestion,
+  resolveAlignmentDecision,
   sanitizeHistory,
-  takeCompleteSentences,
-  validateModelSentence,
 } from '@/lib/contact-intent-logic';
 import { limitContactReflection } from '@/lib/rate-limit';
 
@@ -119,9 +117,7 @@ export async function handleContactIntent(
       reader = upstream.body!.getReader();
       const decoder = new TextDecoder();
       let sseBuffer = '';
-      let modelBuffer = '';
-      let emittedLength = 0;
-      let responseQuestionCount = 0;
+      let decisionBuffer = '';
 
       const close = () => {
         if (terminated) return;
@@ -143,40 +139,13 @@ export async function handleContactIntent(
         emit({ type: 'error', code: 'upstream' });
         controller.close();
       };
-      const emitSentence = (sentence: string): boolean => {
-        const validation = validateModelSentence(sentence, questionUsed, responseQuestionCount);
-        if (!validation.valid || codePointLength(sentence) > MAX_MODEL_TEXT_LENGTH - emittedLength) return false;
-        responseQuestionCount = validation.questionCount;
-        emittedLength += codePointLength(sentence);
-        emit({ type: 'text', value: sentence });
-        return true;
-      };
-      const emitCompleteSentences = (): boolean => {
-        const { complete, rest } = takeCompleteSentences(modelBuffer, MAX_MODEL_TEXT_LENGTH - emittedLength);
-        modelBuffer = rest;
-        let cursor = 0;
-        const boundary = /[.!?](?=\s|$)/g;
-        let match: RegExpExecArray | null;
-        while ((match = boundary.exec(complete)) !== null) {
-          const sentence = complete.slice(cursor, match.index + 1);
-          cursor = match.index + 1;
-          if (!emitSentence(sentence)) return false;
-        }
-        return cursor === complete.length;
-      };
       const finishCleanly = () => {
-        if (modelBuffer.trim()) {
-          const suffix = finalizeUpstreamSuffix(
-            modelBuffer,
-            MAX_MODEL_TEXT_LENGTH - emittedLength,
-            questionUsed,
-            responseQuestionCount,
-          );
-          if (!suffix || !emitSentence(suffix.text)) {
-            fail();
-            return;
-          }
+        const reflectionChunks = resolveAlignmentDecision(decisionBuffer, questionUsed);
+        if (!reflectionChunks) {
+          fail();
+          return;
         }
+        for (const value of reflectionChunks) emit({ type: 'text', value });
         emit({ type: 'done' });
         close();
       };
@@ -202,14 +171,9 @@ export async function handleContactIntent(
               return;
             }
 
-            modelBuffer += event.value;
-            if (codePointLength(modelBuffer) + emittedLength > MAX_MODEL_TEXT_LENGTH || !emitCompleteSentences()) {
+            decisionBuffer += event.value;
+            if (codePointLength(decisionBuffer) > MAX_DECISION_LENGTH) {
               fail();
-              return;
-            }
-            if (emittedLength === MAX_MODEL_TEXT_LENGTH) {
-              finishCleanly();
-              upstreamController.abort();
               return;
             }
           }
