@@ -7,6 +7,21 @@ import { ContactResult } from './contact-result';
 import type { ContactResultData } from '@/lib/types';
 
 const POPOUT_WIDTH = 266;
+const VIEWPORT_MARGIN = 12;
+const MIN_POPOUT_VIEWPORT_HEIGHT = 300;
+
+function clampToViewport(
+  next: { x: number; y: number },
+  viewportWidth: number,
+  viewportHeight: number,
+) {
+  const maxX = Math.max(VIEWPORT_MARGIN, viewportWidth - POPOUT_WIDTH - VIEWPORT_MARGIN);
+  const maxY = Math.max(VIEWPORT_MARGIN, viewportHeight - MIN_POPOUT_VIEWPORT_HEIGHT);
+  return {
+    x: Math.max(VIEWPORT_MARGIN, Math.min(next.x, maxX)),
+    y: Math.max(VIEWPORT_MARGIN, Math.min(next.y, maxY)),
+  };
+}
 
 export const CONTACT_DATA: ContactResultData = {
   email: 'hello@mannan.is',
@@ -23,18 +38,23 @@ export function ContactModal() {
 
   useEffect(() => {
     if (state.contactModalOpen && state.contactPopoutPosition) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      let x = state.contactPopoutPosition.x;
-      let y = state.contactPopoutPosition.y;
-
-      x = Math.max(12, Math.min(x, vw - POPOUT_WIDTH - 12));
-      y = Math.max(12, Math.min(y, vh - 300));
-
-      setPosition({ x, y });
+      setPosition(clampToViewport(
+        state.contactPopoutPosition,
+        window.innerWidth,
+        window.innerHeight,
+      ));
       positionInitialized.current = true;
     }
   }, [state.contactModalOpen, state.contactPopoutPosition]);
+
+  useEffect(() => {
+    if (!state.contactModalOpen) return;
+    const handleResize = () => {
+      setPosition((current) => clampToViewport(current, window.innerWidth, window.innerHeight));
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [state.contactModalOpen]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('button, textarea, a, input')) return;
@@ -46,7 +66,11 @@ export function ContactModal() {
     if (!dragOffset) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
+      setPosition(clampToViewport(
+        { x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y },
+        window.innerWidth,
+        window.innerHeight,
+      ));
     };
 
     const handleMouseUp = () => {
@@ -96,7 +120,11 @@ export function ContactModal() {
           left: position.x,
           top: position.y,
           width: POPOUT_WIDTH,
-          maxWidth: 'calc(100vw - 24px)',
+          maxWidth: `calc(100vw - ${VIEWPORT_MARGIN * 2}px)`,
+          maxHeight: `calc(100dvh - ${position.y}px - ${VIEWPORT_MARGIN}px)`,
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          boxSizing: 'border-box',
           background: 'rgba(0,0,0,0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
