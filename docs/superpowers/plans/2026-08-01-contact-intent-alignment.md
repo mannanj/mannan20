@@ -246,17 +246,17 @@ Stage only the five Task 3 paths, inspect the staged diff, run the pinned staged
 - Modify: `src/lib/rate-limit.ts` only if `limitContactRequest` was not completed in Task 2
 - Test: `src/lib/contact-request.test.ts`
 
-- [ ] **Step 1: Add failing orchestration tests around injected boundaries**
+- [x] **Step 1: Add failing orchestration tests around injected boundaries**
 
 Export `handleContactRequest(request, deps)` from the route module, where `deps` supplies `verifyToken`, `limit`, `send`, and server-owned configuration. Test it in `route.test.ts`: validation occurs before external calls; invalid/replayed token prevents email; rate limit prevents email; missing `RESEND_API_KEY` or recipient configuration fails safely; `sendEmail` rejection returns 503; and provider acceptance returns `{ submitted: true }`. `POST` calls the same handler with production dependencies.
 
-- [ ] **Step 2: Run the focused test and verify red**
+- [x] **Step 2: Run the focused test and verify red**
 
 Run: `bun test src/app/api/contact-request/route.test.ts src/lib/contact-request.test.ts`
 
 Expected: FAIL until the route orchestration seam is implemented.
 
-- [ ] **Step 3: Implement `/api/contact-request`**
+- [x] **Step 3: Implement `/api/contact-request`**
 
 The route must parse once, normalize the callback payload, verify the fresh Turnstile token through `verifyTurnstileToken`, rate-limit by IP, and require `RESEND_API_KEY`. Use `CONTACT_REQUEST_TO` when configured and otherwise the site's existing public contact address as a fixed server-owned fallback. Call `sendEmail` with fixed subject `Portfolio callback request`, fixed server-owned headers, and the pure plain-text body. Return safe JSON statuses:
 
@@ -268,7 +268,7 @@ The route must parse once, normalize the callback payload, verify the fresh Turn
 
 Never echo visitor data or operational/provider details and never log the payload.
 
-- [ ] **Step 4: Run focused tests and typecheck**
+- [x] **Step 4: Run focused tests and typecheck**
 
 Run: `bun test src/app/api/contact-request/route.test.ts src/lib/contact-request.test.ts src/lib/turnstile-verification.test.ts`
 
@@ -278,7 +278,7 @@ Run: `bun run typecheck`
 
 Expected: no callback route errors.
 
-- [ ] **Step 5: Commit Task 4**
+- [x] **Step 5: Commit Task 4**
 
 Stage only the callback route and any explicitly owned helper/test change, inspect the staged diff, run the pinned staged Gitleaks scan, and commit with `Add human-verified callback requests`.
 
