@@ -2,28 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTurnstile } from "@/hooks/use-turnstile";
+import { verifyTurnstileToken } from "@/lib/turnstile-verification";
 
 const VERIFYING_TEXT = "Verifying...";
 const TURNSTILE_FAIL_TEXT = "Verification failed. Please try again.";
 
 type Status = "verifying" | "error";
-
-async function verifyTurnstileToken(token: string): Promise<boolean> {
-  const workerUrl = process.env.NEXT_PUBLIC_TURNSTILE_WORKER_URL;
-  if (!workerUrl) return false;
-  try {
-    const res = await fetch(workerUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
-    });
-    if (!res.ok) return false;
-    const data = await res.json();
-    return data?.success === true;
-  } catch {
-    return false;
-  }
-}
 
 interface ContactFormProps {
   onReveal: () => void;
