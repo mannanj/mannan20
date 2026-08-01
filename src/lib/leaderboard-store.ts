@@ -1,4 +1,5 @@
 import { Redis } from '@upstash/redis';
+import { callPortfolioState, stateOperationId } from './portfolio-state-client';
 
 export const NAME_RE = /^[\p{L}\p{N} ._'-]{1,24}$/u;
 export const OWNER_COOKIE = 'chicken-owner';
@@ -128,6 +129,8 @@ async function topFor(kind: Kind): Promise<Entry[]> {
 }
 
 export async function boards(): Promise<Boards> {
+  const state = await callPortfolioState<Boards>('/v1/boards', {});
+  if (state !== undefined) return state;
   const [human, agent] = await Promise.all([topFor('human'), topFor('agent')]);
   return { human, agent };
 }
@@ -209,6 +212,11 @@ export async function submitScore(input: {
   ownerId: string;
   cookieName: string | null;
 }): Promise<SubmitResult> {
+  const state = await callPortfolioState<SubmitResult>('/v1/scores/submit', {
+    opId: stateOperationId(),
+    ...input,
+  });
+  if (state !== undefined) return state;
   const normalized = normalizeName(input.name);
   const { lower, rec } = await resolveRenames(normalized.toLowerCase());
   if (rec) {
@@ -240,6 +248,11 @@ export async function submitScore(input: {
 }
 
 export async function createMagicToken(email: string): Promise<string> {
+  const state = await callPortfolioState<{ token: string }>('/v1/magic/create', {
+    opId: stateOperationId(),
+    email,
+  });
+  if (state !== undefined) return state.token;
   const lower = email.trim().toLowerCase();
   const magicToken = newMagicToken();
   if (!redis) {
@@ -285,6 +298,11 @@ export async function consumeMagicToken(
   rawToken: string,
   deviceOwnerId: string | null
 ): Promise<{ ownerId: string; email: string; names: string[] } | null> {
+  const state = await callPortfolioState<{ ownerId: string; email: string; names: string[] } | null>(
+    '/v1/magic/consume',
+    { opId: stateOperationId(), token: rawToken, deviceOwnerId },
+  );
+  if (state !== undefined) return state;
   let email: string | null = null;
   if (!redis) {
     const entry = memMagic.get(rawToken);
@@ -349,6 +367,11 @@ export async function consumeMagicToken(
 export async function identityInfo(
   ownerId: string
 ): Promise<{ names: string[]; email: string | null }> {
+  const state = await callPortfolioState<{ names: string[]; email: string | null }>(
+    '/v1/identity/info',
+    { ownerId },
+  );
+  if (state !== undefined) return state;
   if (!redis) {
     const names: string[] = [];
     for (const lower of memIdNames.get(ownerId) ?? []) {
@@ -433,6 +456,11 @@ export async function renameIdentity(input: {
   to: string;
   from?: string;
 }): Promise<RenameResult> {
+  const state = await callPortfolioState<RenameResult>('/v1/identity/rename', {
+    opId: stateOperationId(),
+    ...input,
+  });
+  if (state !== undefined) return state;
   const toDisplay = normalizeName(input.to);
   const toLower = toDisplay.toLowerCase();
   const verified = await identityVerified(input.ownerId);
@@ -499,6 +527,11 @@ export async function pushFeedback(input: {
   ip: string;
   validated: boolean;
 }): Promise<void> {
+  const state = await callPortfolioState<{ ok: true }>('/v1/feedback', {
+    opId: stateOperationId(),
+    ...input,
+  });
+  if (state !== undefined) return;
   const record = JSON.stringify({
     m: input.message,
     ip: input.ip,

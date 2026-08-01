@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "portfolio-state-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-01",
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [
+      { "name": "PORTFOLIO_STATE", "class_name": "PortfolioState" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["PortfolioState"] }
+  ]
+}

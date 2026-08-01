@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import type { GardenViewSlug } from "./garden-views";
+import { callPortfolioState, stateOperationId } from "./portfolio-state-client";
 
 const url = process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
 const token = process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
@@ -19,6 +20,11 @@ function bumpMemory(slug: GardenViewSlug): number {
 }
 
 export async function recordView(slug: GardenViewSlug): Promise<number> {
+  const state = await callPortfolioState<{ views: number }>("/v1/garden/views/increment", {
+    opId: stateOperationId(),
+    slug,
+  });
+  if (state !== undefined) return state.views;
   if (!redis) return bumpMemory(slug);
   try {
     return await redis.incr(key(slug));
@@ -28,6 +34,8 @@ export async function recordView(slug: GardenViewSlug): Promise<number> {
 }
 
 export async function getViews(slug: GardenViewSlug): Promise<number> {
+  const state = await callPortfolioState<{ views: number }>("/v1/garden/views/get", { slug });
+  if (state !== undefined) return state.views;
   if (!redis) return memoryCounts.get(slug) ?? 0;
   try {
     const value = await redis.get<number | string>(key(slug));
