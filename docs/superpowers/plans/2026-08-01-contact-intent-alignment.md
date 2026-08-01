@@ -353,23 +353,23 @@ Stage only the client-owned paths, inspect the staged diff, run the pinned stage
 - Replace assertions in: `e2e/contact-form-mobile.spec.ts`
 - Preserve unrelated reveal tests in: `e2e/contact-form.spec.ts`
 
-- [ ] **Step 1: Add framed-stream and callback mocks**
+- [x] **Step 1: Add framed-stream and callback mocks**
 
 The helper must emit controllable NDJSON frames, split UTF-8 bytes across chunks, stop before `done`, inject malformed/oversized frames, record intent bodies, mock a fresh callback Turnstile widget/token, and record `/api/contact-request` bodies/responses. Do not use real OpenRouter, Turnstile, or Resend calls.
 
-- [ ] **Step 2: Prove the truthful primary flow**
+- [x] **Step 2: Prove the truthful primary flow**
 
 Tests cover pre-typing provider disclosure; local `Thanks.` before the first remote frame; honest `Looking for possible overlap…`; progressive actual reflection; no model thank-you; bounded history; one-question heuristic; and the three-turn ceiling. The exact provider request contract is covered by the pure Task 2 test rather than a source-string assertion.
 
-- [ ] **Step 3: Prove callback consent and fresh verification**
+- [x] **Step 3: Prove callback consent and fresh verification**
 
 Tests cover no callback request from typing/interpretation/direct contact; prefilled but editable reason; exact transcript disclosure; field bounds; focus to first error; callback button disabled without a fresh token; exact callback payload; 403 resetting verification without clearing fields; provider acceptance wording; generic failure wording; duplicate-submit prevention; and transcript excluding incomplete reflections.
 
-- [ ] **Step 4: Preserve adversarial, mobile, and lifecycle guarantees**
+- [x] **Step 4: Preserve adversarial, mobile, and lifecycle guarantees**
 
 Update XSS/unicode/overflow cases to NDJSON, add malformed/unknown/duplicate/trailing/oversized frames, split UTF-8, upstream error after partial text, close during each request, modal reopen reset, continuous soft-keyboard debounce ceiling, IME, iPhone layout, reduced motion, and the non-chattery live-region assertion.
 
-- [ ] **Step 5: Run focused Playwright and inspect screenshots**
+- [x] **Step 5: Run focused Playwright and inspect screenshots**
 
 Run:
 
@@ -384,7 +384,7 @@ bunx playwright test \
 
 Expected: PASS. Capture and inspect desktop/mobile screenshots of initial disclosure, local thanks/loading, progressive reflection, incomplete reflection, callback editing/verification, provider acceptance, and callback failure. Ensure no private/operational data or browser metadata enters tracked screenshots.
 
-- [ ] **Step 6: Commit Task 6**
+- [x] **Step 6: Commit Task 6**
 
 Stage only the focused test files and deliberately reviewed screenshots, inspect the staged content for personal/operational data, run the pinned staged Gitleaks scan, and commit with `Test contact alignment and callback consent`.
 
