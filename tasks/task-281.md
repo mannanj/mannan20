@@ -1,7 +1,7 @@
 ---
 project:
   id: contact-alignment-mirror
-  revision: 2
+  revision: 3
   status: ACTIVE
   final_goal: Replace the post-reveal contact chatbot with an honest, consent-based alignment mirror that helps a visitor decide whether and how to contact Mannan.
   complete_when: [design, implementation, verification, final-check]
@@ -62,16 +62,18 @@ milestones:
 
 next_task:
   milestone: implementation
-  id: write-implementation-plan-v1
-  task: Write a detailed implementation plan from the accepted design, with exact files, tests, ordering, and protected-worktree boundaries.
-  expected_evidence: A self-reviewed implementation plan linked here and a revision-3 work plan naming its first executable coding task.
-  workspace: repository root on main at 71c04d1 with protected pre-existing changes
+  id: implement-reflection-contract
+  task: Execute Task 1 of the accepted implementation plan by replacing the chat types and pure history logic with a tested one-shot reflection contract.
+  expected_evidence: Focused reflection-logic tests pass, the Task 1 diff contains only its three owned files, and the result is committed.
+  workspace: repository root on main at 7462c70 with protected pre-existing changes
   attempt: 1
   last_failure: null
-  updated_at: 2026-08-01T00:00:00Z
+  updated_at: 2026-08-01T20:25:00Z
 ---
 
 # Task 281: Replace the contact chatbot with an alignment mirror
 
 This is the canonical work plan for the recovered session. The design is in
 `docs/superpowers/specs/2026-08-01-contact-alignment-mirror-design.md`.
+The accepted implementation plan is in
+`docs/superpowers/plans/2026-08-01-contact-alignment-mirror.md`.
