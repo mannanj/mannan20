@@ -1,7 +1,7 @@
 ---
 project:
   id: contact-intent-alignment
-  revision: 2
+  revision: 3
   status: ACTIVE
   final_goal: Deliver an honest, progressive contact-intent experience that surfaces possible mutual alignment and leaves all contact choices with the visitor.
   complete_when: [design, implementation, verification, final-check]
@@ -61,13 +61,13 @@ milestones:
 
 next_task:
   milestone: implementation
-  id: write-implementation-plan
-  task: Write and self-review the detailed implementation plan from the reconciled original design.
-  expected_evidence: A repository-native implementation plan with exact file ownership, TDD steps, gates, and the first executable coding task recorded here.
-  workspace: isolated contact-intent-alignment worktree on feat/contact-intent-alignment at 71c04d1
+  id: implement-intent-protocol
+  task: Execute Task 1 of the accepted implementation plan by replacing the old response helpers with the tested bounded intent-history and NDJSON stream protocol.
+  expected_evidence: Focused protocol tests pass, the diff contains only Task 1's three owned files, and the result is committed.
+  workspace: isolated contact-intent-alignment worktree on feat/contact-intent-alignment at 3605f35
   attempt: 1
   last_failure: null
-  updated_at: 2026-08-01T20:35:00Z
+  updated_at: 2026-08-01T20:45:00Z
 ---
 
 # Contact Intent Alignment Work Plan
@@ -80,3 +80,4 @@ Canonical plan for [task 281](../tasks/task-281.md). Live repository and verific
 - Root and nested Worker dependencies installed without lockfile changes.
 - `bun run test:unit`: 121 passed, 0 failed after installing the nested `cloud-worker` dependencies.
 - OpenRouter's current model page identifies the requested slug as `deepseek/deepseek-v4-flash`.
+- Accepted implementation plan: `docs/superpowers/plans/2026-08-01-contact-intent-alignment.md`.
