@@ -1,109 +1,130 @@
 import { test, expect } from '@playwright/test';
-import { openRevealedModal } from './helpers/contact-form';
+import { frames, mockIntentApi, openRevealedModal, successfulReflection } from './helpers/contact-form';
 
-function replyOnce(message: string) {
-  return JSON.stringify({ message });
-}
-
-test.describe('inline conversation thread — turn-based behavior', () => {
-  test('a completed turn renders as a locked terminal line plus a green AI reply, with a fresh input below', async ({ page }) => {
+test.describe('contact alignment thread', () => {
+  test('discloses the provider, shows local thanks before reflection, then commits a truthful streamed reply', async ({ page }) => {
     await openRevealedModal(page);
-    await page.route('**/api/contact-intent', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: replyOnce('Thanks, Sam!') })
-    );
+    await expect(page.getByTestId('contact-intent-disclosure')).toContainText('DeepSeek through OpenRouter');
 
-    await page.getByTestId('contact-intent-textarea').fill('Hi, I am Sam');
-    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1, { timeout: 10000 });
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => { release = resolve; });
+    await mockIntentApi(page, async (route) => {
+      await pending;
+      await route.fulfill({ status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: successfulReflection('A project conversation could clarify the overlap.') });
+    });
+
+    await page.getByTestId('contact-intent-textarea').fill('I have a project idea');
+    await expect(page.getByTestId('contact-intent-local-thanks')).toHaveText('Thanks.');
+    await expect(page.getByTestId('contact-intent-loading')).toContainText('Looking for possible overlap…');
+    await expect(page.getByTestId('contact-intent-live')).toHaveText('Looking for possible overlap.');
+    release();
 
     const turn = page.getByTestId('contact-intent-turn').first();
-    await expect(turn.getByTestId('contact-intent-turn-user')).toHaveText('> Hi, I am Sam');
-    await expect(turn.getByTestId('contact-intent-turn-ai')).toHaveText('Thanks, Sam!');
-
-    const textarea = page.getByTestId('contact-intent-textarea');
-    await expect(textarea).toBeVisible();
-    await expect(textarea).toBeEnabled();
-    await expect(textarea).toHaveValue('');
-    await page.screenshot({ path: 'e2e/screenshots/intent-thread-first-turn.png' });
+    await expect(turn.getByTestId('contact-intent-turn-user')).toHaveText('> I have a project idea');
+    await expect(turn.getByTestId('contact-intent-turn-ai')).toHaveText('A project conversation could clarify the overlap.');
+    await expect(page.getByTestId('contact-intent-textarea')).toHaveValue('');
   });
 
-  test('past turns stay visible and are plain text, not a second editable textarea', async ({ page }) => {
+  test('keeps bounded completed history and rejects a later model question after one has been shown', async ({ page }) => {
+    const requests: unknown[] = [];
     await openRevealedModal(page);
-    await page.route('**/api/contact-intent', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: replyOnce('Got it, thanks!') })
-    );
+    await mockIntentApi(page, async (route) => {
+      const body = route.request().postDataJSON() as { message: string };
+      const reply = body.message === 'first'
+        ? 'Which outcome matters most?'
+        : body.message === 'second'
+          ? 'A concrete next step is to share the context.'
+          : 'Could you send a time?';
+      await route.fulfill({ status: 200, contentType: 'application/x-ndjson; charset=utf-8', body: successfulReflection(reply) });
+    }, requests);
 
     const textarea = page.getByTestId('contact-intent-textarea');
-    await textarea.fill('first message');
-    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1, { timeout: 10000 });
-    await textarea.fill('second message');
-    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(2, { timeout: 10000 });
+    await textarea.fill('first');
+    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1);
+    await textarea.fill('second');
+    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(2);
+    await textarea.fill('third');
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'interpretation_error');
+    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(2);
 
-    const firstTurn = page.getByTestId('contact-intent-turn').first();
-    await expect(firstTurn.getByTestId('contact-intent-turn-user')).toHaveText('> first message');
-    await expect(firstTurn.getByTestId('contact-intent-turn-ai')).toHaveText('Got it, thanks!');
-
-    // Only the active turn is ever a real <textarea>; every past turn is plain, non-form markup.
-    await expect(page.locator('[data-testid="contact-modal"] textarea')).toHaveCount(1);
-    await page.screenshot({ path: 'e2e/screenshots/intent-thread-history-persists.png' });
+    expect(requests).toHaveLength(3);
+    expect(requests[0]).toMatchObject({ message: 'first', history: [] });
+    expect(requests[1]).toMatchObject({
+      message: 'second',
+      history: [
+        { role: 'user', content: 'first' },
+        { role: 'assistant', content: 'Which outcome matters most?' },
+      ],
+    });
+    expect((requests[2] as { history: unknown[] }).history).toHaveLength(4);
   });
 
-  test('conversation caps at 3 turns and the input quietly stops reappearing', async ({ page }) => {
+  test('caps the completed conversation at three turns without a terminal claim', async ({ page }) => {
     await openRevealedModal(page);
-    await page.route('**/api/contact-intent', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: replyOnce('Thanks!') })
-    );
+    await mockIntentApi(page, successfulReflection('A focused next step could help.'));
 
-    const textarea = page.getByTestId('contact-intent-textarea');
-    let turnCount = 0;
     for (const message of ['first', 'second', 'third']) {
-      await expect(textarea).toBeVisible();
-      await textarea.fill(message);
-      turnCount += 1;
-      await expect(page.getByTestId('contact-intent-turn')).toHaveCount(turnCount, { timeout: 10000 });
+      await page.getByTestId('contact-intent-textarea').fill(message);
+      await expect(page.getByTestId('contact-intent-turn')).toHaveCount(['first', 'second', 'third'].indexOf(message) + 1);
     }
 
     await expect(page.getByTestId('contact-intent-textarea')).toHaveCount(0);
-    const modalText = (await page.getByTestId('contact-modal').innerText()).toLowerCase();
-    expect(modalText).not.toMatch(/conversation (has )?ended|that's (all|it)|thread (has )?closed/);
-    await page.screenshot({ path: 'e2e/screenshots/intent-thread-turn-cap.png' });
+    await expect(page.getByTestId('contact-modal')).not.toContainText(/conversation (has )?ended|thread (has )?closed/i);
   });
 
-  test('the next request carries prior turns as conversation history', async ({ page }) => {
+  test('does not accept a model-authored thank-you as a reflection', async ({ page }) => {
     await openRevealedModal(page);
-    const requestBodies: Array<{ message: string; history?: unknown[] }> = [];
-    await page.route('**/api/contact-intent', async (route) => {
-      const body = route.request().postDataJSON();
-      requestBodies.push(body);
-      const reply = requestBodies.length === 1 ? 'Mind sharing which company this is for?' : 'Got it, thanks!';
-      await route.fulfill({ status: 200, contentType: 'application/json', body: replyOnce(reply) });
-    });
-
-    const textarea = page.getByTestId('contact-intent-textarea');
-    await textarea.fill('I have a job opportunity for you');
-    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1, { timeout: 10000 });
-    await textarea.fill('Acme Corp');
-    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(2, { timeout: 10000 });
-
-    expect(requestBodies).toHaveLength(2);
-    expect(requestBodies[0].history ?? []).toEqual([]);
-    expect(requestBodies[1].history).toEqual([
-      { role: 'user', content: 'I have a job opportunity for you' },
-      { role: 'assistant', content: 'Mind sharing which company this is for?' },
-    ]);
-  });
-
-  test('a failed send reverts the turn to editable, restoring the original text', async ({ page }) => {
-    await openRevealedModal(page);
-    await page.route('**/api/contact-intent', (route) => route.fulfill({ status: 500, body: 'boom' }));
-
-    const textarea = page.getByTestId('contact-intent-textarea');
-    await textarea.fill('this will fail');
-    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'error', { timeout: 10000 });
-
-    await expect(page.getByTestId('contact-intent-error')).toBeVisible();
+    await mockIntentApi(page, successfulReflection('Thanks for reaching out.'));
+    await page.getByTestId('contact-intent-textarea').fill('A collaboration idea');
+    await expect(page.getByTestId('contact-intent-status')).toHaveAttribute('data-status', 'interpretation_error');
     await expect(page.getByTestId('contact-intent-turn')).toHaveCount(0);
-    await expect(textarea).toBeEnabled();
-    await expect(textarea).toHaveValue('this will fail');
-    await page.screenshot({ path: 'e2e/screenshots/intent-thread-error-revert.png' });
+    await expect(page.getByTestId('contact-intent-local-thanks')).toHaveText('Thanks.');
+  });
+
+  test('Enter submits immediately', async ({ page }) => {
+    const requests: unknown[] = [];
+    await openRevealedModal(page);
+    await mockIntentApi(page, successfulReflection('An immediate next step could clarify this.'), requests);
+    const textarea = page.getByTestId('contact-intent-textarea');
+    await textarea.fill('Submit this now');
+    await textarea.press('Enter');
+    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1);
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ message: 'Submit this now' });
+  });
+
+  test('Shift+Enter inserts a newline and plain Enter submits the multiline value', async ({ page }) => {
+    const requests: unknown[] = [];
+    await openRevealedModal(page);
+    await mockIntentApi(page, successfulReflection('The additional detail makes the next step clearer.'), requests);
+    const textarea = page.getByTestId('contact-intent-textarea');
+    await textarea.fill('First line');
+    await textarea.press('Shift+Enter');
+    await expect(textarea).toHaveValue('First line\n');
+    await textarea.type('Second line');
+    await textarea.press('Enter');
+    await expect(page.getByTestId('contact-intent-turn')).toHaveCount(1);
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ message: 'First line\nSecond line' });
+  });
+
+  test('retry clears an incomplete reflection and commits a clean response', async ({ page }) => {
+    const requests: unknown[] = [];
+    await openRevealedModal(page);
+    await mockIntentApi(page, async (route) => {
+      const body = requests.length === 1
+        ? frames({ type: 'meta', version: 1 }, { type: 'text', value: 'Partial response.' })
+        : successfulReflection('A clean retry can now be committed.');
+      await route.fulfill({ status: 200, contentType: 'application/x-ndjson; charset=utf-8', body });
+    }, requests);
+
+    await page.getByTestId('contact-intent-textarea').fill('Retry this interpretation');
+    await expect(page.getByTestId('contact-intent-incomplete')).toBeVisible();
+    await page.getByRole('button', { name: 'Retry interpretation' }).click();
+    await expect(page.getByTestId('contact-intent-turn-ai')).toHaveText('A clean retry can now be committed.');
+    await expect(page.getByTestId('contact-intent-incomplete')).toHaveCount(0);
+    expect(requests).toHaveLength(2);
+    expect(requests[0]).toMatchObject({ message: 'Retry this interpretation' });
+    expect(requests[1]).toMatchObject({ message: 'Retry this interpretation' });
   });
 });

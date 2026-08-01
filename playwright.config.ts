@@ -18,6 +18,10 @@ export default defineConfig({
   webServer: {
     command: 'bun run dev',
     port: 3847,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
+    env: {
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 'e2e-synthetic-turnstile-site-key',
+      NEXT_PUBLIC_TURNSTILE_WORKER_URL: 'https://e2e.invalid/turnstile-siteverify-mannan20',
+    },
   },
 });
