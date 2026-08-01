@@ -1,5 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { callPortfolioState, stateOperationId } from './portfolio-state-client';
 
 const WINDOW_SECONDS = 60;
 const MAX_DOWNLOADS_PER_WINDOW = 10;
@@ -102,6 +103,8 @@ function memoryLimit(key: string, max: number, windowSeconds = WINDOW_SECONDS): 
 }
 
 export async function limitDownload(ip: string): Promise<LimitResult> {
+  const state = await limitState('download', ip);
+  if (state) return state;
   if (!upstash) return memoryLimit(ip, MAX_DOWNLOADS_PER_WINDOW);
   try {
     const { success, limit, remaining, reset } = await upstash.limit(ip);
@@ -112,6 +115,8 @@ export async function limitDownload(ip: string): Promise<LimitResult> {
 }
 
 export async function limitLeaderboard(ip: string): Promise<LimitResult> {
+  const state = await limitState('leaderboard', ip);
+  if (state) return state;
   if (!leaderboardUpstash) return memoryLimit(`lb:${ip}`, MAX_LEADERBOARD_PER_WINDOW);
   try {
     const { success, limit, remaining, reset } = await leaderboardUpstash.limit(ip);
@@ -122,6 +127,8 @@ export async function limitLeaderboard(ip: string): Promise<LimitResult> {
 }
 
 export async function limitMagicEmail(key: string): Promise<LimitResult> {
+  const state = await limitState('magic', key);
+  if (state) return state;
   if (!magicUpstash) return memoryLimit(`magic:${key}`, MAX_MAGIC_PER_WINDOW, MAGIC_WINDOW_SECONDS);
   try {
     const { success, limit, remaining, reset } = await magicUpstash.limit(key);
@@ -132,6 +139,8 @@ export async function limitMagicEmail(key: string): Promise<LimitResult> {
 }
 
 export async function limitGardenView(ip: string): Promise<LimitResult> {
+  const state = await limitState('garden-view', ip);
+  if (state) return state;
   if (!gardenViewUpstash) {
     return memoryLimit(`gv:${ip}`, MAX_GARDEN_VIEWS_PER_WINDOW, GARDEN_VIEW_WINDOW_SECONDS);
   }
@@ -144,6 +153,8 @@ export async function limitGardenView(ip: string): Promise<LimitResult> {
 }
 
 export async function limitFeedback(ip: string): Promise<LimitResult> {
+  const state = await limitState('feedback', ip);
+  if (state) return state;
   if (!feedbackUpstash) {
     return memoryLimit(`fb:${ip}`, MAX_FEEDBACK_PER_WINDOW, FEEDBACK_WINDOW_SECONDS);
   }
@@ -153,4 +164,12 @@ export async function limitFeedback(ip: string): Promise<LimitResult> {
   } catch {
     return memoryLimit(`fb:${ip}`, MAX_FEEDBACK_PER_WINDOW, FEEDBACK_WINDOW_SECONDS);
   }
+}
+
+async function limitState(kind: string, subject: string): Promise<LimitResult | undefined> {
+  return callPortfolioState<LimitResult>('/v1/rate/check', {
+    opId: stateOperationId(),
+    kind,
+    subject,
+  });
 }

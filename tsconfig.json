@@ -40,6 +40,7 @@
     "cloud-worker",
     "visits-worker",
     "mcp-worker",
-    "turnstile-worker"
+    "turnstile-worker",
+    "state-worker"
   ]
 }
