@@ -10,14 +10,14 @@ Built 2026-05-09. Companion doc: `docs/cloud-cloudflare-architecture.md` (the un
 
 ```
 Browser
-  │  (real client IP visible in x-forwarded-for)
+  │  (real client IP visible in cf-connecting-ip)
   ▼
-Vercel Edge ── runs src/middleware.ts on every page request
+Cloudflare site Worker ── runs src/middleware.ts on every page request
   │              ├─ skips: prefetch hits, static assets, api/, og-image, etc.
   │              ├─ extracts real IP from x-forwarded-for[0]
   │              ├─ continues serving the page (NextResponse.next())
   │              └─ event.waitUntil(
-  │                    fire-and-forget POST → worker
+  │                    fire-and-forget service-binding POST → worker
   │                    Header: x-real-ip = <real client IP>
   │                 )
   │                                          │
@@ -25,8 +25,7 @@ Vercel Edge ── runs src/middleware.ts on every page request
   │                       Cloudflare Worker: visits-worker
   │                       (https://visits-worker.mannanteam.workers.dev/v)
   │                          ├─ verifies bearer secret
-  │                          ├─ prefers x-real-ip over cf-connecting-ip
-  │                          │  (cf-connecting-ip would be Vercel's egress)
+  │                          ├─ receives the normalized client IP as x-real-ip
   │                          ├─ rate-limits per IP (120 / 60s)
   │                          ├─ hashes IP with rotating salt
   │                          ├─ classifies device from UA
@@ -45,7 +44,7 @@ The middleware does NOT block the response. It returns immediately and uses `eve
 
 ## 2. Why this stack, in one paragraph each
 
-**Why a Cloudflare Worker as a sidecar.** D1 has no public HTTP API; it can only be accessed via a binding inside a CF Worker or Pages function. Vercel-hosted Next.js cannot bind to D1 directly. So we built a 100-line Worker as the bridge. The Worker is the only thing that talks to D1; everything else (Next.js, dashboards, scripts) talks to the Worker.
+**Why a Cloudflare Worker as a sidecar.** The dedicated Worker keeps visit ingestion and its D1 lifecycle isolated from the application runtime. The OpenNext site Worker calls it through a same-account service binding; the authenticated public URL remains only for local development and temporary Vercel rollback.
 
 **Why D1 vs Vercel Postgres / Upstash / Blob.** D1 is on the same account as the user's existing Workers (`cloud-worker`, `vision-board`), free for 100K writes/day on Workers Paid, and SQL is the right tool for analytics queries (time windows, group-by, indexes). Postgres would be overkill; Upstash Redis isn't designed for analytical queries.
 
@@ -53,7 +52,7 @@ The middleware does NOT block the response. It returns immediately and uses `eve
 
 **Why a separate worker (not extending `cloud-worker`).** Reliability isolation. If `visits-worker` gets DOSed or hits a bug, `cloud-worker` (which gates real user file access) keeps running. Also keeps each worker's bundle small and rate-limits independent.
 
-**Why middleware (not a client-side `usePathname` effect).** Middleware runs server-side on Vercel Edge, sees every request — including bots, JS-disabled, and the RSC fetches that App Router uses for soft client navigation. A client effect misses bots and runs only on humans with JS enabled. Middleware also has access to real request headers (IP, UA, Vercel geo, prefetch hints) before the response is sent.
+**Why middleware (not a client-side `usePathname` effect).** Middleware runs inside the Cloudflare-hosted Next.js Worker and sees every request — including bots, JS-disabled clients, and the RSC fetches that App Router uses for soft navigation. It also receives Cloudflare's verified request headers before the response is sent.
 
 **Why fire-and-forget.** The user's page load must not wait on logging. `event.waitUntil` lets the request return immediately while the worker call finishes asynchronously on the edge.
 
@@ -74,8 +73,9 @@ visits-worker/                     ← Cloudflare Worker project
 └── src/
     └── index.ts                   single fetch handler — auth, hash, insert
 
-src/middleware.ts                  ← lives in the main Next.js app
-.env.local                         ← VISITS_WORKER_URL + VISIT_SECRET (untracked)
+src/middleware.ts                  ← lives in the OpenNext site Worker
+wrangler.jsonc                     ← VISITS_WORKER service binding
+.env.local                         ← local/rollback URL + secret (untracked)
 package.json                       ← bun run visits:* aliases
 ```
 
@@ -133,13 +133,13 @@ printf '%s' "$(grep '^VISIT_SECRET=' .dev.vars | cut -d= -f2)" \
 printf '%s' "$(grep '^IP_SALT=' .dev.vars | cut -d= -f2)" \
   | bunx wrangler secret put IP_SALT
 
-# 7. Add the same VISIT_SECRET + worker URL to the Next.js app
-# .env.local (untracked) and Vercel Environment Variables (Production + Preview)
+# 7. Store the same VISIT_SECRET on both site Worker environments.
+# Keep the URL only in .env.local and the temporary Vercel rollback environment.
 VISITS_WORKER_URL=https://visits-worker.mannanteam.workers.dev/v
 VISIT_SECRET=<same value as the worker secret>
 ```
 
-**On Vercel:** add via dashboard or `vercel env add VISIT_SECRET production` and `vercel env add VISITS_WORKER_URL production` (then `preview`). Production logging won't fire until both are set.
+The Cloudflare deployments use the `VISITS_WORKER` service binding plus `VISIT_SECRET`; they do not require the public URL. The Vercel URL variables are rollback-only and are removed with the Vercel project after the observation window.
 
 ---
 
@@ -261,7 +261,7 @@ The fire-and-forget POST itself is a single `fetch(...)`; the response body is i
 
 **Next.js 15.1 uses `middleware.ts`. Next 16 renames it to `proxy.ts`.** The validation hook keeps recommending the rename — only act on it after upgrading to Next 16.
 
-**Vercel doesn't surface real client IP the same way Cloudflare does.** Inside Vercel Edge middleware, `req.headers.get('x-forwarded-for')` carries the real client IP (first comma-separated entry). Inside the Cloudflare Worker, the natural source is `cf-connecting-ip` — but in this architecture the Worker's caller is *Vercel*, not the browser, so `cf-connecting-ip` would resolve to a Vercel egress IP. **Solution in place:** middleware extracts the real IP from `x-forwarded-for` and forwards it to the Worker as `x-real-ip`; the Worker prefers `x-real-ip` over `cf-connecting-ip`. Without this, every visit would hash to a small set of Vercel datacenter IPs, breaking dedupe and `COUNT(DISTINCT ip_hash)` analytics.
+**Client IP forwarding.** The site Worker reads Cloudflare's `cf-connecting-ip`, normalizes it, and forwards it to the bound visits Worker as `x-real-ip`. The legacy URL adapter falls back to the first `x-forwarded-for` value for local development and Vercel rollback. The visits Worker hashes the forwarded value and never stores the raw IP.
 
 **CORS on the worker is wide-open.** Only the bearer secret authenticates. Acceptable for a server-to-server call, but if you ever invoke the endpoint from a browser, lock CORS down to your origin.
 
@@ -298,6 +298,6 @@ Even at 100× traffic, this stays in the included tier. The rate limiter (120 re
 | Change matcher (which routes log) | `src/middleware.ts` → `config.matcher` |
 | Change dedupe window | `src/index.ts` → `DEDUPE_WINDOW_MS` |
 | Change rate limit | `wrangler.jsonc` → `ratelimits[0].simple` |
-| Rotate secrets | `wrangler secret put` for worker, Vercel env vars for app, `.env.local` for local dev |
+| Rotate secrets | `wrangler secret put` for both Workers; update `.env.local` and temporary Vercel rollback env while retained |
 | Add a query alias | `visits-worker/package.json` → scripts, then mirror in root `package.json` |
 | Move to a different worker URL / domain | `wrangler.jsonc` → `routes`, then update `VISITS_WORKER_URL` everywhere |

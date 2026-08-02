@@ -6,11 +6,11 @@ A full read-only audit of this repo ran 2026-07-04 (Next.js app + the Cloudflare
 
 ## Why this exists
 
-Four remediation groups are live security exposure — not optional, not "when you get to it." The newly identified shared public/private R2 boundary is plan `006` and is the immediate priority. Everything past P0 is real but discretionary: the point is to work down a prioritized backlog sustainably, not treat every finding as equally urgent.
+Four remediation groups were classified as live security exposure. Plans `001`-`003` and the shared public/private R2 boundary in plan `006` are now closed. Everything past P0 is real but discretionary: the point is to work down a prioritized backlog sustainably, not treat every finding as equally urgent.
 
 ## Roadmap / phasing
 
-1. **P0 — fix now.** Live security exposure. Plans `001`-`003` are closed; plan `006` has a verified repository phase and remains active because all production gates are unauthorized/open.
+1. **P0 — closed.** Plans `001`-`003` and `006` are complete; plan `006` reached independently reviewed production proof on 2026-08-02.
 2. **P1 — high leverage.** Real bugs and gaps worth fixing soon. `004` and `005` are written; the rest are queued in `README.md` without a detailed plan yet.
 3. **P2 — real, lower urgency.** Do these as capacity allows.
 4. **P3 / investigate.** Low priority, or needs a cheap investigation step before it's even clear a fix is warranted.

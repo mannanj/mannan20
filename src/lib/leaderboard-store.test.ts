@@ -1,16 +1,8 @@
-import { beforeAll, beforeEach, describe, expect, test } from 'bun:test';
-
-delete process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
-delete process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
+import { beforeEach, describe, expect, test } from 'bun:test';
 
 const store = await import('./leaderboard-store');
 
 describe('leaderboard store (memory fallback)', () => {
-  beforeAll(() => {
-    expect(process.env.UPSTASH_REDIS_REST_KV_REST_API_URL).toBeUndefined();
-    expect(process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN).toBeUndefined();
-  });
-
   beforeEach(() => {
     store.__resetMemoryStore();
   });
@@ -65,6 +57,13 @@ describe('leaderboard store (memory fallback)', () => {
     });
     expect(followUp.ok).toBe(true);
     if (followUp.ok) expect(followUp.finalName).toBe('Bobby');
+  });
+
+  test('renaming back to a prior alias reactivates it without a cycle', async () => {
+    await store.submitScore({ kind: 'human', name: 'Before', score: 8, ownerId: 'owner-one', cookieName: null });
+    await store.renameIdentity({ ownerId: 'owner-one', to: 'After', from: 'Before' });
+    await store.renameIdentity({ ownerId: 'owner-one', to: 'Before', from: 'After' });
+    expect(await store.boards()).toEqual({ human: [{ name: 'Before', score: 8 }], agent: [] });
   });
 
   test('a name still belongs to its first owner', async () => {

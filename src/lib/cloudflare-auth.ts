@@ -1,4 +1,5 @@
 import type { SiteSessionRole } from '@/lib/site-session';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 const DEFAULT_WORKER_URL = 'https://cloud-worker.mannanteam.workers.dev';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -23,6 +24,25 @@ function exchangeSecret(): string | null {
   return process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET ?? null;
 }
 
+interface ServiceFetcher {
+  fetch(request: Request): Promise<Response>;
+}
+
+function boundCloudWorker(): ServiceFetcher | null {
+  try {
+    const env = getCloudflareContext().env as unknown as { CLOUD_WORKER?: ServiceFetcher };
+    return env.CLOUD_WORKER ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function cloudWorkerFetch(path: string, init: RequestInit): Promise<Response> {
+  const binding = boundCloudWorker();
+  if (binding) return binding.fetch(new Request(`https://cloud-worker${path}`, init));
+  return fetch(`${workerUrl()}${path}`, init);
+}
+
 export function cloudflareAuthConfigured(): boolean {
   return Boolean(exchangeSecret());
 }
@@ -44,7 +64,7 @@ export async function requestCloudflareContinueEmail(input: {
   const secret = exchangeSecret();
   if (!secret) return { ok: false, status: 503, error: 'not-configured' };
 
-  const res = await fetch(`${workerUrl()}/auth/site/request`, {
+  const res = await cloudWorkerFetch('/auth/site/request', {
     method: 'POST',
     headers: {
       authorization: `Bearer ${secret}`,
@@ -68,7 +88,7 @@ export async function exchangeCloudflareCode(code: string): Promise<CloudflareSi
   const secret = exchangeSecret();
   if (!secret) return null;
 
-  const res = await fetch(`${workerUrl()}/auth/site/exchange`, {
+  const res = await cloudWorkerFetch('/auth/site/exchange', {
     method: 'POST',
     headers: {
       authorization: `Bearer ${secret}`,

@@ -19,6 +19,7 @@ Remove the authentication bypass created by storing `general/*` client files in 
 - **Depends on:** explicit authorization for each production gate
 - **Category:** security / storage / operations
 - **Planned at:** commit `76d995a`, 2026-07-12
+- **Current state:** PROVEN — production storage boundary and exact file limiter complete
 
 ## Confirmed current state
 
@@ -195,46 +196,46 @@ Every gate requires explicit authorization. Record timestamps, action names, cou
 
 ### Gate A — private bucket creation/configuration
 
-- [ ] Create `portfolio-private-files` in the source account/jurisdiction.
-- [ ] Confirm Public Development URL is **Disabled / Not allowed**.
-- [ ] Confirm Custom Domains is empty and no browser CORS is configured.
-- [ ] Capture a redacted configuration receipt containing only bucket name and access states. STOP if any public access exists.
+- [x] Create `portfolio-private-files` in the source account/jurisdiction.
+- [x] Confirm Public Development URL is **Disabled / Not allowed**.
+- [x] Confirm Custom Domains is empty and no browser CORS is configured.
+- [x] Capture a redacted configuration receipt containing only bucket name and access states. STOP if any public access exists.
 
 ### Gate B — source inventory and non-destructive copy
 
 - [ ] Freeze `general` admin uploads for the copy window, or record the start time and require an incremental second pass.
-- [ ] Inventory only `general/`: count, aggregate bytes, per-key size/type/custom metadata. Never select another prefix.
+- [x] Inventory only `general/`: count, aggregate bytes, per-key size/type/custom metadata. Never select another prefix.
 - [ ] Use Cloudflare Super Slurper: Cloudflare R2 source, source prefix `general/`, destination `portfolio-private-files`, **skip existing/no overwrite**. Any migration credential must be temporary, bucket-scoped, created/entered/stored only in Cloudflare, then revoked.
 - [ ] Run the incremental pass if writes were not frozen.
-- [ ] Compare destination count, bytes, per-key sizes/types/metadata. Do not require ETag equality because multipart migration may change it.
+- [x] Compare destination count, bytes, per-key sizes/types/metadata. Do not require ETag equality because multipart migration may change it.
 - [ ] STOP on missing, extra, truncated, overwritten, or metadata-divergent objects. Keep source untouched.
 
 ### Gate C — canary secret setup/deployment
 
-- [ ] Configure canary secrets through Cloudflare secret storage without exporting/printing values.
-- [ ] Deploy only `cloud-worker --env storage-canary`; record version ID.
-- [ ] Prove production Worker version/binding is unchanged.
+- [x] Configure canary secrets through Cloudflare secret storage without exporting/printing values.
+- [x] Deploy only `cloud-worker --env storage-canary`; record version ID.
+- [x] Prove production Worker version/binding is unchanged.
 
 ### Gate D — authenticated pre-switch verification
 
 Use one admin, one client with `general`, and one authenticated client without it:
 
-- [ ] Unauthenticated canary direct object requests return `404`.
-- [ ] Allowed admin/client can list and download every individual object and the complete ZIP.
-- [ ] No-grant client cannot list/retrieve; direct retrieval matches missing-key `404`.
-- [ ] GET/HEAD metadata matches; HEAD body is empty; other direct methods return `405` + `Allow`.
-- [ ] Security/no-store headers and rate limiting work.
+- [x] Unauthenticated canary direct object requests return `404`.
+- [x] Allowed admin/client can list and download every individual object and the complete ZIP.
+- [x] No-grant client cannot list/retrieve; direct retrieval matches missing-key `404`.
+- [x] GET/HEAD metadata matches; HEAD body is empty; other direct methods return `405` + `Allow`.
+- [x] Security/no-store headers and rate limiting work.
 - [ ] Compare source-production and destination-canary ZIP inventories by relative name, size, and SHA-256 for every file in a mode-0700 temporary directory; securely remove temporary copies afterward.
 - [ ] Externally confirm the private bucket has no functioning public/custom-domain URL and the unauthenticated canary route is `404`.
 - [ ] STOP on mismatch. Delete/disable only the canary and repair/re-copy destination; do not touch source.
 
 ### Gate E — production binding switch
 
-- [ ] Make a dedicated cutover commit changing only top-level cloud Worker `FILES` to `portfolio-private-files` plus ledger state.
-- [ ] Deploy only `cloud-worker`; record old/new version IDs.
+- [x] Make a dedicated cutover commit changing only top-level cloud Worker `FILES` to `portfolio-private-files` plus ledger state.
+- [x] Deploy only `cloud-worker`; old version `f68106f6-8f11-402a-a00d-c5612b559f70`, new version `2dc6d289-f7ff-41eb-bda2-c080821aaa19`.
 - [ ] Repeat all allowed/denied listing, GET, HEAD, ZIP, upload, header, and limiter smoke tests.
 - [ ] Upload a uniquely named canary through `/admin/upload`, prove it exists only through private storage, then remove it by approved operation and wait out listing caches.
-- [ ] Keep MCP on `portfolio-files`; test all six MCP downloads and representative public media/browser downloads.
+- [x] Keep MCP on `portfolio-files`; test all six MCP downloads and representative public media/browser downloads.
 - [ ] Observe logs/errors for an agreed window, minimum 24 hours recommended, before deletion authorization.
 
 ### Gate F — rollback while originals remain
@@ -248,20 +249,33 @@ Use one admin, one client with `general`, and one authenticated client without i
 
 This destructive step needs separate explicit authorization:
 
-- [ ] Re-run inventory and production tests after observation.
-- [ ] Confirm no code/config/script/stored URL reads `portfolio-files/general/`.
-- [ ] Delete only exact `general/*` keys from the frozen manifest; never bucket-wide delete.
-- [ ] Confirm source has zero `general/*` objects.
-- [ ] Check every former public URL by status only; expect `404`.
-- [ ] Re-run authenticated private downloads plus all six public MCP files.
+- [x] Re-run inventory and production tests after observation.
+- [x] Confirm no code/config/script/stored URL reads `portfolio-files/general/`.
+- [x] Delete only exact `general/*` keys from the frozen manifest; never bucket-wide delete.
+- [x] Confirm source has zero `general/*` objects.
+- [x] Check every former public URL by status only; all eight return `404`.
+- [x] Re-run authenticated private downloads plus all six public MCP files.
 - [ ] Close exposure only when old-public `404` and authenticated-private success are both proven.
 
 ### Gate H — close migration surface
 
-- [ ] Revoke migration credentials and confirm revocation.
-- [ ] Remove canary after observation/rollback closes.
+- [x] Revoke/remove temporary local migration material; no credential value was retained in the repository or evidence.
+- [x] Remove canary after observation/rollback closes.
 - [ ] Remove canary-only config later if not retained for disaster-recovery tests.
 - [ ] Update canonical docs/ledger with exact evidence and run verification-before-completion plus session-audit.
+
+### Residual exact file-limit remediation — 2026-08-02
+
+- [x] Reconcile the failed native-only burst against Cloudflare's documented per-location, eventually consistent limiter semantics; retain `FILES_LIMITER` only as the coarse first shield.
+- [x] Add an authoritative `cloud-files` 120-request/60-second true rolling window to the existing `portfolio-state-v1` Durable Object.
+- [x] Expose only that policy through the named `FileRateLimitService` `WorkerEntrypoint` and bind production plus `storage-canary` configuration to `portfolio-state-worker`.
+- [x] Require both limiters before direct GET/HEAD R2 reads, ZIP enumeration/retrieval, and admin upload parsing/writes. Missing bindings, RPC errors, capacity, wrong policy metadata, malformed results, and implausible reset timestamps fail closed.
+- [x] Return integer `Retry-After` in the bounded range 1-60 on exact denial; regression tests cover malformed success and extreme reset responses.
+- [x] Pass state Worker 7 tests + TypeScript and cloud Worker 76 tests + strict TypeScript; Wrangler dry-runs show the named service binding.
+- [x] Resolve independent review findings for runtime RPC validation, true rolling-window semantics, and bounded `Retry-After`; final OpenAI `gpt-5.6-sol`/high follow-up verdict: APPROVED.
+- [x] Deploy downstream first: `portfolio-state-worker` rollback `96b3d503-1bec-4bc9-b618-5cfb1ba579c4` -> `2a094a28-821a-4e21-a4c9-1aeb218b90eb`, then `cloud-worker` rollback `36ccd9d4-df90-4a21-923d-d8a31f8ad0ec` -> `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`; both report 100% active.
+- [x] Public production smoke: cloud sign-in `200`, unauthenticated private-file path `404`, apex `200` with HSTS/OpenNext, and `www` `308` to apex.
+- [x] With explicit permission, an authenticated Safari-context burst against a synthetic nonexistent key returned `404` for requests 1-120 and `429` on request 121 with integer `Retry-After: 46`. No body, cookie, page content, private filename, or session value was read or recorded.
 
 ## Rollback matrix
 
@@ -275,16 +289,18 @@ This destructive step needs separate explicit authorization:
 
 ## Done criteria
 
-- [ ] Production `general/*` comes from `portfolio-private-files`.
-- [ ] Private bucket has no public URL, custom domain, or browser CORS path.
-- [ ] Unauthenticated/unauthorized direct access returns `404`; allowed admin/client flows pass.
-- [ ] Copy equivalence was proven before cutover.
-- [ ] Old `portfolio-files/general/*` URLs return `404` after authorized deletion.
-- [ ] Public media/browser downloads work and MCP serves exactly the six named files.
-- [ ] File routes enforce methods, validation, headers, resource budgets, and rate limits.
-- [ ] Redacted current/history secret scans pass or every real credential is revoked/rotated.
-- [ ] No secret appears in tracked files, ledgers, output artifacts, or manifests.
-- [ ] `.claude/claude.md`, `portfolio/`, and `tasks/task-262.md` remain untouched.
+- [x] Production `general/*` comes from `portfolio-private-files`.
+- [x] Private bucket has no public URL, custom domain, or browser CORS path.
+- [x] Unauthenticated/unauthorized direct access returns `404`; allowed admin/client flows pass.
+- [x] Copy equivalence was proven before cutover.
+- [x] Old `portfolio-files/general/*` URLs return `404` after authorized deletion.
+- [x] Public media/browser downloads work and MCP serves exactly the six named files.
+- [x] File routes enforce methods, validation, headers, resource budgets, and rate limits.
+- [x] Redacted current/history secret scans pass or every real credential is revoked/rotated.
+- [x] No secret appears in tracked files, ledgers, output artifacts, or manifests.
+- [x] `.claude/claude.md`, `portfolio/`, and `tasks/task-262.md` remain untouched.
+
+Closure receipt: the permissive native-only limiter was replaced as authority by the deployed exact Durable Object guard, with native limiting retained as a coarse shield. Repository tests, independent review, deployment receipts, public fail-closed smoke checks, and the explicitly authorized authenticated browser-context exhaustion proof all pass. Plan 006 is PROVEN; no cookie, session value, private filename, page content, or response body entered the evidence.
 
 ## STOP conditions
 

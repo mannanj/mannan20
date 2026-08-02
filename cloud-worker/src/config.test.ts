@@ -15,6 +15,7 @@ interface WorkerConfig {
   d1_databases?: Binding[];
   r2_buckets?: Binding[];
   ratelimits?: Binding[];
+  services?: Array<{ binding: string; service: string; entrypoint?: string }>;
   env?: Record<string, WorkerConfig & { name?: string }>;
 }
 
@@ -27,8 +28,8 @@ function binding(items: Binding[] | undefined, name: string): Binding | undefine
 }
 
 describe('storage boundary configuration', () => {
-  test('keeps the production general-files binding on the public bucket before cutover', () => {
-    expect(binding(config.r2_buckets, 'FILES')?.bucket_name).toBe('portfolio-files');
+  test('keeps the production general-files binding on the private bucket after cutover', () => {
+    expect(binding(config.r2_buckets, 'FILES')?.bucket_name).toBe('portfolio-private-files');
   });
 
   test('declares the authenticated file limiter in production', () => {
@@ -36,6 +37,19 @@ describe('storage boundary configuration', () => {
       name: 'FILES_LIMITER',
       namespace_id: '1003',
       simple: { limit: 120, period: 60 },
+    });
+  });
+
+  test('binds the exact file limiter to the private state Worker entrypoint', () => {
+    expect(config.services).toContainEqual({
+      binding: 'FILE_RATE_LIMIT_SERVICE',
+      service: 'portfolio-state-worker',
+      entrypoint: 'FileRateLimitService',
+    });
+    expect(config.env?.['storage-canary']?.services).toContainEqual({
+      binding: 'FILE_RATE_LIMIT_SERVICE',
+      service: 'portfolio-state-worker',
+      entrypoint: 'FileRateLimitService',
     });
   });
 

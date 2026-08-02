@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest, type NextFetchEvent } from 'next/server'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
 
 export const config = {
   matcher: [
@@ -9,8 +10,22 @@ export const config = {
 const WORKER_URL = process.env.VISITS_WORKER_URL
 const WORKER_SECRET = process.env.VISIT_SECRET
 
+interface ServiceFetcher {
+  fetch(request: Request): Promise<Response>
+}
+
+function boundVisitsWorker(): ServiceFetcher | null {
+  try {
+    const env = getCloudflareContext().env as unknown as { VISITS_WORKER?: ServiceFetcher }
+    return env.VISITS_WORKER ?? null
+  } catch {
+    return null
+  }
+}
+
 export function middleware(req: NextRequest, event: NextFetchEvent) {
-  if (!WORKER_URL || !WORKER_SECRET) return NextResponse.next()
+  const binding = boundVisitsWorker()
+  if ((!binding && !WORKER_URL) || !WORKER_SECRET) return NextResponse.next()
 
   if (req.headers.get('next-router-prefetch')) return NextResponse.next()
   if (req.headers.get('purpose') === 'prefetch') return NextResponse.next()
@@ -23,11 +38,12 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
     url.searchParams.has('_rsc')
 
   const realIp =
+    req.headers.get('cf-connecting-ip') ||
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') ||
     ''
 
-  const ping = fetch(WORKER_URL, {
+  const visitRequest = new Request(binding ? 'https://visits-worker/' : WORKER_URL!, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -40,7 +56,8 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
       referrer: req.headers.get('referer'),
       isRsc,
     }),
-  }).catch(() => undefined)
+  })
+  const ping = (binding ? binding.fetch(visitRequest) : fetch(visitRequest)).catch(() => undefined)
 
   event.waitUntil(ping)
   return NextResponse.next()
