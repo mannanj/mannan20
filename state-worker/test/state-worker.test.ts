@@ -1,4 +1,4 @@
-import { env, runInDurableObject } from "cloudflare:test";
+import { env, runInDurableObject, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { PortfolioState } from "../src/index";
 
@@ -32,6 +32,9 @@ describe("portfolio state durable object", () => {
     await expect(stub.renameIdentity({ opId: "rename-identity-001", ownerId: claimed!.ownerId, to: "After" })).resolves.toEqual({ ok: true });
     expect(await stub.boards()).toEqual({ human: [{ name: "After", score: 8 }], agent: [] });
     expect(await stub.identityInfo(claimed!.ownerId)).toEqual({ email: "ada@example.test", names: ["After"] });
+    await expect(stub.renameIdentity({ opId: "rename-identity-002", ownerId: claimed!.ownerId, to: "Before" })).resolves.toEqual({ ok: true });
+    expect(await stub.boards()).toEqual({ human: [{ name: "Before", score: 8 }], agent: [] });
+    expect(await stub.identityInfo(claimed!.ownerId)).toEqual({ email: "ada@example.test", names: ["Before"] });
   });
 
   it("uses exact rolling limits, tracks garden views, and caps feedback", async () => {
@@ -53,5 +56,59 @@ describe("portfolio state durable object", () => {
     await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
       expect(objectState.storage.sql.exec<{ count: number }>("SELECT COUNT(*) AS count FROM operations").one().count).toBeLessThanOrEqual(10_000);
     });
+  });
+
+  it("enforces both contact limits at exactly ten requests per hour", async () => {
+    const stub = state();
+    for (const kind of ["contact-intent", "validate-contact"] as const) {
+      for (let index = 0; index < 10; index += 1) {
+        await expect(stub.limit({
+          opId: `${kind.replaceAll("-", "")}-${index.toString().padStart(2, "0")}`,
+          kind,
+          subject: `subject-${kind}`,
+        })).resolves.toMatchObject({ success: true, limit: 10, remaining: 9 - index });
+      }
+      await expect(stub.limit({
+        opId: `${kind.replaceAll("-", "")}-blocked`,
+        kind,
+        subject: `subject-${kind}`,
+      })).resolves.toMatchObject({ success: false, limit: 10, remaining: 0 });
+    }
+  });
+
+  it("globally compacts expired rate hits and fails closed at the storage cap", async () => {
+    const expiredStub = state();
+    await runInDurableObject(expiredStub, (_instance: PortfolioState, objectState) => {
+      objectState.storage.sql.exec(
+        "INSERT INTO rate_hits(bucket, subject_hash, occurred_at) VALUES ('download', 'expired-subject', ?)",
+        Date.now() - 2 * 60 * 1000 - 1_001,
+      );
+    });
+    await expiredStub.limit({ opId: "global-rate-compact-01", kind: "download", subject: "fresh-subject" });
+    await runInDurableObject(expiredStub, (_instance: PortfolioState, objectState) => {
+      expect(objectState.storage.sql.exec<{ count: number }>("SELECT COUNT(*) AS count FROM rate_hits WHERE subject_hash = 'expired-subject'").one().count).toBe(0);
+    });
+
+    const cappedStub = env.PORTFOLIO_STATE.getByName("portfolio-state-v1");
+    await runInDurableObject(cappedStub, (_instance: PortfolioState, objectState) => {
+      objectState.storage.sql.exec(`
+        WITH RECURSIVE sequence(value) AS (
+          SELECT 1 UNION ALL SELECT value + 1 FROM sequence WHERE value < 10000
+        )
+        INSERT INTO rate_hits(bucket, subject_hash, occurred_at)
+        SELECT 'download', printf('subject-%05d', value), ? FROM sequence
+      `, Date.now());
+    });
+    const response = await SELF.fetch("https://portfolio-state-worker/v1/rate/check", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-state-service-key": "test-state-key" },
+      body: JSON.stringify({
+        opId: "global-rate-capacity-01",
+        kind: "download",
+        subject: "new-subject",
+      }),
+    });
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ ok: false, code: "rate_limit_capacity" });
   });
 });

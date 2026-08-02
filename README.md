@@ -52,5 +52,10 @@ GitHub Actions runs the root TypeScript check and unit suite on pushes and pull 
 ## Deployment
 
 ```bash
-vercel
+bun run cf:deploy:preview
+bun run cf:deploy:production
 ```
+
+Both commands build the pinned OpenNext bundle and deploy the corresponding
+Cloudflare Worker environment. Vercel is retained only as a temporary runtime
+rollback until the DNS cutover observation window closes.

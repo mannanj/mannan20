@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
 const manifest = JSON.parse(await readFile('.next/prerender-manifest.json', 'utf8'));
+const appPaths = JSON.parse(await readFile('.next/server/app-paths-manifest.json', 'utf8'));
 const cached = new Set(Object.keys(manifest.routes ?? {}));
 const forbidden = [
   '/api/auth/cloudflare-callback',
@@ -30,4 +31,11 @@ for (const route of ['/opengraph-image', '/twitter-image', '/download-resume/ope
   if (!cached.has(route)) throw new Error(`Expected static metadata image is not cached: ${route}`);
 }
 
-console.log(`Cache boundary verified: ${cached.size} prerendered routes, 0 sensitive routes.`);
+const disabledRoutes = Object.keys(appPaths).filter(
+  (route) => route.includes('/_jordan') || route.includes('/keep-alive'),
+);
+if (disabledRoutes.length > 0) {
+  throw new Error(`Disabled legacy routes entered the application manifest: ${disabledRoutes.join(', ')}`);
+}
+
+console.log(`Cache boundary verified: ${cached.size} prerendered routes, 0 sensitive or disabled routes.`);

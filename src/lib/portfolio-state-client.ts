@@ -28,7 +28,12 @@ export async function callPortfolioState<T>(
   const env = stateEnv();
   const secret = env.STATE_SERVICE_SECRET ?? process.env.STATE_SERVICE_SECRET;
   const publicUrl = process.env.PORTFOLIO_STATE_WORKER_URL?.replace(/\/+$/, '');
-  if (!secret || (!env.PORTFOLIO_STATE && !publicUrl)) return undefined;
+  if (!secret || (!env.PORTFOLIO_STATE && !publicUrl)) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Portfolio state service is not configured');
+    }
+    return undefined;
+  }
 
   const request = new Request(
     env.PORTFOLIO_STATE ? `https://portfolio-state-worker${path}` : `${publicUrl}${path}`,
