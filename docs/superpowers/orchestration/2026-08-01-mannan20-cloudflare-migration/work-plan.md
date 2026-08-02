@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 14
+  revision: 15
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -67,11 +67,11 @@ milestones:
     depends_on: [internal-bindings, r2-boundary]
     state: ACTIVE
     acceptance: Cloudflare zone eligibility is proven, all DNS records are reconciled, a non-production hostname passes production-shaped smoke tests, and apex/www traffic is cut over with a timed Vercel rollback drill and no DNS/email regression.
-    evidence: Active full-zone receipt; .is parent and multi-resolver Cloudflare delegation; authoritative Proton MX/SPF/DMARC/DKIM comparison; live apex Worker route plus www Worker Custom Domain; deployment c2ec62d1-b612-4d07-90ec-cf8ebfebdd08; HTTPS/canonical/static/API/browser smoke matrices; revision 8 independent reviews; revision 12 timed Vercel rollback/Cloudflare restore receipt; revisions 13-14 Custom Domain prerequisite/recovery/production-test receipts.
+    evidence: Active full-zone receipt; .is parent and multi-resolver Cloudflare delegation; authoritative Proton MX/SPF/DMARC/DKIM comparison; final apex and www Worker Custom Domains; deployment c4158947-0c49-4a26-b3f7-1f480df3a8a4; HTTPS/canonical/static/API/browser smoke matrices; revision 8 independent reviews; revision 12 timed Vercel rollback/Cloudflare restore receipt; revisions 13-15 Custom Domain prerequisite/recovery/production-test/final-cutover receipts.
     review_level: TWO_REVIEWS
     review_route: MIXED
     review_status: RECONCILED
-    blocker: The bounded rollback-friendly apex Worker Route, final www Worker Custom Domain, Plan 006, no-charge Stripe validation, and timed Vercel rollback/Cloudflare restore are proven. The final apex Custom Domain is still blocked by a separate externally managed apex Vercel DNS record that Cloudflare requires removing first; the previous manual deletion removed www instead, which revision 14 repaired. The milestone also remains open for the observation window, actual mail send/receive proof, and DNSSEC enablement.
+    blocker: Final apex and www Worker Custom Domains, Plan 006, no-charge Stripe validation, and timed Vercel rollback/Cloudflare restore are proven. The milestone remains open only for the observation window, actual mail send/receive proof, and DNSSEC enablement.
   - id: decommission
     priority: 7
     depends_on: [dns-cutover]
@@ -107,12 +107,12 @@ milestones:
 next_task:
   milestone: dns-cutover
   id: observe-worker-route-cutover
-  task: Continue observing the restored Worker Route cutover while Vercel remains available; remove only the old apex Vercel DNS record through an explicitly authorized dashboard action, deploy the final apex Worker Custom Domain, prove real mail send/receive, and enable Cloudflare DNSSEC.
-  expected_evidence: Stable production telemetry and smoke matrix; mail send/receive proof; final Custom Domain/certificate/DNS evidence; signed multi-resolver DNSSEC resolution.
+  task: Continue observing the final Worker Custom Domains while Vercel remains available; prove real mail send/receive and enable Cloudflare DNSSEC, then reconcile the migration branch into the protected dirty main worktree before legacy-provider decommission.
+  expected_evidence: Stable production telemetry and smoke matrix; mail send/receive proof; signed multi-resolver DNSSEC resolution; protected-main reconciliation receipt.
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
   attempt: 1
   last_failure: null
-  updated_at: "2026-08-02T16:20:00Z"
+  updated_at: "2026-08-02T16:32:00Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -515,3 +515,10 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - Production HTTP/API matrix: 24 non-`www` checks passed for HTTP-to-HTTPS, dynamic/static pages, favicon/robots/sitemap, session boundary, leaderboard and garden-state reads, R2 download HEAD and hardened metadata, unknown/disabled surfaces, checkout validation, and a fresh $1 Stripe test-mode Checkout Session that was neither opened nor paid. The original 25th check detected the missing `www`; its authoritative DNS/TLS/redirect repair is proven separately above.
 - Browser evidence: desktop/mobile root, garden, health article, game, episodes, MCP, support, and payment pages rendered 200 without application-error text or JavaScript page errors; root-to-garden navigation passed. Isolated steady-state root/garden/game/episodes/MCP/payment journeys reported zero same-origin request failures. A broad repository E2E attempt was not counted because its garden-paper audio spec requires a missing local WAV fixture and other local/mock-oriented cases entered long retries; the actual public R2 audio object returned 200.
 - Repository/config gates: TypeScript passed; 137 unit tests passed; Wrangler production dry-run passed with all service, R2, and asset bindings. The only remaining DNS conversion action is deletion of the row whose hostname is exactly apex `mannan.is` and whose type is A/CNAME pointing to Vercel—not `www` or any MX/TXT/DKIM/verification record.
+
+### Revision 15 — final apex Custom Domain and deployment command
+
+- The remaining proxied apex A record `mannan.is -> 216.198.79.1` was independently confirmed as Vercel-owned and manually removed without touching Proton, Resend, DKIM, verification, ACME, MX, or TXT records.
+- A clean OpenNext build and production deploy attached both `mannan.is` and `www.mannan.is` as Worker-managed Custom Domains on version `c4158947-0c49-4a26-b3f7-1f480df3a8a4`, active at 100%. Cloudflare's Workers Domains API lists both hostnames on `mannan20-site` production. 1.1.1.1, 8.8.8.8, and 9.9.9.9 return Cloudflare edge addresses for both; apex and session API return 200 with HSTS and `x-opennext`, direct Workers returns 200, and direct-edge www TLS returns the canonical 308 with path/query preserved. A workstation-only stale negative cache for www remains bounded by its prior SOA TTL.
+- `package.json` now exposes `deploy` as an alias for the complete production OpenNext build/deploy pipeline. Current Bun reserves the literal `bun deploy` subcommand before package-script dispatch and prints that it is reserved for future use, so the portable command is `bun run deploy`; this is a Bun CLI constraint, not a repository configuration gap.
+- The original `/Users/manblack/Documents/mannan20` main worktree is a direct ancestor of the migration branch but contains 39 protected user-owned modified/untracked entries, including independent `package.json` security-hook edits. Final branch reconciliation must preserve those changes explicitly; do not overwrite, silently stash, or commit them as migration work.
