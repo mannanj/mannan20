@@ -76,6 +76,50 @@ describe("portfolio state durable object", () => {
     }
   });
 
+  it("enforces the cloud file boundary at exactly 120 requests per minute", async () => {
+    const stub = state();
+    for (let index = 0; index < 120; index += 1) {
+      await expect(stub.limit({
+        opId: `cloud-files-${index.toString().padStart(3, "0")}`,
+        kind: "cloud-files",
+        subject: "person@example.test:198.51.100.7",
+      })).resolves.toMatchObject({ success: true, limit: 120, remaining: 119 - index });
+    }
+    await expect(stub.limit({
+      opId: "cloud-files-blocked",
+      kind: "cloud-files",
+      subject: "person@example.test:198.51.100.7",
+    })).resolves.toMatchObject({ success: false, limit: 120, remaining: 0 });
+  });
+
+  it("expires cloud file hits on a true rolling-window boundary", async () => {
+    const stub = state();
+    const subject = "rolling@example.test:198.51.100.8";
+    const subjectBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(subject));
+    const subjectHash = [...new Uint8Array(subjectBytes)]
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+    await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
+      objectState.storage.sql.exec(
+        "INSERT INTO rate_hits(bucket, subject_hash, occurred_at) VALUES ('cloud-files', ?, ?)",
+        subjectHash,
+        Date.now() - 60_001,
+      );
+    });
+
+    await expect(stub.limit({
+      opId: "cloud-files-after-expiry",
+      kind: "cloud-files",
+      subject,
+    })).resolves.toMatchObject({ success: true, limit: 120, remaining: 119 });
+    await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
+      expect(objectState.storage.sql.exec<{ count: number }>(
+        "SELECT COUNT(*) AS count FROM rate_hits WHERE bucket = 'cloud-files' AND subject_hash = ?",
+        subjectHash,
+      ).one().count).toBe(1);
+    });
+  });
+
   it("globally compacts expired rate hits and fails closed at the storage cap", async () => {
     const expiredStub = state();
     await runInDurableObject(expiredStub, (_instance: PortfolioState, objectState) => {

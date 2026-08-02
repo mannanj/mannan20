@@ -1,4 +1,4 @@
-import { DurableObject } from "cloudflare:workers";
+import { DurableObject, WorkerEntrypoint } from "cloudflare:workers";
 
 export interface Env {
   PORTFOLIO_STATE: DurableObjectNamespace<PortfolioState>;
@@ -6,7 +6,7 @@ export interface Env {
 }
 
 type Kind = "human" | "agent";
-type LimitKind = "download" | "leaderboard" | "magic" | "feedback" | "garden-view" | "contact-intent" | "validate-contact";
+type LimitKind = "download" | "leaderboard" | "magic" | "feedback" | "garden-view" | "contact-intent" | "validate-contact" | "cloud-files";
 type Row = Record<string, SqlStorageValue>;
 
 const INSTANCE_NAME = "portfolio-state-v1";
@@ -29,6 +29,7 @@ const LIMITS: Record<LimitKind, { max: number; ms: number }> = {
   "garden-view": { max: 20, ms: 60_000 },
   "contact-intent": { max: 10, ms: 60 * 60_000 },
   "validate-contact": { max: 10, ms: 60 * 60_000 },
+  "cloud-files": { max: 120, ms: 60_000 },
 };
 
 function json(value: unknown, status = 200): Response {
@@ -297,9 +298,8 @@ export class PortfolioState extends DurableObject<Env> {
       const now = Date.now();
       const currentStart = Math.floor(now / config.ms) * config.ms;
       const previousStart = currentStart - config.ms;
-      // Preserve Upstash's two-bucket weighted sliding-window algorithm while
-      // expiring each policy on its own schedule. Short policies therefore
-      // cannot fill the global cap with rows that no longer affect decisions.
+      // Expire each policy on its own schedule. Short policies therefore cannot
+      // fill the global cap with rows that no longer affect decisions.
       for (const [kind, policy] of Object.entries(LIMITS)) {
         this.ctx.storage.sql.exec(
           "DELETE FROM rate_hits WHERE bucket = ? AND occurred_at <= ?",
@@ -307,6 +307,32 @@ export class PortfolioState extends DurableObject<Env> {
           now - (policy.ms * 2 + 1_000),
         );
       }
+      if (input.kind === "cloud-files") {
+        const windowStart = now - config.ms;
+        this.ctx.storage.sql.exec(
+          "DELETE FROM rate_hits WHERE bucket = ? AND occurred_at <= ?",
+          input.kind,
+          windowStart,
+        );
+        const window = this.one<{ count: number; oldest: number | null }>(`
+          SELECT COUNT(*) AS count, MIN(occurred_at) AS oldest
+          FROM rate_hits
+          WHERE bucket = ? AND subject_hash = ? AND occurred_at > ?
+        `, input.kind, subjectHash, windowStart);
+        const current = window?.count ?? 0;
+        const reset = current > 0 && window?.oldest != null
+          ? window.oldest + config.ms
+          : now + config.ms;
+        if (current >= config.max) {
+          return { success: false, limit: config.max, remaining: 0, reset };
+        }
+        const total = this.one<{ count: number }>("SELECT COUNT(*) AS count FROM rate_hits")?.count ?? 0;
+        if (total >= RATE_HITS_MAX) return { error: "rate_limit_capacity" as const };
+        this.ctx.storage.sql.exec("INSERT INTO rate_hits(bucket, subject_hash, occurred_at) VALUES (?, ?, ?)", input.kind, subjectHash, now);
+        return { success: true, limit: config.max, remaining: config.max - current - 1, reset };
+      }
+      // Preserve Upstash's two-bucket weighted sliding-window algorithm for
+      // migrated public-site policies whose parity depends on those semantics.
       const counts = this.one<{ previous_count: number; current_count: number }>(`
         SELECT
           SUM(CASE WHEN occurred_at >= ? AND occurred_at < ? THEN 1 ELSE 0 END) AS previous_count,
@@ -366,6 +392,22 @@ export class PortfolioState extends DurableObject<Env> {
 
 class StateError extends Error {
   constructor(readonly code: string, readonly status: number) { super(code); }
+}
+
+export class FileRateLimitService extends WorkerEntrypoint<Env> {
+  async limitFileAccess(input: { subject: string }): Promise<
+    { success: boolean; limit: number; remaining: number; reset: number }
+    | { error: "invalid_input" | "rate_limit_capacity" }
+  > {
+    const subject = requiredString(input?.subject, 512);
+    if (!subject) return { error: "invalid_input" };
+    const state = this.env.PORTFOLIO_STATE.getByName(INSTANCE_NAME);
+    return state.limit({
+      opId: `cloud-files-${crypto.randomUUID()}`,
+      kind: "cloud-files",
+      subject,
+    });
+  }
 }
 
 const REMOTE_STATE_ERRORS: Record<string, number> = {

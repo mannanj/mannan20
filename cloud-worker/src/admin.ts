@@ -12,6 +12,7 @@ import {
 import { sendMagicLink } from './email';
 import { listingCacheKey } from './cache';
 import { objectKeyFor } from './storage';
+import { checkFileRateLimit } from './file-rate-limit';
 
 interface AdminCtx {
   Bindings: Env;
@@ -30,7 +31,9 @@ admin.use('*', async (c, next) => {
 });
 
 admin.post('/invite', async (c) => {
-  const body = await c.req.json<{ email?: string; folders?: string[] }>().catch(() => ({}));
+  const body: { email?: string; folders?: string[] } = await c.req
+    .json<{ email?: string; folders?: string[] }>()
+    .catch(() => ({}));
   const email = body.email ? normalizeEmail(body.email) : '';
   const folders = (body.folders ?? []).filter(isFolder);
   if (!email || folders.length === 0) {
@@ -58,7 +61,9 @@ admin.post('/invite', async (c) => {
 });
 
 admin.post('/grant', async (c) => {
-  const body = await c.req.json<{ email?: string; folder?: string }>().catch(() => ({}));
+  const body: { email?: string; folder?: string } = await c.req
+    .json<{ email?: string; folder?: string }>()
+    .catch(() => ({}));
   const email = body.email ? normalizeEmail(body.email) : '';
   if (!email || !body.folder || !isFolder(body.folder)) {
     return c.json({ error: 'email and valid folder required' }, 400);
@@ -74,7 +79,9 @@ admin.post('/grant', async (c) => {
 });
 
 admin.post('/revoke', async (c) => {
-  const body = await c.req.json<{ email?: string; folder?: string }>().catch(() => ({}));
+  const body: { email?: string; folder?: string } = await c.req
+    .json<{ email?: string; folder?: string }>()
+    .catch(() => ({}));
   const email = body.email ? normalizeEmail(body.email) : '';
   if (!email || !body.folder || !isFolder(body.folder)) {
     return c.json({ error: 'email and valid folder required' }, 400);
@@ -103,14 +110,16 @@ admin.post('/upload', async (c) => {
     return c.json({ error: 'file exceeds 100 MiB upload limit' }, 413);
   }
 
-  const limiter = c.env.FILES_LIMITER;
-  if (!limiter || typeof limiter.limit !== 'function') {
-    return c.json({ error: 'service unavailable' }, 503);
-  }
   const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
   const session = c.get('session');
-  const limit = await limiter.limit({ key: `files:${session.email}:${ip}` });
-  if (!limit.success) return c.json({ error: 'too many requests' }, 429);
+  const limit = await checkFileRateLimit(c.env, session.email, ip);
+  if (!limit.allowed && limit.reason === 'unavailable') {
+    return c.json({ error: 'service unavailable' }, 503);
+  }
+  if (!limit.allowed) {
+    c.header('retry-after', String(limit.retryAfter));
+    return c.json({ error: 'too many requests' }, 429);
+  }
 
   const form = await c.req.formData();
   const folder = form.get('folder');

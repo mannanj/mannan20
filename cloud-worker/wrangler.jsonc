@@ -32,6 +32,13 @@
       "bucket_name": "deep-calm-weave-backups"
     }
   ],
+  "services": [
+    {
+      "binding": "FILE_RATE_LIMIT_SERVICE",
+      "service": "portfolio-state-worker",
+      "entrypoint": "FileRateLimitService"
+    }
+  ],
   "ratelimits": [
     {
       "name": "REQUEST_LIMITER",
@@ -77,6 +84,13 @@
         {
           "binding": "FILES_BACKUPS",
           "bucket_name": "deep-calm-weave-backups"
+        }
+      ],
+      "services": [
+        {
+          "binding": "FILE_RATE_LIMIT_SERVICE",
+          "service": "portfolio-state-worker",
+          "entrypoint": "FileRateLimitService"
         }
       ],
       "ratelimits": [

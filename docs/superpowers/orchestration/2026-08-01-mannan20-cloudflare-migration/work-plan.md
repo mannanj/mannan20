@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 8
+  revision: 9
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -98,11 +98,11 @@ milestones:
     depends_on: []
     state: ACTIVE
     acceptance: Plan 006 is independently PROVEN through its production Gates E-H and done criteria; no public `general/*` original or temporary migration surface remains.
-    evidence: plans/006-private-r2-storage-boundary.md plus its separately authorized private operations evidence.
+    evidence: plans/006-private-r2-storage-boundary.md plus its separately authorized private operations evidence; exact-limiter deployments 2a094a28-821a-4e21-a4c9-1aeb218b90eb and 9ab1a0ca-ef08-4b04-b199-75f72617ecd6; controlled review report 20260802T150000Z-52163-plan006-files-limiter-approval-followup.
     review_level: TWO_REVIEWS
     review_route: MIXED
     review_status: IN_PROGRESS
-    blocker: Private cutover, deletion, and canary cleanup are complete, but the live Cloudflare native FILES_LIMITER did not emit 429 during a 125-request burst; Plan 006 cannot be marked fully proven until that residual gate is reconciled.
+    blocker: Private cutover, deletion, and canary cleanup are complete. Native-only authority was replaced by an independently approved and deployed exact DO guard; closure now requires explicit permission to use an authenticated browser session for the 121-request production 429/Retry-After proof.
 
 next_task:
   milestone: dns-cutover
@@ -112,7 +112,7 @@ next_task:
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
   attempt: 1
   last_failure: null
-  updated_at: "2026-08-02T02:10:00Z"
+  updated_at: "2026-08-02T15:03:00Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -471,3 +471,11 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - Production deployment `2ebb0a6a-f3d4-439c-bb99-d4edf70f1380` adds a custom OpenNext wrapper that redirects HTTP and `www` to the HTTPS apex, preserves path/query with 308, adds one-year HSTS on apex responses, and runs before production static assets. `workers_dev=true` remains explicit for observation and diagnostics.
 - Parent gates: canonical redirect tests 4/4; root TypeScript; Wrangler production dry-run; apex/www HTTP and HTTPS; HSTS; favicon GET/HEAD; robots, sitemap, garden, game, cloud redirect, leaderboard, session status, and `workers.dev` smokes. No Vercel response identifier remained on the routed apex/www responses.
 - Two independent native-controlled OpenAI `gpt-5.6-sol`/high reviews initially found missing HTTP-to-HTTPS, missing `www` canonicalization, and uncommitted/config ambiguity. Both focused re-reviews passed after remediation and accepted the bounded Worker Route cutover. They explicitly did not mark the final Custom Domain, DNSSEC, rollback-drill, mail send/receive, Plan 006, observation, or decommission gates complete.
+
+### Revision 9 — exact private-file limiter deployment
+
+- Cloudflare's native Worker Rate Limiting binding remains a coarse first shield because its per-location, asynchronously updated counters are intentionally permissive. The authoritative private-file policy is now a true per-subject 120-request/60-second rolling window in the existing `portfolio-state-v1` Durable Object, exposed only through the named `FileRateLimitService` service-binding RPC.
+- Direct GET/HEAD, ZIP, and admin upload paths require both checks before R2 work. Missing/RPC/capacity/malformed conditions fail closed; runtime validation pins policy metadata and a plausible reset, while exact denials emit integer `Retry-After` bounded to 1-60.
+- Independent OpenAI `gpt-5.6-sol`/high review found and drove three repairs: runtime validation of RPC results, exact event-log semantics instead of the legacy weighted approximation, and bounded HTTP delay output. Verified follow-up verdict: APPROVED with no blocking finding.
+- Parent gates: state Worker 7 tests and TypeScript; cloud Worker 76 tests and strict TypeScript; both Wrangler dry-runs; downstream-first production rollout. Active versions are state `2a094a28-821a-4e21-a4c9-1aeb218b90eb` and cloud `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`, both at 100%; their prior versions remain rollback targets.
+- Public smoke checks passed for cloud root, unauthenticated private-file denial, apex, and `www`. The final authenticated 121-request 429 proof is pending explicit permission to use an existing browser session without extracting its cookie.

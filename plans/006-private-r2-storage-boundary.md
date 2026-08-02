@@ -19,6 +19,7 @@ Remove the authentication bypass created by storing `general/*` client files in 
 - **Depends on:** explicit authorization for each production gate
 - **Category:** security / storage / operations
 - **Planned at:** commit `76d995a`, 2026-07-12
+- **Current state:** production storage boundary complete; exact file limiter deployed; authenticated live exhaustion proof pending
 
 ## Confirmed current state
 
@@ -263,6 +264,19 @@ This destructive step needs separate explicit authorization:
 - [ ] Remove canary-only config later if not retained for disaster-recovery tests.
 - [ ] Update canonical docs/ledger with exact evidence and run verification-before-completion plus session-audit.
 
+### Residual exact file-limit remediation — 2026-08-02
+
+- [x] Reconcile the failed native-only burst against Cloudflare's documented per-location, eventually consistent limiter semantics; retain `FILES_LIMITER` only as the coarse first shield.
+- [x] Add an authoritative `cloud-files` 120-request/60-second true rolling window to the existing `portfolio-state-v1` Durable Object.
+- [x] Expose only that policy through the named `FileRateLimitService` `WorkerEntrypoint` and bind production plus `storage-canary` configuration to `portfolio-state-worker`.
+- [x] Require both limiters before direct GET/HEAD R2 reads, ZIP enumeration/retrieval, and admin upload parsing/writes. Missing bindings, RPC errors, capacity, wrong policy metadata, malformed results, and implausible reset timestamps fail closed.
+- [x] Return integer `Retry-After` in the bounded range 1-60 on exact denial; regression tests cover malformed success and extreme reset responses.
+- [x] Pass state Worker 7 tests + TypeScript and cloud Worker 76 tests + strict TypeScript; Wrangler dry-runs show the named service binding.
+- [x] Resolve independent review findings for runtime RPC validation, true rolling-window semantics, and bounded `Retry-After`; final OpenAI `gpt-5.6-sol`/high follow-up verdict: APPROVED.
+- [x] Deploy downstream first: `portfolio-state-worker` rollback `96b3d503-1bec-4bc9-b618-5cfb1ba579c4` -> `2a094a28-821a-4e21-a4c9-1aeb218b90eb`, then `cloud-worker` rollback `36ccd9d4-df90-4a21-923d-d8a31f8ad0ec` -> `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`; both report 100% active.
+- [x] Public production smoke: cloud sign-in `200`, unauthenticated private-file path `404`, apex `200` with HSTS/OpenNext, and `www` `308` to apex.
+- [ ] With explicit permission to use an already authenticated browser session, send 121 same-subject HEAD requests and record the first production `429`, integer `Retry-After`, and zero object-body transfer. Never extract or record the cookie.
+
 ## Rollback matrix
 
 | Point | Safe rollback | Consequence |
@@ -286,7 +300,7 @@ This destructive step needs separate explicit authorization:
 - [x] No secret appears in tracked files, ledgers, output artifacts, or manifests.
 - [x] `.claude/claude.md`, `portfolio/`, and `tasks/task-262.md` remain untouched.
 
-Residual gate: unit tests prove the required limiter fails closed when missing, but a live 125-request production HEAD burst did not produce 429. The storage confidentiality cutover is complete; Plan 006 remains ACTIVE until the native limiter behavior is explained or replaced and the combined file-route/rate-limit criterion is proven.
+Residual gate: the permissive native-only limiter has been replaced as authority by the deployed exact Durable Object guard, with native limiting retained as a coarse shield. Repository tests, independent review, deployment receipts, and public fail-closed smoke checks pass. Plan 006 remains ACTIVE only until an explicitly authorized authenticated browser-context burst observes the production `429` and bounded `Retry-After`; no cookie or session value may leave the browser or enter evidence.
 
 ## STOP conditions
 
