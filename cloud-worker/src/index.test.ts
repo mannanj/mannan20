@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import app from './index';
 import { createSessionCookie } from './auth';
-import type { Env, RateLimit } from './types';
+import type { Env, ExactFileRateLimitService, ExactFileRateLimitResult, RateLimit } from './types';
 
 function fakeDb(role: 'admin' | 'client' | null = 'admin', hasGrant = false): D1Database {
   return {
@@ -95,11 +95,24 @@ function limiter(result = true, keys: string[] = []): RateLimit {
   };
 }
 
+function exactLimiter(
+  result: ExactFileRateLimitResult = { success: true, limit: 120, remaining: 119, reset: Date.now() + 60_000 },
+  subjects: string[] = [],
+): ExactFileRateLimitService {
+  return {
+    async limitFileAccess({ subject }) {
+      subjects.push(subject);
+      return result;
+    },
+  };
+}
+
 function fakeEnv(options: {
   role?: 'admin' | 'client' | null;
   hasGrant?: boolean;
   object?: R2ObjectBody | null;
   fileLimiter?: RateLimit | null;
+  exactFileLimiter?: ExactFileRateLimitService | null;
 } = {}): { env: Env; state: BucketState; states: Record<'general' | 'hans' | 'backups', BucketState> } {
   const makeState = (object: R2ObjectBody | null): BucketState => ({
     getKeys: [],
@@ -120,6 +133,9 @@ function fakeEnv(options: {
     FILES_HANS: fakeBucket(states.hans),
     FILES_BACKUPS: fakeBucket(states.backups),
     FILES_LIMITER: options.fileLimiter === null ? undefined : options.fileLimiter ?? limiter(),
+    FILE_RATE_LIMIT_SERVICE: options.exactFileLimiter === null
+      ? undefined
+      : options.exactFileLimiter ?? exactLimiter(),
     REQUEST_LIMITER: limiter(),
     VERIFY_LIMITER: limiter(),
     SESSION_SECRET: 'test-session-secret',
@@ -274,6 +290,66 @@ describe('authenticated direct files', () => {
     expect(res.status).toBe(503);
     expect(state.getKeys).toEqual([]);
   });
+
+  test('honors the exact limiter before reading R2 and sends Retry-After', async () => {
+    const subjects: string[] = [];
+    const { env, state } = fakeEnv({
+      exactFileLimiter: exactLimiter({
+        success: false,
+        limit: 120,
+        remaining: 0,
+        reset: Date.now() + 30_000,
+      }, subjects),
+    });
+    const res = await app.request('/files/general/report.pdf', {
+      headers: await authHeaders(env, '198.51.100.5'),
+    }, env);
+
+    expect(res.status).toBe(429);
+    expect(Number(res.headers.get('retry-after'))).toBeGreaterThan(0);
+    expect(subjects).toEqual(['files:person@example.com:198.51.100.5']);
+    expect(state.getKeys).toEqual([]);
+  });
+
+  test('fails closed before R2 when the exact limiter is unavailable', async () => {
+    const { env, state } = fakeEnv({ exactFileLimiter: null });
+    const res = await app.request('/files/general/report.pdf', {
+      headers: await authHeaders(env),
+    }, env);
+
+    expect(res.status).toBe(503);
+    expect(state.getKeys).toEqual([]);
+  });
+
+  test('fails closed before R2 when the exact limiter returns a malformed success', async () => {
+    const { env, state } = fakeEnv({
+      exactFileLimiter: { limitFileAccess: async () => ({ success: true }) },
+    });
+    const res = await app.request('/files/general/report.pdf', {
+      headers: await authHeaders(env),
+    }, env);
+
+    expect(res.status).toBe(503);
+    expect(state.getKeys).toEqual([]);
+  });
+
+  test('fails closed before R2 when the exact limiter returns an extreme reset', async () => {
+    const { env, state } = fakeEnv({
+      exactFileLimiter: exactLimiter({
+        success: false,
+        limit: 120,
+        remaining: 0,
+        reset: Number.MAX_SAFE_INTEGER,
+      }),
+    });
+    const res = await app.request('/files/general/report.pdf', {
+      headers: await authHeaders(env),
+    }, env);
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('retry-after')).toBeNull();
+    expect(state.getKeys).toEqual([]);
+  });
 });
 
 describe('private listing, ZIP, and upload boundaries', () => {
@@ -414,6 +490,32 @@ describe('private listing, ZIP, and upload boundaries', () => {
     }, env);
 
     expect(res.status).toBe(400);
+    expect(state.putKeys).toEqual([]);
+  });
+
+  test('rate-limits admin uploads with the exact limiter before parsing or put', async () => {
+    const { env, state } = fakeEnv({
+      exactFileLimiter: exactLimiter({
+        success: false,
+        limit: 120,
+        remaining: 0,
+        reset: Date.now() + 10_000,
+      }),
+    });
+    const form = new FormData();
+    form.set('folder', 'general');
+    form.set('file', new File(['secret'], 'report.pdf', { type: 'application/pdf' }));
+    const headers = new Headers(await authHeaders(env));
+    headers.set('content-length', '1024');
+
+    const res = await app.request('/admin/upload', {
+      method: 'POST',
+      headers,
+      body: form,
+    }, env);
+
+    expect(res.status).toBe(429);
+    expect(Number(res.headers.get('retry-after'))).toBeGreaterThan(0);
     expect(state.putKeys).toEqual([]);
   });
 

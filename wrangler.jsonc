@@ -1,0 +1,135 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mannan20-site",
+  "main": "cloudflare-worker.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "mannan20-site"
+    },
+    {
+      "binding": "CLOUD_WORKER",
+      "service": "cloud-worker"
+    },
+    {
+      "binding": "VISITS_WORKER",
+      "service": "visits-worker"
+    },
+    {
+      "binding": "PORTFOLIO_STATE",
+      "service": "portfolio-state-worker"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "mannan20-opennext-cache"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+    "logs": {
+      "enabled": false,
+      "invocation_logs": false
+    }
+  },
+  "env": {
+    "preview": {
+      "name": "mannan20-site-preview",
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS"
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "mannan20-site-preview"
+        },
+        {
+          "binding": "CLOUD_WORKER",
+          "service": "cloud-worker"
+        },
+        {
+          "binding": "VISITS_WORKER",
+          "service": "visits-worker"
+        },
+        {
+          "binding": "PORTFOLIO_STATE",
+          "service": "portfolio-state-worker"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "mannan20-opennext-cache-preview"
+        }
+      ],
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 0.1,
+        "logs": {
+          "enabled": false,
+          "invocation_logs": false
+        }
+      }
+    },
+    "production": {
+      "name": "mannan20-site",
+      "workers_dev": true,
+      "routes": [
+        {
+          "pattern": "mannan.is",
+          "custom_domain": true
+        },
+        {
+          "pattern": "www.mannan.is",
+          "custom_domain": true
+        }
+      ],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS",
+        "run_worker_first": true
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "mannan20-site"
+        },
+        {
+          "binding": "CLOUD_WORKER",
+          "service": "cloud-worker"
+        },
+        {
+          "binding": "VISITS_WORKER",
+          "service": "visits-worker"
+        },
+        {
+          "binding": "PORTFOLIO_STATE",
+          "service": "portfolio-state-worker"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "NEXT_INC_CACHE_R2_BUCKET",
+          "bucket_name": "mannan20-opennext-cache"
+        }
+      ],
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 0.1,
+        "logs": {
+          "enabled": false,
+          "invocation_logs": false
+        }
+      }
+    }
+  }
+}

@@ -21,7 +21,7 @@
   "r2_buckets": [
     {
       "binding": "FILES",
-      "bucket_name": "portfolio-files"
+      "bucket_name": "portfolio-private-files"
     },
     {
       "binding": "FILES_HANS",
@@ -30,6 +30,13 @@
     {
       "binding": "FILES_BACKUPS",
       "bucket_name": "deep-calm-weave-backups"
+    }
+  ],
+  "services": [
+    {
+      "binding": "FILE_RATE_LIMIT_SERVICE",
+      "service": "portfolio-state-worker",
+      "entrypoint": "FileRateLimitService"
     }
   ],
   "ratelimits": [
@@ -77,6 +84,13 @@
         {
           "binding": "FILES_BACKUPS",
           "bucket_name": "deep-calm-weave-backups"
+        }
+      ],
+      "services": [
+        {
+          "binding": "FILE_RATE_LIMIT_SERVICE",
+          "service": "portfolio-state-worker",
+          "entrypoint": "FileRateLimitService"
         }
       ],
       "ratelimits": [

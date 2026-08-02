@@ -30,7 +30,7 @@ Magic-link gated file sharing, sitting entirely on Cloudflare. The portfolio sit
 | Bucket | Binding | Purpose | Who writes |
 |---|---|---|---|
 | `portfolio-private-files` | `FILES` after cutover; configured canary target | Authenticated general files (key prefix `general/`); no `r2.dev` URL or custom domain | Worker only (admin via `/admin/upload`) |
-| `portfolio-files` | `FILES` before cutover; public portfolio/MCP bindings remain | Intentionally public media and documents, including the exact six MCP documents | Portfolio/MCP publishing paths |
+| `portfolio-files` | Public portfolio/MCP bindings only after cutover | Intentionally public media and documents, including the exact six MCP documents | Portfolio/MCP publishing paths |
 | `mannan-hans` | `FILES_HANS` | Hans's portfolio deliverables (whole bucket) | Worker only (admin) |
 | `deep-calm-weave-backups` | `FILES_BACKUPS` | Hans's personal-website backups (DB dumps, code, media) | External Supabase Edge Function + GitHub Actions, via S3-compatible R2 API token scoped to this bucket only |
 
@@ -100,7 +100,7 @@ The public `portfolio-files` bucket has an enabled public delivery surface, so a
   "main": "src/index.ts",
   "d1_databases": [{ "binding": "DB", "database_name": "cloud", "database_id": "…" }],
   "r2_buckets":  [
-    { "binding": "FILES",          "bucket_name": "portfolio-files" }, // pre-cutover production
+    { "binding": "FILES",          "bucket_name": "portfolio-private-files" },
     { "binding": "FILES_HANS",     "bucket_name": "mannan-hans" },
     { "binding": "FILES_BACKUPS",  "bucket_name": "deep-calm-weave-backups" }
   ],
@@ -117,7 +117,7 @@ Bindings appear on `c.env` inside handlers. They're injected at runtime — no S
 
 **Secrets:** stored separately from `wrangler.jsonc`, set via `wrangler secret put NAME`. The required values are `SESSION_SECRET` (HMAC key for the auth cookie), `RESEND_API_KEY`, and `SITE_AUTH_EXCHANGE_SECRET`. The `storage-canary` environment does not inherit them; configure each only in Cloudflare secret storage during the authorized canary gate.
 
-**Canary/cutover:** `env.storage-canary` is a distinct Worker whose `FILES` binding targets `portfolio-private-files`. The top-level production binding deliberately stays on `portfolio-files` during repository work. Copy, canary deployment, production rebinding, observation, deletion of exact source keys, and cleanup are separate approval gates in [`plans/006-private-r2-storage-boundary.md`](../plans/006-private-r2-storage-boundary.md).
+**Canary/cutover:** `env.storage-canary` is a distinct Worker whose `FILES` binding targets `portfolio-private-files`. Production now uses the same private binding after the verified copy and authenticated canary gates. Public-source deletion and canary cleanup remain separately recorded gates in [`plans/006-private-r2-storage-boundary.md`](../plans/006-private-r2-storage-boundary.md).
 
 **Deploy:** `wrangler deploy` from `cloud-worker/`. Each deploy creates a new immutable version; `wrangler deployments list` shows them. Rollback = `wrangler rollback --version-id <id>`.
 

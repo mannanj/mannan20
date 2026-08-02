@@ -126,6 +126,14 @@ function createFakeEnv(): Env {
     FILES_HANS: {} as Env['FILES_HANS'],
     FILES_BACKUPS: {} as Env['FILES_BACKUPS'],
     FILES_LIMITER: { limit: async () => ({ success: true }) },
+    FILE_RATE_LIMIT_SERVICE: {
+      limitFileAccess: async () => ({
+        success: true,
+        limit: 120,
+        remaining: 119,
+        reset: Date.now() + 60_000,
+      }),
+    },
     REQUEST_LIMITER: { limit: async () => ({ success: true }) },
     VERIFY_LIMITER: { limit: async () => ({ success: true }) },
     SESSION_SECRET: 'test-session-secret',

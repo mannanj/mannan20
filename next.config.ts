@@ -1,4 +1,7 @@
 import type { NextConfig } from 'next';
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+
+initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
   devIndicators: false,
@@ -8,6 +11,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    // Serve source assets directly on Cloudflare instead of requiring a paid
+    // Images binding. The existing sources are already constrained below.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
