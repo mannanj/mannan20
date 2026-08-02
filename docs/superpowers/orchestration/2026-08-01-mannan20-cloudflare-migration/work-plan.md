@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 9
+  revision: 10
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -96,13 +96,13 @@ milestones:
   - id: r2-boundary
     priority: 5
     depends_on: []
-    state: ACTIVE
+    state: PROVEN
     acceptance: Plan 006 is independently PROVEN through its production Gates E-H and done criteria; no public `general/*` original or temporary migration surface remains.
-    evidence: plans/006-private-r2-storage-boundary.md plus its separately authorized private operations evidence; exact-limiter deployments 2a094a28-821a-4e21-a4c9-1aeb218b90eb and 9ab1a0ca-ef08-4b04-b199-75f72617ecd6; controlled review report 20260802T150000Z-52163-plan006-files-limiter-approval-followup.
+    evidence: plans/006-private-r2-storage-boundary.md plus its separately authorized private operations evidence; exact-limiter deployments 2a094a28-821a-4e21-a4c9-1aeb218b90eb and 9ab1a0ca-ef08-4b04-b199-75f72617ecd6; controlled review report 20260802T150000Z-52163-plan006-files-limiter-approval-followup; authenticated production proof returned 404 for requests 1-120 and 429 + Retry-After 46 on request 121 without reading a body or extracting browser/session/private data.
     review_level: TWO_REVIEWS
     review_route: MIXED
-    review_status: IN_PROGRESS
-    blocker: Private cutover, deletion, and canary cleanup are complete. Native-only authority was replaced by an independently approved and deployed exact DO guard; closure now requires explicit permission to use an authenticated browser session for the 121-request production 429/Retry-After proof.
+    review_status: RECONCILED
+    blocker: null
 
 next_task:
   milestone: dns-cutover
@@ -112,7 +112,7 @@ next_task:
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
   attempt: 1
   last_failure: null
-  updated_at: "2026-08-02T15:03:00Z"
+  updated_at: "2026-08-02T15:18:43Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -479,3 +479,9 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - Independent OpenAI `gpt-5.6-sol`/high review found and drove three repairs: runtime validation of RPC results, exact event-log semantics instead of the legacy weighted approximation, and bounded HTTP delay output. Verified follow-up verdict: APPROVED with no blocking finding.
 - Parent gates: state Worker 7 tests and TypeScript; cloud Worker 76 tests and strict TypeScript; both Wrangler dry-runs; downstream-first production rollout. Active versions are state `2a094a28-821a-4e21-a4c9-1aeb218b90eb` and cloud `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`, both at 100%; their prior versions remain rollback targets.
 - Public smoke checks passed for cloud root, unauthenticated private-file denial, apex, and `www`. The final authenticated 121-request 429 proof is pending explicit permission to use an existing browser session without extracting its cookie.
+
+### Revision 10 — Plan 006 production closure
+
+- The user explicitly authorized use of the existing Safari authentication context for the bounded limiter proof. The browser executed only synthetic nonexistent-key HEAD requests with credentials contained in Safari; page content, cookies, private filenames, response bodies, and session values were neither read nor returned.
+- The authoritative production route returned denial-equivalent `404` for requests 1-120, then `429` on request 121 with integer `Retry-After: 46`. This proves the deployed service-binding RPC, exact Durable Object window, route ordering, and HTTP denial contract end to end.
+- Plan 006 and migration milestone `r2-boundary` are PROVEN with no blocker. DNS cutover work may proceed to its remaining observation, Stripe, mail, rollback-drill, final Custom Domain, and DNSSEC gates.

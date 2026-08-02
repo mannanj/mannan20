@@ -29,5 +29,5 @@
 - [x] Resolve independent review findings for malformed RPC success, weighted-window approximation, and unbounded `Retry-After`; pass state 7 tests/typecheck and cloud 76 tests/typecheck
 - [x] Deploy state Worker `2a094a28-821a-4e21-a4c9-1aeb218b90eb` before cloud Worker `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`; preserve rollback versions `96b3d503-1bec-4bc9-b618-5cfb1ba579c4` and `36ccd9d4-df90-4a21-923d-d8a31f8ad0ec`
 - [x] Pass public production smoke: cloud root 200, unauthenticated private path 404, apex 200, and `www` canonical 308
-- [ ] With explicit browser-session permission, prove the authoritative production route emits 429 + bounded `Retry-After` on request 121 without extracting or recording credentials
+- [x] With explicit browser-session permission, prove the authoritative production route emits `429` on request 121 with bounded `Retry-After: 46`; requests 1-120 returned denial-equivalent `404`, no body was read, and no credential/private data was extracted
 - Location: `.gitleaks.toml`, `.github/workflows/ci.yml`, `.gitignore`, `cloud-worker/`, `docs/cloud-cloudflare-architecture.md`, `mcp-worker/`, `scripts/build-mcp-data.mjs`, `src/app/api/download/[slug]/`, `plans/006-private-r2-storage-boundary.md`, `plans/README.md`, `plans/PLAN.md`, `plans/KICKOFF.md`, `tasks/task-272.md`
