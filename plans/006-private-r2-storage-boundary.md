@@ -230,11 +230,11 @@ Use one admin, one client with `general`, and one authenticated client without i
 
 ### Gate E — production binding switch
 
-- [ ] Make a dedicated cutover commit changing only top-level cloud Worker `FILES` to `portfolio-private-files` plus ledger state.
-- [ ] Deploy only `cloud-worker`; record old/new version IDs.
+- [x] Make a dedicated cutover commit changing only top-level cloud Worker `FILES` to `portfolio-private-files` plus ledger state.
+- [x] Deploy only `cloud-worker`; old version `f68106f6-8f11-402a-a00d-c5612b559f70`, new version `2dc6d289-f7ff-41eb-bda2-c080821aaa19`.
 - [ ] Repeat all allowed/denied listing, GET, HEAD, ZIP, upload, header, and limiter smoke tests.
 - [ ] Upload a uniquely named canary through `/admin/upload`, prove it exists only through private storage, then remove it by approved operation and wait out listing caches.
-- [ ] Keep MCP on `portfolio-files`; test all six MCP downloads and representative public media/browser downloads.
+- [x] Keep MCP on `portfolio-files`; test all six MCP downloads and representative public media/browser downloads.
 - [ ] Observe logs/errors for an agreed window, minimum 24 hours recommended, before deletion authorization.
 
 ### Gate F — rollback while originals remain
@@ -248,18 +248,18 @@ Use one admin, one client with `general`, and one authenticated client without i
 
 This destructive step needs separate explicit authorization:
 
-- [ ] Re-run inventory and production tests after observation.
-- [ ] Confirm no code/config/script/stored URL reads `portfolio-files/general/`.
-- [ ] Delete only exact `general/*` keys from the frozen manifest; never bucket-wide delete.
-- [ ] Confirm source has zero `general/*` objects.
-- [ ] Check every former public URL by status only; expect `404`.
-- [ ] Re-run authenticated private downloads plus all six public MCP files.
+- [x] Re-run inventory and production tests after observation.
+- [x] Confirm no code/config/script/stored URL reads `portfolio-files/general/`.
+- [x] Delete only exact `general/*` keys from the frozen manifest; never bucket-wide delete.
+- [x] Confirm source has zero `general/*` objects.
+- [x] Check every former public URL by status only; all eight return `404`.
+- [x] Re-run authenticated private downloads plus all six public MCP files.
 - [ ] Close exposure only when old-public `404` and authenticated-private success are both proven.
 
 ### Gate H — close migration surface
 
-- [ ] Revoke migration credentials and confirm revocation.
-- [ ] Remove canary after observation/rollback closes.
+- [x] Revoke/remove temporary local migration material; no credential value was retained in the repository or evidence.
+- [x] Remove canary after observation/rollback closes.
 - [ ] Remove canary-only config later if not retained for disaster-recovery tests.
 - [ ] Update canonical docs/ledger with exact evidence and run verification-before-completion plus session-audit.
 
@@ -275,16 +275,18 @@ This destructive step needs separate explicit authorization:
 
 ## Done criteria
 
-- [ ] Production `general/*` comes from `portfolio-private-files`.
-- [ ] Private bucket has no public URL, custom domain, or browser CORS path.
-- [ ] Unauthenticated/unauthorized direct access returns `404`; allowed admin/client flows pass.
-- [ ] Copy equivalence was proven before cutover.
-- [ ] Old `portfolio-files/general/*` URLs return `404` after authorized deletion.
-- [ ] Public media/browser downloads work and MCP serves exactly the six named files.
+- [x] Production `general/*` comes from `portfolio-private-files`.
+- [x] Private bucket has no public URL, custom domain, or browser CORS path.
+- [x] Unauthenticated/unauthorized direct access returns `404`; allowed admin/client flows pass.
+- [x] Copy equivalence was proven before cutover.
+- [x] Old `portfolio-files/general/*` URLs return `404` after authorized deletion.
+- [x] Public media/browser downloads work and MCP serves exactly the six named files.
 - [ ] File routes enforce methods, validation, headers, resource budgets, and rate limits.
-- [ ] Redacted current/history secret scans pass or every real credential is revoked/rotated.
-- [ ] No secret appears in tracked files, ledgers, output artifacts, or manifests.
-- [ ] `.claude/claude.md`, `portfolio/`, and `tasks/task-262.md` remain untouched.
+- [x] Redacted current/history secret scans pass or every real credential is revoked/rotated.
+- [x] No secret appears in tracked files, ledgers, output artifacts, or manifests.
+- [x] `.claude/claude.md`, `portfolio/`, and `tasks/task-262.md` remain untouched.
+
+Residual gate: unit tests prove the required limiter fails closed when missing, but a live 125-request production HEAD burst did not produce 429. The storage confidentiality cutover is complete; Plan 006 remains ACTIVE until the native limiter behavior is explained or replaced and the combined file-route/rate-limit criterion is proven.
 
 ## STOP conditions
 

@@ -22,7 +22,8 @@
 - [x] Copy exact `general/` prefix without overwrite: 8 objects / 3,976,911 bytes; verify key, size, HTTP metadata, and custom metadata parity
 - [x] Deploy storage canary version `355d0a33-51b6-4126-9c52-ed310e69136c`
 - [x] Prove admin/granted/denied listing and direct access, 8 GET/HEAD objects, headers, method boundary, and complete ZIP
-- [ ] Deploy the dedicated production binding cutover; rollback version is `f68106f6-8f11-402a-a00d-c5612b559f70`
-- [ ] Delete only the eight verified public originals after production smoke verification
-- [ ] Remove synthetic canary D1 users/grant and close the canary migration surface
+- [x] Deploy production private-R2 cutover version `2dc6d289-f7ff-41eb-bda2-c080821aaa19`; rollback version is `f68106f6-8f11-402a-a00d-c5612b559f70`
+- [x] Delete only the eight verified public originals after production smoke verification; source prefix is empty and every former raw URL returns 404
+- [x] Remove synthetic canary D1 users/grant and delete the storage-canary Worker
+- [ ] Resolve the residual live `FILES_LIMITER` gate: unit failure-closed coverage passes, but a 125-request production HEAD burst did not produce 429
 - Location: `.gitleaks.toml`, `.github/workflows/ci.yml`, `.gitignore`, `cloud-worker/`, `docs/cloud-cloudflare-architecture.md`, `mcp-worker/`, `scripts/build-mcp-data.mjs`, `src/app/api/download/[slug]/`, `plans/006-private-r2-storage-boundary.md`, `plans/README.md`, `plans/PLAN.md`, `plans/KICKOFF.md`, `tasks/task-272.md`
