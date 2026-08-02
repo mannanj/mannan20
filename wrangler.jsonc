@@ -85,8 +85,8 @@
       "workers_dev": true,
       "routes": [
         {
-          "pattern": "mannan.is/*",
-          "zone_name": "mannan.is"
+          "pattern": "mannan.is",
+          "custom_domain": true
         },
         {
           "pattern": "www.mannan.is",

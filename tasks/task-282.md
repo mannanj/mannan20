@@ -4,7 +4,7 @@ The canonical proof-carrying work plan is:
 
 `docs/superpowers/orchestration/2026-08-01-mannan20-cloudflare-migration/work-plan.md`
 
-Status: **ACTIVE — Cloudflare runtime/state, private R2, DNS Worker Routes, no-charge Stripe validation, and the timed Vercel rollback/Cloudflare restore drill are proven; remaining gates are observation, mail send/receive, final Worker Custom Domain, DNSSEC, and legacy-provider decommission.**
+Status: **ACTIVE — Cloudflare runtime/state, private R2, final apex/www Worker Custom Domains, no-charge Stripe validation, and the timed Vercel rollback/Cloudflare restore drill are proven; remaining gates are observation, mail send/receive, DNSSEC, protected-main reconciliation, and legacy-provider decommission.**
 
 The user's 2026-08-01 direction authorizes the complete migration, including the production,
 DNS, state, cleanup, commit, and push operations defined by the canonical plan. Plan 006 retains
@@ -46,3 +46,12 @@ cases, desktop/mobile and isolated browser journeys, public R2 audio/downloads, 
 reads, a fresh no-charge Stripe test-mode session, TypeScript, 137 unit tests, and the Wrangler
 production dry-run. The remaining manual target is only the A/CNAME row named exactly `mannan.is`
 that points to Vercel; do not remove `www`, MX, TXT, DKIM, or verification records.
+
+2026-08-02 final Custom Domain receipt: the Vercel-owned apex A record
+`mannan.is -> 216.198.79.1` was removed, and a clean OpenNext build deployed both apex and www as
+Worker-managed Custom Domains on production version `c4158947-0c49-4a26-b3f7-1f480df3a8a4` at
+100%. Cloudflare's API lists both hostnames on `mannan20-site`; three public resolvers return
+Cloudflare edges; apex/API/direct-Worker checks return 200 and www returns the canonical 308. A
+top-level `deploy` package script now aliases the full production pipeline. Bun currently reserves
+literal `bun deploy` before package-script dispatch, so it must be invoked as `bun run deploy`.
+Protected-main reconciliation, observation, actual mail send/receive proof, and DNSSEC remain.
