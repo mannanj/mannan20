@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 10
+  revision: 11
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -71,7 +71,7 @@ milestones:
     review_level: TWO_REVIEWS
     review_route: MIXED
     review_status: RECONCILED
-    blocker: The bounded rollback-friendly Worker Route cutover is accepted, but the milestone remains open for the observation window, a tested rollback drill, safe Stripe validation, actual mail send/receive proof, DNSSEC enablement, Plan 006 closure, and final Worker Custom Domain conversion.
+    blocker: The bounded rollback-friendly Worker Route cutover, Plan 006, and no-charge Stripe validation are proven. The milestone remains open for the observation window, a tested rollback drill, actual mail send/receive proof, DNSSEC enablement, and final Worker Custom Domain conversion.
   - id: decommission
     priority: 7
     depends_on: [dns-cutover]
@@ -107,12 +107,12 @@ milestones:
 next_task:
   milestone: dns-cutover
   id: observe-worker-route-cutover
-  task: Observe the accepted Worker Route cutover while Vercel remains available; close Plan 006, validate Stripe without a charge, prove real mail send/receive, rehearse rollback, then replace the temporary origin-preserving routes with the final Worker Custom Domain and enable Cloudflare DNSSEC.
-  expected_evidence: Stable production telemetry and smoke matrix; Plan 006 completion receipt; no-charge Stripe validation; mail send/receive proof; timed route rollback/restore receipt; final Custom Domain/certificate/DNS evidence; signed multi-resolver DNSSEC resolution.
+  task: Continue observing the accepted Worker Route cutover while Vercel remains available; prove real mail send/receive, rehearse rollback, then replace the temporary origin-preserving routes with the final Worker Custom Domain and enable Cloudflare DNSSEC.
+  expected_evidence: Stable production telemetry and smoke matrix; mail send/receive proof; timed route rollback/restore receipt; final Custom Domain/certificate/DNS evidence; signed multi-resolver DNSSEC resolution.
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
   attempt: 1
   last_failure: null
-  updated_at: "2026-08-02T15:18:43Z"
+  updated_at: "2026-08-02T15:36:38Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -485,3 +485,11 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - The user explicitly authorized use of the existing Safari authentication context for the bounded limiter proof. The browser executed only synthetic nonexistent-key HEAD requests with credentials contained in Safari; page content, cookies, private filenames, response bodies, and session values were neither read nor returned.
 - The authoritative production route returned denial-equivalent `404` for requests 1-120, then `429` on request 121 with integer `Retry-After: 46`. This proves the deployed service-binding RPC, exact Durable Object window, route ordering, and HTTP denial contract end to end.
 - Plan 006 and migration milestone `r2-boundary` are PROVEN with no blocker. DNS cutover work may proceed to its remaining observation, Stripe, mail, rollback-drill, final Custom Domain, and DNSSEC gates.
+
+### Revision 11 — Stripe Worker transport repair and no-charge proof
+
+- The first approved no-charge production checkout probe failed reproducibly at the Stripe outbound-network boundary. Secret-name inventory proved `STRIPE_SECRET_KEY` was bound without revealing its value; a categorized second probe confirmed a network—not auth, amount, or runtime-secret—failure.
+- Root cause: OpenNext bundles Stripe through its Node platform path under `nodejs_compat`, so the two call sites relied on a Node HTTP requester that does not work in the Worker runtime. A shared lazy client now explicitly installs `Stripe.createFetchHttpClient()` for checkout creation and payment-session retrieval.
+- TDD and parent gates: the transport contract was observed red before the helper, then green; an executable assertion confirms Stripe reports client name `fetch`; missing-key behavior and both shared call sites are covered. Root TypeScript, 135 unit tests, and the OpenNext production build pass.
+- Independent compatibility-controlled OpenAI `gpt-5.6-sol`/high review inspected the built artifact and approved the fix with no critical/important finding. Its minor source-text-test concern was resolved by the executable transport assertion.
+- Production rollout `2ebb0a6a-f3d4-439c-bb99-d4edf70f1380` -> `0b4e4d8f-b3eb-4849-b709-bb2e62765976` is active at 100%. A post-deploy $1 test-mode Checkout Session was created but never opened or paid; no charge occurred, and its URL/identifier were neither output nor stored. The complete public health matrix remained green.

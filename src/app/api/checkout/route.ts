@@ -1,11 +1,7 @@
-import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
+import { getStripeClient } from '@/lib/stripe-client';
 
 const MIN_AMOUNT_CENTS = 100;
-
-function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!);
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +19,7 @@ export async function POST(request: NextRequest) {
     const host = request.headers.get('host') ?? 'localhost:3000';
     const origin = `${proto}://${host}`;
 
-    const session = await getStripe().checkout.sessions.create({
+    const session = await getStripeClient().checkout.sessions.create({
       mode: 'payment',
       line_items: [
         {
