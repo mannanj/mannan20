@@ -41,6 +41,7 @@
     "visits-worker",
     "mcp-worker",
     "turnstile-worker",
-    "state-worker"
+    "state-worker",
+    "src/app/api/_jordan"
   ]
 }

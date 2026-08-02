@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
 import type { ContactIntentResult } from '@/lib/types';
 import { MAX_MESSAGE_LENGTH, alreadyAskedQuestion, normalizeResult, parseContentFallback, sanitizeHistory } from '@/lib/contact-intent-logic';
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_KV_REST_API_URL!,
-  token: process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN!,
-});
-
-const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, '1 h'),
-  prefix: 'contact-intent',
-});
+import { limitContactIntent } from '@/lib/rate-limit';
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'deepseek/deepseek-v3.2';
@@ -58,7 +46,7 @@ export async function POST(request: NextRequest) {
       ?? request.headers.get('x-real-ip')
       ?? '127.0.0.1';
 
-    const { success, remaining, reset } = await ratelimit.limit(ip);
+    const { success, remaining, reset } = await limitContactIntent(ip);
     if (!success) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.', remaining, reset },

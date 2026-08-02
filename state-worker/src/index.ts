@@ -6,7 +6,7 @@ export interface Env {
 }
 
 type Kind = "human" | "agent";
-type LimitKind = "download" | "leaderboard" | "magic" | "feedback" | "garden-view";
+type LimitKind = "download" | "leaderboard" | "magic" | "feedback" | "garden-view" | "contact-intent" | "validate-contact";
 type Row = Record<string, SqlStorageValue>;
 
 const INSTANCE_NAME = "portfolio-state-v1";
@@ -20,12 +20,15 @@ const FEEDBACK_KEEP = 500;
 const RENAME_HOP_LIMIT = 3;
 const OPERATION_RETENTION_MS = 24 * 60 * 60 * 1000;
 const OPERATIONS_MAX = 10_000;
+const RATE_HITS_MAX = 10_000;
 const LIMITS: Record<LimitKind, { max: number; ms: number }> = {
   download: { max: 10, ms: 60_000 },
   leaderboard: { max: 6, ms: 60_000 },
   magic: { max: 3, ms: 15 * 60_000 },
   feedback: { max: 4, ms: 10 * 60_000 },
   "garden-view": { max: 20, ms: 60_000 },
+  "contact-intent": { max: 10, ms: 60 * 60_000 },
+  "validate-contact": { max: 10, ms: 60 * 60_000 },
 };
 
 function json(value: unknown, status = 200): Response {
@@ -254,6 +257,7 @@ export class PortfolioState extends DurableObject<Env> {
       if (existing && existing.owner_id !== input.ownerId) return { ok: false as const, code: "taken" as const };
       if (!existing && this.one("SELECT 1 AS found FROM board_entries WHERE name = ? LIMIT 1", input.to)) return { ok: false as const, code: "taken" as const };
       if (!existing) this.ctx.storage.sql.exec("INSERT INTO owners(lower_name, owner_id, display_name, email_bound) VALUES (?, ?, ?, ?)", lower, input.ownerId, input.to, verified ? 1 : 0);
+      else this.ctx.storage.sql.exec("UPDATE owners SET display_name = ?, email_bound = MAX(email_bound, ?), renamed_to = NULL WHERE lower_name = ?", input.to, verified ? 1 : 0, lower);
       this.ctx.storage.sql.exec("INSERT OR IGNORE INTO identity_names(owner_id, lower_name) VALUES (?, ?)", input.ownerId, lower);
       for (const old of olds) {
         if (old === lower) continue;
@@ -286,17 +290,42 @@ export class PortfolioState extends DurableObject<Env> {
     });
   }
 
-  async limit(input: { opId: string; kind: LimitKind; subject: string }): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> {
+  async limit(input: { opId: string; kind: LimitKind; subject: string }): Promise<{ success: boolean; limit: number; remaining: number; reset: number } | { error: "rate_limit_capacity" }> {
     const subjectHash = await sha256(input.subject);
     return this.operation("rate.check", input.opId, () => {
       const config = LIMITS[input.kind];
       const now = Date.now();
-      const start = now - config.ms;
-      this.ctx.storage.sql.exec("DELETE FROM rate_hits WHERE bucket = ? AND subject_hash = ? AND occurred_at <= ?", input.kind, subjectHash, start);
-      const hits = this.rows<{ occurred_at: number }>("SELECT occurred_at FROM rate_hits WHERE bucket = ? AND subject_hash = ? AND occurred_at > ? ORDER BY occurred_at ASC", input.kind, subjectHash, start);
-      if (hits.length >= config.max) return { success: false, limit: config.max, remaining: 0, reset: hits[0].occurred_at + config.ms };
+      const currentStart = Math.floor(now / config.ms) * config.ms;
+      const previousStart = currentStart - config.ms;
+      // Preserve Upstash's two-bucket weighted sliding-window algorithm while
+      // expiring each policy on its own schedule. Short policies therefore
+      // cannot fill the global cap with rows that no longer affect decisions.
+      for (const [kind, policy] of Object.entries(LIMITS)) {
+        this.ctx.storage.sql.exec(
+          "DELETE FROM rate_hits WHERE bucket = ? AND occurred_at <= ?",
+          kind,
+          now - (policy.ms * 2 + 1_000),
+        );
+      }
+      const counts = this.one<{ previous_count: number; current_count: number }>(`
+        SELECT
+          SUM(CASE WHEN occurred_at >= ? AND occurred_at < ? THEN 1 ELSE 0 END) AS previous_count,
+          SUM(CASE WHEN occurred_at >= ? THEN 1 ELSE 0 END) AS current_count
+        FROM rate_hits
+        WHERE bucket = ? AND subject_hash = ? AND occurred_at >= ?
+      `, previousStart, currentStart, currentStart, input.kind, subjectHash, previousStart);
+      const previous = counts?.previous_count ?? 0;
+      const current = counts?.current_count ?? 0;
+      const percentageInCurrent = (now % config.ms) / config.ms;
+      const weightedPrevious = Math.floor((1 - percentageInCurrent) * previous);
+      const reset = currentStart + config.ms;
+      if (weightedPrevious + current >= config.max) {
+        return { success: false, limit: config.max, remaining: 0, reset };
+      }
+      const total = this.one<{ count: number }>("SELECT COUNT(*) AS count FROM rate_hits")?.count ?? 0;
+      if (total >= RATE_HITS_MAX) return { error: "rate_limit_capacity" as const };
       this.ctx.storage.sql.exec("INSERT INTO rate_hits(bucket, subject_hash, occurred_at) VALUES (?, ?, ?)", input.kind, subjectHash, now);
-      return { success: true, limit: config.max, remaining: config.max - hits.length - 1, reset: now + config.ms };
+      return { success: true, limit: config.max, remaining: config.max - weightedPrevious - current - 1, reset };
     });
   }
 
@@ -339,6 +368,11 @@ class StateError extends Error {
   constructor(readonly code: string, readonly status: number) { super(code); }
 }
 
+const REMOTE_STATE_ERRORS: Record<string, number> = {
+  invalid_import: 400,
+  op_id_conflict: 409,
+};
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method !== "POST") return fail(404, "not_found");
@@ -366,11 +400,21 @@ export default {
       if (path === "/v1/identity/rename") { const ownerId = validOwner(body.ownerId), to = validName(body.to), from = body.from === undefined || body.from === null ? null : validName(body.from); return ownerId && to && (body.from === undefined || body.from === null || from) ? json(await state.renameIdentity({ opId, ownerId, to, from })) : fail(400, "invalid_input"); }
       if (path === "/v1/feedback") { const message = requiredString(body.message, 4_000), ip = requiredString(body.ip, 200); return message && ip && typeof body.validated === "boolean" ? json(await state.pushFeedback({ opId, message, ip, validated: body.validated })) : fail(400, "invalid_input"); }
       if (path === "/v1/garden/views/increment") { const slug = requiredString(body.slug, 120); return slug ? json(await state.gardenIncrement({ opId, slug })) : fail(400, "invalid_input"); }
-      if (path === "/v1/rate/check") { const kind = body.kind as LimitKind, subject = requiredString(body.subject, 512); return LIMITS[kind] && subject ? json(await state.limit({ opId, kind, subject })) : fail(400, "invalid_input"); }
+      if (path === "/v1/rate/check") {
+        const kind = body.kind as LimitKind, subject = requiredString(body.subject, 512);
+        if (!LIMITS[kind] || !subject) return fail(400, "invalid_input");
+        const result = await state.limit({ opId, kind, subject });
+        return "error" in result ? fail(503, result.error) : json(result);
+      }
       if (path === "/v1/admin/import") return isObject(body.data) ? json(await state.adminImport({ opId, data: body.data })) : fail(400, "invalid_input");
       return fail(404, "not_found");
     } catch (error) {
       if (error instanceof StateError) return fail(error.status, error.code);
+      // WorkerEntrypoint RPC serializes application exceptions as plain remote
+      // Errors, so preserve the small allowlisted status contract explicitly.
+      if (error instanceof Error && REMOTE_STATE_ERRORS[error.message]) {
+        return fail(REMOTE_STATE_ERRORS[error.message], error.message);
+      }
       return fail(500, "internal_error");
     }
   },
