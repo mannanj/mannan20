@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 11
+  revision: 13
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -67,11 +67,11 @@ milestones:
     depends_on: [internal-bindings, r2-boundary]
     state: ACTIVE
     acceptance: Cloudflare zone eligibility is proven, all DNS records are reconciled, a non-production hostname passes production-shaped smoke tests, and apex/www traffic is cut over with a timed Vercel rollback drill and no DNS/email regression.
-    evidence: Active full-zone receipt; .is parent and multi-resolver Cloudflare delegation; authoritative Proton MX/SPF/DMARC/DKIM comparison; live Worker route table; deployment 2ebb0a6a-f3d4-439c-bb99-d4edf70f1380; HTTPS/canonical/static/API smoke matrix; revision 8 independent reviews.
+    evidence: Active full-zone receipt; .is parent and multi-resolver Cloudflare delegation; authoritative Proton MX/SPF/DMARC/DKIM comparison; live Worker route table; deployment fd56f4db-8d1e-4f83-a21c-3a9264658c2e; HTTPS/canonical/static/API smoke matrix; revision 8 independent reviews; revision 12 timed Vercel rollback/Cloudflare restore receipt; revision 13 Custom Domain prerequisite/recovery receipt.
     review_level: TWO_REVIEWS
     review_route: MIXED
     review_status: RECONCILED
-    blocker: The bounded rollback-friendly Worker Route cutover, Plan 006, and no-charge Stripe validation are proven. The milestone remains open for the observation window, a tested rollback drill, actual mail send/receive proof, DNSSEC enablement, and final Worker Custom Domain conversion.
+    blocker: The bounded rollback-friendly Worker Route cutover, Plan 006, no-charge Stripe validation, and timed Vercel rollback/Cloudflare restore are proven. The final apex Custom Domain is blocked only by the externally managed apex Vercel DNS record that Cloudflare requires removing first; the authenticated Wrangler OAuth session lacks DNS-record read/write scope. The milestone also remains open for the observation window, actual mail send/receive proof, and DNSSEC enablement.
   - id: decommission
     priority: 7
     depends_on: [dns-cutover]
@@ -107,12 +107,12 @@ milestones:
 next_task:
   milestone: dns-cutover
   id: observe-worker-route-cutover
-  task: Continue observing the accepted Worker Route cutover while Vercel remains available; prove real mail send/receive, rehearse rollback, then replace the temporary origin-preserving routes with the final Worker Custom Domain and enable Cloudflare DNSSEC.
-  expected_evidence: Stable production telemetry and smoke matrix; mail send/receive proof; timed route rollback/restore receipt; final Custom Domain/certificate/DNS evidence; signed multi-resolver DNSSEC resolution.
+  task: Continue observing the restored Worker Route cutover while Vercel remains available; remove only the old apex Vercel DNS record through an explicitly authorized dashboard action, deploy the final apex Worker Custom Domain, prove real mail send/receive, and enable Cloudflare DNSSEC.
+  expected_evidence: Stable production telemetry and smoke matrix; mail send/receive proof; final Custom Domain/certificate/DNS evidence; signed multi-resolver DNSSEC resolution.
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
   attempt: 1
   last_failure: null
-  updated_at: "2026-08-02T15:36:38Z"
+  updated_at: "2026-08-02T15:53:30Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -493,3 +493,17 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - TDD and parent gates: the transport contract was observed red before the helper, then green; an executable assertion confirms Stripe reports client name `fetch`; missing-key behavior and both shared call sites are covered. Root TypeScript, 135 unit tests, and the OpenNext production build pass.
 - Independent compatibility-controlled OpenAI `gpt-5.6-sol`/high review inspected the built artifact and approved the fix with no critical/important finding. Its minor source-text-test concern was resolved by the executable transport assertion.
 - Production rollout `2ebb0a6a-f3d4-439c-bb99-d4edf70f1380` -> `0b4e4d8f-b3eb-4849-b709-bb2e62765976` is active at 100%. A post-deploy $1 test-mode Checkout Session was created but never opened or paid; no charge occurred, and its URL/identifier were neither output nor stored. The complete public health matrix remained green.
+
+### Revision 12 — timed Vercel rollback and Cloudflare restore drill
+
+- The production site Worker was deployed unchanged with its routes temporarily moved from apex/`www` to the non-resolving `rollback-drill-disabled.mannan.is` hostname. Version `db75e47c-3354-4b74-a724-9766ce618ebc` reached 100% before the receipt was taken.
+- Cache-busted, headers-only requests to `/` and `/api/auth/me` both reached the preserved Vercel origin: each returned its expected `429` challenge with an `x-vercel-id`; neither returned `x-opennext`. No response body, cookie, session value, or private data was read.
+- The canonical `mannan.is/*` and `www.mannan.is/*` Worker routes were immediately restored through the checked-in production configuration. Version `eb882a07-0fd0-407d-b97e-fbc9fb9bbe3f` is active at 100%; `/api/auth/me` returned 200 with HSTS and `x-opennext`, `www` returned the canonical 308 redirect, and the direct `workers.dev` hostname returned 200 with `x-opennext`.
+- The first restored apex probe returned a Cloudflare 429 after the concentrated drill traffic, while the restored dynamic route and direct Worker remained healthy. This is retained as a bounded post-drill observation item rather than rewritten as a clean root smoke. The route rollback mechanism itself is proven and the checked-in route configuration is restored exactly.
+
+### Revision 13 — Custom Domain prerequisite and fail-safe recovery
+
+- Current Cloudflare documentation was rechecked before conversion. A Custom Domain makes the Worker the origin and creates Worker-managed DNS/certificates, but Cloudflare refuses creation while externally managed DNS exists on the hostname.
+- The production configuration was changed locally from apex route `mannan.is/*` to apex Custom Domain `mannan.is`, while retaining `www.mannan.is/*` as the existing Worker redirect route. Wrangler uploaded the unchanged Worker and retained `www`, but rejected the apex Custom Domain with API code `100117` because an externally managed apex A/CNAME record still exists. Wrangler explicitly reported a partial trigger update.
+- The checked-in route configuration was immediately restored and redeployed. Production version `fd56f4db-8d1e-4f83-a21c-3a9264658c2e` is active at 100% with both canonical Worker Routes attached. Fresh headers-only probes returned 200 for root, robots, garden, and leaderboard, all dynamic responses carried `x-opennext`, and `www` returned its canonical 308 redirect.
+- The final conversion now has one exact prerequisite: remove only the old apex Vercel DNS record, leaving Proton mail, DKIM, verification, and every non-apex record untouched. Wrangler OAuth can manage Worker routes and certificates but cannot read or edit DNS records; authenticated dashboard record access requires explicit user authorization or a user-performed deletion. Until then, the healthy reversible Worker Route remains authoritative and no partial Custom Domain configuration remains.
