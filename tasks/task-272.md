@@ -25,5 +25,9 @@
 - [x] Deploy production private-R2 cutover version `2dc6d289-f7ff-41eb-bda2-c080821aaa19`; rollback version is `f68106f6-8f11-402a-a00d-c5612b559f70`
 - [x] Delete only the eight verified public originals after production smoke verification; source prefix is empty and every former raw URL returns 404
 - [x] Remove synthetic canary D1 users/grant and delete the storage-canary Worker
-- [ ] Resolve the residual live `FILES_LIMITER` gate: unit failure-closed coverage passes, but a 125-request production HEAD burst did not produce 429
+- [x] Replace native-only authority with an exact `cloud-files` 120/60 true rolling-window Durable Object policy behind a named service-binding RPC; retain native limiting as a coarse shield
+- [x] Resolve independent review findings for malformed RPC success, weighted-window approximation, and unbounded `Retry-After`; pass state 7 tests/typecheck and cloud 76 tests/typecheck
+- [x] Deploy state Worker `2a094a28-821a-4e21-a4c9-1aeb218b90eb` before cloud Worker `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`; preserve rollback versions `96b3d503-1bec-4bc9-b618-5cfb1ba579c4` and `36ccd9d4-df90-4a21-923d-d8a31f8ad0ec`
+- [x] Pass public production smoke: cloud root 200, unauthenticated private path 404, apex 200, and `www` canonical 308
+- [ ] With explicit browser-session permission, prove the authoritative production route emits 429 + bounded `Retry-After` on request 121 without extracting or recording credentials
 - Location: `.gitleaks.toml`, `.github/workflows/ci.yml`, `.gitignore`, `cloud-worker/`, `docs/cloud-cloudflare-architecture.md`, `mcp-worker/`, `scripts/build-mcp-data.mjs`, `src/app/api/download/[slug]/`, `plans/006-private-r2-storage-boundary.md`, `plans/README.md`, `plans/PLAN.md`, `plans/KICKOFF.md`, `tasks/task-272.md`

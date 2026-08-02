@@ -30,6 +30,7 @@ import {
 } from './views';
 import { admin } from './admin';
 import { listingCacheKey } from './cache';
+import { checkFileRateLimit } from './file-rate-limit';
 import { streamZip, type ZipSource } from './zip';
 import {
   objectKeyFor,
@@ -306,13 +307,13 @@ app.post('/cloud/:folder/download', async (c) => {
     return c.html(messagePage('Forbidden', 'You do not have access to this folder.'), 403);
   }
 
-  const limiter = c.env.FILES_LIMITER;
-  if (!limiter || typeof limiter.limit !== 'function') {
+  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
+  const limit = await checkFileRateLimit(c.env, session.email, ip);
+  if (!limit.allowed && limit.reason === 'unavailable') {
     return c.html(messagePage('Unavailable', 'File downloads are temporarily unavailable.'), 503);
   }
-  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
-  const limit = await limiter.limit({ key: `files:${session.email}:${ip}` });
-  if (!limit.success) {
+  if (!limit.allowed) {
+    c.header('retry-after', String(limit.retryAfter));
     return c.html(messagePage('Too many requests', 'Please try again in a minute.'), 429);
   }
 
@@ -417,13 +418,15 @@ async function handleDirectFile(c: Context<AppCtx>) {
   const key = objectKeyFor(folder, name);
   if (!key) return notFoundFile();
 
-  const limiter = c.env.FILES_LIMITER;
-  if (!limiter || typeof limiter.limit !== 'function') {
+  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
+  const limit = await checkFileRateLimit(c.env, session.email, ip);
+  if (!limit.allowed && limit.reason === 'unavailable') {
     return c.json({ error: 'service unavailable' }, 503);
   }
-  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
-  const limit = await limiter.limit({ key: `files:${session.email}:${ip}` });
-  if (!limit.success) return c.json({ error: 'too many requests' }, 429);
+  if (!limit.allowed) {
+    c.header('retry-after', String(limit.retryAfter));
+    return c.json({ error: 'too many requests' }, 429);
+  }
 
   const bucket = bucketFor(c.env, folder);
   const obj = c.req.method === 'HEAD' ? await bucket.head(key) : await bucket.get(key);
