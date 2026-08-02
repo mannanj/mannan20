@@ -1,8 +1,8 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 6
-  status: ACTIVE
+  revision: 7
+  status: BLOCKED
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
 
@@ -47,31 +47,31 @@ milestones:
     depends_on: [runtime-parity]
     state: ACTIVE
     acceptance: Leaderboard, feedback, view counters, magic tokens, and rate limits use Cloudflare-owned state with verified import or expiry, shadow comparison, idempotent writes, rollback coverage, and no live request requiring Upstash.
-    evidence: null
+    evidence: docs/superpowers/orchestration/2026-08-01-mannan20-cloudflare-migration/state-cutover-evidence.md
     review_level: TWO_REVIEWS
     review_route: MIXED
-    review_status: NOT_STARTED
-    blocker: null
+    review_status: RECONCILED
+    blocker: The Cloudflare path is proven and independent of Upstash, but authoritative apex traffic still reaches the Vercel rollback deployment and its Upstash state until DNS cutover.
   - id: internal-bindings
     priority: 4
     depends_on: [runtime-parity, state-cutover]
-    state: PENDING
+    state: PROVEN
     acceptance: The Cloudflare-hosted site reaches first-party Workers through explicit service bindings where the caller is server-side; public HTTP remains only where browser or external-client access is intentional.
-    evidence: null
+    evidence: Preview and production deploy binding receipts plus state-cutover-evidence.md; service-bound site leaderboard returned 200 after obsolete URL-independent secrets were removed.
     review_level: ONE_REVIEW
     review_route: OPENAI
-    review_status: NOT_STARTED
+    review_status: RECONCILED
     blocker: null
   - id: dns-cutover
     priority: 6
     depends_on: [internal-bindings, r2-boundary]
-    state: PENDING
+    state: BLOCKED
     acceptance: Cloudflare zone eligibility is proven, all DNS records are reconciled, a non-production hostname passes production-shaped smoke tests, and apex/www traffic is cut over with a timed Vercel rollback drill and no DNS/email regression.
-    evidence: null
+    evidence: Authoritative NS/A/CNAME and mail-record snapshot plus Cloudflare API 403 receipt recorded in revision 7 operations evidence.
     review_level: TWO_REVIEWS
     review_route: MIXED
     review_status: NOT_STARTED
-    blocker: null
+    blocker: Available Cloudflare token and Wrangler OAuth can read zones but lack account.zone.create; user must create the mannan.is zone in the dashboard or provide a zone-create-capable credential. The Stripe secret must also be validated before final go/no-go.
   - id: decommission
     priority: 7
     depends_on: [dns-cutover]
@@ -96,23 +96,23 @@ milestones:
   - id: r2-boundary
     priority: 5
     depends_on: []
-    state: PENDING
+    state: ACTIVE
     acceptance: Plan 006 is independently PROVEN through its production Gates E-H and done criteria; no public `general/*` original or temporary migration surface remains.
     evidence: plans/006-private-r2-storage-boundary.md plus its separately authorized private operations evidence.
     review_level: TWO_REVIEWS
     review_route: MIXED
-    review_status: NOT_STARTED
-    blocker: User owns each separately authorized Plan 006 production gate; resume when its Gate E-H evidence is complete.
+    review_status: IN_PROGRESS
+    blocker: Private cutover, deletion, and canary cleanup are complete, but the live Cloudflare native FILES_LIMITER did not emit 429 during a 125-request burst; Plan 006 cannot be marked fully proven until that residual gate is reconciled.
 
 next_task:
-  milestone: state-cutover
-  id: implement-and-import-portfolio-state
-  task: Finish the authenticated SQLite Durable Object state Worker, integrate the site through its service binding, import the small live Upstash dataset without writing payloads to disk, verify aggregate invariants, deploy state before callers, and remove active Upstash paths.
-  expected_evidence: State Worker tests and deployment version; redacted source/target counts and digests; one-time-token provenance tests; exact rate-limit tests; service-binding preview; zero active Upstash references outside disabled Jordan/archive migration tooling.
+  milestone: dns-cutover
+  id: onboard-cloudflare-zone
+  task: Create the mannan.is Cloudflare zone with a credential that has account.zone.create, reproduce the recorded web and Proton mail records without changing nameservers, validate the Stripe secret in no-charge mode, then resume the DNSSEC/NS cutover gates.
+  expected_evidence: Active Cloudflare zone receipt; exact redacted DNS/mail comparison; no-charge Stripe API validation; nameserver and rollback records; apex/www preview smoke before authoritative delegation changes.
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
-  attempt: 2
-  last_failure: null
-  updated_at: "2026-08-01T22:58:00Z"
+  attempt: 1
+  last_failure: Cloudflare zone-create API returned 403 because the available credentials lack account.zone.create; no DNS mutation occurred.
+  updated_at: "2026-08-02T00:18:00Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -455,3 +455,10 @@ Final proof:
 - Architecture result: PROVEN in revision 4. The two required independent routes are reconciled with no unresolved high/medium finding.
 
 Append only route, date, tree reference, finding severity, reconciliation, and check result. Do not paste prompts, secrets, private data, or unredacted provider output.
+
+### Revision 7 — state cleanup and production-shaped deploy review
+
+- OpenAI review 1: native-controlled `gpt-5.6-sol`/high, read-only. It found four important and two minor issues covering rollback reachability, migration equivalence, rate-row cardinality, stale Vercel operations prose, disabled Jordan manifest coverage, and production fail-closed tests. All were remediated and verified.
+- DeepSeek review attempts: compatibility-controlled OpenRouter `deepseek/deepseek-v4-flash`/xhigh. The first broad run timed out at 240 seconds; a materially narrower escalated run observed the requested model/effort but timed out at 180 seconds. Both reports had `verified=false`; neither is counted as review evidence.
+- OpenAI review 2: fresh native-controlled `gpt-5.6-sol`/high, read-only substitution after the cross-provider route was unavailable. It found rename-cycle, zero-name identity export, Upstash limiter-algorithm parity, and per-policy compaction defects. Focused follow-ups confirmed every material finding resolved and no residual issue.
+- Parent gates: root TypeScript and 124 tests; state Worker TypeScript, 5 tests, and dry-run; MCP drift and 44 tests; OpenNext build; cache/privacy/disabled-route checks; deployment and status-only smokes. Result: the Cloudflare path is review-reconciled; apex completion remains blocked on zone creation and Stripe-secret validation.
