@@ -5,7 +5,7 @@ Before doing anything else:
 2. Reconcile live state: `git status -sb`, `git log --oneline -8`, `git worktree list`, and `git rev-list --left-right --count main...feat/drops-m1`.
 3. Preserve the known user-owned local paths unless the user explicitly scopes them in: modified `.claude/claude.md`, untracked `portfolio/`, and untracked `tasks/task-262.md`.
 4. Check port 3847 before any live-browser work. Do not run `bun run dev` reflexively because it force-kills the current listener. Do not run `next build` against a shared `.next` while a persistent server is active.
-5. Re-run the narrow validation appropriate to the selected item. The latest Plan 006 repository baseline is: root typecheck + 117/117 unit tests pass; MCP snapshot is in sync and 44/44 tests pass; cloud-worker tests pass 70/70; cloud-worker typecheck has exactly 14 pre-existing `src/admin.ts` JSON-body failures tracked as `CORRECTNESS-13`; redacted intended-state/history Gitleaks scans pass.
+5. Re-run the narrow validation appropriate to the selected item. Plan 006 is production-PROVEN as of 2026-08-02: the final exact-limiter baseline is state Worker 7 tests/typecheck and cloud Worker 76 tests/strict typecheck; active/rollback versions and the credential-free browser proof are recorded in `tasks/task-272.md`.
 
 Repository state at the 2026-07-12 handoff:
 - `main` points to local commit `76d995a`; the locally known `origin/main` remains at `01357a9` (main is ahead 1). Do not push or equate either ref with a freshly verified production deployment.
@@ -15,13 +15,12 @@ Repository state at the 2026-07-12 handoff:
 - The README/ledger were refreshed in task 271 to cover the fourth Worker and current pipeline state.
 
 Highest-priority ready remediation work:
-1. Plan `006` / `SEC-14`-`SEC-16` — repository implementation is verified but uncommitted. Before Gate A, confirm required secrets are provider-managed and obtain separate authorization before removing ignored local credential-bearing files. Bucket creation, migration credentials, object copy/delete, binding/public-access changes, deployment, commit, push, and all remote mutation remain unauthorized until Mannan approves the relevant action/gate.
-2. `SEC-08` — CSRF state/nonce on login callback.
-3. `SEC-09` — real server-side session invalidation on sign-out.
-4. `SEC-05` — gameplay-proof token for leaderboard submissions.
-5. Finish `DX-01` by deciding and implementing a practical Playwright CI strategy; `DX-02` ESLint remains separate.
-6. `DEBT-03` + `PERF-02` — split `header.tsx` and remove the 60/sec garden-nav hover rerender.
-7. Smaller ready work: `CORRECTNESS-13` cloud-worker admin type errors and `DEP-08` residual PostCSS advisory.
+1. `SEC-08` — CSRF state/nonce on login callback.
+2. `SEC-09` — real server-side session invalidation on sign-out.
+3. `SEC-05` — gameplay-proof token for leaderboard submissions.
+4. Finish `DX-01` by deciding and implementing a practical Playwright CI strategy; `DX-02` ESLint remains separate.
+5. `DEBT-03` + `PERF-02` — split `header.tsx` and remove the 60/sec garden-nav hover rerender.
+6. Smaller ready work: `DEP-08` residual PostCSS advisory. The former `CORRECTNESS-13` admin JSON-body type errors were cleared during the exact-limiter gate.
 
 Substantial separate pipeline:
 - `/Users/manblack/Documents/mannan20-drops` is the clean `feat/drops-m1` worktree at `7e4cd7e`.

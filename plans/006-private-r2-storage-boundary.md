@@ -19,7 +19,7 @@ Remove the authentication bypass created by storing `general/*` client files in 
 - **Depends on:** explicit authorization for each production gate
 - **Category:** security / storage / operations
 - **Planned at:** commit `76d995a`, 2026-07-12
-- **Current state:** production storage boundary complete; exact file limiter deployed; authenticated live exhaustion proof pending
+- **Current state:** PROVEN — production storage boundary and exact file limiter complete
 
 ## Confirmed current state
 
@@ -275,7 +275,7 @@ This destructive step needs separate explicit authorization:
 - [x] Resolve independent review findings for runtime RPC validation, true rolling-window semantics, and bounded `Retry-After`; final OpenAI `gpt-5.6-sol`/high follow-up verdict: APPROVED.
 - [x] Deploy downstream first: `portfolio-state-worker` rollback `96b3d503-1bec-4bc9-b618-5cfb1ba579c4` -> `2a094a28-821a-4e21-a4c9-1aeb218b90eb`, then `cloud-worker` rollback `36ccd9d4-df90-4a21-923d-d8a31f8ad0ec` -> `9ab1a0ca-ef08-4b04-b199-75f72617ecd6`; both report 100% active.
 - [x] Public production smoke: cloud sign-in `200`, unauthenticated private-file path `404`, apex `200` with HSTS/OpenNext, and `www` `308` to apex.
-- [ ] With explicit permission to use an already authenticated browser session, send 121 same-subject HEAD requests and record the first production `429`, integer `Retry-After`, and zero object-body transfer. Never extract or record the cookie.
+- [x] With explicit permission, an authenticated Safari-context burst against a synthetic nonexistent key returned `404` for requests 1-120 and `429` on request 121 with integer `Retry-After: 46`. No body, cookie, page content, private filename, or session value was read or recorded.
 
 ## Rollback matrix
 
@@ -295,12 +295,12 @@ This destructive step needs separate explicit authorization:
 - [x] Copy equivalence was proven before cutover.
 - [x] Old `portfolio-files/general/*` URLs return `404` after authorized deletion.
 - [x] Public media/browser downloads work and MCP serves exactly the six named files.
-- [ ] File routes enforce methods, validation, headers, resource budgets, and rate limits.
+- [x] File routes enforce methods, validation, headers, resource budgets, and rate limits.
 - [x] Redacted current/history secret scans pass or every real credential is revoked/rotated.
 - [x] No secret appears in tracked files, ledgers, output artifacts, or manifests.
 - [x] `.claude/claude.md`, `portfolio/`, and `tasks/task-262.md` remain untouched.
 
-Residual gate: the permissive native-only limiter has been replaced as authority by the deployed exact Durable Object guard, with native limiting retained as a coarse shield. Repository tests, independent review, deployment receipts, and public fail-closed smoke checks pass. Plan 006 remains ACTIVE only until an explicitly authorized authenticated browser-context burst observes the production `429` and bounded `Retry-After`; no cookie or session value may leave the browser or enter evidence.
+Closure receipt: the permissive native-only limiter was replaced as authority by the deployed exact Durable Object guard, with native limiting retained as a coarse shield. Repository tests, independent review, deployment receipts, public fail-closed smoke checks, and the explicitly authorized authenticated browser-context exhaustion proof all pass. Plan 006 is PROVEN; no cookie, session value, private filename, page content, or response body entered the evidence.
 
 ## STOP conditions
 
