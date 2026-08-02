@@ -4,7 +4,7 @@ The canonical proof-carrying work plan is:
 
 `docs/superpowers/orchestration/2026-08-01-mannan20-cloudflare-migration/work-plan.md`
 
-Status: **ACTIVE — Cloudflare runtime/state, private R2, final apex/www Worker Custom Domains, no-charge Stripe validation, and the timed Vercel rollback/Cloudflare restore drill are proven; remaining gates are observation, mail send/receive, DNSSEC, protected-main reconciliation, and legacy-provider decommission.**
+Status: **ACTIVE — Cloudflare runtime/state, private R2, final apex/www Worker Custom Domains, no-charge Stripe validation, timed rollback, and protected-main reconciliation are proven; remaining gates are the final observation window, outbound mail confirmation, DNSSEC, and legacy-provider decommission.**
 
 The user's 2026-08-01 direction authorizes the complete migration, including the production,
 DNS, state, cleanup, commit, and push operations defined by the canonical plan. Plan 006 retains
@@ -55,3 +55,14 @@ Cloudflare edges; apex/API/direct-Worker checks return 200 and www returns the c
 top-level `deploy` package script now aliases the full production pipeline. Bun currently reserves
 literal `bun deploy` before package-script dispatch, so it must be invoked as `bun run deploy`.
 Protected-main reconciliation, observation, actual mail send/receive proof, and DNSSEC remain.
+
+2026-08-02 protected-main/final-deploy receipt: the 39-entry dirty main state was transferred to
+`/Users/manblack/Documents/mannan20-dirty-main-2026-08-02` on
+`preserve/dirty-main-2026-08-02` with the exact original status fingerprint, while backup stash
+`290e651ba250ae382d6c1a8a62e17c55ba12ab64` remains retained. The normal `mannan20` path then
+fast-forwarded cleanly to the migration. After Bun install and a fresh OpenNext build, TypeScript,
+137 tests, privacy/cache gates, and production dry-run passed. Ignored local WAV/Finder files were
+moved into the preserved worktree; a reproducible 243-asset build deployed version
+`a16b57fd-c5ce-4fd9-8a0d-e449b64e9659` at 100%. Final HTTP/API checks passed 24/24 and isolated
+desktop/mobile/www browser checks passed 17/17. DNSSEC, real outbound mail confirmation, and the
+24-hour observation window through at least 2026-08-03 12:45 PM ET remain before decommission.

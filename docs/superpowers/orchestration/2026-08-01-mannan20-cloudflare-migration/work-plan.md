@@ -1,7 +1,7 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 15
+  revision: 16
   status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
@@ -107,12 +107,12 @@ milestones:
 next_task:
   milestone: dns-cutover
   id: observe-worker-route-cutover
-  task: Continue observing the final Worker Custom Domains while Vercel remains available; prove real mail send/receive and enable Cloudflare DNSSEC, then reconcile the migration branch into the protected dirty main worktree before legacy-provider decommission.
-  expected_evidence: Stable production telemetry and smoke matrix; mail send/receive proof; signed multi-resolver DNSSEC resolution; protected-main reconciliation receipt.
-  workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
+  task: Continue observing the final Worker Custom Domains while Vercel remains available; prove real outbound mail delivery and enable Cloudflare DNSSEC, then close the rollback window before legacy-provider decommission.
+  expected_evidence: Stable production telemetry and smoke matrix through at least 2026-08-03T16:45:18Z; outbound mail receipt; signed multi-resolver DNSSEC resolution; final rollback-window closure receipt.
+  workspace: /Users/manblack/Documents/mannan20 on main; preserved dirty work is isolated at /Users/manblack/Documents/mannan20-dirty-main-2026-08-02 on preserve/dirty-main-2026-08-02.
   attempt: 1
   last_failure: null
-  updated_at: "2026-08-02T16:32:00Z"
+  updated_at: "2026-08-02T16:48:00Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -522,3 +522,11 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - A clean OpenNext build and production deploy attached both `mannan.is` and `www.mannan.is` as Worker-managed Custom Domains on version `c4158947-0c49-4a26-b3f7-1f480df3a8a4`, active at 100%. Cloudflare's Workers Domains API lists both hostnames on `mannan20-site` production. 1.1.1.1, 8.8.8.8, and 9.9.9.9 return Cloudflare edge addresses for both; apex and session API return 200 with HSTS and `x-opennext`, direct Workers returns 200, and direct-edge www TLS returns the canonical 308 with path/query preserved. A workstation-only stale negative cache for www remains bounded by its prior SOA TTL.
 - `package.json` now exposes `deploy` as an alias for the complete production OpenNext build/deploy pipeline. Current Bun reserves the literal `bun deploy` subcommand before package-script dispatch and prints that it is reserved for future use, so the portable command is `bun run deploy`; this is a Bun CLI constraint, not a repository configuration gap.
 - The original `/Users/manblack/Documents/mannan20` main worktree is a direct ancestor of the migration branch but contains 39 protected user-owned modified/untracked entries, including independent `package.json` security-hook edits. Final branch reconciliation must preserve those changes explicitly; do not overwrite, silently stash, or commit them as migration work.
+
+### Revision 16 — protected main reconciliation and clean-path production deploy
+
+- The original dirty main state was fingerprinted at 39 porcelain entries with SHA-256 `a1afe035537390c8197c4fbb9047b75a00c3ba90f192ebe7fbfa5786c20cff31`. It was captured in retained backup stash `290e651ba250ae382d6c1a8a62e17c55ba12ab64`, applied without conflict to branch `preserve/dirty-main-2026-08-02` at `/Users/manblack/Documents/mannan20-dirty-main-2026-08-02`, and reverified with the exact same count and fingerprint. Existing nested worktrees therefore remained at stable paths.
+- The clean original `/Users/manblack/Documents/mannan20` checkout fast-forwarded from `a437fa5229145e9536e44a30abf98c4f8328aca1` to the migration result without a merge conflict. Bun dependencies installed cleanly. The first artifact-dependent type/cache/dry-run checks accurately failed because the recreated checkout had no fresh `.next`/`.open-next`; after a clean OpenNext build, TypeScript, cache boundary, and production dry-run passed. Privacy passed and all 137 unit tests passed throughout.
+- The first main-path deployment exposed 28 ignored local WAV files (321 MB) and two Finder metadata files in the static asset input. Those files were moved—not deleted—into the preserved dirty worktree. A second clean build produced the expected 243 assets, proving tracked-source reproducibility, and deployed production version `a16b57fd-c5ce-4fd9-8a0d-e449b64e9659` at 100% on both Worker Custom Domains.
+- Final production evidence from main: 24/24 apex HTTP/API checks passed, including dynamic/static routes, session and Cloudflare-state reads, R2 download metadata, disabled/unknown boundaries, checkout validation, and a fresh $1 Stripe test-mode session that was neither opened nor paid. The literal www check was blocked only by the workstation OS's stale prior NXDOMAIN; Cloudflare authority plus 1.1.1.1/8.8.8.8/9.9.9.9 resolved www, and a direct mapped browser completed its canonical redirect. The isolated desktop/mobile/browser matrix passed 17/17 with zero JavaScript errors or same-origin failures.
+- Public MX, Proton SPF/verification, and DMARC records remain intact. No `mannan.is` DNSKEY or parent `.is` DS exists, so DNSSEC is explicitly not complete. Inbound magic-link delivery was proven earlier; outbound delivery from `hello@mannan.is` still needs a real user confirmation. The normal 24-hour rollback window for this final clean deployment ends no earlier than `2026-08-03T16:45:18Z` (12:45 PM America/New_York).
