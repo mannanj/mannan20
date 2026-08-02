@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "mannan20-site",
-  "main": ".open-next/worker.js",
+  "main": "cloudflare-worker.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -82,9 +82,21 @@
     },
     "production": {
       "name": "mannan20-site",
+      "workers_dev": true,
+      "routes": [
+        {
+          "pattern": "mannan.is/*",
+          "zone_name": "mannan.is"
+        },
+        {
+          "pattern": "www.mannan.is/*",
+          "zone_name": "mannan.is"
+        }
+      ],
       "assets": {
         "directory": ".open-next/assets",
-        "binding": "ASSETS"
+        "binding": "ASSETS",
+        "run_worker_first": true
       },
       "services": [
         {

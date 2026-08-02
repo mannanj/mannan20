@@ -1,8 +1,8 @@
 ---
 project:
   id: mannan20-cloudflare-migration
-  revision: 7
-  status: BLOCKED
+  revision: 8
+  status: ACTIVE
   final_goal: Run mannan.is and its first-party application state on Cloudflare without a Vercel runtime, Vercel telemetry, or Upstash dependency, while preserving intentional external providers and proven rollback paths.
   complete_when: [architecture, runtime-parity, state-cutover, internal-bindings, r2-boundary, dns-cutover, decommission, final-check]
 
@@ -51,7 +51,7 @@ milestones:
     review_level: TWO_REVIEWS
     review_route: MIXED
     review_status: RECONCILED
-    blocker: The Cloudflare path is proven and independent of Upstash, but authoritative apex traffic still reaches the Vercel rollback deployment and its Upstash state until DNS cutover.
+    blocker: Authoritative apex traffic now reaches the Cloudflare site Worker and its service-bound state path; keep this milestone active through the bounded production observation window before removing rollback adapters or legacy dependencies.
   - id: internal-bindings
     priority: 4
     depends_on: [runtime-parity, state-cutover]
@@ -65,13 +65,13 @@ milestones:
   - id: dns-cutover
     priority: 6
     depends_on: [internal-bindings, r2-boundary]
-    state: BLOCKED
+    state: ACTIVE
     acceptance: Cloudflare zone eligibility is proven, all DNS records are reconciled, a non-production hostname passes production-shaped smoke tests, and apex/www traffic is cut over with a timed Vercel rollback drill and no DNS/email regression.
-    evidence: Authoritative NS/A/CNAME and mail-record snapshot plus Cloudflare API 403 receipt recorded in revision 7 operations evidence.
+    evidence: Active full-zone receipt; .is parent and multi-resolver Cloudflare delegation; authoritative Proton MX/SPF/DMARC/DKIM comparison; live Worker route table; deployment 2ebb0a6a-f3d4-439c-bb99-d4edf70f1380; HTTPS/canonical/static/API smoke matrix; revision 8 independent reviews.
     review_level: TWO_REVIEWS
     review_route: MIXED
-    review_status: NOT_STARTED
-    blocker: Available Cloudflare token and Wrangler OAuth can read zones but lack account.zone.create; user must create the mannan.is zone in the dashboard or provide a zone-create-capable credential. The Stripe secret must also be validated before final go/no-go.
+    review_status: RECONCILED
+    blocker: The bounded rollback-friendly Worker Route cutover is accepted, but the milestone remains open for the observation window, a tested rollback drill, safe Stripe validation, actual mail send/receive proof, DNSSEC enablement, Plan 006 closure, and final Worker Custom Domain conversion.
   - id: decommission
     priority: 7
     depends_on: [dns-cutover]
@@ -106,13 +106,13 @@ milestones:
 
 next_task:
   milestone: dns-cutover
-  id: onboard-cloudflare-zone
-  task: Create the mannan.is Cloudflare zone with a credential that has account.zone.create, reproduce the recorded web and Proton mail records without changing nameservers, validate the Stripe secret in no-charge mode, then resume the DNSSEC/NS cutover gates.
-  expected_evidence: Active Cloudflare zone receipt; exact redacted DNS/mail comparison; no-charge Stripe API validation; nameserver and rollback records; apex/www preview smoke before authoritative delegation changes.
+  id: observe-worker-route-cutover
+  task: Observe the accepted Worker Route cutover while Vercel remains available; close Plan 006, validate Stripe without a charge, prove real mail send/receive, rehearse rollback, then replace the temporary origin-preserving routes with the final Worker Custom Domain and enable Cloudflare DNSSEC.
+  expected_evidence: Stable production telemetry and smoke matrix; Plan 006 completion receipt; no-charge Stripe validation; mail send/receive proof; timed route rollback/restore receipt; final Custom Domain/certificate/DNS evidence; signed multi-resolver DNSSEC resolution.
   workspace: /Users/manblack/Documents/mannan20-cloudflare on feat/cloudflare-full-migration; protected main remains untouched.
   attempt: 1
-  last_failure: Cloudflare zone-create API returned 403 because the available credentials lack account.zone.create; no DNS mutation occurred.
-  updated_at: "2026-08-02T00:18:00Z"
+  last_failure: null
+  updated_at: "2026-08-02T02:10:00Z"
 ---
 
 # Mannan20: Vercel/Upstash to Cloudflare migration
@@ -462,3 +462,12 @@ Append only route, date, tree reference, finding severity, reconciliation, and c
 - DeepSeek review attempts: compatibility-controlled OpenRouter `deepseek/deepseek-v4-flash`/xhigh. The first broad run timed out at 240 seconds; a materially narrower escalated run observed the requested model/effort but timed out at 180 seconds. Both reports had `verified=false`; neither is counted as review evidence.
 - OpenAI review 2: fresh native-controlled `gpt-5.6-sol`/high, read-only substitution after the cross-provider route was unavailable. It found rename-cycle, zero-name identity export, Upstash limiter-algorithm parity, and per-policy compaction defects. Focused follow-ups confirmed every material finding resolved and no residual issue.
 - Parent gates: root TypeScript and 124 tests; state Worker TypeScript, 5 tests, and dry-run; MCP drift and 44 tests; OpenNext build; cache/privacy/disabled-route checks; deployment and status-only smokes. Result: the Cloudflare path is review-reconciled; apex completion remains blocked on zone creation and Stripe-secret validation.
+
+### Revision 8 — DNS onboarding and bounded Worker Route cutover
+
+- Cloudflare zone `mannan.is` became active as a full zone with assigned nameservers `gabe.ns.cloudflare.com` and `rosemary.ns.cloudflare.com`; the `.is` parent plus 1.1.1.1 and 8.8.8.8 returned that delegation. No DS is published yet, so the staged DNSSEC state remains intentionally unsigned.
+- The imported Proton MX, SPF, DMARC, verification, and three DKIM CNAMEs were compared with the former authoritative zone. The DKIM records were corrected from proxied to DNS-only and then resolved correctly from Cloudflare authority and public resolvers.
+- Before application cutover, apex and `www` still reached the preserved Vercel origin and returned its 429 challenge, while `mannan20-site.mannanteam.workers.dev` returned 200. Reversible Worker routes `mannan.is/*` and `www.mannan.is/*` were attached to `mannan20-site` without deleting the Vercel origin.
+- Production deployment `2ebb0a6a-f3d4-439c-bb99-d4edf70f1380` adds a custom OpenNext wrapper that redirects HTTP and `www` to the HTTPS apex, preserves path/query with 308, adds one-year HSTS on apex responses, and runs before production static assets. `workers_dev=true` remains explicit for observation and diagnostics.
+- Parent gates: canonical redirect tests 4/4; root TypeScript; Wrangler production dry-run; apex/www HTTP and HTTPS; HSTS; favicon GET/HEAD; robots, sitemap, garden, game, cloud redirect, leaderboard, session status, and `workers.dev` smokes. No Vercel response identifier remained on the routed apex/www responses.
+- Two independent native-controlled OpenAI `gpt-5.6-sol`/high reviews initially found missing HTTP-to-HTTPS, missing `www` canonicalization, and uncommitted/config ambiguity. Both focused re-reviews passed after remediation and accepted the bounded Worker Route cutover. They explicitly did not mark the final Custom Domain, DNSSEC, rollback-drill, mail send/receive, Plan 006, observation, or decommission gates complete.
