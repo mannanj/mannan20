@@ -89,8 +89,8 @@
           "zone_name": "mannan.is"
         },
         {
-          "pattern": "www.mannan.is/*",
-          "zone_name": "mannan.is"
+          "pattern": "www.mannan.is",
+          "custom_domain": true
         }
       ],
       "assets": {

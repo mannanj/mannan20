@@ -35,3 +35,14 @@ and leaderboard probes returned 200 from Cloudflare/OpenNext and `www` returned 
 conversion prerequisite is narrowly scoped: delete only the old apex Vercel DNS record, then deploy
 the checked-in apex Custom Domain form. The current Wrangler OAuth token cannot read or edit DNS
 records; mail, DKIM, verification, and all non-apex records remain untouched.
+
+2026-08-02 www repair and production-test receipt: the manual DNS deletion removed `www`, while
+Cloudflare still rejected the apex Custom Domain because a separate externally managed apex A/CNAME
+remains. The apex Worker Route was restored immediately, and `www.mannan.is` is now a final
+Worker-managed Custom Domain on production version `c2ec62d1-b612-4d07-90ec-cf8ebfebdd08` at
+100%. Cloudflare authority, 1.1.1.1, 8.8.8.8, and 9.9.9.9 return its edge addresses; direct edge TLS
+returns the canonical 308 with path/query preserved. Production checks passed across 24 HTTP/API
+cases, desktop/mobile and isolated browser journeys, public R2 audio/downloads, session and state
+reads, a fresh no-charge Stripe test-mode session, TypeScript, 137 unit tests, and the Wrangler
+production dry-run. The remaining manual target is only the A/CNAME row named exactly `mannan.is`
+that points to Vercel; do not remove `www`, MX, TXT, DKIM, or verification records.
