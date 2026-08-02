@@ -1,3 +1,4 @@
+// @ts-ignore OpenNext creates this module during cf:build; clean CI typechecks before that build.
 import openNextWorker from './.open-next/worker.js'
 
 import { canonicalRedirectUrl } from './src/lib/canonical-origin'
