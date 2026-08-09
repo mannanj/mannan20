@@ -1,6 +1,20 @@
-# Defects
+In this assessment, I found several issues documented below, including answers being set in storage or passed along where they shouldn't be. I fixed the problem where they were set in local storage, and where the backend received, logged and persisted them. 
 
-1. **Critical — Answers are saved in browser storage.**
+Subsequently, tests were added around the use cases of ensuring no quickcheck answers are persisted to local storage. 
+
+Next, I would work down the list and start addressing the issues in order. 
+
+How did I use AI?
+
+Here's an overview. For a better answer, I suggest looking at codex transcript files which can be provided upon request. I agree with OpenAI's philosophy, which is that you want to share prompts, not results or interpretations after-the-fact. I think you can learn the most by seeing directly how I interact with the AI.
+
+It's like the game of telephone we played as a kid.
+
+How would I manage a larger agent-assisted change? It would be essential to know the prompt and context. More likely, I think I would scratch the output and start over with a fresh prompt with different system design and parameters. It's harder to take a bad design and make it good then start with a good design.
+
+# Issues
+
+1. FIXED: **Critical — Answers are saved in browser storage.**
    [QuickCheck.tsx](frontend/app/components/QuickCheck.tsx#L38) writes sensitive answers to `localStorage`, which the product rules explicitly prohibit.
 
 2. **Critical — Answers are sent to analytics and logs.**
@@ -9,13 +23,13 @@
 3. **Critical — Answers are included in the handoff.**
    The frontend adds `answers` to the handoff in [QuickCheck.tsx](frontend/app/components/QuickCheck.tsx#L72), despite the handoff's five-field allowlist.
 
-4. **Critical — The backend receives, logs, and persists answers.**
+4. FIXED (BACKEND ONLY): **Critical — The backend receives, logs, and persists answers.**
    The complete path is:
 
    - Next.js accepts and logs the body in [route.ts](frontend/app/api/studies/%5BstudyId%5D/handoffs/route.ts#L9).
    - Next.js forwards the body to FastAPI.
-   - FastAPI accepts an unrestricted dictionary and logs it in [handoffs.py](backend/app/api/routes/handoffs.py#L12).
-   - The service copies `answers` into the record in [services/handoffs.py](backend/app/services/handoffs.py#L38).
+   - FIXED: FastAPI accepts an unrestricted dictionary and logs it in [handoffs.py](backend/app/api/routes/handoffs.py#L12).
+   - FIXED: The service copies `answers` into the record in [services/handoffs.py](backend/app/services/handoffs.py#L38).
    - The repository retains the record.
 
 5. **High — The system makes clinical eligibility claims.**

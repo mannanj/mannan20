@@ -12,5 +12,4 @@ class HandoffRecord:
     selected_site_id: str
     precheck_outcome: str
     eligibility_status: str
-    answers: dict[str, str] = field(default_factory=dict)
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
