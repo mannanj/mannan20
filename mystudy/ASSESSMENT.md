@@ -1,6 +1,6 @@
 In this assessment, I found several issues documented below, including answers being set in storage or passed along where they shouldn't be. I fixed the problem where they were set in local storage, and where the backend received, logged and persisted them. 
 
-Subsequently, tests were added around the use cases of ensuring no quickcheck answers are persisted to local storage. 
+Subsequently, tests were added around the use cases of ensuring no quickcheck answers are persisted to local storage. And that the python records have no answers and the payload gets on answers. We reject payloads that have answers to ensure we never process that data.
 
 Next, I would work down the list and start addressing the issues in order. 
 
@@ -9,6 +9,10 @@ How did I use AI?
 Here's an overview. For a better answer, I suggest looking at codex transcript files which can be provided upon request. I agree with OpenAI's philosophy, which is that you want to share prompts, not results or interpretations after-the-fact. I think you can learn the most by seeing directly how I interact with the AI.
 
 It's like the game of telephone we played as a kid.
+
+I used AI to explore the project and get a UV dependency issue resolved, then gave the context of the product rules and had it find and transform violations in the code to the list we have below. It also helped test my assumptions and separate defects from product intent (noted in the list). It fixed the two items I narrowed in on fixing, one at a time, and when I found out I couldn't push to your remote repo, I had it push the code to this PR in my own repo https://github.com/mannanj/mannan20/pull/3/commits.
+
+It acted as my git partner, it had too much scope when I asked it to fix a defect and I stopped it. I worked with it across 4 sessions and had it summarize the work into a format I could ingest for this summary for you. Some challenges/pushbacks: its tendency to fill this document with fluff. It's tendency was to eagerly jump into fixing things before my consent and I had to be clear to only do specific things.
 
 How would I manage a larger agent-assisted change? It would be essential to know the prompt and context. More likely, I think I would scratch the output and start over with a fresh prompt with different system design and parameters. It's harder to take a bad design and make it good then start with a good design.
 
