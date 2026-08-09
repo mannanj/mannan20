@@ -35,7 +35,6 @@ class HandoffService:
             eligibility_status=(
                 "eligible" if precheck_outcome == "potentialMatch" else "ineligible"
             ),
-            answers=dict(payload.get("answers", {})),
         )
         self.repository.add(record)
 
