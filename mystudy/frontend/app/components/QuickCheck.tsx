@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { track } from "@/lib/analytics";
 import { createHandoff } from "@/lib/handoffs";
@@ -34,13 +34,6 @@ export function QuickCheck() {
   const progress = outcome
     ? 100
     : ((questionIndex + 1) / quickCheckQuestions.length) * 100;
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      "nova-301-quick-check",
-      JSON.stringify(answers),
-    );
-  }, [answers]);
 
   function answerQuestion(answer: Answer) {
     if (!question) return;
