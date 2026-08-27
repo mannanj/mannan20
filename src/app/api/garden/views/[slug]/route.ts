@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isGardenViewSlug } from '@/lib/garden-views';
-import { getViews, recordView } from '@/lib/garden-views-store';
+import { getArticleMetrics, recordView } from '@/lib/garden-views-store';
 import { limitGardenView } from '@/lib/rate-limit';
 
 const NO_STORE = { 'cache-control': 'no-store' } as const;
@@ -22,8 +22,8 @@ export async function GET(
   if (!isGardenViewSlug(slug)) {
     return NextResponse.json({ error: 'Unknown article' }, { status: 404 });
   }
-  const views = await getViews(slug);
-  return NextResponse.json({ views }, { headers: NO_STORE });
+  const metrics = await getArticleMetrics(slug);
+  return NextResponse.json(metrics, { headers: NO_STORE });
 }
 
 export async function POST(
@@ -37,10 +37,10 @@ export async function POST(
 
   const result = await limitGardenView(clientIp(request));
   if (!result.success) {
-    const views = await getViews(slug);
-    return NextResponse.json({ views, throttled: true }, { headers: NO_STORE });
+    const metrics = await getArticleMetrics(slug);
+    return NextResponse.json({ ...metrics, throttled: true }, { headers: NO_STORE });
   }
 
-  const views = await recordView(slug);
-  return NextResponse.json({ views }, { headers: NO_STORE });
+  const metrics = await recordView(slug);
+  return NextResponse.json(metrics, { headers: NO_STORE });
 }
