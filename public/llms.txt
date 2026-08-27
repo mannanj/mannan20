@@ -4,7 +4,7 @@
 
 I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
 
-This file is generated from the same data that powers the MCP server below (updated 2026-07-30). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
+This file is generated from the same data that powers the MCP server below (updated 2026-08-27). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
 
 ## MCP server
 

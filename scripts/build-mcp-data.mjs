@@ -45,6 +45,12 @@ const abs = (p) => (p.startsWith("http") ? p : `${SITE}${p}`);
 const agentFileUrl = (slug) => `${WORKER_BASE}/files/${slug}`;
 const slugFromPath = (p) => p.split("/").pop();
 
+const MCP_ARTICLE_FILES = {
+  "health-longevity": join(ROOT, "src", "content", "mcp-articles", "health-longevity.md"),
+  "seeking-community": join(ROOT, "src", "content", "mcp-articles", "seeking-community.md"),
+  "funny-frustrations": join(ROOT, "src", "content", "mcp-articles", "funny-frustrations.md"),
+};
+
 const clean = (s) =>
   s == null
     ? s
@@ -111,14 +117,29 @@ const extracurriculars = Object.entries(about.activities).map(([id, a]) => {
 });
 
 const writing = [...GARDEN_ARTICLES.filter((a) => !a.unavailable && !a.hidden), JOYFUL_FRUSTRATIONS].map(
-  (a) => ({
-    title: a.title,
-    description: a.description,
-    ...(a.date ? { date: a.date } : {}),
-    ...(a.readingTime ? { readingTime: a.readingTime } : {}),
-    ...(a.wordCount ? { wordCount: a.wordCount } : {}),
-    url: abs(a.href),
-  }),
+  (a) => {
+    const slug = slugFromPath(a.href);
+    const contentPath = MCP_ARTICLE_FILES[slug];
+    if (!contentPath || !existsSync(contentPath)) {
+      console.error(`public MCP article content missing: ${slug}`);
+      process.exit(1);
+    }
+    const content = readFileSync(contentPath, "utf8").trim();
+    if (content.length < 300) {
+      console.error(`public MCP article content is too short: ${slug}`);
+      process.exit(1);
+    }
+    return {
+      slug,
+      title: a.title,
+      description: a.description,
+      ...(a.date ? { date: a.date } : {}),
+      ...(a.readingTime ? { readingTime: a.readingTime } : {}),
+      ...(a.wordCount ? { wordCount: a.wordCount } : {}),
+      url: abs(a.href),
+      content,
+    };
+  },
 );
 
 const readings = EPISODES.filter((e) => !e.hidden).map((e) => {
