@@ -1,6 +1,6 @@
 # MCP Server Design — `mannan-mcp` (approved 2026-06-11)
 
-Read-only MCP server exposing the public data of mannan.is to AI agents. Approved by Mannan on 2026-06-11 after design review; this document is the implementation spec.
+Public-data MCP server exposing mannan.is to AI agents. Most tools are read-only; `get_article` records an aggregate per-article fetch counter. Approved by Mannan on 2026-06-11 after design review; this document is the implementation spec.
 
 ## Goal
 
@@ -31,7 +31,7 @@ garden products registry   ──┘    filters gated content,               wra
 
 *Amendment (2026-08-26):* `src/content/mcp-articles/*.md` now supplies privacy-reviewed full text for the public writing snapshot. Successful `get_article` calls record a per-article MCP fetch through the portfolio state Worker.
 
-- Server framework — *amended at implementation after live API research*: Cloudflare Agents SDK (`agents` package) `createMcpHandler` wrapping the official `@modelcontextprotocol/sdk` `McpServer`, constructed per request. This is Cloudflare's currently documented preferred shape for stateless read-only servers: same official SDK owning protocol conformance, but no Durable Object binding or migrations at all. (The spec originally named `McpAgent` + DO; the simpler documented path supersedes it.)
+- Server framework — *amended at implementation after live API research*: Cloudflare Agents SDK (`agents` package) `createMcpHandler` wrapping the official `@modelcontextprotocol/sdk` `McpServer`, constructed per request. The protocol handler stays stateless; aggregate article analytics use the existing portfolio state Worker's Durable Object through a private service binding. (The spec originally named a dedicated `McpAgent` + DO; the simpler transport plus shared state service supersedes it.)
 - Garden products are currently defined inline in `src/components/garden/garden-explorer.tsx` (`PRODUCTS` array with JSX thumbs). The data portion (title, description, href, year, retired) is extracted to `src/lib/garden-products.ts` so both the component and the build script import one source of truth. No behavior change to the site.
 - Tool schemas via zod. Server declares `instructions` on initialize describing who Mannan is and which tool answers what.
 

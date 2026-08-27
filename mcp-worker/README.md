@@ -1,6 +1,6 @@
 # mannan-mcp
 
-Read-only MCP server for the public data of [mannan.is](https://mannan.is), live at `https://mcp.mannanteam.workers.dev/mcp` (Streamable HTTP).
+Public-data MCP server for [mannan.is](https://mannan.is), live at `https://mcp.mannanteam.workers.dev/mcp` (Streamable HTTP). Most tools are read-only; successful `get_article` calls also record an aggregate per-article fetch count.
 
 Ask any MCP-capable agent about Mannan's profile, mission and goals, experience, writing, apps, research, or how to reach him — it gets the same data the site serves, with links back to the source.
 
@@ -74,4 +74,4 @@ Then browsable at https://registry.modelcontextprotocol.io/ (search `io.github.m
 
 ## Design
 
-See `docs/mcp-server-design.md` and `docs/mcp-server-implementation-plan.md`. Hosted on Cloudflare Workers rather than mannan.is itself because Vercel's security checkpoint challenges non-browser clients — exactly the audience an MCP server exists for. Stateless `createMcpHandler` (no Durable Objects) per current Cloudflare guidance for read-only servers; SSE transport omitted as it is deprecated.
+See `docs/mcp-server-design.md` and `docs/mcp-server-implementation-plan.md`. Hosted on Cloudflare Workers rather than mannan.is itself because Vercel's security checkpoint challenges non-browser clients — exactly the audience an MCP server exists for. The MCP transport remains stateless; article analytics live behind a private service binding in the portfolio state Worker's Durable Object. SSE transport is omitted as deprecated.

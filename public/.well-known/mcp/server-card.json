@@ -1,7 +1,7 @@
 {
   "name": "mannan-portfolio",
   "title": "Mannan Javid — Portfolio",
-  "description": "Read-only MCP server for the public data of mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads.",
+  "description": "Public-data MCP server for mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Full article fetches record an aggregate counter.",
   "version": "1.0.0",
   "endpoint": "https://mcp.mannanteam.workers.dev/mcp",
   "transport": "streamable-http",

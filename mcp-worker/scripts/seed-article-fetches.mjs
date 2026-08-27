@@ -54,14 +54,18 @@ async function readAndAssertThree(slugs) {
 }
 
 const client = new Client({ name: "article-fetch-seeder", version: "1.0.0" });
+let publicSlugs = [];
+let connected = false;
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(endpoint)));
+  connected = true;
   const listing = toolJson(await client.callTool({ name: "list_writing", arguments: {} }));
   const slugs = listing.writing.map((article) => article.slug).sort();
   const expected = ["funny-frustrations", "health-longevity", "seeking-community"];
   if (JSON.stringify(slugs) !== JSON.stringify(expected)) {
     throw new Error(`Unexpected public article inventory: ${JSON.stringify(slugs)}`);
   }
+  publicSlugs = slugs;
 
   await resetAll(slugs);
   await fetchAll(client, slugs);
@@ -72,6 +76,17 @@ try {
   await fetchAll(client, slugs);
   const finalSummary = await readAndAssertThree(slugs);
   console.log(JSON.stringify(finalSummary, null, 2));
+} catch (error) {
+  if (publicSlugs.length > 0) {
+    const recovery = await Promise.allSettled(publicSlugs.map((slug) => admin("reset", slug)));
+    const failed = recovery.filter((result) => result.status === "rejected").length;
+    console.error(
+      failed === 0
+        ? "seed failed; all MCP fetch counts were restored to zero"
+        : `seed failed; recovery could not reset ${failed} article count(s)`,
+    );
+  }
+  throw error;
 } finally {
-  await client.close();
+  if (connected) await client.close();
 }

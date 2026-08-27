@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SELF } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import type { WorkerEnv } from "../src/types";
 import { connectClient, toolJson } from "./helpers";
 
 const EXPECTED_TOOLS = [
@@ -73,6 +74,12 @@ describe("mcp protocol", () => {
     }
     const search = tools.find((t) => t.name === "search");
     expect(search?.inputSchema.required).toContain("query");
+    const article = tools.find((t) => t.name === "get_article");
+    expect(article?.annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+    });
   });
 
   it("get_profile returns identity and links", async () => {
@@ -142,6 +149,11 @@ describe("mcp protocol", () => {
   });
 
   it("get_article returns full public content and rejects excluded slugs", async () => {
+    const state = (env as unknown as WorkerEnv).MCP_ARTICLE_STATE!;
+    await state.resetArticleFetches({
+      opId: `protocol-reset-${crypto.randomUUID()}`,
+      slug: "health-longevity",
+    });
     const article = toolJson<{
       article: { slug: string; title: string; url: string; content: string };
       dataGeneratedAt: string;
@@ -156,6 +168,9 @@ describe("mcp protocol", () => {
     expect(article.article.url).toBe("https://mannan.is/garden/article/health-longevity");
     expect(article.article.content).toContain("health optimization stopped being a hobby");
     expect(article.dataGeneratedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    await expect(state.getArticleMetrics({ slug: "health-longevity" })).resolves.toMatchObject({
+      mcpFetches: 1,
+    });
 
     const excluded = await client.callTool({
       name: "get_article",
@@ -163,6 +178,9 @@ describe("mcp protocol", () => {
     });
     expect(excluded.isError).toBe(true);
     expect(JSON.stringify(excluded.content)).toContain("Unknown article");
+    await expect(state.getArticleMetrics({ slug: "taken" })).resolves.toEqual({
+      error: "invalid_input",
+    });
   });
 
   it("list_readings returns 3 public readings, self-authored ones clearly labeled", async () => {
