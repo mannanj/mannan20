@@ -44,7 +44,14 @@ async function fetchAll(client, slugs) {
 async function readAndAssertThree(slugs) {
   const summary = {};
   for (const slug of slugs) {
-    const metrics = await admin("get", slug);
+    const deadline = Date.now() + 5_000;
+    let metrics;
+    do {
+      metrics = await admin("get", slug);
+      if (metrics.mcpFetches === 3) break;
+      if (metrics.mcpFetches > 3) break;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } while (Date.now() < deadline);
     summary[slug] = metrics.mcpFetches;
     if (metrics.mcpFetches !== 3) {
       throw new Error(`Expected ${slug} to have 3 MCP fetches, got ${metrics.mcpFetches}`);
