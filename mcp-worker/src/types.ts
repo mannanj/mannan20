@@ -41,12 +41,14 @@ export interface Extracurricular {
 }
 
 export interface Writing {
+  slug: string;
   title: string;
   description: string;
   date?: string;
   readingTime?: string;
   wordCount?: number;
   url: string;
+  content: string;
 }
 
 export interface Reading {
