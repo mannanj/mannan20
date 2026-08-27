@@ -115,7 +115,7 @@ Expected: all state Worker tests pass.
 
 - [ ] **Step 1: Write failing snapshot assertions**
 
-Require each `list_writing` result to have a URL-derived slug and substantive content:
+Require the generated snapshot to have a URL-derived slug and substantive content for each public writing, while `list_writing` returns metadata without the full body:
 
 ```ts
 expect(writing.map((item) => item.slug).sort()).toEqual([
@@ -124,9 +124,11 @@ expect(writing.map((item) => item.slug).sort()).toEqual([
   "seeking-community",
 ]);
 for (const item of writing) {
-  expect(item.content.length).toBeGreaterThan(300);
+  expect(item.content).toBeUndefined();
 }
 ```
+
+Separately assert `data.writing` entries have `content.length > 300`; only `get_article` may expose that field so every article-body delivery is attributable to a slug.
 
 Add all three public article contents to the response corpus in `privacy.spec.ts` so existing forbidden-content checks cover them.
 

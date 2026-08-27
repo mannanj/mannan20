@@ -27,7 +27,8 @@ Cursor (`.cursor/mcp.json`):
 | `get_profile` | Name, tagline, bio, education, certifications, site/GitHub links |
 | `get_mission_and_goals` | The site's 4 narrative chapters verbatim + goals derived from the site, each with `{statement, source: {url, quote}}` |
 | `list_experience` | 7 jobs (company, position, dates, skills, highlights, links) + 4 extracurriculars (teaching, volunteering, travel, community building) |
-| `list_writing` | Articles written by Mannan on mannan.is/garden — title, summary, date, reading time, URL |
+| `list_writing` | Articles written by Mannan on mannan.is/garden — slug, title, summary, date, reading time, URL |
+| `get_article` | Full text and metadata for one public Garden article; successful calls increment that article's MCP fetch count |
 | `list_readings` | Readings published or curated on mannan.is, with explicit author attribution |
 | `list_apps` | Products and experiments from the shared Garden catalog, plus the Floating Chicken Game |
 | `list_research` | Publications and university projects (ARCHR robotics, solar, dome) with demo/download links |
@@ -37,7 +38,9 @@ Cursor (`.cursor/mcp.json`):
 
 ## How data flows
 
-`scripts/build-mcp-data.mjs` (repo root, run with bun) snapshots `public/data/about.json`, `src/lib/garden-articles.ts`, `src/lib/episodes.ts`, `src/lib/garden-products.ts`, and `src/lib/downloads.ts` into `src/data.generated.json`, which the worker bundles — nothing is fetched at request time. It also generates the public `llms.txt` and well-known server cards. Never hand-edit those generated files.
+`scripts/build-mcp-data.mjs` (repo root, run with bun) snapshots `public/data/about.json`, `src/lib/garden-articles.ts`, `src/content/mcp-articles/*.md`, `src/lib/episodes.ts`, `src/lib/garden-products.ts`, and `src/lib/downloads.ts` into `src/data.generated.json`, which the worker bundles — nothing is fetched at request time. It also generates the public `llms.txt` and well-known server cards. Never hand-edit those generated files.
+
+`get_article` records an **MCP fetch** only when the server resolves a public article and returns its content. It does not claim the model cited the article, included it in a final answer, or showed it to a human.
 
 The build script enforces two guards at generation time, and the test suite re-enforces them on the bundled output:
 

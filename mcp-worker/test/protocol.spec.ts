@@ -4,6 +4,7 @@ import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { connectClient, toolJson } from "./helpers";
 
 const EXPECTED_TOOLS = [
+  "get_article",
   "get_downloads",
   "get_mission_and_goals",
   "get_profile",
@@ -121,9 +122,9 @@ describe("mcp protocol", () => {
     expect(jung?.link).toBe("https://appliedjung.com");
   });
 
-  it("list_writing returns 3 public articles with slugs, content, and site URLs", async () => {
+  it("list_writing returns 3 public article metadata records without full content", async () => {
     const { writing } = toolJson<{
-      writing: Array<{ slug: string; title: string; url: string; content: string }>;
+      writing: Array<{ slug: string; title: string; url: string; content?: string }>;
     }>(
       await client.callTool({ name: "list_writing", arguments: {} }),
     );
@@ -136,8 +137,32 @@ describe("mcp protocol", () => {
     ]);
     for (const w of writing) {
       expect(w.url).toMatch(/^https:\/\/mannan\.is\/garden\/article\//);
-      expect(w.content.length).toBeGreaterThan(300);
+      expect(w.content).toBeUndefined();
     }
+  });
+
+  it("get_article returns full public content and rejects excluded slugs", async () => {
+    const article = toolJson<{
+      article: { slug: string; title: string; url: string; content: string };
+      dataGeneratedAt: string;
+    }>(
+      await client.callTool({
+        name: "get_article",
+        arguments: { slug: "health-longevity" },
+      }),
+    );
+    expect(article.article.slug).toBe("health-longevity");
+    expect(article.article.title).toBe("Health is an Artform");
+    expect(article.article.url).toBe("https://mannan.is/garden/article/health-longevity");
+    expect(article.article.content).toContain("health optimization stopped being a hobby");
+    expect(article.dataGeneratedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+    const excluded = await client.callTool({
+      name: "get_article",
+      arguments: { slug: "taken" },
+    });
+    expect(excluded.isError).toBe(true);
+    expect(JSON.stringify(excluded.content)).toContain("Unknown article");
   });
 
   it("list_readings returns 3 public readings, self-authored ones clearly labeled", async () => {

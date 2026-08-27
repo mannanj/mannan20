@@ -1,6 +1,7 @@
 import { createMcpHandler } from "agents/mcp";
 import { createServer } from "./server";
 import { data } from "./data";
+import { getArticleMetrics, resetArticleFetches } from "./article-state";
 import { handleFileRequest } from "./files";
 import type { WorkerEnv } from "./types";
 
@@ -76,6 +77,66 @@ a:hover{text-decoration:underline}
 </html>`;
 
 const JSON_HEADERS = { "content-type": "application/json" };
+const NO_STORE_JSON_HEADERS = {
+  "content-type": "application/json",
+  "cache-control": "no-store",
+};
+
+function stableEqual(a: string, b: string): boolean {
+  const max = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let index = 0; index < max; index += 1) {
+    diff |= (a.charCodeAt(index) || 0) ^ (b.charCodeAt(index) || 0);
+  }
+  return diff === 0;
+}
+
+export async function handleArticleAdminRequest(
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (!env.MCP_ADMIN_SECRET || !env.MCP_ARTICLE_STATE) {
+    return Response.json(
+      { error: "Article maintenance unavailable" },
+      { status: 503, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  const supplied = request.headers.get("authorization") ?? "";
+  const expected = `Bearer ${env.MCP_ADMIN_SECRET}`;
+  if (!stableEqual(supplied, expected)) {
+    return Response.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  let body: { action?: unknown; slug?: unknown };
+  try {
+    body = (await request.json()) as { action?: unknown; slug?: unknown };
+  } catch {
+    return Response.json(
+      { error: "Invalid request" },
+      { status: 400, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  const article = data.writing.find((item) => item.slug === body.slug);
+  if (!article || (body.action !== "get" && body.action !== "reset")) {
+    return Response.json(
+      { error: "Invalid request" },
+      { status: 400, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  try {
+    const metrics = body.action === "reset"
+      ? await resetArticleFetches(env, article.slug)
+      : await getArticleMetrics(env, article.slug);
+    return Response.json(metrics, { headers: NO_STORE_JSON_HEADERS });
+  } catch {
+    return Response.json(
+      { error: "Article maintenance unavailable" },
+      { status: 503, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+}
 
 function hasOversizedSearchQuery(body: ArrayBuffer): boolean {
   try {
@@ -140,7 +201,7 @@ async function handleMcpRequest(
     boundedRequest = forwarded;
   }
 
-  const response = await createMcpHandler(createServer(), {
+  const response = await createMcpHandler(createServer(env), {
     route: "/mcp",
     corsOptions: { origin: "*" },
     enableJsonResponse: true,
@@ -172,6 +233,9 @@ export default {
     }
     if (pathname.startsWith("/files/")) {
       return handleFileRequest(request, env);
+    }
+    if (pathname === "/admin/article-fetches" && request.method === "POST") {
+      return handleArticleAdminRequest(request, env);
     }
     if (pathname === "/mcp") {
       return handleMcpRequest(request, env, ctx);
