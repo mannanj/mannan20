@@ -146,7 +146,7 @@ Transcribe the complete public prose and headings from:
 - `src/components/garden/seeking-community-body.tsx`
 - `src/components/garden/funny-frustrations-body.tsx`
 
-Exclude navigation labels, decorative SVG/scene copy, interaction instructions, view counters, and hidden article content. Preserve the authored wording and heading order; do not paraphrase.
+Exclude navigation labels, decorative SVG/scene copy, interaction instructions, view counters, and hidden article content. Preserve authored meaning and heading order. For *Joyful Frustrations*, normalize typos and narrowly redact the private route, environment-variable name, insults, and credentials; never copy the secret value.
 
 - [ ] **Step 4: Extend snapshot generation**
 
@@ -385,7 +385,11 @@ Run: `bun run cf:deploy:production`
 
 Expected: successful production deployment for `mannan.is` with the combined counter UI/API.
 
-- [ ] **Step 4: Install a temporary admin secret and run the live sequence**
+- [ ] **Step 4: Run the mutating production MCP smoke**
+
+Run the full-content MCP smoke now. It intentionally calls `get_article`, so it must happen before the deterministic reset-and-seed sequence.
+
+- [ ] **Step 5: Install a temporary admin secret and run the live sequence**
 
 Generate a 32-byte random secret without printing it, put it as the MCP Worker's `MCP_ADMIN_SECRET`, export it only to the seed script process, and run:
 
@@ -403,9 +407,9 @@ Expected final summary:
 }
 ```
 
-- [ ] **Step 5: Remove the temporary production secret**
+- [ ] **Step 6: Remove the temporary production secret**
 
-Delete only `MCP_ADMIN_SECRET` from the MCP Worker after successful seeding so the maintenance route returns `503` until deliberately re-enabled. Re-run public MCP smoke and read each public Garden API counter to confirm the three final values remain.
+Delete only `MCP_ADMIN_SECRET` from the MCP Worker after successful seeding so the maintenance route returns `503` until deliberately re-enabled. Do not run `get_article` afterward; read each public Garden API counter to confirm the three final values remain.
 
 ### Task 7: Final verification and merge only the feature to main
 
@@ -429,7 +433,7 @@ Also run the focused Playwright counter spec and production MCP smoke. All comma
 
 - [ ] **Step 2: Inspect the scoped diff and commit**
 
-Verify no contact-form, Turnstile, myStudy, credential, generated task-metadata, or unrelated files appear. Commit the feature in focused commits with explicit pathspecs.
+Verify no contact-form, Turnstile, credential, generated task-metadata, or unrelated product files appear. The root `tsconfig.json` may exclude the nested standalone `mystudy` app so the root Next.js typecheck remains scoped to the root application.
 
 - [ ] **Step 3: Merge into local main**
 

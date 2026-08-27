@@ -13,7 +13,7 @@ const MCP_MAX_SEARCH_QUERY_LENGTH = 512;
 const INFO = JSON.stringify(
   {
     name: "mannan-portfolio",
-    description: "Read-only MCP server for the public data of mannan.is",
+    description: "Public-data MCP server for mannan.is with article-fetch analytics",
     endpoint: "/mcp",
     transport: "streamable-http",
     site: data.site,
@@ -30,7 +30,7 @@ const SERVER_CARD = JSON.stringify(
     name: "mannan-portfolio",
     title: "Mannan Javid — Portfolio",
     description:
-      "Read-only MCP server for the public data of mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads.",
+      "Public-data MCP server for mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Article content fetches record an aggregate counter.",
     version: "1.0.0",
     endpoint: ENDPOINT,
     transport: "streamable-http",
@@ -62,7 +62,7 @@ a:hover{text-decoration:underline}
 <body>
 <main>
 <h1>Mannan MCP</h1>
-<p>A read-only MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent.</p>
+<p>An MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent. Full article fetches tick a tiny aggregate counter.</p>
 <code>${ENDPOINT}</code>
 <p>Claude Code:</p>
 <code>claude mcp add --transport http mannan ${ENDPOINT}</code>
@@ -201,11 +201,14 @@ async function handleMcpRequest(
     boundedRequest = forwarded;
   }
 
-  const response = await createMcpHandler(createServer(env), {
-    route: "/mcp",
-    corsOptions: { origin: "*" },
-    enableJsonResponse: true,
-  })(boundedRequest, env, ctx);
+  const response = await createMcpHandler(
+    createServer(env, (promise) => ctx.waitUntil(promise)),
+    {
+      route: "/mcp",
+      corsOptions: { origin: "*" },
+      enableJsonResponse: true,
+    },
+  )(boundedRequest, env, ctx);
   const headers = new Headers(response.headers);
   headers.set("x-ratelimit-limit", MCP_RATE_LIMIT);
   headers.set("x-ratelimit-policy", `${MCP_RATE_LIMIT};w=60`);
