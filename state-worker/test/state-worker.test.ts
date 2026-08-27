@@ -43,9 +43,19 @@ describe("portfolio state durable object", () => {
       await expect(stub.limit({ opId: `limit-op-000${index}`, kind: "leaderboard", subject: "198.51.100.1" })).resolves.toMatchObject({ success: true, remaining: 5 - index });
     }
     await expect(stub.limit({ opId: "limit-op-0010", kind: "leaderboard", subject: "198.51.100.1" })).resolves.toMatchObject({ success: false, remaining: 0, limit: 6 });
+    expect(await stub.gardenGet("health-longevity")).toEqual({
+      slug: "health-longevity",
+      views: 0,
+      mcpFetches: 0,
+    });
+    await stub.gardenMcpIncrement({ opId: "mcp-fetch-0001", slug: "health-longevity" });
+    await stub.gardenMcpIncrement({ opId: "mcp-fetch-0001", slug: "health-longevity" });
+    expect((await stub.gardenGet("health-longevity")).mcpFetches).toBe(1);
+    await stub.gardenMcpReset({ opId: "mcp-reset-0001", slug: "health-longevity" });
+    expect((await stub.gardenGet("health-longevity")).mcpFetches).toBe(0);
     await stub.gardenIncrement({ opId: "garden-view-0001", slug: "taken" });
     await stub.gardenIncrement({ opId: "garden-view-0002", slug: "taken" });
-    expect(await stub.gardenGet("taken")).toEqual({ slug: "taken", views: 2 });
+    expect(await stub.gardenGet("taken")).toEqual({ slug: "taken", views: 2, mcpFetches: 0 });
     for (let index = 0; index < 501; index += 1) await stub.pushFeedback({ opId: `feedback-op-${index.toString().padStart(4, "0")}`, message: `feedback ${index}`, ip: "198.51.100.1", validated: true });
     await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
       expect(objectState.storage.sql.exec<{ count: number }>("SELECT COUNT(*) AS count FROM feedback").one().count).toBe(500);
@@ -56,6 +66,37 @@ describe("portfolio state durable object", () => {
     await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
       expect(objectState.storage.sql.exec<{ count: number }>("SELECT COUNT(*) AS count FROM operations").one().count).toBeLessThanOrEqual(10_000);
     });
+  });
+
+  it("authenticates MCP article fetch mutations and rejects malformed slugs", async () => {
+    const slug = `mcp-http-${crypto.randomUUID()}`;
+    const call = (path: string, body: Record<string, unknown>) =>
+      SELF.fetch(`https://portfolio-state-worker${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-state-service-key": "test-state-key" },
+        body: JSON.stringify(body),
+      });
+
+    const increment = await call("/v1/garden/mcp-fetches/increment", {
+      opId: "mcp-http-increment-0001",
+      slug,
+    });
+    expect(increment.status).toBe(200);
+    await expect(increment.json()).resolves.toMatchObject({ slug, mcpFetches: 1 });
+
+    const reset = await call("/v1/garden/mcp-fetches/reset", {
+      opId: "mcp-http-reset-0001",
+      slug,
+    });
+    expect(reset.status).toBe(200);
+    await expect(reset.json()).resolves.toMatchObject({ slug, mcpFetches: 0 });
+
+    const invalid = await call("/v1/garden/mcp-fetches/increment", {
+      opId: "mcp-http-invalid-0001",
+      slug: "../taken",
+    });
+    expect(invalid.status).toBe(400);
+    await expect(invalid.json()).resolves.toEqual({ ok: false, code: "invalid_input" });
   });
 
   it("enforces both contact limits at exactly ten requests per hour", async () => {

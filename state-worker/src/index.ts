@@ -74,6 +74,11 @@ function validOp(value: unknown): string | null {
   return op && /^[a-zA-Z0-9_-]{8,128}$/.test(op) ? op : null;
 }
 
+function validSlug(value: unknown): string | null {
+  const slug = requiredString(value, 120);
+  return slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? slug : null;
+}
+
 function validKind(value: unknown): Kind | null {
   return value === "human" || value === "agent" ? value : null;
 }
@@ -122,12 +127,23 @@ export class PortfolioState extends DurableObject<Env> {
       CREATE INDEX IF NOT EXISTS magic_expiry ON magic_tokens(expires_at);
       CREATE TABLE IF NOT EXISTS magic_creations (op_id TEXT PRIMARY KEY, email TEXT NOT NULL, token_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS feedback (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT NOT NULL, ip_hash TEXT NOT NULL, validated INTEGER NOT NULL, created_at INTEGER NOT NULL);
-      CREATE TABLE IF NOT EXISTS garden_views (slug TEXT PRIMARY KEY, views INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS garden_views (slug TEXT PRIMARY KEY, views INTEGER NOT NULL DEFAULT 0, mcp_fetches INTEGER NOT NULL DEFAULT 0);
       CREATE TABLE IF NOT EXISTS rate_hits (bucket TEXT NOT NULL, subject_hash TEXT NOT NULL, occurred_at INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS rate_window ON rate_hits(bucket, subject_hash, occurred_at);
       CREATE TABLE IF NOT EXISTS operations (op_id TEXT PRIMARY KEY, endpoint TEXT NOT NULL, response_json TEXT NOT NULL, created_at INTEGER NOT NULL);
       INSERT OR IGNORE INTO _sql_schema_migrations(id, applied_at) VALUES (1, unixepoch() * 1000);
     `);
+    const gardenColumns = this.ctx.storage.sql
+      .exec<{ name: string }>("PRAGMA table_info(garden_views)")
+      .toArray();
+    if (!gardenColumns.some((column) => column.name === "mcp_fetches")) {
+      this.ctx.storage.sql.exec(
+        "ALTER TABLE garden_views ADD COLUMN mcp_fetches INTEGER NOT NULL DEFAULT 0",
+      );
+    }
+    this.ctx.storage.sql.exec(
+      "INSERT OR IGNORE INTO _sql_schema_migrations(id, applied_at) VALUES (2, unixepoch() * 1000)",
+    );
   }
 
   private rows<T extends Row>(query: string, ...params: unknown[]): T[] {
@@ -280,13 +296,41 @@ export class PortfolioState extends DurableObject<Env> {
     });
   }
 
-  gardenGet(slug: string): { slug: string; views: number } {
-    return { slug, views: this.one<{ views: number }>("SELECT views FROM garden_views WHERE slug = ?", slug)?.views ?? 0 };
+  gardenGet(slug: string): { slug: string; views: number; mcpFetches: number } {
+    const row = this.one<{ views: number; mcp_fetches: number }>(
+      "SELECT views, mcp_fetches FROM garden_views WHERE slug = ?",
+      slug,
+    );
+    return {
+      slug,
+      views: row?.views ?? 0,
+      mcpFetches: row?.mcp_fetches ?? 0,
+    };
   }
 
-  gardenIncrement(input: { opId: string; slug: string }): { slug: string; views: number } {
+  gardenIncrement(input: { opId: string; slug: string }): { slug: string; views: number; mcpFetches: number } {
     return this.operation("garden.increment", input.opId, () => {
       this.ctx.storage.sql.exec("INSERT INTO garden_views(slug, views) VALUES (?, 1) ON CONFLICT(slug) DO UPDATE SET views = views + 1", input.slug);
+      return this.gardenGet(input.slug);
+    });
+  }
+
+  gardenMcpIncrement(input: { opId: string; slug: string }): { slug: string; views: number; mcpFetches: number } {
+    return this.operation("garden.mcp.increment", input.opId, () => {
+      this.ctx.storage.sql.exec(
+        "INSERT INTO garden_views(slug, views, mcp_fetches) VALUES (?, 0, 1) ON CONFLICT(slug) DO UPDATE SET mcp_fetches = mcp_fetches + 1",
+        input.slug,
+      );
+      return this.gardenGet(input.slug);
+    });
+  }
+
+  gardenMcpReset(input: { opId: string; slug: string }): { slug: string; views: number; mcpFetches: number } {
+    return this.operation("garden.mcp.reset", input.opId, () => {
+      this.ctx.storage.sql.exec(
+        "INSERT INTO garden_views(slug, views, mcp_fetches) VALUES (?, 0, 0) ON CONFLICT(slug) DO UPDATE SET mcp_fetches = 0",
+        input.slug,
+      );
       return this.gardenGet(input.slug);
     });
   }
@@ -362,7 +406,7 @@ export class PortfolioState extends DurableObject<Env> {
       owners: this.rows("SELECT lower_name, owner_id, display_name, email_bound, renamed_to FROM owners"),
       identityNames: this.rows("SELECT owner_id, lower_name FROM identity_names"),
       identityEmails: this.rows("SELECT email, owner_id FROM identity_emails"),
-      gardenViews: this.rows("SELECT slug, views FROM garden_views"),
+      gardenViews: this.rows("SELECT slug, views, mcp_fetches FROM garden_views"),
       feedbackSummary: this.one<{ count: number }>("SELECT COUNT(*) AS count FROM feedback")?.count ?? 0,
     };
   }
@@ -375,7 +419,7 @@ export class PortfolioState extends DurableObject<Env> {
         ["owners", "INSERT OR REPLACE INTO owners(lower_name, owner_id, display_name, email_bound, renamed_to) VALUES (?, ?, ?, ?, ?)", ["lower_name", "owner_id", "display_name"], (row) => [row.lower_name, row.owner_id, row.display_name, row.email_bound ? 1 : 0, row.renamed_to ?? null]],
         ["identityNames", "INSERT OR IGNORE INTO identity_names(owner_id, lower_name) VALUES (?, ?)", ["owner_id", "lower_name"], (row) => [row.owner_id, row.lower_name]],
         ["identityEmails", "INSERT OR REPLACE INTO identity_emails(email, owner_id) VALUES (?, ?)", ["email", "owner_id"], (row) => [row.email, row.owner_id]],
-        ["gardenViews", "INSERT INTO garden_views(slug, views) VALUES (?, ?) ON CONFLICT(slug) DO UPDATE SET views = excluded.views", ["slug", "views"], (row) => [row.slug, row.views]],
+        ["gardenViews", "INSERT INTO garden_views(slug, views, mcp_fetches) VALUES (?, ?, ?) ON CONFLICT(slug) DO UPDATE SET views = excluded.views, mcp_fetches = excluded.mcp_fetches", ["slug", "views"], (row) => [row.slug, row.views, row.mcp_fetches ?? 0]],
       ];
       for (const [key, statement, required, values] of arrays) {
         const raw = input.data[key];
@@ -410,6 +454,37 @@ export class FileRateLimitService extends WorkerEntrypoint<Env> {
   }
 }
 
+export class McpArticleStateService extends WorkerEntrypoint<Env> {
+  async getArticleMetrics(input: { slug: string }): Promise<
+    { slug: string; views: number; mcpFetches: number }
+    | { error: "invalid_input" }
+  > {
+    const slug = validSlug(input?.slug);
+    if (!slug) return { error: "invalid_input" };
+    return this.env.PORTFOLIO_STATE.getByName(INSTANCE_NAME).gardenGet(slug);
+  }
+
+  async incrementArticleFetch(input: { opId: string; slug: string }): Promise<
+    { slug: string; views: number; mcpFetches: number }
+    | { error: "invalid_input" }
+  > {
+    const opId = validOp(input?.opId);
+    const slug = validSlug(input?.slug);
+    if (!opId || !slug) return { error: "invalid_input" };
+    return this.env.PORTFOLIO_STATE.getByName(INSTANCE_NAME).gardenMcpIncrement({ opId, slug });
+  }
+
+  async resetArticleFetches(input: { opId: string; slug: string }): Promise<
+    { slug: string; views: number; mcpFetches: number }
+    | { error: "invalid_input" }
+  > {
+    const opId = validOp(input?.opId);
+    const slug = validSlug(input?.slug);
+    if (!opId || !slug) return { error: "invalid_input" };
+    return this.env.PORTFOLIO_STATE.getByName(INSTANCE_NAME).gardenMcpReset({ opId, slug });
+  }
+}
+
 const REMOTE_STATE_ERRORS: Record<string, number> = {
   invalid_import: 400,
   op_id_conflict: 409,
@@ -427,7 +502,7 @@ export default {
       const path = new URL(request.url).pathname;
       if (path === "/v1/boards") return json(await state.boards());
       if (path === "/v1/identity/info") { const ownerId = validOwner(body.ownerId); return ownerId ? json(await state.identityInfo(ownerId)) : fail(400, "invalid_input"); }
-      if (path === "/v1/garden/views/get") { const slug = requiredString(body.slug, 120); return slug ? json(await state.gardenGet(slug)) : fail(400, "invalid_input"); }
+      if (path === "/v1/garden/views/get") { const slug = validSlug(body.slug); return slug ? json(await state.gardenGet(slug)) : fail(400, "invalid_input"); }
       if (path === "/v1/admin/export") return json(await state.adminExport());
       const opId = validOp(body.opId);
       if (!opId) return fail(400, "invalid_op_id");
@@ -441,7 +516,9 @@ export default {
       if (path === "/v1/magic/consume") { const token = requiredString(body.token, 200); const deviceOwnerId = body.deviceOwnerId === null || body.deviceOwnerId === undefined ? null : validOwner(body.deviceOwnerId); return token && /^do1_[a-f0-9]{64}$/i.test(token) && (body.deviceOwnerId === null || body.deviceOwnerId === undefined || deviceOwnerId) ? json(await state.consumeMagic({ opId, token, deviceOwnerId })) : fail(400, "invalid_input"); }
       if (path === "/v1/identity/rename") { const ownerId = validOwner(body.ownerId), to = validName(body.to), from = body.from === undefined || body.from === null ? null : validName(body.from); return ownerId && to && (body.from === undefined || body.from === null || from) ? json(await state.renameIdentity({ opId, ownerId, to, from })) : fail(400, "invalid_input"); }
       if (path === "/v1/feedback") { const message = requiredString(body.message, 4_000), ip = requiredString(body.ip, 200); return message && ip && typeof body.validated === "boolean" ? json(await state.pushFeedback({ opId, message, ip, validated: body.validated })) : fail(400, "invalid_input"); }
-      if (path === "/v1/garden/views/increment") { const slug = requiredString(body.slug, 120); return slug ? json(await state.gardenIncrement({ opId, slug })) : fail(400, "invalid_input"); }
+      if (path === "/v1/garden/views/increment") { const slug = validSlug(body.slug); return slug ? json(await state.gardenIncrement({ opId, slug })) : fail(400, "invalid_input"); }
+      if (path === "/v1/garden/mcp-fetches/increment") { const slug = validSlug(body.slug); return slug ? json(await state.gardenMcpIncrement({ opId, slug })) : fail(400, "invalid_input"); }
+      if (path === "/v1/garden/mcp-fetches/reset") { const slug = validSlug(body.slug); return slug ? json(await state.gardenMcpReset({ opId, slug })) : fail(400, "invalid_input"); }
       if (path === "/v1/rate/check") {
         const kind = body.kind as LimitKind, subject = requiredString(body.subject, 512);
         if (!LIMITS[kind] || !subject) return fail(400, "invalid_input");
