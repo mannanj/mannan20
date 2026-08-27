@@ -1,6 +1,6 @@
 # MCP Article Fetch Count Design
 
-**Date:** 2026-08-26  
+**Date:** 2026-08-26
 **Status:** Approved for implementation
 
 ## Goal
