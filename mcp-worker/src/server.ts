@@ -1,7 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { data } from "./data";
+import { recordArticleFetch } from "./article-state";
 import { searchData } from "./search";
+import type { ArticleStateEnv } from "./types";
 
 const text = (value: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(value) }],
@@ -9,11 +11,11 @@ const text = (value: unknown) => ({
 
 const READ_ONLY = { readOnlyHint: true };
 
-export function createServer() {
+export function createServer(env: ArticleStateEnv = {}) {
   const server = new McpServer(
     { name: "mannan-portfolio", version: "1.0.0" },
     {
-      instructions: `Read-only public data about Mannan Javid (https://mannan.is), multi-disciplinary engineer and founder. This is a snapshot of what the site serves publicly, generated ${data.generatedAt}. Tools: get_profile (who he is), get_mission_and_goals (his narrative and sourced goals), list_experience (employment and extracurriculars), list_writing (articles he wrote), list_readings (readings he published or curated, with author attribution), list_apps (products he built), list_research (publications and university projects), get_downloads (resume and cover letter), how_to_contact, search (keyword search across everything). All URLs link to mannan.is or his product domains.`,
+      instructions: `Read-only public data about Mannan Javid (https://mannan.is), multi-disciplinary engineer and founder. This is a snapshot of what the site serves publicly, generated ${data.generatedAt}. Tools: get_profile (who he is), get_mission_and_goals (his narrative and sourced goals), list_experience (employment and extracurriculars), list_writing (articles he wrote), get_article (full article text by slug), list_readings (readings he published or curated, with author attribution), list_apps (products he built), list_research (publications and university projects), get_downloads (resume and cover letter), how_to_contact, search (keyword search across everything). All URLs link to mannan.is or his product domains.`,
     },
   );
 
@@ -55,10 +57,42 @@ export function createServer() {
     {
       title: "List writing",
       description:
-        "Articles written by Mannan, published on mannan.is/garden — title, summary, date, reading time, and URL. Fetch the URL for full text.",
+        "Articles written by Mannan, published on mannan.is/garden — slug, title, summary, date, reading time, and URL. Use get_article for full text.",
       annotations: READ_ONLY,
     },
-    async () => text({ writing: data.writing }),
+    async () =>
+      text({
+        writing: data.writing.map(({ content: _content, ...article }) => article),
+      }),
+  );
+
+  server.registerTool(
+    "get_article",
+    {
+      title: "Get article",
+      description:
+        "Fetch the full text and metadata of one public Mannan Javid Garden article by slug.",
+      inputSchema: {
+        slug: z.string().min(1).max(120).describe("Article slug from list_writing"),
+      },
+      annotations: READ_ONLY,
+    },
+    async ({ slug }) => {
+      const article = data.writing.find((item) => item.slug === slug);
+      if (!article) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({ error: "Unknown article" }),
+            },
+          ],
+        };
+      }
+      await recordArticleFetch(env, slug);
+      return text({ article, dataGeneratedAt: data.generatedAt });
+    },
   );
 
   server.registerTool(

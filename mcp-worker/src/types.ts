@@ -92,10 +92,35 @@ export interface FileEntry {
   label: string;
 }
 
-export interface WorkerEnv {
+export interface GardenMetrics {
+  slug: string;
+  views: number;
+  mcpFetches: number;
+}
+
+export interface McpArticleStateService {
+  getArticleMetrics(input: {
+    slug: string;
+  }): Promise<GardenMetrics | { error: "invalid_input" }>;
+  incrementArticleFetch(input: {
+    opId: string;
+    slug: string;
+  }): Promise<GardenMetrics | { error: "invalid_input" }>;
+  resetArticleFetches(input: {
+    opId: string;
+    slug: string;
+  }): Promise<GardenMetrics | { error: "invalid_input" }>;
+}
+
+export interface ArticleStateEnv {
+  MCP_ARTICLE_STATE?: McpArticleStateService;
+}
+
+export interface WorkerEnv extends ArticleStateEnv {
   FILES: R2Bucket;
   FILES_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
   MCP_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
+  MCP_ADMIN_SECRET?: string;
 }
 
 export interface Contact {

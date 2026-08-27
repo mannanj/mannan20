@@ -388,7 +388,7 @@ const buildLlmsTxt = (d) => {
     llmsLink(
       "MCP endpoint (Streamable HTTP)",
       MCP_ENDPOINT,
-      "Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan " +
+      "Query this data as 11 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan " +
         MCP_ENDPOINT +
         "`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.",
     ),
