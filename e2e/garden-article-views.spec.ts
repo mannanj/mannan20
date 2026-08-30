@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 const HEALTH = '/garden/article/health-longevity';
 const COMMUNITY = '/garden/article/seeking-community';
 
-const stubViews = async (page: Page, value: number) => {
+const stubViews = async (page: Page, value: number, mcpFetches = 0) => {
   const posts: { url: string; method: string }[] = [];
   page.on('request', (req) => {
     if (req.url().includes('/api/garden/views/')) {
@@ -14,7 +14,7 @@ const stubViews = async (page: Page, value: number) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ views: value }),
+      body: JSON.stringify({ views: value, mcpFetches }),
     });
   });
   return posts;
@@ -39,20 +39,24 @@ test.describe('garden article view counter', () => {
   });
 
   test('displays the server count, comma-formatted, after the count-up settles', async ({ page }) => {
-    await stubViews(page, 12345);
+    await stubViews(page, 12345, 24);
     await gotoCounter(page, HEALTH);
 
     await expect(page.getByTestId('article-views-count')).toHaveText('12,345');
-    await expect(page.getByTestId('article-views')).toContainText('12,345 views');
+    await expect(page.getByTestId('article-views')).toContainText(
+      '12,345 views · 24 MCP fetches',
+    );
   });
 
   test('uses the singular noun when exactly one view', async ({ page }) => {
-    await stubViews(page, 1);
+    await stubViews(page, 1, 1);
     const counter = await gotoCounter(page, HEALTH);
 
     await expect(page.getByTestId('article-views-count')).toHaveText('1');
     await expect(counter).toContainText('1 view');
     await expect(counter).not.toContainText('1 views');
+    await expect(counter).toContainText('1 MCP fetch');
+    await expect(counter).not.toContainText('1 MCP fetches');
   });
 
   test('counter is uniquely tailored per article via its accent color', async ({ page }) => {
@@ -82,7 +86,7 @@ test.describe('garden article view counter', () => {
     ]) {
       await stubViews(page, 7);
       const counter = await gotoCounter(page, path);
-      await expect(counter).toContainText('7 views');
+      await expect(counter).toContainText('7 views · 0 MCP fetches');
     }
   });
 

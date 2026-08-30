@@ -1,12 +1,35 @@
 import { env, runInDurableObject, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { PortfolioState } from "../src/index";
+import { migratePortfolioState, PortfolioState } from "../src/index";
 
 function state() {
   return env.PORTFOLIO_STATE.getByName(`portfolio-state-test-${crypto.randomUUID()}`);
 }
 
 describe("portfolio state durable object", () => {
+  it("upgrades an existing garden view table without losing browser views", async () => {
+    const stub = state();
+    await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
+      objectState.storage.sql.exec("DROP TABLE garden_views");
+      objectState.storage.sql.exec(
+        "CREATE TABLE garden_views (slug TEXT PRIMARY KEY, views INTEGER NOT NULL DEFAULT 0)",
+      );
+      objectState.storage.sql.exec(
+        "INSERT INTO garden_views(slug, views) VALUES ('health-longevity', 17)",
+      );
+
+      migratePortfolioState(objectState.storage.sql);
+
+      expect(
+        objectState.storage.sql
+          .exec<{ views: number; mcp_fetches: number }>(
+            "SELECT views, mcp_fetches FROM garden_views WHERE slug = 'health-longevity'",
+          )
+          .one(),
+      ).toEqual({ views: 17, mcp_fetches: 0 });
+    });
+  });
+
   it("keeps score ownership transactional and idempotent", async () => {
     const stub = state();
     await expect(stub.submitScore({ opId: "submit-owner-0001", kind: "human", name: "Ada", score: 80, ownerId: "owner_abcdefgh" })).resolves.toEqual({ ok: true, finalName: "Ada" });
@@ -43,9 +66,19 @@ describe("portfolio state durable object", () => {
       await expect(stub.limit({ opId: `limit-op-000${index}`, kind: "leaderboard", subject: "198.51.100.1" })).resolves.toMatchObject({ success: true, remaining: 5 - index });
     }
     await expect(stub.limit({ opId: "limit-op-0010", kind: "leaderboard", subject: "198.51.100.1" })).resolves.toMatchObject({ success: false, remaining: 0, limit: 6 });
+    expect(await stub.gardenGet("health-longevity")).toEqual({
+      slug: "health-longevity",
+      views: 0,
+      mcpFetches: 0,
+    });
+    await stub.gardenMcpIncrement({ opId: "mcp-fetch-0001", slug: "health-longevity" });
+    await stub.gardenMcpIncrement({ opId: "mcp-fetch-0001", slug: "health-longevity" });
+    expect((await stub.gardenGet("health-longevity")).mcpFetches).toBe(1);
+    await stub.gardenMcpReset({ opId: "mcp-reset-0001", slug: "health-longevity" });
+    expect((await stub.gardenGet("health-longevity")).mcpFetches).toBe(0);
     await stub.gardenIncrement({ opId: "garden-view-0001", slug: "taken" });
     await stub.gardenIncrement({ opId: "garden-view-0002", slug: "taken" });
-    expect(await stub.gardenGet("taken")).toEqual({ slug: "taken", views: 2 });
+    expect(await stub.gardenGet("taken")).toEqual({ slug: "taken", views: 2, mcpFetches: 0 });
     for (let index = 0; index < 501; index += 1) await stub.pushFeedback({ opId: `feedback-op-${index.toString().padStart(4, "0")}`, message: `feedback ${index}`, ip: "198.51.100.1", validated: true });
     await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
       expect(objectState.storage.sql.exec<{ count: number }>("SELECT COUNT(*) AS count FROM feedback").one().count).toBe(500);
@@ -56,6 +89,47 @@ describe("portfolio state durable object", () => {
     await runInDurableObject(stub, (_instance: PortfolioState, objectState) => {
       expect(objectState.storage.sql.exec<{ count: number }>("SELECT COUNT(*) AS count FROM operations").one().count).toBeLessThanOrEqual(10_000);
     });
+  });
+
+  it("authenticates MCP article fetch mutations and rejects malformed slugs", async () => {
+    const slug = "health-longevity";
+    const call = (path: string, body: Record<string, unknown>) =>
+      SELF.fetch(`https://portfolio-state-worker${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-state-service-key": "test-state-key" },
+        body: JSON.stringify(body),
+      });
+
+    const initialReset = await call("/v1/garden/mcp-fetches/reset", {
+      opId: "mcp-http-reset-initial-0001",
+      slug,
+    });
+    expect(initialReset.status).toBe(200);
+
+    const increment = await call("/v1/garden/mcp-fetches/increment", {
+      opId: "mcp-http-increment-0001",
+      slug,
+    });
+    expect(increment.status).toBe(200);
+    await expect(increment.json()).resolves.toMatchObject({ slug, mcpFetches: 1 });
+
+    const reset = await call("/v1/garden/mcp-fetches/reset", {
+      opId: "mcp-http-reset-0001",
+      slug,
+    });
+    expect(reset.status).toBe(200);
+    await expect(reset.json()).resolves.toMatchObject({ slug, mcpFetches: 0 });
+
+    for (const [index, excludedSlug] of ["taken", "ai-false-positives", "well-formed-but-unknown", "../taken"].entries()) {
+      for (const action of ["increment", "reset"]) {
+        const invalid = await call(`/v1/garden/mcp-fetches/${action}`, {
+          opId: `mcp-http-invalid-${index}-${action}`,
+          slug: excludedSlug,
+        });
+        expect(invalid.status).toBe(400);
+        await expect(invalid.json()).resolves.toEqual({ ok: false, code: "invalid_input" });
+      }
+    }
   });
 
   it("enforces both contact limits at exactly ten requests per hour", async () => {
