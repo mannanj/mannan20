@@ -1,6 +1,7 @@
 import { createMcpHandler } from "agents/mcp";
 import { createServer } from "./server";
 import { data } from "./data";
+import { getArticleMetrics, resetArticleFetches } from "./article-state";
 import { handleFileRequest } from "./files";
 import type { WorkerEnv } from "./types";
 
@@ -12,7 +13,7 @@ const MCP_MAX_SEARCH_QUERY_LENGTH = 512;
 const INFO = JSON.stringify(
   {
     name: "mannan-portfolio",
-    description: "Read-only MCP server for the public data of mannan.is",
+    description: "Public-data MCP server for mannan.is with article-fetch analytics",
     endpoint: "/mcp",
     transport: "streamable-http",
     site: data.site,
@@ -29,7 +30,7 @@ const SERVER_CARD = JSON.stringify(
     name: "mannan-portfolio",
     title: "Mannan Javid — Portfolio",
     description:
-      "Read-only MCP server for the public data of mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads.",
+      "Public-data MCP server for mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Article content fetches record an aggregate counter.",
     version: "1.0.0",
     endpoint: ENDPOINT,
     transport: "streamable-http",
@@ -61,7 +62,7 @@ a:hover{text-decoration:underline}
 <body>
 <main>
 <h1>Mannan MCP</h1>
-<p>A read-only MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent.</p>
+<p>An MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent. Full article fetches tick a tiny aggregate counter.</p>
 <code>${ENDPOINT}</code>
 <p>Claude Code:</p>
 <code>claude mcp add --transport http mannan ${ENDPOINT}</code>
@@ -76,6 +77,66 @@ a:hover{text-decoration:underline}
 </html>`;
 
 const JSON_HEADERS = { "content-type": "application/json" };
+const NO_STORE_JSON_HEADERS = {
+  "content-type": "application/json",
+  "cache-control": "no-store",
+};
+
+function stableEqual(a: string, b: string): boolean {
+  const max = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let index = 0; index < max; index += 1) {
+    diff |= (a.charCodeAt(index) || 0) ^ (b.charCodeAt(index) || 0);
+  }
+  return diff === 0;
+}
+
+export async function handleArticleAdminRequest(
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (!env.MCP_ADMIN_SECRET || !env.MCP_ARTICLE_STATE) {
+    return Response.json(
+      { error: "Article maintenance unavailable" },
+      { status: 503, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  const supplied = request.headers.get("authorization") ?? "";
+  const expected = `Bearer ${env.MCP_ADMIN_SECRET}`;
+  if (!stableEqual(supplied, expected)) {
+    return Response.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  let body: { action?: unknown; slug?: unknown };
+  try {
+    body = (await request.json()) as { action?: unknown; slug?: unknown };
+  } catch {
+    return Response.json(
+      { error: "Invalid request" },
+      { status: 400, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  const article = data.writing.find((item) => item.slug === body.slug);
+  if (!article || (body.action !== "get" && body.action !== "reset")) {
+    return Response.json(
+      { error: "Invalid request" },
+      { status: 400, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+  try {
+    const metrics = body.action === "reset"
+      ? await resetArticleFetches(env, article.slug)
+      : await getArticleMetrics(env, article.slug);
+    return Response.json(metrics, { headers: NO_STORE_JSON_HEADERS });
+  } catch {
+    return Response.json(
+      { error: "Article maintenance unavailable" },
+      { status: 503, headers: NO_STORE_JSON_HEADERS },
+    );
+  }
+}
 
 function hasOversizedSearchQuery(body: ArrayBuffer): boolean {
   try {
@@ -140,11 +201,14 @@ async function handleMcpRequest(
     boundedRequest = forwarded;
   }
 
-  const response = await createMcpHandler(createServer(), {
-    route: "/mcp",
-    corsOptions: { origin: "*" },
-    enableJsonResponse: true,
-  })(boundedRequest, env, ctx);
+  const response = await createMcpHandler(
+    createServer(env, (promise) => ctx.waitUntil(promise)),
+    {
+      route: "/mcp",
+      corsOptions: { origin: "*" },
+      enableJsonResponse: true,
+    },
+  )(boundedRequest, env, ctx);
   const headers = new Headers(response.headers);
   headers.set("x-ratelimit-limit", MCP_RATE_LIMIT);
   headers.set("x-ratelimit-policy", `${MCP_RATE_LIMIT};w=60`);
@@ -172,6 +236,9 @@ export default {
     }
     if (pathname.startsWith("/files/")) {
       return handleFileRequest(request, env);
+    }
+    if (pathname === "/admin/article-fetches" && request.method === "POST") {
+      return handleArticleAdminRequest(request, env);
     }
     if (pathname === "/mcp") {
       return handleMcpRequest(request, env, ctx);

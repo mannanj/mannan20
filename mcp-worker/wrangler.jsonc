@@ -7,6 +7,13 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "observability": { "enabled": true },
+  "services": [
+    {
+      "binding": "MCP_ARTICLE_STATE",
+      "service": "portfolio-state-worker",
+      "entrypoint": "McpArticleStateService"
+    }
+  ],
   "r2_buckets": [
     {
       "binding": "FILES",

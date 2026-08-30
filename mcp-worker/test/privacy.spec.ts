@@ -36,6 +36,16 @@ beforeAll(async () => {
   for (const name of NO_ARG_TOOLS) {
     outputs.push(firstText(await client.callTool({ name, arguments: {} })));
   }
+  for (const article of data.writing) {
+    outputs.push(
+      firstText(
+        await client.callTool({
+          name: "get_article",
+          arguments: { slug: article.slug },
+        }),
+      ),
+    );
+  }
   outputs.push(firstText(await client.callTool({ name: "search", arguments: { query: "a" } })));
   everyResponse = outputs.join("\n");
 });
