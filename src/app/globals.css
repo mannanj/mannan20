@@ -1438,3 +1438,23 @@ body.gem-rain-active #header > div:first-child {
     transition: none;
   }
 }
+
+/* Half-height scrollbar for the connector menu's value boxes. At the default
+   weight the bar reads as a rule sitting under the row rather than a control. */
+.mcp-thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.mcp-thin-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.mcp-thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mcp-thin-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+}
