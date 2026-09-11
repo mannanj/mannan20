@@ -92,20 +92,22 @@ export function McpHeaderButton({
         >
           <div className="mb-3 flex items-baseline justify-between">
             <span className="text-sm font-medium text-white">MCP Connector</span>
+            {/* Docs sits on the header line, right-aligned: it leads out of
+                this menu, so it belongs beside the title. */}
+            <Link
+              href="/mcp"
+              data-testid="mcp-popover-guide-link"
+              onClick={() => updateOpen(false)}
+              className="text-xs text-red-500 transition-colors hover:text-red-400"
+            >
+              Docs
+            </Link>
           </div>
           <div className="flex flex-col gap-3">
             <CopySnippet label="Claude.ai" value={MCP_ENDPOINT} />
             <CopySnippet label="Claude Code" value={MCP_CLAUDE_CODE_CMD} />
             <CopySnippet label="Agent agnostic" value={MCP_AGENT_INSTRUCTION} />
           </div>
-          <Link
-            href="/mcp"
-            data-testid="mcp-popover-guide-link"
-            onClick={() => updateOpen(false)}
-            className="mt-3 block text-xs text-red-500 transition-colors hover:text-red-400"
-          >
-            Docs
-          </Link>
         </div>
       )}
     </div>

@@ -30,7 +30,7 @@ export function CopySnippet({ value, label }: { value: string; label?: string })
         <div className="mb-1 text-[10px] uppercase tracking-widest text-white/35">{label}</div>
       )}
       <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-        <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs text-white/75">
+        <code className="mcp-thin-scroll min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs text-white/75">
           {value}
         </code>
         <button
