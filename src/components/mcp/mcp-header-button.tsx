@@ -91,13 +91,12 @@ export function McpHeaderButton({
           className="absolute top-full right-0 z-50 mt-4 w-[316px] max-w-[calc(100vw-32px)] rounded-xl border border-white/10 bg-[#111] p-4 shadow-2xl shadow-black/60"
         >
           <div className="mb-3 flex items-baseline justify-between">
-            <span className="text-sm font-medium text-white">Mannan MCP</span>
-            <span className="text-[10px] text-white/35">live data from this site</span>
+            <span className="text-sm font-medium text-white">MCP Connector</span>
           </div>
           <div className="flex flex-col gap-3">
-            <CopySnippet label="Endpoint — claude.ai › Connectors" value={MCP_ENDPOINT} />
+            <CopySnippet label="Claude.ai" value={MCP_ENDPOINT} />
             <CopySnippet label="Claude Code" value={MCP_CLAUDE_CODE_CMD} />
-            <CopySnippet label="Tell your agent" value={MCP_AGENT_INSTRUCTION} />
+            <CopySnippet label="Agent agnostic" value={MCP_AGENT_INSTRUCTION} />
           </div>
           <Link
             href="/mcp"
@@ -105,7 +104,7 @@ export function McpHeaderButton({
             onClick={() => updateOpen(false)}
             className="mt-3 block text-xs text-red-500 transition-colors hover:text-red-400"
           >
-            Full guide &rarr;
+            Docs
           </Link>
         </div>
       )}
