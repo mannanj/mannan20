@@ -3,23 +3,39 @@ import { callPortfolioState, stateOperationId } from "./portfolio-state-client";
 
 const memoryCounts = new Map<GardenViewSlug, number>();
 
-function bumpMemory(slug: GardenViewSlug): number {
-  const next = (memoryCounts.get(slug) ?? 0) + 1;
-  memoryCounts.set(slug, next);
-  return next;
+export interface GardenArticleMetrics {
+  views: number;
+  mcpFetches: number;
 }
 
-export async function recordView(slug: GardenViewSlug): Promise<number> {
-  const state = await callPortfolioState<{ views: number }>("/v1/garden/views/increment", {
+function memoryMetrics(slug: GardenViewSlug): GardenArticleMetrics {
+  return { views: memoryCounts.get(slug) ?? 0, mcpFetches: 0 };
+}
+
+function bumpMemory(slug: GardenViewSlug): GardenArticleMetrics {
+  const next = (memoryCounts.get(slug) ?? 0) + 1;
+  memoryCounts.set(slug, next);
+  return memoryMetrics(slug);
+}
+
+function normalizeMetrics(state: { views: number; mcpFetches?: number }): GardenArticleMetrics {
+  return {
+    views: state.views,
+    mcpFetches: typeof state.mcpFetches === "number" ? state.mcpFetches : 0,
+  };
+}
+
+export async function recordView(slug: GardenViewSlug): Promise<GardenArticleMetrics> {
+  const state = await callPortfolioState<{ views: number; mcpFetches?: number }>("/v1/garden/views/increment", {
     opId: stateOperationId(),
     slug,
   });
-  if (state !== undefined) return state.views;
+  if (state !== undefined) return normalizeMetrics(state);
   return bumpMemory(slug);
 }
 
-export async function getViews(slug: GardenViewSlug): Promise<number> {
-  const state = await callPortfolioState<{ views: number }>("/v1/garden/views/get", { slug });
-  if (state !== undefined) return state.views;
-  return memoryCounts.get(slug) ?? 0;
+export async function getArticleMetrics(slug: GardenViewSlug): Promise<GardenArticleMetrics> {
+  const state = await callPortfolioState<{ views: number; mcpFetches?: number }>("/v1/garden/views/get", { slug });
+  if (state !== undefined) return normalizeMetrics(state);
+  return memoryMetrics(slug);
 }
