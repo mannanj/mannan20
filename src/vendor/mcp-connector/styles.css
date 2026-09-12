@@ -1,0 +1,120 @@
+/* GENERATED FROM @mannan/mcp-connector/styles.css - DO NOT EDIT HERE.
+   Edit ~/Documents/mcp-connector and re-run: node bin/sync.mjs <this dir> */
+/*
+ * The connector's structure. Colour, radius and typeface all come from custom
+ * properties so an app can theme it without overriding a single selector.
+ *
+ * THE RULE THAT MUST NOT BE BROKEN: the value box scrolls, and its height must
+ * never change to make room for the scrollbar. Thin the bar with
+ * scrollbar-width; NEVER style ::-webkit-scrollbar. That pseudo element swaps
+ * WebKit's overlay scrollbar for a classic one that reserves space inside the
+ * box, so the input grows 4px in Safari and nowhere else. Measured in both
+ * engines - see README.
+ */
+
+.mcp-connector {
+  /* Defaults are deliberately neutral: an app that sets nothing still reads. */
+  --mcpc-fg: #101416;
+  --mcpc-muted: #55605b;
+  --mcpc-line: #c7cdbf;
+  --mcpc-surface: transparent;
+  --mcpc-accent: #0d8a5a;
+  --mcpc-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mcpc-radius: 7px;
+  --mcpc-gap: 12px;
+
+  color: var(--mcpc-fg);
+}
+
+.mcpc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: var(--mcpc-gap);
+}
+
+.mcpc-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mcpc-docs {
+  flex: none;
+  color: var(--mcpc-accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mcpc-docs.is-locked {
+  color: var(--mcpc-muted);
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.mcpc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mcpc-gap);
+}
+
+.mcpc-rows.is-locked {
+  filter: blur(3px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.mcpc-snippet__label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--mcpc-muted);
+  font-family: var(--mcpc-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.mcpc-snippet__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mcpc-snippet__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 8px 10px;
+  border: 1px solid var(--mcpc-line);
+  border-radius: var(--mcpc-radius);
+  background: var(--mcpc-surface);
+  color: var(--mcpc-fg);
+  font-family: var(--mcpc-mono);
+  font-size: 12px;
+
+  /* Thins the bar at ZERO reserved height in Chromium and WebKit alike. */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 22%, transparent) transparent;
+}
+
+.mcpc-snippet__copy {
+  flex: none;
+  padding: 7px 11px;
+  border: 1px solid var(--mcpc-line);
+  border-radius: var(--mcpc-radius);
+  background: none;
+  color: var(--mcpc-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.mcpc-snippet__copy:hover {
+  color: var(--mcpc-fg);
+  border-color: currentColor;
+}
