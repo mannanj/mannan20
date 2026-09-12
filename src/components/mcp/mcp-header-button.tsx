@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { McpConnector } from "@/vendor/mcp-connector/connector";
 import { McpLogoIcon } from "@/components/icons/mcp-logo-icon";
-import { CopySnippet } from "@/components/mcp/copy-snippet";
 import {
   MCP_AGENT_INSTRUCTION,
   MCP_CLAUDE_CODE_CMD,
@@ -90,23 +90,24 @@ export function McpHeaderButton({
           data-testid="mcp-popover"
           className="absolute top-full right-0 z-50 mt-4 w-[316px] max-w-[calc(100vw-32px)] rounded-xl border border-white/10 bg-[#111] p-4 shadow-2xl shadow-black/60"
         >
-          <div className="mb-3 flex items-baseline justify-between">
-            <span className="text-sm font-medium text-white">Mannan MCP</span>
-            <span className="text-[10px] text-white/35">live data from this site</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            <CopySnippet label="Endpoint — claude.ai › Connectors" value={MCP_ENDPOINT} />
-            <CopySnippet label="Claude Code" value={MCP_CLAUDE_CODE_CMD} />
-            <CopySnippet label="Tell your agent" value={MCP_AGENT_INSTRUCTION} />
-          </div>
-          <Link
-            href="/mcp"
-            data-testid="mcp-popover-guide-link"
-            onClick={() => updateOpen(false)}
-            className="mt-3 block text-xs text-red-500 transition-colors hover:text-red-400"
-          >
-            Full guide &rarr;
-          </Link>
+          {/* Shared with gogo.green, sunsignal.app and Meet Time. GENERATED
+              from ~/Documents/mcp-connector by `bun run sync:mcp`. */}
+          <McpConnector
+            endpoint={MCP_ENDPOINT}
+            claudeCodeCommand={MCP_CLAUDE_CODE_CMD}
+            agentInstruction={MCP_AGENT_INSTRUCTION}
+            docsHref="/mcp"
+            renderDocsLink={(href, children) => (
+              <Link
+                href={href}
+                data-testid="mcp-popover-guide-link"
+                onClick={() => updateOpen(false)}
+                className="mcpc-docs"
+              >
+                {children}
+              </Link>
+            )}
+          />
         </div>
       )}
     </div>
