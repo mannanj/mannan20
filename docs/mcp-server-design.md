@@ -1,6 +1,6 @@
 # MCP Server Design — `mannan-mcp` (approved 2026-06-11)
 
-Read-only MCP server exposing the public data of mannan.is to AI agents. Approved by Mannan on 2026-06-11 after design review; this document is the implementation spec.
+Public-data MCP server exposing mannan.is to AI agents. Most tools are read-only; `get_article` records an aggregate per-article fetch counter. Approved by Mannan on 2026-06-11 after design review; this document is the implementation spec.
 
 ## Goal
 
@@ -29,18 +29,21 @@ garden products registry   ──┘    filters gated content,               wra
                                   emits generatedAt stamp)
 ```
 
-- Server framework — *amended at implementation after live API research*: Cloudflare Agents SDK (`agents` package) `createMcpHandler` wrapping the official `@modelcontextprotocol/sdk` `McpServer`, constructed per request. This is Cloudflare's currently documented preferred shape for stateless read-only servers: same official SDK owning protocol conformance, but no Durable Object binding or migrations at all. (The spec originally named `McpAgent` + DO; the simpler documented path supersedes it.)
+*Amendment (2026-08-26):* `src/content/mcp-articles/*.md` now supplies privacy-reviewed full text for the public writing snapshot. Successful `get_article` calls record a per-article MCP fetch through the portfolio state Worker.
+
+- Server framework — *amended at implementation after live API research*: Cloudflare Agents SDK (`agents` package) `createMcpHandler` wrapping the official `@modelcontextprotocol/sdk` `McpServer`, constructed per request. The protocol handler stays stateless; aggregate article analytics use the existing portfolio state Worker's Durable Object through a private service binding. (The spec originally named a dedicated `McpAgent` + DO; the simpler transport plus shared state service supersedes it.)
 - Garden products are currently defined inline in `src/components/garden/garden-explorer.tsx` (`PRODUCTS` array with JSX thumbs). The data portion (title, description, href, year, retired) is extracted to `src/lib/garden-products.ts` so both the component and the build script import one source of truth. No behavior change to the site.
 - Tool schemas via zod. Server declares `instructions` on initialize describing who Mannan is and which tool answers what.
 
-## Tools (10, all read-only)
+## Tools (11, all read-only)
 
 | Tool | Returns |
 |---|---|
 | `get_profile` | Name, tagline, bio (aboutIntro), education, certifications, GitHub/site links |
 | `get_mission_and_goals` | The 4 narrative chapters verbatim (wellbeing, impact, arena, continue) + derived goals, each `{statement, source: {url, quote}}` |
 | `list_experience` | 7 jobs (company, position, dates, skills, description, highlights, company links) + 4 extracurriculars (teaching, volunteering, travel, Applied Jung community building) with their public links |
-| `list_writing` | 4 public articles authored by Mannan: title, date, summary, reading time, word count, absolute URL (*amended from 5: AI False Positives excluded, see Exclusions*) |
+| `list_writing` | 3 public articles authored by Mannan: slug, title, date, summary, reading time, word count, absolute URL; full text is intentionally reserved for `get_article` so per-article fetches are measurable |
+| `get_article` | Full text and metadata for one public Garden article by slug; successful responses increment that article's MCP fetch total |
 | `list_readings` | 2 public curated readings, explicitly labeled as authored by others (Faizan Ishaq, Bryan Johnson) |
 | `list_apps` | Sun Signal, Read Along, SkillGuard, Summon It, Meal Fairy (retired), the portfolio itself, Floating Chicken Game — name, one-liner, URL, year |
 | `list_research` | publishedWorks + educationProjects (ARCHR, solar, dome) with demo/download links |
@@ -76,7 +79,7 @@ Each goal's quote must appear verbatim in the bundled source data; a test enforc
 
 `mcp-worker/` gets vitest + `@cloudflare/vitest-pool-workers` (tests execute in the real workerd runtime):
 
-1. **Protocol integration** — a real `@modelcontextprotocol/sdk` client connects over Streamable HTTP to `SELF`, performs the initialize handshake, lists tools (asserting all 10 names + input schemas), and calls every tool asserting response shape and content invariants.
+1. **Protocol integration** — a real `@modelcontextprotocol/sdk` client connects over Streamable HTTP to `SELF`, performs the initialize handshake, lists tools (asserting all 11 names + input schemas), and calls every tool asserting response shape and content invariants.
 2. **Privacy** — serialized response text for every tool must never contain: `taken` article path, hidden episode slugs (`affiliate-leads-redesign`, `rules-of-the-new-rich`), `jordan`, `ACCESS_CODE`, `@` email patterns, phone-number patterns, `protonmail`.
 3. **Goals integrity** — every derived goal has a `source.url` on mannan.is (or its pages) and a `source.quote`; quotes drawn from site data must string-match the bundled snapshot.
 4. **Search behavior** — "prediabetes" finds Health is an Artform; "chicken" finds the Floating Chicken Game; nonsense query returns empty results, not an error.
@@ -101,7 +104,6 @@ Each goal's quote must appear verbatim in the bundled source data; a test enforc
 
 ## Non-goals (v1)
 
-- Full article text (agents get metadata + URL; prose lives in TSX components, extraction is brittle)
 - Write actions of any kind (contact stays a pointer per approval)
 - Custom domain mapping
 - Linking the MCP from the site UI

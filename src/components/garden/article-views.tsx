@@ -40,10 +40,12 @@ function useCountUp(target: number | null): number {
 
 export function ArticleViews({ slug, align = "left" }: ArticleViewsProps) {
   const [views, setViews] = useState<number | null>(null);
+  const [mcpFetches, setMcpFetches] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
   const sent = useRef(false);
   const accent = GARDEN_VIEW_ACCENTS[slug];
-  const display = useCountUp(views);
+  const viewsDisplay = useCountUp(views);
+  const mcpFetchesDisplay = useCountUp(mcpFetches);
 
   useEffect(() => {
     if (sent.current) return;
@@ -51,10 +53,14 @@ export function ArticleViews({ slug, align = "left" }: ArticleViewsProps) {
     let active = true;
     fetch(`/api/garden/views/${slug}`, { method: "POST" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("bad status"))))
-      .then((data: { views?: number }) => {
+      .then((data: { views?: number; mcpFetches?: number }) => {
         if (!active) return;
-        if (typeof data.views === "number") setViews(data.views);
-        else setFailed(true);
+        if (typeof data.views !== "number") {
+          setFailed(true);
+          return;
+        }
+        setViews(data.views);
+        setMcpFetches(typeof data.mcpFetches === "number" ? data.mcpFetches : 0);
       })
       .catch(() => {
         if (active) setFailed(true);
@@ -66,10 +72,13 @@ export function ArticleViews({ slug, align = "left" }: ArticleViewsProps) {
 
   if (failed) return null;
 
-  const ready = views !== null;
+  const ready = views !== null && mcpFetches !== null;
   const centered = align === "center";
-  const formatted = new Intl.NumberFormat("en-US").format(display);
-  const label = views === 1 ? "view" : "views";
+  const formatter = new Intl.NumberFormat("en-US");
+  const formattedViews = formatter.format(viewsDisplay);
+  const formattedMcpFetches = formatter.format(mcpFetchesDisplay);
+  const viewLabel = views === 1 ? "view" : "views";
+  const mcpLabel = mcpFetches === 1 ? "MCP fetch" : "MCP fetches";
 
   return (
     <div className={`mt-12 ${centered ? "text-center" : ""}`}>
@@ -100,9 +109,17 @@ export function ArticleViews({ slug, align = "left" }: ArticleViewsProps) {
             className="font-medium tabular-nums text-white/85"
             data-testid="article-views-count"
           >
-            {formatted}
+            {formattedViews}
           </span>
-          <span className="text-white/35"> {label}</span>
+          <span className="text-white/35"> {viewLabel}</span>
+          <span className="text-white/20"> · </span>
+          <span
+            className="font-medium tabular-nums text-white/70"
+            data-testid="article-mcp-fetch-count"
+          >
+            {formattedMcpFetches}
+          </span>
+          <span className="text-white/35"> {mcpLabel}</span>
         </span>
       </div>
     </div>

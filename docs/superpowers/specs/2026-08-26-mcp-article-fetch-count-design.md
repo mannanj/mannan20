@@ -1,6 +1,6 @@
 # MCP Article Fetch Count Design
 
-**Date:** 2026-08-26  
+**Date:** 2026-08-26
 **Status:** Approved for implementation
 
 ## Goal
@@ -17,11 +17,11 @@ The metric reports successful article-content responses from Mannan's MCP server
 - The site middleware separately records page requests, including raw HTTP clients and bots, in the visits D1 database.
 - A raw fetch of a website article URL therefore remains visit telemetry, not a public `views` increment.
 - `list_writing` continues to return the public article catalog.
-- Hidden, unavailable, and no-index articles remain excluded from MCP article content.
+- MCP publication is an explicit allowlist independent from website route availability. Hidden/no-index articles remain excluded; the privacy-redacted *Joyful Frustrations* story remains intentionally MCP-public even while its interactive website route is disabled.
 
 ## MCP interface
 
-Add one read-only tool:
+Add one non-destructive content-fetch tool:
 
 ```text
 get_article({ slug })
@@ -38,8 +38,8 @@ Extend the existing portfolio state Worker rather than introducing another datab
 - Add persistent per-slug MCP fetch totals alongside Garden view totals.
 - Add authenticated get, increment, and reset operations scoped to known public article slugs.
 - Preserve operation-ID idempotency for increment and reset mutations.
-- Bind the MCP Worker to the portfolio state Worker and authenticate calls with the existing state-service pattern.
-- Increment only after `get_article` has resolved a valid public article and constructed a successful content response.
+- Bind the MCP Worker to the portfolio state Worker through a named Cloudflare service binding. The binding is the private transport identity; public HTTP state routes continue to require the existing state-service secret.
+- Increment in `waitUntil` only after `get_article` has resolved a valid public article and constructed its successful content response, so analytics cannot delay delivery.
 - If counter persistence is unavailable, still serve the public article but do not fabricate a count.
 
 The reset operation exists for controlled validation and maintenance; it is not exposed as an MCP tool or public site endpoint.

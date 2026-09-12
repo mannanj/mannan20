@@ -20,6 +20,7 @@ export const MCP_TOOLS: McpToolInfo[] = [
   { name: "get_mission_and_goals", description: "Mission chapters and goals, each with a sourced verbatim quote" },
   { name: "list_experience", description: "Employment history and extracurriculars with links" },
   { name: "list_writing", description: "Articles written by Mannan on mannan.is/garden" },
+  { name: "get_article", description: "Full text for one public article, with an MCP fetch recorded" },
   { name: "list_readings", description: "Readings published or curated on mannan.is, with author attribution" },
   { name: "list_apps", description: "Products and experiments he built, with URLs" },
   { name: "list_research", description: "Publications and university projects with demo and download links" },
