@@ -48,6 +48,28 @@ const DEFAULT_LABELS: Required<McpConnectorLabels> = {
 
 const COPIED_RESET_MS = 1600;
 
+/** Two overlapping sheets: the copy affordance every app already used. */
+function CopyGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+/** Confirmation, in the app's own accent rather than a fixed green. */
+function CheckGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"
+      className="mcpc-snippet__check">
+      <path d="M4 12.5 9 17.5 20 6.5" />
+    </svg>
+  );
+}
+
 export function CopySnippet({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -68,15 +90,18 @@ export function CopySnippet({ label, value }: { label: string; value: string }) 
   return (
     <div className="mcpc-snippet">
       <span className="mcpc-snippet__label">{label}</span>
+      {/* The field carries the border; the copy control sits INSIDE it as an
+          icon. Two bordered boxes side by side read as two controls, when only
+          one of them does anything. */}
       <div className="mcpc-snippet__row">
         <code className="mcpc-snippet__value">{value}</code>
         <button
           type="button"
           className="mcpc-snippet__copy"
           onClick={copy}
-          aria-label={copied ? 'Copied' : `Copy ${label}`}
+          aria-label={copied ? "Copied" : `Copy ${label}`}
         >
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? <CheckGlyph /> : <CopyGlyph />}
         </button>
       </div>
     </div>
@@ -130,3 +155,4 @@ export function mcpStrings(input: { origin: string; slug: string; purpose: strin
     agentInstruction: `Connect to the MCP server at ${endpoint} (streamable HTTP) ${input.purpose}`,
   };
 }
+

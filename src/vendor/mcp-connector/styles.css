@@ -4,12 +4,16 @@
  * The connector's structure. Colour, radius and typeface all come from custom
  * properties so an app can theme it without overriding a single selector.
  *
- * THE RULE THAT MUST NOT BE BROKEN: the value box scrolls, and its height must
- * never change to make room for the scrollbar. Thin the bar with
- * scrollbar-width; NEVER style ::-webkit-scrollbar. That pseudo element swaps
- * WebKit's overlay scrollbar for a classic one that reserves space inside the
- * box, so the input grows 4px in Safari and nowhere else. Measured in both
- * engines - see README.
+ * NO SCROLLBAR ON THE VALUE FIELD, and this is deliberate rather than an
+ * oversight. Two earlier attempts both failed on a real machine:
+ *   - styling ::-webkit-scrollbar swaps WebKit's overlay bar for a classic one
+ *     that reserves space INSIDE the box, growing the field 4px in Safari only
+ *     (measured: chromium 32/0, webkit 36/4);
+ *   - scrollbar-width: thin then looked correct in headless browsers, which
+ *     default to overlay bars - but on a system set to "show scroll bars:
+ *     always" it draws a permanent bar that still eats height.
+ * The values here are copy targets, not prose. Truncate with an ellipsis and
+ * let the button hand over the whole string.
  */
 
 .mcp-connector {
@@ -77,44 +81,67 @@
   text-transform: uppercase;
 }
 
+/* The ROW is the field: one bordered box holding the value and its copy
+   control, rather than two bordered boxes sitting beside each other. */
 .mcpc-snippet__row {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.mcpc-snippet__value {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow-x: auto;
-  white-space: nowrap;
   padding: 8px 10px;
   border: 1px solid var(--mcpc-line);
   border-radius: var(--mcpc-radius);
   background: var(--mcpc-surface);
+}
+
+/* No scrollbar at all. A bar drawn here is permanent for anyone whose system
+   shows scrollbars always, it eats height inside the field, and these values
+   are copy targets rather than things read in place - the ellipsis says there
+   is more and the button hands over all of it. */
+.mcpc-snippet__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--mcpc-fg);
   font-family: var(--mcpc-mono);
   font-size: 12px;
-
-  /* Thins the bar at ZERO reserved height in Chromium and WebKit alike. */
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, currentColor 22%, transparent) transparent;
 }
 
 .mcpc-snippet__copy {
   flex: none;
-  padding: 7px 11px;
-  border: 1px solid var(--mcpc-line);
-  border-radius: var(--mcpc-radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border: 0;
   background: none;
   color: var(--mcpc-muted);
   cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  transition: color 120ms ease, border-color 120ms ease;
+  transition: color 120ms ease;
+}
+
+.mcpc-snippet__copy svg {
+  width: 100%;
+  height: 100%;
 }
 
 .mcpc-snippet__copy:hover {
   color: var(--mcpc-fg);
-  border-color: currentColor;
 }
+
+.mcpc-snippet__copy:focus-visible {
+  outline: 2px solid var(--mcpc-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Confirmation borrows the app's accent, so each keeps its own green. */
+.mcpc-snippet__check {
+  color: var(--mcpc-accent);
+}
+
+@media (min-width: 640px) {
+  }
