@@ -1,9 +1,0 @@
-packages:
-  - frontend
-
-allowBuilds:
-  sharp: true
-  unrs-resolver: true
-
-overrides:
-  baseline-browser-mapping: 2.10.42
