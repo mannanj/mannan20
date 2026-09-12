@@ -1,3 +1,4 @@
+@import "../vendor/mcp-connector/styles.css";
 @import "tailwindcss";
 
 * {
@@ -22,8 +23,6 @@
   background-clip: padding-box;
 }
 .popout-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 @keyframes articleHighlight {
@@ -1437,4 +1436,16 @@ body.gem-rain-active #header > div:first-child {
   .chicken-sq-legs {
     transition: none;
   }
+}
+
+
+
+/* mannan.is's skin for the shared connector: the dark header panel. */
+[data-testid="mcp-popover"] .mcp-connector {
+  --mcpc-fg: rgba(255, 255, 255, 0.92);
+  --mcpc-muted: rgba(255, 255, 255, 0.45);
+  --mcpc-line: rgba(255, 255, 255, 0.16);
+  --mcpc-surface: rgba(255, 255, 255, 0.04);
+  --mcpc-accent: #ef4444;
+  --mcpc-radius: 6px;
 }
