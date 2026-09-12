@@ -41,7 +41,7 @@ export default function McpPage() {
         >
           Model Context Protocol
         </a>{" "}
-        server. Same data, no scraping.
+        server.
       </p>
 
       <section className="mt-10">

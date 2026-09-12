@@ -23,6 +23,12 @@ function boundVisitsWorker(): ServiceFetcher | null {
   }
 }
 
+async function sendVisit(binding: ServiceFetcher | null, init: RequestInit) {
+  return binding
+    ? binding.fetch(new Request('https://visits-worker/', init))
+    : fetch(WORKER_URL!, init)
+}
+
 export function middleware(req: NextRequest, event: NextFetchEvent) {
   const binding = boundVisitsWorker()
   if ((!binding && !WORKER_URL) || !WORKER_SECRET) return NextResponse.next()
@@ -43,7 +49,7 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
     req.headers.get('x-real-ip') ||
     ''
 
-  const visitRequest = new Request(binding ? 'https://visits-worker/' : WORKER_URL!, {
+  const init: RequestInit = {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -56,9 +62,8 @@ export function middleware(req: NextRequest, event: NextFetchEvent) {
       referrer: req.headers.get('referer'),
       isRsc,
     }),
-  })
-  const ping = (binding ? binding.fetch(visitRequest) : fetch(visitRequest)).catch(() => undefined)
+  }
 
-  event.waitUntil(ping)
+  event.waitUntil(sendVisit(binding, init).catch(() => undefined))
   return NextResponse.next()
 }
