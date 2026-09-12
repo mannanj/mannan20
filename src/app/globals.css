@@ -1,3 +1,4 @@
+@import "../vendor/mcp-connector/styles.css";
 @import "tailwindcss";
 
 * {
@@ -1438,10 +1439,13 @@ body.gem-rain-active #header > div:first-child {
 }
 
 
-.mcp-thin-scroll {
-  /* Thins the bar without reserving layout height (measured in Chromium and
-     WebKit). ::-webkit-scrollbar would grow the box in WebKit. */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
-}
 
+/* mannan.is's skin for the shared connector: the dark header panel. */
+[data-testid="mcp-popover"] .mcp-connector {
+  --mcpc-fg: rgba(255, 255, 255, 0.92);
+  --mcpc-muted: rgba(255, 255, 255, 0.45);
+  --mcpc-line: rgba(255, 255, 255, 0.16);
+  --mcpc-surface: rgba(255, 255, 255, 0.04);
+  --mcpc-accent: #ef4444;
+  --mcpc-radius: 6px;
+}
