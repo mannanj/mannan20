@@ -15,22 +15,39 @@ function stubTurnstileNeverResolves(page: Page) {
   );
 }
 
+function expectBothContactLinks(page: Page) {
+  const result = page.getByTestId('contact-result');
+  return Promise.all([
+    expect(result.locator('a[href="mailto:hello@mannan.is"]')).toBeVisible(),
+    expect(result.locator('a[href="tel:+15712288302"]')).toBeVisible(),
+  ]);
+}
+
 const THANKS_RESPONSE = JSON.stringify({ message: 'Thanks!' });
 
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
-  test('close while verifying resets cleanly on reopen', async ({ page }) => {
+  test('Turnstile that never resolves falls back to both contact links', async ({ page }) => {
     await stubTurnstileNeverResolves(page);
     await openModal(page);
-    const status = page.getByTestId('contact-status');
-    await expect(status).toHaveAttribute('data-status', 'verifying');
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    await expectBothContactLinks(page);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-turnstile-timeout-fallback.png' });
+  });
 
-    await page.getByTestId('contact-modal-close').click();
-    await expect(page.getByTestId('contact-modal')).not.toBeVisible();
+  test('Turnstile script failure falls back to both contact links', async ({ page }) => {
+    await page.route('**/turnstile/v0/api.js', (route) => route.abort('failed'));
+    await openModal(page);
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    await expectBothContactLinks(page);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-turnstile-script-fallback.png' });
+  });
 
-    await page.getByTestId('contact-email-masked').click();
-    await expect(page.getByTestId('contact-modal')).toBeVisible();
-    await expect(status).toHaveAttribute('data-status', 'verifying');
-    await page.screenshot({ path: 'e2e/screenshots/edge-cases-verifying-resets.png' });
+  test('Turnstile verification service outage falls back to both contact links', async ({ page }) => {
+    await stubTurnstile(page, { success: false }, 503);
+    await openModal(page);
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
+    await expectBothContactLinks(page);
+    await page.screenshot({ path: 'e2e/screenshots/edge-cases-turnstile-worker-fallback.png' });
   });
 
   test('post-reveal intent form resets after close/reopen', async ({ page }) => {
@@ -124,6 +141,26 @@ test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
     await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 10000 });
     expect(callCount).toBe(1);
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-retype.png' });
+  });
+
+  test('backspacing restarts the three-second inactivity timer', async ({ page }) => {
+    let callCount = 0;
+    await openRevealedModal(page);
+    await page.route('**/api/contact-intent', async (route) => {
+      callCount++;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: THANKS_RESPONSE });
+    });
+
+    const textarea = page.getByTestId('contact-intent-textarea');
+    await textarea.fill('draftx');
+    await page.waitForTimeout(600);
+    await textarea.press('Backspace');
+    await expect(textarea).toHaveValue('draft');
+
+    await page.waitForTimeout(2800);
+    expect(callCount).toBe(0);
+    await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 3000 });
+    expect(callCount).toBe(1);
   });
 
   test('turn locks and input disables the instant it sends, preventing overlapping requests', async ({ page }) => {

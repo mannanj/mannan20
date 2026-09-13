@@ -5,23 +5,29 @@ import { useTurnstile } from "@/hooks/use-turnstile";
 
 const VERIFYING_TEXT = "Verifying...";
 const TURNSTILE_FAIL_TEXT = "Verification failed. Please try again.";
+const TURNSTILE_FALLBACK_TIMEOUT_MS = 5000;
 
 type Status = "verifying" | "error";
+type VerificationOutcome = "verified" | "rejected" | "unavailable";
 
-async function verifyTurnstileToken(token: string): Promise<boolean> {
+async function verifyTurnstileToken(token: string): Promise<VerificationOutcome> {
   const workerUrl = process.env.NEXT_PUBLIC_TURNSTILE_WORKER_URL;
-  if (!workerUrl) return false;
+  if (!workerUrl) return "unavailable";
   try {
     const res = await fetch(workerUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),
     });
-    if (!res.ok) return false;
+    if (!res.ok) return "unavailable";
     const data = await res.json();
-    return data?.success === true;
+    if (data?.success === true) return "verified";
+    if (data?.success !== false) return "unavailable";
+
+    const errorCodes = Array.isArray(data["error-codes"]) ? data["error-codes"] : [];
+    return errorCodes.includes("internal-error") ? "unavailable" : "rejected";
   } catch {
-    return false;
+    return "unavailable";
   }
 }
 
@@ -31,17 +37,33 @@ interface ContactFormProps {
 
 export function ContactForm({ onReveal }: ContactFormProps) {
   const [status, setStatus] = useState<Status>("verifying");
-  const { token, reset: resetTurnstile, containerRef: turnstileContainerRef } = useTurnstile();
+  const {
+    token,
+    availability: turnstileAvailability,
+    reset: resetTurnstile,
+    containerRef: turnstileContainerRef,
+  } = useTurnstile();
   const checkedTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (status !== "verifying") return;
+    if (turnstileAvailability === "unavailable") {
+      onReveal();
+      return;
+    }
+
+    const fallbackTimer = window.setTimeout(onReveal, TURNSTILE_FALLBACK_TIMEOUT_MS);
+    return () => window.clearTimeout(fallbackTimer);
+  }, [status, turnstileAvailability, onReveal]);
 
   useEffect(() => {
     if (!token || checkedTokenRef.current === token) return;
     checkedTokenRef.current = token;
     let cancelled = false;
 
-    verifyTurnstileToken(token).then((verified) => {
+    verifyTurnstileToken(token).then((outcome) => {
       if (cancelled) return;
-      if (verified) {
+      if (outcome === "verified" || outcome === "unavailable") {
         onReveal();
       } else {
         resetTurnstile();
