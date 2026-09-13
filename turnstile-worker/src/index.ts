@@ -23,8 +23,7 @@ import { SiteverifyError, errorResponse } from './errors.js';
 import { logSiteverify } from './observability.js';
 import { validate } from './validate.js';
 import type { Env, SiteverifyRequest } from './types.js';
-
-export const WORKER_VERSION = '1.0.0';
+import { WORKER_VERSION } from './version.js';
 
 function corsHeaders(env: Env): Record<string, string> {
 	return {

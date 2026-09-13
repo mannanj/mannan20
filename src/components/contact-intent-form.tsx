@@ -4,8 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ContactIntentResult, ContactIntentTurn } from '@/lib/types';
 
 const PLACEHOLDER = "Your name, and/or why you're here";
-const DEBOUNCE_MS = 900;
-const MAX_PENDING_MS = 3000;
+const INACTIVITY_DELAY_MS = 3000;
 const MAX_INPUT_LENGTH = 1000;
 const TURN_CAP = 3;
 const HISTORY_MAX_HEIGHT = 168;
@@ -27,7 +26,6 @@ export function ContactIntentForm() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingSinceRef = useRef<number | null>(null);
   const isComposingRef = useRef(false);
 
   const capped = turns.length >= TURN_CAP;
@@ -70,7 +68,6 @@ export function ContactIntentForm() {
   }, []);
 
   const send = useCallback(async (value: string) => {
-    pendingSinceRef.current = null;
     setPendingText(value);
     setText('');
     setStatus('sending');
@@ -113,10 +110,7 @@ export function ContactIntentForm() {
 
   const scheduleSend = useCallback((value: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (pendingSinceRef.current === null) pendingSinceRef.current = Date.now();
-    const elapsed = Date.now() - pendingSinceRef.current;
-    const wait = Math.max(0, Math.min(DEBOUNCE_MS, MAX_PENDING_MS - elapsed));
-    timerRef.current = setTimeout(() => send(value), wait);
+    timerRef.current = setTimeout(() => send(value), INACTIVITY_DELAY_MS);
   }, [send]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -126,8 +120,6 @@ export function ContactIntentForm() {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (value.trim()) {
       scheduleSend(value);
-    } else {
-      pendingSinceRef.current = null;
     }
   }, [scheduleSend]);
 
@@ -149,8 +141,6 @@ export function ContactIntentForm() {
     setText(value);
     if (value.trim()) {
       scheduleSend(value);
-    } else {
-      pendingSinceRef.current = null;
     }
   }, [scheduleSend]);
 

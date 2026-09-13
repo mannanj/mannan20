@@ -1,10 +1,41 @@
 # turnstile-worker
 
-The siteverify Worker backing Turnstile bot protection on the [mannan.is](https://mannan.is) contact form, live at `https://turnstile-siteverify-mannan20.mannanteam.workers.dev`. Provisioned via the `turnstile-spin` skill (stock template, unmodified except for `wrangler.toml` vars); the browser posts a Turnstile token here, this Worker forwards it to Cloudflare's `siteverify` API using a Worker secret, and the contact form only reveals contact info on `success: true`.
+The siteverify Worker backing Turnstile bot protection on the [mannan.is](https://mannan.is) contact form, live at `https://turnstile-siteverify-mannan20.mannanteam.workers.dev`. Provisioned via the `turnstile-spin` skill (stock template, modified only in `wrangler.toml` vars and by moving `WORKER_VERSION` out of the entrypoint into `src/version.ts` — see Local development); the browser posts a Turnstile token here, this Worker forwards it to Cloudflare's `siteverify` API using a Worker secret, and the contact form only reveals contact info on `success: true`.
 
 `cd turnstile-worker && bun run deploy` to redeploy after a `wrangler.toml` change. `TURNSTILE_SECRET_KEY` is set as a Worker secret (`wrangler secret put`), never committed.
 
 The rest of this file is the upstream template's reference docs (endpoints, config vars, testing).
+
+## Local development
+
+Run the whole chain locally against Cloudflare's real siteverify endpoint, using
+the documented test keys. Nothing touches the production widget or its secret.
+
+```sh
+cp turnstile-worker/.dev.vars.example turnstile-worker/.dev.vars
+cp .env.example .env.local          # or copy just the two NEXT_PUBLIC_TURNSTILE_* lines
+bun run turnstile:dev               # siteverify Worker on :8787
+bun run dev                         # the site on :3847
+```
+
+`.dev.vars.example` carries the always-passes secret. Swap it for the
+always-fails or already-spent secret listed in that file and restart the Worker
+to exercise the refusal paths; `.dev.vars` is not hot-reloaded.
+
+Verify both halves without a browser:
+
+```sh
+curl -s localhost:8787/health
+curl -s -X POST localhost:8787/ -H 'content-type: application/json' -d '{"token":"dummy"}'
+```
+
+A response carrying `"metadata": {"result_with_testing_key": true}` is
+Cloudflare confirming it saw a test secret, so the round trip is real.
+
+`bun run turnstile:dev` deliberately uses the **root** wrangler 4, not this
+directory's pinned wrangler 3. Either version refuses to boot the worker if the
+entrypoint module has a named export that is not a handler, which is why
+`WORKER_VERSION` lives in `src/version.ts` rather than `src/index.ts`.
 
 ## Manual deploy
 

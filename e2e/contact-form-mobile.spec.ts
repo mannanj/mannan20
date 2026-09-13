@@ -62,7 +62,7 @@ async function runStorm(page: Page, intervalMs: number, flag: { stop: boolean })
 }
 
 test.describe('post-reveal intent capture — mobile soft-keyboard resilience', () => {
-  test('continuous soft-keyboard events still trigger the intent parse call', async ({ page }) => {
+  test('continuous soft-keyboard events defer the intent parse call until they stop', async ({ page }) => {
     const counter = { n: 0 };
     await openRevealedModal(page);
     await mockIntentApi(page, INTENT_RESPONSE, counter);
@@ -71,20 +71,17 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
     const flag = { stop: false };
     const storm = runStorm(page, 500, flag);
 
-    await expect
-      .poll(() => counter.n, {
-        timeout: 6000,
-        message: 'intent parse never fired while soft-keyboard events kept streaming in',
-      })
-      .toBeGreaterThanOrEqual(1);
+    await page.waitForTimeout(3500);
+    expect(counter.n).toBe(0);
 
     flag.stop = true;
     await storm.catch(() => {});
 
     await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
+    expect(counter.n).toBe(1);
   });
 
-  test('continuous events under iPhone emulation still trigger the intent parse call', async ({ browser }) => {
+  test('continuous events under iPhone emulation defer the intent parse call until they stop', async ({ browser }) => {
     const context = await browser.newContext(IPHONE);
     const page = await context.newPage();
     try {
@@ -96,13 +93,13 @@ test.describe('post-reveal intent capture — mobile soft-keyboard resilience', 
       const flag = { stop: false };
       const storm = runStorm(page, 500, flag);
 
-      await expect
-        .poll(() => counter.n, { timeout: 6000 })
-        .toBeGreaterThanOrEqual(1);
+      await page.waitForTimeout(3500);
+      expect(counter.n).toBe(0);
 
       flag.stop = true;
       await storm.catch(() => {});
       await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 8000 });
+      expect(counter.n).toBe(1);
     } finally {
       await context.close();
     }
