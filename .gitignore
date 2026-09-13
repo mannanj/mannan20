@@ -90,3 +90,7 @@ wants/kick-the-can/
 # Brainstorming visual-companion mockups (local only)
 .superpowers/
 .worktrees/
+
+# Written by .githooks/post-commit; read by nothing.
+public/data/dev-commits.json
+public/data/metadata.json
