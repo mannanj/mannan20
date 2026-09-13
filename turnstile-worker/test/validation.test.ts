@@ -16,7 +16,8 @@
  */
 
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import worker, { WORKER_VERSION } from '../src/index.js';
+import worker from '../src/index.js';
+import { WORKER_VERSION } from '../src/version.js';
 import type { Env } from '../src/types.js';
 
 const ENV: Env = {
