@@ -4,11 +4,11 @@
 
 I work as a multi-disciplinary engineer, leader, and student. I've built products across non-profits, government, and commercial teams — and I measure my success by the strength of those around me. Based in Alexandria, Virginia.
 
-This file is generated from the same data that powers the MCP server below (updated 2026-07-30). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
+This file is generated from the same data that powers the MCP server below (updated 2026-08-27). The site is a single-page Next.js portfolio with sibling routes for essays, curated readings, products, and interactive pages.
 
 ## MCP server
 
-- [MCP endpoint (Streamable HTTP)](https://mcp.mannanteam.workers.dev/mcp): Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan https://mcp.mannanteam.workers.dev/mcp`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.
+- [MCP endpoint (Streamable HTTP)](https://mcp.mannanteam.workers.dev/mcp): Query this data with 11 MCP tools; successful get_article calls record an aggregate fetch count. Claude Code: `claude mcp add --transport http mannan https://mcp.mannanteam.workers.dev/mcp`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.
 - [MCP guide for humans and agents](https://mannan.is/mcp): Connect instructions, tool catalog, and what data is served.
 - [MCP server card](https://mcp.mannanteam.workers.dev/.well-known/mcp/server-card.json): Machine-readable server metadata.
 
