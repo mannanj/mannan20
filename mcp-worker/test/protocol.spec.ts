@@ -1,9 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { SELF } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import type { WorkerEnv } from "../src/types";
 import { connectClient, toolJson } from "./helpers";
 
 const EXPECTED_TOOLS = [
+  "get_article",
   "get_downloads",
   "get_mission_and_goals",
   "get_profile",
@@ -72,6 +74,12 @@ describe("mcp protocol", () => {
     }
     const search = tools.find((t) => t.name === "search");
     expect(search?.inputSchema.required).toContain("query");
+    const article = tools.find((t) => t.name === "get_article");
+    expect(article?.annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+    });
   });
 
   it("get_profile returns identity and links", async () => {
@@ -121,15 +129,58 @@ describe("mcp protocol", () => {
     expect(jung?.link).toBe("https://appliedjung.com");
   });
 
-  it("list_writing returns 3 public articles with site URLs", async () => {
-    const { writing } = toolJson<{ writing: Array<{ title: string; url: string }> }>(
+  it("list_writing returns 3 public article metadata records without full content", async () => {
+    const { writing } = toolJson<{
+      writing: Array<{ slug: string; title: string; url: string; content?: string }>;
+    }>(
       await client.callTool({ name: "list_writing", arguments: {} }),
     );
     expect(writing).toHaveLength(3);
     expect(writing.map((w) => w.title)).toContain("Health is an Artform");
+    expect(writing.map((w) => w.slug).sort()).toEqual([
+      "funny-frustrations",
+      "health-longevity",
+      "seeking-community",
+    ]);
     for (const w of writing) {
       expect(w.url).toMatch(/^https:\/\/mannan\.is\/garden\/article\//);
+      expect(w.content).toBeUndefined();
     }
+  });
+
+  it("get_article returns full public content and rejects excluded slugs", async () => {
+    const state = (env as unknown as WorkerEnv).MCP_ARTICLE_STATE!;
+    await state.resetArticleFetches({
+      opId: `protocol-reset-${crypto.randomUUID()}`,
+      slug: "health-longevity",
+    });
+    const article = toolJson<{
+      article: { slug: string; title: string; url: string; content: string };
+      dataGeneratedAt: string;
+    }>(
+      await client.callTool({
+        name: "get_article",
+        arguments: { slug: "health-longevity" },
+      }),
+    );
+    expect(article.article.slug).toBe("health-longevity");
+    expect(article.article.title).toBe("Health is an Artform");
+    expect(article.article.url).toBe("https://mannan.is/garden/article/health-longevity");
+    expect(article.article.content).toContain("health optimization stopped being a hobby");
+    expect(article.dataGeneratedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    await expect(state.getArticleMetrics({ slug: "health-longevity" })).resolves.toMatchObject({
+      mcpFetches: 1,
+    });
+
+    const excluded = await client.callTool({
+      name: "get_article",
+      arguments: { slug: "taken" },
+    });
+    expect(excluded.isError).toBe(true);
+    expect(JSON.stringify(excluded.content)).toContain("Unknown article");
+    await expect(state.getArticleMetrics({ slug: "taken" })).resolves.toEqual({
+      error: "invalid_input",
+    });
   });
 
   it("list_readings returns 3 public readings, self-authored ones clearly labeled", async () => {

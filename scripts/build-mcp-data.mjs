@@ -45,6 +45,12 @@ const abs = (p) => (p.startsWith("http") ? p : `${SITE}${p}`);
 const agentFileUrl = (slug) => `${WORKER_BASE}/files/${slug}`;
 const slugFromPath = (p) => p.split("/").pop();
 
+const MCP_ARTICLE_FILES = {
+  "health-longevity": join(ROOT, "src", "content", "mcp-articles", "health-longevity.md"),
+  "seeking-community": join(ROOT, "src", "content", "mcp-articles", "seeking-community.md"),
+  "funny-frustrations": join(ROOT, "src", "content", "mcp-articles", "funny-frustrations.md"),
+};
+
 const clean = (s) =>
   s == null
     ? s
@@ -111,14 +117,29 @@ const extracurriculars = Object.entries(about.activities).map(([id, a]) => {
 });
 
 const writing = [...GARDEN_ARTICLES.filter((a) => !a.unavailable && !a.hidden), JOYFUL_FRUSTRATIONS].map(
-  (a) => ({
-    title: a.title,
-    description: a.description,
-    ...(a.date ? { date: a.date } : {}),
-    ...(a.readingTime ? { readingTime: a.readingTime } : {}),
-    ...(a.wordCount ? { wordCount: a.wordCount } : {}),
-    url: abs(a.href),
-  }),
+  (a) => {
+    const slug = slugFromPath(a.href);
+    const contentPath = MCP_ARTICLE_FILES[slug];
+    if (!contentPath || !existsSync(contentPath)) {
+      console.error(`public MCP article content missing: ${slug}`);
+      process.exit(1);
+    }
+    const content = readFileSync(contentPath, "utf8").trim();
+    if (content.length < 300) {
+      console.error(`public MCP article content is too short: ${slug}`);
+      process.exit(1);
+    }
+    return {
+      slug,
+      title: a.title,
+      description: a.description,
+      ...(a.date ? { date: a.date } : {}),
+      ...(a.readingTime ? { readingTime: a.readingTime } : {}),
+      ...(a.wordCount ? { wordCount: a.wordCount } : {}),
+      url: abs(a.href),
+      content,
+    };
+  },
 );
 
 const readings = EPISODES.filter((e) => !e.hidden).map((e) => {
@@ -333,7 +354,7 @@ const serverCard =
       name: "mannan-portfolio",
       title: "Mannan Javid — Portfolio",
       description:
-        "Read-only MCP server for the public data of mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads.",
+        "Public-data MCP server for mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Full article fetches record an aggregate counter.",
       version: "1.0.0",
       endpoint: MCP_ENDPOINT,
       transport: "streamable-http",
@@ -367,7 +388,7 @@ const buildLlmsTxt = (d) => {
     llmsLink(
       "MCP endpoint (Streamable HTTP)",
       MCP_ENDPOINT,
-      "Query this data as 10 read-only MCP tools. Claude Code: `claude mcp add --transport http mannan " +
+      "Query this data with 11 MCP tools; successful get_article calls record an aggregate fetch count. Claude Code: `claude mcp add --transport http mannan " +
         MCP_ENDPOINT +
         "`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.",
     ),
