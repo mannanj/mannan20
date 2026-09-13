@@ -15,6 +15,8 @@ declare global {
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
+export type TurnstileAvailability = 'loading' | 'ready' | 'unavailable';
+
 function loadScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     const existing = document.querySelector(`script[src="${SCRIPT_SRC}"]`);
@@ -35,6 +37,9 @@ function loadScript(): Promise<void> {
 
 export function useTurnstile() {
   const [token, setToken] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<TurnstileAvailability>(
+    SITE_KEY ? 'loading' : 'unavailable',
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
@@ -45,18 +50,41 @@ export function useTurnstile() {
 
     const mount = async () => {
       if (!window.turnstile) {
-        await loadScript().catch(() => {});
+        try {
+          await loadScript();
+        } catch {
+          if (!cancelled) setAvailability('unavailable');
+          return;
+        }
       }
-      if (cancelled || !window.turnstile || !containerRef.current || widgetIdRef.current) return;
+      if (cancelled) return;
+      if (!window.turnstile || !containerRef.current) {
+        setAvailability('unavailable');
+        return;
+      }
+      if (widgetIdRef.current) return;
 
-      widgetIdRef.current = window.turnstile.render(containerRef.current, {
-        sitekey: SITE_KEY,
-        action: 'turnstile-spin-v1',
-        appearance: 'interaction-only',
-        callback: (t: string) => setToken(t),
-        'expired-callback': () => setToken(null),
-        'error-callback': () => setToken(null),
-      });
+      try {
+        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+          sitekey: SITE_KEY,
+          action: 'turnstile-spin-v1',
+          appearance: 'interaction-only',
+          callback: (t: string) => {
+            setAvailability('ready');
+            setToken(t);
+          },
+          'expired-callback': () => setToken(null),
+          'error-callback': () => {
+            setToken(null);
+            setAvailability('unavailable');
+          },
+          'timeout-callback': () => setAvailability('unavailable'),
+          'unsupported-callback': () => setAvailability('unavailable'),
+        });
+        setAvailability('ready');
+      } catch {
+        setAvailability('unavailable');
+      }
     };
 
     mount();
@@ -78,5 +106,5 @@ export function useTurnstile() {
     }
   }, []);
 
-  return { token, reset, containerRef };
+  return { token, availability, reset, containerRef };
 }

@@ -43,6 +43,7 @@
     "mystudy",
     "turnstile-worker",
     "state-worker",
+    "mystudy",
     "src/app/api/_jordan"
   ]
 }
