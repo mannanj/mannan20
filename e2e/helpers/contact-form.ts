@@ -8,7 +8,11 @@ export async function openModal(page: Page) {
   await expect(page.getByTestId('contact-modal')).toBeVisible();
 }
 
-export function stubTurnstile(page: Page, verifyResult: { success: boolean } = { success: true }) {
+export function stubTurnstile(
+  page: Page,
+  verifyResult: { success: boolean } = { success: true },
+  verifyStatus = 200,
+) {
   return Promise.all([
     page.route('**/turnstile/v0/api.js', (route) =>
       route.fulfill({
@@ -26,7 +30,7 @@ export function stubTurnstile(page: Page, verifyResult: { success: boolean } = {
     ),
     page.route('**/turnstile-siteverify-mannan20**', (route) =>
       route.fulfill({
-        status: 200,
+        status: verifyStatus,
         contentType: 'application/json',
         body: JSON.stringify(verifyResult),
       })

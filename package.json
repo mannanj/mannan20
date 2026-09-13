@@ -12,7 +12,7 @@
     "cf:upload:preview": "bun run cf:build && opennextjs-cloudflare upload --env preview",
     "cf:upload:production": "bun run cf:build && opennextjs-cloudflare upload --env production",
     "cf:deploy:preview": "bun run cf:build && opennextjs-cloudflare deploy --env preview",
-    "cf:deploy:production": "bun run cf:build && opennextjs-cloudflare deploy --env production",
+    "cf:deploy:production": "node scripts/check-turnstile-public-env.mjs && bun run cf:build && opennextjs-cloudflare deploy --env production",
     "cf:dry-run:preview": "wrangler deploy --dry-run --env preview",
     "cf:dry-run:production": "wrangler deploy --dry-run --env production",
     "cf:typegen": "bun run cf:typegen:preview && bun run cf:typegen:production",
@@ -34,7 +34,8 @@
     "mcp:check": "bun scripts/build-mcp-data.mjs --check",
     "mcp:test": "cd mcp-worker && bun run test",
     "mcp:deploy": "bun scripts/build-mcp-data.mjs && cd mcp-worker && bun run deploy",
-    "mcp:smoke": "cd mcp-worker && bun run smoke"
+    "mcp:smoke": "cd mcp-worker && bun run smoke",
+    "sync:mcp": "node ../mcp-connector/bin/sync.mjs src/vendor/mcp-connector"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
