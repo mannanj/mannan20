@@ -59,6 +59,7 @@ This file is generated from the same data that powers the MCP server below (upda
 
 ## Garden readings
 
+- [[AI GENERATED] a pdf of a feature im developing — Mannan Javid](https://mannan.is/data/documents/chat-storyboard.pdf): Reading on mannan.is; authored by Mannan Javid.
 - [[AI GENERATED] MCP Intent Spike — Mannan Javid](https://mannan.is/episodes/mcp-intent-spike): Reading on mannan.is; authored by Mannan Javid.
 - [Be Courageously You — Faizan Ishaq](https://mannan.is/episodes/be-courageously-you): Curated reading on mannan.is; authored by Faizan Ishaq, not by Mannan Javid.
 - [Immortalism Manifesto — Bryan Johnson](https://mannan.is/episodes/immortalism-manifesto): Curated reading on mannan.is; authored by Bryan Johnson, not by Mannan Javid.

@@ -184,14 +184,15 @@ describe("mcp protocol", () => {
     });
   });
 
-  it("list_readings returns 3 public readings, self-authored ones clearly labeled", async () => {
+  it("list_readings returns 4 public readings, self-authored ones clearly labeled", async () => {
     const { readings } = toolJson<{
       readings: Array<{ author: string; note: string; url: string }>;
     }>(await client.callTool({ name: "list_readings", arguments: {} }));
-    expect(readings).toHaveLength(3);
+    expect(readings).toHaveLength(4);
     expect(readings.map((r) => r.author).sort()).toEqual([
       "Bryan Johnson",
       "Faizan Ishaq",
+      "Mannan Javid",
       "Mannan Javid",
     ]);
     for (const r of readings) {
