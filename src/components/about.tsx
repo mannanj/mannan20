@@ -7,7 +7,7 @@ import { EmploymentSection } from './about/employment-section';
 import { PublishedWorksSection } from './about/published-works-section';
 import { ExtracurricularsSection } from './about/extracurriculars-section';
 import { EducationSection } from './about/education-section';
-import { VideoPopout } from './video-popout';
+import { VideoPopoutHost } from './video-popout-host';
 import { PlusMinusIcon } from './icons/plus-minus-icon';
 
 const EMPLOYMENT_DEFAULT = 3;
@@ -26,20 +26,6 @@ export function About({ data }: AboutProps) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [deepLinkedVideo, setDeepLinkedVideo] = useState<string | null>(null);
   const archrVideoUrl = data.educationProjects.archr?.demoUrl;
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const url = (e as CustomEvent).detail as string;
-      setVideoUrl((prev) => (prev === url ? null : url));
-    };
-    const closeHandler = () => setVideoUrl(null);
-    window.addEventListener('open-video-popout', handler);
-    window.addEventListener('close-video-popout', closeHandler);
-    return () => {
-      window.removeEventListener('open-video-popout', handler);
-      window.removeEventListener('close-video-popout', closeHandler);
-    };
-  }, []);
 
   useEffect(() => {
     const videoId = new URLSearchParams(window.location.search).get('video');
@@ -115,13 +101,11 @@ export function About({ data }: AboutProps) {
         Get In Touch
       </button>
 
-      {videoUrl && (
-        <VideoPopout
-          url={videoUrl}
-          shareId={archrVideoUrl === videoUrl ? 'archr' : undefined}
-          onClose={() => { setVideoUrl(null); window.dispatchEvent(new CustomEvent('close-video-popout')); }}
-        />
-      )}
+      <VideoPopoutHost
+        url={videoUrl}
+        onUrlChange={setVideoUrl}
+        shareId={archrVideoUrl === videoUrl ? 'archr' : undefined}
+      />
     </div>
   );
 }

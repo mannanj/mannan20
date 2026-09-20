@@ -49,3 +49,5 @@ export const SEEKING_COMMUNITY_CHUNKS: AudioChunk[] = buildAudioChunks('seeking-
 export const SELF_PARENTING_CHUNKS: AudioChunk[] = buildAudioChunks('self-parenting', 2);
 
 export const AI_FALSE_POSITIVES_CHUNKS: AudioChunk[] = buildAudioChunks('ai-false-positives', 1);
+
+export const WHAT_HUBERMAN_DIDNT_SAY_CHUNKS: AudioChunk[] = buildAudioChunks('what-huberman-didnt-say', 1);
