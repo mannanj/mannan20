@@ -157,7 +157,8 @@ test.describe('Garden carousel', () => {
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
     await expect(page.getByTestId('garden-tab-writings')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
-    await expect(page.locator('[data-panel="writings"] a[href^="/garden/article"]')).toHaveCount(2);
+    await expect(page.locator('[data-panel="writings"] a[href^="/garden/article"]')).toHaveCount(3);
+    await expect(page.locator('[data-panel="writings"] a[href="/garden/article/what-huberman-didnt-say"]')).toHaveCount(1);
     await expect(page.locator('[data-panel="writings"] a[href="/garden/article/taken"]')).toHaveCount(0);
   });
 

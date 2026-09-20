@@ -5,6 +5,7 @@ export const GARDEN_VIEW_ACCENTS = {
   "ai-false-positives": "#e0b341",
   taken: "#ff5d5d",
   "funny-frustrations": "#d97757",
+  "what-huberman-didnt-say": "#f2a65a",
 } as const;
 
 export type GardenViewSlug = keyof typeof GARDEN_VIEW_ACCENTS;

@@ -344,10 +344,31 @@ function WritingCard({
 
 function WritingsPanel() {
   const visible = GARDEN_ARTICLES.filter((a) => !a.hidden);
-  const available = visible.filter((a) => !a.unavailable);
-  const unavailable = visible.filter((a) => a.unavailable);
+  const shorts = visible.filter((a) => a.short);
+  const longform = visible.filter((a) => !a.short);
+  const available = longform.filter((a) => !a.unavailable);
+  const unavailable = longform.filter((a) => a.unavailable);
   return (
     <div className="flex flex-col">
+      {shorts.length > 0 && (
+        <section
+          data-testid="garden-shorts"
+          className="mb-8 flex flex-col gap-4"
+          aria-labelledby="garden-shorts-heading"
+        >
+          <h3
+            id="garden-shorts-heading"
+            className="text-xs font-medium uppercase tracking-wider text-white"
+          >
+            Shorts
+          </h3>
+          <div className="flex flex-col gap-2">
+            {shorts.map((article) => (
+              <WritingCard key={article.href} article={article} muted={false} />
+            ))}
+          </div>
+        </section>
+      )}
       <div className="flex flex-col gap-2">
         {available.map((article) => (
           <WritingCard key={article.href} article={article} muted={false} />
