@@ -4,17 +4,9 @@ export interface Episode {
   date: string;
   href: string;
   hidden?: boolean;
-  file?: boolean;
 }
 
 export const EPISODES: Episode[] = [
-  {
-    title: '[AI GENERATED] a pdf of a feature im developing',
-    author: 'Mannan Javid',
-    date: 'September 20, 2026',
-    href: '/data/documents/chat-storyboard.pdf',
-    file: true,
-  },
   {
     title: '[AI GENERATED] MCP Intent Spike',
     author: 'Mannan Javid',
