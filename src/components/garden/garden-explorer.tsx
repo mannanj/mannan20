@@ -386,36 +386,21 @@ function ReadingsPanel({ showAll }: { showAll: boolean }) {
   const visible = EPISODES.filter((episode) => showAll || !episode.hidden);
   return (
     <div className="flex flex-col">
-      {visible.map((episode) => {
-        const className =
-          "group -mx-4 flex items-baseline justify-between rounded-lg px-4 py-5 transition-colors hover:bg-white/[0.03]";
-        const body = (
-          <>
-            <div>
-              <span className="text-lg font-light text-white transition-colors duration-200 group-hover:text-red-500">
-                {episode.title}
-              </span>
-              <span className="ml-3 text-sm text-white/40">{episode.author}</span>
-            </div>
-            <span className="shrink-0 text-xs text-white/30">{episode.date}</span>
-          </>
-        );
-        return episode.file ? (
-          <a
-            key={episode.href}
-            href={episode.href}
-            target="_blank"
-            rel="noreferrer"
-            className={className}
-          >
-            {body}
-          </a>
-        ) : (
-          <Link key={episode.href} href={episode.href} className={className}>
-            {body}
-          </Link>
-        );
-      })}
+      {visible.map((episode) => (
+        <Link
+          key={episode.href}
+          href={episode.href}
+          className="group -mx-4 flex items-baseline justify-between rounded-lg px-4 py-5 transition-colors hover:bg-white/[0.03]"
+        >
+          <div>
+            <span className="text-lg font-light text-white transition-colors duration-200 group-hover:text-red-500">
+              {episode.title}
+            </span>
+            <span className="ml-3 text-sm text-white/40">{episode.author}</span>
+          </div>
+          <span className="shrink-0 text-xs text-white/30">{episode.date}</span>
+        </Link>
+      ))}
     </div>
   );
 }
