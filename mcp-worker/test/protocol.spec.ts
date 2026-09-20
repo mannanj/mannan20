@@ -129,18 +129,19 @@ describe("mcp protocol", () => {
     expect(jung?.link).toBe("https://appliedjung.com");
   });
 
-  it("list_writing returns 3 public article metadata records without full content", async () => {
+  it("list_writing returns 4 public article metadata records without full content", async () => {
     const { writing } = toolJson<{
       writing: Array<{ slug: string; title: string; url: string; content?: string }>;
     }>(
       await client.callTool({ name: "list_writing", arguments: {} }),
     );
-    expect(writing).toHaveLength(3);
+    expect(writing).toHaveLength(4);
     expect(writing.map((w) => w.title)).toContain("Health is an Artform");
     expect(writing.map((w) => w.slug).sort()).toEqual([
       "funny-frustrations",
       "health-longevity",
       "seeking-community",
+      "what-huberman-didnt-say",
     ]);
     for (const w of writing) {
       expect(w.url).toMatch(/^https:\/\/mannan\.is\/garden\/article\//);
