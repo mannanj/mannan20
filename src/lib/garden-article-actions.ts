@@ -4,6 +4,7 @@ import {
   HEALTH_LONGEVITY_CHUNKS,
   SEEKING_COMMUNITY_CHUNKS,
   SELF_PARENTING_CHUNKS,
+  WHAT_HUBERMAN_DIDNT_SAY_CHUNKS,
 } from "@/lib/audio-config";
 
 export interface GardenArticleDownloadAsset {
@@ -50,6 +51,9 @@ export const GARDEN_ARTICLE_ACTIONS: GardenArticleActionConfig = {
   "ai-false-positives": {
     download: { href: "/api/download/ai-false-positives" },
     listen: { chunks: AI_FALSE_POSITIVES_CHUNKS },
+  },
+  "what-huberman-didnt-say": {
+    listen: { chunks: WHAT_HUBERMAN_DIDNT_SAY_CHUNKS },
   },
 };
 

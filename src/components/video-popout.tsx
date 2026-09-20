@@ -7,7 +7,10 @@ interface VideoPopoutProps {
   url: string;
   onClose: () => void;
   shareId?: string;
+  shareTitle?: string;
 }
+
+const DEFAULT_SHARE_TITLE = 'Baxter and miniBOT Robot Collaboration at Disaster Response';
 
 const SHARE_LABELS: Record<ShareVideoResult | 'idle' | 'sharing', string> = {
   idle: 'Share video',
@@ -17,7 +20,7 @@ const SHARE_LABELS: Record<ShareVideoResult | 'idle' | 'sharing', string> = {
   failed: 'Unable to share',
 };
 
-export function VideoPopout({ url, onClose, shareId }: VideoPopoutProps) {
+export function VideoPopout({ url, onClose, shareId, shareTitle = DEFAULT_SHARE_TITLE }: VideoPopoutProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -75,9 +78,9 @@ export function VideoPopout({ url, onClose, shareId }: VideoPopoutProps) {
   const onShare = useCallback(async () => {
     if (!shareId || shareStatus === 'sharing') return;
     setShareStatus('sharing');
-    const result = await shareVideoLink(shareId, 'Baxter and miniBOT Robot Collaboration at Disaster Response');
+    const result = await shareVideoLink(shareId, shareTitle);
     setShareStatus(result);
-  }, [shareId, shareStatus]);
+  }, [shareId, shareStatus, shareTitle]);
 
   if (!position) return null;
 

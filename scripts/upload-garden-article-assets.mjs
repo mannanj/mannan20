@@ -14,6 +14,7 @@ const ASSETS = [
   ['public/data/audio/self-parenting/chunk-1.wav', 'portfolio/audio/self-parenting/chunk-1.wav', 'audio/wav'],
   ['public/data/audio/self-parenting/chunk-2.wav', 'portfolio/audio/self-parenting/chunk-2.wav', 'audio/wav'],
   ['public/data/audio/ai-false-positives/chunk-1.wav', 'portfolio/audio/ai-false-positives/chunk-1.wav', 'audio/wav'],
+  ['public/data/audio/what-huberman-didnt-say/chunk-1.wav', 'portfolio/audio/what-huberman-didnt-say/chunk-1.wav', 'audio/wav'],
 ];
 
 for (const [localPath, key, contentType] of ASSETS) {

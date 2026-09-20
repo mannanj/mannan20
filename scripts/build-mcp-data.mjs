@@ -49,6 +49,7 @@ const MCP_ARTICLE_FILES = {
   "health-longevity": join(ROOT, "src", "content", "mcp-articles", "health-longevity.md"),
   "seeking-community": join(ROOT, "src", "content", "mcp-articles", "seeking-community.md"),
   "funny-frustrations": join(ROOT, "src", "content", "mcp-articles", "funny-frustrations.md"),
+  "what-huberman-didnt-say": join(ROOT, "src", "content", "mcp-articles", "what-huberman-didnt-say.md"),
 };
 
 const clean = (s) =>

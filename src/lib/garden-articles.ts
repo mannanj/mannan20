@@ -7,9 +7,20 @@ export interface GardenArticle {
   wordCount?: number;
   unavailable?: boolean;
   hidden?: boolean;
+  short?: boolean;
 }
 
 export const GARDEN_ARTICLES: GardenArticle[] = [
+  {
+    title: "What Andrew Huberman Didn't Say",
+    description:
+      "Light is the one thing to change. What he left out: follow the sun and the willpower part disappears.",
+    date: "2026-09-19",
+    readingTime: "1 min read",
+    wordCount: 230,
+    href: "/garden/article/what-huberman-didnt-say",
+    short: true,
+  },
   {
     title: "Taken",
     description:
