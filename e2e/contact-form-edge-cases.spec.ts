@@ -1,6 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
 import { openModal, openRevealedModal, stubTurnstile } from './helpers/contact-form';
 
+function stubTurnstileConfig(page: Page) {
+  return page.route('**/api/config', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ turnstile: { enabled: true, sitekey: '1x00000000000000000000AA' } }),
+    })
+  );
+}
+
 function stubTurnstileNeverResolves(page: Page) {
   return page.route('**/turnstile/v0/api.js', (route) =>
     route.fulfill({
@@ -27,6 +37,7 @@ const THANKS_RESPONSE = JSON.stringify({ message: 'Thanks!' });
 
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
   test('Turnstile that never resolves falls back to both contact links', async ({ page }) => {
+    await stubTurnstileConfig(page);
     await stubTurnstileNeverResolves(page);
     await openModal(page);
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -35,6 +46,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
   });
 
   test('Turnstile script failure falls back to both contact links', async ({ page }) => {
+    await stubTurnstileConfig(page);
     await page.route('**/turnstile/v0/api.js', (route) => route.abort('failed'));
     await openModal(page);
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });

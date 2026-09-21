@@ -11,10 +11,8 @@ type Status = "verifying" | "error";
 type VerificationOutcome = "verified" | "rejected" | "unavailable";
 
 async function verifyTurnstileToken(token: string): Promise<VerificationOutcome> {
-  const workerUrl = process.env.NEXT_PUBLIC_TURNSTILE_WORKER_URL;
-  if (!workerUrl) return "unavailable";
   try {
-    const res = await fetch(workerUrl, {
+    const res = await fetch("/api/turnstile/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token }),

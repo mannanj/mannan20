@@ -10,10 +10,19 @@ export async function openModal(page: Page) {
 
 export function stubTurnstile(
   page: Page,
-  verifyResult: { success: boolean } = { success: true },
+  verifyResult: { success: boolean; 'error-codes'?: string[] } = { success: true },
   verifyStatus = 200,
 ) {
   return Promise.all([
+    page.route('**/api/config', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          turnstile: { enabled: true, sitekey: '1x00000000000000000000AA' },
+        }),
+      })
+    ),
     page.route('**/turnstile/v0/api.js', (route) =>
       route.fulfill({
         status: 200,
@@ -28,7 +37,7 @@ export function stubTurnstile(
 };`,
       })
     ),
-    page.route('**/turnstile-siteverify-mannan20**', (route) =>
+    page.route('**/api/turnstile/verify', (route) =>
       route.fulfill({
         status: verifyStatus,
         contentType: 'application/json',
