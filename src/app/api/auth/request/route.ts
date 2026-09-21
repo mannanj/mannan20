@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server';
 import { requestCloudflareContinueEmail } from '@/lib/cloudflare-auth';
-import { limitMagicEmail } from '@/lib/rate-limit';
+import { limitMagicEmail, limitMagicIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function requestIp(request: Request): string {
+function requestIp(request: Request): string | null {
   const forwarded = request.headers.get('x-forwarded-for')?.split(',');
-  return (
-    forwarded?.[forwarded.length - 1] ??
-    request.headers.get('x-real-ip') ??
-    'unknown'
-  ).trim();
+  const candidate =
+    request.headers.get('cf-connecting-ip') ??
+    forwarded?.[0] ??
+    request.headers.get('x-real-ip');
+  const trimmed = candidate?.trim();
+  return trimmed ? trimmed : null;
 }
 
 export async function POST(request: Request) {
@@ -28,14 +29,14 @@ export async function POST(request: Request) {
 
   const ip = requestIp(request);
   const [ipLimit, emailLimit] = await Promise.all([
-    limitMagicEmail(`site:${ip}`),
+    ip ? limitMagicIp(`site:${ip}`) : Promise.resolve(null),
     limitMagicEmail(`site:e:${email}`),
   ]);
-  if (!ipLimit.success || !emailLimit.success) {
+  if ((ipLimit && !ipLimit.success) || !emailLimit.success) {
     return NextResponse.json({ error: 'Too many requests, try again later' }, { status: 429 });
   }
 
-  const result = await requestCloudflareContinueEmail({ email, ip });
+  const result = await requestCloudflareContinueEmail({ email, ip: ip ?? 'unknown' });
   if (!result.ok) {
     const status = result.status === 429 ? 429 : 503;
     return NextResponse.json({ error: 'Could not send email' }, { status });
