@@ -5,6 +5,8 @@ const MAX_DOWNLOADS_PER_WINDOW = 10;
 const MAX_LEADERBOARD_PER_WINDOW = 6;
 const MAGIC_WINDOW_SECONDS = 900;
 const MAX_MAGIC_PER_WINDOW = 3;
+const MAGIC_IP_WINDOW_SECONDS = 60 * 60;
+const MAX_MAGIC_IP_PER_WINDOW = 10;
 const FEEDBACK_WINDOW_SECONDS = 600;
 const MAX_FEEDBACK_PER_WINDOW = 4;
 const GARDEN_VIEW_WINDOW_SECONDS = 60;
@@ -62,6 +64,12 @@ export async function limitMagicEmail(key: string): Promise<LimitResult> {
   const state = await limitState('magic', key);
   if (state) return state;
   return memoryLimit(`magic:${key}`, MAX_MAGIC_PER_WINDOW, MAGIC_WINDOW_SECONDS);
+}
+
+export async function limitMagicIp(key: string): Promise<LimitResult> {
+  const state = await limitState('magic-ip', key);
+  if (state) return state;
+  return memoryLimit(`magic-ip:${key}`, MAX_MAGIC_IP_PER_WINDOW, MAGIC_IP_WINDOW_SECONDS);
 }
 
 export async function limitGardenView(ip: string): Promise<LimitResult> {
