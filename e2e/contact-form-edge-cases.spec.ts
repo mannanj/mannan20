@@ -1,6 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
 import { openModal, openRevealedModal, stubTurnstile } from './helpers/contact-form';
 
+function stubTurnstileConfig(page: Page) {
+  return page.route('**/api/config', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ turnstile: { enabled: true, sitekey: '1x00000000000000000000AA' } }),
+    })
+  );
+}
+
 function stubTurnstileNeverResolves(page: Page) {
   return page.route('**/turnstile/v0/api.js', (route) =>
     route.fulfill({
@@ -27,6 +37,7 @@ const THANKS_RESPONSE = JSON.stringify({ message: 'Thanks!' });
 
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
   test('Turnstile that never resolves falls back to both contact links', async ({ page }) => {
+    await stubTurnstileConfig(page);
     await stubTurnstileNeverResolves(page);
     await openModal(page);
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -35,6 +46,7 @@ test.describe('Group A: Modal Lifecycle & State Reset', () => {
   });
 
   test('Turnstile script failure falls back to both contact links', async ({ page }) => {
+    await stubTurnstileConfig(page);
     await page.route('**/turnstile/v0/api.js', (route) => route.abort('failed'));
     await openModal(page);
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
@@ -143,7 +155,7 @@ test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-retype.png' });
   });
 
-  test('backspacing restarts the three-second inactivity timer', async ({ page }) => {
+  test('backspacing restarts the two-second inactivity timer', async ({ page }) => {
     let callCount = 0;
     await openRevealedModal(page);
     await page.route('**/api/contact-intent', async (route) => {
@@ -157,7 +169,7 @@ test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
     await textarea.press('Backspace');
     await expect(textarea).toHaveValue('draft');
 
-    await page.waitForTimeout(2800);
+    await page.waitForTimeout(1800);
     expect(callCount).toBe(0);
     await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 3000 });
     expect(callCount).toBe(1);
