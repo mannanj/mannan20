@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTurnstile } from "@/hooks/use-turnstile";
 
 interface AuthUser {
   email: string;
@@ -23,6 +24,12 @@ export function ContinueWithEmailMenu({
     "idle",
   );
   const [user, setUser] = useState<AuthUser | null>(null);
+  const {
+    token: turnstileToken,
+    availability: turnstileAvailability,
+    reset: resetTurnstile,
+    containerRef: turnstileContainerRef,
+  } = useTurnstile();
 
   useEffect(() => {
     if (!open) return;
@@ -60,12 +67,13 @@ export function ContinueWithEmailMenu({
     const res = await fetch("/api/auth/request", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, turnstileToken }),
     }).catch(() => null);
     if (res?.ok) {
       setStatus("sent");
       return;
     }
+    resetTurnstile();
     setStatus("error");
   };
 
@@ -124,9 +132,13 @@ export function ContinueWithEmailMenu({
               placeholder="you@example.com"
             />
           </div>
+          <div ref={turnstileContainerRef} />
           <button
             type="submit"
-            disabled={status === "sending"}
+            disabled={
+              status === "sending" ||
+              (turnstileAvailability !== "unavailable" && !turnstileToken)
+            }
             className="w-full rounded-md bg-white px-3 py-2 text-sm font-medium text-black transition hover:bg-white/90 disabled:cursor-wait disabled:opacity-60"
           >
             Continue with email

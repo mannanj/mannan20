@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requestCloudflareContinueEmail } from '@/lib/cloudflare-auth';
 import { limitMagicEmail, limitMagicIp } from '@/lib/rate-limit';
+import { verifyTurnstileToken } from '@/lib/turnstile-verify';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,19 @@ export async function POST(request: Request) {
   }
 
   const ip = requestIp(request);
+
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY?.trim();
+  if (turnstileSecret) {
+    const token = (body as Record<string, unknown> | null)?.turnstileToken;
+    const check = await verifyTurnstileToken(token, turnstileSecret, ip);
+    if (!check.success && !check.errorCodes.includes('internal-error')) {
+      return NextResponse.json(
+        { error: 'That check did not pass. Reload the page and try again.' },
+        { status: 403 },
+      );
+    }
+  }
+
   const [ipLimit, emailLimit] = await Promise.all([
     ip ? limitMagicIp(`site:${ip}`) : Promise.resolve(null),
     limitMagicEmail(`site:e:${email}`),
