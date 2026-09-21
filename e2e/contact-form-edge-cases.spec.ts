@@ -155,7 +155,7 @@ test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-rapid-retype.png' });
   });
 
-  test('backspacing restarts the three-second inactivity timer', async ({ page }) => {
+  test('backspacing restarts the two-second inactivity timer', async ({ page }) => {
     let callCount = 0;
     await openRevealedModal(page);
     await page.route('**/api/contact-intent', async (route) => {
@@ -169,7 +169,7 @@ test.describe('Group B: Post-Reveal Intent Capture Debounce Behavior', () => {
     await textarea.press('Backspace');
     await expect(textarea).toHaveValue('draft');
 
-    await page.waitForTimeout(2800);
+    await page.waitForTimeout(1800);
     expect(callCount).toBe(0);
     await expect(page.getByTestId('contact-intent-turn-ai')).toBeVisible({ timeout: 3000 });
     expect(callCount).toBe(1);
