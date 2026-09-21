@@ -13,9 +13,19 @@ declare global {
 }
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export type TurnstileAvailability = 'loading' | 'ready' | 'unavailable';
+
+async function fetchSiteKey(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/config', { cache: 'no-store' });
+    if (!res.ok) return null;
+    const cfg = (await res.json()) as { turnstile?: { enabled?: boolean; sitekey?: string | null } };
+    return cfg.turnstile?.enabled ? (cfg.turnstile.sitekey ?? null) : null;
+  } catch {
+    return null;
+  }
+}
 
 function loadScript(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -37,14 +47,25 @@ function loadScript(): Promise<void> {
 
 export function useTurnstile() {
   const [token, setToken] = useState<string | null>(null);
-  const [availability, setAvailability] = useState<TurnstileAvailability>(
-    SITE_KEY ? 'loading' : 'unavailable',
-  );
+  const [availability, setAvailability] = useState<TurnstileAvailability>('loading');
+  const [siteKey, setSiteKey] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!SITE_KEY) return;
+    let active = true;
+    fetchSiteKey().then((key) => {
+      if (!active) return;
+      if (key) setSiteKey(key);
+      else setAvailability('unavailable');
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!siteKey) return;
 
     let cancelled = false;
 
@@ -66,7 +87,7 @@ export function useTurnstile() {
 
       try {
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: SITE_KEY,
+          sitekey: siteKey,
           action: 'turnstile-spin-v1',
           appearance: 'interaction-only',
           callback: (t: string) => {
@@ -97,7 +118,7 @@ export function useTurnstile() {
       }
       setToken(null);
     };
-  }, []);
+  }, [siteKey]);
 
   const reset = useCallback(() => {
     setToken(null);
