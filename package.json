@@ -26,6 +26,8 @@
     "typecheck": "tsc --noEmit",
     "unicorn:build": "node scripts/apply-unicorn-transforms.mjs",
     "postinstall": "node scripts/apply-unicorn-transforms.mjs",
+    "prepare": "bash scripts/security/install-git-hooks.sh",
+    "hooks:install": "bash scripts/security/install-git-hooks.sh",
     "visits:recent": "cd visits-worker && bun run db:recent",
     "visits:top": "cd visits-worker && bun run db:top",
     "visits:deploy": "cd visits-worker && bun run deploy",
