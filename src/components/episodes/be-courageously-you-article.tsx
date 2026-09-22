@@ -1,68 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-
 export default function BeCourageouslyYouArticle() {
-  const router = useRouter();
-  const [authenticated, setAuthenticated] = useState(false);
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!code.trim()) return;
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch('/api/episodes/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: code.trim() }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          setAuthenticated(true);
-        } else {
-          router.push('/episodes');
-        }
-      } catch {
-        setError('Connection failed');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [code, router]
-  );
-
-  if (!authenticated) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <form onSubmit={handleSubmit} className="flex w-72 flex-col gap-4">
-          <input
-            type="password"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Access code"
-            autoFocus
-            className="w-full border border-white/20 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-white/50"
-            disabled={loading}
-          />
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading || !code.trim()}
-            className="w-full border border-white/20 py-2.5 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-30"
-          >
-            {loading ? 'Verifying...' : 'Enter'}
-          </button>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <>
       <header className="mb-16">

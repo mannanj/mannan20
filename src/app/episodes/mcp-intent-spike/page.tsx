@@ -1,8 +1,11 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import Link from 'next/link';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { readSiteSession } from '@/lib/site-session';
+import { ReadingSignIn } from '@/components/auth/reading-sign-in';
 
 export const metadata: Metadata = {
   title: '[AI GENERATED] MCP Intent Spike | Episodes',
@@ -10,16 +13,22 @@ export const metadata: Metadata = {
     'A practical proof spike on whether MCP can carry publisher asks and prove they were surfaced to humans.',
 };
 
-const Article = dynamic(
+export const dynamic = 'force-dynamic';
+
+const Article = nextDynamic(
   () => import('@/components/episodes/mcp-intent-spike-article'),
   { loading: () => <div className="h-screen" /> },
 );
 
-export default function McpPublisherIntentProofPage() {
-  const content = readFileSync(
-    join(process.cwd(), 'src/content/mcp-publisher-intent-proof-spike.md'),
-    'utf8',
-  ).replace(/^#\s+MCP Intent Spike\s*\n+/, '');
+export default async function McpPublisherIntentProofPage() {
+  const session = await readSiteSession((await headers()).get('cookie'));
+
+  const content = session
+    ? readFileSync(
+        join(process.cwd(), 'src/content/mcp-publisher-intent-proof-spike.md'),
+        'utf8',
+      ).replace(/^#\s+MCP Intent Spike\s*\n+/, '')
+    : '';
 
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
@@ -31,7 +40,11 @@ export default function McpPublisherIntentProofPage() {
         >
           &larr; Garden
         </Link>
-        <Article content={content} />
+        {session ? (
+          <Article content={content} />
+        ) : (
+          <ReadingSignIn heading="This reading is for signed-in readers" />
+        )}
       </article>
     </main>
   );
