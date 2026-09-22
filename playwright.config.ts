@@ -1,4 +1,18 @@
 import { defineConfig } from '@playwright/test';
+import { existsSync, readFileSync } from 'node:fs';
+
+function loadLocalEnv(file: string): void {
+  if (!existsSync(file)) return;
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    const match = /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/.exec(line);
+    if (!match) continue;
+    const [, key, raw] = match;
+    if (process.env[key] !== undefined) continue;
+    process.env[key] = raw.trim().replace(/^["']|["']$/g, '');
+  }
+}
+
+loadLocalEnv('.env.local');
 
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 

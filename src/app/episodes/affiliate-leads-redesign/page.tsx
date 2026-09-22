@@ -1,24 +1,33 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import Link from 'next/link';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { readSiteSession } from '@/lib/site-session';
+import { ReadingSignIn } from '@/components/auth/reading-sign-in';
 
 export const metadata: Metadata = {
   title: 'Affiliate Attribution, Reset | Episodes',
   description: 'Three iterations to land on a one-table, two-view affiliate attribution system. By Mannan Javid.',
 };
 
-const Article = dynamic(
+export const dynamic = 'force-dynamic';
+
+const Article = nextDynamic(
   () => import('@/components/episodes/affiliate-leads-redesign-article'),
   { loading: () => <div className="h-screen" /> }
 );
 
-export default function AffiliateLeadsRedesignPage() {
-  const content = readFileSync(
-    join(process.cwd(), 'src/content/affiliate-leads-redesign.md'),
-    'utf8'
-  );
+export default async function AffiliateLeadsRedesignPage() {
+  const session = await readSiteSession((await headers()).get('cookie'));
+
+  const content = session
+    ? readFileSync(
+        join(process.cwd(), 'src/content/affiliate-leads-redesign.md'),
+        'utf8',
+      )
+    : '';
 
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
@@ -29,7 +38,11 @@ export default function AffiliateLeadsRedesignPage() {
         >
           &larr; Garden
         </Link>
-        <Article content={content} />
+        {session ? (
+          <Article content={content} />
+        ) : (
+          <ReadingSignIn heading="This reading is for signed-in readers" />
+        )}
       </article>
     </main>
   );
