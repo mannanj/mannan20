@@ -6,7 +6,7 @@ export interface Env {
 }
 
 type Kind = "human" | "agent";
-type LimitKind = "download" | "leaderboard" | "magic" | "feedback" | "garden-view" | "contact-intent" | "validate-contact" | "cloud-files";
+type LimitKind = "download" | "leaderboard" | "magic" | "magic-ip" | "feedback" | "garden-view" | "contact-intent" | "validate-contact" | "cloud-files";
 type Row = Record<string, SqlStorageValue>;
 type StateSql = DurableObjectState["storage"]["sql"];
 
@@ -31,6 +31,7 @@ const LIMITS: Record<LimitKind, { max: number; ms: number }> = {
   download: { max: 10, ms: 60_000 },
   leaderboard: { max: 6, ms: 60_000 },
   magic: { max: 3, ms: 15 * 60_000 },
+  "magic-ip": { max: 10, ms: 60 * 60_000 },
   feedback: { max: 4, ms: 10 * 60_000 },
   "garden-view": { max: 20, ms: 60_000 },
   "contact-intent": { max: 10, ms: 60 * 60_000 },

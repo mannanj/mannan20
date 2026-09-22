@@ -91,6 +91,7 @@ wants/kick-the-can/
 .superpowers/
 .worktrees/
 
-# Written by .githooks/post-commit; read by nothing.
+# Leftovers from the removed .githooks/post-commit hook. Nothing writes or reads
+# them now; the entries stay so existing local copies do not show up as untracked.
 public/data/dev-commits.json
 public/data/metadata.json

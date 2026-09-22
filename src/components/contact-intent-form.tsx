@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ContactIntentResult, ContactIntentTurn } from '@/lib/types';
 
 const PLACEHOLDER = "Your name, and/or why you're here";
-const INACTIVITY_DELAY_MS = 3000;
+const INACTIVITY_DELAY_MS = 2000;
 const MAX_INPUT_LENGTH = 1000;
 const TURN_CAP = 3;
 const HISTORY_MAX_HEIGHT = 168;
