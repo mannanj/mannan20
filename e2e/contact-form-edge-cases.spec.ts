@@ -1,28 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
-import { openModal, openRevealedModal, stubTurnstile } from './helpers/contact-form';
-
-function stubTurnstileConfig(page: Page) {
-  return page.route('**/api/config', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ turnstile: { enabled: true, sitekey: '1x00000000000000000000AA' } }),
-    })
-  );
-}
+import {
+  openModal,
+  openRevealedModal,
+  solveTurnstile,
+  stubTurnstile,
+  stubTurnstileConfig,
+} from './helpers/contact-form';
 
 function stubTurnstileNeverResolves(page: Page) {
-  return page.route('**/turnstile/v0/api.js', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/javascript',
-      body: `window.turnstile = {
-  render: () => 'e2e-fake-widget-id',
-  reset: () => {},
-  remove: () => {},
-};`,
-    })
-  );
+  return stubTurnstile(page, { success: true }, 200, { autoSolve: false });
 }
 
 function expectBothContactLinks(page: Page) {
@@ -37,12 +23,25 @@ const THANKS_RESPONSE = JSON.stringify({ message: 'Thanks!' });
 
 test.describe('Group A: Modal Lifecycle & State Reset', () => {
   test('Turnstile that never resolves falls back to both contact links', async ({ page }) => {
-    await stubTurnstileConfig(page);
     await stubTurnstileNeverResolves(page);
     await openModal(page);
     await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 10000 });
     await expectBothContactLinks(page);
     await page.screenshot({ path: 'e2e/screenshots/edge-cases-turnstile-timeout-fallback.png' });
+  });
+
+  test('the reveal waits for the token, then fires on it and not on the fallback timer', async ({
+    page,
+  }) => {
+    await stubTurnstileNeverResolves(page);
+    await openModal(page);
+
+    await page.waitForTimeout(1500);
+    await expect(page.getByTestId('contact-result')).toBeHidden();
+
+    await solveTurnstile(page);
+    await expect(page.getByTestId('contact-result')).toBeVisible({ timeout: 2500 });
+    await expectBothContactLinks(page);
   });
 
   test('Turnstile script failure falls back to both contact links', async ({ page }) => {
