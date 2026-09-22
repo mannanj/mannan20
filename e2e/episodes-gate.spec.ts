@@ -27,6 +27,28 @@ test.describe('Episodes are gated', () => {
     });
   }
 
+  test('the sign-in group is equidistant', async ({ page }) => {
+    await page.goto('/episodes/mcp-intent-spike');
+    await expect(page.getByText(SIGN_IN_HEADING)).toBeVisible();
+
+    const gaps = await page.evaluate(() => {
+      const form = document.querySelector('form');
+      if (!form) return null;
+      const kids = Array.from(form.children).filter(
+        (el) => getComputedStyle(el).display !== 'none',
+      );
+      return kids
+        .slice(1)
+        .map((el, i) =>
+          Math.round(el.getBoundingClientRect().top - kids[i].getBoundingClientRect().bottom),
+        );
+    });
+
+    expect(gaps).not.toBeNull();
+    expect(gaps!.length).toBeGreaterThan(1);
+    expect(new Set(gaps!).size, `gaps were ${JSON.stringify(gaps)}`).toBe(1);
+  });
+
   test('a signed-in reader gets the article body', async ({ page, context }) => {
     await signInAsReader(context);
     await page.goto('/episodes/mcp-intent-spike');
