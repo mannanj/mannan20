@@ -49,6 +49,20 @@ export type McpGrantVerification =
   | { ok: true; payload: McpGrantPayload }
   | { ok: false; reason: 'malformed' | 'bad_signature' | 'expired' | 'state_mismatch' };
 
+/**
+ * Domain separation. Prefixed into the signed bytes so a grant can NEVER
+ * verify as an actor token, whatever the secrets are set to.
+ *
+ * Without it the two are enforced apart only by configuration: the payloads
+ * have the same shape, so if the secrets ever coincide — copied by mistake,
+ * or set from one variable — a 120-second grant minted by the SITE becomes a
+ * valid actor token, and the site silently gains the power to write to any
+ * user's calendar. That is precisely the boundary the two keys exist to draw,
+ * and it should not rest on two env vars staying different.
+ */
+const GRANT_DOMAIN = 'mcp-grant.v1';
+const ACTOR_DOMAIN = 'mcp-actor.v1';
+
 const encoder = new TextEncoder();
 
 function b64urlEncode(value: string): string {
@@ -67,7 +81,7 @@ function b64urlDecode(value: string): string | null {
   }
 }
 
-async function sign(payload: string, secret: string): Promise<string> {
+async function sign(payload: string, secret: string, domain: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
@@ -75,7 +89,9 @@ async function sign(payload: string, secret: string): Promise<string> {
     false,
     ['sign']
   );
-  const mac = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  // The domain is signed, not merely compared — a verifier for one kind of
+  // token cannot produce the other kind's signature at all.
+  const mac = await crypto.subtle.sign('HMAC', key, encoder.encode(`${domain}.${payload}`));
   let binary = '';
   for (const byte of new Uint8Array(mac)) binary += String.fromCharCode(byte);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -99,7 +115,7 @@ export async function signMcpGrant(
     nonce,
   };
   const encoded = b64urlEncode(JSON.stringify(payload));
-  return `${encoded}.${await sign(encoded, secret)}`;
+  return `${encoded}.${await sign(encoded, secret, GRANT_DOMAIN)}`;
 }
 
 export async function verifyMcpGrant(
@@ -110,7 +126,7 @@ export async function verifyMcpGrant(
   const [encoded, signature] = grant.split('.');
   if (!encoded || !signature) return { ok: false, reason: 'malformed' };
 
-  if (!constantTimeEqual(signature, await sign(encoded, secret))) {
+  if (!constantTimeEqual(signature, await sign(encoded, secret, GRANT_DOMAIN))) {
     return { ok: false, reason: 'bad_signature' };
   }
 
@@ -126,6 +142,9 @@ export async function verifyMcpGrant(
   if (typeof payload?.sub !== 'string' || typeof payload?.email !== 'string') {
     return { ok: false, reason: 'malformed' };
   }
+  // Type-checked, not just compared: `undefined <= n` is false, so a signed
+  // payload with no exp at all never expired.
+  if (typeof payload.exp !== 'number') return { ok: false, reason: 'malformed' };
   if (payload.exp <= Math.floor(Date.now() / 1000)) return { ok: false, reason: 'expired' };
   if (payload.state !== options.expectedState) return { ok: false, reason: 'state_mismatch' };
 
@@ -159,7 +178,7 @@ export async function signActor(
     nonce: crypto.randomUUID(),
   };
   const encoded = b64urlEncode(JSON.stringify(payload));
-  return `${encoded}.${await sign(encoded, secret)}`;
+  return `${encoded}.${await sign(encoded, secret, ACTOR_DOMAIN)}`;
 }
 
 export async function verifyActor(
@@ -168,12 +187,13 @@ export async function verifyActor(
 ): Promise<ActorPayload | null> {
   const [encoded, signature] = token.split('.');
   if (!encoded || !signature) return null;
-  if (!constantTimeEqual(signature, await sign(encoded, secret))) return null;
+  if (!constantTimeEqual(signature, await sign(encoded, secret, ACTOR_DOMAIN))) return null;
   const json = b64urlDecode(encoded);
   if (!json) return null;
   try {
     const payload = JSON.parse(json) as ActorPayload;
     if (typeof payload?.sub !== 'string' || typeof payload?.email !== 'string') return null;
+    if (typeof payload.exp !== 'number') return null;
     if (payload.exp <= Math.floor(Date.now() / 1000)) return null;
     return payload;
   } catch {
