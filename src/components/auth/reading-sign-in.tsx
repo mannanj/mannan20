@@ -47,8 +47,8 @@ export function ReadingSignIn({ heading = "Sign in required" }: ReadingSignInPro
 
   return (
     <div className="py-10">
-      <p className="text-lg font-light text-white">{heading}</p>
-      <form onSubmit={submit} className="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
+      <form onSubmit={submit} className="flex max-w-md flex-col items-start gap-4">
+        <p className="text-lg font-light text-white">{heading}</p>
         <input
           type="email"
           required
@@ -59,13 +59,14 @@ export function ReadingSignIn({ heading = "Sign in required" }: ReadingSignInPro
           disabled={status === "sending"}
           className="w-full rounded-lg border border-white/15 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-colors focus:border-white/40 disabled:opacity-50"
         />
+        <div ref={turnstileContainerRef} className="empty:hidden" />
         <button
           type="submit"
           disabled={
             status === "sending" ||
             (turnstileAvailability !== "unavailable" && !turnstileToken)
           }
-          className="shrink-0 rounded-lg border border-white/15 px-5 py-3 text-sm text-white transition-colors hover:border-white/40 hover:text-red-500 disabled:opacity-50"
+          className="w-full shrink-0 rounded-lg border border-white/15 px-5 py-3 text-sm text-white transition-colors hover:border-white/40 hover:text-red-500 disabled:opacity-50 sm:w-auto"
         >
           {status === "sending"
             ? "Sending…"
@@ -73,11 +74,10 @@ export function ReadingSignIn({ heading = "Sign in required" }: ReadingSignInPro
               ? "Checking…"
               : "Send link"}
         </button>
+        {status === "error" && (
+          <p className="text-xs text-red-400">Could not send that. Try again in a moment.</p>
+        )}
       </form>
-      <div ref={turnstileContainerRef} className="mt-3" />
-      {status === "error" && (
-        <p className="mt-3 text-xs text-red-400">Could not send that. Try again in a moment.</p>
-      )}
     </div>
   );
 }
