@@ -72,7 +72,11 @@ export function ReadingSignIn({
           }
           className="shrink-0 rounded-lg border border-white/15 px-5 py-3 text-sm text-white transition-colors hover:border-white/40 hover:text-red-500 disabled:opacity-50"
         >
-          {status === "sending" ? "Sending…" : "Send link"}
+          {status === "sending"
+            ? "Sending…"
+            : turnstileAvailability !== "unavailable" && !turnstileToken
+              ? "Checking…"
+              : "Send link"}
         </button>
       </form>
       <div ref={turnstileContainerRef} className="mt-3" />
