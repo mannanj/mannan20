@@ -43,7 +43,7 @@ export default async function McpPublisherIntentProofPage() {
         {session ? (
           <Article content={content} />
         ) : (
-          <ReadingSignIn heading="This reading is for signed-in readers" />
+          <ReadingSignIn />
         )}
       </article>
     </main>
