@@ -5,13 +5,9 @@ import { useTurnstile } from "@/hooks/use-turnstile";
 
 interface ReadingSignInProps {
   heading?: string;
-  note?: string;
 }
 
-export function ReadingSignIn({
-  heading = "Readings are for signed-in readers",
-  note = "Enter your email and we will send you a sign-in link.",
-}: ReadingSignInProps) {
+export function ReadingSignIn({ heading = "Sign in required" }: ReadingSignInProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const {
@@ -52,7 +48,6 @@ export function ReadingSignIn({
   return (
     <div className="py-10">
       <p className="text-lg font-light text-white">{heading}</p>
-      <p className="mt-2 text-sm text-white/40">{note}</p>
       <form onSubmit={submit} className="mt-6 flex max-w-md flex-col gap-3 sm:flex-row">
         <input
           type="email"

@@ -29,7 +29,7 @@ export default async function BeCourageouslyYouPage() {
         >
           &larr; Garden
         </Link>
-        {session ? <Article /> : <ReadingSignIn heading="This reading is for signed-in readers" />}
+        {session ? <Article /> : <ReadingSignIn />}
       </article>
     </main>
   );
