@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+message_file=${1:?commit message file is required}
+repo_root=$(git rev-parse --show-toplevel)
+gitleaks_bin=$("$repo_root/scripts/security/bootstrap-gitleaks.sh")
+
+"$gitleaks_bin" stdin \
+  --redact=100 \
+  --no-banner \
+  --config "$repo_root/.gitleaks.toml" \
+  < "$message_file"
