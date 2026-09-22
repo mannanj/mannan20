@@ -8,7 +8,7 @@ const EPISODES = [
   '/episodes/affiliate-leads-redesign',
 ];
 
-const SIGN_IN_HEADING = 'This reading is for signed-in readers';
+const SIGN_IN_HEADING = 'Sign in required';
 
 test.describe('Episodes are gated', () => {
   for (const url of EPISODES) {

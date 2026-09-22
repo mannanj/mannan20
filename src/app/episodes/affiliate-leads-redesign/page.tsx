@@ -41,7 +41,7 @@ export default async function AffiliateLeadsRedesignPage() {
         {session ? (
           <Article content={content} />
         ) : (
-          <ReadingSignIn heading="This reading is for signed-in readers" />
+          <ReadingSignIn />
         )}
       </article>
     </main>
