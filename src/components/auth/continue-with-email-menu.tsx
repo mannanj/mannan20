@@ -153,7 +153,11 @@ function SignInForm() {
         }
         className="w-full rounded-md bg-white px-3 py-2 text-sm font-medium text-black transition hover:bg-white/90 disabled:cursor-wait disabled:opacity-60"
       >
-        Continue with email
+        {status === "sending"
+          ? "Sending…"
+          : turnstileAvailability !== "unavailable" && !turnstileToken
+            ? "Checking…"
+            : "Continue with email"}
       </button>
       {status === "error" && (
         <div className="text-xs leading-5 text-red-200">
