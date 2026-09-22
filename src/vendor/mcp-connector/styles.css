@@ -47,7 +47,9 @@
   flex: none;
   color: var(--mcpc-accent);
   font-size: 12px;
-  font-weight: 600;
+  /* Not bold. It leads out of the menu, so it should sit quieter than the
+     title it shares a line with, not compete with it. */
+  font-weight: 400;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -145,3 +147,131 @@
 
 @media (min-width: 640px) {
   }
+
+/* ─── the AI-Generated mark ───────────────────────────────────────────────
+   Sits above a guide's heading. Quiet by default: it is a disclosure, not a
+   banner. */
+.mcpc-ai {
+  /* Its own defaults rather than the connector's: this one FLOATS, so its
+     surface must be opaque. `--mcpc-surface: transparent` is correct for a
+     connector rendered inline, and renders this popover unreadable over the
+     text it covers. An app that themes the connector themes this too. */
+  --mcpc-fg: #101416;
+  --mcpc-muted: #55605b;
+  --mcpc-line: #c7cdbf;
+  --mcpc-surface: #ffffff;
+  --mcpc-accent: #0d8a5a;
+  --mcpc-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mcpc-radius: 7px;
+
+  position: relative;
+  display: inline-flex;
+  /* Guides stack their heading block in a flex column, whose default
+     align-items would stretch this pill the full measure. */
+  align-self: flex-start;
+}
+
+.mcpc-ai__badge {
+  font-family: var(--mcpc-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mcpc-muted);
+  background: none;
+  border: 1px solid var(--mcpc-line);
+  border-radius: 999px;
+  padding: 3px 9px;
+  cursor: help;
+  line-height: 1.4;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.mcpc-ai__badge:hover,
+.mcpc-ai__badge[aria-expanded='true'] {
+  color: var(--mcpc-fg);
+  border-color: var(--mcpc-fg);
+}
+
+.mcpc-ai__badge:focus-visible {
+  outline: 2px solid var(--mcpc-accent);
+  outline-offset: 2px;
+}
+
+.mcpc-ai__note {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  z-index: 70;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--mcpc-surface);
+  border: 1px solid var(--mcpc-line);
+  border-radius: var(--mcpc-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.09);
+}
+
+.mcpc-ai__text {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--mcpc-muted);
+}
+
+.mcpc-ai__show {
+  align-self: flex-start;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: var(--mcpc-accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mcpc-ai__challenge {
+  display: block;
+}
+
+.mcpc-ai__address {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mcpc-mono);
+  font-size: 0.75rem;
+}
+
+.mcpc-ai__address a {
+  color: var(--mcpc-fg);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.mcpc-ai__address a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mcpc-ai__copy {
+  flex: none;
+  font-family: var(--mcpc-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mcpc-muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mcpc-ai__copy:hover {
+  color: var(--mcpc-fg);
+}

@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { signInAsReader } from './reader-session';
 
 const ARTICLE_URL = '/episodes/immortalism-manifesto';
 const BLOB_PATTERN = '**/audio/manifesto/chunk-*.wav';
@@ -14,6 +15,10 @@ async function openPlayerAndWaitForPlayback(page: Page) {
 }
 
 test.describe('Episodes Audio Player', () => {
+  test.beforeEach(async ({ context }) => {
+    await signInAsReader(context);
+  });
+
   test.describe('Article page loads correctly', () => {
     test('shows article with header links', async ({ page }) => {
       await navigateToArticle(page);
