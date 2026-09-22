@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { signInAsReader } from './reader-session';
 
 async function gotoGarden(page: Page) {
   await page.goto('/garden');
@@ -162,11 +163,21 @@ test.describe('Garden carousel', () => {
     await expect(page.locator('[data-panel="writings"] a[href="/garden/article/taken"]')).toHaveCount(0);
   });
 
-  test('selecting Readings swivels to the curated readings list', async ({ page }) => {
+  test('selecting Readings asks a signed-out visitor to sign in', async ({ page }) => {
     await gotoGarden(page);
     await page.getByTestId('garden-tab-readings').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
     await expect(page.getByTestId('garden-tab-readings')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(3);
+    await expect(page.locator('[data-panel="readings"] input[type="email"]')).toBeVisible();
+    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(0);
+  });
+
+  test('a signed-in reader gets the curated readings list', async ({ page, context }) => {
+    await signInAsReader(context);
+    await gotoGarden(page);
+    await page.getByTestId('garden-tab-readings').click();
+    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
+    await expect(page.locator('[data-panel="readings"] input[type="email"]')).toHaveCount(0);
+    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(4);
   });
 });

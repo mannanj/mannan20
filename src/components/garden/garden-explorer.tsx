@@ -13,6 +13,7 @@ import dynamic from "next/dynamic";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
 import { GARDEN_PRODUCTS, type GardenProductData } from "@/lib/garden-products";
 import { EPISODES } from "@/lib/episodes";
+import { ReadingSignIn } from "@/components/auth/reading-sign-in";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
@@ -25,6 +26,11 @@ const ProductsGallery = dynamic(
 );
 
 type Category = "products" | "writings" | "readings";
+
+type ReadingsReader =
+  | { state: "loading" }
+  | { state: "out" }
+  | { state: "in"; admin: boolean };
 
 interface GardenProduct extends GardenProductData {
   thumb: ReactNode;
@@ -383,7 +389,38 @@ function WritingsPanel() {
 }
 
 function ReadingsPanel({ showAll }: { showAll: boolean }) {
-  const visible = EPISODES.filter((episode) => showAll || !episode.hidden);
+  const [reader, setReader] = useState<ReadingsReader>({ state: "loading" });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data: { user?: { admin?: boolean } | null }) => {
+        if (cancelled) return;
+        setReader(
+          data.user
+            ? { state: "in", admin: Boolean(data.user.admin) }
+            : { state: "out" },
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setReader({ state: "out" });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (reader.state === "loading") {
+    return <div className="h-40 animate-pulse rounded-lg bg-white/[0.02]" />;
+  }
+  if (reader.state === "out") {
+    return <ReadingSignIn />;
+  }
+
+  const visible = EPISODES.filter(
+    (episode) => (showAll && reader.admin) || !episode.hidden,
+  );
   return (
     <div className="flex flex-col">
       {visible.map((episode) => {

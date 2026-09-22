@@ -1,18 +1,25 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import type { Metadata } from 'next';
+import { readSiteSession } from '@/lib/site-session';
+import { ReadingSignIn } from '@/components/auth/reading-sign-in';
 
 export const metadata: Metadata = {
   title: 'Immortalism Manifesto | Episodes',
   description: 'Immortalism Manifesto by Bryan Johnson — March 20th, Spring Equinox.',
 };
 
-const Article = dynamic(
+export const dynamic = 'force-dynamic';
+
+const Article = nextDynamic(
   () => import('@/components/episodes/immortalism-manifesto-article'),
   { loading: () => <div className="h-screen" /> }
 );
 
-export default function ImmortalismManifestoPage() {
+export default async function ImmortalismManifestoPage() {
+  const session = await readSiteSession((await headers()).get('cookie'));
+
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
       <article className="mx-auto max-w-2xl px-6 py-24">
@@ -22,7 +29,7 @@ export default function ImmortalismManifestoPage() {
         >
           &larr; Garden
         </Link>
-        <Article />
+        {session ? <Article /> : <ReadingSignIn heading="This reading is for signed-in readers" />}
       </article>
     </main>
   );
