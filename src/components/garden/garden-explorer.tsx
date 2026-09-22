@@ -13,7 +13,7 @@ import dynamic from "next/dynamic";
 import { GARDEN_ARTICLES, type GardenArticle } from "@/lib/garden-articles";
 import { GARDEN_PRODUCTS, type GardenProductData } from "@/lib/garden-products";
 import { EPISODES } from "@/lib/episodes";
-import { ReadingSignIn } from "@/components/auth/reading-sign-in";
+import { useReaderSession, type ReaderSession } from "@/hooks/use-reader-session";
 import { CommunityNodesPreview } from "@/components/garden/community-nodes-preview";
 import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
@@ -27,27 +27,29 @@ const ProductsGallery = dynamic(
 
 type Category = "products" | "writings" | "readings";
 
-type ReadingsReader =
-  | { state: "loading" }
-  | { state: "out" }
-  | { state: "in"; admin: boolean };
-
 interface GardenProduct extends GardenProductData {
   thumb: ReactNode;
 }
 
 const ORDER: Record<Category, number> = {
-  writings: 0,
-  products: 1,
+  products: 0,
+  writings: 1,
   readings: 2,
 };
 const PANEL_TRANSITION_MS = 700;
 
 const TABS: { key: Category; label: string }[] = [
-  { key: "writings", label: "Writings" },
   { key: "products", label: "Products" },
+  { key: "writings", label: "Writings" },
   { key: "readings", label: "Readings" },
 ];
+
+const DEFAULT_CATEGORY: Category = "products";
+
+function visibleTabs(reader: ReaderSession) {
+  if (reader.state === "in") return TABS;
+  return TABS.filter((tab) => tab.key !== "readings");
+}
 
 const HASH_TO_CATEGORY: Record<string, Category> = {
   writings: "writings",
@@ -388,34 +390,12 @@ function WritingsPanel() {
   );
 }
 
-function ReadingsPanel({ showAll }: { showAll: boolean }) {
-  const [reader, setReader] = useState<ReadingsReader>({ state: "loading" });
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data: { user?: { admin?: boolean } | null }) => {
-        if (cancelled) return;
-        setReader(
-          data.user
-            ? { state: "in", admin: Boolean(data.user.admin) }
-            : { state: "out" },
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setReader({ state: "out" });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+function ReadingsPanel({ showAll, reader }: { showAll: boolean; reader: ReaderSession }) {
   if (reader.state === "loading") {
     return <div className="h-40 animate-pulse rounded-lg bg-white/[0.02]" />;
   }
   if (reader.state === "out") {
-    return <ReadingSignIn />;
+    return null;
   }
 
   const visible = EPISODES.filter(
@@ -457,9 +437,17 @@ function ReadingsPanel({ showAll }: { showAll: boolean }) {
   );
 }
 
-function Panel({ which, showAll }: { which: Category; showAll: boolean }) {
+function Panel({
+  which,
+  showAll,
+  reader,
+}: {
+  which: Category;
+  showAll: boolean;
+  reader: ReaderSession;
+}) {
   if (which === "products") return <ProductsPanel />;
-  if (which === "readings") return <ReadingsPanel showAll={showAll} />;
+  if (which === "readings") return <ReadingsPanel showAll={showAll} reader={reader} />;
   return <WritingsPanel />;
 }
 
@@ -502,7 +490,9 @@ function GlobeIcon({ className }: { className?: string }) {
 }
 
 export function GardenExplorer() {
-  const [active, setActive] = useState<Category>("writings");
+  const reader = useReaderSession();
+  const tabs = visibleTabs(reader);
+  const [active, setActive] = useState<Category>(DEFAULT_CATEGORY);
   const [prev, setPrev] = useState<Category | null>(null);
   const [dir, setDir] = useState(1);
   const [showAll, setShowAll] = useState(false);
@@ -569,6 +559,11 @@ export function GardenExplorer() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (reader.state !== "out") return;
+    setActive((current) => (current === "readings" ? DEFAULT_CATEGORY : current));
+  }, [reader.state]);
+
   const layerStyle = {
     gridArea: "1 / 1",
     "--swivel-dir": dir,
@@ -598,7 +593,7 @@ export function GardenExplorer() {
                 listEntering ? " tab-morph-in" : ""
               }`}
             >
-              {TABS.map((tab) => (
+              {tabs.map((tab) => (
                 <button
                   key={tab.key}
                   type="button"
@@ -630,7 +625,7 @@ export function GardenExplorer() {
                     style={layerStyle}
                     className="swivel-out pointer-events-none [transform-style:preserve-3d]"
                   >
-                    <Panel which={prev} showAll={showAll} />
+                    <Panel which={prev} showAll={showAll} reader={reader} />
                   </div>
                 )}
                 <div
@@ -640,7 +635,7 @@ export function GardenExplorer() {
                   data-testid="garden-active-panel"
                   data-panel={active}
                 >
-                  <Panel which={active} showAll={showAll} />
+                  <Panel which={active} showAll={showAll} reader={reader} />
                 </div>
               </div>
             </div>
@@ -671,7 +666,7 @@ export function GardenExplorer() {
           style={{ top: mockTop }}
           className="tab-morph-out-up pointer-events-none fixed inset-x-0 z-[80] flex items-center justify-center gap-7 sm:gap-10"
         >
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <span
               key={tab.key}
               className={`relative pb-1.5 text-lg sm:text-xl ${
