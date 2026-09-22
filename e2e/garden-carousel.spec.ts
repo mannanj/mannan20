@@ -23,11 +23,12 @@ test.describe('Garden carousel', () => {
     await expect(page.locator('[data-page-magnifier-root]')).toHaveCount(0);
   });
 
-  test('Writings is the default selected tab', async ({ page }) => {
+  test('Products is the default selected tab, and leads the tab order', async ({ page }) => {
     await gotoGarden(page);
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
-    await expect(page.getByTestId('garden-tab-writings')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
+    await expect(page.getByTestId('garden-tab-products')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('garden-tab-writings')).toHaveAttribute('aria-selected', 'false');
+    await expect(page.getByRole('tab')).toHaveText(['Products', 'Writings']);
   });
 
   test('selecting Products swivels to the eight product cards', async ({ page }) => {
@@ -151,8 +152,6 @@ test.describe('Garden carousel', () => {
 
   test('selecting Writings swivels to the stacked writing cards', async ({ page }) => {
     await gotoGarden(page);
-    await page.getByTestId('garden-tab-readings').click();
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
     await page.getByTestId('garden-tab-writings').click();
 
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'writings');
@@ -163,18 +162,23 @@ test.describe('Garden carousel', () => {
     await expect(page.locator('[data-panel="writings"] a[href="/garden/article/taken"]')).toHaveCount(0);
   });
 
-  test('selecting Readings asks a signed-out visitor to sign in', async ({ page }) => {
+  test('the Readings tab is not shown to a signed-out visitor', async ({ page }) => {
     await gotoGarden(page);
-    await page.getByTestId('garden-tab-readings').click();
-    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
-    await expect(page.getByTestId('garden-tab-readings')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('[data-panel="readings"] input[type="email"]')).toBeVisible();
-    await expect(page.locator('[data-panel="readings"] a')).toHaveCount(0);
+    await expect(page.getByTestId('garden-tab-readings')).toHaveCount(0);
+    await expect(page.getByRole('tab')).toHaveText(['Products', 'Writings']);
+  });
+
+  test('a signed-out visitor landing on #readings is sent to the default tab', async ({ page }) => {
+    await page.goto('/garden#readings');
+    await expect(page.getByTestId('garden-tab-readings')).toHaveCount(0);
+    await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'products');
+    await expect(page.locator('[data-panel="readings"]')).toHaveCount(0);
   });
 
   test('a signed-in reader gets the curated readings list', async ({ page, context }) => {
     await signInAsReader(context);
     await gotoGarden(page);
+    await expect(page.getByTestId('garden-tab-readings')).toBeVisible();
     await page.getByTestId('garden-tab-readings').click();
     await expect(page.getByTestId('garden-active-panel')).toHaveAttribute('data-panel', 'readings');
     await expect(page.locator('[data-panel="readings"] input[type="email"]')).toHaveCount(0);

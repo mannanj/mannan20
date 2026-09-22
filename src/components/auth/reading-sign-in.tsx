@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTurnstile } from "@/hooks/use-turnstile";
 
 interface ReadingSignInProps {
   heading?: string;
@@ -13,6 +14,12 @@ export function ReadingSignIn({
 }: ReadingSignInProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const {
+    token: turnstileToken,
+    availability: turnstileAvailability,
+    reset: resetTurnstile,
+    containerRef: turnstileContainerRef,
+  } = useTurnstile();
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -21,9 +28,14 @@ export function ReadingSignIn({
     const res = await fetch("/api/auth/request", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: email.trim() }),
+      body: JSON.stringify({ email: email.trim(), turnstileToken }),
     }).catch(() => null);
-    setStatus(res?.ok ? "sent" : "error");
+    if (res?.ok) {
+      setStatus("sent");
+      return;
+    }
+    resetTurnstile();
+    setStatus("error");
   };
 
   if (status === "sent") {
@@ -54,12 +66,16 @@ export function ReadingSignIn({
         />
         <button
           type="submit"
-          disabled={status === "sending"}
+          disabled={
+            status === "sending" ||
+            (turnstileAvailability !== "unavailable" && !turnstileToken)
+          }
           className="shrink-0 rounded-lg border border-white/15 px-5 py-3 text-sm text-white transition-colors hover:border-white/40 hover:text-red-500 disabled:opacity-50"
         >
           {status === "sending" ? "Sending…" : "Send link"}
         </button>
       </form>
+      <div ref={turnstileContainerRef} className="mt-3" />
       {status === "error" && (
         <p className="mt-3 text-xs text-red-400">Could not send that. Try again in a moment.</p>
       )}
