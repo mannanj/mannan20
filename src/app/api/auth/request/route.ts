@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requestCloudflareContinueEmail } from '@/lib/cloudflare-auth';
 import { limitMagicEmail, limitMagicIp } from '@/lib/rate-limit';
 import { verifyTurnstileToken } from '@/lib/turnstile-verify';
+import { returnPathFromRequest, returnToCookie } from '@/lib/return-to';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,5 +57,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Could not send email' }, { status });
   }
 
-  return NextResponse.json({ ok: true });
+  // Remember where this started, so the callback can land there instead of
+  // on `/`. Only on success: a refused request must not leave a cookie that a
+  // later, unrelated sign-in would pick up.
+  const response = NextResponse.json({ ok: true });
+  const returnTo = returnPathFromRequest(
+    (body as Record<string, unknown>).returnTo,
+    request.headers.get('referer'),
+    new URL(request.url).origin,
+  );
+  if (returnTo) response.headers.append('Set-Cookie', returnToCookie(returnTo));
+  return response;
 }
