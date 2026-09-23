@@ -3,23 +3,24 @@ import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
 /**
  * The bridge that turns a mannan.is session into a calendar MCP grant.
  *
- * This route is the only place a session cookie becomes a portable assertion
- * of identity, so every case below is a way that must not work. A test file
- * that only showed the happy path would be satisfied by an implementation that
- * signed a grant for whoever asked.
+ * This route only ASKS: it must never sign anything on a GET, because a GET
+ * is exactly what a cross-site link can trigger with one click. Every case
+ * below is a way that must not produce a grant.
  */
 
 const SECRET = 'grant-secret-for-tests';
 const CALLBACK = 'https://calendar-mcp.mannanteam.workers.dev/callback';
+const COOKIE_VALUE = 'signed-cookie-value-for-tests';
 
 let sessionAnswer: { email: string; role: string; admin: boolean; exp: number } | null = null;
+let cookieAnswer: string | null = COOKIE_VALUE;
 
 mock.module('@/lib/site-session', () => ({
   readSiteSession: async () => sessionAnswer,
+  cookieValue: () => cookieAnswer,
 }));
 
 const { GET } = await import('./route');
-const { verifyMcpGrant } = await import('@/lib/mcp/grant');
 
 function get(params: Record<string, string>, cookie?: string) {
   const url = new URL('https://mannan.is/api/mcp/calendar/authorize');
@@ -33,6 +34,7 @@ beforeEach(() => {
   process.env.CALENDAR_MCP_GRANT_SECRET = SECRET;
   process.env.CALENDAR_MCP_CALLBACK_URL = CALLBACK;
   sessionAnswer = SIGNED_IN;
+  cookieAnswer = COOKIE_VALUE;
 });
 
 afterEach(() => {
@@ -41,51 +43,36 @@ afterEach(() => {
 });
 
 describe('a signed-in person', () => {
-  it('is redirected to the worker with a grant bound to the state', async () => {
+  it('is asked, not redirected — a 200 consent page with no grant in it', async () => {
     const response = await get({ state: 'st_abcdefgh' });
-    expect(response.status).toBe(307);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
 
-    const location = new URL(response.headers.get('location')!);
-    expect(location.origin + location.pathname).toBe(CALLBACK);
-    expect(location.searchParams.get('state')).toBe('st_abcdefgh');
-
-    const verified = await verifyMcpGrant(location.searchParams.get('grant')!, SECRET, {
-      expectedState: 'st_abcdefgh',
-    });
-    expect(verified.ok).toBe(true);
-    if (verified.ok) expect(verified.payload.email).toBe('hello@mannan.is');
+    const html = await response.text();
+    expect(html).toContain('Connect an assistant?');
+    expect(html).toContain('Continue');
+    expect(html).toContain("If this wasn't you, close this page.");
+    expect(html).toContain('https://mannan.is/calendar/mcp');
+    expect(html).not.toContain('grant=');
   });
 
-  it('mints a grant that is useless for any other authorization request', async () => {
-    const response = await get({ state: 'st_abcdefgh' });
-    const grant = new URL(response.headers.get('location')!).searchParams.get('grant')!;
-
-    const replayed = await verifyMcpGrant(grant, SECRET, { expectedState: 'st_somethingelse' });
-    expect(replayed).toEqual({ ok: false, reason: 'state_mismatch' });
+  it('names the account being connected', async () => {
+    const html = await (await get({ state: 'st_abcdefgh' })).text();
+    expect(html).toContain('hello@mannan.is');
   });
 
-  it('ignores any destination the caller tries to supply', async () => {
-    // Found by mutation: the open-redirect test below only ran for a
-    // SIGNED-OUT visitor, and the destination is only computed for a signed-in
-    // one — so the branch that actually builds the redirect had no cover at
-    // all. Sending a grant off-site is the worst thing this route could do.
-    const response = await get({
-      state: 'st_abcdefgh',
-      redirect_uri: 'https://evil.example/steal',
-      callback: 'https://evil.example/steal',
-      next: 'https://evil.example/steal',
-    });
-
-    const location = new URL(response.headers.get('location')!);
-    expect(location.origin).toBe('https://calendar-mcp.mannanteam.workers.dev');
-    expect(response.headers.get('location')).not.toContain('evil.example');
+  it('posts to the confirm route, carrying the state and a consent token', async () => {
+    const html = await (await get({ state: 'st_abcdefgh' })).text();
+    expect(html).toContain('/api/mcp/calendar/authorize/confirm');
+    expect(html).toContain('state=st_abcdefgh');
+    expect(html).toMatch(/consent=[\w-]+/);
   });
 
-  it('does not let the grant be cached or leak through a Referer', async () => {
-    // The grant is in the URL for exactly one hop.
+  it('does not let the page be cached, framed or leak through a Referer', async () => {
     const response = await get({ state: 'st_abcdefgh' });
     expect(response.headers.get('cache-control')).toContain('no-store');
     expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
   });
 });
 
@@ -116,8 +103,6 @@ describe('a signed-out person', () => {
   });
 
   it('cannot be redirected off-site by adding parameters', async () => {
-    // There is no redirect_uri and there must never be one. If somebody adds
-    // it later, this test is what says no.
     const response = await get({
       state: 'st_abcdefgh',
       redirect_uri: 'https://evil.example/steal',
@@ -146,7 +131,7 @@ describe('the state parameter', () => {
 });
 
 describe('when the site is not configured for this', () => {
-  it('answers 503, and says so, rather than pretending to sign anything', async () => {
+  it('answers 503, and says so, rather than pretending to ask anything', async () => {
     delete process.env.CALENDAR_MCP_GRANT_SECRET;
     const response = await get({ state: 'st_abcdefgh' });
 
@@ -160,8 +145,6 @@ describe('when the site is not configured for this', () => {
   });
 
   it('checks configuration BEFORE the session', async () => {
-    // Otherwise a misconfigured deployment looks like a sign-in problem and
-    // sends signed-out people round the sign-in loop forever.
     sessionAnswer = null;
     delete process.env.CALENDAR_MCP_GRANT_SECRET;
     expect((await get({ state: 'st_abcdefgh' })).status).toBe(503);
