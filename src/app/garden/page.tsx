@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { GardenExplorer } from "@/components/garden/garden-explorer";
+import { loadGardenSkills } from "@/lib/garden-skills";
+
+export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Garden",
@@ -96,7 +99,8 @@ function PlantThree() {
   );
 }
 
-export default function GardenPage() {
+export default async function GardenPage() {
+  const skills = await loadGardenSkills();
   return (
     <div className="relative min-h-screen overflow-x-clip bg-[#0b0b0b] text-white">
       <Link
@@ -128,7 +132,7 @@ export default function GardenPage() {
         <PlantThree />
       </div>
 
-      <GardenExplorer />
+      <GardenExplorer skills={skills} />
     </div>
   );
 }
