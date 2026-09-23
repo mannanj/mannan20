@@ -76,3 +76,50 @@ describe('sign-in bot check', () => {
     expect(calls.siteverify).toBe(0);
   });
 });
+
+describe('where sign-in returns to', () => {
+  const originalExchange = process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET;
+  afterEach(() => restore('CLOUDFLARE_AUTH_EXCHANGE_SECRET', originalExchange));
+
+  function returnCookie(res: Response): string | undefined {
+    return res.headers
+      .getSetCookie()
+      .find((cookie) => cookie.startsWith('__Host-mannan-return='));
+  }
+
+  test('a sent link remembers the page it was asked for from', async () => {
+    delete process.env.TURNSTILE_SECRET_KEY;
+    process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET = 'exchange';
+    stubNetwork(async () => Response.json({ success: true }));
+
+    const res = await route.POST(signInRequest({ email: 'rt1@b.co', returnTo: '/calendar' }));
+    expect(res.status).toBe(200);
+    expect(returnCookie(res)).toContain('__Host-mannan-return=%2Fcalendar;');
+  });
+
+  test('an off-site return path is dropped, not stored', async () => {
+    delete process.env.TURNSTILE_SECRET_KEY;
+    process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET = 'exchange';
+    stubNetwork(async () => Response.json({ success: true }));
+
+    const res = await route.POST(
+      signInRequest({ email: 'rt2@b.co', returnTo: '//evil.example/' }),
+    );
+    expect(res.status).toBe(200);
+    expect(returnCookie(res)).toBeUndefined();
+  });
+
+  test('a refused request leaves no cookie for a later sign-in to find', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'secret';
+    process.env.CLOUDFLARE_AUTH_EXCHANGE_SECRET = 'exchange';
+    stubNetwork(async () =>
+      Response.json({ success: false, 'error-codes': ['invalid-input-response'] }),
+    );
+
+    const res = await route.POST(
+      signInRequest({ email: 'rt3@b.co', turnstileToken: 'no', returnTo: '/calendar' }),
+    );
+    expect(res.status).toBe(403);
+    expect(returnCookie(res)).toBeUndefined();
+  });
+});

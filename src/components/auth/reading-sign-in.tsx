@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTurnstile } from "@/hooks/use-turnstile";
+import { currentReturnPath } from "@/lib/return-to";
 
 interface ReadingSignInProps {
   heading?: string;
@@ -24,7 +25,11 @@ export function ReadingSignIn({ heading = "Sign in required" }: ReadingSignInPro
     const res = await fetch("/api/auth/request", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), turnstileToken }),
+      body: JSON.stringify({
+        email: email.trim(),
+        turnstileToken,
+        returnTo: currentReturnPath(window.location),
+      }),
     }).catch(() => null);
     if (res?.ok) {
       setStatus("sent");

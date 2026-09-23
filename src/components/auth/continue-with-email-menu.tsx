@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTurnstile } from "@/hooks/use-turnstile";
+import { currentReturnPath } from "@/lib/return-to";
 
 interface AuthUser {
   email: string;
@@ -106,7 +107,7 @@ function SignInForm() {
     const res = await fetch("/api/auth/request", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, turnstileToken }),
+      body: JSON.stringify({ email, turnstileToken, returnTo: currentReturnPath(window.location) }),
     }).catch(() => null);
     if (res?.ok) {
       setStatus("sent");
