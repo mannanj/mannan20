@@ -103,6 +103,13 @@ describe('a signed-out person', () => {
     expect(location.searchParams.get('mcp')).toBe('calendar');
   });
 
+  it('is told to come back here once signed in, with the same state', async () => {
+    const response = await get({ state: 'st_abcdefgh' });
+    const next = new URL(response.headers.get('location')!).searchParams.get('next');
+    // Our own path, never another host: the sign-in route re-validates it.
+    expect(next).toBe('/api/mcp/calendar/authorize?state=st_abcdefgh');
+  });
+
   it('gets no grant at all', async () => {
     const response = await get({ state: 'st_abcdefgh' });
     expect(response.headers.get('location')).not.toContain('grant=');
