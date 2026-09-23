@@ -37,6 +37,12 @@ export type McpConnectorProps = {
   labels?: McpConnectorLabels;
   /** Rendered fogged and inert, for a visitor who cannot use it yet. */
   locked?: boolean;
+  /**
+   * Signed in: what this account has connected, with a way to cut each off,
+   * drawn as a "Connected" section under the three snippets. Omit when nobody
+   * is signed in - there is nothing to list.
+   */
+  connections?: McpConnectionsSource;
   className?: string;
 };
 
@@ -117,6 +123,7 @@ export function McpConnector({
   title = 'MCP Connector',
   labels,
   locked = false,
+  connections,
   className,
 }: McpConnectorProps) {
   const text = { ...DEFAULT_LABELS, ...labels };
@@ -142,6 +149,7 @@ export function McpConnector({
         <CopySnippet label={text.claudeCode} value={claudeCodeCommand} />
         <CopySnippet label={text.agent} value={agentInstruction} />
       </div>
+      {connections && !locked && <McpConnections {...connections} />}
     </div>
   );
 }
@@ -307,5 +315,96 @@ export function AiGenerated({
         </span>
       )}
     </span>
+  );
+}
+
+/** One connected assistant, as `@mannan/mcp-grant`'s /connections lists it. */
+export interface McpConnection {
+  id: string;
+  /** The name the client registered with. */
+  client: string;
+  /** Unix seconds. */
+  connectedAt: number;
+}
+
+export interface McpConnectionsSource {
+  /** GET the account's connections. Pass a stable function: it is an effect dependency. */
+  load: () => Promise<McpConnection[]>;
+  /** Cut one assistant off. It stops working straight away. */
+  disconnect: (id: string) => Promise<unknown>;
+}
+
+type ConnectionsState =
+  | { kind: 'loading' }
+  | { kind: 'failed' }
+  | { kind: 'ready'; items: McpConnection[] };
+
+const CONNECTED_ON = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+/**
+ * The "Connected" section at the foot of the connector panel.
+ *
+ * WHY IT IS HERE. A connected assistant holds a refresh token that does not
+ * expire, and signing out of the site does nothing to it: it never had the
+ * session. So the place someone goes to connect an assistant is also where
+ * they see what is connected and cut it off - one panel, not two menu lines.
+ *
+ * Each row: the client's name, Disconnect, and the date it connected, right-
+ * aligned. It checks on open ("Checking…"), so what it shows is current.
+ */
+export function McpConnections({ load, disconnect }: McpConnectionsSource) {
+  const [state, setState] = useState<ConnectionsState>({ kind: 'loading' });
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    load()
+      .then((items) => live && setState({ kind: 'ready', items }))
+      .catch(() => live && setState({ kind: 'failed' }));
+    return () => {
+      live = false;
+    };
+  }, [load]);
+
+  const cut = async (id: string) => {
+    setBusy(id);
+    try {
+      await disconnect(id);
+      setState((was) => (was.kind === 'ready' ? { kind: 'ready', items: was.items.filter((c) => c.id !== id) } : was));
+    } catch {
+      setState({ kind: 'failed' });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <section className="mcpc-connections" aria-label="Connected assistants" data-testid="mcp-connections">
+      <span className="mcpc-snippet__label">Connected</span>
+      {state.kind === 'loading' && <p className="mcpc-connections__note">Checking…</p>}
+      {state.kind === 'failed' && <p className="mcpc-connections__note" role="alert">Could not load connections.</p>}
+      {state.kind === 'ready' && state.items.length === 0 && (
+        <p className="mcpc-connections__note">Nothing connected yet.</p>
+      )}
+      {state.kind === 'ready' && state.items.length > 0 && (
+        <ul className="mcpc-connections__list">
+          {state.items.map((c) => (
+            <li key={c.id} className="mcpc-connections__row">
+              <span className="mcpc-connections__name" title={c.client}>{c.client}</span>
+              <button
+                type="button"
+                className="mcpc-connections__cut"
+                disabled={busy !== null}
+                onClick={() => void cut(c.id)}
+                aria-label={`Disconnect ${c.client}`}
+              >
+                {busy === c.id ? 'Disconnecting…' : 'Disconnect'}
+              </button>
+              <span className="mcpc-connections__when">{CONNECTED_ON.format(new Date(c.connectedAt * 1000))}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
