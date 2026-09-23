@@ -71,7 +71,9 @@ describe('a signed-in person', () => {
   it('does not let the page be cached, framed or leak through a Referer', async () => {
     const response = await get({ state: 'st_abcdefgh' });
     expect(response.headers.get('cache-control')).toContain('no-store');
-    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+    // same-origin, not no-referrer: under no-referrer the Continue POST
+    // carries `Origin: null`. Nothing still goes to other sites.
+    expect(response.headers.get('referrer-policy')).toBe('same-origin');
     expect(response.headers.get('x-frame-options')).toBe('DENY');
   });
 });

@@ -49,7 +49,7 @@ describe('the right consent token', () => {
   it('signs a grant bound to the state and sends the browser to the worker', async () => {
     const consent = await consentToken(COOKIE_VALUE, STATE, SECRET);
     const response = await post({ state: STATE, consent });
-    expect(response.status).toBe(307);
+    expect(response.status).toBe(302);
 
     const location = new URL(response.headers.get('location')!);
     expect(location.origin + location.pathname).toBe(CALLBACK);

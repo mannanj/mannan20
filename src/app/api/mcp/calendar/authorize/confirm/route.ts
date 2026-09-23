@@ -1,7 +1,6 @@
-import { NextResponse } from 'next/server';
 import { cookieValue, readSiteSession } from '@/lib/site-session';
 import { signMcpGrant } from '@/lib/mcp/grant';
-import { consentToken, constantTimeEqual } from '@/vendor/mcp-connector/consent';
+import { consentToken, constantTimeEqual, grantRedirect } from '@/vendor/mcp-connector/consent';
 import { STATE_PATTERN, calendarMcpEnv, problem, signedOutRedirect } from '../../shared';
 
 export const dynamic = 'force-dynamic';
@@ -39,14 +38,7 @@ export async function POST(request: Request) {
 
   const grant = await signMcpGrant({ sub: session.email, email: session.email, state }, secret);
 
-  const destination = new URL(callback);
-  destination.searchParams.set('grant', grant);
-  destination.searchParams.set('state', state);
-
-  return NextResponse.redirect(destination, {
-    headers: {
-      'cache-control': 'no-store, private',
-      'referrer-policy': 'no-referrer',
-    },
-  });
+  // 302, not NextResponse.redirect's default 307: a 307 replays this POST to
+  // the Worker, which then never sees its SameSite=Lax flow cookie.
+  return grantRedirect(callback, grant, state);
 }
