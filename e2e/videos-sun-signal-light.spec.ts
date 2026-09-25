@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('/sun prompt page', () => {
+test.describe('/videos/sun-signal-light page', () => {
   test('renders the conversation as collapsible sections with costs', async ({ page }) => {
-    await page.goto('/sun');
+    await page.goto('/videos/sun-signal-light');
     await expect(page.getByRole('heading', { name: 'The Light We Lost' })).toBeVisible();
     await expect(page.getByText('$4.47').first()).toBeVisible();
 
@@ -19,7 +19,7 @@ test.describe('/sun prompt page', () => {
   });
 
   test('pops out a player that actually plays the film', async ({ page }) => {
-    await page.goto('/sun');
+    await page.goto('/videos/sun-signal-light');
     await page.getByRole('button', { name: /Play the film/ }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();

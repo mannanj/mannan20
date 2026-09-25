@@ -11,7 +11,7 @@ const MEDIA = 'https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/vid
 const VIDEO_SRC = `${MEDIA}/light-we-lost.mp4`;
 const POSTER_SRC = `${MEDIA}/poster.jpg`;
 // Same-origin so the <track> loads without CORS on the r2.dev bucket.
-const CAPTIONS_SRC = '/sun/captions.vtt';
+const CAPTIONS_SRC = '/videos/sun-signal-light/captions.vtt';
 
 type Block = { k: 'text'; text: string } | { k: 'tool'; name: string; desc: string };
 type Step = { k: 'step'; ts: string; cost: number; cw: number; cr: number; in: number; out: number; think: number; blocks: Block[] };
