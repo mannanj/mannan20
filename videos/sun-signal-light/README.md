@@ -54,6 +54,7 @@ Per-call detail is in `budget.json`. Sound effects and rendering are free.
 | `or_.py` | shared OpenRouter request helper and budget log |
 | `budget.json` | every paid call, with model, purpose and cost |
 | `events.json` | SFX cue list exported by the page, so sound and picture share one timeline |
+| `transcripts/` | the raw session logs behind all of it, scrubbed and archived — see its README |
 
 ## Running it
 
