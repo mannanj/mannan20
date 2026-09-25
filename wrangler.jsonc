@@ -30,6 +30,10 @@
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "mannan20-opennext-cache"
+    },
+    {
+      "binding": "GATED_FILES",
+      "bucket_name": "mannan20-gated"
     }
   ],
   "observability": {
@@ -69,6 +73,10 @@
         {
           "binding": "NEXT_INC_CACHE_R2_BUCKET",
           "bucket_name": "mannan20-opennext-cache-preview"
+        },
+        {
+          "binding": "GATED_FILES",
+          "bucket_name": "mannan20-gated"
         }
       ],
       "observability": {
@@ -120,6 +128,10 @@
         {
           "binding": "NEXT_INC_CACHE_R2_BUCKET",
           "bucket_name": "mannan20-opennext-cache"
+        },
+        {
+          "binding": "GATED_FILES",
+          "bucket_name": "mannan20-gated"
         }
       ],
       "observability": {

@@ -13,6 +13,28 @@ the password is not in this repository. Ask if you want it.
 The third is a recording of the session that added it, so it stops partway through its own
 work — the last thing it contains is roughly the act of writing this file.
 
+## Getting a copy without the password
+
+The film page (`/videos/sun-signal-light`, also reachable at `/sun`) has a **Download** button
+in the top right. It opens a short chat that asks who you are. Two answers are accepted — the
+company Mannan shared this with, or the first name of the person he shared it with — case and
+punctuation do not matter, and either one on its own is enough. Three tries, then a ten-minute
+cool-off per IP.
+
+Answer correctly and the site hands you an **unencrypted** copy, so nothing has to be typed
+into Archive Utility. That copy is built by `scripts/build-transcripts-archive.mjs`, lives in
+the private `mannan20-gated` R2 bucket, and is served only by `/api/transcripts/download`
+behind a signed, short-lived grant cookie. It is deliberately not in this repository and not on
+the public R2 domain.
+
+```bash
+TRANSCRIPTS_ZIP_PASSWORD=… bun run transcripts:build ~/somewhere/outside/the/repo.zip
+```
+
+The gate's logic lives in `src/lib/transcript-gate.ts` and is covered by unit tests plus a
+mutation suite (`bun run transcripts:mutation`) that checks the tests actually fail when the
+gate is weakened.
+
 ## Opening it
 
 On macOS, double-click the archive in Finder and enter the password when Archive Utility asks.

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ClaudeIcon } from './claude-icon';
+import { TranscriptsGate } from './transcripts-gate';
 import transcript from './transcript.json';
 
 const MEDIA = 'https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/video/sun-signal';
@@ -365,7 +366,10 @@ export function SunPromptPage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="mx-auto max-w-3xl px-4 pt-28 pb-24 sm:px-6">
-        <p className="font-mono text-xs tracking-[0.2em] text-amber-200/70 uppercase">Sun Signal · made in Claude Code</p>
+        <div className="flex items-start justify-between gap-4">
+          <p className="font-mono text-xs tracking-[0.2em] text-amber-200/70 uppercase">Sun Signal · made in Claude Code</p>
+          <TranscriptsGate />
+        </div>
         <h1 className="mt-3 font-[family-name:var(--font-caption)] text-5xl italic sm:text-6xl">The Light We Lost</h1>
         <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/70">
           A 33-second film for Sun Signal, made in one Claude Code session in about {minutes} minutes. Below is the
