@@ -95,3 +95,10 @@ wants/kick-the-can/
 # them now; the entries stay so existing local copies do not show up as untracked.
 public/data/dev-commits.json
 public/data/metadata.json
+
+# Decrypted Sun Signal transcripts. The password-protected archive is the only
+# copy that belongs in the repo; the plaintext one is built by
+# scripts/build-transcripts-archive.mjs and served from private R2.
+sun-signal-transcripts.zip
+**/transcripts.plain.zip
+videos/sun-signal-light/transcripts/*.plain.zip
