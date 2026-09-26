@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getBatch, isId, isUploadOwner, listFiles, objectKey, uploadsEnv } from '@/lib/uploads';
 import { safeAttachmentDisposition, safeAttachmentFilename } from '@/lib/attachment';
-import { previewableImageType } from '@/lib/uploads-shared';
+import { planDownload, previewableImageType } from '@/lib/uploads-shared';
 import { streamZip, type ZipSource } from '@/lib/zip';
 
 export const dynamic = 'force-dynamic';
 
-const MAX_ZIP_ENTRIES = 500;
-
 type RouteContext = { params: Promise<{ id: string }> };
 
-function zipName(title: string): string {
-  const base = title.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
-  return `${base || 'uploads'}.zip`;
+function zipName(title: string, part?: { index: number; total: number }): string {
+  const base = title.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'uploads';
+  if (!part) return `${base}.zip`;
+  return `${base}-part-${part.index + 1}-of-${part.total}.zip`;
 }
 
 function uniqueName(taken: Set<string>, raw: string): string {
@@ -77,12 +76,33 @@ export async function GET(request: Request, { params }: RouteContext) {
 
   const requested = url.searchParams.get('ids');
   const wanted = requested ? new Set(requested.split(',').filter(isId)) : null;
-  const chosen = (wanted ? files.filter((file) => wanted.has(file.id)) : files).slice(
-    0,
-    MAX_ZIP_ENTRIES,
-  );
+  const selected = wanted ? files.filter((file) => wanted.has(file.id)) : files;
 
-  if (!chosen.length) return NextResponse.json({ error: 'Nothing to download' }, { status: 400 });
+  if (!selected.length) return NextResponse.json({ error: 'Nothing to download' }, { status: 400 });
+
+  const plan = planDownload(selected);
+
+  if (url.searchParams.get('plan') === '1') {
+    return NextResponse.json({
+      total: selected.reduce((sum, file) => sum + file.size, 0),
+      parts: plan.map((part, index) => ({
+        index,
+        kind: part.kind,
+        bytes: part.bytes,
+        count: part.ids.length,
+        fileId: part.kind === 'file' ? part.ids[0] : null,
+      })),
+    });
+  }
+
+  const rawPart = url.searchParams.get('part');
+  const partIndex = rawPart === null ? null : Number(rawPart);
+  if (partIndex !== null && (!Number.isInteger(partIndex) || !plan[partIndex])) {
+    return NextResponse.json({ error: 'Unknown part' }, { status: 400 });
+  }
+
+  const inPart = partIndex === null ? null : new Set(plan[partIndex].ids);
+  const chosen = inPart ? selected.filter((file) => inPart.has(file.id)) : selected;
 
   const taken = new Set<string>();
   const sources = (async function* (): AsyncGenerator<ZipSource> {
@@ -97,5 +117,10 @@ export async function GET(request: Request, { params }: RouteContext) {
     }
   })();
 
-  return streamZip(sources, zipName(batch.title));
+  const label =
+    partIndex === null || plan.length < 2
+      ? undefined
+      : { index: partIndex, total: plan.length };
+
+  return streamZip(sources, zipName(batch.title, label));
 }
