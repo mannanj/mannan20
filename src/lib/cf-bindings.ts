@@ -24,6 +24,21 @@ export interface R2PutOptions {
   customMetadata?: Record<string, string>;
 }
 
+export interface R2UploadedPart {
+  partNumber: number;
+  etag: string;
+}
+
+export interface R2MultipartUpload {
+  uploadId: string;
+  uploadPart(
+    partNumber: number,
+    value: ReadableStream<Uint8Array> | ArrayBuffer | Blob | string,
+  ): Promise<R2UploadedPart>;
+  complete(parts: R2UploadedPart[]): Promise<{ size: number }>;
+  abort(): Promise<void>;
+}
+
 export interface R2Binding {
   get(key: string): Promise<R2Object | null>;
   put(
@@ -31,4 +46,6 @@ export interface R2Binding {
     value: ReadableStream<Uint8Array> | ArrayBuffer | Blob | string,
     options?: R2PutOptions,
   ): Promise<unknown>;
+  createMultipartUpload(key: string, options?: R2PutOptions): Promise<R2MultipartUpload>;
+  resumeMultipartUpload(key: string, uploadId: string): R2MultipartUpload;
 }

@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatBytes, type UploadBatch, type UploadFile } from '@/lib/uploads-shared';
+import {
+  MAX_UPLOAD_BYTES,
+  UPLOAD_PART_SIZE,
+  formatBytes,
+  previewableImageType,
+  type UploadBatch,
+  type UploadFile,
+} from '@/lib/uploads-shared';
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = {
   month: 'short',
@@ -14,7 +21,60 @@ const TITLE_SAVE_DELAY_MS = 600;
 interface Pending {
   name: string;
   size: number;
+  progress: number;
   error: string | null;
+}
+
+async function uploadWhole(batchId: string, file: File): Promise<void> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`/api/uploads/${batchId}/files`, { method: 'POST', body: form });
+  if (!res.ok) throw new Error(res.status === 413 ? 'Too large' : 'Upload failed');
+}
+
+async function uploadInParts(
+  batchId: string,
+  file: File,
+  onProgress: (percent: number) => void,
+): Promise<void> {
+  const started = await fetch(`/api/uploads/${batchId}/multipart`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+  });
+  if (!started.ok) throw new Error(started.status === 413 ? 'Too large' : 'Upload failed');
+
+  const { fileId, partSize, parts } = (await started.json()) as {
+    fileId: string;
+    partSize: number;
+    parts: number;
+  };
+
+  const uploaded: { partNumber: number; etag: string }[] = [];
+  try {
+    for (let part = 1; part <= parts; part += 1) {
+      const chunk = file.slice((part - 1) * partSize, part * partSize);
+      const res = await fetch(`/api/uploads/${batchId}/multipart/${fileId}?part=${part}`, {
+        method: 'PUT',
+        body: chunk,
+      });
+      if (!res.ok) throw new Error('Upload failed');
+      uploaded.push((await res.json()) as { partNumber: number; etag: string });
+      onProgress(Math.round((part / parts) * 100));
+    }
+
+    const finished = await fetch(`/api/uploads/${batchId}/multipart/${fileId}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ parts: uploaded }),
+    });
+    if (!finished.ok) throw new Error('Upload failed');
+  } catch (error) {
+    await fetch(`/api/uploads/${batchId}/multipart/${fileId}`, { method: 'DELETE' }).catch(
+      () => null,
+    );
+    throw error;
+  }
 }
 
 export function UploadDetail({ batch, files }: { batch: UploadBatch; files: UploadFile[] }) {
@@ -23,6 +83,7 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, setPending] = useState<Pending[]>([]);
   const [dragging, setDragging] = useState(false);
+  const [preview, setPreview] = useState<UploadFile | null>(null);
   const picker = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -52,25 +113,27 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
   const upload = useCallback(
     async (chosen: File[]) => {
       if (!chosen.length) return;
-      setPending(chosen.map((file) => ({ name: file.name, size: file.size, error: null })));
+      setPending(
+        chosen.map((file) => ({ name: file.name, size: file.size, progress: 0, error: null })),
+      );
 
       for (const file of chosen) {
-        const form = new FormData();
-        form.append('file', file);
-        const res = await fetch(`/api/uploads/${batch.id}/files`, {
-          method: 'POST',
-          body: form,
-        }).catch(() => null);
-
-        if (!res?.ok) {
-          const message =
-            res?.status === 413 ? 'Too large' : 'Upload failed';
+        const patch = (change: Partial<Pending>) =>
           setPending((was) =>
-            was.map((item) => (item.name === file.name ? { ...item, error: message } : item)),
+            was.map((item) => (item.name === file.name ? { ...item, ...change } : item)),
           );
-          continue;
+
+        try {
+          if (file.size > MAX_UPLOAD_BYTES) throw new Error('Too large');
+          if (file.size > UPLOAD_PART_SIZE) {
+            await uploadInParts(batch.id, file, (percent) => patch({ progress: percent }));
+          } else {
+            await uploadWhole(batch.id, file);
+          }
+          setPending((was) => was.filter((item) => item.name !== file.name));
+        } catch (error) {
+          patch({ error: error instanceof Error ? error.message : 'Upload failed' });
         }
-        setPending((was) => was.filter((item) => item.name !== file.name));
       }
 
       router.refresh();
@@ -108,7 +171,9 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
           dragging ? 'border-[#0b0b0b] bg-white' : 'border-[#ddd] bg-white'
         }`}
       >
-        <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">Drop files here</p>
+        <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">
+          Drop files here &mdash; up to {formatBytes(MAX_UPLOAD_BYTES)} each
+        </p>
         <button
           type="button"
           onClick={() => picker.current?.click()}
@@ -137,7 +202,7 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
                 {formatBytes(item.size)}
               </span>
               <span className={item.error ? 'text-[#c1121f]' : 'text-[#6f6f6f]'}>
-                {item.error ?? 'Uploading…'}
+                {item.error ?? (item.progress ? `${item.progress}%` : 'Uploading…')}
               </span>
             </li>
           ))}
@@ -181,11 +246,18 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
                 file={file}
                 checked={selected.has(file.id)}
                 onToggle={() => toggle(file.id)}
+                onPreview={
+                  previewableImageType(file.contentType) ? () => setPreview(file) : null
+                }
               />
             ))}
           </ul>
         )}
       </div>
+
+      {preview && (
+        <ImagePreview batchId={batch.id} file={preview} onClose={() => setPreview(null)} />
+      )}
     </section>
   );
 }
@@ -195,23 +267,14 @@ function FileRow({
   file,
   checked,
   onToggle,
+  onPreview,
 }: {
   batchId: string;
   file: UploadFile;
   checked: boolean;
   onToggle: () => void;
+  onPreview: (() => void) | null;
 }) {
-  const [description, setDescription] = useState(file.description);
-
-  const save = () => {
-    if (description === file.description) return;
-    fetch(`/api/uploads/${batchId}/files/${file.id}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ description }),
-    }).catch(() => null);
-  };
-
   return (
     <li className="flex items-center gap-[13px] px-4 py-3">
       <input
@@ -221,19 +284,20 @@ function FileRow({
         aria-label={`Select ${file.title}`}
         className="h-4 w-4 shrink-0 accent-[#1a56db]"
       />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-[0.9375rem] font-medium text-[#0b0b0b]" title={file.title}>
+      {onPreview ? (
+        <button
+          type="button"
+          onClick={onPreview}
+          title={`Preview ${file.title}`}
+          className="min-w-0 flex-1 cursor-pointer truncate border-0 bg-transparent p-0 text-left text-[0.9375rem] font-medium text-[#1a56db] hover:text-[#143fa8] hover:underline hover:underline-offset-[3px]"
+        >
+          {file.title}
+        </button>
+      ) : (
+        <span className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium text-[#0b0b0b]" title={file.title}>
           {file.title}
         </span>
-        <input
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          onBlur={save}
-          placeholder="Add a description"
-          aria-label={`Description for ${file.title}`}
-          className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-[0.875rem] text-[#6f6f6f] outline-none placeholder:text-[#a8a8a8] hover:border-[#ddd] focus:border-[#a8a8a8] focus:bg-white"
-        />
-      </div>
+      )}
       <span className="shrink-0 font-mono text-[0.6875rem] text-[#6f6f6f]">
         {formatBytes(file.size)}
       </span>
@@ -262,5 +326,39 @@ function FileRow({
         </svg>
       </a>
     </li>
+  );
+}
+
+function ImagePreview({
+  batchId,
+  file,
+  onClose,
+}: {
+  batchId: string;
+  file: UploadFile;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', escape);
+    return () => document.removeEventListener('keydown', escape);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-[13px] bg-black/80 p-6"
+      onClick={onClose}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/api/uploads/${batchId}/download?file=${file.id}&inline=1`}
+        alt={file.title}
+        onClick={(event) => event.stopPropagation()}
+        className="max-h-[80vh] max-w-full rounded-[9px] bg-white object-contain"
+      />
+      <p className="m-0 text-[0.9375rem] text-white">{file.title}</p>
+    </div>
   );
 }

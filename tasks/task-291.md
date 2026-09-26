@@ -6,6 +6,8 @@
 - [x] Batch page: editable title, drop zone, file list with select all / download all
 - [x] Files stored in R2 `mannan20-uploads`; metadata in D1 `cloud`
 - [x] Deletes are soft — rows flagged, R2 objects untouched
-- [ ] Apply `cloud-worker/migrations/0003_uploads.sql` to remote D1
-- [ ] Deploy
+- [x] Apply `cloud-worker/migrations/0003_uploads.sql` to remote D1
+- [x] Deploy
+- [x] Lift the size cap to 10 GB with R2 multipart through the Worker
+- [x] One-line file rows; click an image filename to preview it
 - Location: `src/app/upload`, `src/app/api/uploads`, `src/components/upload`, `src/lib/uploads.ts`

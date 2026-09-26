@@ -8,26 +8,16 @@ import {
   objectKey,
   uploadsEnv,
 } from '@/lib/uploads';
+import { UPLOAD_PART_SIZE } from '@/lib/uploads-shared';
 import { safeAttachmentFilename } from '@/lib/attachment';
+import { blobWithKnownLength } from '@/lib/fixed-length';
 
 export const dynamic = 'force-dynamic';
 
-const MAX_FILE_BYTES = 100 * 1024 * 1024;
+const MAX_FILE_BYTES = UPLOAD_PART_SIZE;
 const MAX_TITLE = 200;
 const MAX_DESCRIPTION = 500;
 
-type FixedLengthStreamCtor = new (length: number) => {
-  readable: ReadableStream<Uint8Array>;
-  writable: WritableStream<Uint8Array>;
-};
-
-function fixedLengthBody(file: File): ReadableStream<Uint8Array> | Blob {
-  const ctor = (globalThis as { FixedLengthStream?: FixedLengthStreamCtor }).FixedLengthStream;
-  if (!ctor) return file;
-  const { readable, writable } = new ctor(file.size);
-  void file.stream().pipeTo(writable);
-  return readable;
-}
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -63,7 +53,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   const fileId = newId();
   const key = objectKey(id, fileId);
 
-  await env.UPLOADS.put(key, fixedLengthBody(file), {
+  await env.UPLOADS.put(key, blobWithKnownLength(file), {
     httpMetadata: { contentType },
     customMetadata: { owner: UPLOAD_OWNER_EMAIL, batch: id },
   });

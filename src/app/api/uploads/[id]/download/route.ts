@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getBatch, isId, isUploadOwner, listFiles, objectKey, uploadsEnv } from '@/lib/uploads';
 import { safeAttachmentDisposition, safeAttachmentFilename } from '@/lib/attachment';
+import { previewableImageType } from '@/lib/uploads-shared';
 import { streamZip, type ZipSource } from '@/lib/zip';
 
 export const dynamic = 'force-dynamic';
@@ -57,11 +58,14 @@ export async function GET(request: Request, { params }: RouteContext) {
     const object = await env.UPLOADS.get(objectKey(id, entry.id));
     if (!object) return NextResponse.json({ error: 'File unavailable' }, { status: 502 });
 
+    const imageType = previewableImageType(entry.contentType);
+    const inline = url.searchParams.get('inline') === '1' && imageType !== null;
+
     return new Response(object.body, {
       headers: {
-        'content-type': entry.contentType,
+        'content-type': inline && imageType ? imageType : entry.contentType,
         'content-length': String(entry.size),
-        'content-disposition': safeAttachmentDisposition(entry.title),
+        'content-disposition': inline ? 'inline' : safeAttachmentDisposition(entry.title),
         'cache-control': 'private, no-store',
         'x-content-type-options': 'nosniff',
         'content-security-policy': "default-src 'none'; sandbox",

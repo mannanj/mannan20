@@ -52,6 +52,7 @@ export async function listBatches(env: UploadsEnv): Promise<UploadBatch[]> {
             COALESCE(SUM(f.size), 0) AS total_size
        FROM upload_batches b
        LEFT JOIN upload_files f ON f.batch_id = b.id AND f.deleted_at IS NULL
+                                AND f.status = 'complete'
       WHERE b.owner_email = ?1 AND b.deleted_at IS NULL
       GROUP BY b.id
       ORDER BY b.created_at DESC`,
@@ -83,6 +84,7 @@ export async function getBatch(env: UploadsEnv, id: string): Promise<UploadBatch
             COALESCE(SUM(f.size), 0) AS total_size
        FROM upload_batches b
        LEFT JOIN upload_files f ON f.batch_id = b.id AND f.deleted_at IS NULL
+                                AND f.status = 'complete'
       WHERE b.id = ?1 AND b.owner_email = ?2 AND b.deleted_at IS NULL
       GROUP BY b.id`,
   )
@@ -111,7 +113,7 @@ export async function listFiles(env: UploadsEnv, batchId: string): Promise<Uploa
   const { results } = await env.UPLOADS_DB.prepare(
     `SELECT id, title, description, content_type, size, created_at
        FROM upload_files
-      WHERE batch_id = ?1 AND deleted_at IS NULL
+      WHERE batch_id = ?1 AND deleted_at IS NULL AND status = 'complete'
       ORDER BY created_at ASC`,
   )
     .bind(batchId)

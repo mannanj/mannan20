@@ -1,3 +1,9 @@
+export const UPLOAD_PART_SIZE = 50 * 1024 * 1024;
+
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 * 1024;
+
+export const MAX_UPLOAD_PARTS = Math.ceil(MAX_UPLOAD_BYTES / UPLOAD_PART_SIZE);
+
 export interface UploadBatch {
   id: string;
   title: string;
@@ -35,4 +41,19 @@ export function defaultBatchTitle(now = new Date()): string {
     year: 'numeric',
   });
   return `Uploads on ${stamp}`;
+}
+
+const PREVIEWABLE_IMAGE_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'image/avif',
+  'image/bmp',
+  'image/x-icon',
+]);
+
+export function previewableImageType(contentType: string): string | null {
+  const bare = contentType.split(';')[0].trim().toLowerCase();
+  return PREVIEWABLE_IMAGE_TYPES.has(bare) ? bare : null;
 }
