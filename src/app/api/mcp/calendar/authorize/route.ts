@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
-import { readSiteSession } from '@/lib/site-session';
-import { signMcpGrant } from '@/lib/mcp/grant';
+import { cookieValue, readSiteSession } from '@/lib/site-session';
+import { consentResponse, consentToken } from '@/vendor/mcp-connector/consent';
+import {
+  CONSENT_ABILITIES,
+  CONSENT_APP_NAME,
+  CONSENT_CAPABILITIES_PATH,
+  CONSENT_SITE_URL,
+  STATE_PATTERN,
+  calendarMcpEnv,
+  problem,
+  signedOutRedirect,
+} from '../shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +23,9 @@ export const dynamic = 'force-dynamic';
  * every present and future subdomain for one feature's convenience.
  *
  * So the Worker bounces the browser here, this route reads the cookie, and it
- * hands back a 120-second signed assertion of who the person is.
+ * asks before handing back a short-lived signed assertion of who the person is.
  *
- *   calendar-mcp /authorize ──▶ HERE ──grant──▶ calendar-mcp /callback
+ *   calendar-mcp /authorize ──▶ HERE (ask) ──▶ confirm (sign) ──grant──▶ calendar-mcp /callback
  *
  * THIS ROUTE MINTS IDENTITY, NOT AUTHORITY. The grant says "this browser
  * belongs to alice@example.com" and confers nothing on its own; the Worker
@@ -28,41 +38,29 @@ export const dynamic = 'force-dynamic';
  * must never be one: the destination is configuration, so this cannot be
  * turned into an open redirect that launders a mannan.is session to somebody
  * else's host.
+ *
+ * A GET used to sign the grant and redirect immediately, which meant anybody
+ * could start a connect flow in their own client, take the opaque `state`, and
+ * send a signed-in person this URL — one click, and that person's calendar was
+ * readable and writable by a stranger's assistant. So a GET now only asks: it
+ * renders `consentResponse` naming the account and what the assistant will be
+ * able to do, and the grant is signed only on the confirm POST, carrying a
+ * token bound to this session that a cross-site link cannot produce.
  */
-
-/** Opaque, Worker-generated. Validated before it is used for anything. */
-const STATE_PATTERN = /^[A-Za-z0-9._~-]{8,256}$/;
-
-function problem(status: number, message: string) {
-  return new NextResponse(message, {
-    status,
-    headers: {
-      'content-type': 'text/plain; charset=utf-8',
-      'cache-control': 'no-store, private',
-      'referrer-policy': 'no-referrer',
-    },
-  });
-}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const state = url.searchParams.get('state') ?? '';
 
-  // Shape-checked BEFORE any session work. The state is echoed into a redirect
-  // and signed into the grant, so it is validated where it enters rather than
-  // trusted because it looks fine.
   if (!STATE_PATTERN.test(state)) return problem(400, 'Invalid request.');
 
-  const secret = process.env.CALENDAR_MCP_GRANT_SECRET;
-  const callback = process.env.CALENDAR_MCP_CALLBACK_URL;
+  const { secret, callback } = calendarMcpEnv();
   if (!secret || !callback) {
-    // Unconfigured is 503, not 500: nothing is broken, the feature is simply
-    // not turned on here. Checked before the session so a misconfiguration
-    // cannot be mistaken for a sign-in problem.
     return problem(503, 'Calendar MCP is not configured on this site.');
   }
 
-  const session = await readSiteSession(request.headers.get('cookie'));
+  const cookie = request.headers.get('cookie');
+  const session = await readSiteSession(cookie);
   if (!session) {
     // Home, with a marker, and `next` pointing back at THIS request. The
     // sign-in form sends `next` as its return path, so once the link is
@@ -80,25 +78,19 @@ export async function GET(request: Request) {
     });
   }
 
-  const grant = await signMcpGrant(
-    // The address is the identity everywhere in this system: the calendar
-    // scopes every row by owner_email, so `sub` and `email` are the same
-    // thing and pretending otherwise would invent a second identifier that
-    // nothing maps back.
-    { sub: session.email, email: session.email, state },
-    secret,
-  );
+  const id = cookieValue(cookie);
+  if (!id) return signedOutRedirect(url.origin);
 
-  const destination = new URL(callback);
-  destination.searchParams.set('grant', grant);
-  destination.searchParams.set('state', state);
+  const action = new URL('/api/mcp/calendar/authorize/confirm', url.origin);
+  action.searchParams.set('state', state);
+  action.searchParams.set('consent', await consentToken(id, state, secret));
 
-  return NextResponse.redirect(destination, {
-    headers: {
-      // The grant is in the URL for one hop. It must not be cached anywhere,
-      // and it must not leak into a Referer header on the way.
-      'cache-control': 'no-store, private',
-      'referrer-policy': 'no-referrer',
-    },
+  return consentResponse({
+    appName: CONSENT_APP_NAME,
+    siteUrl: CONSENT_SITE_URL,
+    account: session.email,
+    abilities: CONSENT_ABILITIES,
+    action: action.pathname + action.search,
+    capabilitiesPath: CONSENT_CAPABILITIES_PATH,
   });
 }
