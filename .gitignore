@@ -102,3 +102,6 @@ public/data/metadata.json
 sun-signal-transcripts.zip
 **/transcripts.plain.zip
 videos/sun-signal-light/transcripts/*.plain.zip
+# Both archives now live in the private mannan20-gated R2 bucket. See
+# videos/sun-signal-light/transcripts/ARCHIVES.md — nothing zip-shaped belongs here.
+videos/sun-signal-light/transcripts/*.zip
