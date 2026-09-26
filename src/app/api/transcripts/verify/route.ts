@@ -12,6 +12,7 @@ import { limitTranscriptGuess } from '@/lib/rate-limit';
 import { clientIp } from '@/lib/client-ip';
 
 const UNLOCKED_MESSAGE = 'Thanks — that checks out. Your download is unlocked below.';
+const UNAVAILABLE_MESSAGE = 'The door is jammed on my side — try again in a bit.';
 const EMPTY = { message: '', unlocked: false };
 
 function wrongMessage(remaining: number): string {
@@ -49,7 +50,16 @@ export async function POST(request: NextRequest) {
   }
 
   const ip = clientIp(request.headers);
-  const limit = await limitTranscriptGuess(ip);
+
+  let limit;
+  try {
+    limit = await limitTranscriptGuess(ip);
+  } catch {
+    return NextResponse.json(
+      { message: UNAVAILABLE_MESSAGE, unlocked: false, remaining: 0 },
+      { status: 503, headers: { 'cache-control': 'private, no-store' } },
+    );
+  }
 
   if (!limit.success) {
     const retryAfter = Math.max(1, Math.ceil((limit.reset - Date.now()) / 1000));

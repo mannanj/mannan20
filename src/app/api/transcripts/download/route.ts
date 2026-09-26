@@ -44,7 +44,16 @@ async function serve(request: Request, head: boolean) {
     return NextResponse.json({ error: 'Locked' }, { status: 403, headers: { 'cache-control': 'private, no-store' } });
   }
 
-  const limit = await limitTranscriptDownload(clientIp(request.headers));
+  let limit;
+  try {
+    limit = await limitTranscriptDownload(clientIp(request.headers));
+  } catch {
+    return NextResponse.json(
+      { error: 'Temporarily unavailable, try again shortly' },
+      { status: 503, headers: { 'cache-control': 'private, no-store' } },
+    );
+  }
+
   const rateHeaders: Record<string, string> = {
     'x-ratelimit-limit': String(limit.limit),
     'x-ratelimit-remaining': String(Math.max(0, limit.remaining)),
