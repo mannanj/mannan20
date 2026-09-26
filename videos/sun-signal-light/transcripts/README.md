@@ -1,8 +1,9 @@
 # Session transcripts
 
-`transcripts.zip` holds the raw Claude Code session logs behind the film, as JSON Lines — the
-same format Claude Code writes to `~/.claude/projects/`. The archive is password-protected;
-the password is not in this repository. Ask if you want it.
+The raw Claude Code session logs behind the film, as JSON Lines — the same format Claude Code
+writes to `~/.claude/projects/`. The archives are no longer stored in this repository; both
+live in a private R2 bucket. See [ARCHIVES.md](ARCHIVES.md) for their keys and how to fetch,
+rebuild or delete them.
 
 | File | Lines | What happened |
 |---|---|---|
@@ -22,10 +23,10 @@ punctuation do not matter, and either one on its own is enough. Three tries, the
 cool-off per IP.
 
 Answer correctly and the site hands you an **unencrypted** copy, so nothing has to be typed
-into Archive Utility. That copy is built by `scripts/build-transcripts-archive.mjs`, lives in
-the private `mannan20-gated` R2 bucket, and is served only by `/api/transcripts/download`
-behind a signed, short-lived grant cookie. It is deliberately not in this repository and not on
-the public R2 domain.
+into Archive Utility. That copy is built by `scripts/build-transcripts-archive.mjs` — which pulls the
+password-protected source straight from R2 — and is served only by
+`/api/transcripts/download` behind a signed, short-lived grant cookie. Neither archive is in
+this repository, and neither is on the public R2 domain.
 
 ```bash
 TRANSCRIPTS_ZIP_PASSWORD=… bun run transcripts:build ~/somewhere/outside/the/repo.zip
@@ -35,16 +36,19 @@ The gate's logic lives in `src/lib/transcript-gate.ts` and is covered by unit te
 mutation suite (`bun run transcripts:mutation`) that checks the tests actually fail when the
 gate is weakened.
 
-## Opening it
+## Opening the password-protected one
 
-On macOS, double-click the archive in Finder and enter the password when Archive Utility asks.
-Nothing needs installing.
+Fetch it first (see [ARCHIVES.md](ARCHIVES.md)), then on macOS double-click it in Finder and
+enter the password when Archive Utility asks. Nothing needs installing.
 
 From a terminal, on any platform:
 
 ```bash
 unzip transcripts.zip     # prompts for the password
 ```
+
+Most people want the unencrypted copy instead, which the Download Transcripts button hands
+over without a password once you say who you are.
 
 Each `.jsonl` file is one JSON record per line:
 
