@@ -236,7 +236,6 @@ function SectionAccordion({
           aria-controls={id}
           className="flex w-full items-start gap-4 px-4 py-4 text-left transition-colors hover:bg-white/[0.03] sm:px-5"
         >
-          <span className="mt-0.5 font-mono text-xs text-white/35">{String(index + 1).padStart(2, '0')}</span>
           <span className="min-w-0 flex-1">
             <span className="block text-[15px] font-medium text-white sm:text-base">{section.title}</span>
             <span className="mt-1 block font-mono text-[11px] text-white/40">
@@ -389,13 +388,6 @@ export function SunPromptPage() {
 
         <div className="mt-8 overflow-hidden rounded-xl ring-1 ring-white/10">
           <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.04]">
-                <th scope="col" className="px-4 py-2.5 text-xs font-medium text-white/45">Item</th>
-                <th scope="col" className="px-4 py-2.5 text-right text-xs font-medium text-white/45">Amount</th>
-                <th scope="col" className="hidden px-4 py-2.5 text-xs font-medium text-white/45 sm:table-cell">Detail</th>
-              </tr>
-            </thead>
             <tbody>
               {[
                 { k: 'Session', v: `${minutes} min`, s: `${stepCount} model calls` },
@@ -413,7 +405,7 @@ export function SunPromptPage() {
             <tfoot>
               <tr className="border-t border-white/10 bg-white/[0.02]">
                 <td colSpan={3} className="px-4 py-2 font-mono text-[11px] leading-relaxed text-white/40">
-                  Tokens: {compact(tokenTotals.cr)} cache-read · {compact(tokenTotals.cw)} cache-write ·{' '}
+                  {compact(tokenTotals.cr)} cache-read · {compact(tokenTotals.cw)} cache-write ·{' '}
                   {compact(tokenTotals.out)} output ({compact(tokenTotals.think)} of it thinking)
                 </td>
               </tr>
@@ -437,12 +429,8 @@ export function SunPromptPage() {
           ))}
         </ol>
 
-        <div className="mt-10 space-y-3">
-          <p className="font-mono text-[11px] tracking-wide text-white/40 uppercase">And then</p>
+        <div className="mt-10">
           <UserBubble msg={{ k: 'user', text: transcript.epilogue, ts: transcript.epilogueTs }} />
-          <p className="text-sm text-white/50">
-            That prompt started the next piece of work: the film is becoming the front door of Sun Signal.
-          </p>
         </div>
 
       </div>

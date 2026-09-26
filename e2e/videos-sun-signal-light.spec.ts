@@ -5,9 +5,10 @@ test.describe('/videos/sun-signal-light page', () => {
     await page.goto('/videos/sun-signal-light');
     await expect(page.getByText('$4.47').first()).toBeVisible();
     await expect(page.getByRole('table')).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Amount' })).toBeVisible();
+    await expect(page.getByRole('columnheader')).toHaveCount(0);
     await expect(page.getByRole('rowheader', { name: 'All in' })).toBeVisible();
-    await expect(page.getByText(/Tokens: .* cache-read/)).toBeVisible();
+    await expect(page.getByText(/cache-read · .* cache-write/)).toBeVisible();
+    await expect(page.getByText(/Tokens:/)).toHaveCount(0);
 
     const first = page.getByRole('button', { name: /Clean up the old landing work/ });
     await expect(first).toHaveAttribute('aria-expanded', 'false');
