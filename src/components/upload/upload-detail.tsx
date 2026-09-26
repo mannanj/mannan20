@@ -28,6 +28,7 @@ interface Pending {
 async function uploadWhole(batchId: string, file: File): Promise<void> {
   const form = new FormData();
   form.append('file', file);
+  form.append('lastModified', String(file.lastModified));
   const res = await fetch(`/api/uploads/${batchId}/files`, { method: 'POST', body: form });
   if (!res.ok) throw new Error(res.status === 413 ? 'Too large' : 'Upload failed');
 }
@@ -40,7 +41,12 @@ async function uploadInParts(
   const started = await fetch(`/api/uploads/${batchId}/multipart`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+    body: JSON.stringify({
+      name: file.name,
+      size: file.size,
+      contentType: file.type,
+      lastModified: file.lastModified,
+    }),
   });
   if (!started.ok) throw new Error(started.status === 413 ? 'Too large' : 'Upload failed');
 
@@ -238,7 +244,16 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
         {files.length === 0 ? (
           <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">No files here yet.</p>
         ) : (
-          <ul className="m-0 flex list-none flex-col divide-y divide-[#ddd] overflow-hidden rounded-[9px] border border-[#ddd] bg-white p-0">
+          <div className="overflow-hidden rounded-[9px] border border-[#ddd] bg-white">
+            <div className="flex items-center gap-[13px] border-b border-[#ddd] bg-[#fafafa] px-4 py-2 font-mono text-[0.6875rem] text-[#6f6f6f]">
+              <span className="h-4 w-4 shrink-0" />
+              <span className="min-w-0 flex-1">Name</span>
+              <span className="w-[68px] shrink-0 text-right">Size</span>
+              <span className="hidden w-[96px] shrink-0 text-right sm:inline">Modified</span>
+              <span className="hidden w-[96px] shrink-0 text-right sm:inline">Uploaded</span>
+              <span className="w-[17px] shrink-0" />
+            </div>
+            <ul className="m-0 flex list-none flex-col divide-y divide-[#ddd] p-0">
             {files.map((file) => (
               <FileRow
                 key={file.id}
@@ -250,8 +265,9 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
                   previewableImageType(file.contentType) ? () => setPreview(file) : null
                 }
               />
-            ))}
-          </ul>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
 
@@ -294,20 +310,28 @@ function FileRow({
           {file.title}
         </button>
       ) : (
-        <span className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium text-[#0b0b0b]" title={file.title}>
+        <span
+          className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium text-[#0b0b0b]"
+          title={file.title}
+        >
           {file.title}
         </span>
       )}
-      <span className="shrink-0 font-mono text-[0.6875rem] text-[#6f6f6f]">
+      <span className="w-[68px] shrink-0 text-right font-mono text-[0.6875rem] text-[#6f6f6f]">
         {formatBytes(file.size)}
       </span>
-      <span className="hidden shrink-0 font-mono text-[0.6875rem] text-[#6f6f6f] sm:inline">
+      <span className="hidden w-[96px] shrink-0 text-right font-mono text-[0.6875rem] text-[#6f6f6f] sm:inline">
+        {file.modifiedAt
+          ? new Date(file.modifiedAt).toLocaleDateString('en-US', DATE_FORMAT)
+          : '\u2014'}
+      </span>
+      <span className="hidden w-[96px] shrink-0 text-right font-mono text-[0.6875rem] text-[#6f6f6f] sm:inline">
         {new Date(file.createdAt).toLocaleDateString('en-US', DATE_FORMAT)}
       </span>
       <a
         href={`/api/uploads/${batchId}/download?file=${file.id}`}
         aria-label={`Download ${file.title}`}
-        className="shrink-0 text-[#6f6f6f] hover:text-[#0b0b0b]"
+        className="w-[17px] shrink-0 text-[#6f6f6f] hover:text-[#0b0b0b]"
       >
         <svg
           viewBox="0 0 16 16"

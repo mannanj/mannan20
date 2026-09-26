@@ -66,6 +66,7 @@ export async function GET(request: Request, { params }: RouteContext) {
         'content-type': inline && imageType ? imageType : entry.contentType,
         'content-length': String(entry.size),
         'content-disposition': inline ? 'inline' : safeAttachmentDisposition(entry.title),
+        'last-modified': new Date(entry.modifiedAt ?? entry.createdAt).toUTCString(),
         'cache-control': 'private, no-store',
         'x-content-type-options': 'nosniff',
         'content-security-policy': "default-src 'none'; sandbox",
@@ -88,7 +89,11 @@ export async function GET(request: Request, { params }: RouteContext) {
     for (const file of chosen) {
       const object = await env.UPLOADS.get(objectKey(id, file.id));
       if (!object) continue;
-      yield { name: uniqueName(taken, file.title), body: object.body };
+      yield {
+        name: uniqueName(taken, file.title),
+        body: object.body,
+        modified: file.modifiedAt ?? file.createdAt,
+      };
     }
   })();
 

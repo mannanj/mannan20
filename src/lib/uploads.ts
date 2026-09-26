@@ -111,7 +111,7 @@ export async function getBatch(env: UploadsEnv, id: string): Promise<UploadBatch
 
 export async function listFiles(env: UploadsEnv, batchId: string): Promise<UploadFile[]> {
   const { results } = await env.UPLOADS_DB.prepare(
-    `SELECT id, title, description, content_type, size, created_at
+    `SELECT id, title, description, content_type, size, created_at, modified_at
        FROM upload_files
       WHERE batch_id = ?1 AND deleted_at IS NULL AND status = 'complete'
       ORDER BY created_at ASC`,
@@ -124,6 +124,7 @@ export async function listFiles(env: UploadsEnv, batchId: string): Promise<Uploa
       content_type: string;
       size: number;
       created_at: number;
+      modified_at: number | null;
     }>();
 
   return results.map((row) => ({
@@ -133,6 +134,7 @@ export async function listFiles(env: UploadsEnv, batchId: string): Promise<Uploa
     contentType: row.content_type,
     size: Number(row.size),
     createdAt: row.created_at,
+    modifiedAt: row.modified_at ? Number(row.modified_at) : null,
   }));
 }
 

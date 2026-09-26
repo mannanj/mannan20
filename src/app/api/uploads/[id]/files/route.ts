@@ -45,6 +45,12 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'File is too large' }, { status: 413 });
   }
 
+  const rawModified = Number(form.get('lastModified'));
+  const modifiedAt =
+    Number.isSafeInteger(rawModified) && rawModified > 0 && rawModified < 4102444800000
+      ? rawModified
+      : null;
+
   const description = String(form.get('description') ?? '')
     .trim()
     .slice(0, MAX_DESCRIPTION);
@@ -62,15 +68,23 @@ export async function POST(request: Request, { params }: RouteContext) {
   await env.UPLOADS_DB.batch([
     env.UPLOADS_DB.prepare(
       `INSERT INTO upload_files
-         (id, batch_id, object_key, title, description, content_type, size, created_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
-    ).bind(fileId, id, key, title, description, contentType, file.size, now),
+         (id, batch_id, object_key, title, description, content_type, size, created_at, modified_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`,
+    ).bind(fileId, id, key, title, description, contentType, file.size, now, modifiedAt),
     env.UPLOADS_DB.prepare(`UPDATE upload_batches SET updated_at = ?1 WHERE id = ?2`).bind(now, id),
   ]);
 
   return NextResponse.json(
     {
-      file: { id: fileId, title, description, contentType, size: file.size, createdAt: now },
+      file: {
+        id: fileId,
+        title,
+        description,
+        contentType,
+        size: file.size,
+        createdAt: now,
+        modifiedAt,
+      },
     },
     { status: 201 },
   );

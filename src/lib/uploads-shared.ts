@@ -20,6 +20,7 @@ export interface UploadFile {
   contentType: string;
   size: number;
   createdAt: number;
+  modifiedAt: number | null;
 }
 
 export function formatBytes(bytes: number): string {

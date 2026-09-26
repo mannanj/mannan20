@@ -19,6 +19,34 @@ function crc32Update(crc: number, chunk: Uint8Array): number {
 export interface ZipSource {
   name: string;
   body: ReadableStream<Uint8Array> | null;
+  modified?: number;
+}
+
+function dosTimestamp(ms: number | undefined): { time: number; date: number } {
+  const at = ms ? new Date(ms) : null;
+  const year = at?.getUTCFullYear() ?? 0;
+  if (!at || Number.isNaN(year) || year < 1980 || year > 2107) {
+    return { time: 0, date: 0x21 };
+  }
+  return {
+    time:
+      (at.getUTCHours() << 11) | (at.getUTCMinutes() << 5) | Math.floor(at.getUTCSeconds() / 2),
+    date: ((year - 1980) << 9) | ((at.getUTCMonth() + 1) << 5) | at.getUTCDate(),
+  };
+}
+
+function extendedTimestamp(ms: number | undefined): Uint8Array {
+  const seconds = ms ? Math.floor(ms / 1000) : 0;
+  if (!seconds || !Number.isSafeInteger(seconds) || seconds <= 0 || seconds > 0x7fffffff) {
+    return new Uint8Array(0);
+  }
+  const field = new Uint8Array(9);
+  const dv = new DataView(field.buffer);
+  dv.setUint16(0, 0x5455, true);
+  dv.setUint16(2, 5, true);
+  field[4] = 0x01;
+  dv.setInt32(5, seconds, true);
+  return field;
 }
 
 export function streamZip(sources: AsyncIterable<ZipSource>, filename: string): Response {
@@ -27,7 +55,15 @@ export function streamZip(sources: AsyncIterable<ZipSource>, filename: string): 
   const enc = new TextEncoder();
 
   (async () => {
-    type Entry = { name: Uint8Array; crc: number; size: number; offset: number };
+    type Entry = {
+      name: Uint8Array;
+      crc: number;
+      size: number;
+      offset: number;
+      time: number;
+      date: number;
+      extra: Uint8Array;
+    };
     const entries: Entry[] = [];
     let offset = 0;
 
@@ -35,20 +71,23 @@ export function streamZip(sources: AsyncIterable<ZipSource>, filename: string): 
       if (!src.body) continue;
       const entryName = safeAttachmentFilename(src.name);
       const nameBytes = enc.encode(entryName);
-      const header = new Uint8Array(30 + nameBytes.length);
+      const stamp = dosTimestamp(src.modified);
+      const extra = extendedTimestamp(src.modified);
+      const header = new Uint8Array(30 + nameBytes.length + extra.length);
       const dv = new DataView(header.buffer);
       dv.setUint32(0, 0x04034b50, true);
       dv.setUint16(4, 20, true);
       dv.setUint16(6, 0x0008, true);
       dv.setUint16(8, 0, true);
-      dv.setUint16(10, 0, true);
-      dv.setUint16(12, 0x21, true);
+      dv.setUint16(10, stamp.time, true);
+      dv.setUint16(12, stamp.date, true);
       dv.setUint32(14, 0, true);
       dv.setUint32(18, 0, true);
       dv.setUint32(22, 0, true);
       dv.setUint16(26, nameBytes.length, true);
-      dv.setUint16(28, 0, true);
+      dv.setUint16(28, extra.length, true);
       header.set(nameBytes, 30);
+      if (extra.length) header.set(extra, 30 + nameBytes.length);
 
       const entryOffset = offset;
       await writer.write(header);
@@ -82,31 +121,40 @@ export function streamZip(sources: AsyncIterable<ZipSource>, filename: string): 
       await writer.write(dd);
       offset += 16;
 
-      entries.push({ name: nameBytes, crc, size, offset: entryOffset });
+      entries.push({
+        name: nameBytes,
+        crc,
+        size,
+        offset: entryOffset,
+        time: stamp.time,
+        date: stamp.date,
+        extra,
+      });
     }
 
     const cdStart = offset;
     for (const e of entries) {
-      const cd = new Uint8Array(46 + e.name.length);
+      const cd = new Uint8Array(46 + e.name.length + e.extra.length);
       const dv = new DataView(cd.buffer);
       dv.setUint32(0, 0x02014b50, true);
       dv.setUint16(4, 20, true);
       dv.setUint16(6, 20, true);
       dv.setUint16(8, 0x0008, true);
       dv.setUint16(10, 0, true);
-      dv.setUint16(12, 0, true);
-      dv.setUint16(14, 0x21, true);
+      dv.setUint16(12, e.time, true);
+      dv.setUint16(14, e.date, true);
       dv.setUint32(16, e.crc, true);
       dv.setUint32(20, e.size, true);
       dv.setUint32(24, e.size, true);
       dv.setUint16(28, e.name.length, true);
-      dv.setUint16(30, 0, true);
+      dv.setUint16(30, e.extra.length, true);
       dv.setUint16(32, 0, true);
       dv.setUint16(34, 0, true);
       dv.setUint16(36, 0, true);
       dv.setUint32(38, 0, true);
       dv.setUint32(42, e.offset, true);
       cd.set(e.name, 46);
+      if (e.extra.length) cd.set(e.extra, 46 + e.name.length);
       await writer.write(cd);
       offset += cd.length;
     }

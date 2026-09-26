@@ -31,7 +31,12 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const body: unknown = await request.json().catch(() => null);
-  const record = (body ?? {}) as { name?: unknown; size?: unknown; contentType?: unknown };
+  const record = (body ?? {}) as {
+    name?: unknown;
+    size?: unknown;
+    contentType?: unknown;
+    lastModified?: unknown;
+  };
 
   const size = typeof record.size === 'number' ? record.size : NaN;
   if (!Number.isSafeInteger(size) || size <= 0) {
@@ -50,6 +55,12 @@ export async function POST(request: Request, { params }: RouteContext) {
       ? record.contentType.slice(0, 200)
       : 'application/octet-stream';
 
+  const rawModified = typeof record.lastModified === 'number' ? record.lastModified : NaN;
+  const modifiedAt =
+    Number.isSafeInteger(rawModified) && rawModified > 0 && rawModified < 4102444800000
+      ? rawModified
+      : null;
+
   const fileId = newId();
   const multipart = await env.UPLOADS.createMultipartUpload(objectKey(id, fileId), {
     httpMetadata: { contentType },
@@ -58,8 +69,9 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   await env.UPLOADS_DB.prepare(
     `INSERT INTO upload_files
-       (id, batch_id, object_key, title, description, content_type, size, created_at, status, upload_id)
-     VALUES (?1, ?2, ?3, ?4, '', ?5, ?6, ?7, 'pending', ?8)`,
+       (id, batch_id, object_key, title, description, content_type, size, created_at,
+        status, upload_id, modified_at)
+     VALUES (?1, ?2, ?3, ?4, '', ?5, ?6, ?7, 'pending', ?8, ?9)`,
   )
     .bind(
       fileId,
@@ -70,6 +82,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       size,
       Date.now(),
       multipart.uploadId,
+      modifiedAt,
     )
     .run();
 

@@ -10,4 +10,6 @@
 - [x] Deploy
 - [x] Lift the size cap to 10 GB with R2 multipart through the Worker
 - [x] One-line file rows; click an image filename to preview it
+- [x] Capture each file's original modified date; show Modified and Uploaded columns
+- [x] Write real timestamps into downloaded zips (were 1980-01-01)
 - Location: `src/app/upload`, `src/app/api/uploads`, `src/components/upload`, `src/lib/uploads.ts`
