@@ -6,12 +6,18 @@ export const AI_DESIGNED_DISCLOSURE =
   "These apps were designed primarily with AI and have received limited human review or refinement.";
 
 interface AiDesignedDisclosureProps {
+  label?: string;
+  subject?: string;
+  disclosure?: string;
   labelAs?: "h3" | "span";
   className?: string;
   labelClassName?: string;
 }
 
 export function AiDesignedDisclosure({
+  label = "AI-Designed",
+  subject = "AI-designed products",
+  disclosure = AI_DESIGNED_DISCLOSURE,
   labelAs = "span",
   className = "",
   labelClassName = "text-xs font-normal uppercase tracking-wider text-white/60",
@@ -52,12 +58,12 @@ export function AiDesignedDisclosure({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <Label className={labelClassName}>AI-Designed</Label>
+      <Label className={labelClassName}>{label}</Label>
       <button
         ref={buttonRef}
         type="button"
         data-testid="ai-designed-info"
-        aria-label="About AI-designed products"
+        aria-label={`About ${subject}`}
         aria-expanded={open}
         aria-describedby={tooltipId}
         onFocus={() => setFocused(true)}
@@ -76,7 +82,7 @@ export function AiDesignedDisclosure({
           open ? "visible opacity-100" : "pointer-events-none invisible opacity-0"
         }`}
       >
-        {AI_DESIGNED_DISCLOSURE}
+        {disclosure}
       </div>
     </div>
   );

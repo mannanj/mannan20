@@ -34,6 +34,10 @@
     {
       "binding": "UPLOADS",
       "bucket_name": "mannan20-uploads"
+    },
+    {
+      "binding": "GATED_FILES",
+      "bucket_name": "mannan20-gated"
     }
   ],
   "d1_databases": [
@@ -84,6 +88,10 @@
         {
           "binding": "UPLOADS",
           "bucket_name": "mannan20-uploads"
+        },
+        {
+          "binding": "GATED_FILES",
+          "bucket_name": "mannan20-gated"
         }
       ],
       "d1_databases": [
@@ -146,6 +154,10 @@
         {
           "binding": "UPLOADS",
           "bucket_name": "mannan20-uploads"
+        },
+        {
+          "binding": "GATED_FILES",
+          "bucket_name": "mannan20-gated"
         }
       ],
       "d1_databases": [

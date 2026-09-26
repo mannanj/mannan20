@@ -57,7 +57,7 @@ function normalizeRole(role: unknown): SiteSessionRole | null {
   return null;
 }
 
-function cookieValue(cookieHeader: string | null): string | null {
+export function cookieValue(cookieHeader: string | null): string | null {
   if (!cookieHeader) return null;
   const match = cookieHeader
     .split(/;\s*/)
