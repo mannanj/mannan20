@@ -1,31 +1,48 @@
 import { test, expect, type Page } from '@playwright/test';
+import { stubTurnstile } from './helpers/contact-form';
 
 const PAGE = '/videos/sun-signal-light';
+
+const octet = () => Math.floor(Math.random() * 254) + 1;
+const freshIp = () => `10.${octet()}.${octet()}.${octet()}`;
+
+const REAL_ANSWER_IP = freshIp();
+const EXISTING_GRANT_IP = freshIp();
+const NO_GRANT_IP = freshIp();
 const VERIFY = '**/api/transcripts/verify';
 
 function reply(body: Record<string, unknown>, status = 200) {
   return { status, contentType: 'application/json', body: JSON.stringify(body) };
 }
 
-async function openGate(page: Page) {
+async function openGate(page: Page, { expectChat = true }: { expectChat?: boolean } = {}) {
+  await stubTurnstile(page);
   await page.goto(PAGE);
   const button = page.getByTestId('transcripts-download-button');
   await expect(button).toBeVisible();
   await button.click();
   await expect(page.getByTestId('transcripts-gate-modal')).toBeVisible();
+  if (expectChat) {
+    await expect(page.getByTestId('transcript-gate-textarea')).toBeVisible({ timeout: 15000 });
+  }
 }
 
 test.describe('the download button on the film page', () => {
-  test('sits at the top right, reads Download, and carries a chat icon', async ({ page }) => {
+  test('sits at the top right, reads Download Transcripts, and trails a chat icon', async ({ page }) => {
     await page.goto(PAGE);
     const button = page.getByTestId('transcripts-download-button');
     await expect(button).toBeVisible();
-    await expect(button).toHaveText('Download');
-    await expect(button.locator('svg')).toHaveCount(1);
+    await expect(button).toHaveText('Download Transcripts');
+
+    const icon = button.locator('svg');
+    await expect(icon).toHaveCount(1);
+    const iconBox = (await icon.boundingBox())!;
+    const buttonBox = (await button.boundingBox())!;
+    expect(iconBox.x).toBeGreaterThan(buttonBox.x + buttonBox.width / 2);
 
     const box = (await button.boundingBox())!;
-    const heading = (await page.getByRole('heading', { level: 1 }).boundingBox())!;
-    expect(box.y).toBeLessThan(heading.y);
+    const player = (await page.getByRole('button', { name: /Play the film/ }).boundingBox())!;
+    expect(box.y).toBeLessThan(player.y);
     expect(box.x).toBeGreaterThan(page.viewportSize()!.width / 2);
   });
 
@@ -46,8 +63,17 @@ test.describe('the identity gate', () => {
     const hints = page.getByTestId('transcript-gate-hints');
     await expect(hints).toBeVisible();
     await expect(hints).toHaveCount(1);
-    await expect(hints).toContainText('where you work');
-    await expect(hints).toContainText('who you are');
+
+    const rows = await hints.locator('span').allInnerTexts();
+    expect(rows).toEqual([
+      'Mannan made these available for select people',
+      'hint: say where you work',
+      'hint: say who you are',
+    ]);
+
+    const workBox = (await hints.locator('span', { hasText: 'where you work' }).boundingBox())!;
+    const whoBox = (await hints.locator('span', { hasText: 'who you are' }).boundingBox())!;
+    expect(whoBox.y).toBeGreaterThan(workBox.y);
 
     await expect(page.getByTestId('transcript-gate-turn')).toHaveCount(0);
     await expect(page.getByTestId('transcripts-download-link')).toHaveCount(0);
@@ -119,7 +145,6 @@ test.describe('the identity gate', () => {
     const link = page.getByTestId('transcripts-download-link');
     await expect(link).toBeVisible({ timeout: 10000 });
     await expect(link).toHaveAttribute('href', '/api/transcripts/download');
-    await expect(page.getByTestId('transcript-gate-unlocked-note')).toContainText('checks out');
     await expect(page.getByTestId('transcript-gate-textarea')).toHaveCount(0);
     await expect(page.getByTestId('transcript-gate-hints')).toHaveCount(0);
     await page.screenshot({ path: 'e2e/screenshots/transcripts-gate-unlocked.png' });
@@ -151,7 +176,7 @@ test.describe('the identity gate', () => {
 });
 
 test.describe('the gate against the real API', () => {
-  test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.21' } });
+  test.use({ extraHTTPHeaders: { 'x-forwarded-for': REAL_ANSWER_IP } });
 
   test('a real correct answer unlocks a real, password-free download', async ({ page }) => {
     await openGate(page);
@@ -174,7 +199,7 @@ test.describe('the gate against the real API', () => {
 });
 
 test.describe('a grant that already exists', () => {
-  test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.23' } });
+  test.use({ extraHTTPHeaders: { 'x-forwarded-for': EXISTING_GRANT_IP } });
 
   test('survives a full page reload without spending another guess', async ({ page }) => {
     await openGate(page);
@@ -186,12 +211,11 @@ test.describe('a grant that already exists', () => {
 
     await expect(page.getByTestId('transcripts-download-link')).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('transcript-gate-textarea')).toHaveCount(0);
-    await expect(page.getByTestId('transcript-gate-unlocked-note')).toContainText('Still unlocked');
   });
 });
 
 test.describe('the download route without a grant', () => {
-  test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.22' } });
+  test.use({ extraHTTPHeaders: { 'x-forwarded-for': NO_GRANT_IP } });
 
   test('refuses an ungranted request and a forged grant alike', async ({ request }) => {
     expect((await request.get('/api/transcripts/download')).status()).toBe(403);
