@@ -1,0 +1,11 @@
+### Task 291: Private /upload page with magic sign-in and R2 storage
+- [x] `/upload` gated to hello@mannan.is; everyone else sees "Nice, you found this page."
+- [x] Reuse the existing site magic-link session (`__Host-mannan-session`)
+- [x] Meet Time shell: Upload wordmark, account menu (MCP disabled), made-by footer
+- [x] Card grid with New upload, per-card menu, delete confirmation
+- [x] Batch page: editable title, drop zone, file list with select all / download all
+- [x] Files stored in R2 `mannan20-uploads`; metadata in D1 `cloud`
+- [x] Deletes are soft — rows flagged, R2 objects untouched
+- [ ] Apply `cloud-worker/migrations/0003_uploads.sql` to remote D1
+- [ ] Deploy
+- Location: `src/app/upload`, `src/app/api/uploads`, `src/components/upload`, `src/lib/uploads.ts`
