@@ -32,6 +32,8 @@
     "visits:top": "cd visits-worker && bun run db:top",
     "visits:deploy": "cd visits-worker && bun run deploy",
     "visits:tail": "cd visits-worker && bun run tail",
+    "transcripts:build": "node scripts/build-transcripts-archive.mjs",
+    "transcripts:mutation": "node scripts/mutation-test-transcript-gate.mjs",
     "mcp:build": "bun scripts/build-mcp-data.mjs",
     "mcp:check": "bun scripts/build-mcp-data.mjs --check",
     "mcp:test": "cd mcp-worker && bun run test",

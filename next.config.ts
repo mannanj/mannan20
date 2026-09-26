@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: '/sun{/}?',
+        destination: '/videos/sun-signal-light',
+        permanent: false,
+      },
+      {
         source: '/github{/}?',
         destination: 'https://github.com/mannanj',
         permanent: false,

@@ -18,6 +18,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/`, priority: 1 },
     { url: `${SITE}/garden`, priority: 0.8 },
     { url: `${SITE}/mcp`, priority: 0.6 },
+    { url: `${SITE}/videos`, priority: 0.6 },
+    { url: `${SITE}/videos/sun-signal-light`, priority: 0.6 },
     { url: `${SITE}/game`, priority: 0.4 },
     ...articles,
     ...episodes,

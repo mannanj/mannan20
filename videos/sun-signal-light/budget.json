@@ -1,0 +1,143 @@
+{
+ "calls": [
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 1 sage",
+   "cost": 0.009444,
+   "t": 1790288012.9014132
+  },
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 3 sage",
+   "cost": 0.004845,
+   "t": 1790288040.515541
+  },
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 5 sage",
+   "cost": 0.005293,
+   "t": 1790288040.677262
+  },
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 1 sage",
+   "cost": 0.0067045,
+   "t": 1790288040.8461561
+  },
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 4 sage",
+   "cost": 0.0079855,
+   "t": 1790288041.044044
+  },
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 2 sage",
+   "cost": 0.0088865,
+   "t": 1790288041.179011
+  },
+  {
+   "model": "openai/gpt-audio",
+   "purpose": "tts 6 sage",
+   "cost": 0.0094675,
+   "t": 1790288041.8075671
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img sun",
+   "cost": 0.0672765,
+   "t": 1790288093.9213288
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img work",
+   "cost": 0.067279,
+   "t": 1790288117.74337
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img sleep",
+   "cost": 0.067279,
+   "t": 1790288118.438771
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img cave",
+   "cost": 0.0672755,
+   "t": 1790288118.736613
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img farmer",
+   "cost": 0.067272,
+   "t": 1790288118.9086158
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img rest",
+   "cost": 0.067277,
+   "t": 1790288119.23
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img wake",
+   "cost": 0.0672775,
+   "t": 1790288119.3712268
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img village",
+   "cost": 0.067271,
+   "t": 1790288119.5578508
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img fluorescent",
+   "cost": 0.06727,
+   "t": 1790288128.0587971
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img bulb",
+   "cost": 0.0672735,
+   "t": 1790288128.550478
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img tired",
+   "cost": 0.0672825,
+   "t": 1790288129.116926
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img moon",
+   "cost": 0.067271,
+   "t": 1790288129.287431
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img phone",
+   "cost": 0.067271,
+   "t": 1790288129.382159
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img hills",
+   "cost": 0.067275,
+   "t": 1790288130.952985
+  },
+  {
+   "model": "google/gemini-3.1-flash-image",
+   "purpose": "img streetlamp",
+   "cost": 0.067271,
+   "t": 1790288150.465645
+  },
+  {
+   "model": "google/lyria-3-clip-preview",
+   "purpose": "music audio/music_a.wav",
+   "cost": 0.04,
+   "t": 1790288214.662375
+  }
+ ],
+ "total": 1.1017
+}
