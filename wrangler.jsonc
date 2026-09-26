@@ -32,8 +32,19 @@
       "bucket_name": "mannan20-opennext-cache"
     },
     {
+      "binding": "UPLOADS",
+      "bucket_name": "mannan20-uploads"
+    },
+    {
       "binding": "GATED_FILES",
       "bucket_name": "mannan20-gated"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "UPLOADS_DB",
+      "database_name": "cloud",
+      "database_id": "6aac55fe-a879-40ea-891e-4723cdb60891"
     }
   ],
   "observability": {
@@ -75,8 +86,19 @@
           "bucket_name": "mannan20-opennext-cache-preview"
         },
         {
+          "binding": "UPLOADS",
+          "bucket_name": "mannan20-uploads"
+        },
+        {
           "binding": "GATED_FILES",
           "bucket_name": "mannan20-gated"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "UPLOADS_DB",
+          "database_name": "cloud",
+          "database_id": "6aac55fe-a879-40ea-891e-4723cdb60891"
         }
       ],
       "observability": {
@@ -130,8 +152,19 @@
           "bucket_name": "mannan20-opennext-cache"
         },
         {
+          "binding": "UPLOADS",
+          "bucket_name": "mannan20-uploads"
+        },
+        {
           "binding": "GATED_FILES",
           "bucket_name": "mannan20-gated"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "UPLOADS_DB",
+          "database_name": "cloud",
+          "database_id": "6aac55fe-a879-40ea-891e-4723cdb60891"
         }
       ],
       "observability": {
