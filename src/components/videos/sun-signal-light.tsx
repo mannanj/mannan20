@@ -366,15 +366,9 @@ export function SunPromptPage() {
   return (
     <main className="min-h-screen bg-[#0b0b0b] text-white">
       <div className="mx-auto max-w-3xl px-4 pt-28 pb-24 sm:px-6">
-        <div className="flex items-start justify-between gap-4">
-          <p className="font-mono text-xs tracking-[0.2em] text-amber-200/70 uppercase">Sun Signal · made in Claude Code</p>
+        <div className="flex justify-end">
           <TranscriptsGate />
         </div>
-        <h1 className="mt-3 font-[family-name:var(--font-caption)] text-5xl italic sm:text-6xl">The Light We Lost</h1>
-        <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/70">
-          A 33-second film for Sun Signal, made in one Claude Code session in about {minutes} minutes. Below is the
-          whole conversation: my prompts, Claude&apos;s replies, and what each step cost.
-        </p>
 
         <button
           type="button"
@@ -393,24 +387,39 @@ export function SunPromptPage() {
           </span>
         </button>
 
-        <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { k: 'Session', v: `${minutes} min`, s: `${stepCount} model calls` },
-            { k: 'Claude Opus 5.5', v: usd(claudeTotal), s: 'API-equivalent', c: 'text-[#E8A48A]' },
-            { k: 'OpenRouter', v: usd(externalTotal), s: 'voice, images, music, research', c: 'text-sky-300' },
-            { k: 'All in', v: usd(claudeTotal + externalTotal), s: 'estimated' },
-          ].map((t) => (
-            <div key={t.k} className="rounded-xl bg-white/[0.03] p-4 ring-1 ring-white/10">
-              <dt className="text-xs text-white/45">{t.k}</dt>
-              <dd className={`mt-1 font-mono text-2xl ${t.c ?? 'text-white'}`}>{t.v}</dd>
-              <dd className="mt-1 text-[11px] leading-snug text-white/40">{t.s}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="mt-3 font-mono text-[11px] leading-relaxed text-white/40">
-          Tokens: {compact(tokenTotals.cr)} cache-read · {compact(tokenTotals.cw)} cache-write · {compact(tokenTotals.out)}{' '}
-          output ({compact(tokenTotals.think)} of it thinking)
-        </p>
+        <div className="mt-8 overflow-hidden rounded-xl ring-1 ring-white/10">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/[0.04]">
+                <th scope="col" className="px-4 py-2.5 text-xs font-medium text-white/45">Item</th>
+                <th scope="col" className="px-4 py-2.5 text-right text-xs font-medium text-white/45">Amount</th>
+                <th scope="col" className="hidden px-4 py-2.5 text-xs font-medium text-white/45 sm:table-cell">Detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { k: 'Session', v: `${minutes} min`, s: `${stepCount} model calls` },
+                { k: 'Claude Opus 5.5', v: usd(claudeTotal), s: 'API-equivalent', c: 'text-[#E8A48A]' },
+                { k: 'OpenRouter', v: usd(externalTotal), s: 'voice, images, music, research', c: 'text-sky-300' },
+                { k: 'All in', v: usd(claudeTotal + externalTotal), s: 'estimated' },
+              ].map((t) => (
+                <tr key={t.k} className="border-b border-white/[0.06] last:border-b-0">
+                  <th scope="row" className="px-4 py-2.5 text-sm font-normal text-white/70">{t.k}</th>
+                  <td className={`px-4 py-2.5 text-right font-mono text-sm ${t.c ?? 'text-white'}`}>{t.v}</td>
+                  <td className="hidden px-4 py-2.5 text-[11px] text-white/40 sm:table-cell">{t.s}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t border-white/10 bg-white/[0.02]">
+                <td colSpan={3} className="px-4 py-2 font-mono text-[11px] leading-relaxed text-white/40">
+                  Tokens: {compact(tokenTotals.cr)} cache-read · {compact(tokenTotals.cw)} cache-write ·{' '}
+                  {compact(tokenTotals.out)} output ({compact(tokenTotals.think)} of it thinking)
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
         <div className="mt-14 mb-4 flex items-end justify-between gap-4">
           <h2 className="text-xl font-medium">The conversation</h2>
@@ -421,15 +430,6 @@ export function SunPromptPage() {
           >
             {allOpen ? 'Collapse all' : 'Expand all'}
           </button>
-        </div>
-        <div className="mb-4 flex flex-wrap gap-4 font-mono text-[11px] text-white/45">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#D97757]" /> Claude
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-sky-400" /> OpenRouter
-          </span>
-          <span>times are minutes into the session</span>
         </div>
         <ol className="space-y-3">
           {sections.map((s, i) => (
@@ -445,17 +445,6 @@ export function SunPromptPage() {
           </p>
         </div>
 
-        <section className="mt-14 border-t border-white/10 pt-6 text-sm leading-relaxed text-white/50">
-          <h2 className="mb-2 font-medium text-white/70">How the costs were estimated</h2>
-          <p>
-            Claude costs come from the token counts Claude Code logged for each model call, priced at Opus 5.5 list
-            rates: $4 per million input tokens, $20 per million output, $8 per million written to the one-hour prompt
-            cache, and $0.20 per million read from it. The session ran on a Claude subscription, so these are
-            API-equivalent figures, not a bill. OpenRouter figures come from the key&apos;s usage before and after the
-            run, plus the research agent&apos;s own report. File paths are shortened and secrets are removed; the words
-            are otherwise as typed.
-          </p>
-        </section>
       </div>
       {playing && <VideoPopout onClose={closePlayer} />}
     </main>
