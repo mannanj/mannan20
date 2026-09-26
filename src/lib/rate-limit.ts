@@ -13,6 +13,10 @@ const GARDEN_VIEW_WINDOW_SECONDS = 60;
 const MAX_GARDEN_VIEWS_PER_WINDOW = 20;
 const CONTACT_WINDOW_SECONDS = 60 * 60;
 const MAX_CONTACT_REQUESTS_PER_WINDOW = 10;
+const TRANSCRIPT_GUESS_WINDOW_SECONDS = 10 * 60;
+const MAX_TRANSCRIPT_GUESSES_PER_WINDOW = 3;
+const TRANSCRIPT_DOWNLOAD_WINDOW_SECONDS = 60 * 60;
+const MAX_TRANSCRIPT_DOWNLOADS_PER_WINDOW = 10;
 const MEMORY_KEYS_MAX = 5000;
 
 export interface LimitResult {
@@ -88,6 +92,18 @@ export async function limitContactIntent(ip: string): Promise<LimitResult> {
   const state = await limitState('contact-intent', ip);
   if (state) return state;
   return memoryLimit(`contact-intent:${ip}`, MAX_CONTACT_REQUESTS_PER_WINDOW, CONTACT_WINDOW_SECONDS);
+}
+
+export async function limitTranscriptGuess(ip: string): Promise<LimitResult> {
+  const state = await limitState('transcript-guess', ip);
+  if (state) return state;
+  return memoryLimit(`transcript-guess:${ip}`, MAX_TRANSCRIPT_GUESSES_PER_WINDOW, TRANSCRIPT_GUESS_WINDOW_SECONDS);
+}
+
+export async function limitTranscriptDownload(ip: string): Promise<LimitResult> {
+  const state = await limitState('transcript-download', ip);
+  if (state) return state;
+  return memoryLimit(`transcript-download:${ip}`, MAX_TRANSCRIPT_DOWNLOADS_PER_WINDOW, TRANSCRIPT_DOWNLOAD_WINDOW_SECONDS);
 }
 
 export async function limitValidateContact(ip: string): Promise<LimitResult> {

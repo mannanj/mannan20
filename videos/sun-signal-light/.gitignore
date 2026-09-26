@@ -1,0 +1,6 @@
+assets/
+frames/
+out/
+audio/
+__pycache__/
+.env
