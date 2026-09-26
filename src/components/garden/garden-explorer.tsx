@@ -19,6 +19,8 @@ import { HealthHeroPreview } from "@/components/garden/health-hero-preview";
 import { SelfParentingPreview } from "@/components/garden/self-parenting-figures";
 import { PapersSection } from "@/components/garden/papers-section";
 import { AiDesignedDisclosure } from "@/components/garden/ai-designed-disclosure";
+import { SkillsSection } from "@/components/garden/skills-section";
+import type { GardenSkill } from "@/lib/garden-skills";
 
 const ProductsGallery = dynamic(
   () => import("@/components/garden/products-gallery"),
@@ -350,7 +352,7 @@ function WritingCard({
   );
 }
 
-function WritingsPanel() {
+function WritingsPanel({ skills }: { skills: GardenSkill[] }) {
   const visible = GARDEN_ARTICLES.filter((a) => !a.hidden);
   const shorts = visible.filter((a) => a.short);
   const longform = visible.filter((a) => !a.short);
@@ -386,6 +388,7 @@ function WritingsPanel() {
         ))}
       </div>
       <PapersSection />
+      <SkillsSection skills={skills} />
     </div>
   );
 }
@@ -441,14 +444,16 @@ function Panel({
   which,
   showAll,
   reader,
+  skills,
 }: {
   which: Category;
   showAll: boolean;
   reader: ReaderSession;
+  skills: GardenSkill[];
 }) {
   if (which === "products") return <ProductsPanel />;
   if (which === "readings") return <ReadingsPanel showAll={showAll} reader={reader} />;
-  return <WritingsPanel />;
+  return <WritingsPanel skills={skills} />;
 }
 
 function GardenSkeleton() {
@@ -489,7 +494,7 @@ function GlobeIcon({ className }: { className?: string }) {
   );
 }
 
-export function GardenExplorer() {
+export function GardenExplorer({ skills }: { skills: GardenSkill[] }) {
   const reader = useReaderSession();
   const tabs = visibleTabs(reader);
   const [active, setActive] = useState<Category>(DEFAULT_CATEGORY);
@@ -625,7 +630,7 @@ export function GardenExplorer() {
                     style={layerStyle}
                     className="swivel-out pointer-events-none [transform-style:preserve-3d]"
                   >
-                    <Panel which={prev} showAll={showAll} reader={reader} />
+                    <Panel which={prev} showAll={showAll} reader={reader} skills={skills} />
                   </div>
                 )}
                 <div
@@ -635,7 +640,7 @@ export function GardenExplorer() {
                   data-testid="garden-active-panel"
                   data-panel={active}
                 >
-                  <Panel which={active} showAll={showAll} reader={reader} />
+                  <Panel which={active} showAll={showAll} reader={reader} skills={skills} />
                 </div>
               </div>
             </div>

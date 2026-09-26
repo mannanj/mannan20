@@ -13,6 +13,7 @@ import { ExpandCollapseIcon } from '@/components/icons/expand-collapse-icon';
 
 const DEFAULT_WIDTH = 400;
 const DEFAULT_MINI_WIDTH = 240;
+const DEFAULT_BODY_MAX_HEIGHT = '50vh';
 
 export interface DraggablePopoutHandle {
   minimize: () => void;
@@ -31,6 +32,7 @@ interface DraggablePopoutProps {
   width?: number;
   miniWidth?: number;
   minimizable?: boolean;
+  bodyMaxHeight?: string;
 }
 
 export function DraggablePopout({
@@ -44,6 +46,7 @@ export function DraggablePopout({
   width = DEFAULT_WIDTH,
   miniWidth = DEFAULT_MINI_WIDTH,
   minimizable = false,
+  bodyMaxHeight = DEFAULT_BODY_MAX_HEIGHT,
 }: DraggablePopoutProps) {
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -193,7 +196,7 @@ export function DraggablePopout({
           ref={scrollRef}
           className="overflow-y-auto popout-scroll -mr-[21px] pr-[21px]"
           style={{
-            maxHeight: minimized ? '28vh' : '50vh',
+            maxHeight: minimized ? '28vh' : bodyMaxHeight,
             transition: 'max-height 300ms ease',
           }}
         >
