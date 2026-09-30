@@ -39,6 +39,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: '/ai-energy-tool{/}?',
+        destination: '/videos/rates-went-up',
+        permanent: false,
+      },
+      {
         source: '/github{/}?',
         destination: 'https://github.com/mannanj',
         permanent: false,

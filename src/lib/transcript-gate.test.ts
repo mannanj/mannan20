@@ -13,6 +13,9 @@ import {
   normalizeGuess,
   readGrantCookie,
   verifyGrantToken,
+  CIVIC_GATE,
+  SUN_GATE,
+  gateForFilm,
 } from './transcript-gate';
 
 const SECRET = 'test-secret-for-transcript-gate';
@@ -211,5 +214,46 @@ describe('cookies', () => {
     const { createHmac } = require('node:crypto');
     const sessionStyleSig = createHmac('sha256', SECRET).update(encoded).digest('base64url');
     expect(verifyGrantToken(`${encoded}.${sessionStyleSig}`)).toBe(false);
+  });
+});
+
+describe('civic signal gate', () => {
+  test('is reachable by film slug, and unknown films are refused', () => {
+    expect(gateForFilm('civic-signal')).toBe(CIVIC_GATE);
+    expect(gateForFilm(null)).toBe(SUN_GATE);
+    expect(gateForFilm('nope')).toBeNull();
+    expect(gateForFilm('__proto__')).toBeNull();
+  });
+
+  test('accepts each team name in any case, bare or in a sentence', () => {
+    for (const guess of ['maggie', 'Nicole', 'KEN', "I'm Julie", 'this is ken.', 'Maggie Ward']) {
+      expect(isCorrectGuess(guess, CIVIC_GATE)).toBe(true);
+    }
+  });
+
+  test('accepts upskilling labs with or without a space or dash, in any case', () => {
+    for (const guess of ['upskilling-labs', 'Upskilling Labs', 'UPSKILLINGLABS', 'from upskilling_labs', 'Upskilling-Labs!']) {
+      expect(isCorrectGuess(guess, CIVIC_GATE)).toBe(true);
+    }
+  });
+
+  test('names only match as whole words', () => {
+    for (const guess of ['kenneth', 'broken', 'token', 'juliet', 'upskilling', 'labs']) {
+      expect(isCorrectGuess(guess, CIVIC_GATE)).toBe(false);
+    }
+  });
+
+  test('the two films do not share answers', () => {
+    expect(isCorrectGuess('faizan', CIVIC_GATE)).toBe(false);
+    expect(isCorrectGuess('ken', SUN_GATE)).toBe(false);
+  });
+
+  test('a grant for one film does not open the other', () => {
+    const civic = mintGrantToken(Date.now(), CIVIC_GATE)!;
+    expect(verifyGrantToken(civic, Date.now(), CIVIC_GATE)).toBe(true);
+    expect(verifyGrantToken(civic, Date.now(), SUN_GATE)).toBe(false);
+    expect(hasValidGrant(`${CIVIC_GATE.cookieName}=${civic}`, Date.now(), CIVIC_GATE)).toBe(true);
+    expect(hasValidGrant(`${GRANT_COOKIE_NAME}=${civic}`)).toBe(false);
+    expect(grantCookie(civic, CIVIC_GATE).startsWith(`${CIVIC_GATE.cookieName}=`)).toBe(true);
   });
 });
