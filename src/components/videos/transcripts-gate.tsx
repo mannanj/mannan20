@@ -8,7 +8,8 @@ import { TurnstileCheck } from '../turnstile-check';
 const PLACEHOLDER = 'Where are you coming from?';
 const TURN_CAP = 3;
 const ERROR_TEXT = "Couldn't check that just now — give it another go in a moment.";
-const DOWNLOAD_URL = '/api/transcripts/download';
+const SUN_NOTE = 'Mannan made these available for select people';
+const SUN_HINTS = ['hint: say where you work', 'hint: say who you are'];
 const POPOUT_GAP = 12;
 const CLOSE_CLEARANCE = 24;
 
@@ -30,7 +31,19 @@ function ChatIcon({ className }: { className?: string }) {
   );
 }
 
-export function TranscriptsGate() {
+function withFilm(path: string, film?: string) {
+  return film ? `${path}?film=${encodeURIComponent(film)}` : path;
+}
+
+export function TranscriptsGate({
+  film,
+  note = SUN_NOTE,
+  hints = SUN_HINTS,
+}: {
+  film?: string;
+  note?: string;
+  hints?: string[];
+}) {
   const [open, setOpen] = useState(false);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
   const [verified, setVerified] = useState(false);
@@ -39,7 +52,7 @@ export function TranscriptsGate() {
   useEffect(() => {
     if (!open || unlocked) return;
     let cancelled = false;
-    fetch('/api/transcripts/verify')
+    fetch(withFilm('/api/transcripts/verify', film))
       .then((res) => (res.ok ? res.json() : null))
       .then((data: VerifyResponse | null) => {
         if (!cancelled && data?.unlocked === true) setUnlocked(true);
@@ -48,7 +61,7 @@ export function TranscriptsGate() {
     return () => {
       cancelled = true;
     };
-  }, [open, unlocked]);
+  }, [open, unlocked, film]);
 
   const handleOpen = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -57,7 +70,7 @@ export function TranscriptsGate() {
   }, []);
 
   const send = useCallback(async (value: string, _history: TerminalChatHistoryEntry[]) => {
-    const res = await fetch('/api/transcripts/verify', {
+    const res = await fetch(withFilm('/api/transcripts/verify', film), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: value }),
@@ -77,7 +90,7 @@ export function TranscriptsGate() {
     if (data.unlocked === true) setUnlocked(true);
 
     return { message: data.message };
-  }, []);
+  }, [film]);
 
   return (
     <>
@@ -102,14 +115,14 @@ export function TranscriptsGate() {
         {unlocked ? (
           <a
             data-testid="transcripts-download-link"
-            href={DOWNLOAD_URL}
+            href={withFilm('/api/transcripts/download', film)}
             style={{ marginTop: CLOSE_CLEARANCE }}
             className="mx-1 mb-1 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-black transition-opacity hover:opacity-90"
           >
             <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true" fill="none">
               <path d="M8 2v8m0 0L5 7m3 3 3-3M3 13h10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Download transcripts.zip
+            {film ? 'Download transcript.zip' : 'Download transcripts.zip'}
           </a>
         ) : !verified ? (
           <TurnstileCheck onPass={() => setVerified(true)} testIdPrefix="transcripts-gate-turnstile" />
@@ -123,9 +136,12 @@ export function TranscriptsGate() {
             testIdPrefix="transcript-gate"
             footer={
               <span data-testid="transcript-gate-hints" style={{ display: 'block' }}>
-                <span style={{ display: 'block' }}>Mannan made these available for select people</span>
-                <span style={{ display: 'block' }}>hint: say where you work</span>
-                <span style={{ display: 'block' }}>hint: say who you are</span>
+                <span style={{ display: 'block' }}>{note}</span>
+                {hints.map((hint) => (
+                  <span key={hint} style={{ display: 'block' }}>
+                    {hint}
+                  </span>
+                ))}
               </span>
             }
           />

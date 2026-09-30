@@ -18,6 +18,28 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = {
 };
 const TITLE_SAVE_DELAY_MS = 600;
 
+interface PlanPart {
+  index: number;
+  kind: 'file' | 'zip';
+  bytes: number;
+  count: number;
+  fileId: string | null;
+}
+
+interface Plan {
+  total: number;
+  parts: PlanPart[];
+}
+
+function triggerDownload(href: string): void {
+  const link = document.createElement('a');
+  link.href = href;
+  link.rel = 'noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 interface Pending {
   name: string;
   size: number;
@@ -90,6 +112,9 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
   const [pending, setPending] = useState<Pending[]>([]);
   const [dragging, setDragging] = useState(false);
   const [preview, setPreview] = useState<UploadFile | null>(null);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [started, setStarted] = useState<Set<number>>(new Set());
+  const [planning, setPlanning] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -147,11 +172,39 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
     [batch.id, router],
   );
 
-  const downloadHref = useMemo(() => {
-    const base = `/api/uploads/${batch.id}/download`;
-    if (!selected.size) return base;
-    return `${base}?ids=${[...selected].join(',')}`;
-  }, [batch.id, selected]);
+  const selection = useMemo(
+    () => (selected.size ? `ids=${[...selected].join(',')}` : ''),
+    [selected],
+  );
+
+  const downloadBase = `/api/uploads/${batch.id}/download`;
+
+  const partHref = useCallback(
+    (part: PlanPart) =>
+      part.kind === 'file'
+        ? `${downloadBase}?file=${part.fileId}`
+        : `${downloadBase}?part=${part.index}${selection ? `&${selection}` : ''}`,
+    [downloadBase, selection],
+  );
+
+  const beginDownload = useCallback(async () => {
+    if (planning) return;
+    setPlanning(true);
+    const res = await fetch(
+      `${downloadBase}?plan=1${selection ? `&${selection}` : ''}`,
+    ).catch(() => null);
+    setPlanning(false);
+    if (!res?.ok) return;
+
+    const next = (await res.json()) as Plan;
+    if (next.parts.length < 2) {
+      triggerDownload(selection ? `${downloadBase}?${selection}` : downloadBase);
+      return;
+    }
+    setPlan(next);
+    setStarted(new Set([0]));
+    triggerDownload(partHref(next.parts[0]));
+  }, [downloadBase, partHref, planning, selection]);
 
   return (
     <section className="flex flex-col gap-[38px]">
@@ -232,12 +285,18 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
           )}
 
           {files.length > 0 && (
-            <a
-              href={downloadHref}
-              className="cursor-pointer rounded-[9px] border-2 border-[#0b0b0b] bg-white px-4 py-2 text-[0.9375rem] font-medium text-[#0b0b0b] no-underline hover:bg-[#f3f3f3]"
+            <button
+              type="button"
+              onClick={beginDownload}
+              disabled={planning}
+              className="cursor-pointer rounded-[9px] border-2 border-[#0b0b0b] bg-white px-4 py-2 text-[0.9375rem] font-medium text-[#0b0b0b] hover:bg-[#f3f3f3] disabled:cursor-wait disabled:opacity-60"
             >
-              {selected.size ? `Download selected (${selected.size})` : 'Download all'}
-            </a>
+              {planning
+                ? 'Preparing…'
+                : selected.size
+                  ? `Download selected (${selected.size})`
+                  : 'Download all'}
+            </button>
           )}
         </div>
 
@@ -270,6 +329,50 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
           </div>
         )}
       </div>
+
+      {plan && (
+        <div className="rounded-[9px] border border-[#ddd] bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-[13px] border-b border-[#ddd] px-4 py-3">
+            <p className="m-0 text-[0.9375rem] text-[#0b0b0b]">
+              {formatBytes(plan.total)} in {plan.parts.length} parts &mdash; download them one at a
+              time.
+            </p>
+            <button
+              type="button"
+              onClick={() => setPlan(null)}
+              className="cursor-pointer border-0 bg-transparent p-0 text-[0.9375rem] text-[#1a56db] hover:text-[#143fa8]"
+            >
+              Done
+            </button>
+          </div>
+          <ul className="m-0 flex list-none flex-col divide-y divide-[#ddd] p-0">
+            {plan.parts.map((part) => (
+              <li key={part.index} className="flex items-center gap-[13px] px-4 py-3">
+                <span className="min-w-0 flex-1 text-[0.9375rem] text-[#0b0b0b]">
+                  Part {part.index + 1} of {plan.parts.length}
+                  {part.kind === 'file' && ' — on its own, too big to pack'}
+                </span>
+                <span className="shrink-0 font-mono text-[0.6875rem] text-[#6f6f6f]">
+                  {part.count} file{part.count === 1 ? '' : 's'}
+                </span>
+                <span className="w-[68px] shrink-0 text-right font-mono text-[0.6875rem] text-[#6f6f6f]">
+                  {formatBytes(part.bytes)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStarted((was) => new Set(was).add(part.index));
+                    triggerDownload(partHref(part));
+                  }}
+                  className="w-[104px] shrink-0 cursor-pointer rounded-[9px] border border-[#0b0b0b] bg-white px-3 py-1.5 text-[0.875rem] font-medium text-[#0b0b0b] hover:bg-[#f3f3f3]"
+                >
+                  {started.has(part.index) ? 'Again' : 'Download'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {preview && (
         <ImagePreview batchId={batch.id} file={preview} onClose={() => setPreview(null)} />

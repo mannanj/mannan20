@@ -3,7 +3,9 @@ import {
   GRANT_TTL_SECONDS,
   MAX_GUESSES,
   MAX_GUESS_LENGTH,
+  gateForFilm,
   grantCookie,
+  guessKey,
   hasValidGrant,
   isCorrectGuess,
   mintGrantToken,
@@ -14,6 +16,7 @@ import { clientIp } from '@/lib/client-ip';
 const UNLOCKED_MESSAGE = 'Thanks — that checks out. Your download is unlocked below.';
 const UNAVAILABLE_MESSAGE = 'The door is jammed on my side — try again in a bit.';
 const EMPTY = { message: '', unlocked: false };
+const unknownFilm = () => NextResponse.json({ error: 'Unknown film' }, { status: 404 });
 
 function wrongMessage(remaining: number): string {
   if (remaining <= 0) {
@@ -29,6 +32,9 @@ function lockedMessage(retryAfterSeconds: number): string {
 }
 
 export async function POST(request: NextRequest) {
+  const gate = gateForFilm(request.nextUrl.searchParams.get('film'));
+  if (!gate) return unknownFilm();
+
   let body: unknown;
   try {
     body = await request.json();
@@ -45,7 +51,7 @@ export async function POST(request: NextRequest) {
   }
 
   const cookieHeader = request.headers.get('cookie');
-  if (hasValidGrant(cookieHeader)) {
+  if (hasValidGrant(cookieHeader, Date.now(), gate)) {
     return NextResponse.json({ message: UNLOCKED_MESSAGE, unlocked: true, remaining: MAX_GUESSES });
   }
 
@@ -53,7 +59,7 @@ export async function POST(request: NextRequest) {
 
   let limit;
   try {
-    limit = await limitTranscriptGuess(ip);
+    limit = await limitTranscriptGuess(guessKey(ip, gate));
   } catch {
     return NextResponse.json(
       { message: UNAVAILABLE_MESSAGE, unlocked: false, remaining: 0 },
@@ -69,12 +75,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!isCorrectGuess(guess)) {
+  if (!isCorrectGuess(guess, gate)) {
     const remaining = Math.max(0, limit.remaining);
     return NextResponse.json({ message: wrongMessage(remaining), unlocked: false, remaining });
   }
 
-  const token = mintGrantToken();
+  const token = mintGrantToken(Date.now(), gate);
   if (!token) {
     return NextResponse.json(
       { message: 'The door is jammed on my side — try again later.', unlocked: false, remaining: Math.max(0, limit.remaining) },
@@ -84,13 +90,15 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(
     { message: UNLOCKED_MESSAGE, unlocked: true, remaining: Math.max(0, limit.remaining), expiresInSeconds: GRANT_TTL_SECONDS },
-    { headers: { 'set-cookie': grantCookie(token) } },
+    { headers: { 'set-cookie': grantCookie(token, gate) } },
   );
 }
 
 export async function GET(request: NextRequest) {
+  const gate = gateForFilm(request.nextUrl.searchParams.get('film'));
+  if (!gate) return unknownFilm();
   return NextResponse.json(
-    { unlocked: hasValidGrant(request.headers.get('cookie')) },
+    { unlocked: hasValidGrant(request.headers.get('cookie'), Date.now(), gate) },
     { headers: { 'cache-control': 'private, no-store' } },
   );
 }

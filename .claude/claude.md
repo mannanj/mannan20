@@ -168,4 +168,15 @@ Privacy rules are enforced by build guards and tests: gated/hidden content (Take
 - Each task gets its own file: `tasks/task-N.md`
 - Mark subtasks complete as they're done
 
-**5. Push:** `git push`
+**5. Push:** `git push` — straight to `main`.
+
+### No pull requests
+
+Work lands on `main` directly. Do not open a pull request, do not create a
+feature branch "so it can be reviewed", and do not ask which branch to target.
+Mannan reviews the change in the session as it is made; a PR adds a step that
+review has already covered.
+
+If a push to `main` is rejected, the cause is the repository ruleset, not a
+convention to follow — say so and stop, rather than opening a PR to work
+around it.
