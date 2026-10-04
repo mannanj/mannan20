@@ -1,14 +1,15 @@
 import { test, expect } from '@playwright/test';
+import { MCP_TOOLS } from '../src/lib/mcp-info';
 
 test.describe('mcp page', () => {
-  test('renders the guide with endpoint, copy snippets, and 10 tools', async ({ page }) => {
+  test('renders the guide with endpoint, copy snippets, and every tool', async ({ page }) => {
     await page.goto('/mcp');
     await expect(page.getByRole('heading', { name: 'Mannan MCP' })).toBeVisible();
     await expect(
       page.getByText('https://mcp.mannanteam.workers.dev/mcp').first(),
     ).toBeVisible();
     expect(await page.getByTestId('mcp-copy-snippet').count()).toBeGreaterThanOrEqual(4);
-    await expect(page.getByTestId('mcp-tool-row')).toHaveCount(10);
+    await expect(page.getByTestId('mcp-tool-row')).toHaveCount(MCP_TOOLS.length);
   });
 });
 
@@ -29,7 +30,7 @@ test.describe('header mcp popover', () => {
     await expect(
       popover.getByText('https://mcp.mannanteam.workers.dev/mcp').first(),
     ).toBeVisible();
-    expect(await popover.getByTestId('mcp-copy-snippet').count()).toBe(3);
+    expect(await popover.locator('.mcpc-snippet[data-kind]').count()).toBe(3);
     await popover.getByTestId('mcp-popover-guide-link').click();
     await expect(page).toHaveURL(/\/mcp$/);
     await expect(page.getByRole('heading', { name: 'Mannan MCP' })).toBeVisible();
