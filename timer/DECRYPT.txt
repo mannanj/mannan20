@@ -1,0 +1,18 @@
+Timer.dmg - how it is encrypted and how to open it
+
+ALGORITHM
+  Apple encrypted disk image, made with:
+    hdiutil create -encryption AES-256 -format UDZO
+  Cipher: AES-256. The key is derived from a password, which is not stored here.
+  File names and contents are all encrypted.
+
+TO DECRYPT AND INSTALL (any Mac, built-in tools only)
+  curl -LO https://raw.githubusercontent.com/mannanj/mannan20/main/timer/Timer.dmg
+  hdiutil attach Timer.dmg          (asks for the password)
+  /Volumes/Timer/install.sh
+  hdiutil detach /Volumes/Timer
+
+  Or double-click Timer.dmg in Finder and enter the password.
+
+  Needs Apple Silicon and macOS 13 or later. No admin rights needed.
+  To uninstall: /Volumes/Timer/uninstall.sh

@@ -10,6 +10,14 @@ export const metadata: Metadata = {
 
 const videos = [
   {
+    href: '/videos/rates-went-up',
+    title: 'Rates went up. What can I do?',
+    meta: '1:22 · Civic Signal',
+    poster: 'https://pub-a7c89d8a6af64fffb3d7f411335c94b2.r2.dev/portfolio/video/civic-signal/poster.jpg',
+    blurb:
+      'A paper-collage explainer for Fairfax County residents: one plain question about a rising electric bill, answered with a safety check, three short questions, and the programs that fit. Made in one Claude Code session.',
+  },
+  {
     href: '/videos/sun-signal-light',
     title: 'The Light We Lost',
     meta: '33s · Sun Signal',

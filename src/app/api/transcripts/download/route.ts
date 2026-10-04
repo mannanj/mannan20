@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { hasValidGrant } from '@/lib/transcript-gate';
+import { gateForFilm, hasValidGrant, type TranscriptGate } from '@/lib/transcript-gate';
 import { limitTranscriptDownload } from '@/lib/rate-limit';
 import { clientIp } from '@/lib/client-ip';
 
-const OBJECT_KEY = 'sun-signal/transcripts.zip';
-const FILENAME = 'sun-signal-transcripts.zip';
 const CONTENT_TYPE = 'application/zip';
 
 const ATTACHMENT_HEADERS = {
@@ -28,8 +26,8 @@ function gatedBucket(): GatedBucket | undefined {
   }
 }
 
-async function localFallback(): Promise<{ body: Uint8Array } | null> {
-  const path = process.env.TRANSCRIPTS_LOCAL_FILE;
+async function localFallback(gate: TranscriptGate): Promise<{ body: Uint8Array } | null> {
+  const path = gate.film === 'sun-signal' ? process.env.TRANSCRIPTS_LOCAL_FILE : process.env[`TRANSCRIPTS_LOCAL_FILE_${gate.film.toUpperCase().replace(/-/g, '_')}`];
   if (!path || process.env.NODE_ENV === 'production') return null;
   try {
     const { readFile } = await import('node:fs/promises');
@@ -40,7 +38,11 @@ async function localFallback(): Promise<{ body: Uint8Array } | null> {
 }
 
 async function serve(request: Request, head: boolean) {
-  if (!hasValidGrant(request.headers.get('cookie'))) {
+  const gate = gateForFilm(new URL(request.url).searchParams.get('film'));
+  if (!gate) {
+    return NextResponse.json({ error: 'Unknown film' }, { status: 404, headers: { 'cache-control': 'private, no-store' } });
+  }
+  if (!hasValidGrant(request.headers.get('cookie'), Date.now(), gate)) {
     return NextResponse.json({ error: 'Locked' }, { status: 403, headers: { 'cache-control': 'private, no-store' } });
   }
 
@@ -70,11 +72,11 @@ async function serve(request: Request, head: boolean) {
   const headers = new Headers(rateHeaders);
   for (const [name, value] of Object.entries(ATTACHMENT_HEADERS)) headers.set(name, value);
   headers.set('content-type', CONTENT_TYPE);
-  headers.set('content-disposition', `attachment; filename="${FILENAME}"`);
+  headers.set('content-disposition', `attachment; filename="${gate.filename}"`);
 
   const bucket = gatedBucket();
   if (bucket) {
-    const object = await bucket.get(OBJECT_KEY);
+    const object = await bucket.get(gate.objectKey);
     if (!object) {
       return NextResponse.json({ error: 'File unavailable' }, { status: 502, headers: rateHeaders });
     }
@@ -82,7 +84,7 @@ async function serve(request: Request, head: boolean) {
     return new Response(head ? null : object.body, { status: 200, headers });
   }
 
-  const local = await localFallback();
+  const local = await localFallback(gate);
   if (!local) {
     return NextResponse.json({ error: 'File unavailable' }, { status: 502, headers: rateHeaders });
   }
