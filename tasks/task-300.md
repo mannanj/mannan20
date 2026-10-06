@@ -35,17 +35,20 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] Tests + screenshots → `artifacts/review-2026-10-05/dropdown-*`, `draft-marker-*`, report `dropdown-report.md`
 
 #### Sun — being built (worker 2, worktree `~/Documents/sun-wt-popouts`)
-- [ ] Desktop: every widget opens as a pop-out, source widget closes
-- [ ] Pop-out blocked → toast, open inline instead
-- [ ] Mobile: open inline in the clock
-- [ ] Parity audit of all 7 pop-outs, gaps listed, events/schedule fixed first (create events, open other widgets as pop-outs)
-- [ ] Events header date is a dropdown that changes the clock's day + events; inline Today icon when not today, first header only (`task-events-header-date-picker.md`)
-- [ ] Mobile drawer: slides up from the bottom, pop-out icon + window-in-window mode icon to switch to/from the draggable widget, mode remembered per device (default on mobile)
-- [ ] Tests + screenshots → `artifacts/review-2026-10-05/popout-*`, `drawer-*`, report `popout-report.md`
+- [x] Worker 2 verified by me: found its test helper left pop-outs blocked for the rest of a test (broke 2 tests that passed before) — fixed + pushed (541b04f); remaining popout-sync/schedule-widget failures are pre-existing
+- [ ] Gaps left for later: phase pop-out weather temps, schedule pop-out per-event hide/show, no Work pop-out, one shared mode-switch button on the floating widget
+- [x] Desktop: every widget opens as a pop-out, source widget closes
+- [x] Pop-out blocked → toast, open inline instead
+- [x] Mobile: open inline in the clock
+- [x] Parity audit of all 7 pop-outs, gaps listed, events/schedule fixed first (create events, open other widgets as pop-outs)
+- [x] Events header date is a dropdown that changes the clock's day + events; inline Today icon when not today, first header only (`task-events-header-date-picker.md`)
+- [x] Mobile drawer: slides up from the bottom, pop-out icon + window-in-window mode icon to switch to/from the draggable widget, mode remembered per device (default on mobile)
+- [x] Tests + screenshots → `artifacts/review-2026-10-05/popout-*`, `drawer-*`, report `popout-report.md`
 
 #### Sun — worker 1 follow-up (`task-live-sync-and-day-headers.md`)
-- [ ] BUG: draft dot doesn't move live when changing the time; clock needs manual reload after save
-- [ ] Day headers `M 10/5`, `T`, `W`, `Th`, `F`, `Sa`, `Su`
+- [x] BUG: clock needs reload after save — fixed (stores now sync across windows), tests failed before the fix
+- [ ] BUG: draft dot not moving live — NOT reproduced; most-recent marker now wins; need Mannan's exact steps if it persists
+- [x] Day headers `M 10/5`, `T`, `W`, `Th`, `F`, `Sa`, `Su`
 
 #### Sun — round 2, starts after worker 2 lands (`task-widget-menus-and-clock-sync.md`)
 - [ ] Several synced widgets: clock follows the last one changed
@@ -67,7 +70,9 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 
 #### End of session
 - [ ] Review both reports and screenshots; verify claims firsthand
-- [ ] Worktree removed, everything on Sun `main`
+- [x] Round 1 on Sun `main`, verified: 502 unit pass, 33/33 new e2e pass
+- [ ] Round 2 + MCP moon running (started 2026-10-05 ~11:55 PM); time zones after round 2
+- [ ] Worktrees removed at the end
 - [ ] Mannan reviews, then deploy Sun (no deploy before his OK)
 - [ ] Cloudflare: one-off tokens via cf-custom-grant allowed (Mannan consented 2026-10-05); revoke when done
 - [ ] Calendar push + deploy: Mannan said not yet (2026-10-05)
