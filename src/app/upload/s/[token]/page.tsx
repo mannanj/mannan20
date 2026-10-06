@@ -43,6 +43,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
           size: file.size,
           createdAt: file.createdAt,
           contentType: file.contentType,
+          modifiedAt: file.modifiedAt,
           batchTitle: share.batchTitle,
           uploadedBy: file.uploadedBy,
         }))

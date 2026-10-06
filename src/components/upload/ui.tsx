@@ -136,7 +136,7 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-5 py-8"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 px-5 py-8"
       onClick={onClose}
     >
       <div

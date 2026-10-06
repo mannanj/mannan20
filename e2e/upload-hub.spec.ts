@@ -495,6 +495,71 @@ test.describe('downloads stream through tickets', () => {
   });
 });
 
+const PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
+
+test.describe('file preview', () => {
+  test('owner: thumbnails, image preview, unavailable preview, share from panel and inline icon', async () => {
+    const id = await createPage(owner.request, `${RUN} preview`);
+    created.push(id);
+    await owner.request.post(`/api/uploads/${id}/files`, {
+      multipart: { file: { name: 'dot.png', mimeType: 'image/png', buffer: PNG } },
+    });
+    await uploadSmall(owner.request, `/api/uploads/${id}`, 'readme.txt', 120);
+
+    const page = await owner.newPage();
+    await page.goto(`/upload/${id}`);
+    const pngRow = page.getByTestId('file-row').filter({ hasText: 'dot.png' });
+    const txtRow = page.getByTestId('file-row').filter({ hasText: 'readme.txt' });
+    await expect(pngRow.getByTestId('file-thumb')).toBeVisible();
+    await expect.poll(() => pngRow.getByTestId('file-thumb').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(1);
+    await expect(txtRow.getByTestId('file-icon')).toHaveText('TXT');
+
+    await pngRow.getByRole('button', { name: 'dot.png', exact: true }).click();
+    const preview = page.getByTestId('file-preview');
+    await expect(preview.getByTestId('preview-image')).toBeVisible();
+    await expect(preview.getByTestId('preview-details')).toContainText('image/png');
+    await expect(preview.getByTestId('preview-details')).toContainText(`${RUN} preview`);
+    await page.keyboard.press('ArrowRight');
+    await expect(preview.getByTestId('preview-unavailable')).toHaveText('Preview not available for this file type.');
+    await expect(preview.getByTestId('preview-details')).toContainText('120 B');
+    await expect(preview.getByTestId('preview-download')).toHaveAttribute('href', /download\?file=/);
+
+    await preview.getByTestId('preview-share').click();
+    await expect(page.getByTestId('share-dialog')).toContainText('Share readme.txt');
+    await page.getByRole('button', { name: 'Done' }).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('file-preview')).toHaveCount(0);
+
+    await pngRow.getByRole('button', { name: 'Share dot.png' }).click();
+    await expect(page.getByTestId('share-dialog')).toContainText('Share dot.png');
+  });
+
+  test('share page: preview with no share action, and previews do not spend downloads', async () => {
+    const id = await createPage(owner.request, `${RUN} preview share`);
+    created.push(id);
+    const res = await owner.request.post(`/api/uploads/${id}/files`, {
+      multipart: { file: { name: 'dot.png', mimeType: 'image/png', buffer: PNG } },
+    });
+    const fileId = ((await res.json()) as { file: { id: string } }).file.id;
+    const share = await createShare(owner.request, { fileId, maxDownloads: 1 });
+
+    const page = await anon.newPage();
+    await page.goto(`/upload/s/${share.token}`);
+    await expect(page.getByTestId('file-thumb')).toBeVisible();
+    await page.getByTestId('shared-file').getByRole('button', { name: 'dot.png', exact: true }).click();
+    await expect(page.getByTestId('preview-image')).toBeVisible();
+    await expect(page.getByTestId('preview-share')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Manage dot.png' })).toHaveCount(0);
+
+    expect((await getShare(owner.request, share.id)).downloadCount).toBe(0);
+    expect((await anon.request.get(`/api/uploads/s/${share.token}/download?file=${fileId}`)).status()).toBe(200);
+    expect((await anon.request.get(`/api/uploads/s/${share.token}/preview?file=${fileId}`)).status()).toBe(403);
+  });
+});
+
 test.describe('explorer and analytics', () => {
   test('all files: grouped by week, additive search, date range, grouping switch', async () => {
     const page = await owner.newPage();

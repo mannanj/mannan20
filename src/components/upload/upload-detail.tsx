@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useUploader } from '@/hooks/use-uploader';
 import { ActionMenu, ConfirmDialog, DropZone, PendingList, PRIMARY_BUTTON } from './ui';
 import { ShareDialog, type ShareTarget } from './share-dialog';
+import { FilePreview, FileThumb, ShareIconButton, type PreviewItem } from './file-preview';
 import {
   MAX_UPLOAD_BYTES,
   formatBytes,
-  previewableImageType,
+  canPreviewImage,
   uploaderFirstName,
   type UploadBatch,
   type UploadFile,
@@ -44,13 +45,34 @@ function triggerDownload(href: string): void {
   link.remove();
 }
 
+function previewUrl(batchId: string, file: UploadFile): string | null {
+  return canPreviewImage(file.contentType, file.size)
+    ? `/api/uploads/${batchId}/download?file=${file.id}&inline=1`
+    : null;
+}
+
+function previewItem(batch: UploadBatch, file: UploadFile): PreviewItem {
+  return {
+    id: file.id,
+    title: file.title,
+    size: file.size,
+    contentType: file.contentType,
+    createdAt: file.createdAt,
+    modifiedAt: file.modifiedAt,
+    pageTitle: batch.title,
+    uploadedBy: file.uploadedBy,
+    previewUrl: previewUrl(batch.id, file),
+    downloadUrl: `/api/uploads/${batch.id}/download?file=${file.id}`,
+  };
+}
+
 export function UploadDetail({ batch, files }: { batch: UploadBatch; files: UploadFile[] }) {
   const router = useRouter();
   const [title, setTitle] = useState(batch.title);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [sharing, setSharing] = useState<ShareTarget | null>(null);
   const [deleting, setDeleting] = useState<UploadFile | null>(null);
-  const [preview, setPreview] = useState<UploadFile | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [started, setStarted] = useState<Set<number>>(new Set());
   const [planning, setPlanning] = useState(false);
@@ -207,11 +229,13 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
           <div className="rounded-[9px] border border-[#ddd] bg-white">
             <div className="flex items-center gap-[13px] rounded-t-[9px] border-b border-[#ddd] bg-[#fafafa] px-4 py-2 font-mono text-[0.6875rem] text-[#6f6f6f]">
               <span className="h-4 w-4 shrink-0" />
+              <span className="w-8 shrink-0" />
               <span className="min-w-0 flex-1">Name</span>
               <span className="w-[68px] shrink-0 text-right">Size</span>
               <span className="hidden w-[96px] shrink-0 text-right sm:inline">Modified</span>
               <span className="hidden w-[96px] shrink-0 text-right sm:inline">Uploaded</span>
               <span className="w-[17px] shrink-0" />
+              <span className="w-4 shrink-0" />
               <span className="w-4 shrink-0" />
             </div>
             <ul className="m-0 flex list-none flex-col divide-y divide-[#ddd] p-0">
@@ -222,9 +246,8 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
                 file={file}
                 checked={selected.has(file.id)}
                 onToggle={() => toggle(file.id)}
-                onPreview={
-                  previewableImageType(file.contentType) ? () => setPreview(file) : null
-                }
+                previewUrl={previewUrl(batch.id, file)}
+                onPreview={() => setPreviewIndex(files.indexOf(file))}
                 onShare={() => setSharing({ batchId: batch.id, fileId: file.id, title: file.title })}
                 onDuplicate={() => duplicate(file)}
                 onDelete={() => setDeleting(file)}
@@ -291,8 +314,30 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
         />
       )}
 
-      {preview && (
-        <ImagePreview batchId={batch.id} file={preview} onClose={() => setPreview(null)} />
+      {previewIndex !== null && (
+        <FilePreview
+          items={files.map((file) => previewItem(batch, file))}
+          index={previewIndex}
+          onIndex={setPreviewIndex}
+          onClose={() => setPreviewIndex(null)}
+          onShare={(item) => setSharing({ batchId: batch.id, fileId: item.id, title: item.title })}
+          menu={(item) => {
+            const file = files.find((entry) => entry.id === item.id);
+            return file
+              ? [
+                  { label: 'Share', onSelect: () => setSharing({ batchId: batch.id, fileId: file.id, title: file.title }) },
+                  { label: 'Duplicate', onSelect: () => duplicate(file) },
+                  {
+                    label: 'Delete',
+                    onSelect: () => {
+                      setPreviewIndex(null);
+                      setDeleting(file);
+                    },
+                  },
+                ]
+              : [];
+          }}
+        />
       )}
     </section>
   );
@@ -303,6 +348,7 @@ function FileRow({
   file,
   checked,
   onToggle,
+  previewUrl,
   onPreview,
   onShare,
   onDuplicate,
@@ -312,7 +358,8 @@ function FileRow({
   file: UploadFile;
   checked: boolean;
   onToggle: () => void;
-  onPreview: (() => void) | null;
+  previewUrl: string | null;
+  onPreview: () => void;
   onShare: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -326,23 +373,15 @@ function FileRow({
         aria-label={`Select ${file.title}`}
         className="h-4 w-4 shrink-0 accent-[#1a56db]"
       />
-      {onPreview ? (
-        <button
-          type="button"
-          onClick={onPreview}
-          title={`Preview ${file.title}`}
-          className="min-w-0 flex-1 cursor-pointer truncate border-0 bg-transparent p-0 text-left text-[0.9375rem] font-medium text-[#1a56db] hover:text-[#143fa8] hover:underline hover:underline-offset-[3px]"
-        >
-          {file.title}
-        </button>
-      ) : (
-        <span
-          className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium text-[#0b0b0b]"
-          title={file.title}
-        >
-          {file.title}
-        </span>
-      )}
+      <FileThumb title={file.title} previewUrl={previewUrl} />
+      <button
+        type="button"
+        onClick={onPreview}
+        title={`Open ${file.title}`}
+        className="min-w-0 flex-1 cursor-pointer truncate border-0 bg-transparent p-0 text-left text-[0.9375rem] font-medium text-[#0b0b0b] hover:text-[#1a56db] hover:underline hover:underline-offset-[3px]"
+      >
+        {file.title}
+      </button>
       {file.uploadedBy ? (
         <span
           className="max-w-[8rem] shrink-0 truncate text-[0.8125rem] text-[#6f6f6f]"
@@ -384,6 +423,7 @@ function FileRow({
           <path d="M2.5 13h11" />
         </svg>
       </a>
+      <ShareIconButton label={`Share ${file.title}`} onClick={onShare} />
       <span className="w-4 shrink-0">
         <ActionMenu
           label={`Manage ${file.title}`}
@@ -395,39 +435,5 @@ function FileRow({
         />
       </span>
     </li>
-  );
-}
-
-function ImagePreview({
-  batchId,
-  file,
-  onClose,
-}: {
-  batchId: string;
-  file: UploadFile;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', escape);
-    return () => document.removeEventListener('keydown', escape);
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-[13px] bg-black/80 p-6"
-      onClick={onClose}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`/api/uploads/${batchId}/download?file=${file.id}&inline=1`}
-        alt={file.title}
-        onClick={(event) => event.stopPropagation()}
-        className="max-h-[80vh] max-w-full rounded-[9px] bg-white object-contain"
-      />
-      <p className="m-0 text-[0.9375rem] text-white">{file.title}</p>
-    </div>
   );
 }

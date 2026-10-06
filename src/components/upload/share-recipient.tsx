@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   MAX_UPLOAD_BYTES,
   MAX_UPLOADER_NAME,
+  canPreviewImage,
   formatBytes,
   uploaderFirstName,
   type BrowsableFile,
@@ -22,6 +23,7 @@ import {
   plural,
 } from './ui';
 import { FileBrowser } from './file-browser';
+import { FilePreview, FileThumb, type PreviewItem } from './file-preview';
 import { SignInForm } from './upload-locked';
 
 const NAME_KEY = 'upload-share-name';
@@ -80,6 +82,7 @@ export function ShareRecipient({
   const [done, setDone] = useState(0);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const saved = readSavedName();
@@ -96,6 +99,17 @@ export function ShareRecipient({
   );
   const { pending, upload, dismiss } = useUploader(refresh);
   const base = `/api/uploads/s/${token}`;
+  const items: PreviewItem[] = files.map((file) => ({
+    id: file.id,
+    title: file.title,
+    size: file.size,
+    contentType: file.contentType,
+    createdAt: file.createdAt,
+    modifiedAt: file.modifiedAt,
+    uploadedBy: file.uploadedBy,
+    previewUrl: canPreviewImage(file.contentType, file.size) ? `${base}/preview?file=${file.id}` : null,
+    downloadUrl: `${base}/download?file=${file.id}`,
+  }));
   const named = Boolean(firstName.trim() && lastName.trim());
   const canUpload = named || signedInAs !== null;
 
@@ -216,9 +230,15 @@ export function ShareRecipient({
             emptyText="No files here yet."
             renderRow={(file) => (
               <li key={file.id} className="flex items-center gap-[13px] px-4 py-3" data-testid="shared-file">
-                <span className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium" title={file.title}>
+                <FileThumb title={file.title} previewUrl={items[files.indexOf(file)]?.previewUrl ?? null} />
+                <button
+                  type="button"
+                  onClick={() => setPreviewIndex(files.indexOf(file))}
+                  title={`Open ${file.title}`}
+                  className="min-w-0 flex-1 cursor-pointer truncate border-0 bg-transparent p-0 text-left text-[0.9375rem] font-medium text-[#0b0b0b] hover:text-[#1a56db] hover:underline hover:underline-offset-[3px]"
+                >
                   {file.title}
-                </span>
+                </button>
                 {file.uploadedBy ? (
                   <span
                     className="max-w-[8rem] shrink-0 truncate text-[0.8125rem] text-[#6f6f6f]"
@@ -242,6 +262,15 @@ export function ShareRecipient({
             )}
           />
         </div>
+      )}
+
+      {previewIndex !== null && (
+        <FilePreview
+          items={items}
+          index={previewIndex}
+          onIndex={setPreviewIndex}
+          onClose={() => setPreviewIndex(null)}
+        />
       )}
     </section>
   );
