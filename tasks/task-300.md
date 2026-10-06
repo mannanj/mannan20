@@ -14,7 +14,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] `task-mobile-widget-drawer.md` (moved into this round)
 - [x] `task-event-dropdown-times.md` (times column, blue hour ends, grouped dropdown, moon group, moon-phase date picker)
 - [x] `task-draft-event-clock-marker.md`
-- [x] `task-description-inline-input.md`, `task-offset-direction-label.md` (committed by worker 1 with its work)
+- [x] `task-description-inline-input.md`, `task-offset-direction-label.md`, `task-event-hover-clock-highlight.md` (committed by worker 1 with its work)
 - [x] Decisions recorded in the task files
 
 #### Sun — being built (worker 1, main checkout)
@@ -27,6 +27,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Description: no accordion, just an "Add a description..." field to click into (`task-description-inline-input.md`)
 - [ ] Before/After/During label: smaller text, full label visible, no truncation (`task-offset-direction-label.md`)
 - [ ] Red line + dot on the clock while making an event, "New Event" → "Making <title>", normal and pop-out
+- [ ] Hover an event row (pop-out or widget) → its clock dot shows hovered with label (`task-event-hover-clock-highlight.md`)
 - [ ] Tests + screenshots → `artifacts/review-2026-10-05/dropdown-*`, `draft-marker-*`, report `dropdown-report.md`
 
 #### Sun — being built (worker 2, worktree `~/Documents/sun-wt-popouts`)
