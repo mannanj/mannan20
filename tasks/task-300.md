@@ -62,10 +62,14 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] Phases widget: same system (multiple, sync/unsync, menus, ZIP)
 
 #### Sun — round 3: time zones (`task-time-zones.md`)
-- [ ] "Clock Time" row shows the local zone ("Eastern Time"), caret picks other zones; events store their zone
-- [ ] Zone from ZIP via repo's `zip2tz.csv`, browser fallback, `Intl` conversions (no library unless needed)
-- [ ] App-wide rules decided and written down (clock zone = ZIP zone, existing events, DST)
-- [ ] Unit + cross-zone Playwright tests (browser zone ≠ ZIP zone)
+- [x] Round 3 verified by me: 530 unit pass, time-zones 4/4, all new specs pass
+- [x] Found + fixed test bug: unbounded networkidle waits made most of popout-sync time out — now 10/10 (810f79e), was 2/10 before this session
+- [ ] Zoned event crossing midnight stays on the wrong date — fix running; also verifying clock marker angle
+- [ ] Not zoned yet: sleep/work engine clock-time settings
+- [x] "Clock Time" row shows the local zone ("Eastern Time"), caret picks other zones; events store their zone
+- [x] Zone from ZIP via repo's `zip2tz.csv`, browser fallback, `Intl` conversions (no library unless needed)
+- [x] App-wide rules decided and written down (clock zone = ZIP zone, existing events, DST)
+- [x] Unit + cross-zone Playwright tests (browser zone ≠ ZIP zone)
 
 #### Sun — round 4: MCP moon data (`task-mcp-moon-data.md`)
 - [x] `get_moon_year` built (470f370), verified by me: 74/74 mcp tests, tsc clean; `get_dataset_status` reports moon years
@@ -77,7 +81,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Review both reports and screenshots; verify claims firsthand
 - [x] Round 1 on Sun `main`, verified: 502 unit pass, 33/33 new e2e pass
 - [x] Round 2 + MCP moon done
-- [ ] Round 3 time zones running (started 2026-10-06 ~12:20 AM) (started 2026-10-05 ~11:55 PM); time zones after round 2
+- [x] Round 3 time zones done; midnight-crossing fix running (started 2026-10-05 ~11:55 PM); time zones after round 2
 - [ ] Worktrees removed at the end
 - [ ] Mannan reviews, then deploy Sun (no deploy before his OK)
 - [ ] Cloudflare: one-off tokens via cf-custom-grant allowed (Mannan consented 2026-10-05); revoke when done
