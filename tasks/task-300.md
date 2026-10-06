@@ -14,7 +14,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] `task-mobile-widget-drawer.md` (moved into this round)
 - [x] `task-event-dropdown-times.md` (times column, blue hour ends, grouped dropdown, moon group, moon-phase date picker)
 - [x] `task-draft-event-clock-marker.md`
-- [x] `task-description-inline-input.md` (committed by worker 1 with its work)
+- [x] `task-description-inline-input.md`, `task-offset-direction-label.md` (committed by worker 1 with its work)
 - [x] Decisions recorded in the task files
 
 #### Sun — being built (worker 1, main checkout)
@@ -25,6 +25,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Dropdown: Moon group last — Moonrise, Moon Peak, Moonset, Moon Midnight (clock's definitions)
 - [ ] Date picker: Moon dropdown, phases with next date, caret for more, past dates labeled `(past)`
 - [ ] Description: no accordion, just an "Add a description..." field to click into (`task-description-inline-input.md`)
+- [ ] Before/After/During label: smaller text, full label visible, no truncation (`task-offset-direction-label.md`)
 - [ ] Red line + dot on the clock while making an event, "New Event" → "Making <title>", normal and pop-out
 - [ ] Tests + screenshots → `artifacts/review-2026-10-05/dropdown-*`, `draft-marker-*`, report `dropdown-report.md`
 
