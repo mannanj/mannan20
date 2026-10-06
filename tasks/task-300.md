@@ -1,11 +1,42 @@
-### Task 300: Calendar relative events + Sun app widget work (tracked in their repos)
+### Task 300: Session 2026-10-05 — every ask, where it lives, status
 
-Pointer so nothing is lost; detail lives in each repo.
+Detail lives in each repo's task file; this is the full list so nothing is missed.
 
-- [ ] Calendar: events anchored to other events (before/after/during), auto-update when the anchor changes — `~/Documents/calendar/task-31.md` A
-- [ ] Calendar: schedule around sun and moon via the Sun MCP, one year cached per location — `~/Documents/calendar/task-31.md` B
-- [ ] Calendar: status-driven alerts to people (running late/early), needs design — `~/Documents/calendar/task-31.md` C
-- [ ] Sun: solar noon and moon anchors — `~/Documents/sun/tasks/task-solar-noon-and-moon-anchors.md`
-- [ ] Sun: pop-out feature parity, close source on pop-out, pop-out by default on desktop with blocked toast — `~/Documents/sun/tasks/task-popout-parity.md`
-- [ ] Sun (future): mobile bottom drawer with mode switch — `~/Documents/sun/tasks/task-mobile-widget-drawer.md`
+#### Calendar (`~/Documents/calendar/task-31.md`) — captured, not started
+- [x] Captured: events anchored to other events (before/after/during), auto-update on anchor change
+- [x] Captured: schedule around sun and moon via the Sun MCP, one year cached per location
+- [x] Captured: status-driven alerts to people (running late/early), needs design
+- [ ] task-31 commit is local only; ships with the pending calendar push (needs Mannan's approval, see task-297)
+
+#### Sun — captured task files (`~/Documents/sun/tasks/`), all pushed
+- [x] `task-solar-noon-and-moon-anchors.md` (solar noon already existed; moon, moon midnight, solar midnight, phase dates)
+- [x] `task-popout-parity.md`
+- [x] `task-mobile-widget-drawer.md` (future, not being built now)
+- [x] `task-event-dropdown-times.md` (times column, blue hour ends, grouped dropdown, moon group, moon-phase date picker)
+- [x] `task-draft-event-clock-marker.md`
+- [x] Decisions recorded in the task files
+
+#### Sun — being built (worker 1, main checkout)
+- [ ] Dropdown: time pinned right, label truncates, tooltip on hover
+- [ ] Dropdown: Morning Blue Hour End, Evening Blue Hour End
+- [ ] Dropdown: grouped, time-ordered, row click picks / caret expands
+- [ ] Dropdown: Solar Midnight top-level, before Moon
+- [ ] Dropdown: Moon group last — Moonrise, Moon Peak, Moonset, Moon Midnight (clock's definitions)
+- [ ] Date picker: Moon dropdown, phases with next date, caret for more, past dates labeled `(past)`
+- [ ] Red line + dot on the clock while making an event, "New Event" → "Making <title>", normal and pop-out
+- [ ] Tests + screenshots → `artifacts/review-2026-10-05/dropdown-*`, `draft-marker-*`, report `dropdown-report.md`
+
+#### Sun — being built (worker 2, worktree `~/Documents/sun-wt-popouts`)
+- [ ] Desktop: every widget opens as a pop-out, source widget closes
+- [ ] Pop-out blocked → toast, open inline instead
+- [ ] Mobile: open inline in the clock
+- [ ] Parity audit of all 7 pop-outs, gaps listed, events/schedule fixed first (create events, open other widgets as pop-outs)
+- [ ] Tests + screenshots → `artifacts/review-2026-10-05/popout-*`, report `popout-report.md`
+
+#### End of session
+- [ ] Review both reports and screenshots; verify claims firsthand
+- [ ] Worktree removed, everything on Sun `main`
+- [ ] Mannan reviews, then deploy Sun
+- [ ] Mannan approves calendar push + deploy (task-297 + task-31)
+
 - Location: `~/Documents/calendar`, `~/Documents/sun`
