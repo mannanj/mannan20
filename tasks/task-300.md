@@ -66,12 +66,15 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Unit + cross-zone Playwright tests (browser zone ≠ ZIP zone)
 
 #### Sun — round 4: MCP moon data (`task-mcp-moon-data.md`)
-- [ ] `get_moon_year`-style tool, tests; no deploy without OK
+- [x] `get_moon_year` built (470f370), verified by me: 74/74 mcp tests, tsc clean; `get_dataset_status` reports moon years
+- [ ] Moon data exists for 22310 2026 but NOT 2027 (prod probe) — generate 2027+ moon files before relying on next-year moon anchors/MCP
+- [ ] `transit_altitude` is always null in generated moon files — generator fix + regenerate (affects MCP and clock moon altitude)
+- [ ] Deploy MCP (`cd cloudflare/mcp && bun run deploy`) after Mannan's OK
 
 #### End of session
 - [ ] Review both reports and screenshots; verify claims firsthand
 - [x] Round 1 on Sun `main`, verified: 502 unit pass, 33/33 new e2e pass
-- [ ] Round 2 + MCP moon running (started 2026-10-05 ~11:55 PM); time zones after round 2
+- [ ] Round 2 running; MCP moon done (started 2026-10-05 ~11:55 PM); time zones after round 2
 - [ ] Worktrees removed at the end
 - [ ] Mannan reviews, then deploy Sun (no deploy before his OK)
 - [ ] Cloudflare: one-off tokens via cf-custom-grant allowed (Mannan consented 2026-10-05); revoke when done
