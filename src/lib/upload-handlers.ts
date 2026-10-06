@@ -17,10 +17,10 @@ import {
 } from '@/lib/uploads-shared';
 import { releaseUpload, reserveUpload } from '@/lib/upload-shares';
 import { recordEvent, type UploadActor } from '@/lib/upload-events';
-import { safeAttachmentDisposition, safeAttachmentFilename } from '@/lib/attachment';
+import { safeAttachmentFilename } from '@/lib/attachment';
 import { blobWithKnownLength, withKnownLength } from '@/lib/fixed-length';
 import type { R2UploadedPart } from '@/lib/cf-bindings';
-import { streamZip, type ZipSource } from '@/lib/zip';
+import { issueTicket, type TicketEntry } from '@/lib/download-stream';
 
 const MAX_TITLE = 200;
 const MAX_DESCRIPTION = 500;
@@ -381,6 +381,27 @@ function uniqueName(taken: Set<string>, raw: string): string {
   return candidate;
 }
 
+function ticketEntry(file: StoredFile, name = file.title): TicketEntry {
+  return {
+    bucket: file.bucket,
+    key: file.objectKey,
+    name,
+    size: file.size,
+    modified: file.modifiedAt ?? file.createdAt,
+  };
+}
+
+function redirect(request: Request, path: string): Response {
+  return new Response(null, {
+    status: 303,
+    headers: {
+      location: new URL(path, request.url).toString(),
+      'cache-control': 'private, no-store',
+      'referrer-policy': 'no-referrer',
+    },
+  });
+}
+
 export interface DownloadScope {
   env: UploadsEnv;
   title: string;
@@ -388,11 +409,6 @@ export interface DownloadScope {
   actor: UploadActor;
   shareId: string | null;
   spend: () => Promise<boolean>;
-}
-
-async function openObject(env: UploadsEnv, file: StoredFile) {
-  const bucket = bucketFor(env, file.bucket);
-  return bucket ? bucket.get(file.objectKey) : null;
 }
 
 export async function serveDownload(request: Request, scope: DownloadScope): Promise<Response> {
@@ -424,21 +440,14 @@ export async function serveDownload(request: Request, scope: DownloadScope): Pro
     if (!preview && !(await spent(entry.size, entry.id, entry.batchId))) {
       return json({ error: 'This link has no downloads left' }, 403);
     }
-    const object = await openObject(env, entry);
-    if (!object) return json({ error: 'File unavailable' }, 502);
-
-    return new Response(object.body, {
-      headers: {
-        'content-type': inline && imageType ? imageType : entry.contentType,
-        'content-length': String(entry.size),
-        'content-disposition': inline ? 'inline' : safeAttachmentDisposition(entry.title),
-        'last-modified': new Date(entry.modifiedAt ?? entry.createdAt).toUTCString(),
-        'cache-control': 'private, no-store',
-        'x-content-type-options': 'nosniff',
-        'content-security-policy': "default-src 'none'; sandbox",
-        'referrer-policy': 'no-referrer',
-      },
+    const path = await issueTicket(env.UPLOADS_DB, {
+      kind: 'file',
+      name: entry.title,
+      contentType: inline && imageType ? imageType : entry.contentType,
+      inline,
+      entries: [ticketEntry(entry)],
     });
+    return redirect(request, path);
   }
 
   const requested = url.searchParams.get('ids');
@@ -476,20 +485,26 @@ export async function serveDownload(request: Request, scope: DownloadScope): Pro
   }
 
   const taken = new Set<string>();
-  const sources = (async function* (): AsyncGenerator<ZipSource> {
-    for (const file of chosen) {
-      const object = await openObject(env, file);
-      if (!object) continue;
-      yield {
-        name: uniqueName(taken, file.title),
-        body: object.body,
-        modified: file.modifiedAt ?? file.createdAt,
-      };
-    }
-  })();
-
   const label =
     partIndex === null || plan.length < 2 ? undefined : { index: partIndex, total: plan.length };
 
-  return streamZip(sources, zipName(scope.title, label));
+  if (chosen.length === 1 && plan.length > 1) {
+    const path = await issueTicket(env.UPLOADS_DB, {
+      kind: 'file',
+      name: chosen[0].title,
+      contentType: chosen[0].contentType,
+      inline: false,
+      entries: [ticketEntry(chosen[0])],
+    });
+    return redirect(request, path);
+  }
+
+  const path = await issueTicket(env.UPLOADS_DB, {
+    kind: 'zip',
+    name: zipName(scope.title, label),
+    contentType: 'application/zip',
+    inline: false,
+    entries: chosen.map((file) => ticketEntry(file, uniqueName(taken, file.title))),
+  });
+  return redirect(request, path);
 }

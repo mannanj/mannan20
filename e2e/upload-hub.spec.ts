@@ -445,6 +445,56 @@ test.describe('share links', () => {
   });
 });
 
+test.describe('downloads stream through tickets', () => {
+  test('file: 303 to a ticket, full bytes, Range resume, HEAD, bad ticket', async () => {
+    const id = await createPage(owner.request, `${RUN} stream`);
+    created.push(id);
+    const size = 300_000;
+    const res = await uploadSmall(owner.request, `/api/uploads/${id}`, 'stream.txt', size);
+    const fileId = ((await res.json()) as { file: { id: string } }).file.id;
+
+    const first = await owner.request.get(`/api/uploads/${id}/download?file=${fileId}`, { maxRedirects: 0 });
+    expect(first.status()).toBe(303);
+    const location = first.headers()['location'];
+    expect(location).toContain('/api/uploads/stream/');
+
+    const full = await anon.request.get(location);
+    expect(full.status()).toBe(200);
+    expect(full.headers()['content-length']).toBe(String(size));
+    expect(full.headers()['accept-ranges']).toBe('bytes');
+    expect(full.headers()['content-disposition']).toContain('stream.txt');
+    expect((await full.body()).length).toBe(size);
+
+    const part = await anon.request.get(location, { headers: { range: 'bytes=1000-1999' } });
+    expect(part.status()).toBe(206);
+    expect(part.headers()['content-range']).toBe(`bytes 1000-1999/${size}`);
+    expect((await part.body()).length).toBe(1000);
+
+    const tail = await anon.request.get(location, { headers: { range: 'bytes=-10' } });
+    expect(tail.status()).toBe(206);
+    expect((await tail.body()).length).toBe(10);
+
+    expect((await anon.request.get(location, { headers: { range: `bytes=${size}-` } })).status()).toBe(416);
+    expect((await anon.request.head(location)).headers()['content-length']).toBe(String(size));
+    expect((await anon.request.get('/api/uploads/stream/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')).status()).toBe(410);
+    expect((await anon.request.get('/api/uploads/stream/not-a-ticket')).status()).toBe(404);
+  });
+
+  test('zip arrives whole', async () => {
+    const id = await createPage(owner.request, `${RUN} zipcheck`);
+    created.push(id);
+    await uploadSmall(owner.request, `/api/uploads/${id}`, 'a.txt', 200_000);
+    await uploadSmall(owner.request, `/api/uploads/${id}`, 'b.txt', 300_000);
+    const zip = await owner.request.get(`/api/uploads/${id}/download`);
+    expect(zip.status()).toBe(200);
+    expect(zip.headers()['content-type']).toContain('zip');
+    const body = await zip.body();
+    expect(body.length).toBeGreaterThan(500_000);
+    expect(body.readUInt32LE(body.length - 22)).toBe(0x06054b50);
+    expect(body.readUInt16LE(body.length - 22 + 10)).toBe(2);
+  });
+});
+
 test.describe('explorer and analytics', () => {
   test('all files: grouped by week, additive search, date range, grouping switch', async () => {
     const page = await owner.newPage();

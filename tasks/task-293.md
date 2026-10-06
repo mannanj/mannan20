@@ -64,9 +64,11 @@ Owner is `hello@mannan.is` only. Lives at `mannan.is/upload`. MeetTime-style UI 
 - [x] Unit tests for share rules + explorer grouping
 - [x] E2E (Playwright) for owner flows, share recipient, request access, limits
 - [x] Create R2 bucket `mannan20-shared-uploads` + OAuth KV
-- [ ] Apply migration remotely, set secrets, deploy site + MCP worker
-- [ ] Live smoke test in prod; MCP connect from Claude
+- [x] Apply migration remotely, set secrets, deploy site + MCP worker
+- [x] Live smoke test in prod (19/19 e2e on mannan.is, MCP 401/OAuth metadata, actor token owner-only), test data cleaned up
+- [ ] Connect the owner MCP from Claude (needs Mannan's browser sign-in): `claude mcp add --transport http mannan-owner https://mcp.mannanteam.workers.dev/owner/mcp`
+- [ ] Large downloads → see `tasks/task-296.md`
 - [x] Update CLAUDE.md / mcp-worker README
-- [ ] Secret scan, commit + push to main
+- [x] Secret scan, commit + push to main
 
 - Location: `src/app/upload`, `src/app/api/uploads`, `src/components/upload`, `src/lib/upload*`, `mcp-worker/src`, `cloud-worker/migrations`

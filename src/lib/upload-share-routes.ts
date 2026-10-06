@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { storedFiles, uploadsEnv } from '@/lib/uploads';
+import { issueTicket } from '@/lib/download-stream';
+import { THUMBNAIL_MAX_BYTES, previewableImageType } from '@/lib/uploads-shared';
 import { resolveShare, reserveDownload, type ShareDenial } from '@/lib/upload-shares';
 import { serveDownload, type UploadTarget } from '@/lib/upload-handlers';
 
@@ -63,4 +65,39 @@ export async function shareDownload(request: Request, token: string): Promise<Re
     shareId: share.id,
     spend: () => reserveDownload(env, share.id),
   });
+}
+
+export async function sharePreview(request: Request, token: string): Promise<Response> {
+  const env = uploadsEnv();
+  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const resolved = await resolveShare(env, token, 'read', request.headers.get('cookie'));
+  if (!resolved.ok) return deny(resolved.reason);
+  const { share } = resolved;
+
+  const fileId = new URL(request.url).searchParams.get('file');
+  const file = (await storedFiles(env, share.batchId)).find(
+    (entry) => entry.id === fileId && (share.fileId === null || entry.id === share.fileId),
+  );
+  if (!file) return deny('not-found');
+
+  const imageType = previewableImageType(file.contentType);
+  if (!imageType || file.size > THUMBNAIL_MAX_BYTES) {
+    return NextResponse.json({ error: 'No preview' }, { status: 415 });
+  }
+  const path = await issueTicket(env.UPLOADS_DB, {
+    kind: 'file',
+    name: file.title,
+    contentType: imageType,
+    inline: true,
+    entries: [
+      {
+        bucket: file.bucket,
+        key: file.objectKey,
+        name: file.title,
+        size: file.size,
+        modified: file.modifiedAt ?? file.createdAt,
+      },
+    ],
+  });
+  return Response.redirect(new URL(path, request.url).toString(), 303);
 }

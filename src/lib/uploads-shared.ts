@@ -110,6 +110,12 @@ const PREVIEWABLE_IMAGE_TYPES = new Set([
   'image/x-icon',
 ]);
 
+export const THUMBNAIL_MAX_BYTES = 25 * 1024 * 1024;
+
+export function canPreviewImage(contentType: string, size: number): boolean {
+  return previewableImageType(contentType) !== null && size <= THUMBNAIL_MAX_BYTES;
+}
+
 export function previewableImageType(contentType: string): string | null {
   const bare = contentType.split(';')[0].trim().toLowerCase();
   return PREVIEWABLE_IMAGE_TYPES.has(bare) ? bare : null;
@@ -293,6 +299,7 @@ export interface BrowsableFile {
   contentType: string;
   size: number;
   createdAt: number;
+  modifiedAt?: number | null;
   uploadedBy?: string | null;
 }
 
