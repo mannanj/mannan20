@@ -127,6 +127,19 @@ Privacy rules are enforced by build guards and tests: gated/hidden content (Take
 
 `scripts/build-mcp-data.mjs` also generates `public/llms.txt` and the `public/.well-known/` server cards — never hand-edit those either. The site has a human-facing guide at `/mcp` (`src/app/mcp/page.tsx`, content constants in `src/lib/mcp-info.ts`) and a header popover (`src/components/mcp/mcp-header-button.tsx`); if MCP tools change, update `MCP_TOOLS` in `src/lib/mcp-info.ts` to match `mcp-worker/src/server.ts`. The worker also serves documents at `/files/<slug>` from R2 with per-IP rate limiting.
 
+## Upload hub — `/upload` (owner: hello@mannan.is)
+
+Pages ("batches"), files up to 10 GB (50 MB multipart parts), share links, All files explorer, analytics. Everything owner-side is gated by `isUploadOwner` (`src/lib/uploads.ts`): the site session OR an MCP actor token signed with `UPLOADS_MCP_ACTOR_SECRET`.
+
+- One upload/download implementation: `src/lib/upload-handlers.ts`. Owner routes (`src/app/api/uploads/[id]/*`), share-link routes (`src/app/api/uploads/s/[token]/*`) and the MCP all go through it — a future own-client API should wrap it too, not reimplement it.
+- Storage: owner uploads → R2 `mannan20-uploads` (`UPLOADS`); share-link uploads → R2 `mannan20-shared-uploads` (`SHARED_UPLOADS`). Rows in the `cloud` D1 (`UPLOADS_DB`); reads always use the stored `object_key` + `bucket`, never a recomputed key (duplicates share one object). Deletes are soft.
+- Share links (`src/lib/upload-shares.ts`): read / write / both, expiry, upload + download limits, byte capacity, all editable; quota is reserved atomically in SQL before bytes move. `sign_in_read` / `sign_in_write` are enforced server-side but have no UI yet. Share uploaders must give first + last name or be signed in.
+- Non-owners signed in see "Request access" (`RequestAccessChat`, reusable via `ACCESS_RESOURCES` in `src/lib/access-requests.ts`) → D1 `access_requests` + email to hello@mannan.is.
+- Analytics: every action writes `upload_events`; dashboard at `/upload/analytics`.
+- Schema lives in `cloud-worker/migrations/` (apply with `bunx wrangler d1 migrations apply cloud --remote -c cloud-worker/wrangler.jsonc`).
+- Owner MCP: `https://mcp.mannanteam.workers.dev/owner/mcp` (OAuth via `/api/mcp/uploads/authorize`, refuses anyone but hello@mannan.is). Large files: the `create_upload_link` tool returns a share link to open in a browser. See `mcp-worker/README.md`.
+- E2E: `e2e/upload-hub.spec.ts` (needs local D1 migrated: `bunx wrangler d1 execute cloud --local --file cloud-worker/migrations/<file>.sql`).
+
 ## Code Quality
 
 - Minimal, performant

@@ -1,12 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useUploader } from '@/hooks/use-uploader';
+import { ActionMenu, ConfirmDialog, DropZone, PendingList, PRIMARY_BUTTON } from './ui';
+import { ShareDialog, type ShareTarget } from './share-dialog';
 import {
   MAX_UPLOAD_BYTES,
-  UPLOAD_PART_SIZE,
   formatBytes,
   previewableImageType,
+  uploaderFirstName,
   type UploadBatch,
   type UploadFile,
 } from '@/lib/uploads-shared';
@@ -40,82 +44,16 @@ function triggerDownload(href: string): void {
   link.remove();
 }
 
-interface Pending {
-  name: string;
-  size: number;
-  progress: number;
-  error: string | null;
-}
-
-async function uploadWhole(batchId: string, file: File): Promise<void> {
-  const form = new FormData();
-  form.append('file', file);
-  form.append('lastModified', String(file.lastModified));
-  const res = await fetch(`/api/uploads/${batchId}/files`, { method: 'POST', body: form });
-  if (!res.ok) throw new Error(res.status === 413 ? 'Too large' : 'Upload failed');
-}
-
-async function uploadInParts(
-  batchId: string,
-  file: File,
-  onProgress: (percent: number) => void,
-): Promise<void> {
-  const started = await fetch(`/api/uploads/${batchId}/multipart`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      name: file.name,
-      size: file.size,
-      contentType: file.type,
-      lastModified: file.lastModified,
-    }),
-  });
-  if (!started.ok) throw new Error(started.status === 413 ? 'Too large' : 'Upload failed');
-
-  const { fileId, partSize, parts } = (await started.json()) as {
-    fileId: string;
-    partSize: number;
-    parts: number;
-  };
-
-  const uploaded: { partNumber: number; etag: string }[] = [];
-  try {
-    for (let part = 1; part <= parts; part += 1) {
-      const chunk = file.slice((part - 1) * partSize, part * partSize);
-      const res = await fetch(`/api/uploads/${batchId}/multipart/${fileId}?part=${part}`, {
-        method: 'PUT',
-        body: chunk,
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      uploaded.push((await res.json()) as { partNumber: number; etag: string });
-      onProgress(Math.round((part / parts) * 100));
-    }
-
-    const finished = await fetch(`/api/uploads/${batchId}/multipart/${fileId}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ parts: uploaded }),
-    });
-    if (!finished.ok) throw new Error('Upload failed');
-  } catch (error) {
-    await fetch(`/api/uploads/${batchId}/multipart/${fileId}`, { method: 'DELETE' }).catch(
-      () => null,
-    );
-    throw error;
-  }
-}
-
 export function UploadDetail({ batch, files }: { batch: UploadBatch; files: UploadFile[] }) {
   const router = useRouter();
   const [title, setTitle] = useState(batch.title);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [pending, setPending] = useState<Pending[]>([]);
-  const [dragging, setDragging] = useState(false);
+  const [sharing, setSharing] = useState<ShareTarget | null>(null);
+  const [deleting, setDeleting] = useState<UploadFile | null>(null);
   const [preview, setPreview] = useState<UploadFile | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [started, setStarted] = useState<Set<number>>(new Set());
   const [planning, setPlanning] = useState(false);
-  const picker = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const trimmed = title.trim();
@@ -141,36 +79,30 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
     });
   };
 
-  const upload = useCallback(
-    async (chosen: File[]) => {
-      if (!chosen.length) return;
-      setPending(
-        chosen.map((file) => ({ name: file.name, size: file.size, progress: 0, error: null })),
-      );
+  const refresh = useCallback(() => router.refresh(), [router]);
+  const { pending, upload, dismiss } = useUploader(refresh);
 
-      for (const file of chosen) {
-        const patch = (change: Partial<Pending>) =>
-          setPending((was) =>
-            was.map((item) => (item.name === file.name ? { ...item, ...change } : item)),
-          );
+  const duplicate = async (file: UploadFile) => {
+    await fetch(`/api/uploads/${batch.id}/files/${file.id}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'duplicate' }),
+    }).catch(() => null);
+    router.refresh();
+  };
 
-        try {
-          if (file.size > MAX_UPLOAD_BYTES) throw new Error('Too large');
-          if (file.size > UPLOAD_PART_SIZE) {
-            await uploadInParts(batch.id, file, (percent) => patch({ progress: percent }));
-          } else {
-            await uploadWhole(batch.id, file);
-          }
-          setPending((was) => was.filter((item) => item.name !== file.name));
-        } catch (error) {
-          patch({ error: error instanceof Error ? error.message : 'Upload failed' });
-        }
-      }
-
-      router.refresh();
-    },
-    [batch.id, router],
-  );
+  const remove = async (file: UploadFile) => {
+    await fetch(`/api/uploads/${batch.id}/files/${file.id}`, { method: 'DELETE' }).catch(
+      () => null,
+    );
+    setDeleting(null);
+    setSelected((was) => {
+      const next = new Set(was);
+      next.delete(file.id);
+      return next;
+    });
+    router.refresh();
+  };
 
   const selection = useMemo(
     () => (selected.size ? `ids=${[...selected].join(',')}` : ''),
@@ -208,65 +140,34 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
 
   return (
     <section className="flex flex-col gap-[38px]">
+      <div className="flex flex-col gap-[13px]">
+        <Link href="/upload" className="text-[0.9375rem] text-[#1a56db] no-underline hover:text-[#143fa8]">
+          &larr; Upload
+        </Link>
       <input
         value={title}
         onChange={(event) => setTitle(event.target.value)}
         aria-label="Upload title"
         className="-ml-3 w-[calc(100%+0.75rem)] rounded-[9px] border border-transparent bg-transparent px-3 py-2 text-[1.5rem] font-bold tracking-[-0.02em] text-[#0b0b0b] outline-none hover:border-[#ddd] focus:border-[#a8a8a8] focus:bg-white"
       />
-
-      <div
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(event) => {
-          event.preventDefault();
-          setDragging(false);
-          void upload([...event.dataTransfer.files]);
-        }}
-        className={`flex flex-col items-center justify-center gap-2 rounded-[9px] border border-dashed p-8 text-center transition-colors ${
-          dragging ? 'border-[#0b0b0b] bg-white' : 'border-[#ddd] bg-white'
-        }`}
-      >
-        <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">
-          Drop files here &mdash; up to {formatBytes(MAX_UPLOAD_BYTES)} each
-        </p>
-        <button
-          type="button"
-          onClick={() => picker.current?.click()}
-          className="cursor-pointer rounded-[9px] border-2 border-[#0b0b0b] bg-white px-4 py-2 text-[0.9375rem] font-medium text-[#0b0b0b] hover:bg-[#f3f3f3]"
-        >
-          Choose files
-        </button>
-        <input
-          ref={picker}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(event) => {
-            void upload([...(event.target.files ?? [])]);
-            event.target.value = '';
-          }}
-        />
+        <div className="flex flex-wrap items-center gap-[13px]">
+          <button
+            type="button"
+            onClick={() => setSharing({ batchId: batch.id, fileId: null, title: title || batch.title })}
+            className={PRIMARY_BUTTON}
+            data-testid="share-page"
+          >
+            Share page
+          </button>
+        </div>
       </div>
 
-      {pending.length > 0 && (
-        <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
-          {pending.map((item) => (
-            <li key={item.name} className="flex items-baseline gap-[13px] text-[0.9375rem]">
-              <span className="text-[#0b0b0b]">{item.name}</span>
-              <span className="font-mono text-[0.6875rem] text-[#6f6f6f]">
-                {formatBytes(item.size)}
-              </span>
-              <span className={item.error ? 'text-[#c1121f]' : 'text-[#6f6f6f]'}>
-                {item.error ?? (item.progress ? `${item.progress}%` : 'Uploading…')}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <DropZone
+        onFiles={(chosen) => void upload(`/api/uploads/${batch.id}`, chosen)}
+        hint={`Drop files here — up to ${formatBytes(MAX_UPLOAD_BYTES)} each`}
+      />
+
+      <PendingList pending={pending} onDismiss={dismiss} />
 
       <div className="flex flex-col gap-[13px]">
         <div className="flex flex-wrap items-center justify-between gap-[13px]">
@@ -303,14 +204,15 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
         {files.length === 0 ? (
           <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">No files here yet.</p>
         ) : (
-          <div className="overflow-hidden rounded-[9px] border border-[#ddd] bg-white">
-            <div className="flex items-center gap-[13px] border-b border-[#ddd] bg-[#fafafa] px-4 py-2 font-mono text-[0.6875rem] text-[#6f6f6f]">
+          <div className="rounded-[9px] border border-[#ddd] bg-white">
+            <div className="flex items-center gap-[13px] rounded-t-[9px] border-b border-[#ddd] bg-[#fafafa] px-4 py-2 font-mono text-[0.6875rem] text-[#6f6f6f]">
               <span className="h-4 w-4 shrink-0" />
               <span className="min-w-0 flex-1">Name</span>
               <span className="w-[68px] shrink-0 text-right">Size</span>
               <span className="hidden w-[96px] shrink-0 text-right sm:inline">Modified</span>
               <span className="hidden w-[96px] shrink-0 text-right sm:inline">Uploaded</span>
               <span className="w-[17px] shrink-0" />
+              <span className="w-4 shrink-0" />
             </div>
             <ul className="m-0 flex list-none flex-col divide-y divide-[#ddd] p-0">
             {files.map((file) => (
@@ -323,6 +225,9 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
                 onPreview={
                   previewableImageType(file.contentType) ? () => setPreview(file) : null
                 }
+                onShare={() => setSharing({ batchId: batch.id, fileId: file.id, title: file.title })}
+                onDuplicate={() => duplicate(file)}
+                onDelete={() => setDeleting(file)}
               />
               ))}
             </ul>
@@ -374,6 +279,18 @@ export function UploadDetail({ batch, files }: { batch: UploadBatch; files: Uplo
         </div>
       )}
 
+      {sharing && <ShareDialog target={sharing} onClose={() => setSharing(null)} onChanged={refresh} />}
+
+      {deleting && (
+        <ConfirmDialog
+          title={`Delete “${deleting.title}”?`}
+          body="This can’t be undone, and any link to this file stops working."
+          confirm="Delete file"
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => remove(deleting)}
+        />
+      )}
+
       {preview && (
         <ImagePreview batchId={batch.id} file={preview} onClose={() => setPreview(null)} />
       )}
@@ -387,15 +304,21 @@ function FileRow({
   checked,
   onToggle,
   onPreview,
+  onShare,
+  onDuplicate,
+  onDelete,
 }: {
   batchId: string;
   file: UploadFile;
   checked: boolean;
   onToggle: () => void;
   onPreview: (() => void) | null;
+  onShare: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
 }) {
   return (
-    <li className="flex items-center gap-[13px] px-4 py-3">
+    <li className="flex items-center gap-[13px] px-4 py-3" data-testid="file-row">
       <input
         type="checkbox"
         checked={checked}
@@ -420,6 +343,15 @@ function FileRow({
           {file.title}
         </span>
       )}
+      {file.uploadedBy ? (
+        <span
+          className="max-w-[8rem] shrink-0 truncate text-[0.8125rem] text-[#6f6f6f]"
+          title={`Uploaded by ${file.uploadedBy}`}
+          data-testid="uploader-name"
+        >
+          {uploaderFirstName(file.uploadedBy)}
+        </span>
+      ) : null}
       <span className="w-[68px] shrink-0 text-right font-mono text-[0.6875rem] text-[#6f6f6f]">
         {formatBytes(file.size)}
       </span>
@@ -452,6 +384,16 @@ function FileRow({
           <path d="M2.5 13h11" />
         </svg>
       </a>
+      <span className="w-4 shrink-0">
+        <ActionMenu
+          label={`Manage ${file.title}`}
+          items={[
+            { label: 'Share', onSelect: onShare },
+            { label: 'Duplicate', onSelect: onDuplicate },
+            { label: 'Delete', onSelect: onDelete },
+          ]}
+        />
+      </span>
     </li>
   );
 }

@@ -1,5 +1,5 @@
-import type { WorkerEnv } from "../src/types";
+import type { OwnerEnv, WorkerEnv } from "../src/types";
 
 declare module "cloudflare:test" {
-  interface ProvidedEnv extends WorkerEnv {}
+  interface ProvidedEnv extends WorkerEnv, OwnerEnv {}
 }

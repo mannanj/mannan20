@@ -1,3 +1,5 @@
+import type { OAuthHelpers } from "@cloudflare/workers-oauth-provider";
+
 export interface Profile {
   name: string;
   tagline: string;
@@ -116,12 +118,28 @@ export interface ArticleStateEnv {
   MCP_ARTICLE_STATE?: McpArticleStateService;
 }
 
+export interface OwnerEnv {
+  OAUTH_KV: KVNamespace;
+  OAUTH_PROVIDER: OAuthHelpers;
+  SITE_ORIGIN: string;
+  MCP_GRANT_SECRET: string;
+  MCP_ACTOR_SECRET: string;
+}
+
+export interface OwnerProps {
+  userId: string;
+  email: string;
+  [key: string]: unknown;
+}
+
 export interface WorkerEnv extends ArticleStateEnv {
   FILES: R2Bucket;
   FILES_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
   MCP_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
   MCP_ADMIN_SECRET?: string;
 }
+
+export type AppEnv = WorkerEnv & OwnerEnv;
 
 export interface Contact {
   how: string;

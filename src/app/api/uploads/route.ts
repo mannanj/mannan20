@@ -1,42 +1,30 @@
 import { NextResponse } from 'next/server';
-import {
-  UPLOAD_OWNER_EMAIL,
-  defaultBatchTitle,
-  isUploadOwner,
-  listBatches,
-  newId,
-  uploadsEnv,
-} from '@/lib/uploads';
+import { createBatch, defaultBatchTitle, listBatches } from '@/lib/uploads';
+import { ownerEnv } from '@/lib/upload-owner';
+import { recordEvent } from '@/lib/upload-events';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_TITLE = 200;
 
 export async function GET(request: Request) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
-
-  return NextResponse.json({ batches: await listBatches(env) });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+  return NextResponse.json({ batches: await listBatches(owner.env) });
 }
 
 export async function POST(request: Request) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
 
-  const id = newId();
-  const now = Date.now();
-  await env.UPLOADS_DB.prepare(
-    `INSERT INTO upload_batches (id, owner_email, title, created_at, updated_at)
-     VALUES (?1, ?2, ?3, ?4, ?4)`,
-  )
-    .bind(id, UPLOAD_OWNER_EMAIL, defaultBatchTitle().slice(0, MAX_TITLE), now)
-    .run();
+  const body: unknown = await request.json().catch(() => null);
+  const raw = (body as { title?: unknown } | null)?.title;
+  const title = (typeof raw === 'string' && raw.trim() ? raw.trim() : defaultBatchTitle()).slice(
+    0,
+    MAX_TITLE,
+  );
 
-  return NextResponse.json({ id }, { status: 201 });
+  const id = await createBatch(owner.env, title);
+  await recordEvent(owner.env, { type: 'page_created', actor: owner.actor, batchId: id });
+  return NextResponse.json({ id, title }, { status: 201 });
 }

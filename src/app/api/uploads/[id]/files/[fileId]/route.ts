@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { isId, isUploadOwner, uploadsEnv } from '@/lib/uploads';
+import { duplicateFile, isId } from '@/lib/uploads';
+import { ownerEnv } from '@/lib/upload-owner';
+import { recordEvent } from '@/lib/upload-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,11 +11,9 @@ const MAX_DESCRIPTION = 500;
 type RouteContext = { params: Promise<{ id: string; fileId: string }> };
 
 export async function PATCH(request: Request, { params }: RouteContext) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+  const { env } = owner;
 
   const { id, fileId } = await params;
   if (!isId(id) || !isId(fileId)) {
@@ -49,11 +49,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 }
 
 export async function DELETE(request: Request, { params }: RouteContext) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+  const { env } = owner;
 
   const { id, fileId } = await params;
   if (!isId(id) || !isId(fileId)) {
@@ -68,5 +66,30 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     .run();
 
   if (!result.meta.changes) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  await recordEvent(env, { type: 'file_deleted', actor: owner.actor, batchId: id, fileId });
   return NextResponse.json({ ok: true });
+}
+
+export async function POST(request: Request, { params }: RouteContext) {
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+
+  const { id, fileId } = await params;
+  if (!isId(id) || !isId(fileId)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+  const body: unknown = await request.json().catch(() => null);
+  if ((body as { action?: unknown } | null)?.action !== 'duplicate') {
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  }
+
+  const file = await duplicateFile(owner.env, id, fileId);
+  if (!file) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  await recordEvent(owner.env, {
+    type: 'file_duplicated',
+    actor: owner.actor,
+    batchId: id,
+    fileId: file.id,
+  });
+  return NextResponse.json({ file }, { status: 201 });
 }

@@ -1,14 +1,20 @@
+import { OAuthProvider } from "@cloudflare/workers-oauth-provider";
 import { createMcpHandler } from "agents/mcp";
+import { handleAuthorize, handleCallback } from "./auth";
+import { createOwnerServer } from "./owner";
 import { createServer } from "./server";
 import { data } from "./data";
 import { getArticleMetrics, resetArticleFetches } from "./article-state";
 import { handleFileRequest } from "./files";
-import type { WorkerEnv } from "./types";
+import type { AppEnv, WorkerEnv } from "./types";
 
 const ENDPOINT = "https://mcp.mannanteam.workers.dev/mcp";
 const MCP_RATE_LIMIT = "60";
 const MCP_MAX_BODY_BYTES = 32_768;
 const MCP_MAX_SEARCH_QUERY_LENGTH = 512;
+const OWNER_MAX_BODY_BYTES = 16 * 1024 * 1024;
+const OWNER_ROUTE = "/owner/mcp";
+const OWNER_CORS_ORIGIN = "https://claude.ai";
 
 const INFO = JSON.stringify(
   {
@@ -219,9 +225,25 @@ async function handleMcpRequest(
   });
 }
 
-export default {
+const ownerHandler = {
+  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
+    const declaredLength = Number(request.headers.get("content-length"));
+    if (Number.isFinite(declaredLength) && declaredLength > OWNER_MAX_BODY_BYTES) {
+      return Response.json({ error: "MCP request body too large" }, { status: 413 });
+    }
+    const handler = createMcpHandler(createOwnerServer(env as AppEnv), {
+      route: OWNER_ROUTE,
+      corsOptions: { origin: OWNER_CORS_ORIGIN },
+    });
+    return handler(request, env, ctx);
+  },
+};
+
+const publicRouter = {
   async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext) {
     const { pathname } = new URL(request.url);
+    if (pathname === "/authorize") return handleAuthorize(request, env as AppEnv);
+    if (pathname === "/callback") return handleCallback(request, env as AppEnv);
     if (pathname === "/") {
       const wantsHtml = request.headers.get("accept")?.includes("text/html");
       if (wantsHtml) {
@@ -246,3 +268,13 @@ export default {
     return new Response("Not found", { status: 404 });
   },
 } satisfies ExportedHandler<WorkerEnv>;
+
+export default new OAuthProvider<WorkerEnv>({
+  apiRoute: OWNER_ROUTE,
+  apiHandler: ownerHandler,
+  defaultHandler: publicRouter,
+  authorizeEndpoint: "/authorize",
+  tokenEndpoint: "/token",
+  clientRegistrationEndpoint: "/register",
+  scopesSupported: ["uploads"],
+});

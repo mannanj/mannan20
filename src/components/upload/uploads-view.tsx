@@ -1,42 +1,84 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { formatBytes, type UploadBatch } from '@/lib/uploads-shared';
+import {
+  MAX_UPLOAD_BYTES,
+  formatBytes,
+  searchTerms,
+  shareStatus,
+  type UploadBatch,
+  type UploadShare,
+} from '@/lib/uploads-shared';
+import { useUploader } from '@/hooks/use-uploader';
+import {
+  ActionMenu,
+  CARD,
+  CARD_GRID,
+  ConfirmDialog,
+  DATE_FORMAT,
+  INPUT,
+  META,
+  PendingList,
+  SECTION_TITLE,
+  plural,
+} from './ui';
+import {
+  CopyLink,
+  STATUS_LABEL,
+  ShareDialog,
+  accessLabel,
+  describeShare,
+  type ShareTarget,
+} from './share-dialog';
 
-const DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-};
+const ACTION_CARD =
+  'flex h-full min-h-[7.5rem] w-full cursor-pointer flex-col items-start justify-between gap-2 rounded-[9px] border border-[#ddd] bg-white p-4 text-left text-[#0b0b0b] no-underline transition-colors hover:border-[#0b0b0b] disabled:cursor-wait';
 
-function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? '' : 's'}`;
-}
-
-export function UploadsView({ batches }: { batches: UploadBatch[] }) {
+export function UploadsView({
+  batches,
+  shares,
+  fileCount,
+}: {
+  batches: UploadBatch[];
+  shares: UploadShare[];
+  fileCount: number;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<UploadBatch | null>(null);
+  const [sharing, setSharing] = useState<{ target: ShareTarget; edit: UploadShare | null } | null>(
+    null,
+  );
+  const refresh = useCallback(() => router.refresh(), [router]);
+  const { pending, upload, dismiss } = useUploader(refresh);
 
   const matching = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return batches;
-    return batches.filter((batch) => batch.title.toLowerCase().includes(needle));
+    const terms = searchTerms(query);
+    if (!terms.length) return batches;
+    return batches.filter((batch) => terms.every((term) => batch.title.toLowerCase().includes(term)));
   }, [batches, query]);
 
-  const create = async () => {
+  const createPage = async (): Promise<string | null> => {
+    const res = await fetch('/api/uploads', { method: 'POST' }).catch(() => null);
+    if (!res?.ok) return null;
+    return ((await res.json()) as { id: string }).id;
+  };
+
+  const newPage = async () => {
     if (creating) return;
     setCreating(true);
-    const res = await fetch('/api/uploads', { method: 'POST' }).catch(() => null);
-    if (!res?.ok) {
-      setCreating(false);
-      return;
-    }
-    const { id } = (await res.json()) as { id: string };
-    router.push(`/upload/${id}`);
+    const id = await createPage();
+    if (id) router.push(`/upload/${id}`);
+    else setCreating(false);
+  };
+
+  const uploadFiles = async (files: File[]) => {
+    if (!files.length) return;
+    const id = await createPage();
+    if (id) await upload(`/api/uploads/${id}`, files);
   };
 
   const confirmDelete = async () => {
@@ -46,190 +88,265 @@ export function UploadsView({ batches }: { batches: UploadBatch[] }) {
     router.refresh();
   };
 
+  const setRevoked = async (share: UploadShare, revoked: boolean) => {
+    await fetch(`/api/uploads/shares/${share.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ revoked }),
+    }).catch(() => null);
+    router.refresh();
+  };
+
   return (
-    <section className="flex flex-col gap-[13px]">
-      <div className="flex flex-wrap items-center justify-between gap-[13px]">
-        <h2 className="m-0 text-[1.25rem] font-bold tracking-[-0.01em]">All Uploads</h2>
-        {batches.length > 0 && (
-          <label>
-            <span className="sr-only">Search your uploads</span>
-            <input
-              type="search"
-              value={query}
-              placeholder="Search"
-              onChange={(event) => setQuery(event.target.value)}
-              className="w-60 max-w-full rounded-[9px] border border-[#a8a8a8] bg-white px-3 py-[9px] text-[0.9375rem] text-[#0b0b0b] outline-none hover:border-[#0b0b0b] focus:border-[#0b0b0b]"
-            />
-          </label>
-        )}
-      </div>
-
-      <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-[13px] p-0">
-        <li>
-          <button
-            type="button"
-            onClick={create}
-            disabled={creating}
-            className="flex h-full min-h-[9.5rem] w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[9px] border border-dashed border-[#ddd] bg-white p-4 text-[#6f6f6f] transition-colors hover:border-[#0b0b0b] hover:text-[#0b0b0b] disabled:cursor-wait"
-          >
-            <span className="text-2xl leading-none font-normal">+</span>
-            <span className="text-base font-bold tracking-[-0.01em]">
-              {creating ? 'Creating…' : 'New upload'}
-            </span>
-          </button>
-        </li>
-
-        {matching.map((batch) => (
-          <li key={batch.id}>
-            <BatchCard batch={batch} onDelete={() => setPendingDelete(batch)} />
+    <div className="flex flex-col gap-[38px]">
+      <section className="flex flex-col gap-[13px]">
+        <ul className={CARD_GRID} data-testid="upload-actions">
+          <li>
+            <UploadCard onFiles={uploadFiles} />
           </li>
-        ))}
-      </ul>
+          <li>
+            <button type="button" onClick={newPage} disabled={creating} className={ACTION_CARD}>
+              <span className="text-2xl leading-none">+</span>
+              <span>
+                <span className="block text-base font-bold tracking-[-0.01em]">
+                  {creating ? 'Creating…' : 'New page'}
+                </span>
+                <span className="text-[0.875rem] text-[#6f6f6f]">A place to collect files</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <Link href="/upload/files" className={ACTION_CARD}>
+              <span className="text-xl leading-none">≡</span>
+              <span>
+                <span className="block text-base font-bold tracking-[-0.01em]">All files</span>
+                <span className="text-[0.875rem] text-[#6f6f6f]">
+                  {plural(fileCount, 'file')} — search and filter
+                </span>
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link href="/upload/analytics" className={ACTION_CARD}>
+              <span className="text-xl leading-none">↗</span>
+              <span>
+                <span className="block text-base font-bold tracking-[-0.01em]">Analytics</span>
+                <span className="text-[0.875rem] text-[#6f6f6f]">Uploads, downloads, links</span>
+              </span>
+            </Link>
+          </li>
+        </ul>
+        <PendingList pending={pending} onDismiss={dismiss} />
+      </section>
 
-      {matching.length === 0 && batches.length > 0 && (
-        <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">No uploads match that.</p>
-      )}
+      <section className="flex flex-col gap-[13px]" data-testid="shared-section">
+        <h2 className={SECTION_TITLE}>Shared</h2>
+        {shares.length === 0 ? (
+          <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">
+            No share links yet. Open a page or a file&rsquo;s menu and pick Share.
+          </p>
+        ) : (
+          <ul className={CARD_GRID}>
+            {shares.map((share) => (
+              <li key={share.id}>
+                <ShareCard
+                  share={share}
+                  onEdit={() =>
+                    setSharing({
+                      target: {
+                        batchId: share.batchId,
+                        fileId: share.fileId,
+                        title: share.fileTitle ?? share.batchTitle,
+                      },
+                      edit: share,
+                    })
+                  }
+                  onToggle={() => setRevoked(share, share.revokedAt === null)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-[13px]" data-testid="pages-section">
+        <div className="flex flex-wrap items-center justify-between gap-[13px]">
+          <h2 className={SECTION_TITLE}>All pages</h2>
+          {batches.length > 0 && (
+            <label>
+              <span className="sr-only">Search pages</span>
+              <input
+                type="search"
+                value={query}
+                placeholder="Search pages"
+                onChange={(event) => setQuery(event.target.value)}
+                className={`${INPUT} w-60 max-w-full`}
+              />
+            </label>
+          )}
+        </div>
+
+        {batches.length === 0 ? (
+          <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">No pages yet.</p>
+        ) : (
+          <ul className={CARD_GRID}>
+            {matching.map((batch) => (
+              <li key={batch.id}>
+                <PageCard
+                  batch={batch}
+                  shared={shares.some(
+                    (share) =>
+                      share.batchId === batch.id && !share.fileId && shareStatus(share) === 'active',
+                  )}
+                  onShare={() =>
+                    setSharing({
+                      target: { batchId: batch.id, fileId: null, title: batch.title },
+                      edit: null,
+                    })
+                  }
+                  onDelete={() => setPendingDelete(batch)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+        {matching.length === 0 && batches.length > 0 && (
+          <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">No pages match that.</p>
+        )}
+      </section>
 
       {pendingDelete && (
-        <DeleteDialog
-          batch={pendingDelete}
+        <ConfirmDialog
+          title={`Delete “${pendingDelete.title}”?`}
+          body={`This contains ${plural(pendingDelete.fileCount, 'uploaded file')}, ${formatBytes(pendingDelete.totalSize)}, and its share links stop working.`}
+          confirm="Delete page"
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
         />
       )}
-    </section>
+
+      {sharing && (
+        <ShareDialog
+          target={sharing.target}
+          initialEdit={sharing.edit}
+          onClose={() => setSharing(null)}
+          onChanged={refresh}
+        />
+      )}
+    </div>
   );
 }
 
-function BatchCard({ batch, onDelete }: { batch: UploadBatch; onDelete: () => void }) {
-  const [open, setOpen] = useState(false);
-  const wrapper = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const outside = (event: MouseEvent | TouchEvent) => {
-      if (wrapper.current && !wrapper.current.contains(event.target as Node)) setOpen(false);
-    };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', outside);
-    document.addEventListener('touchstart', outside);
-    document.addEventListener('keydown', escape);
-    return () => {
-      document.removeEventListener('mousedown', outside);
-      document.removeEventListener('touchstart', outside);
-      document.removeEventListener('keydown', escape);
-    };
-  }, [open]);
-
+function UploadCard({ onFiles }: { onFiles: (files: File[]) => void }) {
+  const [dragging, setDragging] = useState(false);
   return (
-    <div className="relative flex h-full min-h-[9.5rem] flex-col rounded-[9px] border border-[#ddd] bg-white p-4 transition-colors hover:border-[#0b0b0b]">
+    <label
+      onDragOver={(event) => {
+        event.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setDragging(false);
+        onFiles([...event.dataTransfer.files]);
+      }}
+      className={`${ACTION_CARD} border-dashed ${dragging ? 'border-[#0b0b0b]' : ''}`}
+    >
+      <span className="text-2xl leading-none">↑</span>
+      <span>
+        <span className="block text-base font-bold tracking-[-0.01em]">Upload files</span>
+        <span className="text-[0.875rem] text-[#6f6f6f]">
+          Drop or choose, up to {formatBytes(MAX_UPLOAD_BYTES)} each
+        </span>
+      </span>
+      <input
+        type="file"
+        multiple
+        className="hidden"
+        data-testid="home-upload-input"
+        onChange={(event) => {
+          onFiles([...(event.target.files ?? [])]);
+          event.target.value = '';
+        }}
+      />
+    </label>
+  );
+}
+
+function PageCard({
+  batch,
+  shared,
+  onShare,
+  onDelete,
+}: {
+  batch: UploadBatch;
+  shared: boolean;
+  onShare: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className={CARD} data-testid="page-card">
       <Link href={`/upload/${batch.id}`} className="flex h-full flex-col gap-[13px] text-inherit no-underline">
-        <span className="pr-[26px] text-base font-bold tracking-[-0.01em]">{batch.title}</span>
-        <span className="mt-auto flex flex-wrap items-baseline gap-[13px] pt-[13px] font-mono text-[0.6875rem] text-[#6f6f6f]">
+        <span className="pr-[26px] text-base font-bold tracking-[-0.01em] break-words">{batch.title}</span>
+        <span className={`mt-auto flex flex-wrap items-baseline gap-[13px] pt-[13px] ${META}`}>
           <span>{new Date(batch.createdAt).toLocaleDateString('en-US', DATE_FORMAT)}</span>
           <span>{plural(batch.fileCount, 'file')}</span>
           <span>{formatBytes(batch.totalSize)}</span>
+          {shared && <span className="text-[#1a56db]">Shared</span>}
         </span>
       </Link>
-
-      <div className="absolute top-3.5 right-3.5" ref={wrapper}>
-        <button
-          type="button"
-          aria-label={`Actions for ${batch.title}`}
-          aria-expanded={open}
-          onClick={() => setOpen((was) => !was)}
-          className="flex cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-[#6f6f6f] hover:text-[#0b0b0b]"
-        >
-          <svg viewBox="0 0 16 16" width={16} height={16} fill="currentColor" aria-hidden="true">
-            <circle cx="8" cy="3" r="1.4" />
-            <circle cx="8" cy="8" r="1.4" />
-            <circle cx="8" cy="13" r="1.4" />
-          </svg>
-        </button>
-
-        {open && (
-          <div
-            role="menu"
-            className="absolute top-[calc(100%+6px)] right-0 z-20 flex min-w-[12rem] flex-col rounded-[9px] border border-[#ddd] bg-white p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
-          >
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOpen(false);
-                onDelete();
-              }}
-              className="cursor-pointer rounded-md border-0 bg-transparent px-3 py-2 text-left text-[0.9375rem] text-[#0b0b0b] hover:bg-[#f3f3f3]"
-            >
-              Delete upload
-            </button>
-          </div>
-        )}
+      <div className="absolute top-3.5 right-3.5">
+        <ActionMenu
+          label={`Actions for ${batch.title}`}
+          items={[
+            { label: 'Share', onSelect: onShare },
+            { label: 'Delete page', onSelect: onDelete },
+          ]}
+        />
       </div>
     </div>
   );
 }
 
-function DeleteDialog({
-  batch,
-  onCancel,
-  onConfirm,
+function ShareCard({
+  share,
+  onEdit,
+  onToggle,
 }: {
-  batch: UploadBatch;
-  onCancel: () => void;
-  onConfirm: () => void;
+  share: UploadShare;
+  onEdit: () => void;
+  onToggle: () => void;
 }) {
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCancel();
-    };
-    document.addEventListener('keydown', escape);
-    return () => document.removeEventListener('keydown', escape);
-  }, [onCancel]);
-
+  const status = shareStatus(share);
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-5"
-      onClick={onCancel}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Delete ${batch.title}`}
-        onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-[23rem] rounded-[9px] bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.25)]"
-      >
-        <h3 className="m-0 text-[1.25rem] font-bold tracking-[-0.01em]">
-          Delete &ldquo;{batch.title}&rdquo;?
-        </h3>
-        <p className="mt-2 mb-0 text-[0.9375rem] leading-6 text-[#0b0b0b]">
-          This contains {plural(batch.fileCount, 'uploaded file')}, {formatBytes(batch.totalSize)},
-          and can&rsquo;t be undone.
-        </p>
-        <div className="mt-6 flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="cursor-pointer rounded-[9px] border-2 border-[#0b0b0b] bg-white px-4 py-2 text-[0.9375rem] font-medium text-[#0b0b0b] hover:bg-[#f3f3f3]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setBusy(true);
-              onConfirm();
-            }}
-            className="cursor-pointer rounded-[9px] border-2 border-[#1f2937] bg-[#1f2937] px-4 py-2 text-[0.9375rem] font-medium text-white hover:bg-[#111827] disabled:cursor-wait disabled:opacity-70"
-          >
-            {busy ? 'Deleting…' : 'Delete upload'}
-          </button>
-        </div>
+    <div className={CARD} data-testid="share-card">
+      <Link href={`/upload/${share.batchId}`} className="flex flex-col gap-1 text-inherit no-underline">
+        <span className="pr-[26px] text-base font-bold tracking-[-0.01em] break-words">
+          {share.label || share.fileTitle || share.batchTitle}
+        </span>
+        <span className="text-[0.875rem] text-[#6f6f6f]">
+          {accessLabel(share)}
+          {share.label ? ` · ${share.fileTitle ?? share.batchTitle}` : ''}
+        </span>
+      </Link>
+      <span className={`mt-auto pt-[13px] ${META}`}>{describeShare(share).join(' · ')}</span>
+      <div className="flex items-center justify-between gap-[13px] pt-[13px]">
+        <span
+          className={`text-[0.8125rem] font-medium ${status === 'active' ? 'text-[#0b0b0b]' : 'text-[#a8a8a8]'}`}
+        >
+          {STATUS_LABEL[status]}
+        </span>
+        <CopyLink token={share.token} />
+      </div>
+      <div className="absolute top-3.5 right-3.5">
+        <ActionMenu
+          label={`Actions for share ${share.label || share.batchTitle}`}
+          items={[
+            { label: 'Edit link', onSelect: onEdit },
+            { label: share.revokedAt === null ? 'Turn off' : 'Turn on', onSelect: onToggle },
+          ]}
+        />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@
     "smoke": "bun scripts/mcp-smoke.mjs"
   },
   "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.10.3",
     "@modelcontextprotocol/sdk": "1.29.0",
     "agents": "^0.15.0",
     "zod": "^4.3.6"

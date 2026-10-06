@@ -75,3 +75,21 @@ Then browsable at https://registry.modelcontextprotocol.io/ (search `io.github.m
 ## Design
 
 See `docs/mcp-server-design.md` and `docs/mcp-server-implementation-plan.md`. Hosted on Cloudflare Workers rather than mannan.is itself because Vercel's security checkpoint challenges non-browser clients — exactly the audience an MCP server exists for. The MCP transport remains stateless; article analytics live behind a private service binding in the portfolio state Worker's Durable Object. SSE transport is omitted as deprecated.
+
+## Owner endpoint
+
+`/owner/mcp` is a second, OAuth-protected MCP endpoint for the site owner only (hello@mannan.is). It manages the Upload app: pages, files, upload links, download links and shares. The public `/mcp` endpoint is unchanged and never lists these tools.
+
+Connect from Claude Code:
+
+```
+claude mcp add --transport http mannan-owner https://mcp.mannanteam.workers.dev/owner/mcp
+```
+
+Sign-in bounces through `https://mannan.is/api/mcp/uploads/authorize` and refuses any account other than the owner, both at the site and at `/callback`. The Worker then acts by calling the site's `/api/uploads/*` endpoints with a 60-second signed actor token.
+
+Required configuration:
+
+- Worker secrets: `MCP_GRANT_SECRET` (same value as the site's `UPLOADS_MCP_GRANT_SECRET`), `MCP_ACTOR_SECRET` (same value as the site's `UPLOADS_MCP_ACTOR_SECRET`).
+- Worker vars/bindings in `wrangler.jsonc`: `SITE_ORIGIN`, `OAUTH_KV`.
+- Site env: `UPLOADS_MCP_GRANT_SECRET`, `UPLOADS_MCP_CALLBACK_URL` (`https://mcp.mannanteam.workers.dev/callback`), `UPLOADS_MCP_ACTOR_SECRET`.

@@ -3,21 +3,30 @@
 import { useState } from 'react';
 import { useTurnstile } from '@/hooks/use-turnstile';
 import { currentReturnPath } from '@/lib/return-to';
+import { RequestAccessChat } from '@/components/chat/request-access-chat';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 export function UploadLocked({ email }: { email: string | null }) {
+  if (email) {
+    return (
+      <section className="flex flex-col gap-[13px]" data-testid="request-access">
+        <h2 className="m-0 text-[1.25rem] font-bold tracking-[-0.01em]">Request access</h2>
+        <RequestAccessChat resource="upload" />
+      </section>
+    );
+  }
   return (
     <section className="flex flex-col gap-[13px]">
       <h2 className="m-0 text-[1.25rem] font-bold tracking-[-0.01em]">
         Nice, you found this page.
       </h2>
-      {!email && <SignInForm />}
+      <SignInForm />
     </section>
   );
 }
 
-function SignInForm() {
+export function SignInForm() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const {

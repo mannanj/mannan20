@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
-import {
-  UPLOAD_OWNER_EMAIL,
-  getBatch,
-  isId,
-  isUploadOwner,
-  listFiles,
-  uploadsEnv,
-} from '@/lib/uploads';
+import { UPLOAD_OWNER_EMAIL, getBatch, isId, listFiles } from '@/lib/uploads';
+import { ownerEnv } from '@/lib/upload-owner';
+import { recordEvent } from '@/lib/upload-events';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,11 +10,9 @@ const MAX_TITLE = 200;
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: Request, { params }: RouteContext) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+  const { env } = owner;
 
   const { id } = await params;
   if (!isId(id)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -31,11 +24,9 @@ export async function GET(request: Request, { params }: RouteContext) {
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+  const { env } = owner;
 
   const { id } = await params;
   if (!isId(id)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -60,11 +51,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 }
 
 export async function DELETE(request: Request, { params }: RouteContext) {
-  if (!(await isUploadOwner(request))) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-  const env = uploadsEnv();
-  if (!env) return NextResponse.json({ error: 'Storage unavailable' }, { status: 503 });
+  const owner = await ownerEnv(request);
+  if (!owner.ok) return owner.response;
+  const { env } = owner;
 
   const { id } = await params;
   if (!isId(id)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -85,5 +74,6 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     .bind(now, id)
     .run();
 
+  await recordEvent(env, { type: 'page_deleted', actor: owner.actor, batchId: id });
   return NextResponse.json({ ok: true });
 }

@@ -36,6 +36,10 @@
       "bucket_name": "mannan20-uploads"
     },
     {
+      "binding": "SHARED_UPLOADS",
+      "bucket_name": "mannan20-shared-uploads"
+    },
+    {
       "binding": "GATED_FILES",
       "bucket_name": "mannan20-gated"
     }
@@ -88,6 +92,10 @@
         {
           "binding": "UPLOADS",
           "bucket_name": "mannan20-uploads"
+        },
+        {
+          "binding": "SHARED_UPLOADS",
+          "bucket_name": "mannan20-shared-uploads"
         },
         {
           "binding": "GATED_FILES",
@@ -154,6 +162,10 @@
         {
           "binding": "UPLOADS",
           "bucket_name": "mannan20-uploads"
+        },
+        {
+          "binding": "SHARED_UPLOADS",
+          "bucket_name": "mannan20-shared-uploads"
         },
         {
           "binding": "GATED_FILES",

@@ -6,6 +6,10 @@
   "compatibility_date": "2026-04-01",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "vars": { "SITE_ORIGIN": "https://mannan.is" },
+  "kv_namespaces": [
+    { "binding": "OAUTH_KV", "id": "acab75d9c17e43fd89f261951be73043" }
+  ],
   "observability": { "enabled": true },
   "services": [
     {
