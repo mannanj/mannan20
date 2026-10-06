@@ -17,20 +17,22 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] `task-description-inline-input.md`, `task-offset-direction-label.md`, `task-event-hover-clock-highlight.md` (committed by worker 1 with its work)
 - [x] `task-events-header-date-picker.md` (committed by worker 2 with its work)
 - [x] `task-widget-menus-and-clock-sync.md` (round 2)
+- [x] `task-live-sync-and-day-headers.md`, `task-time-zones.md`, `task-mcp-moon-data.md`
 - [x] Decisions recorded in the task files
 
 #### Sun — being built (worker 1, main checkout)
-- [ ] Dropdown: time pinned right, label truncates, tooltip on hover
-- [ ] Dropdown: Morning Blue Hour End, Evening Blue Hour End
-- [ ] Dropdown: grouped, time-ordered, row click picks / caret expands
-- [ ] Dropdown: Solar Midnight top-level, before Moon
-- [ ] Dropdown: Moon group last — Moonrise, Moon Peak, Moonset, Moon Midnight (clock's definitions)
-- [ ] Date picker: Moon dropdown, phases with next date, caret for more, past dates labeled `(past)`
-- [ ] Description: no accordion, just an "Add a description..." field to click into (`task-description-inline-input.md`)
-- [ ] Before/After/During label: smaller text, full label visible, no truncation (`task-offset-direction-label.md`)
-- [ ] Red line + dot on the clock while making an event, "New Event" → "Making <title>", normal and pop-out
-- [ ] Hover an event row (pop-out or widget) → its clock dot shows hovered with label (`task-event-hover-clock-highlight.md`)
-- [ ] Tests + screenshots → `artifacts/review-2026-10-05/dropdown-*`, `draft-marker-*`, report `dropdown-report.md`
+- [x] Worker 1 verified by me: 500 unit pass, 21/21 new e2e pass; 6 schedule-widget/celestial failures pre-existing (also fail at 8f05a87)
+- [x] Dropdown: time pinned right, label truncates, tooltip on hover
+- [x] Dropdown: Morning Blue Hour End, Evening Blue Hour End
+- [x] Dropdown: grouped, time-ordered, row click picks / caret expands
+- [x] Dropdown: Solar Midnight top-level, before Moon
+- [x] Dropdown: Moon group last — Moonrise, Moon Peak, Moonset, Moon Midnight (clock's definitions)
+- [x] Date picker: Moon dropdown, phases with next date, caret for more, past dates labeled `(past)`
+- [x] Description: no accordion, just an "Add a description..." field to click into (`task-description-inline-input.md`)
+- [x] Before/After/During label: smaller text, full label visible, no truncation (`task-offset-direction-label.md`)
+- [x] Red line + dot on the clock while making an event, "New Event" → "Making <title>", normal and pop-out
+- [x] Hover an event row (pop-out or widget) → its clock dot shows hovered with label (`task-event-hover-clock-highlight.md`)
+- [x] Tests + screenshots → `artifacts/review-2026-10-05/dropdown-*`, `draft-marker-*`, report `dropdown-report.md`
 
 #### Sun — being built (worker 2, worktree `~/Documents/sun-wt-popouts`)
 - [ ] Desktop: every widget opens as a pop-out, source widget closes
@@ -41,6 +43,10 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Mobile drawer: slides up from the bottom, pop-out icon + window-in-window mode icon to switch to/from the draggable widget, mode remembered per device (default on mobile)
 - [ ] Tests + screenshots → `artifacts/review-2026-10-05/popout-*`, `drawer-*`, report `popout-report.md`
 
+#### Sun — worker 1 follow-up (`task-live-sync-and-day-headers.md`)
+- [ ] BUG: draft dot doesn't move live when changing the time; clock needs manual reload after save
+- [ ] Day headers `M 10/5`, `T`, `W`, `Th`, `F`, `Sa`, `Su`
+
 #### Sun — round 2, starts after worker 2 lands (`task-widget-menus-and-clock-sync.md`)
 - [ ] Several synced widgets: clock follows the last one changed
 - [ ] Per-widget clock sync (two-way when synced, local when not), unsynced warning/refresh icon left of ⋯
@@ -49,6 +55,15 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Events: right-click row → edit modal; confirm-before-delete toggle (on by default, always checked, words flip — confirmed)
 - [ ] Moon widget: past dates not grayed; hover doesn't change the clock, click does
 - [ ] Phases widget: same system (multiple, sync/unsync, menus, ZIP)
+
+#### Sun — round 3: time zones (`task-time-zones.md`)
+- [ ] "Clock Time" row shows the local zone ("Eastern Time"), caret picks other zones; events store their zone
+- [ ] Zone from ZIP via repo's `zip2tz.csv`, browser fallback, `Intl` conversions (no library unless needed)
+- [ ] App-wide rules decided and written down (clock zone = ZIP zone, existing events, DST)
+- [ ] Unit + cross-zone Playwright tests (browser zone ≠ ZIP zone)
+
+#### Sun — round 4: MCP moon data (`task-mcp-moon-data.md`)
+- [ ] `get_moon_year`-style tool, tests; no deploy without OK
 
 #### End of session
 - [ ] Review both reports and screenshots; verify claims firsthand
