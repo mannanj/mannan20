@@ -42,17 +42,19 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Tests + screenshots → `artifacts/review-2026-10-05/popout-*`, `drawer-*`, report `popout-report.md`
 
 #### Sun — round 2, starts after worker 2 lands (`task-widget-menus-and-clock-sync.md`)
+- [ ] Several synced widgets: clock follows the last one changed
 - [ ] Per-widget clock sync (two-way when synced, local when not), unsynced warning/refresh icon left of ⋯
 - [ ] ⋯ menu + right-click menu: sync, date range, days shown, resolution (days/weeks/months/lunar months), first 7 shown on the clock, ZIP
 - [ ] New pop-out icon (unlimited duplicates) + widgets icon to change a window's widget
-- [ ] Events: right-click row → edit modal; confirm-before-delete toggle (on by default, label states current behavior, always checked — confirm interpretation at review)
+- [ ] Events: right-click row → edit modal; confirm-before-delete toggle (on by default, always checked, words flip — confirmed)
 - [ ] Moon widget: past dates not grayed; hover doesn't change the clock, click does
 - [ ] Phases widget: same system (multiple, sync/unsync, menus, ZIP)
 
 #### End of session
 - [ ] Review both reports and screenshots; verify claims firsthand
 - [ ] Worktree removed, everything on Sun `main`
-- [ ] Mannan reviews, then deploy Sun
-- [ ] Mannan approves calendar push + deploy (task-297 + task-31)
+- [ ] Mannan reviews, then deploy Sun (no deploy before his OK)
+- [ ] Cloudflare: one-off tokens via cf-custom-grant allowed (Mannan consented 2026-10-05); revoke when done
+- [ ] Calendar push + deploy: Mannan said not yet (2026-10-05)
 
 - Location: `~/Documents/calendar`, `~/Documents/sun`
