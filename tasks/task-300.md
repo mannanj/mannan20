@@ -15,6 +15,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] `task-event-dropdown-times.md` (times column, blue hour ends, grouped dropdown, moon group, moon-phase date picker)
 - [x] `task-draft-event-clock-marker.md`
 - [x] `task-description-inline-input.md`, `task-offset-direction-label.md`, `task-event-hover-clock-highlight.md` (committed by worker 1 with its work)
+- [x] `task-events-header-date-picker.md` (committed by worker 2 with its work)
 - [x] Decisions recorded in the task files
 
 #### Sun — being built (worker 1, main checkout)
@@ -35,6 +36,7 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Pop-out blocked → toast, open inline instead
 - [ ] Mobile: open inline in the clock
 - [ ] Parity audit of all 7 pop-outs, gaps listed, events/schedule fixed first (create events, open other widgets as pop-outs)
+- [ ] Events header date is a dropdown that changes the clock's day + events; inline Today icon when not today, first header only (`task-events-header-date-picker.md`)
 - [ ] Mobile drawer: slides up from the bottom, pop-out icon + window-in-window mode icon to switch to/from the draggable widget, mode remembered per device (default on mobile)
 - [ ] Tests + screenshots → `artifacts/review-2026-10-05/popout-*`, `drawer-*`, report `popout-report.md`
 
