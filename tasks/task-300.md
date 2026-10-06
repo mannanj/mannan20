@@ -64,7 +64,8 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 #### Sun — round 3: time zones (`task-time-zones.md`)
 - [x] Round 3 verified by me: 530 unit pass, time-zones 4/4, all new specs pass
 - [x] Found + fixed test bug: unbounded networkidle waits made most of popout-sync time out — now 10/10 (810f79e), was 2/10 before this session
-- [ ] Zoned event crossing midnight stays on the wrong date — fix running; also verifying clock marker angle
+- [x] Zoned event crossing midnight now lands on the right date; clock marker angle verified by e2e (caa6ecf)
+- [ ] DST-day edge: a recurring event that occurs twice on one date shows once
 - [ ] Not zoned yet: sleep/work engine clock-time settings
 - [x] "Clock Time" row shows the local zone ("Eastern Time"), caret picks other zones; events store their zone
 - [x] Zone from ZIP via repo's `zip2tz.csv`, browser fallback, `Intl` conversions (no library unless needed)
@@ -78,11 +79,11 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [ ] Deploy MCP (`cd cloudflare/mcp && bun run deploy`) after Mannan's OK
 
 #### End of session
-- [ ] Review both reports and screenshots; verify claims firsthand
+- [x] Every worker report verified firsthand; review page: https://claude.ai/artifact/MPv1QiE7tDqCGvg13NFEsA
 - [x] Round 1 on Sun `main`, verified: 502 unit pass, 33/33 new e2e pass
 - [x] Round 2 + MCP moon done
-- [x] Round 3 time zones done; midnight-crossing fix running (started 2026-10-05 ~11:55 PM); time zones after round 2
-- [ ] Worktrees removed at the end
+- [x] Round 3 time zones + midnight fix done; final run: 535 unit pass, 80/87 e2e (7 pre-existing failures) (started 2026-10-05 ~11:55 PM); time zones after round 2
+- [x] Worktrees removed, leftover test servers stopped, ~/Documents/sun fast-forwarded to main
 - [ ] Mannan reviews, then deploy Sun (no deploy before his OK)
 - [ ] Cloudflare: one-off tokens via cf-custom-grant allowed (Mannan consented 2026-10-05); revoke when done
 - [ ] Calendar push + deploy: Mannan said not yet (2026-10-05)
