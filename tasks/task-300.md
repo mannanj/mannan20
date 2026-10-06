@@ -51,13 +51,15 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 - [x] Day headers `M 10/5`, `T`, `W`, `Th`, `F`, `Sa`, `Su`
 
 #### Sun — round 2, starts after worker 2 lands (`task-widget-menus-and-clock-sync.md`)
-- [ ] Several synced widgets: clock follows the last one changed
-- [ ] Per-widget clock sync (two-way when synced, local when not), unsynced warning/refresh icon left of ⋯
-- [ ] ⋯ menu + right-click menu: sync, date range, days shown, resolution (days/weeks/months/lunar months), first 7 shown on the clock, ZIP
-- [ ] New pop-out icon (unlimited duplicates) + widgets icon to change a window's widget
-- [ ] Events: right-click row → edit modal; confirm-before-delete toggle (on by default, always checked, words flip — confirmed)
-- [ ] Moon widget: past dates not grayed; hover doesn't change the clock, click does
-- [ ] Phases widget: same system (multiple, sync/unsync, menus, ZIP)
+- [x] Round 2 verified by me: 511 unit pass, 13/13 round-2 e2e; 2 older tests expected old behavior (delete without confirm, glyph opens inline) — updated + pushed (af13bd6)
+- [ ] Limit: only pop-outs can be unsynced; in-clock widgets are always synced
+- [x] Several synced widgets: clock follows the last one changed
+- [x] Per-widget clock sync (two-way when synced, local when not), unsynced warning/refresh icon left of ⋯
+- [x] ⋯ menu + right-click menu: sync, date range, days shown, resolution (days/weeks/months/lunar months), first 7 shown on the clock, ZIP
+- [x] New pop-out icon (unlimited duplicates) + widgets icon to change a window's widget
+- [x] Events: right-click row → edit modal; confirm-before-delete toggle (on by default, always checked, words flip — confirmed)
+- [x] Moon widget: past dates not grayed; hover doesn't change the clock, click does
+- [x] Phases widget: same system (multiple, sync/unsync, menus, ZIP)
 
 #### Sun — round 3: time zones (`task-time-zones.md`)
 - [ ] "Clock Time" row shows the local zone ("Eastern Time"), caret picks other zones; events store their zone
@@ -74,7 +76,8 @@ Detail lives in each repo's task file; this is the full list so nothing is misse
 #### End of session
 - [ ] Review both reports and screenshots; verify claims firsthand
 - [x] Round 1 on Sun `main`, verified: 502 unit pass, 33/33 new e2e pass
-- [ ] Round 2 running; MCP moon done (started 2026-10-05 ~11:55 PM); time zones after round 2
+- [x] Round 2 + MCP moon done
+- [ ] Round 3 time zones running (started 2026-10-06 ~12:20 AM) (started 2026-10-05 ~11:55 PM); time zones after round 2
 - [ ] Worktrees removed at the end
 - [ ] Mannan reviews, then deploy Sun (no deploy before his OK)
 - [ ] Cloudflare: one-off tokens via cf-custom-grant allowed (Mannan consented 2026-10-05); revoke when done
