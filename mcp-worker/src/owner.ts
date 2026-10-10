@@ -84,17 +84,25 @@ function toolFailure(error: unknown): ToolResult {
   return fail("The request failed.");
 }
 
+export const OWNER_INSTRUCTIONS =
+  "Owner-only tools for the Upload app at https://mannan.is/upload. A page is a batch of files. Use create_upload_link for large files and get_download_link to hand out downloads.";
+
 export function createOwnerServer(
   env: OwnerEnv,
   caller: () => OwnerProps | undefined = ownerCaller,
 ): McpServer {
   const server = new McpServer(
     { name: "mannan-owner", version: "1.0.0" },
-    {
-      instructions:
-        "Owner-only tools for the Upload app at https://mannan.is/upload. A page is a batch of files. Use create_upload_link for large files and get_download_link to hand out downloads.",
-    },
+    { instructions: OWNER_INSTRUCTIONS },
   );
+  return registerOwnerTools(server, env, caller);
+}
+
+export function registerOwnerTools(
+  server: McpServer,
+  env: OwnerEnv,
+  caller: () => OwnerProps | undefined = ownerCaller,
+): McpServer {
 
   const api = <T>(method: string, path: string, body?: Record<string, unknown> | FormData) =>
     ownerFetch<T>(env, method, path, body);

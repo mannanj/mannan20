@@ -1,27 +1,27 @@
 import { OAuthProvider } from "@cloudflare/workers-oauth-provider";
 import { createMcpHandler } from "agents/mcp";
 import { handleAuthorize, handleCallback } from "./auth";
-import { createOwnerServer } from "./owner";
+import { OWNER_INSTRUCTIONS, registerOwnerTools } from "./owner";
+import { OWNER_EMAIL } from "./owner-api";
 import { createServer } from "./server";
 import { data } from "./data";
 import { getArticleMetrics, resetArticleFetches } from "./article-state";
 import { handleFileRequest } from "./files";
-import type { AppEnv, WorkerEnv } from "./types";
+import type { AppEnv, CallerProps, WorkerEnv } from "./types";
 
 const ENDPOINT = "https://mcp.mannanteam.workers.dev/mcp";
 const MCP_RATE_LIMIT = "60";
 const MCP_MAX_BODY_BYTES = 32_768;
 const MCP_MAX_SEARCH_QUERY_LENGTH = 512;
 const OWNER_MAX_BODY_BYTES = 16 * 1024 * 1024;
-const OWNER_ROUTE = "/owner/mcp";
-const OWNER_CORS_ORIGIN = "https://claude.ai";
 
 const INFO = JSON.stringify(
   {
     name: "mannan-portfolio",
-    description: "Public-data MCP server for mannan.is with article-fetch analytics",
+    description: "MCP server for mannan.is: public data for guests, Upload tools for Mannan's signed-in account",
     endpoint: "/mcp",
     transport: "streamable-http",
+    auth: "oauth",
     site: data.site,
     dataGeneratedAt: data.generatedAt,
     docs: "https://mannan.is/mcp",
@@ -36,7 +36,7 @@ const SERVER_CARD = JSON.stringify(
     name: "mannan-portfolio",
     title: "Mannan Javid — Portfolio",
     description:
-      "Public-data MCP server for mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Article content fetches record an aggregate counter.",
+      "MCP server for mannan.is. Connecting opens a sign-in page; continue as a guest for public data: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Mannan's signed-in account also gets the Upload tools. Article content fetches record an aggregate counter.",
     version: "1.0.0",
     endpoint: ENDPOINT,
     transport: "streamable-http",
@@ -68,7 +68,7 @@ a:hover{text-decoration:underline}
 <body>
 <main>
 <h1>Mannan MCP</h1>
-<p>An MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent. Full article fetches tick a tiny aggregate counter.</p>
+<p>An MCP server exposing the public data of <a href="https://mannan.is">mannan.is</a> — profile, goals, experience, writing, apps, research, and documents — to any AI agent. Connecting opens a sign-in page: choose Continue as guest for the public data. Full article fetches tick a tiny aggregate counter.</p>
 <code>${ENDPOINT}</code>
 <p>Claude Code:</p>
 <code>claude mcp add --transport http mannan ${ENDPOINT}</code>
@@ -160,37 +160,49 @@ function hasOversizedSearchQuery(body: ArrayBuffer): boolean {
   }
 }
 
-async function handleMcpRequest(
+function callerProps(ctx: ExecutionContext): CallerProps | undefined {
+  return (ctx as ExecutionContext & { props?: CallerProps }).props;
+}
+
+async function limitGuest(request: Request, env: WorkerEnv): Promise<Response | null> {
+  if (!env.MCP_LIMITER) {
+    return Response.json({ error: "MCP service unavailable" }, { status: 503 });
+  }
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  try {
+    const { success } = await env.MCP_LIMITER.limit({ key: ip });
+    if (success) return null;
+    return Response.json(
+      { error: "Too many MCP requests, try again shortly" },
+      {
+        status: 429,
+        headers: {
+          "retry-after": "60",
+          "x-ratelimit-limit": MCP_RATE_LIMIT,
+          "x-ratelimit-policy": `${MCP_RATE_LIMIT};w=60`,
+        },
+      },
+    );
+  } catch {
+    return Response.json({ error: "MCP service unavailable" }, { status: 503 });
+  }
+}
+
+export async function handleMcpRequest(
   request: Request,
   env: WorkerEnv,
   ctx: ExecutionContext,
 ): Promise<Response> {
-  if (!env.MCP_LIMITER) {
-    return Response.json({ error: "MCP service unavailable" }, { status: 503 });
+  const owner = callerProps(ctx)?.email === OWNER_EMAIL;
+
+  if (!owner) {
+    const limited = await limitGuest(request, env);
+    if (limited) return limited;
   }
 
-  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
-  try {
-    const { success } = await env.MCP_LIMITER.limit({ key: ip });
-    if (!success) {
-      return Response.json(
-        { error: "Too many MCP requests, try again shortly" },
-        {
-          status: 429,
-          headers: {
-            "retry-after": "60",
-            "x-ratelimit-limit": MCP_RATE_LIMIT,
-            "x-ratelimit-policy": `${MCP_RATE_LIMIT};w=60`,
-          },
-        },
-      );
-    }
-  } catch {
-    return Response.json({ error: "MCP service unavailable" }, { status: 503 });
-  }
-
+  const maxBodyBytes = owner ? OWNER_MAX_BODY_BYTES : MCP_MAX_BODY_BYTES;
   const declaredLength = Number(request.headers.get("content-length"));
-  if (Number.isFinite(declaredLength) && declaredLength > MCP_MAX_BODY_BYTES) {
+  if (Number.isFinite(declaredLength) && declaredLength > maxBodyBytes) {
     return Response.json({ error: "MCP request body too large" }, { status: 413 });
   }
 
@@ -198,7 +210,7 @@ async function handleMcpRequest(
   if (request.method === "POST" && request.body) {
     const forwarded = request.clone();
     const body = await request.arrayBuffer();
-    if (body.byteLength > MCP_MAX_BODY_BYTES) {
+    if (body.byteLength > maxBodyBytes) {
       return Response.json({ error: "MCP request body too large" }, { status: 413 });
     }
     if (hasOversizedSearchQuery(body)) {
@@ -207,14 +219,19 @@ async function handleMcpRequest(
     boundedRequest = forwarded;
   }
 
-  const response = await createMcpHandler(
-    createServer(env, (promise) => ctx.waitUntil(promise)),
-    {
-      route: "/mcp",
-      corsOptions: { origin: "*" },
-      enableJsonResponse: true,
-    },
-  )(boundedRequest, env, ctx);
+  const server = createServer(
+    env,
+    (promise) => ctx.waitUntil(promise),
+    owner ? OWNER_INSTRUCTIONS : undefined,
+  );
+  if (owner) registerOwnerTools(server, env as AppEnv);
+
+  const response = await createMcpHandler(server, {
+    route: "/mcp",
+    corsOptions: { origin: "*" },
+    enableJsonResponse: true,
+  })(boundedRequest, env, ctx);
+  if (owner) return response;
   const headers = new Headers(response.headers);
   headers.set("x-ratelimit-limit", MCP_RATE_LIMIT);
   headers.set("x-ratelimit-policy", `${MCP_RATE_LIMIT};w=60`);
@@ -225,22 +242,12 @@ async function handleMcpRequest(
   });
 }
 
-const ownerHandler = {
-  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext): Promise<Response> {
-    const declaredLength = Number(request.headers.get("content-length"));
-    if (Number.isFinite(declaredLength) && declaredLength > OWNER_MAX_BODY_BYTES) {
-      return Response.json({ error: "MCP request body too large" }, { status: 413 });
-    }
-    const handler = createMcpHandler(createOwnerServer(env as AppEnv), {
-      route: OWNER_ROUTE,
-      corsOptions: { origin: OWNER_CORS_ORIGIN },
-    });
-    return handler(request, env, ctx);
-  },
+const mcpHandler = {
+  fetch: handleMcpRequest,
 };
 
 const publicRouter = {
-  async fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext) {
+  async fetch(request: Request, env: WorkerEnv) {
     const { pathname } = new URL(request.url);
     if (pathname === "/authorize") return handleAuthorize(request, env as AppEnv);
     if (pathname === "/callback") return handleCallback(request, env as AppEnv);
@@ -262,16 +269,13 @@ const publicRouter = {
     if (pathname === "/admin/article-fetches" && request.method === "POST") {
       return handleArticleAdminRequest(request, env);
     }
-    if (pathname === "/mcp") {
-      return handleMcpRequest(request, env, ctx);
-    }
     return new Response("Not found", { status: 404 });
   },
 } satisfies ExportedHandler<WorkerEnv>;
 
 export default new OAuthProvider<WorkerEnv>({
-  apiRoute: OWNER_ROUTE,
-  apiHandler: ownerHandler,
+  apiRoute: "/mcp",
+  apiHandler: mcpHandler,
   defaultHandler: publicRouter,
   authorizeEndpoint: "/authorize",
   tokenEndpoint: "/token",

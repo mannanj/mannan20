@@ -1,7 +1,7 @@
 import type { AuthRequest } from "@cloudflare/workers-oauth-provider";
 import { verifyMcpGrant } from "./vendor/grant";
 import { OWNER_EMAIL } from "./owner-api";
-import type { AppEnv, OwnerProps } from "./types";
+import type { AppEnv, CallerProps, OwnerProps } from "./types";
 
 const STATE_TTL_SECONDS = 600;
 const FLOW_COOKIE = "uploads_mcp_flow";
@@ -45,7 +45,40 @@ export function plain(status: number, message: string): Response {
   });
 }
 
+const CHOICE_HTML = (state: string) => `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect to Mannan</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a0f;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif}
+main{width:100%;max-width:400px;padding:48px 16px;box-sizing:border-box}
+h1{font-weight:300;font-size:26px;margin:0 0 12px}
+p{color:rgba(255,255,255,.55);line-height:1.6;margin:0 0 24px}
+form{display:flex;flex-direction:column;gap:12px}
+button{font:inherit;font-size:15px;padding:12px 16px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff}
+button[value=signin]{background:#f43f5e;border-color:#f43f5e}
+small{display:block;margin-top:24px;color:rgba(255,255,255,.4)}
+</style>
+</head>
+<body>
+<main>
+<h1>Connect to Mannan</h1>
+<p>Guests get Mannan's public profile, writing and projects. Signing in also gives Mannan's account the Upload tools.</p>
+<form method="post" action="/authorize">
+<input type="hidden" name="state" value="${state}">
+<button type="submit" name="choice" value="signin">Sign in</button>
+<button type="submit" name="choice" value="guest">Continue as guest</button>
+</form>
+<small>If this wasn't you, close this page.</small>
+</main>
+</body>
+</html>`;
+
 export async function handleAuthorize(request: Request, env: AppEnv): Promise<Response> {
+  if (request.method === "POST") return handleChoice(request, env);
+
   let authRequest: AuthRequest;
   try {
     authRequest = await env.OAUTH_PROVIDER.parseAuthRequest(request);
@@ -57,6 +90,43 @@ export async function handleAuthorize(request: Request, env: AppEnv): Promise<Re
   await env.OAUTH_KV.put(stateKey(state), JSON.stringify(authRequest), {
     expirationTtl: STATE_TTL_SECONDS,
   });
+
+  return new Response(CHOICE_HTML(state), {
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "referrer-policy": "no-referrer",
+      "x-frame-options": "DENY",
+      "content-security-policy": "frame-ancestors 'none'",
+    },
+  });
+}
+
+async function handleChoice(request: Request, env: AppEnv): Promise<Response> {
+  const form = await request.formData().catch(() => null);
+  const state = String(form?.get("state") ?? "");
+  const choice = String(form?.get("choice") ?? "");
+  if (!state || (choice !== "guest" && choice !== "signin")) {
+    return plain(400, "Invalid authorization request.");
+  }
+
+  const stored = await env.OAUTH_KV.get(stateKey(state));
+  if (!stored) return plain(400, "That took too long. Start connecting again.");
+
+  if (choice === "guest") {
+    await env.OAUTH_KV.delete(stateKey(state));
+    const authRequest = JSON.parse(stored) as AuthRequest;
+    const userId = `guest-${crypto.randomUUID()}`;
+    const props: CallerProps = { userId };
+    const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({
+      request: authRequest,
+      userId,
+      metadata: { guest: true },
+      scope: [],
+      props,
+    });
+    return Response.redirect(redirectTo, 302);
+  }
 
   const flow = newState();
   await env.OAUTH_KV.put(flowKey(state), flow, { expirationTtl: STATE_TTL_SECONDS });

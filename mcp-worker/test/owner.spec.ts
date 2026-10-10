@@ -6,7 +6,7 @@ import type { AppEnv } from "../src/types";
 import { createOwnerServer } from "../src/owner";
 import { ownerFetch } from "../src/owner-api";
 import { signMcpGrant, verifyActor } from "../src/vendor/grant";
-import { connectClient, firstText } from "./helpers";
+import { authorizePage, choose, connectClient, exchangeCode, firstText } from "./helpers";
 
 const env = testEnv as unknown as AppEnv;
 
@@ -38,8 +38,8 @@ async function ownerClient(email: string) {
 }
 
 describe("owner endpoint", () => {
-  it("refuses /owner/mcp without a token and advertises how to authenticate", async () => {
-    const res = await SELF.fetch("https://example.com/owner/mcp", {
+  it("refuses /mcp without a token and advertises how to authenticate", async () => {
+    const res = await SELF.fetch("https://example.com/mcp", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: "{}",
@@ -56,7 +56,12 @@ describe("owner endpoint", () => {
     expect(body.scopes_supported).toContain("uploads");
   });
 
-  it("keeps owner tools off the public /mcp endpoint", async () => {
+  it("no longer serves /owner/mcp", async () => {
+    const res = await SELF.fetch("https://example.com/owner/mcp", { method: "POST", body: "{}" });
+    expect(res.status).toBe(404);
+  });
+
+  it("keeps owner tools away from guests on /mcp", async () => {
     const client = await connectClient();
     const names = (await client.listTools()).tools.map((tool) => tool.name);
     await client.close();
@@ -95,6 +100,70 @@ describe("owner endpoint", () => {
     expect(result.isError).toBe(true);
     expect(firstText(result)).toContain("create_upload_link");
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe("authorize choice", () => {
+  it("offers sign in and continue as guest", async () => {
+    const { page, html, state } = await authorizePage();
+    expect(page.status).toBe(200);
+    expect(html).toContain('value="signin"');
+    expect(html).toContain('value="guest"');
+    expect(state.length).toBeGreaterThan(20);
+    expect(page.headers.get("x-frame-options")).toBe("DENY");
+  });
+
+  it("sends a guest straight back to the client with a code", async () => {
+    const { state } = await authorizePage();
+    const res = await choose(state, "guest");
+    expect(res.status).toBe(302);
+    const location = new URL(res.headers.get("location") ?? "");
+    expect(location.origin + location.pathname).toBe("https://client.example/callback");
+    expect(location.searchParams.get("code")).toBeTruthy();
+    expect(location.searchParams.get("state")).toBe("client-state");
+  });
+
+  it("sends sign in to the mannan.is bridge with a flow cookie", async () => {
+    const { state } = await authorizePage();
+    const res = await choose(state, "signin");
+    expect(res.status).toBe(302);
+    const location = new URL(res.headers.get("location") ?? "");
+    expect(location.origin + location.pathname).toBe("https://mannan.is/api/mcp/uploads/authorize");
+    expect(location.searchParams.get("state")).toBe(state);
+    expect(res.headers.get("set-cookie")).toContain("uploads_mcp_flow=");
+    expect(await env.OAUTH_KV.get(`mcp:flow:${state}`)).toBeTruthy();
+  });
+
+  it("gives the signed-in owner public and Upload tools on the same /mcp", async () => {
+    const { state, clientId, verifier } = await authorizePage();
+    const chosen = await choose(state, "signin");
+    const flow = /uploads_mcp_flow=([^;]+)/.exec(chosen.headers.get("set-cookie") ?? "")?.[1] ?? "";
+    const grant = await signMcpGrant(
+      { sub: "owner-id", email: "hello@mannan.is", state },
+      env.MCP_GRANT_SECRET,
+    );
+    const callback = await SELF.fetch(
+      `https://example.com/callback?state=${state}&grant=${encodeURIComponent(grant)}`,
+      { headers: { cookie: `uploads_mcp_flow=${flow}` }, redirect: "manual" },
+    );
+    expect(callback.status).toBe(302);
+    const client = await connectClient(await exchangeCode(callback, clientId, verifier));
+    const names = (await client.listTools()).tools.map((tool) => tool.name);
+    await client.close();
+    for (const tool of OWNER_TOOLS) expect(names).toContain(tool);
+    expect(names).toContain("get_profile");
+  });
+
+  it("refuses an unknown state or choice", async () => {
+    expect((await choose("missing-state-value", "guest")).status).toBe(400);
+    const { state } = await authorizePage();
+    expect((await choose(state, "admin")).status).toBe(400);
+  });
+
+  it("uses each state once", async () => {
+    const { state } = await authorizePage();
+    expect((await choose(state, "guest")).status).toBe(302);
+    expect((await choose(state, "guest")).status).toBe(400);
   });
 });
 

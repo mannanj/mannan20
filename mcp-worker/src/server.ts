@@ -19,11 +19,12 @@ const TRACKED_READ = {
 export function createServer(
   env: ArticleStateEnv = {},
   waitUntil?: (promise: Promise<unknown>) => void,
+  extraInstructions?: string,
 ) {
   const server = new McpServer(
     { name: "mannan-portfolio", version: "1.0.0" },
     {
-      instructions: `Public data about Mannan Javid (https://mannan.is), multi-disciplinary engineer and founder. This is a snapshot of what the site serves publicly, generated ${data.generatedAt}. Tools: get_profile (who he is), get_mission_and_goals (his narrative and sourced goals), list_experience (employment and extracurriculars), list_writing (articles he wrote), get_article (full article text by slug; records one analytics fetch), list_readings (readings he published or curated, with author attribution), list_apps (products he built), list_research (publications and university projects), get_downloads (resume and cover letter), how_to_contact, search (keyword search across everything). All URLs link to mannan.is or his product domains.`,
+      instructions: `Public data about Mannan Javid (https://mannan.is), multi-disciplinary engineer and founder. This is a snapshot of what the site serves publicly, generated ${data.generatedAt}. Tools: get_profile (who he is), get_mission_and_goals (his narrative and sourced goals), list_experience (employment and extracurriculars), list_writing (articles he wrote), get_article (full article text by slug; records one analytics fetch), list_readings (readings he published or curated, with author attribution), list_apps (products he built), list_research (publications and university projects), get_downloads (resume and cover letter), how_to_contact, search (keyword search across everything). All URLs link to mannan.is or his product domains.${extraInstructions ? ` ${extraInstructions}` : ""}`,
     },
   );
 

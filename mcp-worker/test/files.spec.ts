@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { SELF, env } from "cloudflare:test";
 import { data } from "../src/data";
 import { handleFileRequest } from "../src/files";
-import worker from "../src/index";
+import { handleMcpRequest } from "../src/index";
 import type { WorkerEnv } from "../src/types";
 
 const EXPECTED_PUBLIC_FILES = [
@@ -219,7 +219,7 @@ describe("file serving", () => {
 describe("MCP abuse boundary", () => {
   it("fails closed when the MCP limiter binding is missing", async () => {
     const configured = testEnv();
-    const res = await worker.fetch(
+    const res = await handleMcpRequest(
       new Request("https://example.com/mcp", { method: "POST", body: "{}" }),
       { FILES: configured.FILES, FILES_LIMITER: configured.FILES_LIMITER } as WorkerEnv,
       executionContext,
@@ -228,7 +228,7 @@ describe("MCP abuse boundary", () => {
   });
 
   it("returns 429 with rate metadata when the MCP limit is exhausted", async () => {
-    const res = await worker.fetch(
+    const res = await handleMcpRequest(
       new Request("https://example.com/mcp", {
         method: "POST",
         headers: { "cf-connecting-ip": "192.0.2.20" },
@@ -243,7 +243,7 @@ describe("MCP abuse boundary", () => {
   });
 
   it("caps MCP request bodies before protocol handling", async () => {
-    const res = await worker.fetch(
+    const res = await handleMcpRequest(
       new Request("https://example.com/mcp", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -256,7 +256,7 @@ describe("MCP abuse boundary", () => {
   });
 
   it("caps MCP search queries before protocol handling", async () => {
-    const res = await worker.fetch(
+    const res = await handleMcpRequest(
       new Request("https://example.com/mcp", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -271,5 +271,23 @@ describe("MCP abuse boundary", () => {
       executionContext,
     );
     expect(res.status).toBe(400);
+  });
+
+  it("lifts the guest body cap and rate limit for the owner", async () => {
+    const ownerContext = {
+      ...executionContext,
+      props: { userId: "u", email: "hello@mannan.is" },
+    } as unknown as ExecutionContext;
+    const res = await handleMcpRequest(
+      new Request("https://example.com/mcp", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query: "x".repeat(33_000) }),
+      }),
+      testEnv({ mcpLimit: () => false }),
+      ownerContext,
+    );
+    expect(res.status).not.toBe(413);
+    expect(res.status).not.toBe(429);
   });
 });

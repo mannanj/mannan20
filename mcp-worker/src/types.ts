@@ -126,6 +126,12 @@ export interface OwnerEnv {
   MCP_ACTOR_SECRET: string;
 }
 
+export interface CallerProps {
+  userId: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
 export interface OwnerProps {
   userId: string;
   email: string;

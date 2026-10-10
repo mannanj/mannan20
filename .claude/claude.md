@@ -119,7 +119,7 @@ When re-exporting from Unicorn Studio: replace the `.raw.json` file, run `bun ru
 
 ## MCP worker — public data snapshot
 
-`mcp-worker/` serves a read-only MCP server at `https://mcp.mannanteam.workers.dev/mcp` exposing the site's public data to AI agents. The worker bundles `mcp-worker/src/data.generated.json`, generated from site sources by `scripts/build-mcp-data.mjs` — never hand-edit the generated file.
+`mcp-worker/` serves an MCP server at `https://mcp.mannanteam.workers.dev/mcp` exposing the site's public data to AI agents (OAuth: guests continue without an account; the owner's sign-in adds the Upload tools). The worker bundles `mcp-worker/src/data.generated.json`, generated from site sources by `scripts/build-mcp-data.mjs` — never hand-edit the generated file.
 
 **When changing site content** (`public/data/about.json`, `src/lib/garden-articles.ts`, `src/lib/episodes.ts`, `src/lib/garden-products.ts`): run `bun run mcp:build`, commit the regenerated snapshot, and `bun run mcp:deploy`. `bun run mcp:check` detects drift; `bun run mcp:test` runs the worker's suite (protocol, privacy, goals honesty, search); `bun run mcp:smoke` checks the live endpoint.
 
@@ -137,7 +137,7 @@ Pages ("batches"), files up to 10 GB (50 MB multipart parts), share links, All f
 - Non-owners signed in see "Request access" (`RequestAccessChat`, reusable via `ACCESS_RESOURCES` in `src/lib/access-requests.ts`) → D1 `access_requests` + email to hello@mannan.is.
 - Analytics: every action writes `upload_events`; dashboard at `/upload/analytics`.
 - Schema lives in `cloud-worker/migrations/` (apply with `bunx wrangler d1 migrations apply cloud --remote -c cloud-worker/wrangler.jsonc`).
-- Owner MCP: `https://mcp.mannanteam.workers.dev/owner/mcp` (OAuth via `/api/mcp/uploads/authorize`, refuses anyone but hello@mannan.is). Large files: the `create_upload_link` tool returns a share link to open in a browser. See `mcp-worker/README.md`.
+- Owner MCP tools live on the same `https://mcp.mannanteam.workers.dev/mcp` endpoint: OAuth sign-in page offers Continue as guest (public tools) or Sign in (via `/api/mcp/uploads/authorize`, refuses anyone but hello@mannan.is; adds the Upload tools). Large files: the `create_upload_link` tool returns a share link to open in a browser. See `mcp-worker/README.md`.
 - E2E: `e2e/upload-hub.spec.ts` (needs local D1 migrated: `bunx wrangler d1 execute cloud --local --file cloud-worker/migrations/<file>.sql`).
 
 ## Code Quality

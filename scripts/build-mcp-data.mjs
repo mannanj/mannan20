@@ -355,7 +355,7 @@ const serverCard =
       name: "mannan-portfolio",
       title: "Mannan Javid — Portfolio",
       description:
-        "Public-data MCP server for mannan.is: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Full article fetches record an aggregate counter.",
+        "MCP server for mannan.is. Connecting opens a sign-in page; continue as a guest for public data: profile, mission and sourced goals, experience, writing, readings, apps, research, and document downloads. Mannan's signed-in account also gets the Upload tools. Article content fetches record an aggregate counter.",
       version: "1.0.0",
       endpoint: MCP_ENDPOINT,
       transport: "streamable-http",
@@ -389,7 +389,7 @@ const buildLlmsTxt = (d) => {
     llmsLink(
       "MCP endpoint (Streamable HTTP)",
       MCP_ENDPOINT,
-      "Query this data with 11 MCP tools; successful get_article calls record an aggregate fetch count. Claude Code: `claude mcp add --transport http mannan " +
+      "Query this data with 11 MCP tools; successful get_article calls record an aggregate fetch count. Connecting opens a sign-in page: choose Continue as guest. Claude Code: `claude mcp add --transport http mannan " +
         MCP_ENDPOINT +
         "`. claude.ai: Settings > Connectors > paste the URL. Documents (resume, papers) are agent-fetchable via the agentUrl fields from get_downloads.",
     ),

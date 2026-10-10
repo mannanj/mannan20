@@ -1,6 +1,6 @@
 # mannan-mcp
 
-Public-data MCP server for [mannan.is](https://mannan.is), live at `https://mcp.mannanteam.workers.dev/mcp` (Streamable HTTP). Most tools are read-only; successful `get_article` calls also record an aggregate per-article fetch count.
+MCP server for [mannan.is](https://mannan.is), live at `https://mcp.mannanteam.workers.dev/mcp` (Streamable HTTP). Connecting opens a sign-in page: **Continue as guest** gives the public-data tools, **Sign in** as hello@mannan.is adds the Upload tools on the same endpoint. Most tools are read-only; successful `get_article` calls also record an aggregate per-article fetch count.
 
 Ask any MCP-capable agent about Mannan's profile, mission and goals, experience, writing, apps, research, or how to reach him — it gets the same data the site serves, with links back to the source.
 
@@ -76,17 +76,14 @@ Then browsable at https://registry.modelcontextprotocol.io/ (search `io.github.m
 
 See `docs/mcp-server-design.md` and `docs/mcp-server-implementation-plan.md`. Hosted on Cloudflare Workers rather than mannan.is itself because Vercel's security checkpoint challenges non-browser clients — exactly the audience an MCP server exists for. The MCP transport remains stateless; article analytics live behind a private service binding in the portfolio state Worker's Durable Object. SSE transport is omitted as deprecated.
 
-## Owner endpoint
+## Sign-in and entitlements
 
-`/owner/mcp` is a second, OAuth-protected MCP endpoint for the site owner only (hello@mannan.is). It manages the Upload app: pages, files, upload links, download links and shares. The public `/mcp` endpoint is unchanged and never lists these tools.
+`/mcp` is protected by OAuth (`@cloudflare/workers-oauth-provider`), so clients get a `401` and open `/authorize`. That page offers two choices:
 
-Connect from Claude Code:
+- **Continue as guest**: issues a token at once with no account. Guests get the public tools, the 60/min per-IP limit and the 32 KB body cap.
+- **Sign in**: bounces through `https://mannan.is/api/mcp/uploads/authorize`, which refuses any account other than the owner, as does `/callback`. The owner's token adds the 11 Upload tools (pages, files, upload links, download links, shares), a 16 MB body cap and no rate limit. The Worker acts by calling the site's `/api/uploads/*` endpoints with a 60-second signed actor token.
 
-```
-claude mcp add --transport http mannan-owner https://mcp.mannanteam.workers.dev/owner/mcp
-```
-
-Sign-in bounces through `https://mannan.is/api/mcp/uploads/authorize` and refuses any account other than the owner, both at the site and at `/callback`. The Worker then acts by calling the site's `/api/uploads/*` endpoints with a 60-second signed actor token.
+Tokens are stored by the client and refreshed, so both guests and the owner stay connected (refresh tokens last 30 days). To switch from guest to owner, disconnect the connector (claude.ai) or clear its authentication (Claude Code `/mcp`) and connect again.
 
 Required configuration:
 
