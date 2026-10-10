@@ -30,10 +30,9 @@ export async function GET(request: Request) {
   const cookie = request.headers.get('cookie');
   const session = await readSiteSession(cookie);
   if (!session) {
-    const home = new URL('/', url.origin);
-    home.searchParams.set('mcp', 'uploads');
-    home.searchParams.set('next', `${url.pathname}?state=${encodeURIComponent(state)}`);
-    return NextResponse.redirect(home, {
+    const signIn = new URL('/mcp/sign-in', url.origin);
+    signIn.searchParams.set('next', `${url.pathname}?state=${encodeURIComponent(state)}`);
+    return NextResponse.redirect(signIn, {
       headers: { 'cache-control': 'no-store, private', 'referrer-policy': 'no-referrer' },
     });
   }

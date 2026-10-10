@@ -88,10 +88,6 @@ export function Header() {
   const [gardenExpanded, setGardenExpanded] = useState(false);
   const [gardenClicksAllowed, setGardenClicksAllowed] = useState(false);
   const [authMenuOpen, setAuthMenuOpen] = useState(false);
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("mcp") && params.get("next")) setAuthMenuOpen(true);
-  }, []);
   const gardenExpandedRef = useRef(false);
   const gardenGateTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const gardenPointerTypeRef = useRef<string | null>(null);

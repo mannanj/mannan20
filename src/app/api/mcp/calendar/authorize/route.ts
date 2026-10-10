@@ -62,7 +62,7 @@ export async function GET(request: Request) {
   const cookie = request.headers.get('cookie');
   const session = await readSiteSession(cookie);
   if (!session) {
-    // Home, with a marker, and `next` pointing back at THIS request. The
+    // The MCP sign-in page, with `next` pointing back at THIS request. The
     // sign-in form sends `next` as its return path, so once the link is
     // clicked the callback lands here again, signed in, and the connect flow
     // resumes instead of dying at `/`.
@@ -70,10 +70,9 @@ export async function GET(request: Request) {
     // `next` is our own path with the Worker's already-validated state in it
     // — never a caller-chosen destination — and it is re-validated as a
     // same-origin path by the sign-in route that stores it.
-    const home = new URL('/', url.origin);
-    home.searchParams.set('mcp', 'calendar');
-    home.searchParams.set('next', `${url.pathname}?state=${encodeURIComponent(state)}`);
-    return NextResponse.redirect(home, {
+    const signIn = new URL('/mcp/sign-in', url.origin);
+    signIn.searchParams.set('next', `${url.pathname}?state=${encodeURIComponent(state)}`);
+    return NextResponse.redirect(signIn, {
       headers: { 'cache-control': 'no-store, private', 'referrer-policy': 'no-referrer' },
     });
   }

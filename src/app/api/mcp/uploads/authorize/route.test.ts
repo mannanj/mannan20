@@ -92,13 +92,12 @@ describe('a signed-out person', () => {
     sessionAnswer = null;
   });
 
-  it('is sent home, never to a caller-chosen destination', async () => {
+  it('is sent to the MCP sign-in page, never to a caller-chosen destination', async () => {
     const response = await get({ state: 'st_abcdefgh' });
     const location = new URL(response.headers.get('location')!);
 
     expect(location.origin).toBe('https://mannan.is');
-    expect(location.pathname).toBe('/');
-    expect(location.searchParams.get('mcp')).toBe('uploads');
+    expect(location.pathname).toBe('/mcp/sign-in');
   });
 
   it('is told to come back here once signed in, with the same state', async () => {
