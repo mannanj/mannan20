@@ -2,7 +2,7 @@ export const MCP_ENDPOINT = "https://mcp.mannanteam.workers.dev/mcp";
 
 export const MCP_CLAUDE_CODE_CMD = `claude mcp add --transport http mannan ${MCP_ENDPOINT}`;
 
-export const MCP_AGENT_INSTRUCTION = `Connect to the MCP server at ${MCP_ENDPOINT} (streamable HTTP) for Mannan Javid's public data.`;
+export const MCP_AGENT_INSTRUCTION = `Connect to the MCP server at ${MCP_ENDPOINT} (streamable HTTP, OAuth). On the sign-in page, choose Continue as guest for Mannan Javid's public data.`;
 
 export const MCP_CURSOR_SNIPPET = `{ "mcpServers": { "mannan": { "url": "${MCP_ENDPOINT}" } } }`;
 

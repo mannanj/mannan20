@@ -32,7 +32,7 @@ export default function McpPage() {
       </div>
       <p className="mt-4 leading-relaxed text-white/55">
         This site&apos;s public data — profile, goals, experience, writing, apps, research,
-        documents — served to AI agents over a read-only{" "}
+        documents — served to AI agents over a{" "}
         <a
           href="https://modelcontextprotocol.io"
           target="_blank"
@@ -42,6 +42,14 @@ export default function McpPage() {
           Model Context Protocol
         </a>{" "}
         server.
+      </p>
+      <p className="mt-4 leading-relaxed text-white/55">
+        Connecting opens a sign-in page. Choose Continue as guest for the public tools below; no
+        account is needed. Mannan signs in to also get the tools for{" "}
+        <Link href="/upload" className="text-red-500 transition-colors hover:text-red-400">
+          Upload
+        </Link>
+        .
       </p>
 
       <section className="mt-10">
