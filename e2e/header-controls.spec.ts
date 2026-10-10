@@ -159,6 +159,26 @@ test.describe('header controls', () => {
     await page.getByRole('button', { name: 'Continue with email' }).click();
     await expect(page.getByText('Check your email')).toBeVisible();
   });
+
+  test('an MCP connect landing opens the sign-in menu and returns to the bridge', async ({ page }) => {
+    await page.route('**/api/auth/me', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ user: null }) }),
+    );
+    let sent: { returnTo?: string } | null = null;
+    await page.route('**/api/auth/request', (route) => {
+      sent = route.request().postDataJSON();
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+    });
+
+    const next = '/api/mcp/uploads/authorize?state=st_abcdefgh';
+    await page.goto(`/?mcp=uploads&next=${encodeURIComponent(next)}`);
+
+    await expect(page.getByTestId('auth-easter-egg-menu')).toBeVisible();
+    await page.getByLabel('Email').fill('hello@mannan.is');
+    await page.getByRole('button', { name: 'Continue with email' }).click();
+    await expect(page.getByText('Check your email')).toBeVisible();
+    expect(sent!.returnTo).toBe(next);
+  });
 });
 
 test.describe('header right stack (garden + mcp)', () => {
