@@ -4,6 +4,7 @@ import {
   canShareWrite,
   groupFiles,
   groupStart,
+  isAllowedViewer,
   matchesFilter,
   searchTerms,
   shareStatus,
@@ -33,6 +34,7 @@ function share(overrides: Partial<UploadShare> = {}): UploadShare {
     usedBytes: 0,
     signInRead: false,
     signInWrite: false,
+    allowedEmails: [],
     createdAt: NOW,
     updatedAt: NOW,
     revokedAt: null,
@@ -125,5 +127,20 @@ describe('matchesFilter', () => {
     expect(matchesFilter(file, { terms: [], from: day, to: day })).toBe(true);
     expect(matchesFilter(file, { terms: [], from: day + 24 * HOUR, to: null })).toBe(false);
     expect(matchesFilter(file, { terms: [], from: null, to: day - 24 * HOUR })).toBe(false);
+  });
+});
+
+describe('isAllowedViewer', () => {
+  test('an empty list lets anyone through, signed in or not', () => {
+    expect(isAllowedViewer(share(), null)).toBe(true);
+    expect(isAllowedViewer(share(), 'someone@example.com')).toBe(true);
+  });
+
+  test('a list admits only its members, ignoring case and spaces', () => {
+    const listed = share({ allowedEmails: ['a@example.com', 'b@example.com'] });
+    expect(isAllowedViewer(listed, 'a@example.com')).toBe(true);
+    expect(isAllowedViewer(listed, ' B@Example.com ')).toBe(true);
+    expect(isAllowedViewer(listed, 'c@example.com')).toBe(false);
+    expect(isAllowedViewer(listed, null)).toBe(false);
   });
 });

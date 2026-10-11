@@ -57,6 +57,7 @@ export function ShareRecipient({
   readable,
   writable,
   needsSignIn,
+  notAllowed,
   files,
   signedInAs,
   expiresAt,
@@ -71,6 +72,7 @@ export function ShareRecipient({
   readable: boolean;
   writable: boolean;
   needsSignIn: boolean;
+  notAllowed: boolean;
   files: BrowsableFile[];
   signedInAs: string | null;
   expiresAt: number | null;
@@ -140,6 +142,15 @@ export function ShareRecipient({
       {limits.length > 0 && <p className={`m-0 ${META}`}>{limits.join(' · ')}</p>}
     </div>
   );
+
+  if (notAllowed) {
+    return (
+      <section className="flex flex-col gap-[13px]" data-testid="share-not-allowed">
+        <h2 className="m-0 text-[1.25rem] font-bold tracking-[-0.01em]">This link isn&apos;t shared with {signedInAs}.</h2>
+        <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">Sign in with the email address it was sent to.</p>
+      </section>
+    );
+  }
 
   if (!active || (!readable && !writable && !needsSignIn)) {
     if (thanks) {

@@ -7,7 +7,7 @@ import { readSiteSession } from '@/lib/site-session';
 import { storedFiles, uploadsEnv } from '@/lib/uploads';
 import { shareByToken } from '@/lib/upload-shares';
 import { recordEvent } from '@/lib/upload-events';
-import { canShareRead, canShareWrite, shareStatus } from '@/lib/uploads-shared';
+import { canShareRead, canShareWrite, isAllowedViewer, shareStatus } from '@/lib/uploads-shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,10 +29,15 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   const email = session?.email ?? null;
 
   const active = shareStatus(share) === 'active';
-  const readable = canShareRead(share) && (!share.signInRead || email !== null);
-  const writable = canShareWrite(share) && (!share.signInWrite || email !== null);
+  const restricted = share.allowedEmails.length > 0;
+  const allowed = isAllowedViewer(share, email);
+  const readable = allowed && canShareRead(share) && (!share.signInRead || email !== null);
+  const writable = allowed && canShareWrite(share) && (!share.signInWrite || email !== null);
   const needsSignIn =
-    active && !email && ((share.signInRead && share.canRead) || (share.signInWrite && share.canWrite));
+    active &&
+    !email &&
+    (restricted || (share.signInRead && share.canRead) || (share.signInWrite && share.canWrite));
+  const notAllowed = active && email !== null && !allowed;
 
   const files = readable
     ? (await storedFiles(env, share.batchId))
@@ -61,12 +66,13 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
     <UploadShell email={email}>
       <ShareRecipient
         token={token}
-        title={share.fileTitle ?? share.batchTitle}
+        title={allowed ? (share.fileTitle ?? share.batchTitle) : 'Shared with you'}
         isFile={share.fileId !== null}
         active={active}
         readable={readable}
         writable={writable}
         needsSignIn={needsSignIn}
+        notAllowed={notAllowed}
         files={files}
         signedInAs={email}
         expiresAt={share.expiresAt}

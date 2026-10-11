@@ -9,12 +9,14 @@ const DENIAL_STATUS: Record<ShareDenial, number> = {
   'not-found': 404,
   unavailable: 403,
   'sign-in': 401,
+  'not-allowed': 403,
 };
 
 const DENIAL_MESSAGE: Record<ShareDenial, string> = {
   'not-found': 'Not found',
   unavailable: 'This link is no longer available',
   'sign-in': 'Sign in to use this link',
+  'not-allowed': 'This link is not shared with your account',
 };
 
 function deny(reason: ShareDenial): NextResponse {

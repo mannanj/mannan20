@@ -5,6 +5,7 @@ import {
   MAX_UPLOAD_BYTES,
   canShareRead,
   canShareWrite,
+  isAllowedViewer,
   type ShareSettings,
   type UploadShare,
 } from '@/lib/uploads-shared';
@@ -13,6 +14,8 @@ const TOKEN_RE = /^[A-Za-z0-9_-]{32}$/;
 const MAX_LABEL = 120;
 const MAX_COUNT = 1_000_000;
 const MAX_CAPACITY_BYTES = 10 * 1024 * MAX_UPLOAD_BYTES;
+const MAX_ALLOWED_EMAILS = 50;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export function isShareToken(value: string): boolean {
   return TOKEN_RE.test(value);
@@ -44,6 +47,7 @@ interface ShareRow {
   used_bytes: number;
   sign_in_read: number;
   sign_in_write: number;
+  allowed_emails: string;
   created_at: number;
   updated_at: number;
   revoked_at: number | null;
@@ -55,6 +59,15 @@ const SHARE_SELECT = `SELECT s.*, b.title AS batch_title, f.title AS file_title
        LEFT JOIN upload_files f ON f.id = s.file_id`;
 
 const nullableNumber = (value: number | null) => (value === null ? null : Number(value));
+
+function emailList(raw: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  } catch {
+    return [];
+  }
+}
 
 function toShare(row: ShareRow): UploadShare {
   return {
@@ -76,6 +89,7 @@ function toShare(row: ShareRow): UploadShare {
     usedBytes: Number(row.used_bytes),
     signInRead: Boolean(row.sign_in_read),
     signInWrite: Boolean(row.sign_in_write),
+    allowedEmails: emailList(row.allowed_emails),
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at),
     revokedAt: nullableNumber(row.revoked_at),
@@ -150,6 +164,18 @@ export function parseShareSettings(input: unknown): Parsed<ShareSettings> {
   if (!bytes.ok) return bytes;
   if (bytes.value !== undefined) settings.maxBytes = bytes.value;
 
+  if (record.allowedEmails !== undefined) {
+    const raw = record.allowedEmails;
+    if (!Array.isArray(raw) || raw.length > MAX_ALLOWED_EMAILS) {
+      return { ok: false, error: 'Invalid allowed emails' };
+    }
+    const emails = raw.map((item) => (typeof item === 'string' ? item.trim().toLowerCase() : ''));
+    if (emails.some((email) => !EMAIL_RE.test(email) || email.length > 254)) {
+      return { ok: false, error: 'Invalid allowed emails' };
+    }
+    settings.allowedEmails = [...new Set(emails)];
+  }
+
   return { ok: true, value: settings };
 }
 
@@ -181,8 +207,8 @@ export async function createShare(
   await env.UPLOADS_DB.prepare(
     `INSERT INTO upload_shares
        (id, token, batch_id, file_id, label, can_read, can_write, expires_at,
-        max_uploads, max_downloads, max_bytes, created_at, updated_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?12)`,
+        max_uploads, max_downloads, max_bytes, allowed_emails, created_at, updated_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?13)`,
   )
     .bind(
       id,
@@ -196,6 +222,7 @@ export async function createShare(
       canWrite ? (settings.maxUploads ?? null) : null,
       canRead ? (settings.maxDownloads ?? null) : null,
       canWrite ? (settings.maxBytes ?? null) : null,
+      JSON.stringify(settings.allowedEmails ?? []),
       now,
     )
     .run();
@@ -230,7 +257,8 @@ export async function updateShare(
   await env.UPLOADS_DB.prepare(
     `UPDATE upload_shares
         SET label = ?1, can_read = ?2, can_write = ?3, expires_at = ?4, max_uploads = ?5,
-            max_downloads = ?6, max_bytes = ?7, revoked_at = ?8, updated_at = ?9
+            max_downloads = ?6, max_bytes = ?7, revoked_at = ?8, updated_at = ?9,
+            allowed_emails = ?11
       WHERE id = ?10`,
   )
     .bind(
@@ -244,13 +272,14 @@ export async function updateShare(
       revokedAt,
       now,
       id,
+      JSON.stringify(pick(settings.allowedEmails, current.allowedEmails)),
     )
     .run();
 
   return (await getShare(env, id)) ?? { error: 'Not found' };
 }
 
-export type ShareDenial = 'not-found' | 'unavailable' | 'sign-in';
+export type ShareDenial = 'not-found' | 'unavailable' | 'sign-in' | 'not-allowed';
 
 export async function resolveShare(
   env: UploadsEnv,
@@ -267,7 +296,8 @@ export async function resolveShare(
     (need === 'read' && share.signInRead) ||
     ((need === 'write' || need === 'continue') && share.signInWrite) ||
     (need === 'view' && share.signInRead && share.signInWrite);
-  if (needsSignIn && !viewer) return { ok: false, reason: 'sign-in' };
+  if ((needsSignIn || share.allowedEmails.length > 0) && !viewer) return { ok: false, reason: 'sign-in' };
+  if (!isAllowedViewer(share, viewer)) return { ok: false, reason: 'not-allowed' };
 
   if (need === 'read' && !canShareRead(share)) return { ok: false, reason: 'unavailable' };
   if (need === 'write' && !canShareWrite(share)) return { ok: false, reason: 'unavailable' };

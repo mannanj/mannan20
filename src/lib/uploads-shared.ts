@@ -148,6 +148,7 @@ export interface UploadShare {
   usedBytes: number;
   signInRead: boolean;
   signInWrite: boolean;
+  allowedEmails: string[];
   createdAt: number;
   updatedAt: number;
   revokedAt: number | null;
@@ -211,6 +212,12 @@ export interface ShareSettings {
   maxUploads?: number | null;
   maxDownloads?: number | null;
   maxBytes?: number | null;
+  allowedEmails?: string[];
+}
+
+export function isAllowedViewer(share: Pick<UploadShare, 'allowedEmails'>, email: string | null): boolean {
+  if (share.allowedEmails.length === 0) return true;
+  return email !== null && share.allowedEmails.includes(email.trim().toLowerCase());
 }
 
 export function shareUrl(origin: string, token: string): string {

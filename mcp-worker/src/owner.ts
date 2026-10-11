@@ -339,6 +339,11 @@ export function registerOwnerTools(
     maxDownloads: z.number().int().positive().nullable().optional(),
     maxBytes: z.number().int().positive().nullable().optional(),
     label: z.string().max(200).optional(),
+    allowedEmails: z
+      .array(z.string().email())
+      .max(50)
+      .optional()
+      .describe("Only these signed-in emails can open the link. Empty array opens it to anyone with the link."),
   };
 
   server.registerTool(

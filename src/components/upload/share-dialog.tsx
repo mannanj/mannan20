@@ -104,6 +104,7 @@ function toSettings(form: FormState, editing: boolean): ShareSettings {
 
 export function describeShare(share: UploadShare): string[] {
   const parts: string[] = [];
+  if (share.allowedEmails.length > 0) parts.push(`Only ${share.allowedEmails.join(', ')}`);
   if (share.canWrite) {
     parts.push(
       share.maxUploads === null
