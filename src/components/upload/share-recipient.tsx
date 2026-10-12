@@ -24,7 +24,7 @@ import {
 } from './ui';
 import { FileBrowser } from './file-browser';
 import { FilePreview, FileThumb, type PreviewItem } from './file-preview';
-import { SignInForm } from './upload-locked';
+import { SignInForm } from '@/components/auth/sign-in-form';
 
 const NAME_KEY = 'upload-share-name';
 
