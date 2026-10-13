@@ -80,7 +80,7 @@ export function McpHeaderButton({
           >
             <div className="absolute -top-[6px] left-1/2 h-0 w-0 -translate-x-1/2 border-r-[6px] border-b-[6px] border-l-[6px] border-r-transparent border-b-[#333] border-l-transparent" />
             <div className="rounded-full bg-[#333] px-3 py-1.5 text-[10px] whitespace-nowrap text-white">
-              Connect your AI
+              Connect integrations
             </div>
           </div>
         )}

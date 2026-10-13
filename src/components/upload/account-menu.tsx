@@ -69,7 +69,7 @@ export function AccountMenu({ email }: { email: string }) {
             aria-disabled="true"
             className="cursor-not-allowed rounded-md px-3 py-2 text-left text-[0.9375rem] text-[#a8a8a8]"
           >
-            MCP Connector
+            Manage integrations
           </span>
           <button
             type="button"
