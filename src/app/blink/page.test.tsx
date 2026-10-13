@@ -19,6 +19,7 @@ const { default: BlinkPage, metadata } = await import('./page');
 beforeEach(() => {
   sessionAnswer = null;
   process.env.BLINK_ALLOWED_EMAILS = 'hello@mannan.is,listed@example.com';
+  process.env.BLINK_CALLBACK_URL = 'https://blink.mannan.is/auth/callback';
 });
 
 describe('/blink', () => {
@@ -37,6 +38,12 @@ describe('/blink', () => {
   it('listed (case-insensitive): redirects to blink.mannan.is', async () => {
     sessionAnswer = { email: 'Listed@Example.com' };
     await expect(BlinkPage()).rejects.toThrow('REDIRECT:https://blink.mannan.is/');
+  });
+
+  it('follows the sign-in callback: staging callback -> staging site', async () => {
+    process.env.BLINK_CALLBACK_URL = 'https://blink-staging.mannan.is/auth/callback';
+    sessionAnswer = { email: 'listed@example.com' };
+    await expect(BlinkPage()).rejects.toThrow('REDIRECT:https://blink-staging.mannan.is/');
   });
 
   it('allowlist setting missing: nobody gets in (fail closed)', async () => {

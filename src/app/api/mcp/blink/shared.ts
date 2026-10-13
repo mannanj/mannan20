@@ -4,6 +4,16 @@ export const STATE_PATTERN = /^[A-Za-z0-9._~-]{8,256}$/;
 
 export const CONSENT_APP_NAME = 'Blink';
 export const CONSENT_SITE_URL = 'https://blink.mannan.is';
+
+/** The Blink site people are sent to: the origin of BLINK_CALLBACK_URL, so the front door follows
+ *  whichever Blink deployment the sign-in currently returns to. */
+export function blinkSiteUrl(): string {
+  try {
+    return new URL('/', process.env.BLINK_CALLBACK_URL ?? '').toString();
+  } catch {
+    return CONSENT_SITE_URL + '/';
+  }
+}
 export const CONSENT_CAPABILITIES_PATH = '/';
 export const CONSENT_ABILITIES = [
   'You will be able to view the Blink camera clips and people.',

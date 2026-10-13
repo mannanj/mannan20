@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { SignInForm } from '@/components/auth/sign-in-form';
 import { readSiteSession } from '@/lib/site-session';
-import { isBlinkAllowed } from '@/app/api/mcp/blink/shared';
+import { blinkSiteUrl, isBlinkAllowed } from '@/app/api/mcp/blink/shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,12 +13,10 @@ export const metadata: Metadata = {
   referrer: 'no-referrer',
 };
 
-const BLINK_URL = 'https://blink.mannan.is/';
-
 /**
  * Front door for Blink. Not a second auth system: no session -> sign in here;
  * signed in but not on the list -> 404 (same as any unknown URL, no request-access
- * chat); on the list -> hand off to blink.mannan.is, whose own Worker runs the
+ * chat); on the list -> hand off to the Blink site (blinkSiteUrl), whose own Worker runs the
  * grant bridge. Never embedded (a cross-site frame loses the SameSite cookie).
  */
 export default async function BlinkPage() {
@@ -40,5 +38,5 @@ export default async function BlinkPage() {
 
   // Listed: send them on. The 307 body Next streams carries the target; the link below is the
   // fallback for a client that blocks redirects (only rendered if redirect is skipped).
-  redirect(BLINK_URL);
+  redirect(blinkSiteUrl());
 }
