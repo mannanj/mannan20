@@ -1,5 +1,17 @@
 import { describe, expect, test } from 'bun:test';
-import { ZIP_PART_MAX_BYTES, planDownload, previewableImageType } from './uploads-shared';
+import {
+  BATCH_KINDS,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_PARTS,
+  R2_MAX_MULTIPART_PARTS,
+  UPLOAD_PART_SIZE,
+  ZIP_PART_MAX_BYTES,
+  isBatchId,
+  isBatchKind,
+  parseBatchKind,
+  planDownload,
+  previewableImageType,
+} from './uploads-shared';
 
 const MB = 1024 * 1024;
 
@@ -75,5 +87,44 @@ describe('previewableImageType', () => {
     expect(previewableImageType('text/html')).toBeNull();
     expect(previewableImageType('image/svg+xml')).toBeNull();
     expect(previewableImageType('application/octet-stream')).toBeNull();
+  });
+});
+
+describe('batch kinds and ids', () => {
+  test('parseBatchKind defaults to page and rejects unknown kinds', () => {
+    expect(parseBatchKind(undefined)).toBe('page');
+    expect(parseBatchKind(null)).toBe('page');
+    expect(parseBatchKind('')).toBe('page');
+    expect(parseBatchKind('page')).toBe('page');
+    expect(parseBatchKind('chat')).toBe('chat');
+    expect(parseBatchKind('admin')).toBeNull();
+    expect(parseBatchKind(7)).toBeNull();
+  });
+
+  test('isBatchKind only accepts the known kinds', () => {
+    expect(BATCH_KINDS).toEqual(['page', 'chat']);
+    expect(isBatchKind('chat')).toBe(true);
+    expect(isBatchKind('CHAT')).toBe(false);
+  });
+
+  test('isBatchId requires exactly 24 lowercase base36 characters', () => {
+    expect(isBatchId('a'.repeat(24))).toBe(true);
+    expect(isBatchId('0123456789abcdefghijklmn')).toBe(true);
+    expect(isBatchId('a'.repeat(23))).toBe(false);
+    expect(isBatchId('a'.repeat(25))).toBe(false);
+    expect(isBatchId('A'.repeat(24))).toBe(false);
+    expect(isBatchId(`${'a'.repeat(23)}/`)).toBe(false);
+    expect(isBatchId('../'.repeat(8))).toBe(false);
+    expect(isBatchId(undefined)).toBe(false);
+  });
+});
+
+describe('upload size cap', () => {
+  test('cap is 100 GiB and parts stay within the R2 limit', () => {
+    expect(MAX_UPLOAD_BYTES).toBe(100 * 1024 ** 3);
+    expect(UPLOAD_PART_SIZE).toBe(50 * 1024 ** 2);
+    expect(MAX_UPLOAD_PARTS).toBe(2048);
+    expect(MAX_UPLOAD_PARTS).toBeLessThanOrEqual(R2_MAX_MULTIPART_PARTS);
+    expect(Math.ceil((MAX_UPLOAD_BYTES + 1) / UPLOAD_PART_SIZE)).toBeLessThanOrEqual(R2_MAX_MULTIPART_PARTS);
   });
 });

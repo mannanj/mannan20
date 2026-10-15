@@ -17,6 +17,7 @@ const OWNER_TOOLS = [
   "delete_file",
   "duplicate_file",
   "get_download_link",
+  "list_chats",
   "list_files",
   "list_pages",
   "list_shares",
@@ -206,5 +207,68 @@ describe("owner api", () => {
       Response.json({ error: "Page not found" }, { status: 404 }),
     );
     await expect(ownerFetch(env, "GET", "/api/uploads/x")).rejects.toThrow("Page not found");
+  });
+});
+
+describe("chat namespaces", () => {
+  const CHAT = "abcdefghij0123456789abcd";
+
+  it("advertises chatId on the four file tools and kind on list_pages", async () => {
+    const client = await ownerClient("hello@mannan.is");
+    const tools = (await client.listTools()).tools;
+    for (const name of ["list_files", "upload_file", "create_upload_link", "get_download_link"]) {
+      const props = tools.find((tool) => tool.name === name)?.inputSchema.properties ?? {};
+      expect(props).toHaveProperty("chatId");
+    }
+    const pages = tools.find((tool) => tool.name === "list_pages")?.inputSchema.properties ?? {};
+    expect(pages).toHaveProperty("kind");
+    expect(tools.find((tool) => tool.name === "list_chats")?.annotations?.readOnlyHint).toBe(true);
+  });
+
+  it("mentions chat namespaces in the instructions", async () => {
+    const { OWNER_INSTRUCTIONS } = await import("../src/owner");
+    expect(OWNER_INSTRUCTIONS).toContain("chatId");
+    expect(OWNER_INSTRUCTIONS).toContain("list_chats");
+  });
+
+  it("rejects a malformed chatId before calling the site", async () => {
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ files: [] }));
+    const client = await ownerClient("hello@mannan.is");
+    const res = await client.callTool({ name: "list_files", arguments: { chatId: "../x" } });
+    expect(res.isError).toBe(true);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("list_files with chatId asks for chat files only", async () => {
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ files: [] }));
+    const client = await ownerClient("hello@mannan.is");
+    await client.callTool({ name: "list_files", arguments: { chatId: CHAT } });
+    expect(spy.mock.calls[0][0]).toBe("https://mannan.is/api/uploads/files?kind=chat");
+    await client.callTool({ name: "list_files", arguments: {} });
+    expect(spy.mock.calls[1][0]).toBe("https://mannan.is/api/uploads/files?kind=page");
+  });
+
+  it("list_chats and list_pages query by kind", async () => {
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ batches: [] }));
+    const client = await ownerClient("hello@mannan.is");
+    await client.callTool({ name: "list_chats", arguments: {} });
+    await client.callTool({ name: "list_pages", arguments: {} });
+    expect(spy.mock.calls[0][0]).toBe("https://mannan.is/api/uploads?kind=chat");
+    expect(spy.mock.calls[1][0]).toBe("https://mannan.is/api/uploads?kind=page");
+  });
+
+  it("upload_file with chatId creates the chat batch then uploads into it", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () => Response.json({ id: CHAT, file: { id: "f" } }));
+    const client = await ownerClient("hello@mannan.is");
+    await client.callTool({
+      name: "upload_file",
+      arguments: { chatId: CHAT, name: "a.txt", text: "hi" },
+    });
+    const [first, second] = spy.mock.calls as [string, RequestInit][];
+    expect(first[0]).toBe("https://mannan.is/api/uploads");
+    expect(JSON.parse(first[1].body as string)).toMatchObject({ kind: "chat", id: CHAT });
+    expect(second[0]).toBe(`https://mannan.is/api/uploads/${CHAT}/files`);
   });
 });

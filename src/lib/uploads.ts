@@ -2,7 +2,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { readSiteSession } from '@/lib/site-session';
 import { verifyActor } from '@/lib/mcp/grant';
 import type { D1Binding, R2Binding } from '@/lib/cf-bindings';
-import type { UploadBatch, UploadFile, UploadFileEntry } from '@/lib/uploads-shared';
+import type { BatchKind, UploadBatch, UploadFile, UploadFileEntry } from '@/lib/uploads-shared';
 
 export { defaultBatchTitle, formatBytes } from '@/lib/uploads-shared';
 export type { UploadBatch, UploadFile } from '@/lib/uploads-shared';
@@ -102,14 +102,17 @@ function toBatch(row: BatchRow): UploadBatch {
   };
 }
 
-export async function listBatches(env: UploadsEnv): Promise<UploadBatch[]> {
+export async function listBatches(
+  env: UploadsEnv,
+  kind: BatchKind = 'page',
+): Promise<UploadBatch[]> {
   const { results } = await env.UPLOADS_DB.prepare(
     `${BATCH_SELECT}
-      WHERE b.owner_email = ?1 AND b.deleted_at IS NULL
+      WHERE b.owner_email = ?1 AND b.deleted_at IS NULL AND b.kind = ?2
       GROUP BY b.id
       ORDER BY b.created_at DESC`,
   )
-    .bind(UPLOAD_OWNER_EMAIL)
+    .bind(UPLOAD_OWNER_EMAIL, kind)
     .all<BatchRow>();
   return results.map(toBatch);
 }
@@ -125,16 +128,37 @@ export async function getBatch(env: UploadsEnv, id: string): Promise<UploadBatch
   return row ? toBatch(row) : null;
 }
 
-export async function createBatch(env: UploadsEnv, title: string): Promise<string> {
-  const id = newId();
+export async function createBatch(
+  env: UploadsEnv,
+  title: string,
+  kind: BatchKind = 'page',
+  chatId?: string,
+): Promise<string> {
+  const id = chatId ?? newId();
   const now = Date.now();
   await env.UPLOADS_DB.prepare(
-    `INSERT INTO upload_batches (id, owner_email, title, created_at, updated_at)
-     VALUES (?1, ?2, ?3, ?4, ?4)`,
+    `INSERT INTO upload_batches (id, owner_email, title, created_at, updated_at, kind)
+     VALUES (?1, ?2, ?3, ?4, ?4, ?5)`,
   )
-    .bind(id, UPLOAD_OWNER_EMAIL, title, now)
+    .bind(id, UPLOAD_OWNER_EMAIL, title, now, kind)
     .run();
   return id;
+}
+
+/** Idempotent: returns the existing chat batch with this id, or creates it. */
+export async function ensureChatBatch(
+  env: UploadsEnv,
+  chatId: string,
+  title: string,
+): Promise<{ id: string; created: boolean } | null> {
+  const existing = await env.UPLOADS_DB.prepare(
+    `SELECT kind FROM upload_batches WHERE id = ?1 AND owner_email = ?2 AND deleted_at IS NULL`,
+  )
+    .bind(chatId, UPLOAD_OWNER_EMAIL)
+    .first<{ kind: string }>();
+  if (existing) return existing.kind === 'chat' ? { id: chatId, created: false } : null;
+  await createBatch(env, title, 'chat', chatId);
+  return { id: chatId, created: true };
 }
 
 interface FileRow {
@@ -179,16 +203,19 @@ export async function listFiles(env: UploadsEnv, batchId: string): Promise<Uploa
   return results.map(toFile);
 }
 
-export async function listAllFiles(env: UploadsEnv): Promise<UploadFileEntry[]> {
+export async function listAllFiles(
+  env: UploadsEnv,
+  kind: BatchKind = 'page',
+): Promise<UploadFileEntry[]> {
   const { results } = await env.UPLOADS_DB.prepare(
     `SELECT ${FILE_COLUMNS}, b.title AS batch_title
        FROM upload_files f
        JOIN upload_batches b ON b.id = f.batch_id
       WHERE f.deleted_at IS NULL AND f.status = 'complete'
-        AND b.deleted_at IS NULL AND b.owner_email = ?1
+        AND b.deleted_at IS NULL AND b.owner_email = ?1 AND b.kind = ?2
       ORDER BY f.created_at DESC`,
   )
-    .bind(UPLOAD_OWNER_EMAIL)
+    .bind(UPLOAD_OWNER_EMAIL, kind)
     .all<FileRow & { batch_title: string }>();
   return results.map((row) => ({
     ...toFile(row),

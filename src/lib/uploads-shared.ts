@@ -1,6 +1,8 @@
 export const UPLOAD_PART_SIZE = 50 * 1024 * 1024;
 
-export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 * 1024;
+export const MAX_UPLOAD_BYTES = 100 * 1024 * 1024 * 1024;
+
+export const R2_MAX_MULTIPART_PARTS = 10_000;
 
 export const MAX_UPLOAD_PARTS = Math.ceil(MAX_UPLOAD_BYTES / UPLOAD_PART_SIZE);
 
@@ -46,6 +48,25 @@ export function planDownload(
   }
 
   return [...solo, ...bins.map((bin) => ({ kind: 'zip' as const, ids: bin.ids, bytes: bin.bytes }))];
+}
+
+export const BATCH_KINDS = ['page', 'chat'] as const;
+export type BatchKind = (typeof BATCH_KINDS)[number];
+
+const BATCH_ID_RE = /^[0-9a-z]{24}$/;
+
+export function isBatchKind(value: unknown): value is BatchKind {
+  return typeof value === 'string' && (BATCH_KINDS as readonly string[]).includes(value);
+}
+
+/** Missing or empty means 'page'; anything else must be a known kind or null is returned. */
+export function parseBatchKind(value: unknown): BatchKind | null {
+  if (value === undefined || value === null || value === '') return 'page';
+  return isBatchKind(value) ? value : null;
+}
+
+export function isBatchId(value: unknown): value is string {
+  return typeof value === 'string' && BATCH_ID_RE.test(value);
 }
 
 export interface UploadBatch {

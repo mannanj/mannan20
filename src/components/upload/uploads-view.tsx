@@ -40,7 +40,9 @@ export function UploadsView({
   batches,
   shares,
   fileCount,
+  kind = 'page',
 }: {
+  kind?: 'page' | 'chat';
   batches: UploadBatch[];
   shares: UploadShare[];
   fileCount: number;
@@ -171,7 +173,22 @@ export function UploadsView({
 
       <section className="flex flex-col gap-[13px]" data-testid="pages-section">
         <div className="flex flex-wrap items-center justify-between gap-[13px]">
-          <h2 className={SECTION_TITLE}>All pages</h2>
+          <div className="flex items-center gap-[13px]" data-testid="kind-tabs">
+            <Link
+              href="/upload"
+              aria-current={kind === 'page' ? 'page' : undefined}
+              className={`${SECTION_TITLE} no-underline ${kind === 'page' ? '' : 'opacity-40'}`}
+            >
+              All pages
+            </Link>
+            <Link
+              href="/upload?kind=chat"
+              aria-current={kind === 'chat' ? 'page' : undefined}
+              className={`${SECTION_TITLE} no-underline ${kind === 'chat' ? '' : 'opacity-40'}`}
+            >
+              Chats
+            </Link>
+          </div>
           {batches.length > 0 && (
             <label>
               <span className="sr-only">Search pages</span>
@@ -187,7 +204,7 @@ export function UploadsView({
         </div>
 
         {batches.length === 0 ? (
-          <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">No pages yet.</p>
+          <p className="m-0 text-[0.9375rem] text-[#6f6f6f]">{kind === 'chat' ? 'No chats yet.' : 'No pages yet.'}</p>
         ) : (
           <ul className={CARD_GRID}>
             {matching.map((batch) => (

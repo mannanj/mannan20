@@ -10,7 +10,9 @@ const MAX_LIST_LIMIT = 500;
 const DEFAULT_UPLOAD_LINK_MINUTES = 60;
 const DEFAULT_DOWNLOAD_LINK_MINUTES = 15;
 const MS_PER_MINUTE = 60_000;
-const UPLOAD_LINK_NOTE = "Open this link in a browser to upload files up to 10 GB each";
+const UPLOAD_LINK_NOTE = "Open this link in a browser to upload files up to 100 GB each";
+export const CHAT_ID_PATTERN = /^[0-9a-z]{24}$/;
+export const BATCH_KINDS = ["page", "chat"] as const;
 
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
 const WRITE = { readOnlyHint: false, destructiveHint: false, openWorldHint: false };
@@ -85,7 +87,7 @@ function toolFailure(error: unknown): ToolResult {
 }
 
 export const OWNER_INSTRUCTIONS =
-  "Owner-only tools for the Upload app at https://mannan.is/upload. A page is a batch of files. Use create_upload_link for large files and get_download_link to hand out downloads.";
+  "Owner-only tools for the Upload app at https://mannan.is/upload. A page is a batch of files. Chats have their own namespace of files: pass chatId (24 lowercase letters or digits) to list_files, upload_file, create_upload_link or get_download_link to work inside one chat, and use list_chats to see them. Pages and chats never mix unless you ask. Use create_upload_link for large files and get_download_link to hand out downloads.";
 
 export function createOwnerServer(
   env: OwnerEnv,
@@ -123,6 +125,17 @@ export function registerOwnerTools(
     return result;
   };
 
+  const chatIdSchema = z
+    .string()
+    .regex(CHAT_ID_PATTERN, "chatId must be 24 lowercase letters or digits")
+    .optional()
+    .describe("Target the chat namespace with this id instead of a page. Created if missing.");
+
+  const ensureChat = async (chatId: string) => {
+    await api("POST", "/api/uploads", { kind: "chat", id: chatId, title: `Chat ${chatId}` });
+    return chatId;
+  };
+
   const createShare = async (body: Record<string, unknown>) => {
     const { share } = await api<{ share: SiteShare }>("POST", "/api/uploads/shares", body);
     return share;
@@ -132,10 +145,24 @@ export function registerOwnerTools(
     "list_pages",
     {
       title: "List pages",
-      description: "List your Upload pages (batches of files) with file counts and total sizes.",
+      description:
+        "List your Upload pages (batches of files) with file counts and total sizes. kind defaults to page; use list_chats for chats.",
+      inputSchema: { kind: z.enum(BATCH_KINDS).optional() },
       annotations: READ_ONLY,
     },
-    guarded(async () => ok(await api("GET", "/api/uploads"))),
+    guarded(async (args: { kind?: (typeof BATCH_KINDS)[number] }) =>
+      ok(await api("GET", `/api/uploads?kind=${args.kind ?? "page"}`)),
+    ),
+  );
+
+  server.registerTool(
+    "list_chats",
+    {
+      title: "List chats",
+      description: "List chat namespaces (batches of files kept for chats) with file counts and total sizes.",
+      annotations: READ_ONLY,
+    },
+    guarded(async () => ok(await api("GET", "/api/uploads?kind=chat"))),
   );
 
   server.registerTool(
@@ -158,6 +185,7 @@ export function registerOwnerTools(
       inputSchema: {
         query: z.string().max(200).optional(),
         pageId: z.string().optional(),
+        chatId: chatIdSchema,
         from: z.string().optional().describe("ISO date, inclusive"),
         to: z.string().optional().describe("ISO date, inclusive"),
         limit: z.number().int().min(1).max(MAX_LIST_LIMIT).default(DEFAULT_LIST_LIMIT),
@@ -168,6 +196,7 @@ export function registerOwnerTools(
       async (args: {
         query?: string;
         pageId?: string;
+        chatId?: string;
         from?: string;
         to?: string;
         limit?: number;
@@ -178,8 +207,12 @@ export function registerOwnerTools(
           return fail("from and to must be ISO dates.");
         }
         const terms = (args.query ?? "").toLowerCase().split(/\s+/).filter(Boolean);
-        const { files } = await api<{ files: SiteFile[] }>("GET", "/api/uploads/files");
+        const { files } = await api<{ files: SiteFile[] }>(
+          "GET",
+          `/api/uploads/files?kind=${args.chatId ? "chat" : "page"}`,
+        );
         const matches = files.filter((file) => {
+          if (args.chatId && file.batchId !== args.chatId) return false;
           if (args.pageId && file.batchId !== args.pageId) return false;
           if (from !== null && file.createdAt < from) return false;
           if (to !== null && file.createdAt > to) return false;
@@ -200,6 +233,7 @@ export function registerOwnerTools(
         "Upload a small file (up to 10 MB) from base64 content or plain text. For anything larger use create_upload_link. Omit pageId to create a new page.",
       inputSchema: {
         pageId: z.string().optional(),
+        chatId: chatIdSchema,
         name: z.string().min(1).max(255),
         contentBase64: z.string().optional(),
         text: z.string().optional(),
@@ -210,6 +244,7 @@ export function registerOwnerTools(
     guarded(
       async (args: {
         pageId?: string;
+        chatId?: string;
         name: string;
         contentBase64?: string;
         text?: string;
@@ -232,8 +267,10 @@ export function registerOwnerTools(
             "File is larger than 10 MB. Use create_upload_link and open the link in a browser instead.",
           );
         }
-        const pageId =
-          args.pageId ??
+        if (args.chatId && args.pageId) return fail("Provide pageId or chatId, not both.");
+        const pageId = args.chatId
+          ? await ensureChat(args.chatId)
+          : args.pageId ??
           (await createPage(`From MCP — ${new Date().toISOString().slice(0, 10)}`)).id;
         const type = args.contentType ?? (args.text !== undefined ? "text/plain" : "application/octet-stream");
         const form = new FormData();
@@ -253,6 +290,7 @@ export function registerOwnerTools(
         "Create a write-only link someone can open in a browser to upload files of any size. Omit pageId to create a new page.",
       inputSchema: {
         pageId: z.string().optional(),
+        chatId: chatIdSchema,
         title: z.string().max(200).optional(),
         minutes: z.number().positive().default(DEFAULT_UPLOAD_LINK_MINUTES),
         maxUploads: z.number().int().positive().optional(),
@@ -263,12 +301,16 @@ export function registerOwnerTools(
     guarded(
       async (args: {
         pageId?: string;
+        chatId?: string;
         title?: string;
         minutes?: number;
         maxUploads?: number;
         maxBytes?: number;
       }) => {
-        const pageId = args.pageId ?? (await createPage(args.title)).id;
+        if (args.chatId && args.pageId) return fail("Provide pageId or chatId, not both.");
+        const pageId = args.chatId
+          ? await ensureChat(args.chatId)
+          : (args.pageId ?? (await createPage(args.title)).id);
         const minutes = args.minutes ?? DEFAULT_UPLOAD_LINK_MINUTES;
         const share = await createShare({
           batchId: pageId,
@@ -297,12 +339,19 @@ export function registerOwnerTools(
       description: "Create a read-only, time-limited download link for one file.",
       inputSchema: {
         fileId: z.string(),
+        chatId: chatIdSchema.describe("If given, the file must belong to this chat."),
         minutes: z.number().positive().default(DEFAULT_DOWNLOAD_LINK_MINUTES),
         downloads: z.number().int().positive().default(1),
       },
       annotations: WRITE,
     },
-    guarded(async (args: { fileId: string; minutes?: number; downloads?: number }) => {
+    guarded(async (args: { fileId: string; chatId?: string; minutes?: number; downloads?: number }) => {
+      if (args.chatId) {
+        const { files } = await api<{ files: SiteFile[] }>("GET", "/api/uploads/files?kind=chat");
+        if (!files.some((file) => file.id === args.fileId && file.batchId === args.chatId)) {
+          return fail("That file is not in this chat.");
+        }
+      }
       const share = await createShare({
         fileId: args.fileId,
         canRead: true,
