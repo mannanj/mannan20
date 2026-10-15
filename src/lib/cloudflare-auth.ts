@@ -99,3 +99,24 @@ export async function exchangeCloudflareCode(code: string): Promise<CloudflareSi
   if (!res.ok) return null;
   return normalizeCloudflareSiteUser(await res.json().catch(() => null));
 }
+
+export async function verifyCloudflareSignInCode(input: {
+  email: string;
+  code: string;
+  ip: string;
+}): Promise<{ user: CloudflareSiteUser | null; status: number }> {
+  const secret = exchangeSecret();
+  if (!secret) return { user: null, status: 503 };
+
+  const res = await cloudWorkerFetch('/auth/site/verify-code', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${secret}`,
+      'content-type': 'application/json',
+      'x-site-auth-ip': input.ip,
+    },
+    body: JSON.stringify({ email: input.email, code: input.code }),
+  });
+  if (!res.ok) return { user: null, status: res.status };
+  return { user: normalizeCloudflareSiteUser(await res.json().catch(() => null)), status: res.status };
+}

@@ -54,8 +54,8 @@ admin.post('/invite', async (c) => {
   );
   if (stmts.length) await c.env.DB.batch(stmts);
 
-  const token = await mintMagicToken(c.env, email);
-  await sendMagicLink(c.env, email, token);
+  const { token, code } = await mintMagicToken(c.env, email);
+  await sendMagicLink(c.env, email, token, code);
 
   return c.json({ ok: true, email, folders });
 });

@@ -5,6 +5,7 @@ import {
   canAccess,
   clearSessionCookie,
   consumeMagicToken,
+  consumeSignInCode,
   createSessionCookie,
   ensureUser,
   getUser,
@@ -13,6 +14,7 @@ import {
   mintSiteSessionCode,
   mintMagicToken,
   normalizeEmail,
+  normalizeSignInCode,
   readSession,
   consumeSiteSessionCode,
   siteRoleFromDbRole,
@@ -23,6 +25,7 @@ import {
 import { sendMagicLink, sendSiteContinueLink } from './email';
 import {
   cloudIndexPage,
+  codePage,
   folderPage,
   messagePage,
   sentPage,
@@ -86,13 +89,39 @@ app.post('/auth/request', async (c) => {
   }
 
   await ensureUser(c.env, email);
-  const token = await mintMagicToken(c.env, email, 'cloud');
+  const { token, code } = await mintMagicToken(c.env, email, 'cloud');
   try {
-    await sendMagicLink(c.env, email, token);
+    await sendMagicLink(c.env, email, token, code);
   } catch (err) {
     console.error('send_magic_link_failed', err);
   }
-  return c.html(sentPage());
+  return c.html(sentPage(email));
+});
+
+const CODE_REJECTED = "That code didn't work. Check it or send a new one.";
+
+app.get('/auth/code', (c) => {
+  const email = normalizeEmail(c.req.query('email') ?? '');
+  if (!EMAIL_RE.test(email)) return c.redirect('/', 302);
+  return c.html(codePage(email));
+});
+
+app.post('/auth/verify-code', async (c) => {
+  const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
+  const form = await c.req.formData().catch(() => null);
+  const rawEmail = form?.get('email');
+  const email = typeof rawEmail === 'string' ? normalizeEmail(rawEmail) : '';
+  if (!EMAIL_RE.test(email) || email.length > 254) return c.redirect('/', 302);
+  const limit = await c.env.VERIFY_LIMITER.limit({ key: `code:${ip}` });
+  if (!limit.success) return c.html(codePage(email, 'Too many tries. Wait a minute.'), 429);
+  const digits = normalizeSignInCode(form?.get('code'));
+  const verified = digits ? await consumeSignInCode(c.env, email, digits, 'cloud') : null;
+  if (!verified) return c.html(codePage(email, CODE_REJECTED), 400);
+  const cookie = await createSessionCookie(c.env, verified);
+  return new Response(null, {
+    status: 302,
+    headers: { Location: '/cloud', 'Set-Cookie': cookie },
+  });
 });
 
 app.post('/auth/site/request', async (c) => {
@@ -122,9 +151,9 @@ app.post('/auth/site/request', async (c) => {
   }
 
   await ensureUser(c.env, email);
-  const token = await mintMagicToken(c.env, email, 'site');
+  const { token, code } = await mintMagicToken(c.env, email, 'site');
   try {
-    await sendSiteContinueLink(c.env, email, token);
+    await sendSiteContinueLink(c.env, email, token, code);
   } catch (err) {
     console.error('send_site_magic_link_failed', err);
     return c.json({ error: 'email-unavailable' }, 503);
@@ -192,6 +221,35 @@ app.post('/auth/site/exchange', async (c) => {
   if (!code) return c.json({ error: 'invalid-code' }, 400);
 
   const user = await consumeSiteSessionCode(c.env, code);
+  if (!user) return c.json({ error: 'invalid-code' }, 400);
+
+  return c.json({
+    email: user.email,
+    role: siteRoleFromDbRole(user.role),
+    admin: user.role === 'admin',
+  });
+});
+
+app.post('/auth/site/verify-code', async (c) => {
+  if (c.req.header('authorization') !== `Bearer ${c.env.SITE_AUTH_EXCHANGE_SECRET}`) {
+    return c.json({ error: 'unauthorized' }, 401);
+  }
+  const ip =
+    c.req.header('x-site-auth-ip') ??
+    c.req.header('cf-connecting-ip') ??
+    'unknown';
+  const body = await c.req.json().catch(() => null);
+  const record = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  const email = typeof record.email === 'string' ? normalizeEmail(record.email) : '';
+  const digits = normalizeSignInCode(record.code);
+  if (!EMAIL_RE.test(email) || email.length > 254 || !digits) {
+    return c.json({ error: 'invalid-code' }, 400);
+  }
+  const limit = await c.env.VERIFY_LIMITER.limit({ key: `site:code:${ip}` });
+  if (!limit.success) return c.json({ error: 'too-many-requests' }, 429);
+
+  const verified = await consumeSignInCode(c.env, email, digits, 'site');
+  const user = verified ? await getUser(c.env, verified) : null;
   if (!user) return c.json({ error: 'invalid-code' }, 400);
 
   return c.json({

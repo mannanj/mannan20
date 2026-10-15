@@ -61,6 +61,13 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
   function run(sql: string, args: unknown[]): Record<string, unknown> | null {
     const normalized = normalize(sql);
 
+    if (normalized === 'DELETE FROM magic_tokens WHERE purpose = ? AND email = ?') {
+      const [purpose, email] = args as [string, string];
+      for (const [key, row] of magicTokens) {
+        if (row.purpose === purpose && row.email === email) magicTokens.delete(key);
+      }
+      return null;
+    }
     if (normalized.startsWith('INSERT INTO magic_tokens')) {
       const [token, email, expiresAt, purpose] = args as [string, string, number, string];
       magicTokens.set(token, { email, expires_at: expiresAt, purpose });
@@ -116,7 +123,12 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
     };
   }
 
-  return { prepare } as unknown as Pick<Env, 'DB'>['DB'];
+  const batch = async (statements: Array<{ run: () => Promise<unknown> }>) => {
+    for (const statement of statements) await statement.run();
+    return [];
+  };
+
+  return { prepare, batch } as unknown as Pick<Env, 'DB'>['DB'];
 }
 
 function createFakeEnv(): Env {
@@ -148,7 +160,7 @@ function createFakeEnv(): Env {
 describe('consumeMagicToken', () => {
   test('consumes a single valid token successfully', async () => {
     const env = createFakeEnv();
-    const token = await mintMagicToken(env, 'person@example.com', 'cloud');
+    const { token } = await mintMagicToken(env, 'person@example.com', 'cloud');
 
     const email = await consumeMagicToken(env, token, 'cloud');
 
@@ -157,7 +169,7 @@ describe('consumeMagicToken', () => {
 
   test('rejects the same token on a second consumption (double-redeem race)', async () => {
     const env = createFakeEnv();
-    const token = await mintMagicToken(env, 'person@example.com', 'cloud');
+    const { token } = await mintMagicToken(env, 'person@example.com', 'cloud');
 
     const first = await consumeMagicToken(env, token, 'cloud');
     const second = await consumeMagicToken(env, token, 'cloud');

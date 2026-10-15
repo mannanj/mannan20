@@ -176,19 +176,121 @@ export async function hashSecret(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+export type MagicPurpose = 'cloud' | 'site';
+
+const CODE_DIGITS = 8;
+const CODE_SPACE = 10 ** CODE_DIGITS;
+const CODE_SAMPLE_CEILING = Math.floor(2 ** 32 / CODE_SPACE) * CODE_SPACE;
+export const MAX_ATTEMPTS_PER_CODE = 5;
+export const MAX_FAILURES_PER_EMAIL = 10;
+const FAILURE_WINDOW_MS = 60 * 60 * 1000;
+
+export function generateSignInCode(): string {
+  const buffer = new Uint32Array(1);
+  do {
+    crypto.getRandomValues(buffer);
+  } while (buffer[0] >= CODE_SAMPLE_CEILING);
+  return String(buffer[0] % CODE_SPACE).padStart(CODE_DIGITS, '0');
+}
+
+export function formatSignInCode(digits: string): string {
+  return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
+}
+
+export function normalizeSignInCode(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const digits = raw.replace(/\D/g, '');
+  return digits.length === CODE_DIGITS ? digits : null;
+}
+
+async function hashSignInCode(env: Env, purpose: MagicPurpose, email: string, digits: string): Promise<string> {
+  return sign(env.SESSION_SECRET, `signin-code:${purpose}:${email}:${digits}`);
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 export async function mintMagicToken(
   env: Env,
-  email: string,
-  purpose: 'cloud' | 'site' = 'cloud',
-): Promise<string> {
+  rawEmail: string,
+  purpose: MagicPurpose = 'cloud',
+): Promise<{ token: string; code: string }> {
+  const email = normalizeEmail(rawEmail);
   const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
-  const expires = Date.now() + TOKEN_TTL_MS;
-  await env.DB.prepare(
-    'INSERT INTO magic_tokens (token, email, expires_at, purpose) VALUES (?, ?, ?, ?)',
-  )
-    .bind(await hashSecret(token), normalizeEmail(email), expires, purpose)
+  const code = generateSignInCode();
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM magic_tokens WHERE purpose = ? AND email = ?').bind(purpose, email),
+    env.DB.prepare(
+      'INSERT INTO magic_tokens (token, email, expires_at, purpose, code_hash) VALUES (?, ?, ?, ?, ?)',
+    ).bind(
+      await hashSecret(token),
+      email,
+      Date.now() + TOKEN_TTL_MS,
+      purpose,
+      await hashSignInCode(env, purpose, email, code),
+    ),
+  ]);
+  return { token, code };
+}
+
+async function recordCodeFailure(env: Env, email: string, now: number): Promise<void> {
+  await env.DB.prepare('INSERT INTO sign_in_code_failures (email, failed_at) VALUES (?, ?)')
+    .bind(email, now)
     .run();
-  return token;
+}
+
+export async function consumeSignInCode(
+  env: Env,
+  rawEmail: string,
+  digits: string,
+  purpose: MagicPurpose,
+): Promise<string | null> {
+  const email = normalizeEmail(rawEmail);
+  const now = Date.now();
+  const windowStart = now - FAILURE_WINDOW_MS;
+
+  await env.DB.prepare('DELETE FROM sign_in_code_failures WHERE failed_at <= ?').bind(windowStart).run();
+  const failures = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM sign_in_code_failures WHERE email = ? AND failed_at > ?',
+  )
+    .bind(email, windowStart)
+    .first<{ n: number }>();
+  if ((failures?.n ?? 0) >= MAX_FAILURES_PER_EMAIL) return null;
+
+  const row = await env.DB.prepare(
+    'SELECT token, code_hash, expires_at, code_attempts FROM magic_tokens WHERE purpose = ? AND email = ? AND code_hash IS NOT NULL ORDER BY expires_at DESC LIMIT 1',
+  )
+    .bind(purpose, email)
+    .first<{ token: string; code_hash: string; expires_at: number; code_attempts: number }>();
+
+  if (!row || row.expires_at <= now || row.code_attempts >= MAX_ATTEMPTS_PER_CODE) {
+    await recordCodeFailure(env, email, now);
+    return null;
+  }
+
+  if (constantTimeEqual(await hashSignInCode(env, purpose, email, digits), row.code_hash)) {
+    const consumed = await env.DB.prepare(
+      'DELETE FROM magic_tokens WHERE token = ? AND code_attempts < ? AND expires_at > ? RETURNING email',
+    )
+      .bind(row.token, MAX_ATTEMPTS_PER_CODE, now)
+      .first<{ email: string }>();
+    return consumed?.email ?? null;
+  }
+
+  const updated = await env.DB.prepare(
+    'UPDATE magic_tokens SET code_attempts = code_attempts + 1 WHERE token = ? RETURNING code_attempts',
+  )
+    .bind(row.token)
+    .first<{ code_attempts: number }>();
+  await recordCodeFailure(env, email, now);
+  if ((updated?.code_attempts ?? MAX_ATTEMPTS_PER_CODE) >= MAX_ATTEMPTS_PER_CODE) {
+    await env.DB.prepare('DELETE FROM magic_tokens WHERE token = ?').bind(row.token).run();
+  }
+  return null;
 }
 
 export async function consumeMagicToken(

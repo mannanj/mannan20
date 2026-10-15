@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTurnstile } from "@/hooks/use-turnstile";
-import { currentReturnPath } from "@/lib/return-to";
+import { useSignInFlow } from "@/hooks/use-sign-in-flow";
+import { SignInCodeSteps, type SignInCodeTheme } from "@/components/auth/sign-in-code-steps";
 
 interface AuthUser {
   email: string;
@@ -88,83 +88,70 @@ export function ContinueWithEmailMenu({
   );
 }
 
+const MENU_THEME: SignInCodeTheme = {
+  links: "flex gap-4 text-xs",
+  link: "cursor-pointer text-white/80 underline underline-offset-2 hover:text-white disabled:cursor-default disabled:text-white/35 disabled:no-underline",
+  input:
+    "w-full rounded-md border border-white/15 bg-black px-3 py-2 text-sm tracking-[0.06em] text-white outline-none transition placeholder:text-white/25 focus:border-white/45",
+  button:
+    "w-full rounded-md bg-white px-3 py-2 text-sm font-medium text-black transition hover:bg-white/90 disabled:cursor-wait disabled:opacity-60",
+  error: "text-xs leading-5 text-red-200",
+};
+
 function SignInForm() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle",
-  );
-  const {
-    token: turnstileToken,
-    availability: turnstileAvailability,
-    reset: resetTurnstile,
-    containerRef: turnstileContainerRef,
-  } = useTurnstile();
-
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (status === "sending") return;
-    setStatus("sending");
-    const res = await fetch("/api/auth/request", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, turnstileToken, returnTo: currentReturnPath(window.location) }),
-    }).catch(() => null);
-    if (res?.ok) {
-      setStatus("sent");
-      return;
-    }
-    resetTurnstile();
-    setStatus("error");
-  };
-
-  if (status === "sent") {
-    return (
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Check your email</div>
-        <div className="text-xs leading-5 text-white/60">
-          The link expires in 15 minutes.
-        </div>
-      </div>
-    );
-  }
+  const flow = useSignInFlow();
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <div className="space-y-1.5">
-        <label htmlFor="header-auth-email" className="text-xs text-white/65">
-          Email
-        </label>
-        <input
-          id="header-auth-email"
-          type="email"
-          required
-          autoComplete="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded-md border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-white/45"
-          placeholder="you@example.com"
+    <div className="space-y-3">
+      {flow.step === "email" ? (
+        <form onSubmit={flow.submitEmail} className="space-y-3">
+          <div className="space-y-1.5">
+            <label htmlFor="header-auth-email" className="text-xs text-white/65">
+              Email
+            </label>
+            <input
+              id="header-auth-email"
+              type="email"
+              required
+              autoComplete="email"
+              value={flow.email}
+              onChange={(event) => flow.setEmail(event.target.value)}
+              className="w-full rounded-md border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-white/45"
+              placeholder="you@example.com"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={flow.status === "sending" || flow.turnstileWaiting}
+            className={MENU_THEME.button}
+          >
+            {flow.status === "sending"
+              ? "Sending…"
+              : flow.turnstileWaiting
+                ? "Checking…"
+                : "Continue with email"}
+          </button>
+          {flow.status === "error" && (
+            <div className="text-xs leading-5 text-red-200">
+              Could not send the link. Try again in a minute.
+            </div>
+          )}
+        </form>
+      ) : (
+        <SignInCodeSteps
+          flow={flow}
+          theme={MENU_THEME}
+          sent={
+            <div className="space-y-2">
+              <div className="text-sm font-medium">Check your email</div>
+              <div className="text-xs leading-5 text-white/60">
+                The link and code expire in 15 minutes.
+              </div>
+            </div>
+          }
         />
-      </div>
-      <div ref={turnstileContainerRef} />
-      <button
-        type="submit"
-        disabled={
-          status === "sending" ||
-          (turnstileAvailability !== "unavailable" && !turnstileToken)
-        }
-        className="w-full rounded-md bg-white px-3 py-2 text-sm font-medium text-black transition hover:bg-white/90 disabled:cursor-wait disabled:opacity-60"
-      >
-        {status === "sending"
-          ? "Sending…"
-          : turnstileAvailability !== "unavailable" && !turnstileToken
-            ? "Checking…"
-            : "Continue with email"}
-      </button>
-      {status === "error" && (
-        <div className="text-xs leading-5 text-red-200">
-          Could not send the link. Try again in a minute.
-        </div>
       )}
-    </form>
+      <div ref={flow.turnstileContainerRef} className="empty:hidden" />
+    </div>
   );
 }

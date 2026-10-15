@@ -21,7 +21,13 @@ const SHELL_HEAD = raw(`
     flex: 1; min-width: 0; padding: 10px 12px; font-size: 15px;
     border: 1px solid #d6d3d1; border-radius: 8px; background: #fff; color: #111;
   }
-  input[type=email]:focus { outline: none; border-color: #111; }
+  input[type=text] {
+    flex: 1; min-width: 0; padding: 10px 12px; font-size: 15px; letter-spacing: .06em;
+    border: 1px solid #d6d3d1; border-radius: 8px; background: #fff; color: #111;
+  }
+  input[type=email]:focus, input[type=text]:focus { outline: none; border-color: #111; }
+  p.links { display: flex; gap: 18px; margin: 16px 0 0; font-size: 13px; }
+  p.links a { color: #0066cc; }
   button {
     padding: 10px 18px; font-size: 14px; font-weight: 500;
     background: #111; color: #fff; border: 0; border-radius: 8px; cursor: pointer;
@@ -83,12 +89,31 @@ export const signInPage = (msg?: string) => html`<!doctype html>
   ${msg ? html`<p class="msg">${msg}</p>` : ''}
 </div></body></html>`;
 
-export const sentPage = () => html`<!doctype html>
+const CODE_LINKS = (email: string, enterCode: boolean) => html`<p class="links">
+    ${enterCode ? html`<a href="/auth/code?email=${encodeURIComponent(email)}">Enter code</a>` : html`<a href="/">Back</a>`}
+    <form method="post" action="/auth/request" class="inline"><input type="hidden" name="email" value="${email}"><button type="submit" class="dl-link">Resend</button></form>
+  </p>`;
+
+export const sentPage = (email: string) => html`<!doctype html>
 <html><head><title>Check your inbox</title>${SHELL_HEAD}</head>
 <body><div class="card">
   <h1>Check your inbox</h1>
-  <p class="lede">A one-time link is on its way. The link expires in 15 minutes.</p>
-  <p class="msg">Don't see it? Check spam, then try again.</p>
+  <p class="lede">A one-time link and code are on their way. Both expire in 15 minutes.</p>
+  ${CODE_LINKS(email, true)}
+</div></body></html>`;
+
+export const codePage = (email: string, msg?: string) => html`<!doctype html>
+<html><head><title>Enter code</title>${SHELL_HEAD}</head>
+<body><div class="card">
+  <h1>Enter code</h1>
+  <p class="lede">${email}</p>
+  <form method="post" action="/auth/verify-code">
+    <input type="hidden" name="email" value="${email}">
+    <input type="text" name="code" required autofocus inputmode="numeric" autocomplete="one-time-code" placeholder="12-345-678" maxlength="12" aria-label="Code">
+    <button type="submit">Sign in</button>
+  </form>
+  ${msg ? html`<p class="msg">${msg}</p>` : ''}
+  ${CODE_LINKS(email, false)}
 </div></body></html>`;
 
 const FOLDER_ICON = raw(`<span class="folder-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.75 4.25a1 1 0 0 1 1-1h3l1.5 1.5h6a1 1 0 0 1 1 1v6.5a1 1 0 0 1-1 1H2.75a1 1 0 0 1-1-1v-8Z"/></svg></span>`);
