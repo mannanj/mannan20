@@ -4,9 +4,14 @@
   "account_id": "547c30420926d619338cfd0049a6a73e",
   "main": "src/index.ts",
   "compatibility_date": "2026-04-01",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "workers_dev": true,
-  "vars": { "SITE_ORIGIN": "https://mannan.is" },
+  "vars": {
+    "SITE_ORIGIN": "https://mannan.is",
+    "HUB_ORIGIN": "https://mcp.mannanteam.workers.dev"
+  },
+  "durable_objects": { "bindings": [{ "name": "VAULT", "class_name": "OwnerVault" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["OwnerVault"] }],
   "kv_namespaces": [
     { "binding": "OAUTH_KV", "id": "acab75d9c17e43fd89f261951be73043" }
   ],

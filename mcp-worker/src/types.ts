@@ -124,6 +124,9 @@ export interface OwnerEnv {
   SITE_ORIGIN: string;
   MCP_GRANT_SECRET: string;
   MCP_ACTOR_SECRET: string;
+  MCP_VAULT_SECRET: string;
+  HUB_ORIGIN: string;
+  VAULT: DurableObjectNamespace<import("./hub/vault").OwnerVault>;
 }
 
 export interface CallerProps {

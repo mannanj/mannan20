@@ -135,20 +135,13 @@ describe("authorize choice", () => {
     expect(await env.OAUTH_KV.get(`mcp:flow:${state}`)).toBeTruthy();
   });
 
-  it("gives the signed-in owner public and Upload tools on the same /mcp", async () => {
-    const { state, clientId, verifier } = await authorizePage();
-    const chosen = await choose(state, "signin");
-    const flow = /uploads_mcp_flow=([^;]+)/.exec(chosen.headers.get("set-cookie") ?? "")?.[1] ?? "";
-    const grant = await signMcpGrant(
-      { sub: "owner-id", email: "hello@mannan.is", state },
-      env.MCP_GRANT_SECRET,
-    );
-    const callback = await SELF.fetch(
-      `https://example.com/callback?state=${state}&grant=${encodeURIComponent(grant)}`,
-      { headers: { cookie: `uploads_mcp_flow=${flow}` }, redirect: "manual" },
-    );
-    expect(callback.status).toBe(302);
-    const client = await connectClient(await exchangeCode(callback, clientId, verifier));
+  it("gives the signed-in owner public and Upload tools on the same /mcp (via /apps Continue)", async () => {
+    const { ownerSession, postApps } = await import("./helpers");
+    const session = await ownerSession();
+    expect(session.redirect.headers.get("location")).toBe("/apps");
+    const done = await postApps("/apps/continue", session);
+    expect(done.status).toBe(302);
+    const client = await connectClient(await exchangeCode(done, session.clientId, session.verifier));
     const names = (await client.listTools()).tools.map((tool) => tool.name);
     await client.close();
     for (const tool of OWNER_TOOLS) expect(names).toContain(tool);

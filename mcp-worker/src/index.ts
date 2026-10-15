@@ -7,6 +7,9 @@ import { createServer } from "./server";
 import { data } from "./data";
 import { getArticleMetrics, resetArticleFetches } from "./article-state";
 import { handleFileRequest } from "./files";
+import { handleAppsJson, handleAppsRequest } from "./hub/apps";
+
+export { OwnerVault } from "./hub/vault";
 import type { AppEnv, CallerProps, WorkerEnv } from "./types";
 
 const ENDPOINT = "https://mcp.mannanteam.workers.dev/mcp";
@@ -225,6 +228,9 @@ export async function handleMcpRequest(
     owner ? OWNER_INSTRUCTIONS : undefined,
   );
   if (owner) registerOwnerTools(server, env as AppEnv);
+  // HOOK (B3): registerProxiedTools(server, env as AppEnv) goes here, owner only,
+  // next to registerOwnerTools. Sub-app tools register as `<appId>__<tool>` from
+  // the pinned manifests in the OwnerVault (src/hub/vault.ts).
 
   const response = await createMcpHandler(server, {
     route: "/mcp",
@@ -243,13 +249,19 @@ export async function handleMcpRequest(
 }
 
 const mcpHandler = {
-  fetch: handleMcpRequest,
+  fetch(request: Request, env: WorkerEnv, ctx: ExecutionContext) {
+    if (new URL(request.url).pathname === "/apps.json") {
+      return handleAppsJson(request, env as AppEnv, callerProps(ctx));
+    }
+    return handleMcpRequest(request, env, ctx);
+  },
 };
 
 const publicRouter = {
   async fetch(request: Request, env: WorkerEnv) {
     const { pathname } = new URL(request.url);
     if (pathname === "/authorize") return handleAuthorize(request, env as AppEnv);
+    if (pathname === "/apps" || pathname.startsWith("/apps/")) return handleAppsRequest(request, env as AppEnv);
     if (pathname === "/callback") return handleCallback(request, env as AppEnv);
     if (pathname === "/") {
       const wantsHtml = request.headers.get("accept")?.includes("text/html");
@@ -274,7 +286,7 @@ const publicRouter = {
 } satisfies ExportedHandler<WorkerEnv>;
 
 export default new OAuthProvider<WorkerEnv>({
-  apiRoute: "/mcp",
+  apiRoute: ["/mcp", "/apps.json"],
   apiHandler: mcpHandler,
   defaultHandler: publicRouter,
   authorizeEndpoint: "/authorize",

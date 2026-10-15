@@ -1,16 +1,17 @@
 import type { AuthRequest } from "@cloudflare/workers-oauth-provider";
 import { verifyMcpGrant } from "./vendor/grant";
 import { OWNER_EMAIL } from "./owner-api";
-import type { AppEnv, CallerProps, OwnerProps } from "./types";
+import { vaultFor, sessionCookie } from "./hub/session";
+import type { AppEnv, CallerProps } from "./types";
 
-const STATE_TTL_SECONDS = 600;
-const FLOW_COOKIE = "uploads_mcp_flow";
+export const STATE_TTL_SECONDS = 600;
+export const FLOW_COOKIE = "uploads_mcp_flow";
 const UNVERIFIED_MESSAGE = "That sign-in could not be verified.";
 
-const stateKey = (state: string) => `mcp:authreq:${state}`;
-const flowKey = (state: string) => `mcp:flow:${state}`;
+export const stateKey = (state: string) => `mcp:authreq:${state}`;
+export const flowKey = (state: string) => `mcp:flow:${state}`;
 
-function readCookie(header: string | null, name: string): string | null {
+export function readCookie(header: string | null, name: string): string | null {
   if (!header) return null;
   for (const part of header.split(";")) {
     const [key, ...rest] = part.trim().split("=");
@@ -19,14 +20,14 @@ function readCookie(header: string | null, name: string): string | null {
   return null;
 }
 
-function sameFlow(a: string, b: string): boolean {
+export function sameFlow(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let index = 0; index < a.length; index += 1) diff |= a.charCodeAt(index) ^ b.charCodeAt(index);
   return diff === 0;
 }
 
-function newState(): string {
+export function newState(): string {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   let binary = "";
@@ -172,16 +173,25 @@ export async function handleCallback(request: Request, env: AppEnv): Promise<Res
     return plain(403, UNVERIFIED_MESSAGE);
   }
 
-  const authRequest = JSON.parse(stored) as AuthRequest;
-  const props: OwnerProps = { userId: verified.payload.sub, email: verified.payload.email };
-
-  const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({
-    request: authRequest,
-    userId: verified.payload.sub,
-    metadata: { email: verified.payload.email },
-    scope: authRequest.scope,
-    props,
+  // Two kinds of sign-in share this callback: an OAuth client signing in
+  // (completes at /apps/continue) and the owner opening /apps/login ('manage').
+  const parsed = JSON.parse(stored) as AuthRequest & { kind?: string };
+  const pending =
+    parsed.kind === "manage"
+      ? null
+      : {
+          authRequest: stored,
+          userId: verified.payload.sub,
+          email: verified.payload.email,
+        };
+  const session = await vaultFor(env).createSession(pending);
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: "/apps",
+      "cache-control": "no-store",
+      "referrer-policy": "no-referrer",
+      "set-cookie": sessionCookie(session.sid),
+    },
   });
-
-  return Response.redirect(redirectTo, 302);
 }
