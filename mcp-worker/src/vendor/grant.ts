@@ -62,6 +62,7 @@ export type McpGrantVerification =
  */
 const GRANT_DOMAIN = 'mcp-grant.v1';
 const ACTOR_DOMAIN = 'mcp-actor.v1';
+const MANAGE_DOMAIN = 'mcp-manage.v1';
 
 const encoder = new TextEncoder();
 
@@ -172,22 +173,62 @@ export async function signActor(
   identity: { sub: string; email: string },
   secret: string
 ): Promise<string> {
-  const payload: ActorPayload = {
-    ...identity,
-    exp: Math.floor(Date.now() / 1000) + ACTOR_TTL_SECONDS,
-    nonce: crypto.randomUUID(),
-  };
-  const encoded = b64urlEncode(JSON.stringify(payload));
-  return `${encoded}.${await sign(encoded, secret, ACTOR_DOMAIN)}`;
+  return signShortLived(identity, secret, ACTOR_DOMAIN);
 }
 
 export async function verifyActor(
   token: string,
   secret: string
 ): Promise<ActorPayload | null> {
+  return verifyShortLived(token, secret, ACTOR_DOMAIN);
+}
+
+/**
+ * The manage token: the APP asking the MCP Worker to list or disconnect the
+ * AI clients one person has connected. The reverse direction of the actor
+ * token, signed with the same shared secret but its own domain, so neither
+ * can stand in for the other: an actor token the Worker minted for one tool
+ * call can never be replayed at the Worker to disconnect somebody's clients.
+ *
+ * It names whose connections, and nothing else — the Worker still scopes
+ * every list and revoke to that `sub`, so it cannot reach anyone else's.
+ */
+export async function signManage(
+  identity: { sub: string; email: string },
+  secret: string
+): Promise<string> {
+  return signShortLived(identity, secret, MANAGE_DOMAIN);
+}
+
+export async function verifyManage(
+  token: string,
+  secret: string
+): Promise<ActorPayload | null> {
+  return verifyShortLived(token, secret, MANAGE_DOMAIN);
+}
+
+async function signShortLived(
+  identity: { sub: string; email: string },
+  secret: string,
+  domain: string
+): Promise<string> {
+  const payload: ActorPayload = {
+    ...identity,
+    exp: Math.floor(Date.now() / 1000) + ACTOR_TTL_SECONDS,
+    nonce: crypto.randomUUID(),
+  };
+  const encoded = b64urlEncode(JSON.stringify(payload));
+  return `${encoded}.${await sign(encoded, secret, domain)}`;
+}
+
+async function verifyShortLived(
+  token: string,
+  secret: string,
+  domain: string
+): Promise<ActorPayload | null> {
   const [encoded, signature] = token.split('.');
   if (!encoded || !signature) return null;
-  if (!constantTimeEqual(signature, await sign(encoded, secret, ACTOR_DOMAIN))) return null;
+  if (!constantTimeEqual(signature, await sign(encoded, secret, domain))) return null;
   const json = b64urlDecode(encoded);
   if (!json) return null;
   try {

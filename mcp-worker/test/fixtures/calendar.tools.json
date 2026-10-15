@@ -1,0 +1,68 @@
+{
+  "tools": [
+    {
+      "name": "list_events",
+      "description": "Your calendar events, oldest first. Narrow with a date range, or cap how many come back. With no range, every event you have.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "description": "Only events starting at or after this time."
+          },
+          "end": {
+            "type": "string",
+            "description": "Only events starting at or before this time."
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 1000,
+            "description": "At most this many."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    {
+      "name": "restore_event",
+      "description": "Put a removed event back on your calendar. Find its id with `list_deleted_events`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "list_deleted_events",
+      "description": "Events you removed, which are kept in the history and can be brought back with `restore_event`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 1000
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    }
+  ]
+}

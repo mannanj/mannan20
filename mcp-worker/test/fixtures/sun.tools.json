@@ -1,0 +1,42 @@
+{
+  "tools": [
+    {
+      "name": "get_dataset_status",
+      "description": "Returns exact available annual Sun Signal datasets for one US ZIP code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "zipcode": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          }
+        },
+        "required": [
+          "zipcode"
+        ]
+      }
+    },
+    {
+      "name": "get_solar_year",
+      "description": "Returns one pre-generated calendar year of read-only solar timing data. It never generates or substitutes data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "zipcode": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 2020,
+            "maximum": 2100
+          }
+        },
+        "required": [
+          "zipcode",
+          "year"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "tools": [
+    {
+      "name": "whoami",
+      "description": "The email address this connection is signed in as.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "accountId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "accountId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_event",
+      "description": "One saved event by the id that list_events reports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "asCalendarFile": {
+            "type": "boolean",
+            "description": "Attach the event as an .ics file as well as describing it."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "required": [
+          "id"
+        ]
+      }
+    }
+  ]
+}

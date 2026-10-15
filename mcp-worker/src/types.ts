@@ -145,6 +145,8 @@ export interface WorkerEnv extends ArticleStateEnv {
   FILES: R2Bucket;
   FILES_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
   MCP_LIMITER: { limit(options: { key: string }): Promise<{ success: boolean }> };
+  /** 30/min per sub-app, keyed `proxy:<appId>`. */
+  PROXY_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> };
   MCP_ADMIN_SECRET?: string;
 }
 

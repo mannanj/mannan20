@@ -8,6 +8,8 @@ import { data } from "./data";
 import { getArticleMetrics, resetArticleFetches } from "./article-state";
 import { handleFileRequest } from "./files";
 import { handleAppsJson, handleAppsRequest } from "./hub/apps";
+import { registerProxiedTools } from "./hub/proxy";
+import { handleConnections } from "./vendor/connections";
 
 export { OwnerVault } from "./hub/vault";
 import type { AppEnv, CallerProps, WorkerEnv } from "./types";
@@ -76,6 +78,7 @@ a:hover{text-decoration:underline}
 <p>Claude Code:</p>
 <code>claude mcp add --transport http mannan ${ENDPOINT}</code>
 <p>Or paste the endpoint into claude.ai Settings &rarr; Connectors, or your agent's MCP config.</p>
+<p>Signed in as Mannan, this server also fronts Calendar, Greenlights, MeetTime, Event Every and Sun Signal as <code style="display:inline;padding:2px 6px;margin:0">app__tool</code> tools, for the apps he authorizes at <a href="/apps/login">/apps</a>. Guests see the public tools only.</p>
 <div class="links">
 <a href="https://mannan.is/mcp">Full guide</a>
 <a href="https://github.com/mannanj/mannan20/tree/main/mcp-worker">Source</a>
@@ -163,6 +166,15 @@ function hasOversizedSearchQuery(body: ArrayBuffer): boolean {
   }
 }
 
+function hasMethod(body: ArrayBuffer, method: string): boolean {
+  try {
+    const parsed = JSON.parse(new TextDecoder().decode(body));
+    return (Array.isArray(parsed) ? parsed : [parsed]).some((message) => message?.method === method);
+  } catch {
+    return false;
+  }
+}
+
 function callerProps(ctx: ExecutionContext): CallerProps | undefined {
   return (ctx as ExecutionContext & { props?: CallerProps }).props;
 }
@@ -210,6 +222,7 @@ export async function handleMcpRequest(
   }
 
   let boundedRequest = request;
+  let listsTools = false;
   if (request.method === "POST" && request.body) {
     const forwarded = request.clone();
     const body = await request.arrayBuffer();
@@ -219,6 +232,7 @@ export async function handleMcpRequest(
     if (hasOversizedSearchQuery(body)) {
       return Response.json({ error: "Search query too long" }, { status: 400 });
     }
+    if (owner) listsTools = hasMethod(body, "tools/list");
     boundedRequest = forwarded;
   }
 
@@ -227,10 +241,10 @@ export async function handleMcpRequest(
     (promise) => ctx.waitUntil(promise),
     owner ? OWNER_INSTRUCTIONS : undefined,
   );
-  if (owner) registerOwnerTools(server, env as AppEnv);
-  // HOOK (B3): registerProxiedTools(server, env as AppEnv) goes here, owner only,
-  // next to registerOwnerTools. Sub-app tools register as `<appId>__<tool>` from
-  // the pinned manifests in the OwnerVault (src/hub/vault.ts).
+  if (owner) {
+    registerOwnerTools(server, env as AppEnv);
+    await registerProxiedTools(server, env as AppEnv, callerProps(ctx)?.email, { recheck: listsTools });
+  }
 
   const response = await createMcpHandler(server, {
     route: "/mcp",
@@ -263,6 +277,12 @@ const publicRouter = {
     if (pathname === "/authorize") return handleAuthorize(request, env as AppEnv);
     if (pathname === "/apps" || pathname.startsWith("/apps/")) return handleAppsRequest(request, env as AppEnv);
     if (pathname === "/callback") return handleCallback(request, env as AppEnv);
+    if (pathname === "/connections" || pathname.startsWith("/connections/")) {
+      const e = env as AppEnv;
+      // Server to server from the site (manage token, own signing domain). Same shape as the app Workers.
+      const connections = await handleConnections(request, e.OAUTH_PROVIDER, e.MCP_ACTOR_SECRET);
+      if (connections) return connections;
+    }
     if (pathname === "/") {
       const wantsHtml = request.headers.get("accept")?.includes("text/html");
       if (wantsHtml) {

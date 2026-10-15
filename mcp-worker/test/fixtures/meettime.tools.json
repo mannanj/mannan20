@@ -1,0 +1,82 @@
+{
+  "tools": [
+    {
+      "name": "get_event",
+      "description": "Read a MeetTime poll from its share link.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "required": [
+          "link"
+        ]
+      }
+    },
+    {
+      "name": "submit_availability",
+      "description": "Mark when you are free, as the named person.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 200,
+            "description": "Identifies the answer, and receives updates."
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "date",
+                "start"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The blocks this person can make."
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "required": [
+          "link",
+          "firstName",
+          "lastName",
+          "email",
+          "times"
+        ]
+      }
+    }
+  ]
+}
