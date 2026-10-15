@@ -61,10 +61,10 @@ function createFakeDb(): Pick<Env, 'DB'>['DB'] {
   function run(sql: string, args: unknown[]): Record<string, unknown> | null {
     const normalized = normalize(sql);
 
-    if (normalized === 'DELETE FROM magic_tokens WHERE purpose = ? AND email = ?') {
-      const [purpose, email] = args as [string, string];
+    if (normalized === 'DELETE FROM magic_tokens WHERE purpose = ? AND email = ? AND expires_at <= ?') {
+      const [purpose, email, now] = args as [string, string, number];
       for (const [key, row] of magicTokens) {
-        if (row.purpose === purpose && row.email === email) magicTokens.delete(key);
+        if (row.purpose === purpose && row.email === email && row.expires_at <= now) magicTokens.delete(key);
       }
       return null;
     }

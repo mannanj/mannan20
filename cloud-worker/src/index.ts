@@ -106,7 +106,14 @@ app.get('/auth/code', (c) => {
   return c.html(codePage(email));
 });
 
+function crossSiteForm(c: Context<AppCtx>): boolean {
+  if (c.req.header('sec-fetch-site') === 'cross-site') return true;
+  const origin = c.req.header('origin');
+  return Boolean(origin) && origin !== new URL(c.env.PUBLIC_BASE_URL).origin;
+}
+
 app.post('/auth/verify-code', async (c) => {
+  if (crossSiteForm(c)) return c.text('Forbidden', 403);
   const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
   const form = await c.req.formData().catch(() => null);
   const rawEmail = form?.get('email');

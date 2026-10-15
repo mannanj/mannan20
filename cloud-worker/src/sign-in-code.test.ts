@@ -185,13 +185,25 @@ describe('consumeSignInCode', () => {
     expect(await consumeSignInCode(env, EMAIL, code, 'site')).toBe(EMAIL);
   });
 
-  test('resending kills the previous link and code', async () => {
+  test('resending keeps the earlier email working, so nobody can cancel a pending sign-in', async () => {
     const { env } = createEnv();
     const first = await mintMagicToken(env, EMAIL, 'site');
     const second = await mintMagicToken(env, EMAIL, 'site');
+    expect(await consumeSignInCode(env, EMAIL, first.code, 'site')).toBe(EMAIL);
+    expect(await consumeMagicToken(env, second.token, 'site')).toBe(EMAIL);
+  });
+
+  test('a wrong guess counts against every live code for that email', async () => {
+    const { env } = createEnv();
+    const first = await mintMagicToken(env, EMAIL, 'site');
+    const second = await mintMagicToken(env, EMAIL, 'site');
+    for (let i = 0; i < MAX_ATTEMPTS_PER_CODE; i++) {
+      let guess = wrongCode(first.code);
+      if (guess === second.code) guess = wrongCode(guess);
+      await consumeSignInCode(env, EMAIL, guess, 'site');
+    }
     expect(await consumeSignInCode(env, EMAIL, first.code, 'site')).toBeNull();
-    expect(await consumeMagicToken(env, first.token, 'site')).toBeNull();
-    expect(await consumeSignInCode(env, EMAIL, second.code, 'site')).toBe(EMAIL);
+    expect(await consumeSignInCode(env, EMAIL, second.code, 'site')).toBeNull();
   });
 
   test(`resending cannot farm guesses: ${MAX_FAILURES_PER_EMAIL} failures per email per hour`, async () => {
@@ -259,11 +271,11 @@ describe('POST /auth/site/verify-code', () => {
 });
 
 describe('Cloud HTML code sign-in', () => {
-  function form(env: Env, fields: Record<string, string>) {
+  function form(env: Env, fields: Record<string, string>, headers: Record<string, string> = {}) {
     return app.fetch(
       new Request('https://cloud.test/auth/verify-code', {
         method: 'POST',
-        headers: { 'cf-connecting-ip': '203.0.113.10' },
+        headers: { 'cf-connecting-ip': '203.0.113.10', ...headers },
         body: new URLSearchParams(fields),
       }),
       env,
@@ -278,6 +290,18 @@ describe('Cloud HTML code sign-in', () => {
     expect(res.status).toBe(400);
     expect(await res.text()).toContain('That code didn&#39;t work');
     expect(res.headers.get('set-cookie')).toBeNull();
+  });
+
+  test('a cross-site form post is refused before the code is checked', async () => {
+    const { env } = createEnv();
+    const { code } = await mintMagicToken(env, EMAIL, 'cloud');
+    const crossSite: Array<Record<string, string>> = [{ origin: 'https://evil.example' }, { 'sec-fetch-site': 'cross-site' }];
+    for (const headers of crossSite) {
+      const res = await form(env, { email: EMAIL, code }, headers);
+      expect(res.status).toBe(403);
+    }
+    const sameSite = await form(env, { email: EMAIL, code }, { origin: 'https://example.com' });
+    expect(sameSite.status).toBe(302);
   });
 
   test('the right code sets the Cloud session and redirects', async () => {
