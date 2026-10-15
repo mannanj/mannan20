@@ -25,4 +25,5 @@ export interface Env {
   PUBLIC_BASE_URL: string;
   SITE_AUTH_RETURN_URL: string;
   SITE_AUTH_EXCHANGE_SECRET: string;
+  SITE_AUTH_SITES?: string;
 }

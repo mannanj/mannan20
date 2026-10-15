@@ -12,7 +12,7 @@ interface MagicLinkEmailInput {
 }
 
 async function sendMagicLinkEmail(env: Env, input: MagicLinkEmailInput): Promise<void> {
-  const url = `${env.PUBLIC_BASE_URL}${input.path}?token=${encodeURIComponent(input.token)}`;
+  const url = `${env.PUBLIC_BASE_URL}${input.path}${input.path.includes('?') ? '&' : '?'}token=${encodeURIComponent(input.token)}`;
   const html = `<!doctype html>
 <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
   <h2 style="margin:0 0 16px;font-size:18px;font-weight:600">${input.heading}</h2>
@@ -56,7 +56,24 @@ export async function sendMagicLink(env: Env, to: string, token: string): Promis
   });
 }
 
-export async function sendSiteContinueLink(env: Env, to: string, token: string): Promise<void> {
+export async function sendSiteContinueLink(
+  env: Env,
+  to: string,
+  token: string,
+  site?: { id: string; name: string },
+): Promise<void> {
+  if (site) {
+    return sendMagicLinkEmail(env, {
+      to,
+      token,
+      path: `/auth/site/verify?site=${encodeURIComponent(site.id)}`,
+      subject: `Sign in to ${site.name}`,
+      heading: `Sign in to ${site.name}`,
+      body: 'Click the button below to sign in with your mannan.is email. This link expires in 15 minutes.',
+      button: 'Sign in',
+      idempotencyKey: `site-magic/${token.slice(0, 32)}`,
+    });
+  }
   return sendMagicLinkEmail(env, {
     to,
     token,

@@ -179,7 +179,7 @@ export async function hashSecret(value: string): Promise<string> {
 export async function mintMagicToken(
   env: Env,
   email: string,
-  purpose: 'cloud' | 'site' = 'cloud',
+  purpose: MagicTokenPurpose = 'cloud',
 ): Promise<string> {
   const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
   const expires = Date.now() + TOKEN_TTL_MS;
@@ -194,7 +194,7 @@ export async function mintMagicToken(
 export async function consumeMagicToken(
   env: Env,
   token: string,
-  purpose: 'cloud' | 'site' = 'cloud',
+  purpose: MagicTokenPurpose = 'cloud',
 ): Promise<string | null> {
   const row = await env.DB.prepare(
     'DELETE FROM magic_tokens WHERE token = ? AND purpose = ? RETURNING email, expires_at',
@@ -206,12 +206,50 @@ export async function consumeMagicToken(
   return row.email;
 }
 
-export async function mintSiteSessionCode(env: Env, email: string): Promise<string> {
+export type MagicTokenPurpose = 'cloud' | 'site' | `site:${string}`;
+
+export interface SiteAuthSite {
+  id: string;
+  secret: string;
+  returnUrl: string;
+  name: string;
+}
+
+const SITE_ID_RE = /^[a-z0-9-]{1,40}$/;
+
+export function siteAuthSite(env: Env, id: string): SiteAuthSite | null {
+  if (!SITE_ID_RE.test(id) || !env.SITE_AUTH_SITES) return null;
+  let sites: unknown;
+  try {
+    sites = JSON.parse(env.SITE_AUTH_SITES);
+  } catch {
+    return null;
+  }
+  if (!sites || typeof sites !== 'object') return null;
+  const entry = (sites as Record<string, unknown>)[id];
+  if (!entry || typeof entry !== 'object') return null;
+  const { secret, return_url: returnUrl, name } = entry as Record<string, unknown>;
+  if (typeof secret !== 'string' || secret.length < 1 || typeof returnUrl !== 'string') return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(returnUrl);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== 'https:') return null;
+  return { id, secret, returnUrl, name: typeof name === 'string' && name ? name : id };
+}
+
+function siteCodeKey(code: string, siteId?: string): string {
+  return siteId ? `${siteId}:${code}` : code;
+}
+
+export async function mintSiteSessionCode(env: Env, email: string, siteId?: string): Promise<string> {
   const code = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
   await env.DB.prepare(
     'INSERT INTO site_session_codes (code_hash, email, expires_at) VALUES (?, ?, ?)',
   )
-    .bind(await hashSecret(code), normalizeEmail(email), Date.now() + SITE_CODE_TTL_MS)
+    .bind(await hashSecret(siteCodeKey(code, siteId)), normalizeEmail(email), Date.now() + SITE_CODE_TTL_MS)
     .run();
   return code;
 }
@@ -219,8 +257,9 @@ export async function mintSiteSessionCode(env: Env, email: string): Promise<stri
 export async function consumeSiteSessionCode(
   env: Env,
   code: string,
+  siteId?: string,
 ): Promise<{ email: string; role: string } | null> {
-  const codeHash = await hashSecret(code);
+  const codeHash = await hashSecret(siteCodeKey(code, siteId));
   const row = await env.DB.prepare(
     'DELETE FROM site_session_codes WHERE code_hash = ? RETURNING email, expires_at',
   )
