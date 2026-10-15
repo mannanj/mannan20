@@ -8,6 +8,7 @@ import {
   consumeSignInCode,
   createSessionCookie,
   ensureUser,
+  siteAuthSite,
   getUser,
   isFolder,
   listAllowedFolders,
@@ -132,18 +133,19 @@ app.post('/auth/verify-code', async (c) => {
 });
 
 app.post('/auth/site/request', async (c) => {
-  if (c.req.header('authorization') !== `Bearer ${c.env.SITE_AUTH_EXCHANGE_SECRET}`) {
+  const body = await c.req.json().catch(() => null);
+  const record = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  const siteId = typeof record.site === 'string' ? record.site : null;
+  const site = siteId ? siteAuthSite(c.env, siteId) : null;
+  const expectedSecret = siteId ? site?.secret : c.env.SITE_AUTH_EXCHANGE_SECRET;
+  if (!expectedSecret || c.req.header('authorization') !== `Bearer ${expectedSecret}`) {
     return c.json({ error: 'unauthorized' }, 401);
   }
   const ip =
     c.req.header('x-site-auth-ip') ??
     c.req.header('cf-connecting-ip') ??
     'unknown';
-  const body = await c.req.json().catch(() => null);
-  const email =
-    body && typeof body === 'object' && typeof (body as Record<string, unknown>).email === 'string'
-      ? normalizeEmail((body as Record<string, unknown>).email as string)
-      : '';
+  const email = typeof record.email === 'string' ? normalizeEmail(record.email) : '';
 
   if (!email || !EMAIL_RE.test(email) || email.length > 254) {
     return c.json({ error: 'invalid-email' }, 400);
@@ -158,9 +160,9 @@ app.post('/auth/site/request', async (c) => {
   }
 
   await ensureUser(c.env, email);
-  const { token, code } = await mintMagicToken(c.env, email, 'site');
+  const { token, code } = await mintMagicToken(c.env, email, site ? `site:${site.id}` : 'site');
   try {
-    await sendSiteContinueLink(c.env, email, token, code);
+    await sendSiteContinueLink(c.env, email, token, code, site ? { id: site.id, name: site.name } : undefined);
   } catch (err) {
     console.error('send_site_magic_link_failed', err);
     return c.json({ error: 'email-unavailable' }, 503);
@@ -203,31 +205,37 @@ app.get('/auth/site/verify', async (c) => {
   if (!token) {
     return c.html(messagePage('Invalid link', 'Missing token.'), 400);
   }
-  const email = await consumeMagicToken(c.env, token, 'site');
+  const siteId = c.req.query('site');
+  const site = siteId ? siteAuthSite(c.env, siteId) : null;
+  if (siteId && !site) {
+    return c.html(messagePage('Invalid link', 'That link is invalid or expired. Please request a new one.'), 400);
+  }
+  const email = await consumeMagicToken(c.env, token, site ? `site:${site.id}` : 'site');
   if (!email) {
     return c.html(
       messagePage('Link expired', 'That link is invalid or expired. Please request a new one.'),
       400,
     );
   }
-  const code = await mintSiteSessionCode(c.env, email);
-  const url = new URL(c.env.SITE_AUTH_RETURN_URL);
+  const code = await mintSiteSessionCode(c.env, email, site?.id);
+  const url = new URL(site ? site.returnUrl : c.env.SITE_AUTH_RETURN_URL);
   url.searchParams.set('code', code);
   return c.redirect(url.toString(), 302);
 });
 
 app.post('/auth/site/exchange', async (c) => {
-  if (c.req.header('authorization') !== `Bearer ${c.env.SITE_AUTH_EXCHANGE_SECRET}`) {
+  const body = await c.req.json().catch(() => null);
+  const record = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  const siteId = typeof record.site === 'string' ? record.site : null;
+  const site = siteId ? siteAuthSite(c.env, siteId) : null;
+  const expectedSecret = siteId ? site?.secret : c.env.SITE_AUTH_EXCHANGE_SECRET;
+  if (!expectedSecret || c.req.header('authorization') !== `Bearer ${expectedSecret}`) {
     return c.json({ error: 'unauthorized' }, 401);
   }
-  const body = await c.req.json().catch(() => null);
-  const code =
-    body && typeof body === 'object' && typeof (body as Record<string, unknown>).code === 'string'
-      ? ((body as Record<string, unknown>).code as string)
-      : '';
+  const code = typeof record.code === 'string' ? record.code : '';
   if (!code) return c.json({ error: 'invalid-code' }, 400);
 
-  const user = await consumeSiteSessionCode(c.env, code);
+  const user = await consumeSiteSessionCode(c.env, code, site?.id);
   if (!user) return c.json({ error: 'invalid-code' }, 400);
 
   return c.json({
@@ -238,15 +246,18 @@ app.post('/auth/site/exchange', async (c) => {
 });
 
 app.post('/auth/site/verify-code', async (c) => {
-  if (c.req.header('authorization') !== `Bearer ${c.env.SITE_AUTH_EXCHANGE_SECRET}`) {
+  const body = await c.req.json().catch(() => null);
+  const record = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
+  const siteId = typeof record.site === 'string' ? record.site : null;
+  const site = siteId ? siteAuthSite(c.env, siteId) : null;
+  const expectedSecret = siteId ? site?.secret : c.env.SITE_AUTH_EXCHANGE_SECRET;
+  if (!expectedSecret || c.req.header('authorization') !== `Bearer ${expectedSecret}`) {
     return c.json({ error: 'unauthorized' }, 401);
   }
   const ip =
     c.req.header('x-site-auth-ip') ??
     c.req.header('cf-connecting-ip') ??
     'unknown';
-  const body = await c.req.json().catch(() => null);
-  const record = body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
   const email = typeof record.email === 'string' ? normalizeEmail(record.email) : '';
   const digits = normalizeSignInCode(record.code);
   if (!EMAIL_RE.test(email) || email.length > 254 || !digits) {
@@ -255,7 +266,7 @@ app.post('/auth/site/verify-code', async (c) => {
   const limit = await c.env.VERIFY_LIMITER.limit({ key: `site:code:${ip}` });
   if (!limit.success) return c.json({ error: 'too-many-requests' }, 429);
 
-  const verified = await consumeSignInCode(c.env, email, digits, 'site');
+  const verified = await consumeSignInCode(c.env, email, digits, site ? `site:${site.id}` : 'site');
   const user = verified ? await getUser(c.env, verified) : null;
   if (!user) return c.json({ error: 'invalid-code' }, 400);
 

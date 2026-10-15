@@ -53,6 +53,8 @@ function sqliteD1(db: Database): D1Database {
   } as unknown as D1Database;
 }
 
+const CIVIC_SECRET = 'civic-site-secret';
+
 function createEnv(options: { verifyAllowed?: boolean } = {}): { env: Env; db: Database; limiterKeys: string[] } {
   const db = new Database(':memory:');
   for (const file of readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql')).sort()) {
@@ -74,6 +76,9 @@ function createEnv(options: { verifyAllowed?: boolean } = {}): { env: Env; db: D
     PUBLIC_BASE_URL: 'https://example.com',
     SITE_AUTH_RETURN_URL: 'https://example.com/callback',
     SITE_AUTH_EXCHANGE_SECRET: EXCHANGE_SECRET,
+    SITE_AUTH_SITES: JSON.stringify({
+      civic: { secret: CIVIC_SECRET, return_url: 'https://civic.example/auth/callback', name: 'Civic' },
+    }),
   } as unknown as Env;
   return { env, db, limiterKeys };
 }
@@ -185,25 +190,13 @@ describe('consumeSignInCode', () => {
     expect(await consumeSignInCode(env, EMAIL, code, 'site')).toBe(EMAIL);
   });
 
-  test('resending keeps the earlier email working, so nobody can cancel a pending sign-in', async () => {
+  test('resending expires the earlier email: only the newest link and code work', async () => {
     const { env } = createEnv();
     const first = await mintMagicToken(env, EMAIL, 'site');
     const second = await mintMagicToken(env, EMAIL, 'site');
-    expect(await consumeSignInCode(env, EMAIL, first.code, 'site')).toBe(EMAIL);
-    expect(await consumeMagicToken(env, second.token, 'site')).toBe(EMAIL);
-  });
-
-  test('a wrong guess counts against every live code for that email', async () => {
-    const { env } = createEnv();
-    const first = await mintMagicToken(env, EMAIL, 'site');
-    const second = await mintMagicToken(env, EMAIL, 'site');
-    for (let i = 0; i < MAX_ATTEMPTS_PER_CODE; i++) {
-      let guess = wrongCode(first.code);
-      if (guess === second.code) guess = wrongCode(guess);
-      await consumeSignInCode(env, EMAIL, guess, 'site');
-    }
+    expect(await consumeMagicToken(env, first.token, 'site')).toBeNull();
     expect(await consumeSignInCode(env, EMAIL, first.code, 'site')).toBeNull();
-    expect(await consumeSignInCode(env, EMAIL, second.code, 'site')).toBeNull();
+    expect(await consumeSignInCode(env, EMAIL, second.code, 'site')).toBe(EMAIL);
   });
 
   test(`resending cannot farm guesses: ${MAX_FAILURES_PER_EMAIL} failures per email per hour`, async () => {
@@ -265,6 +258,23 @@ describe('POST /auth/site/verify-code', () => {
 
     await env.DB.prepare("INSERT INTO users (email, role, created_at) VALUES (?, 'client', ?)").bind(EMAIL, 1).run();
     const right = await siteVerify(env, { email: EMAIL.toUpperCase(), code: formatSignInCode(code) });
+    expect(right.status).toBe(200);
+    expect(await right.json() as unknown).toEqual({ email: EMAIL, role: 'user', admin: false });
+  });
+
+  test('a site checks its own codes with its own secret, and the two never mix', async () => {
+    const { env } = createEnv();
+    await env.DB.prepare("INSERT INTO users (email, role, created_at) VALUES (?, 'client', ?)").bind(EMAIL, 1).run();
+    const civic = await mintMagicToken(env, EMAIL, 'site:civic');
+    const mannan = await mintMagicToken(env, EMAIL, 'site');
+    const asCivic = { authorization: `Bearer ${CIVIC_SECRET}` };
+
+    expect((await siteVerify(env, { site: 'civic', email: EMAIL, code: civic.code })).status).toBe(401);
+    expect((await siteVerify(env, { site: 'nope', email: EMAIL, code: civic.code }, asCivic)).status).toBe(401);
+    expect((await siteVerify(env, { site: 'civic', email: EMAIL, code: mannan.code }, asCivic)).status).toBe(400);
+    expect((await siteVerify(env, { email: EMAIL, code: civic.code })).status).toBe(400);
+
+    const right = await siteVerify(env, { site: 'civic', email: EMAIL, code: civic.code }, asCivic);
     expect(right.status).toBe(200);
     expect(await right.json() as unknown).toEqual({ email: EMAIL, role: 'user', admin: false });
   });

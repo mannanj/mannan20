@@ -16,7 +16,7 @@ interface MagicLinkEmailInput {
 export const NEVER_SHARE = 'Never share this code. Nobody from us will ask for it.';
 
 async function sendMagicLinkEmail(env: Env, input: MagicLinkEmailInput): Promise<void> {
-  const url = `${env.PUBLIC_BASE_URL}${input.path}?token=${encodeURIComponent(input.token)}`;
+  const url = `${env.PUBLIC_BASE_URL}${input.path}${input.path.includes('?') ? '&' : '?'}token=${encodeURIComponent(input.token)}`;
   const code = formatSignInCode(input.code);
   const html = `<!doctype html>
 <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
@@ -65,7 +65,26 @@ export async function sendMagicLink(env: Env, to: string, token: string, code: s
   });
 }
 
-export async function sendSiteContinueLink(env: Env, to: string, token: string, code: string): Promise<void> {
+export async function sendSiteContinueLink(
+  env: Env,
+  to: string,
+  token: string,
+  code: string,
+  site?: { id: string; name: string },
+): Promise<void> {
+  if (site) {
+    return sendMagicLinkEmail(env, {
+      to,
+      token,
+      code,
+      path: `/auth/site/verify?site=${encodeURIComponent(site.id)}`,
+      subject: `Sign in to ${site.name}`,
+      heading: `Sign in to ${site.name}`,
+      body: 'Click the button below to sign in with your mannan.is email, or enter the code. Both expire in 15 minutes.',
+      button: 'Sign in',
+      idempotencyKey: `site-magic/${token.slice(0, 32)}`,
+    });
+  }
   return sendMagicLinkEmail(env, {
     to,
     token,
