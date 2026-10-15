@@ -51,6 +51,20 @@ export default function McpPage() {
         </Link>
         .
       </p>
+      <p className="mt-4 leading-relaxed text-white/55">
+        Signed in, Mannan MCP also fronts Calendar, Greenlights, MeetTime, Event Every and Sun
+        Signal as <code className="text-white/70">app__tool</code> tools, for the apps he
+        authorizes at{" "}
+        <a
+          href="https://mcp.mannanteam.workers.dev/apps/login"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-red-500 transition-colors hover:text-red-400"
+        >
+          mcp.mannanteam.workers.dev/apps
+        </a>
+        . Guests see only the public tools.
+      </p>
 
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-light text-white/90">Connect</h2>

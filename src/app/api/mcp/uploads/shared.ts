@@ -9,6 +9,7 @@ export const CONSENT_ABILITIES = [
   'It will be able to upload files to your Upload pages.',
   'It will be able to create share links and download links.',
   'It will be able to duplicate and delete your files.',
+  'It will be able to use the apps you authorize at mcp.mannanteam.workers.dev/apps.',
 ];
 
 export function uploadsMcpEnv(): { secret: string | undefined; callback: string | undefined } {

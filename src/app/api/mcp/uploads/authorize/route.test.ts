@@ -45,6 +45,7 @@ describe('a signed-in person', () => {
     expect(html).toContain('Continue');
     expect(html).toContain("If this wasn't you, close this page.");
     expect(html).toContain('https://mannan.is/upload/mcp');
+    expect(html).toContain('use the apps you authorize at mcp.mannanteam.workers.dev/apps.');
     expect(html).not.toContain('grant=');
   });
 
