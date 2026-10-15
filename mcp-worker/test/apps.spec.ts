@@ -210,7 +210,7 @@ describe("sub-MCP sign-in", () => {
     await linkCalendar(s);
     const vault = vaultFor(hubEnv);
     const link = await vault.getLink("calendar");
-    await vault.setManifest("calendar", link!.manifest.map((t) => ({ ...t, status: "changed" as const })), "changed");
+    await vault.setManifest("calendar", (link!.manifest as Array<Record<string, any>>).map((t) => ({ ...t, status: "changed" as const })) as any, "changed");
     let page = await (await SELF.fetch(`${HUB_URL}/apps`, { headers: { cookie: s.cookie } })).text();
     expect(page).toContain("Review tools");
     expect((await vault.list())[0]).toMatchObject({ appId: "calendar", status: "changed", manifestChangedCount: 2 });
