@@ -1,4 +1,4 @@
-import type { LinkedAppServer } from "../vendor/mcp-connector/linked-app";
+import type { LinkedAppServer, ToolAnnotations } from "../vendor/mcp-connector/linked-app";
 
 /**
  * Fixed registry. Nothing about a sub-MCP is ever read from a request: ids come
@@ -46,6 +46,8 @@ export interface ManifestTool {
   name: string;
   description: string;
   inputSchema: Record<string, any>;
+  /** Safety hints as the sub-MCP declared them at pin time. Absent on rows pinned before annotations existed. */
+  annotations?: ToolAnnotations;
   sha256: string;
   status: "ok" | "changed";
 }
@@ -61,20 +63,32 @@ function canonical(value: unknown): string {
   return JSON.stringify(value);
 }
 
-export async function toolHash(tool: { name: string; description?: string; inputSchema: unknown }): Promise<string> {
-  const text = canonical({ name: tool.name, description: tool.description ?? "", inputSchema: tool.inputSchema });
+/** Annotations are part of the hash (a flipped readOnlyHint is a change); a tool without them hashes as it did before they existed. */
+export async function toolHash(tool: {
+  name: string;
+  description?: string;
+  inputSchema: unknown;
+  annotations?: ToolAnnotations;
+}): Promise<string> {
+  const text = canonical({
+    name: tool.name,
+    description: tool.description ?? "",
+    inputSchema: tool.inputSchema,
+    annotations: tool.annotations,
+  });
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
   return Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export async function pinManifest(
-  tools: Array<{ name: string; description?: string; inputSchema: Record<string, unknown> }>,
+  tools: Array<{ name: string; description?: string; inputSchema: Record<string, unknown>; annotations?: ToolAnnotations }>,
 ): Promise<ManifestTool[]> {
   return Promise.all(
     tools.map(async (tool) => ({
       name: tool.name,
       description: tool.description ?? "",
       inputSchema: tool.inputSchema,
+      ...(tool.annotations ? { annotations: tool.annotations } : {}),
       sha256: await toolHash(tool),
       status: "ok" as const,
     })),

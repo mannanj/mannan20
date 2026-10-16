@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { LinkedAppError, McpSession } from "../vendor/mcp-connector/linked-app";
+import { LinkedAppError, McpSession, type ToolAnnotations } from "../vendor/mcp-connector/linked-app";
 import { OWNER_EMAIL } from "../owner-api";
 import type { AppEnv } from "../types";
 import { REGISTRY, guardedFetch, pinManifest, serverOf, toolHash, type HubApp } from "./registry";
@@ -96,6 +96,28 @@ export function capResultText(result: ToolOutput, cap = RESULT_TEXT_CAP): ToolOu
   return { ...result, content };
 }
 
+const DESTRUCTIVE_NAME = /(^|[_-])(delete|remove|destroy|deactivate|revoke|cancel|purge|clear|drop)([_-]|$)/;
+const WRITE_NAME = /(^|[_-])(create|add|update|set|submit|send|upload|duplicate|restore|invite|share|move|rename|write|edit|post|import)([_-]|$)/;
+
+/**
+ * The annotations the hub advertises for a proxied tool. A sub-MCP's claim can
+ * only make a tool look MORE dangerous, never less: a name that says delete or
+ * write wins over readOnlyHint:true, and a tool with no declared hint is a write.
+ */
+export function safeAnnotations(name: string, given?: ToolAnnotations): ToolAnnotations {
+  const out: ToolAnnotations = { ...(given ?? {}) };
+  const lower = name.toLowerCase();
+  if (typeof out.readOnlyHint !== "boolean") out.readOnlyHint = false;
+  if (DESTRUCTIVE_NAME.test(lower)) {
+    out.destructiveHint = true;
+    out.readOnlyHint = false;
+  } else if (WRITE_NAME.test(lower)) {
+    out.readOnlyHint = false;
+  }
+  if (out.readOnlyHint) delete out.destructiveHint;
+  return out;
+}
+
 /** Compare a live tools/list against the pin; a differing hash withholds that tool. Never adds tools. */
 async function recheck(env: AppEnv, app: HubApp, link: LinkRow): Promise<LinkRow> {
   const vault = vaultFor(env);
@@ -105,7 +127,20 @@ async function recheck(env: AppEnv, app: HubApp, link: LinkRow): Promise<LinkRow
   const pinned = new Map(manifest.map((tool) => [tool.name, tool]));
   for (const live of listed.value) {
     const pin = pinned.get(live.name);
-    if (pin && (await toolHash(live)) !== pin.sha256) pin.status = "changed";
+    if (!pin || (await toolHash(live)) === pin.sha256) continue;
+    // Pinned before annotations existed: if the rest is byte-identical, adopt the
+    // annotations silently. Anything else (or a pin that had annotations) is a change.
+    if (
+      pin.status === "ok" &&
+      pin.annotations === undefined &&
+      live.annotations !== undefined &&
+      (await toolHash({ name: live.name, description: live.description, inputSchema: live.inputSchema })) === pin.sha256
+    ) {
+      pin.annotations = live.annotations;
+      pin.sha256 = await toolHash(live);
+      continue;
+    }
+    pin.status = "changed";
   }
   const anyChanged = manifest.some((tool) => tool.status !== "ok");
   const status = anyChanged ? "changed" : link.status === "changed" ? "linked" : link.status;
@@ -141,7 +176,11 @@ function register(server: McpServer, env: AppEnv, app: HubApp, tool: LinkRow["ma
   }
   server.registerTool(
     name,
-    { description: `[${app.name} tool, via Mannan MCP] ${tool.description}`, inputSchema },
+    {
+      description: `[${app.name} tool, via Mannan MCP] ${tool.description}`,
+      inputSchema,
+      annotations: safeAnnotations(tool.name, tool.annotations),
+    },
     async (args: unknown): Promise<any> => {
       const limiter = env.PROXY_LIMITER;
       if (!limiter) return errorResult("Rate limiter unavailable.");

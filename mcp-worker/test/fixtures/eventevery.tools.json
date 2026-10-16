@@ -24,6 +24,11 @@
           "accountId"
         ],
         "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     },
     {
@@ -47,6 +52,10 @@
         "required": [
           "id"
         ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     }
   ]
