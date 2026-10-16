@@ -164,6 +164,8 @@ async function authorize(request: Request, env: AppEnv, app: HubApp): Promise<Re
   const checked = await mutation(request, env);
   if (checked instanceof Response) return checked;
   if (app.scope === null) return plain(400, "That app needs no sign-in.");
+  // Fail closed until the sealing key is set (wrangler secret put MCP_VAULT_SECRET).
+  if (!env.MCP_VAULT_SECRET) return showPage(request, env, "Authorizing apps is not switched on yet.");
   const f = guardedFetch(app.mcpUrl);
   let started;
   try {
