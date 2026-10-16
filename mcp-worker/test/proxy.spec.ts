@@ -518,19 +518,18 @@ describe("annotations through the hub", () => {
     await client.close();
   });
 
-  it("a pin without annotations is upgraded silently when nothing else differs", async () => {
+  it("a pin without annotations is NOT adopted silently: gaining annotations is a change to review (F6)", async () => {
     mockSubs({ tools: { calendar: [tool("list_events", { readOnlyHint: true }), tool("create_event")] } });
     await seedLink("calendar", "at-1", [tool("list_events"), tool("create_event")]);
     await expireCheck("calendar");
     const client = await ownerHttpClient();
-    const listed = (await client.listTools()).tools;
-    expect(listed.find((t) => t.name === "calendar__list_events")!.annotations).toMatchObject({ readOnlyHint: true });
-    expect(listed.some((t) => t.name === "calendar__create_event")).toBe(true);
+    const listed = await names(client);
+    expect(listed).not.toContain("calendar__list_events");
+    expect(listed).toContain("calendar__create_event");
     const link = (await vaultFor(hubEnv).getLink("calendar"))!;
-    expect(link.status).toBe("linked");
-    expect(link.manifest.every((t) => t.status === "ok")).toBe(true);
-    expect(link.manifest.find((t) => t.name === "list_events")!.annotations).toEqual({ readOnlyHint: true });
-    expect(link.manifest.find((t) => t.name === "create_event")!.annotations).toBeUndefined();
+    expect(link.status).toBe("changed");
+    expect(link.manifest.find((t) => t.name === "list_events")).toMatchObject({ status: "changed" });
+    expect(link.manifest.find((t) => t.name === "list_events")!.annotations).toBeUndefined();
     await client.close();
   });
 

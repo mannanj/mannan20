@@ -154,7 +154,7 @@ export async function manageSession(): Promise<OwnerSession> {
 export function postApps(
   path: string,
   session: { cookie: string; csrf: string },
-  opts: { origin?: string | null; csrf?: string | null; cookie?: string | null; headers?: Record<string, string> } = {},
+  opts: { origin?: string | null; csrf?: string | null; cookie?: string | null; headers?: Record<string, string>; fields?: Record<string, string> } = {},
 ) {
   const headers: Record<string, string> = { ...(opts.headers ?? {}) };
   const origin = opts.origin === undefined ? hubEnv.HUB_ORIGIN : opts.origin;
@@ -164,6 +164,7 @@ export function postApps(
   const body = new URLSearchParams();
   const csrf = opts.csrf === undefined ? session.csrf : opts.csrf;
   if (csrf !== null) body.set("csrf", csrf);
+  for (const [k, v] of Object.entries(opts.fields ?? {})) body.set(k, v);
   return SELF.fetch(`${HUB_URL}${path}`, { method: "POST", headers, body, redirect: "manual" });
 }
 

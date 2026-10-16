@@ -27,7 +27,7 @@ const errorResult = (message: string): ToolOutput => ({ content: [{ type: "text"
 const reauthMessage = (app: HubApp) => `${app.name} needs to be authorized again. Open ${REAUTH_URL} to re-authorize it, then retry.`;
 
 /** Only the app's own origin, no redirects, no Origin header, and no Authorization when tokenless. */
-function subFetch(app: HubApp, accessToken: string, timeoutMs: number): typeof fetch {
+export function subFetch(app: HubApp, accessToken: string, timeoutMs: number): typeof fetch {
   const guarded = guardedFetch(app.mcpUrl);
   return ((input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
@@ -128,18 +128,7 @@ async function recheck(env: AppEnv, app: HubApp, link: LinkRow): Promise<LinkRow
   for (const live of listed.value) {
     const pin = pinned.get(live.name);
     if (!pin || (await toolHash(live)) === pin.sha256) continue;
-    // Pinned before annotations existed: if the rest is byte-identical, adopt the
-    // annotations silently. Anything else (or a pin that had annotations) is a change.
-    if (
-      pin.status === "ok" &&
-      pin.annotations === undefined &&
-      live.annotations !== undefined &&
-      (await toolHash({ name: live.name, description: live.description, inputSchema: live.inputSchema })) === pin.sha256
-    ) {
-      pin.annotations = live.annotations;
-      pin.sha256 = await toolHash(live);
-      continue;
-    }
+    // Any difference, annotations included, is a change the owner reviews (no silent adoption).
     pin.status = "changed";
   }
   const anyChanged = manifest.some((tool) => tool.status !== "ok");
@@ -192,13 +181,8 @@ function register(server: McpServer, env: AppEnv, app: HubApp, tool: LinkRow["ma
         return errorResult("Rate limiter unavailable.");
       }
       try {
-        // McpSession.request is the vendored file's only way to get the whole
-        // result (content AND structuredContent); callTool flattens it.
         const outcome = await withSession(env, app, CALL_TIMEOUT_MS, (session) =>
-          (session as unknown as { request(m: string, p: Record<string, unknown>): Promise<unknown> }).request(
-            "tools/call",
-            { name: tool.name, arguments: (args ?? {}) as Record<string, unknown> },
-          ),
+          session.callToolRaw(tool.name, (args ?? {}) as Record<string, unknown>),
         );
         if (!outcome.ok) return errorResult(outcome.message);
         const result = outcome.value as ToolOutput | undefined;
