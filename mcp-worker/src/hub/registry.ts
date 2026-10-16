@@ -35,10 +35,13 @@ export function guardedFetch(
   f: typeof fetch = (input, init) => fetch(input, init),
 ): typeof fetch {
   const origin = new URL(mcpUrl).origin;
-  return ((input: RequestInfo | URL, init?: RequestInit) => {
+  return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const raw = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     if (new URL(raw).origin !== origin) throw new Error("blocked: origin is not in the registry");
-    return f(input, { ...init, redirect: "error" });
+    // workerd accepts only follow|manual; take the redirect by hand and refuse it.
+    const res = await f(input, { ...init, redirect: "manual" });
+    if (res.status >= 300 && res.status < 400) throw new Error("blocked: redirect from a registry origin");
+    return res;
   }) as typeof fetch;
 }
 
