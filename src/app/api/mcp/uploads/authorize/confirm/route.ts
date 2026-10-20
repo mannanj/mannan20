@@ -2,8 +2,6 @@ import { cookieValue, readSiteSession } from '@/lib/site-session';
 import { signMcpGrant } from '@/lib/mcp/grant';
 import { consentToken, constantTimeEqual, grantRedirect } from '@/vendor/mcp-connector/consent';
 import {
-  NOT_OWNER_MESSAGE,
-  OWNER_EMAIL,
   STATE_PATTERN,
   uploadsMcpEnv,
   problem,
@@ -28,8 +26,7 @@ export async function POST(request: Request) {
   const session = await readSiteSession(cookie);
   if (!session) return signedOutRedirect(url.origin);
 
-  if (session.email.toLowerCase() !== OWNER_EMAIL) return problem(403, NOT_OWNER_MESSAGE);
-
+  // Any account may connect; what it gets is decided by the MCP Worker per email.
   const id = cookieValue(cookie);
   if (!id) return signedOutRedirect(url.origin);
 

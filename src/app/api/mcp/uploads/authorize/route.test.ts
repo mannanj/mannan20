@@ -76,10 +76,15 @@ describe('a signed-in person who is not the owner', () => {
     sessionAnswer = { ...SIGNED_IN, email: 'someone@example.com' };
   });
 
-  it('is refused with a plain 403 and no consent page', async () => {
+  it('is asked to connect, and told they get public data and their own apps, not Upload', async () => {
     const response = await get({ state: 'st_abcdefgh' });
-    expect(response.status).toBe(403);
-    expect(await response.text()).toBe('Only Mannan can connect Upload.');
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('someone@example.com');
+    expect(html).toContain('apps you have been given access to');
+    expect(html).not.toContain('upload files');
+    expect(html).not.toContain('apps you authorize');
+    expect(html).not.toContain('grant=');
   });
 
   it('is still checked after configuration', async () => {

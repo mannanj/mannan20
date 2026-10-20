@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
   // Not listed: 404 BEFORE consent, so nobody outside the list ever sees
   // "Blink would like to know you are ...". Logged like other denials.
-  if (!isBlinkAllowed(session.email)) {
+  if (!(await isBlinkAllowed(session.email))) {
     console.warn(JSON.stringify({ event: 'blink_authorize_denied', email: session.email }));
     return problem(404, 'Not found.');
   }

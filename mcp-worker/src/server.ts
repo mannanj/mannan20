@@ -3,7 +3,45 @@ import { z } from "zod";
 import { data } from "./data";
 import { recordArticleFetch } from "./article-state";
 import { searchData } from "./search";
-import type { ArticleStateEnv } from "./types";
+import { signActor } from "./vendor/grant";
+import type { App, ArticleStateEnv } from "./types";
+
+/** Who is connected: a signed-in mannan.is account (guests have none). */
+export interface Caller {
+  email: string;
+}
+
+interface AccessEnv {
+  SITE_ORIGIN?: string;
+  MCP_ACTOR_SECRET?: string;
+}
+
+/**
+ * The apps this account may open, from mannan.is (/api/access/apps), asked as
+ * that account with a 60-second actor token. The catalog and its grants live on
+ * the site, never in this public repo; nothing is cached here, so a revoked
+ * grant disappears from the next call.
+ */
+async function appsFor(env: AccessEnv, caller: Caller): Promise<App[]> {
+  if (!env.SITE_ORIGIN || !env.MCP_ACTOR_SECRET) throw new Error("not configured");
+  const token = await signActor({ sub: caller.email, email: caller.email }, env.MCP_ACTOR_SECRET);
+  const res = await fetch(`${env.SITE_ORIGIN}/api/access/apps`, {
+    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
+    redirect: "manual",
+  });
+  if (!res.ok) throw new Error(`site returned ${res.status}`);
+  const body = (await res.json()) as { email?: unknown; apps?: unknown };
+  if (body.email !== caller.email || !Array.isArray(body.apps)) throw new Error("unexpected answer");
+  const out: App[] = [];
+  for (const raw of body.apps as Record<string, unknown>[]) {
+    if (typeof raw?.name !== "string" || typeof raw.url !== "string") continue;
+    let url: URL;
+    try { url = new URL(raw.url); } catch { continue; }
+    if (url.protocol !== "https:") continue;
+    out.push({ name: raw.name, description: typeof raw.description === "string" ? raw.description : "", url: url.toString() });
+  }
+  return out;
+}
 
 const text = (value: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(value) }],
@@ -17,14 +55,15 @@ const TRACKED_READ = {
 };
 
 export function createServer(
-  env: ArticleStateEnv = {},
+  env: ArticleStateEnv & AccessEnv = {},
   waitUntil?: (promise: Promise<unknown>) => void,
   extraInstructions?: string,
+  caller?: Caller,
 ) {
   const server = new McpServer(
     { name: "mannan-portfolio", version: "1.0.0" },
     {
-      instructions: `Public data about Mannan Javid (https://mannan.is), multi-disciplinary engineer and founder. This is a snapshot of what the site serves publicly, generated ${data.generatedAt}. Tools: get_profile (who he is), get_mission_and_goals (his narrative and sourced goals), list_experience (employment and extracurriculars), list_writing (articles he wrote), get_article (full article text by slug; records one analytics fetch), list_readings (readings he published or curated, with author attribution), list_apps (products he built), list_research (publications and university projects), get_downloads (resume and cover letter), how_to_contact, search (keyword search across everything). All URLs link to mannan.is or his product domains.${extraInstructions ? ` ${extraInstructions}` : ""}`,
+      instructions: `Public data about Mannan Javid (https://mannan.is), multi-disciplinary engineer and founder. This is a snapshot of what the site serves publicly, generated ${data.generatedAt}. Tools: get_profile (who he is), get_mission_and_goals (his narrative and sourced goals), list_experience (employment and extracurriculars), list_writing (articles he wrote), get_article (full article text by slug; records one analytics fetch), list_readings (readings he published or curated, with author attribution), list_apps (products he built; signed in, also the apps you have been given), list_research (publications and university projects), get_downloads (resume and cover letter), how_to_contact, search (keyword search across everything). All URLs link to mannan.is or his product domains.${extraInstructions ? ` ${extraInstructions}` : ""}`,
     },
   );
 
@@ -123,10 +162,19 @@ export function createServer(
     {
       title: "List apps",
       description:
-        "Apps and products Mannan built — name, one-line description, URL, year. Includes Sun Signal, Read Along, SkillGuard, Event Every, and more.",
+        "Apps and products Mannan built — name, one-line description, URL, year. Includes Sun Signal, Read Along, SkillGuard, Event Every, and more. Signed in with a mannan.is account, the list also includes the apps under mannan.is that account has been given access to.",
       annotations: READ_ONLY,
     },
-    async () => text({ apps: data.apps }),
+    async () => {
+      if (!caller) return text({ apps: data.apps });
+      try {
+        const known = new Set(data.apps.map((app) => app.url));
+        const yours = (await appsFor(env, caller)).filter((app) => !known.has(app.url));
+        return text({ apps: [...data.apps, ...yours], signedInAs: caller.email });
+      } catch {
+        return text({ apps: data.apps, signedInAs: caller.email, note: "Your own apps could not be loaded just now; these are the public ones." });
+      }
+    },
   );
 
   server.registerTool(

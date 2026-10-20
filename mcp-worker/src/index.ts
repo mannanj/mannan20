@@ -2,6 +2,7 @@ import { OAuthProvider } from "@cloudflare/workers-oauth-provider";
 import { createMcpHandler } from "agents/mcp";
 import { handleAuthorize, handleCallback } from "./auth";
 import { OWNER_INSTRUCTIONS, registerOwnerTools } from "./owner";
+import { ACCESS_INSTRUCTIONS, registerAccessTools } from "./access-tools";
 import { OWNER_EMAIL } from "./owner-api";
 import { createServer } from "./server";
 import { data } from "./data";
@@ -236,13 +237,16 @@ export async function handleMcpRequest(
     boundedRequest = forwarded;
   }
 
+  const email = callerProps(ctx)?.email;
   const server = createServer(
-    env,
+    env as AppEnv,
     (promise) => ctx.waitUntil(promise),
-    owner ? OWNER_INSTRUCTIONS : undefined,
+    owner ? `${OWNER_INSTRUCTIONS} ${ACCESS_INSTRUCTIONS}` : undefined,
+    typeof email === "string" && email ? { email } : undefined,
   );
   if (owner) {
     registerOwnerTools(server, env as AppEnv);
+    registerAccessTools(server, env as AppEnv);
     await registerProxiedTools(server, env as AppEnv, callerProps(ctx)?.email, { recheck: listsTools });
   }
 

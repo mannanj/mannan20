@@ -174,10 +174,11 @@ describe("callback", () => {
     });
   }
 
-  it("refuses a valid grant for a non-owner email with the uniform 403", async () => {
+  it("never gives a non-owner email the hub (test/access.spec.ts covers what members get)", async () => {
     const res = await callbackFor("someone@example.com");
-    expect(res.status).toBe(403);
-    expect(await res.text()).toBe("That sign-in could not be verified.");
+    expect(res.status).toBe(400); // this fixture's stored request is not a real client's
+    expect(res.headers.get("location")).toBeNull();
+    expect(res.headers.get("set-cookie") ?? "").not.toContain("__Host-hub");
   });
 });
 

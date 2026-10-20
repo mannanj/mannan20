@@ -34,7 +34,7 @@ export default async function BlinkPage() {
     );
   }
 
-  if (!isBlinkAllowed(session.email)) notFound();
+  if (!(await isBlinkAllowed(session.email))) notFound();
 
   // Listed: send them on. The 307 body Next streams carries the target; the link below is the
   // fallback for a client that blocks redirects (only rendered if redirect is skipped).

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const session = await readSiteSession(cookie);
   if (!session) return signedOutRedirect(url.origin);
 
-  if (!isBlinkAllowed(session.email)) return problem(404, 'Not found.');
+  if (!(await isBlinkAllowed(session.email))) return problem(404, 'Not found.');
 
   const id = cookieValue(cookie);
   if (!id) return signedOutRedirect(url.origin);

@@ -101,13 +101,22 @@ describe('a wrong or missing consent token', () => {
 });
 
 describe('a signed-in person who is not the owner', () => {
-  it('is refused and no grant is signed, even with a valid consent token', async () => {
+  it('gets a grant naming their own account (the Worker decides what it opens)', async () => {
     sessionAnswer = { ...SIGNED_IN, email: 'someone@example.com' };
     const consent = await consentToken(COOKIE_VALUE, STATE, SECRET);
     const response = await post({ state: STATE, consent });
-    expect(response.status).toBe(403);
-    expect(await response.text()).toBe('Only Mannan can connect Upload.');
-    expect(response.headers.get('location')).toBeNull();
+    expect(response.status).toBe(302);
+    const verified = await verifyMcpGrant(new URL(response.headers.get('location')!).searchParams.get('grant')!, SECRET, { expectedState: STATE });
+    expect(verified.ok).toBe(true);
+    if (verified.ok) expect(verified.payload.email).toBe('someone@example.com');
+  });
+
+  it('cannot reuse a consent token minted for another session or state', async () => {
+    sessionAnswer = { ...SIGNED_IN, email: 'someone@example.com' };
+    const other = await consentToken('someone-elses-cookie', STATE, SECRET);
+    expect((await post({ state: STATE, consent: other })).headers.get('location') ?? '').not.toContain('grant=');
+    const otherState = await consentToken(COOKIE_VALUE, 'st_other_state', SECRET);
+    expect((await post({ state: STATE, consent: otherState })).headers.get('location') ?? '').not.toContain('grant=');
   });
 });
 

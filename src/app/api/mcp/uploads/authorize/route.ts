@@ -7,8 +7,10 @@ import {
   CONSENT_CAPABILITIES_PATH,
   CONSENT_SITE_URL,
   STATE_PATTERN,
+  MEMBER_ABILITIES,
+  MEMBER_APP_NAME,
+  MEMBER_SITE_URL,
   uploadsMcpEnv,
-  NOT_OWNER_MESSAGE,
   OWNER_EMAIL,
   problem,
   signedOutRedirect,
@@ -37,7 +39,7 @@ export async function GET(request: Request) {
     });
   }
 
-  if (session.email.toLowerCase() !== OWNER_EMAIL) return problem(403, NOT_OWNER_MESSAGE);
+  const owner = session.email.toLowerCase() === OWNER_EMAIL;
 
   const id = cookieValue(cookie);
   if (!id) return signedOutRedirect(url.origin);
@@ -47,10 +49,10 @@ export async function GET(request: Request) {
   action.searchParams.set('consent', await consentToken(id, state, secret));
 
   return consentResponse({
-    appName: CONSENT_APP_NAME,
-    siteUrl: CONSENT_SITE_URL,
+    appName: owner ? CONSENT_APP_NAME : MEMBER_APP_NAME,
+    siteUrl: owner ? CONSENT_SITE_URL : MEMBER_SITE_URL,
     account: session.email,
-    abilities: CONSENT_ABILITIES,
+    abilities: owner ? CONSENT_ABILITIES : MEMBER_ABILITIES,
     action: action.pathname + action.search,
     capabilitiesPath: CONSENT_CAPABILITIES_PATH,
   });

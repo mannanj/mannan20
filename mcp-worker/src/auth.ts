@@ -66,7 +66,7 @@ small{display:block;margin-top:24px;color:rgba(255,255,255,.4)}
 <body>
 <main>
 <h1>Connect to Mannan</h1>
-<p>Guests get Mannan's public profile, writing and projects. Signing in also gives Mannan's account the Upload tools.</p>
+<p>Guests get Mannan's public profile, writing and projects. Sign in with your mannan.is account to also see the apps you have been given; Mannan's own account also gets the Upload tools.</p>
 <form method="post" action="/authorize">
 <input type="hidden" name="state" value="${state}">
 <button type="submit" name="choice" value="signin">Sign in</button>
@@ -169,20 +169,39 @@ export async function handleCallback(request: Request, env: AppEnv): Promise<Res
   await env.OAUTH_KV.delete(stateKey(state));
 
   const verified = await verifyMcpGrant(grant, env.MCP_GRANT_SECRET, { expectedState: state });
-  if (!verified.ok || verified.payload.email !== OWNER_EMAIL) {
-    return plain(403, UNVERIFIED_MESSAGE);
-  }
+  if (!verified.ok) return plain(403, UNVERIFIED_MESSAGE);
 
   // Two kinds of sign-in share this callback: an OAuth client signing in
   // (completes at /apps/continue) and the owner opening /apps/login ('manage').
   const parsed = JSON.parse(stored) as AuthRequest & { kind?: string };
+
+  // Anyone else with a mannan.is account: no hub, no Upload tools. The token
+  // names their account, and list_apps asks the site what that account may open.
+  // Normalised before the owner check, so no spelling of the owner's address takes this path.
+  const email = verified.payload.email.trim().toLowerCase();
+  if (email !== OWNER_EMAIL) {
+    if (parsed.kind === "manage") return plain(403, UNVERIFIED_MESSAGE);
+    const props: CallerProps = { userId: verified.payload.sub, email };
+    try {
+      const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({
+        request: parsed,
+        userId: verified.payload.sub,
+        metadata: { email },
+        scope: [],
+        props,
+      });
+      return Response.redirect(redirectTo, 302);
+    } catch {
+      return plain(400, "Invalid authorization request.");
+    }
+  }
   const pending =
     parsed.kind === "manage"
       ? null
       : {
           authRequest: stored,
           userId: verified.payload.sub,
-          email: verified.payload.email,
+          email,
         };
   const session = await vaultFor(env).createSession(pending);
   return new Response(null, {

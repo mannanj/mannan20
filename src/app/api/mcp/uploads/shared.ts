@@ -20,7 +20,18 @@ export function uploadsMcpEnv(): { secret: string | undefined; callback: string 
 }
 
 export const OWNER_EMAIL = 'hello@mannan.is';
-export const NOT_OWNER_MESSAGE = 'Only Mannan can connect Upload.';
+
+/**
+ * Anyone else with a mannan.is account can connect too, but gets no Upload
+ * tools: only the public data and the apps Mannan has given them (list_apps).
+ * Signing in confers nothing by itself; each app is still checked per person.
+ */
+export const MEMBER_APP_NAME = 'Mannan';
+export const MEMBER_SITE_URL = 'https://mannan.is';
+export const MEMBER_ABILITIES = [
+  "It will see Mannan's public profile, writing and projects.",
+  'It will see which of Mannan\'s apps you have been given access to.',
+];
 
 export function problem(status: number, message: string): NextResponse {
   return new NextResponse(message, {

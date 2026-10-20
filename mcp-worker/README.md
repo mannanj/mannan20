@@ -81,7 +81,13 @@ See `docs/mcp-server-design.md` and `docs/mcp-server-implementation-plan.md`. Ho
 `/mcp` is protected by OAuth (`@cloudflare/workers-oauth-provider`), so clients get a `401` and open `/authorize`. That page offers two choices:
 
 - **Continue as guest**: issues a token at once with no account. Guests get the public tools, the 60/min per-IP limit and the 32 KB body cap.
-- **Sign in**: bounces through `https://mannan.is/api/mcp/uploads/authorize`, which refuses any account other than the owner, as does `/callback`. The owner's token adds the 11 Upload tools (pages, files, upload links, download links, shares), a 16 MB body cap and no rate limit. The Worker acts by calling the site's `/api/uploads/*` endpoints with a 60-second signed actor token.
+- **Sign in**: bounces through `https://mannan.is/api/mcp/uploads/authorize`, which signs in any mannan.is account.
+  - **Mannan's account** goes through `/apps` and gets the 11 Upload tools (pages, files, upload links, download links, shares), the access tools (`list_app_catalog`, `save_app`, `remove_app`, `list_app_access`, `grant_app_access`, `revoke_app_access`), a 16 MB body cap and no rate limit. The Worker acts by calling the site's `/api/uploads/*` and `/api/access/*` endpoints with a 60-second signed actor token.
+  - **Anyone else** completes straight to their client, with the guest limits and the public tools. Their `list_apps` also shows the apps under mannan.is they have been granted: the Worker asks `GET /api/access/apps` as that account, every call, so a revoked grant disappears at once. Signing in grants nothing by itself; anyone can make an account with an email code.
+
+### App access
+
+Who may open which app lives on the site, in the `cloud` D1 (`site_apps`, `app_access`; migration `cloud-worker/migrations/0011_app_access.sql`), so the names of private apps never enter this public repo. Each app is `public` (anyone), `granted` (Mannan plus the people granted) or `owner` (Mannan only). The apps themselves check the same table (`GET /api/access/check?app=<id>`, or `canOpen` in `src/lib/app-access.ts`), so a grant shows in `list_apps` and opens the app together. An app stays `owner` until it checks the table, so a grant can't show something that won't open.
 
 Tokens are stored by the client and refreshed, so both guests and the owner stay connected (refresh tokens last 30 days). To switch from guest to owner, disconnect the connector (claude.ai) or clear its authentication (Claude Code `/mcp`) and connect again.
 

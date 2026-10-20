@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { canOpen } from '@/lib/app-access';
+import { uploadsEnv } from '@/lib/uploads';
 
 export const STATE_PATTERN = /^[A-Za-z0-9._~-]{8,256}$/;
 
@@ -32,8 +34,17 @@ export function blinkAllowedEmails(): string[] {
     .filter(Boolean);
 }
 
-export function isBlinkAllowed(email: string | null | undefined): boolean {
-  return !!email && blinkAllowedEmails().includes(email.trim().toLowerCase());
+/**
+ * Listed in BLINK_ALLOWED_EMAILS (as before), or granted 'blink' in the shared
+ * app access table (src/lib/app-access.ts), which is where new grants go. Any
+ * failure reading the table counts as not granted.
+ */
+export async function isBlinkAllowed(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  if (blinkAllowedEmails().includes(email.trim().toLowerCase())) return true;
+  const db = uploadsEnv()?.UPLOADS_DB;
+  if (!db) return false;
+  return canOpen(db, email, 'blink').catch(() => false);
 }
 
 export function blinkEnv(): { secret: string | undefined; callback: string | undefined } {
