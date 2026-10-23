@@ -1,0 +1,184 @@
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
+import { accessTestDb } from '@/lib/app-access-test-db';
+import { saveApp } from '@/lib/app-access';
+
+/**
+ * The bridge that turns a mannan.is session into a Fresh Start grant.
+ *
+ * This route only ASKS: it must never sign anything on a GET, because a GET
+ * is exactly what a cross-site link can trigger with one click. Every case
+ * below is a way that must not produce a grant.
+ */
+
+const SECRET = 'grant-secret-for-tests';
+const CALLBACK = 'https://fresh-start.mannanteam.workers.dev/auth/callback';
+const COOKIE_VALUE = 'signed-cookie-value-for-tests';
+
+let sessionAnswer: { email: string; role: string; admin: boolean; exp: number } | null = null;
+let cookieAnswer: string | null = COOKIE_VALUE;
+
+let db = accessTestDb();
+mock.module('@/lib/uploads', () => ({ UPLOAD_OWNER_EMAIL: 'hello@mannan.is', uploadsEnv: () => ({ UPLOADS_DB: db }) }));
+const FRESH_START = { id: 'fresh-start', name: 'Fresh Start', description: '', url: 'https://mannan.is/fresh' };
+
+mock.module('@/lib/site-session', () => ({
+  readSiteSession: async () => sessionAnswer,
+  cookieValue: () => cookieAnswer,
+}));
+
+const { GET } = await import('./route');
+
+function get(params: Record<string, string>, cookie?: string) {
+  const url = new URL('https://mannan.is/api/mcp/fresh-start/authorize');
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  return GET(new Request(url, { headers: cookie ? { cookie } : {} }));
+}
+
+const SIGNED_IN = { email: 'hello@mannan.is', role: 'user', admin: false, exp: 2 ** 40 };
+
+beforeEach(async () => {
+  db = accessTestDb();
+  await saveApp(db, { ...FRESH_START, visibility: 'public' });
+  process.env.FRESH_START_GRANT_SECRET = SECRET;
+  process.env.FRESH_START_CALLBACK_URL = CALLBACK;
+  sessionAnswer = SIGNED_IN;
+  cookieAnswer = COOKIE_VALUE;
+});
+
+afterEach(() => {
+  delete process.env.FRESH_START_GRANT_SECRET;
+  delete process.env.FRESH_START_CALLBACK_URL;
+});
+
+describe('a signed-in person', () => {
+  it('is asked, not redirected — a 200 consent page with no grant in it', async () => {
+    const response = await get({ state: 'st_abcdefgh' });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
+
+    const html = await response.text();
+    expect(html).toContain('Connect an assistant?');
+    expect(html).toContain('Continue');
+    expect(html).toContain("If this wasn't you, close this page.");
+    expect(html).toContain('https://mannan.is/fresh');
+    expect(html).not.toContain('grant=');
+  });
+
+  it('names the account being connected', async () => {
+    const html = await (await get({ state: 'st_abcdefgh' })).text();
+    expect(html).toContain('hello@mannan.is');
+  });
+
+  it('posts to the confirm route, carrying the state and a consent token', async () => {
+    const html = await (await get({ state: 'st_abcdefgh' })).text();
+    expect(html).toContain('/api/mcp/fresh-start/authorize/confirm');
+    expect(html).toContain('state=st_abcdefgh');
+    expect(html).toMatch(/consent=[\w-]+/);
+  });
+
+  it('does not let the page be cached, framed or leak through a Referer', async () => {
+    const response = await get({ state: 'st_abcdefgh' });
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    // same-origin, not no-referrer: under no-referrer the Continue POST
+    // carries `Origin: null`. Nothing still goes to other sites.
+    expect(response.headers.get('referrer-policy')).toBe('same-origin');
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+  });
+});
+
+describe('a signed-out person', () => {
+  beforeEach(() => {
+    sessionAnswer = null;
+  });
+
+  it('is sent to the MCP sign-in page, never to a caller-chosen destination', async () => {
+    const response = await get({ state: 'st_abcdefgh' });
+    const location = new URL(response.headers.get('location')!);
+
+    expect(location.origin).toBe('https://mannan.is');
+    expect(location.pathname).toBe('/mcp/sign-in');
+  });
+
+  it('is told to come back here once signed in, with the same state', async () => {
+    const response = await get({ state: 'st_abcdefgh' });
+    const next = new URL(response.headers.get('location')!).searchParams.get('next');
+    // Our own path, never another host: the sign-in route re-validates it.
+    expect(next).toBe('/api/mcp/fresh-start/authorize?state=st_abcdefgh');
+  });
+
+  it('gets no grant at all', async () => {
+    const response = await get({ state: 'st_abcdefgh' });
+    expect(response.headers.get('location')).not.toContain('grant=');
+  });
+
+  it('cannot be redirected off-site by adding parameters', async () => {
+    const response = await get({
+      state: 'st_abcdefgh',
+      redirect_uri: 'https://evil.example/steal',
+      next: 'https://evil.example/steal',
+      callback: 'https://evil.example/steal',
+    });
+
+    const location = new URL(response.headers.get('location')!);
+    expect(location.origin).toBe('https://mannan.is');
+    expect(response.headers.get('location')).not.toContain('evil.example');
+  });
+});
+
+describe('the state parameter', () => {
+  it('is rejected before any session is read when it is the wrong shape', async () => {
+    for (const state of ['', 'short', 'has spaces!!', 'x'.repeat(257), '<script>', '../../etc']) {
+      const response = await get({ state });
+      expect(response.status, `state=${JSON.stringify(state)}`).toBe(400);
+    }
+  });
+
+  it('is checked even for a signed-out visitor', async () => {
+    sessionAnswer = null;
+    expect((await get({ state: 'no' })).status).toBe(400);
+  });
+});
+
+describe('when the site is not configured for this', () => {
+  it('answers 503, and says so, rather than pretending to ask anything', async () => {
+    delete process.env.FRESH_START_GRANT_SECRET;
+    const response = await get({ state: 'st_abcdefgh' });
+
+    expect(response.status).toBe(503);
+    expect(await response.text()).toContain('not configured');
+  });
+
+  it('needs the callback URL too', async () => {
+    delete process.env.FRESH_START_CALLBACK_URL;
+    expect((await get({ state: 'st_abcdefgh' })).status).toBe(503);
+  });
+
+  it('checks configuration BEFORE the session', async () => {
+    sessionAnswer = null;
+    delete process.env.FRESH_START_GRANT_SECRET;
+    expect((await get({ state: 'st_abcdefgh' })).status).toBe(503);
+  });
+});
+
+describe('Fresh Start made owner-only: a signed-in stranger', () => {
+  it('gets a 404 BEFORE any consent page, and the denial is logged', async () => {
+    await saveApp(db, { ...FRESH_START, visibility: 'owner' });
+    sessionAnswer = { ...SIGNED_IN, email: 'stranger@example.com' };
+    const warn = console.warn;
+    const logged: string[] = [];
+    console.warn = (m: string) => logged.push(String(m));
+    try {
+      const response = await get({ state: 'st_abcdefgh' });
+      expect(response.status).toBe(404);
+      expect(await response.text()).not.toContain('Continue');
+    } finally {
+      console.warn = warn;
+    }
+    expect(logged.join()).toContain('fresh_start_authorize_denied');
+  });
+
+  it('while it is public, any mannan.is account is asked', async () => {
+    sessionAnswer = { ...SIGNED_IN, email: 'SomeOne@Example.com' };
+    expect((await get({ state: 'st_abcdefgh' })).status).toBe(200);
+  });
+});

@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: '/fresh{/}?',
+        destination: 'https://fresh-start.mannanteam.workers.dev/',
+        permanent: false,
+      },
+      {
         source: '/vision{/}?',
         destination: 'https://vision-board.mannanteam.workers.dev/',
         permanent: false,
