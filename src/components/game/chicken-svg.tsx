@@ -12,6 +12,7 @@ interface ChickenSvgProps {
   morph?: number;
   eyes?: (typeof TIERS)[number]['eyes'];
   skin?: string;
+  wound?: { hp: number; open: boolean } | null;
 }
 
 function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
@@ -58,6 +59,48 @@ function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
   );
 }
 
+const FLAP_ANGLES = [0, -70, -28, 0];
+const RAINBOW_WOUND = ['#ff4d4d', '#ffb84d', '#f4ff4d', '#4dff88', '#4dc3ff', '#a64dff'];
+const WOUND_PATH = 'M29 94 L36 100 L33 106 L41 111 L38 117 L49 123';
+
+function WoundMark({ hp, open, uid }: { hp: number; open: boolean; uid: string }) {
+  const gradId = `${uid}-wound`;
+  if (open || hp <= 0) {
+    return (
+      <g data-testid="wound-open">
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+            {RAINBOW_WOUND.map((c, i) => (
+              <stop key={c} offset={`${(i / (RAINBOW_WOUND.length - 1)) * 100}%`} stopColor={c} />
+            ))}
+          </linearGradient>
+        </defs>
+        <path d={WOUND_PATH} stroke={`url(#${gradId})`} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
+        <path d={WOUND_PATH} stroke="#2a1a1a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" transform="translate(-2 0)" />
+        <path d={WOUND_PATH} stroke="#2a1a1a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" transform="translate(2 0)" />
+      </g>
+    );
+  }
+  const flap = FLAP_ANGLES[Math.min(hp, 3)];
+  return (
+    <g>
+      <path data-testid="wound-line" d={WOUND_PATH} stroke="#2a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <g transform="translate(40 108) rotate(-35)">
+        <g key={hp} className="bandaid-peel" data-testid="bandaid" data-hp={hp}>
+          <rect x="-17" y="-6" width="14" height="12" rx="4" fill="#e8c39a" stroke="#b98f62" strokeWidth="1" />
+          <g transform={`rotate(${flap} -3 0)`}>
+            {hp < 3 && <rect x="-3" y="-4" width="20" height="12" rx="4" fill="#00000022" />}
+            <rect x="-3" y="-6" width="20" height="12" rx="4" fill="#e8c39a" stroke="#b98f62" strokeWidth="1" />
+            <rect x="1" y="-3.5" width="10" height="7" rx="2" fill="#d6a977" />
+            <circle cx="3" cy="0" r="0.7" fill="#b98f62" />
+            <circle cx="9" cy="0" r="0.7" fill="#b98f62" />
+          </g>
+        </g>
+      </g>
+    </g>
+  );
+}
+
 export function ChickenSvg({
   className,
   style,
@@ -66,6 +109,7 @@ export function ChickenSvg({
   morph = 0,
   eyes,
   skin: skinId,
+  wound,
 }: ChickenSvgProps) {
   const uid = useId();
   const clampedTier = Math.max(0, Math.min(tier, TIERS.length - 1));
@@ -138,6 +182,7 @@ export function ChickenSvg({
           <path d="M19 114 L10 110 L21 106 Z" />
         </g>
       )}
+      {wound && <WoundMark hp={wound.hp} open={wound.open} uid={uid} />}
       <g className="chicken-sq-head">
         {skin.accessory === 'halo' && (
           <ellipse

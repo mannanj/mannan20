@@ -1,3 +1,4 @@
+import { DROP_GRAVITY, MAX_POOLS, POOL_FADE_MS, POOL_LIFE_MS, RAINBOW_STOPS } from './chicken-split';
 export interface Feather {
   x: number;
   y: number;
@@ -297,4 +298,114 @@ export function drawBlackHoles(
     ctx.stroke();
     ctx.restore();
   }
+}
+
+export interface RainbowDrop {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  hue: number;
+  r: number;
+  born: number;
+}
+
+export interface Pool {
+  x: number;
+  y: number;
+  rx: number;
+  ry: number;
+  born: number;
+  seed: number;
+  grad: CanvasGradient | null;
+}
+
+const DROP_HUE_STEP = 47;
+const DROP_HUE_TIME_DIV = 6;
+const DROP_R_MIN = 2;
+const DROP_R_SPREAD = 2;
+const DROP_SPEED_X = 3;
+const DROP_SPEED_UP = 3;
+const POOL_RX_MIN = 14;
+const POOL_RX_SPREAD = 16;
+const POOL_RY_MIN = 3;
+const POOL_RY_SPREAD = 3;
+const POOL_DEPTH_SCATTER = 10;
+const POOL_ALPHA = 0.85;
+const POOL_SHIMMER = 0.08;
+const POOL_SHIMMER_FREQ = 0.004;
+
+export function makeDrop(x: number, y: number, born: number, index: number): RainbowDrop {
+  return {
+    x,
+    y,
+    vx: (Math.random() - 0.5) * 2 * DROP_SPEED_X,
+    vy: -Math.random() * DROP_SPEED_UP,
+    hue: (born / DROP_HUE_TIME_DIV + index * DROP_HUE_STEP) % 360,
+    r: DROP_R_MIN + Math.random() * DROP_R_SPREAD,
+    born,
+  };
+}
+
+export function updateDrop(d: RainbowDrop, dt: number): void {
+  d.vy += DROP_GRAVITY * dt;
+  d.x += d.vx * dt;
+  d.y += d.vy * dt;
+}
+
+export function makePool(x: number, groundY: number, born: number): Pool {
+  return {
+    x,
+    y: groundY + Math.random() * POOL_DEPTH_SCATTER,
+    rx: POOL_RX_MIN + Math.random() * POOL_RX_SPREAD,
+    ry: POOL_RY_MIN + Math.random() * POOL_RY_SPREAD,
+    born,
+    seed: Math.random() * Math.PI * 2,
+    grad: null,
+  };
+}
+
+export function addPool(pools: Pool[], pool: Pool): void {
+  pools.push(pool);
+  if (pools.length > MAX_POOLS) pools.shift();
+}
+
+export function drawDrops(ctx: CanvasRenderingContext2D, drops: RainbowDrop[]): void {
+  for (const d of drops) {
+    ctx.fillStyle = `hsl(${d.hue} 95% 62%)`;
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.arc(d.x - d.r * 0.3, d.y - d.r * 0.3, d.r * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+export function drawPools(ctx: CanvasRenderingContext2D, pools: Pool[], now: number): void {
+  for (const pool of pools) {
+    const age = now - pool.born;
+    const fade = age > POOL_LIFE_MS - POOL_FADE_MS ? Math.max(0, (POOL_LIFE_MS - age) / POOL_FADE_MS) : 1;
+    if (fade <= 0) continue;
+    if (!pool.grad) {
+      const g = ctx.createLinearGradient(pool.x - pool.rx, 0, pool.x + pool.rx, 0);
+      RAINBOW_STOPS.forEach((c, i) => g.addColorStop(i / (RAINBOW_STOPS.length - 1), c));
+      pool.grad = g;
+    }
+    const ry = pool.ry * (1 + POOL_SHIMMER * Math.sin(now * POOL_SHIMMER_FREQ + pool.seed));
+    ctx.globalAlpha = POOL_ALPHA * fade;
+    ctx.fillStyle = pool.grad;
+    ctx.beginPath();
+    ctx.ellipse(pool.x, pool.y, pool.rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(40,20,80,0.45)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(pool.x - pool.rx * 0.3, pool.y - ry * 0.35, pool.rx * 0.35, ry * 0.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
 }

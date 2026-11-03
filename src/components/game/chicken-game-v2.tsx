@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { ChickenSvg } from './chicken-svg';
+import { HoldTossHud } from './hold-toss-hud';
 import { GameScenery } from './game-scenery';
 import { EscapeScenery } from './escape-scenery';
 import { EscapeGiggle, EscapeVehicleBack, EscapeVehicleFront, ParkedRocket, type StagePhase } from './escape-vehicle';
@@ -24,6 +32,12 @@ import {
 import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import {
+  addPool,
+  drawDrops,
+  drawPools,
+  makeDrop,
+  makePool,
+  updateDrop,
   drawFeather,
   drawBlackHoles,
   drawPortals,
@@ -33,8 +47,10 @@ import {
   updateFeather,
   type BlackHole,
   type Feather,
+  type Pool,
   type Portal,
   type PortalSide,
+  type RainbowDrop,
   type Streak,
 } from './chicken-effects';
 import {
@@ -71,6 +87,73 @@ import {
   type CursorOffset,
   type OrbKind,
 } from './chicken-orbs';
+import {
+  BANDAID_HP,
+  CHICK_H,
+  CHICK_W,
+  FORCED_TOSS_VX,
+  FORCED_TOSS_VY,
+  FORCE_REFORM_BOOST,
+  FRAME_MS,
+  FREE_AVOID_FORCE,
+  FREE_AVOID_RADIUS,
+  FREE_FLAP_MS,
+  FREE_ROT_DAMP,
+  FREE_ROT_SPRING,
+  FREE_STEER,
+  FREE_TURN_MIN_MS,
+  FREE_TURN_SPREAD_MS,
+  FRESH_PROTECT_MS,
+  HELD_FLAP_MS,
+  HOLD_GRACE_MS,
+  HOLD_HUD_DELAY_MS,
+  HOLD_MS,
+  HOLD_SLACK_PX,
+  LEVEL_FREE_SPEED,
+  LEVEL_SCALE,
+  MAX_DROPS,
+  MAX_SPLIT_LEVEL,
+  MERGE_PROXIMITY,
+  MIN_HIT_PX,
+  POINTER_EMA,
+  POOL_LIFE_MS,
+  RAG_FOLLOW,
+  RAG_STRETCH_MAX,
+  RAG_STRETCH_PER_SPEED,
+  RAINBOW_DROP_BURST,
+  RAINBOW_DROP_SEEP,
+  RAINBOW_LEAK_INTERVAL_MS,
+  RAINBOW_LEAK_MS,
+  RAD_TO_DEG,
+  REGROUP_RETRY_MS,
+  REJOIN_DELAY_MS,
+  RETURN_SPEED,
+  SCATTER_MS,
+  SCATTER_SPEED_JITTER,
+  SCATTER_SPEED_MIN,
+  SCATTER_SPEED_SPREAD,
+  SPLIT_COUNT,
+  SQUASH_DECAY,
+  TOSS_SPIN_FROM_VX,
+  TOSS_SPIN_RANDOM,
+  TOSS_SPLIT_FALLBACK_MS,
+  TOSS_SPLIT_IMPACT_MIN,
+  chickSize,
+  clamp,
+  groupCentroid,
+  heldDriftFor,
+  hitPadFor,
+  mergeDelayFor,
+  ragdollStep,
+  splitFan,
+  tossStep,
+  tossVelocity,
+  type ChickGroup,
+  type ChickMotion,
+  type HoldState,
+  type SplitLevel,
+  type Wound,
+} from './chicken-split';
 import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, skinById } from './chicken-skins';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
@@ -483,6 +566,51 @@ interface ChickenStateSnapshot {
   cursors: number;
   cursorOffsets: CursorOffset[];
   cursorBuffMs: { x5: number; x3: number };
+  pieces: number;
+  splitLevels: number[];
+  held: boolean;
+  holdProgress: number;
+  holdDrift: number;
+  bandaid: number | null;
+  woundOpen: boolean;
+  drops: number;
+  pools: number;
+  rootSplit: boolean;
+}
+
+interface ChickView {
+  id: number;
+  level: SplitLevel;
+}
+
+function makeChickMotion(id: number, level: SplitLevel, x: number, y: number, groupId: number, ts: number): ChickMotion {
+  return {
+    id,
+    level,
+    groupId,
+    x,
+    y,
+    vx: 0,
+    vy: 0,
+    rot: 0,
+    rv: 0,
+    dir: 1,
+    phase: 'free',
+    phaseUntil: 0,
+    nextTurnAt: 0,
+    tossedAt: 0,
+    spawnedAt: ts,
+    squash: 0,
+    stretch: 0,
+    grabDx: 0,
+    grabDy: 0,
+    noSplit: false,
+    breaking: false,
+    leakUntil: 0,
+    nextLeakAt: 0,
+    targetVx: 0,
+    targetVy: 0,
+  };
 }
 
 interface ChickenBridge {
@@ -503,6 +631,10 @@ interface ChickenBridge {
   forceOrb: (kind: OrbKind) => void;
   collectOrb: (kind: OrbKind) => void;
   fastForward: (ms: number) => void;
+  forceToss: (level?: number) => void;
+  forceReform: () => void;
+  forceBandaid: () => void;
+  holdMsOverride: (ms: number) => void;
 }
 
 interface BridgeWindow {
@@ -782,6 +914,29 @@ function ChickenGameInner() {
   const kidMotionRef = useRef(new Map<number, KidMotion>());
   const kidElsRef = useRef(new Map<number, HTMLDivElement>());
   const kidsCountRef = useRef(0);
+  const [chicks, setChicks] = useState<ChickView[]>([]);
+  const [wound, setWound] = useState<Wound | null>(null);
+  const woundRef = useRef<Wound | null>(null);
+  const chickMotionRef = useRef(new Map<number, ChickMotion>());
+  const chickElsRef = useRef(new Map<number, HTMLDivElement>());
+  const groupsRef = useRef(new Map<number, ChickGroup>());
+  const chickIdRef = useRef(0);
+  const groupIdRef = useRef(0);
+  const rootSplitRef = useRef(false);
+  const depthMaxRef = useRef(0);
+  const holdRef = useRef<HoldState | null>(null);
+  const holdMsOverrideRef = useRef<number | null>(null);
+  const suppressClickUntilRef = useRef(0);
+  const forceReformRef = useRef(false);
+  const dropsRef = useRef<RainbowDrop[]>([]);
+  const poolsRef = useRef<Pool[]>([]);
+  const pointerRef = useRef({ lastX: -1000, lastY: -1000, vx: 0, vy: 0, ax: 0 });
+  const hudRef = useRef<HTMLDivElement>(null);
+  const hudLabelRef = useRef<HTMLSpanElement>(null);
+  const hudBarRef = useRef<HTMLDivElement>(null);
+  const hudReadoutRef = useRef<HTMLSpanElement>(null);
+  const hudFullRef = useRef(false);
+  const hitRef = useRef<(e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }) => void>(() => undefined);
   const [orbViews, setOrbViews] = useState<OrbView[]>([]);
   const [cloneViews, setCloneViews] = useState<CloneView[]>([]);
   const [overlayOffsets, setOverlayOffsets] = useState<CursorOffset[]>([]);
@@ -927,6 +1082,540 @@ function ChickenGameInner() {
       else fleeKid(id);
     },
     [startKidMerge, fleeKid]
+  );
+
+
+  const syncChicks = useCallback(() => {
+    setChicks([...chickMotionRef.current.values()].map((m) => ({ id: m.id, level: m.level })));
+  }, []);
+
+  const setWoundState = useCallback((next: Wound | null) => {
+    woundRef.current = next;
+    setWound(next);
+  }, []);
+
+  const emitDrops = useCallback((x: number, y: number, count: number) => {
+    const now = performance.now();
+    for (let i = 0; i < count && dropsRef.current.length < MAX_DROPS; i++) {
+      dropsRef.current.push(makeDrop(x, y, now, i));
+    }
+  }, []);
+
+  const hideHud = useCallback(() => {
+    if (hudRef.current) hudRef.current.style.opacity = '0';
+    hudFullRef.current = false;
+    if (hudBarRef.current) hudBarRef.current.classList.remove('hold-bar-full');
+  }, []);
+
+  const restoreRoot = useCallback((x: number, y: number, rot: number) => {
+    const p = physicsRef.current;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    p.x = clamp(x - CHICKEN_W / 2, 0, vw - CHICKEN_W);
+    p.y = clamp(y - CHICKEN_H / 2, 0, vh - CHICKEN_H);
+    p.rotation = rot;
+    p.rv = 0;
+    const angle = Math.random() * Math.PI * 2;
+    p.vx = Math.cos(angle) * BASE_SPEED;
+    p.vy = Math.sin(angle) * BASE_SPEED;
+    rootSplitRef.current = false;
+    forceReformRef.current = false;
+  }, []);
+
+  const convertRoot = useCallback(
+    (ts: number): ChickMotion => {
+      const p = physicsRef.current;
+      const m = makeChickMotion(++chickIdRef.current, 0, p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, 0, ts);
+      m.rot = p.rotation;
+      m.dir = facingRef.current;
+      chickMotionRef.current.set(m.id, m);
+      rootSplitRef.current = true;
+      syncChicks();
+      return m;
+    },
+    [syncChicks]
+  );
+
+  const removeChickEl = useCallback((id: number) => {
+    chickMotionRef.current.delete(id);
+    chickElsRef.current.delete(id);
+  }, []);
+
+  const splitChick = useCallback(
+    (m: ChickMotion, ts: number) => {
+      const level = (m.level + 1) as SplitLevel;
+      const gid = ++groupIdRef.current;
+      const group: ChickGroup = {
+        id: gid,
+        level,
+        parentGroupId: m.groupId,
+        mergeAt: ts + mergeDelayFor(level),
+        expected: SPLIT_COUNT,
+        members: new Set(),
+        returning: false,
+        cx: m.x,
+        cy: m.y,
+      };
+      groupsRef.current.set(gid, group);
+      groupsRef.current.get(m.groupId)?.members.delete(m.id);
+      removeChickEl(m.id);
+      for (const deg of splitFan(SPLIT_COUNT)) {
+        const c = makeChickMotion(++chickIdRef.current, level, m.x, m.y, gid, ts);
+        const angle = ((-90 + deg) * Math.PI) / 180;
+        const speed =
+          (SCATTER_SPEED_MIN + Math.random() * SCATTER_SPEED_SPREAD) *
+          (1 + (Math.random() - 0.5) * 2 * SCATTER_SPEED_JITTER);
+        c.vx = Math.cos(angle) * speed;
+        c.vy = Math.sin(angle) * speed;
+        c.rv = (Math.random() - 0.5) * 2 * TOSS_SPIN_RANDOM;
+        c.dir = c.vx >= 0 ? 1 : -1;
+        c.phase = 'scatter';
+        c.phaseUntil = ts + SCATTER_MS;
+        if (m.breaking) c.leakUntil = ts + RAINBOW_LEAK_MS;
+        chickMotionRef.current.set(c.id, c);
+        group.members.add(c.id);
+      }
+      depthMaxRef.current = Math.max(depthMaxRef.current, level);
+      spawnFeathers(m.x, m.y, 6);
+      squeak(0.35);
+      recordPlay({ type: 'squeak', at: Date.now() });
+      syncChicks();
+    },
+    [removeChickEl, spawnFeathers, squeak, recordPlay, syncChicks]
+  );
+
+  const mergeGroup = useCallback(
+    (g: ChickGroup, ts: number) => {
+      const members = [...g.members].map((id) => chickMotionRef.current.get(id)).filter((m): m is ChickMotion => !!m);
+      const c = groupCentroid(members);
+      for (const m of members) removeChickEl(m.id);
+      groupsRef.current.delete(g.id);
+      if (g.level === 1) {
+        restoreRoot(c.x, c.y, 0);
+        setWoundState(depthMaxRef.current >= MAX_SPLIT_LEVEL ? { hp: BANDAID_HP, open: false } : null);
+        depthMaxRef.current = 0;
+      } else {
+        const parent = makeChickMotion(++chickIdRef.current, (g.level - 1) as SplitLevel, c.x, c.y, g.parentGroupId, ts);
+        parent.dir = members[0]?.dir ?? 1;
+        chickMotionRef.current.set(parent.id, parent);
+        const pg = groupsRef.current.get(g.parentGroupId);
+        if (pg) {
+          pg.members.add(parent.id);
+          pg.mergeAt = Math.max(pg.mergeAt, ts + REJOIN_DELAY_MS);
+        }
+      }
+      spawnFeathers(c.x, c.y, 5);
+      squeak(0.35);
+      recordPlay({ type: 'squeak', at: Date.now() });
+      syncChicks();
+    },
+    [removeChickEl, restoreRoot, setWoundState, spawnFeathers, squeak, recordPlay, syncChicks]
+  );
+
+  const startRelease = useCallback(
+    (m: ChickMotion, vx: number, vy: number, ts: number) => {
+      const v = tossVelocity(vx, vy);
+      m.vx = v.vx;
+      m.vy = v.vy;
+      m.rv = v.vx * TOSS_SPIN_FROM_VX + (Math.random() * 2 - 1) * TOSS_SPIN_RANDOM;
+      m.phase = 'tossed';
+      m.tossedAt = ts;
+      m.noSplit = m.level >= MAX_SPLIT_LEVEL;
+      const w = woundRef.current;
+      if (m.level === 0 && w && !w.open && w.hp > 0) {
+        const hp = w.hp - 1;
+        if (hp > 0) {
+          m.noSplit = true;
+          emitDrops(m.x, m.y, RAINBOW_DROP_SEEP);
+          setWoundState({ hp, open: false });
+        } else {
+          m.breaking = true;
+          emitDrops(m.x, m.y, RAINBOW_DROP_BURST);
+          setWoundState({ hp: 0, open: true });
+        }
+      }
+    },
+    [emitDrops, setWoundState]
+  );
+
+  const landChick = useCallback(
+    (m: ChickMotion, ts: number) => {
+      if (!m.noSplit && m.level < MAX_SPLIT_LEVEL) {
+        splitChick(m, ts);
+        return;
+      }
+      if (m.level === 0) {
+        restoreRoot(m.x, m.y, 0);
+        removeChickEl(m.id);
+        syncChicks();
+        return;
+      }
+      m.phase = 'free';
+      m.nextTurnAt = 0;
+    },
+    [splitChick, restoreRoot, removeChickEl, syncChicks]
+  );
+
+  const beginHold = useCallback((id: number, e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || holdRef.current) return;
+    const now = performance.now();
+    const m = id === 0 ? null : chickMotionRef.current.get(id);
+    if (id !== 0 && (!m || m.phase !== 'free' && m.phase !== 'returning' || now - m.spawnedAt < FRESH_PROTECT_MS)) return;
+    if (id === 0 && rootSplitRef.current) return;
+    const p = physicsRef.current;
+    holdRef.current = {
+      id,
+      ms: 0,
+      grabbed: false,
+      outsideSince: 0,
+      anchorX: p.x,
+      anchorY: p.y,
+      driftX: 0,
+      driftY: 0,
+      driftTotal: 0,
+    };
+  }, []);
+
+  const grabHold = useCallback(
+    (h: HoldState, ts: number) => {
+      const m = h.id === 0 ? convertRoot(ts) : chickMotionRef.current.get(h.id);
+      if (!m) {
+        holdRef.current = null;
+        return;
+      }
+      const mouse = mouseRef.current;
+      h.id = m.id;
+      h.grabbed = true;
+      m.phase = 'held';
+      m.vx = 0;
+      m.vy = 0;
+      m.grabDx = clamp(m.x - mouse.x, -CHICK_W, CHICK_W);
+      m.grabDy = clamp(m.y - mouse.y, -CHICK_H, CHICK_H);
+      spawnFeathers(m.x, m.y, 3);
+      squeak(0.35);
+      recordPlay({ type: 'squeak', at: Date.now() });
+    },
+    [convertRoot, spawnFeathers, squeak, recordPlay]
+  );
+
+  const endHold = useCallback(() => {
+    const h = holdRef.current;
+    if (!h) return;
+    holdRef.current = null;
+    hideHud();
+    if (!h.grabbed) return;
+    const m = chickMotionRef.current.get(h.id);
+    suppressClickUntilRef.current = performance.now() + 120;
+    if (m) startRelease(m, pointerRef.current.vx, pointerRef.current.vy, performance.now());
+  }, [hideHud, startRelease]);
+
+  const tickHold = useCallback(
+    (ts: number, dtMs: number, dt: number) => {
+      const mouse = mouseRef.current;
+      const pr = pointerRef.current;
+      if (pr.lastX > -500) {
+        const vx = (mouse.x - pr.lastX) / dt;
+        const vy = (mouse.y - pr.lastY) / dt;
+        const nvx = pr.vx + (vx - pr.vx) * POINTER_EMA;
+        pr.ax = nvx - pr.vx;
+        pr.vx = nvx;
+        pr.vy += (vy - pr.vy) * POINTER_EMA;
+      }
+      pr.lastX = mouse.x;
+      pr.lastY = mouse.y;
+      const h = holdRef.current;
+      if (!h) return;
+      if (h.grabbed) {
+        if (hudRef.current) {
+          hudRef.current.style.transform = `translate(${mouse.x + 16}px, ${mouse.y + 18}px)`;
+        }
+        return;
+      }
+      const m = h.id === 0 ? null : chickMotionRef.current.get(h.id);
+      if (h.id !== 0 && !m) {
+        holdRef.current = null;
+        hideHud();
+        return;
+      }
+      const level = m ? m.level : 0;
+      const size = chickSize(level);
+      const p = physicsRef.current;
+      const cx = m ? m.x : p.x + CHICKEN_W / 2;
+      const cy = m ? m.y : p.y + CHICKEN_H / 2;
+      const halfW = Math.max(size.w, MIN_HIT_PX) / 2 + HOLD_SLACK_PX;
+      const halfH = Math.max(size.h, MIN_HIT_PX) / 2 + HOLD_SLACK_PX;
+      const inside = Math.abs(mouse.x - cx) <= halfW && Math.abs(mouse.y - cy) <= halfH;
+      if (inside) {
+        h.outsideSince = 0;
+        h.ms += dtMs;
+      } else if (!h.outsideSince) {
+        h.outsideSince = ts;
+      } else if (ts - h.outsideSince > HOLD_GRACE_MS) {
+        holdRef.current = null;
+        hideHud();
+        return;
+      }
+      let dx = cx - mouse.x;
+      let dy = cy - mouse.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 0.001) {
+        dx = 0;
+        dy = -1;
+      } else {
+        dx /= d;
+        dy /= d;
+      }
+      const step = heldDriftFor(level) * dt;
+      h.driftTotal += step;
+      if (m) {
+        m.x += dx * step;
+        m.y += dy * step;
+      } else {
+        h.driftX += dx * step;
+        h.driftY += dy * step;
+      }
+      const holdMs = holdMsOverrideRef.current ?? HOLD_MS;
+      const hud = hudRef.current;
+      if (hud) {
+        const show = h.ms >= Math.min(HOLD_HUD_DELAY_MS, holdMs * 0.2);
+        hud.style.opacity = show ? '1' : '0';
+        hud.style.transform = `translate(${mouse.x + 16}px, ${mouse.y + 18}px)`;
+        const frac = Math.min(1, h.ms / holdMs);
+        if (hudBarRef.current) hudBarRef.current.style.width = `${(frac * 100).toFixed(1)}%`;
+        if (hudReadoutRef.current) {
+          hudReadoutRef.current.textContent = `${(Math.min(h.ms, holdMs) / 1000).toFixed(1)} / ${(holdMs / 1000).toFixed(1)}s`;
+        }
+        if (hudLabelRef.current) hudLabelRef.current.textContent = frac >= 1 ? 'toss!' : 'hold to toss';
+      }
+      if (h.ms >= holdMs) {
+        if (hudBarRef.current) hudBarRef.current.classList.add('hold-bar-full');
+        grabHold(h, ts);
+      }
+    },
+    [grabHold, hideHud]
+  );
+
+  const tickChicks = useCallback(
+    (ts: number, dtMs: number, dt: number, vw: number, vh: number) => {
+      const motions = chickMotionRef.current;
+      const groundY = groundYFor(vh);
+      const mouse = mouseRef.current;
+      const pr = pointerRef.current;
+      const forced = forceReformRef.current;
+      const hold = holdRef.current;
+      for (const g of [...groupsRef.current.values()]) {
+        const members = [...g.members]
+          .map((id) => motions.get(id))
+          .filter((m): m is ChickMotion => !!m);
+        if (members.length === 0) continue;
+        if (!g.returning) {
+          if (
+            members.length === g.expected &&
+            members.every((m) => m.phase === 'free') &&
+            (forced || ts >= g.mergeAt)
+          ) {
+            g.returning = true;
+            for (const m of members) m.phase = 'returning';
+          }
+          continue;
+        }
+        if (members.some((m) => m.phase !== 'returning')) {
+          g.returning = false;
+          g.mergeAt = ts + REGROUP_RETRY_MS;
+          for (const m of members) if (m.phase === 'returning') m.phase = 'free';
+          continue;
+        }
+        const c = groupCentroid(members);
+        g.cx = c.x;
+        g.cy = c.y;
+        if (members.every((m) => Math.hypot(m.x - c.x, m.y - c.y) < MERGE_PROXIMITY)) mergeGroup(g, ts);
+      }
+      const groundMode = modeRef.current === 'ground';
+      const speedBase = BASE_SPEED * FRAME_MS * speedRef.current;
+      const cursorX = mouse.x;
+      const cursorY = mouse.y;
+      for (const m of motions.values()) {
+        const size = chickSize(m.level);
+        const halfH = size.h / 2;
+        const el = chickElsRef.current.get(m.id);
+        const pending = hold && !hold.grabbed && hold.id === m.id;
+        if (m.squash > 0) {
+          m.squash *= Math.pow(SQUASH_DECAY, dt);
+          if (m.squash < 0.005) m.squash = 0;
+        }
+        if (m.phase === 'held') {
+          const tx = mouse.x + m.grabDx;
+          const ty = mouse.y + m.grabDy;
+          const k = Math.min(1, RAG_FOLLOW * dt);
+          m.x += (tx - m.x) * k;
+          m.y += (ty - m.y) * k;
+          ragdollStep(m, pr.ax, dt);
+          m.stretch = Math.min(RAG_STRETCH_MAX, Math.hypot(pr.vx, pr.vy) * RAG_STRETCH_PER_SPEED);
+          m.dir = pr.vx > 1 ? 1 : pr.vx < -1 ? -1 : m.dir;
+        } else if (m.phase === 'tossed' || m.phase === 'scatter') {
+          m.stretch *= 0.9;
+          const impact = tossStep(m, { w: size.w, h: size.h, vw, vh, groundY }, dt);
+          if (impact >= TOSS_SPLIT_IMPACT_MIN) {
+            spawnFeathers(m.x, m.y, 2);
+            if (m.phase === 'tossed') {
+              squeak(0.35);
+              recordPlay({ type: 'squeak', at: Date.now() });
+            }
+          }
+          if (m.phase === 'tossed') {
+            if (impact >= TOSS_SPLIT_IMPACT_MIN || ts - m.tossedAt >= TOSS_SPLIT_FALLBACK_MS) {
+              landChick(m, ts);
+              if (!motions.has(m.id)) continue;
+            }
+          } else if (ts >= m.phaseUntil) {
+            m.phase = 'free';
+            m.nextTurnAt = 0;
+          }
+        } else if (!pending) {
+          m.stretch *= 0.9;
+          const factor = LEVEL_FREE_SPEED[m.level];
+          if (m.phase === 'returning') {
+            const g = groupsRef.current.get(m.groupId);
+            if (g) {
+              const dx = g.cx - m.x;
+              const dy = g.cy - m.y;
+              const dist = Math.hypot(dx, dy);
+              const step = Math.min(dist, RETURN_SPEED * factor * (forced ? FORCE_REFORM_BOOST : 1) * dt);
+              if (dist > 0.001) {
+                m.x += (dx / dist) * step;
+                m.y += (dy / dist) * step;
+              }
+              if (Math.abs(dx) > 2) m.dir = dx > 0 ? 1 : -1;
+            }
+          } else if (groundMode) {
+            const floorY = groundY - halfH;
+            if (m.y < floorY - 1) {
+              m.vy += 0.9 * dt;
+              m.y = Math.min(floorY, m.y + m.vy * dt);
+              m.x = clamp(m.x + m.vx * dt, size.w / 2, vw - size.w / 2);
+            } else {
+              if (!m.nextTurnAt || ts >= m.nextTurnAt) {
+                m.nextTurnAt = ts + FREE_TURN_MIN_MS + Math.random() * FREE_TURN_SPREAD_MS;
+                m.targetVx =
+                  Math.random() < GROUND_PAUSE_CHANCE ? 0 : (Math.random() < 0.5 ? -1 : 1) * GROUND_WANDER * FRAME_MS * factor;
+              }
+              m.vy = 0;
+              m.vx += (m.targetVx - m.vx) * Math.min(1, 0.05 * dt);
+              m.x = clamp(m.x + m.vx * dt, size.w / 2 + 8, vw - size.w / 2 - 8);
+              m.y = floorY + Math.sin(ts * 0.004 + m.id) * 1.2;
+              m.rot += (0 - m.rot) * Math.min(1, 0.1 * dt);
+              m.rv = 0;
+            }
+            if (m.vx > 0.05) m.dir = 1;
+            else if (m.vx < -0.05) m.dir = -1;
+          } else {
+            if (!m.nextTurnAt || ts >= m.nextTurnAt) {
+              m.nextTurnAt = ts + FREE_TURN_MIN_MS + Math.random() * FREE_TURN_SPREAD_MS;
+              const angle = Math.random() * Math.PI * 2;
+              const spd = speedBase * factor;
+              m.targetVx = Math.cos(angle) * spd;
+              m.targetVy = Math.sin(angle) * spd;
+            }
+            m.vx += (m.targetVx - m.vx) * Math.min(1, FREE_STEER * dt);
+            m.vy += (m.targetVy - m.vy) * Math.min(1, FREE_STEER * dt);
+            const adx = m.x - cursorX;
+            const ady = m.y - cursorY;
+            const ad = Math.hypot(adx, ady);
+            if (ad < FREE_AVOID_RADIUS && ad > 0) {
+              const f = ((FREE_AVOID_RADIUS - ad) / FREE_AVOID_RADIUS) * FREE_AVOID_FORCE * dt;
+              m.vx += (adx / ad) * f;
+              m.vy += (ady / ad) * f;
+            }
+            m.x += m.vx * dt;
+            m.y += m.vy * dt;
+            const halfW = size.w / 2;
+            if (m.x < halfW || m.x > vw - halfW) {
+              m.x = clamp(m.x, halfW, vw - halfW);
+              m.vx = -m.vx;
+              m.targetVx = -m.targetVx;
+            }
+            if (m.y < halfH || m.y > groundY - halfH) {
+              m.y = clamp(m.y, halfH, groundY - halfH);
+              m.vy = -m.vy;
+              m.targetVy = -m.targetVy;
+            }
+            m.rv += (-m.rot * FREE_ROT_SPRING - m.rv * FREE_ROT_DAMP) * dt;
+            m.rot += m.rv * dt;
+            if (m.vx > 0.25) m.dir = 1;
+            else if (m.vx < -0.25) m.dir = -1;
+          }
+          if (m.phase === 'returning') {
+            m.rv += (-m.rot * FREE_ROT_SPRING - m.rv * FREE_ROT_DAMP) * dt;
+            m.rot += m.rv * dt;
+          }
+        }
+        if (m.leakUntil > ts && ts >= m.nextLeakAt) {
+          m.nextLeakAt = ts + RAINBOW_LEAK_INTERVAL_MS;
+          emitDrops(m.x, m.y, 1);
+        }
+        if (el) {
+          const s = LEVEL_SCALE[m.level];
+          const sx = (1 + m.squash - m.stretch * 0.5) * s * m.dir;
+          const sy = (1 - m.squash * 0.8 + m.stretch) * s;
+          el.style.transform = `translate(${(m.x - CHICK_W / 2).toFixed(1)}px, ${(m.y - CHICK_H / 2).toFixed(1)}px) rotate(${m.rot.toFixed(1)}deg) scale(${sx.toFixed(3)}, ${sy.toFixed(3)})`;
+          const ragdoll = m.phase === 'held' || m.phase === 'tossed';
+          const flag = ragdoll ? '1' : '0';
+          if (el.dataset.ragdoll !== flag) {
+            el.dataset.ragdoll = flag;
+            el.style.setProperty('--flap-ms', `${ragdoll ? HELD_FLAP_MS : FREE_FLAP_MS}ms`);
+          }
+          if (el.dataset.phase !== m.phase) el.dataset.phase = m.phase;
+          if (ragdoll) {
+            el.style.setProperty('--rag-head', `${(-m.rot * 0.35).toFixed(1)}deg`);
+            el.style.setProperty('--rag-wing', `${(m.rot * 0.5 + 12).toFixed(1)}deg`);
+            el.style.setProperty('--rag-legs', `${(-m.rot * 0.3).toFixed(1)}deg`);
+          }
+        }
+      }
+      const drops = dropsRef.current;
+      for (let i = drops.length - 1; i >= 0; i--) {
+        const d = drops[i];
+        updateDrop(d, dt);
+        if (d.y >= groundY) {
+          addPool(poolsRef.current, makePool(d.x, groundY, performance.now()));
+          drops.splice(i, 1);
+        } else if (d.y > vh + 20) {
+          drops.splice(i, 1);
+        }
+      }
+      const pools = poolsRef.current;
+      const nowMs = performance.now();
+      for (let i = pools.length - 1; i >= 0; i--) {
+        if (nowMs - pools[i].born >= POOL_LIFE_MS) pools.splice(i, 1);
+      }
+    },
+    [mergeGroup, landChick, spawnFeathers, squeak, recordPlay, emitDrops]
+  );
+
+  const clickPiece = useCallback((id: number) => {
+    if (performance.now() < suppressClickUntilRef.current) return;
+    const m = chickMotionRef.current.get(id);
+    if (!m || m.phase === 'held') return;
+    hitRef.current(undefined, true, { x: m.x, y: m.y });
+  }, []);
+
+  const forceTossAt = useCallback(
+    (level?: number) => {
+      const now = performance.now();
+      holdRef.current = null;
+      hideHud();
+      let target: ChickMotion | undefined;
+      for (const m of chickMotionRef.current.values()) {
+        if ((m.phase === 'free' || m.phase === 'returning') && (level === undefined || m.level === level)) {
+          target = m;
+          break;
+        }
+      }
+      if (!target && !rootSplitRef.current && (level === undefined || level === 0)) target = convertRoot(now);
+      if (!target) return;
+      startRelease(target, FORCED_TOSS_VX * (Math.random() < 0.5 ? -1 : 1), FORCED_TOSS_VY, now);
+    },
+    [convertRoot, hideHud, startRelease]
   );
 
   const selectSkin = useCallback((id: string) => {
@@ -1309,13 +1998,16 @@ function ChickenGameInner() {
   );
 
   const hit = useCallback(
-    (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean) => {
+    (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }) => {
       const now = performance.now();
       const p = physicsRef.current;
+      const plain = source !== undefined;
       let award = 1;
       const hyper = hyperRef.current;
       const tp = teleportRef.current;
-      if (hyper.phase === 'burst') {
+      if (plain) {
+        award = 1;
+      } else if (hyper.phase === 'burst') {
         award = HYPER_BONUS;
         hyper.phase = 'recover';
         hyper.until = now + HYPER_RECOVER_MS;
@@ -1323,13 +2015,13 @@ function ChickenGameInner() {
         award = TELEPORT_BONUS;
       }
       if (award > 1) setBonus({ amount: award, id: now });
-      if (modeRef.current === 'ground') {
+      if (!plain && modeRef.current === 'ground') {
         modeRef.current = 'flying';
         p.vy = -BASE_SPEED * 1.2;
         p.vx = facingRef.current * BASE_SPEED * 0.8;
       }
       const visit = visitRef.current;
-      if (visit.phase !== 'idle') {
+      if (!plain && visit.phase !== 'idle') {
         visit.phase = 'idle';
         visit.cooldownUntil = now + VISIT_COOLDOWN_MIN_MS + Math.random() * VISIT_COOLDOWN_SPREAD_MS;
       }
@@ -1346,8 +2038,8 @@ function ChickenGameInner() {
       if (nextStage !== stageRef.current) enterStage(nextStage, now);
       heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
       lastHitRef.current = now;
-      const cx = p.x + CHICKEN_W / 2;
-      const cy = p.y + CHICKEN_H / 2;
+      const cx = source ? source.x : p.x + CHICKEN_W / 2;
+      const cy = source ? source.y : p.y + CHICKEN_H / 2;
       const previousTier = tierRef.current;
       const newTier = tierForScore(next);
       if (newTier !== previousTier) {
@@ -1372,6 +2064,9 @@ function ChickenGameInner() {
       if (!extra) applySquash(e);
       const ceremony = ceremonyRef.current;
       if (
+        !plain &&
+        !rootSplitRef.current &&
+        !holdRef.current &&
         ceremony.phase === 'idle' &&
         now >= ceremony.cooldownUntil &&
         heatRef.current >= CEREMONY_HEAT &&
@@ -1386,6 +2081,10 @@ function ChickenGameInner() {
     },
     [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash, enterStage, checkOrbSchedule]
   );
+
+  useEffect(() => {
+    hitRef.current = hit;
+  }, [hit]);
 
   useEffect(() => {
     mountAtRef.current = performance.now();
@@ -1450,6 +2149,18 @@ function ChickenGameInner() {
           x5: Math.max(0, cursorBuffRef.current.x5Until - performance.now()),
           x3: Math.max(0, cursorBuffRef.current.x3Until - performance.now()),
         },
+        pieces: chickMotionRef.current.size,
+        splitLevels: [...chickMotionRef.current.values()].map((c) => c.level).sort(),
+        held: !!holdRef.current?.grabbed,
+        holdProgress: holdRef.current
+          ? Math.min(1, holdRef.current.ms / (holdMsOverrideRef.current ?? HOLD_MS))
+          : 0,
+        holdDrift: holdRef.current?.driftTotal ?? 0,
+        bandaid: woundRef.current ? woundRef.current.hp : null,
+        woundOpen: !!woundRef.current?.open,
+        drops: dropsRef.current.length,
+        pools: poolsRef.current.length,
+        rootSplit: rootSplitRef.current,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -1540,13 +2251,24 @@ function ChickenGameInner() {
         multiplyStartRef.current -= ms;
         cursorBuffRef.current.x5Until -= ms;
         cursorBuffRef.current.x3Until -= ms;
+        for (const pool of poolsRef.current) pool.born -= ms;
+      },
+      forceToss: (level?: number) => forceTossAt(level),
+      forceReform: () => {
+        forceReformRef.current = true;
+      },
+      forceBandaid: () => {
+        if (!rootSplitRef.current) setWoundState({ hp: BANDAID_HP, open: false });
+      },
+      holdMsOverride: (ms: number) => {
+        holdMsOverrideRef.current = ms > 0 ? ms : null;
       },
     };
     bridgeWindow().__chicken = bridge;
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState]);
 
   useEffect(() => {
     const p = physicsRef.current;
@@ -1569,18 +2291,27 @@ function ChickenGameInner() {
   }, []);
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
+    const onMove = (e: MouseEvent | PointerEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
     };
     window.addEventListener('mousemove', onMove);
-    return () => window.removeEventListener('mousemove', onMove);
-  }, []);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', endHold);
+    window.addEventListener('pointercancel', endHold);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', endHold);
+      window.removeEventListener('pointercancel', endHold);
+    };
+  }, [endHold]);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target as Element | null;
       if (target?.closest(SHEET_SAFE_SELECTOR)) return;
+      if (performance.now() < suppressClickUntilRef.current) return;
       const p = physicsRef.current;
       const kidY = groundYFor(window.innerHeight) - KID_H;
       for (const offset of cursorOffsetsRef.current) {
@@ -1592,7 +2323,13 @@ function ChickenGameInner() {
           collectOrb(orb.id);
           continue;
         }
-        if (pointInRect(px, py, p.x, p.y, CHICKEN_W, CHICKEN_H)) hit(undefined, true);
+        if (!rootSplitRef.current && pointInRect(px, py, p.x, p.y, CHICKEN_W, CHICKEN_H)) hit(undefined, true);
+        for (const piece of chickMotionRef.current.values()) {
+          const size = chickSize(piece.level);
+          if (pointInRect(px, py, piece.x - size.w / 2, piece.y - size.h / 2, size.w, size.h)) {
+            hit(undefined, true, { x: piece.x, y: piece.y });
+          }
+        }
         for (const [id, motion] of kidMotionRef.current) {
           if (pointInRect(px, py, motion.x, kidY, KID_W, KID_H)) {
             clickKid(id);
@@ -1693,9 +2430,11 @@ function ChickenGameInner() {
       const vh = window.innerHeight;
       const sc = scoreRef.current;
       const flying = modeRef.current === 'flying';
+      tickHold(ts, dtMs, dt);
+      const rootBusy = rootSplitRef.current || holdRef.current !== null;
 
       const hyper = hyperRef.current;
-      if (flying && sc >= HYPER_MIN_SCORE) {
+      if (flying && !rootBusy && sc >= HYPER_MIN_SCORE) {
         if (hyper.phase === 'idle') {
           if (!hyper.nextAt) {
             hyper.nextAt = ts + HYPER_DELAY_MIN_MS + Math.random() * HYPER_DELAY_SPREAD_MS;
@@ -1779,6 +2518,7 @@ function ChickenGameInner() {
       const tp = teleportRef.current;
       if (
         flying &&
+        !rootBusy &&
         (sc >= TELEPORT_MIN_SCORE || tp.forcedDecoys !== null) &&
         tp.phase === 'idle' &&
         portal.phase === 'idle' &&
@@ -1953,6 +2693,7 @@ function ChickenGameInner() {
           scramble.nextAt = ts + SCRAMBLE_DELAY_MIN_MS + Math.random() * SCRAMBLE_DELAY_SPREAD_MS;
         } else if (
           ts >= scramble.nextAt &&
+          !rootBusy &&
           sc >= SCRAMBLE_MIN_SCORE &&
           ts - lastHitRef.current < CLICK_ACTIVE_WINDOW_MS &&
           hyper.phase !== 'burst' &&
@@ -2001,7 +2742,7 @@ function ChickenGameInner() {
           p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH * 1.5;
         };
         const tryEdgeSpecial = (side: PortalSide): boolean => {
-          if (ts < portal.cooldownUntil || portal.phase !== 'idle' || tp.phase !== 'idle') {
+          if (rootBusy || ts < portal.cooldownUntil || portal.phase !== 'idle' || tp.phase !== 'idle') {
             return false;
           }
           const portalChance = ts < portal.hotUntil ? EDGE_PORTAL_HOT_CHANCE : EDGE_PORTAL_CHANCE;
@@ -2067,7 +2808,7 @@ function ChickenGameInner() {
         }
 
         const visit = visitRef.current;
-        if (visit.phase === 'idle' && kidsCountRef.current > 0 && mercy < VISIT_MERCY_THRESHOLD && stageRef.current === 'none') {
+        if (!rootBusy && visit.phase === 'idle' && kidsCountRef.current > 0 && mercy < VISIT_MERCY_THRESHOLD && stageRef.current === 'none') {
           if (!visit.nextRollAt) {
             visit.nextRollAt = ts + VISIT_ROLL_MS;
           } else if (ts >= visit.nextRollAt) {
@@ -2181,7 +2922,14 @@ function ChickenGameInner() {
         }
       }
 
+      const rootHold = holdRef.current;
+      if (rootHold && !rootHold.grabbed && rootHold.id === 0) {
+        p.x = rootHold.anchorX + rootHold.driftX;
+        p.y = rootHold.anchorY + rootHold.driftY;
+      }
       if (chickenElRef.current) {
+        const hidden = rootSplitRef.current ? 'hidden' : 'visible';
+        if (chickenElRef.current.style.visibility !== hidden) chickenElRef.current.style.visibility = hidden;
         chickenElRef.current.style.transform =
           `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${((1 + sizeBoostRef.current) * stageScale).toFixed(3)})`;
         chickenElRef.current.style.setProperty('--bend', `${bendRef.current.toFixed(1)}deg`);
@@ -2259,6 +3007,7 @@ function ChickenGameInner() {
       }
 
       tickAbilities(performance.now(), dtMs, vw, vh);
+      tickChicks(ts, dtMs, dt, vw, vh);
 
       if (ts >= ghostSweepAtRef.current) {
         ghostSweepAtRef.current = ts + 500;
@@ -2312,7 +3061,7 @@ function ChickenGameInner() {
         if (!updateFeather(feathers[i], dt, ts)) feathers.splice(i, 1);
       }
 
-      const lightning = lightningForScore(sc);
+      const lightning = rootBusy ? null : lightningForScore(sc);
       if (lightning) {
         if (!nextArcAtRef.current) nextArcAtRef.current = ts + lightning.intervalMs;
         if (ts >= nextArcAtRef.current) {
@@ -2339,7 +3088,7 @@ function ChickenGameInner() {
         if (stageRef.current === 'surf') drawSurf(ctx, vw, vh, ts, heatRef.current);
 
         const auraRgb = auraRgbFor(sc);
-        drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
+        if (!rootBusy) drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
 
         const now = performance.now();
         const arcs = arcsRef.current;
@@ -2399,6 +3148,8 @@ function ChickenGameInner() {
           drawFeather(ctx, f, ts);
         }
 
+        drawPools(ctx, poolsRef.current, now);
+        drawDrops(ctx, dropsRef.current);
         drawStreaks(ctx, streaksRef.current, now, dt, auraRgb);
         drawPortals(ctx, portalsRef.current, now);
         drawBlackHoles(ctx, blackHolesRef.current, performance.now(), BLACK_HOLE_LIFE_MS, BLACK_HOLE_RADIUS);
@@ -2411,7 +3162,7 @@ function ChickenGameInner() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge, tickAbilities]);
+  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge, tickAbilities, tickHold, tickChicks]);
 
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
@@ -2557,6 +3308,36 @@ function ChickenGameInner() {
         </div>
       ))}
 
+      {chicks.map((c) => (
+        <div
+          key={c.id}
+          data-testid="chicken-piece"
+          data-level={c.level}
+          data-tier={tier}
+          data-chick-id={c.id}
+          data-ragdoll="0"
+          ref={(el) => {
+            if (el) chickElsRef.current.set(c.id, el);
+            else chickElsRef.current.delete(c.id);
+          }}
+          onPointerDown={(e) => beginHold(c.id, e)}
+          onClick={() => clickPiece(c.id)}
+          className="chicken-piece absolute top-0 left-0 touch-none will-change-transform"
+        >
+          <span className="absolute" style={{ inset: -hitPadFor(c.level) }} />
+          <ChickenSvg
+            className="block w-[70px]"
+            tier={tier}
+            morph={morph}
+            eyes={mood}
+            skin={skin}
+            wound={c.level === 0 ? wound : null}
+          />
+        </div>
+      ))}
+
+      <HoldTossHud hudRef={hudRef} labelRef={hudLabelRef} barRef={hudBarRef} readoutRef={hudReadoutRef} />
+
       {cloneViews.map((clone) => (
         <div
           key={clone.id}
@@ -2587,7 +3368,11 @@ function ChickenGameInner() {
         data-squash="0"
         className="absolute will-change-transform"
         style={{ left: 0, top: 0 }}
-        onClick={hit}
+        onPointerDown={(e) => beginHold(0, e)}
+        onClick={(e) => {
+          if (performance.now() < suppressClickUntilRef.current) return;
+          hit(e);
+        }}
       >
         <div
           ref={facingElRef}
@@ -2605,6 +3390,7 @@ function ChickenGameInner() {
               morph={morph}
               eyes={mood}
               skin={skin}
+              wound={wound}
             />
           </div>
           <EscapeVehicleFront stage={stage} phase={stagePhase} />

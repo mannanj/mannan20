@@ -1583,3 +1583,44 @@ body.gem-rain-active #header > div:first-child {
 .chicken-clone-blink {
   animation: cloneBlink 220ms steps(1, end) infinite;
 }
+
+@keyframes bandaidPeel {
+  0% { transform: rotate(0deg) scale(1.15); }
+  35% { transform: rotate(-14deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.bandaid-peel {
+  transform-box: fill-box;
+  transform-origin: 20% 50%;
+  animation: bandaidPeel 400ms ease-out;
+}
+
+@keyframes holdBarFlash {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(2); }
+}
+
+.hold-bar-full {
+  animation: holdBarFlash 360ms ease-out;
+}
+
+.chicken-piece[data-ragdoll='1'] .chicken-sq-head {
+  transform: rotate(var(--rag-head, 0deg));
+  transition: none;
+}
+
+.chicken-piece[data-ragdoll='1'] .chicken-sq-wing-left {
+  transform: rotate(var(--rag-wing, 0deg));
+  transition: none;
+}
+
+.chicken-piece[data-ragdoll='1'] .chicken-sq-wing-right {
+  transform: rotate(calc(var(--rag-wing, 0deg) * -1));
+  transition: none;
+}
+
+.chicken-piece[data-ragdoll='1'] .chicken-sq-legs {
+  transform: rotate(var(--rag-legs, 0deg));
+  transition: none;
+}

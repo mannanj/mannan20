@@ -183,6 +183,19 @@ Event-only — no background/ambient beds (`chicken-audio.ts`):
 - **Squeak** on deep rubber squashes (see Rubber squash).
 - Resilient loader (R2 → local → html5 fallback); the game runs silently if all sound fails.
 
+## Tossing & splitting (v2 only)
+
+Design: `docs/chicken-game-toss-split.md`. Code: `chicken-split.ts` (constants, pure helpers), `chicken-game-v2.tsx`
+(`tickHold`, `tickChicks`, `splitChick`, `mergeGroup`), `hold-toss-hud.tsx`, rainbow drops/pools in `chicken-effects.ts`.
+Hold 1.5s on any chicken to grab it (root converts to a level-0 piece and the root element is hidden while
+`rootSplitRef` is set); release tosses it with ragdoll flight. The first impact splits it into 3 (levels 1 -> 3 -> 9 -> 27;
+level 3 only ragdolls). Pieces wander at a size-tuned speed, then groups return to their centroid and merge level by level
+back into the root. A full 3-level split plus reform gives the root a bandaid (3 tosses; toss 3 opens the wound, splits,
+leaks rainbow drops and leaves pools for about 9s). Toss scores 0; a click on any piece scores 1. While split or held,
+hyper, teleport, scramble, ceremony, visit, portals, aura and lightning are gated off.
+Bridge: `pieces`, `splitLevels`, `held`, `holdProgress`, `holdDrift`, `bandaid`, `woundOpen`, `drops`, `pools`,
+`rootSplit`; forcers `forceToss(level?)`, `forceReform()`, `forceBandaid()`, `holdMsOverride(ms)`.
+
 ## Test bridge
 
 `window.__chicken` (e2e backbone, `e2e/chicken-game.spec.ts`):

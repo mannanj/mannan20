@@ -307,3 +307,312 @@ test.describe('chicken game v2 ability orbs', () => {
     await page.screenshot({ path: `${SHOT_DIR}/vanish.png` });
   });
 });
+
+interface TossState {
+  score: number;
+  tier: number;
+  pieces: number;
+  splitLevels: number[];
+  held: boolean;
+  holdProgress: number;
+  holdDrift: number;
+  bandaid: number | null;
+  woundOpen: boolean;
+  drops: number;
+  pools: number;
+  rootSplit: boolean;
+}
+
+interface TossBridge {
+  state: () => TossState;
+  boost: (n: number) => void;
+  forceToss: (level?: number) => void;
+  forceReform: () => void;
+  forceBandaid: () => void;
+  holdMsOverride: (ms: number) => void;
+  fastForward: (ms: number) => void;
+}
+
+const TOSS_SHOT_DIR = process.env.TOSS_SHOT_DIR;
+const SETTLE_MS = 1300;
+const PERF_P95_MAX_MS = 25;
+
+const tossState = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __chicken: TossBridge }).__chicken.state());
+
+const tossCall = (page: Page, fn: 'forceReform' | 'forceBandaid') =>
+  page.evaluate((name) => (window as unknown as { __chicken: TossBridge }).__chicken[name](), fn);
+
+const forceToss = (page: Page, level?: number) =>
+  page.evaluate((l) => (window as unknown as { __chicken: TossBridge }).__chicken.forceToss(l), level);
+
+async function chickenCenter(page: Page) {
+  const box = await page.getByTestId('chicken').boundingBox();
+  if (!box) throw new Error('no chicken');
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+}
+
+async function waitPieces(page: Page, count: number) {
+  await page.waitForFunction(
+    (n) => (window as unknown as { __chicken: TossBridge }).__chicken.state().pieces === n,
+    count,
+    { timeout: 10_000 }
+  );
+}
+
+async function splitTo(page: Page, levels: number, from = 0) {
+  for (let level = from; level < levels; level++) {
+    const count = 3 ** level;
+    for (let i = 0; i < count; i++) await forceToss(page, level);
+    await waitPieces(page, 3 ** (level + 1));
+    await page.waitForTimeout(SETTLE_MS);
+  }
+}
+
+async function reformFully(page: Page) {
+  await tossCall(page, 'forceReform');
+  await page.waitForFunction(
+    () => {
+      const s = (window as unknown as { __chicken: TossBridge }).__chicken.state();
+      return !s.rootSplit && s.pieces === 0;
+    },
+    undefined,
+    { timeout: 25_000 }
+  );
+}
+
+test.describe('chicken game v2 toss and split', () => {
+  test.setTimeout(60_000);
+
+  test('hold shows the hold-to-toss bar and counts up', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    const c = await chickenCenter(page);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.waitForTimeout(600);
+    const s = await tossState(page);
+    expect(s.holdProgress).toBeGreaterThan(0.2);
+    expect(s.holdProgress).toBeLessThan(0.6);
+    await expect(page.getByTestId('hold-toss-hud')).toHaveCSS('opacity', '1');
+    await expect(page.getByTestId('hold-toss-label')).toHaveText('hold to toss');
+    await expect(page.getByTestId('hold-toss-readout')).toContainText('/ 1.5s');
+    if (TOSS_SHOT_DIR) await page.screenshot({ path: `${TOSS_SHOT_DIR}/hold-hud.png` });
+    await page.mouse.up();
+  });
+
+  test('a quick click still squeezes for 1 point', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    const c = await chickenCenter(page);
+    await page.mouse.click(c.x, c.y);
+    const s = await tossState(page);
+    expect(s.score).toBe(1);
+    expect(s.held).toBe(false);
+    await expect(page.getByTestId('hold-toss-hud')).toHaveCSS('opacity', '0');
+  });
+
+  test('holding 1.5s grabs the chicken', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    const c = await chickenCenter(page);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.waitForTimeout(1700);
+    expect((await tossState(page)).held).toBe(true);
+    await page.mouse.move(c.x + 120, c.y - 120, { steps: 8 });
+    await page.waitForTimeout(500);
+    const piece = await page.getByTestId('chicken-piece').boundingBox();
+    if (!piece) throw new Error('no held piece');
+    expect(Math.abs(piece.x + piece.width / 2 - (c.x + 120))).toBeLessThan(110);
+    await page.mouse.up();
+  });
+
+  test('leaving the chicken resets the hold', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    const c = await chickenCenter(page);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.waitForTimeout(300);
+    await page.mouse.move(c.x + 400, c.y - 200);
+    await page.waitForTimeout(400);
+    const s = await tossState(page);
+    expect(s.holdProgress).toBe(0);
+    expect(s.held).toBe(false);
+    await page.mouse.up();
+  });
+
+  test('releasing a toss splits the chicken into 3 and scores nothing', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: TossBridge }).__chicken.holdMsOverride(300));
+    const c = await chickenCenter(page);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.waitForTimeout(500);
+    expect((await tossState(page)).held).toBe(true);
+    await page.mouse.move(c.x + 80, c.y - 150, { steps: 6 });
+    await page.mouse.up();
+    await waitPieces(page, 3);
+    const s = await tossState(page);
+    expect(s.splitLevels).toEqual([1, 1, 1]);
+    expect(s.score).toBe(0);
+    expect(s.rootSplit).toBe(true);
+    await expect(page.getByTestId('chicken')).toHaveCSS('visibility', 'hidden');
+  });
+
+  test('pieces split again, three levels at most, and a level-3 toss only ragdolls', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await splitTo(page, 2);
+    expect((await tossState(page)).splitLevels).toEqual([2, 2, 2, 2, 2, 2, 2, 2, 2]);
+    if (TOSS_SHOT_DIR) await page.screenshot({ path: `${TOSS_SHOT_DIR}/split-9.png` });
+    await splitTo(page, 3, 2);
+    const s = await tossState(page);
+    expect(s.pieces).toBe(27);
+    expect(new Set(s.splitLevels)).toEqual(new Set([3]));
+    await forceToss(page, 3);
+    await page.waitForTimeout(1200);
+    expect((await tossState(page)).pieces).toBe(27);
+  });
+
+  test('smaller chickens slip away faster while held', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    const c = await chickenCenter(page);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.waitForTimeout(250);
+    const big = (await tossState(page)).holdDrift;
+    await page.mouse.up();
+    await splitTo(page, 3);
+    const box = await page.locator('[data-testid="chicken-piece"][data-level="3"]').first().boundingBox();
+    if (!box) throw new Error('no small piece');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(250);
+    const small = (await tossState(page)).holdDrift;
+    await page.mouse.up();
+    expect(small).toBeGreaterThan(big);
+  });
+
+  test('pieces share the root stage and a piece click scores exactly 1', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: TossBridge }).__chicken.boost(30));
+    await forceToss(page);
+    await waitPieces(page, 3);
+    await page.waitForTimeout(SETTLE_MS);
+    const s = await tossState(page);
+    const tiers = await page.getByTestId('chicken-piece').evaluateAll((els) =>
+      els.map((el) => el.getAttribute('data-tier'))
+    );
+    expect(new Set(tiers)).toEqual(new Set([String(s.tier)]));
+    await forceToss(page, 1);
+    await waitPieces(page, 5);
+    await page.waitForTimeout(SETTLE_MS);
+    const before = (await tossState(page)).score;
+    await page
+      .locator('[data-testid="chicken-piece"][data-level="2"]')
+      .first()
+      .evaluate((el) => (el as HTMLElement).click());
+    expect((await tossState(page)).score).toBe(before + 1);
+  });
+
+  test('pieces wander then merge back into one', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await forceToss(page);
+    await waitPieces(page, 3);
+    await page.waitForTimeout(SETTLE_MS);
+    await reformFully(page);
+    const s = await tossState(page);
+    expect(s.splitLevels).toEqual([]);
+    expect(s.bandaid).toBeNull();
+    await expect(page.getByTestId('chicken')).toHaveCSS('visibility', 'visible');
+  });
+
+  test('a bandaid appears only after a full 3-level split and reform', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await splitTo(page, 3);
+    await reformFully(page);
+    const s = await tossState(page);
+    expect(s.bandaid).toBe(3);
+    await expect(page.getByTestId('wound-line')).toBeVisible();
+    await expect(page.getByTestId('bandaid')).toHaveAttribute('data-hp', '3');
+  });
+
+  test('a bandaided chicken takes 3 tosses; the third splits it and leaks rainbow', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await tossCall(page, 'forceBandaid');
+    await expect(page.getByTestId('bandaid')).toBeVisible();
+    if (TOSS_SHOT_DIR) await page.screenshot({ path: `${TOSS_SHOT_DIR}/bandaid.png` });
+    for (const expected of [2, 1]) {
+      await forceToss(page);
+      await page.waitForFunction(
+        () => !(window as unknown as { __chicken: TossBridge }).__chicken.state().rootSplit,
+        undefined,
+        { timeout: 5000 }
+      );
+      const s = await tossState(page);
+      expect(s.bandaid).toBe(expected);
+      expect(s.pieces).toBe(0);
+    }
+    await forceToss(page);
+    await waitPieces(page, 3);
+    const s = await tossState(page);
+    expect(s.bandaid).toBe(0);
+    expect(s.woundOpen).toBe(true);
+    expect(s.drops).toBeGreaterThan(0);
+    await page.waitForFunction(
+      () => (window as unknown as { __chicken: TossBridge }).__chicken.state().pools > 0,
+      undefined,
+      { timeout: 5000 }
+    );
+    const pools = (await tossState(page)).pools;
+    expect(pools).toBeLessThanOrEqual(24);
+    if (TOSS_SHOT_DIR) {
+      await page.waitForTimeout(2200);
+      await page.screenshot({ path: `${TOSS_SHOT_DIR}/pools.png` });
+    }
+    await page.waitForTimeout(3000);
+    await page.evaluate(() => (window as unknown as { __chicken: TossBridge }).__chicken.fastForward(10_000));
+    await page.waitForFunction(
+      () => (window as unknown as { __chicken: TossBridge }).__chicken.state().pools === 0,
+      undefined,
+      { timeout: 3000 }
+    );
+  });
+
+  test('27 chickens keep the frame time healthy', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await splitTo(page, 3);
+    const p95 = await page.evaluate(
+      () =>
+        new Promise<number>((resolve) => {
+          const deltas: number[] = [];
+          let last = performance.now();
+          const end = last + 2000;
+          const step = (t: number) => {
+            deltas.push(t - last);
+            last = t;
+            if (t < end) requestAnimationFrame(step);
+            else {
+              deltas.sort((a, b) => a - b);
+              resolve(deltas[Math.floor(deltas.length * 0.95)]);
+            }
+          };
+          requestAnimationFrame(step);
+        })
+    );
+    expect(p95).toBeLessThan(PERF_P95_MAX_MS);
+  });
+
+  test('screenshot: mid-air ragdoll', async ({ page }) => {
+    test.skip(!TOSS_SHOT_DIR, 'TOSS_SHOT_DIR not set');
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: TossBridge }).__chicken.holdMsOverride(300));
+    const c = await chickenCenter(page);
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    await page.waitForTimeout(500);
+    await page.mouse.move(c.x + 250, c.y - 250, { steps: 10 });
+    await page.mouse.move(c.x + 330, c.y - 260, { steps: 3 });
+    await page.screenshot({ path: `${TOSS_SHOT_DIR}/ragdoll-held.png` });
+    await page.mouse.up();
+    await page.waitForTimeout(140);
+    await page.screenshot({ path: `${TOSS_SHOT_DIR}/ragdoll-flight.png` });
+  });
+});
