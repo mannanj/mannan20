@@ -124,3 +124,27 @@ color/palette but reads as the same molded rubber toy (matte→glossy material, 
 **Keep all special energy effects** — flame aura, lightning shroud, evolution flash/shards, teleport
 streaks stay exactly as they are; only the bird's body rendering changes. The squash-on-click system
 (task-234) already moves like rubber — this is the visual skin to match it.
+
+## Ability orbs and the hawk (designed 2026-11-02)
+
+- [Ability orbs: Multiply x3, Cursor x5, Cursor x3](chicken-game-ability-orbs.md) — task-304.
+- [Hawk event at 2000 points](chicken-game-hawk.md) — task-305.
+- Raw source: [chicken-game-toss-orbs-hawk-raw.md](chicken-game-toss-orbs-hawk-raw.md).
+
+## Hold-to-toss, split & bandaid (Task 303)
+
+Hold a chicken 1.5s to grab it, release to toss it with ragdoll motion; each toss splits it into 3 (3 levels, up to 27
+chickens), pieces wander then merge back, and a chicken that fully reformed after 3 splits wears a wound + bandaid that
+takes 3 tosses to destroy before rainbow leaks and pools. Every squeeze scores 1 regardless of size. Design:
+[chicken-game-toss-split.md](chicken-game-toss-split.md), tasks: `tasks/task-303.md`.
+
+## Follow-up: hawk aftermath, eagle, phoenix, inventory, skins (designed 2026-11-02)
+
+- [Hawk event, aftermath, feather and hawk skin x1.25](chicken-game-hawk.md#aftermath-follow-up-2026-11-02-supersedes-the-old-releaseexit) — task-305.
+- [Bald eagle (10000, x2 skin) and phoenix (heat, permanent char)](chicken-game-eagle-phoenix.md) — task-307.
+- [Shared inventory bag (extracted from the garden) and game items](chicken-game-inventory.md) — task-308.
+- Pause, deferred on purpose (separate item, separate leaderboard): `tasks/task-306.md`.
+
+## Follow-up: cosmos, Jupiter, Martians (designed 2026-11-02)
+
+- [Cosmos journey from 10,000, Jupiter with imaginary ground, Martian friends (100 clicks -> item + x3 skin)](chicken-game-cosmos-jupiter.md) — task-310. Raw: [chicken-game-toss-orbs-hawk-raw.md](chicken-game-toss-orbs-hawk-raw.md).

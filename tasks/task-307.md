@@ -1,0 +1,12 @@
+### Task 307: Chicken Game — Bald eagle & phoenix
+- [ ] Generalize the hawk state machine into `BirdEvent` driven by `BIRDS` config (trigger score, clicks per talon, focal offset, feather, skin id, multiplier); queue bird events in order
+- [ ] `eagle-svg.tsx`, bald eagle event at 10000 (50 clicks per talon), departure to the up-right focal point, eagle feather drop after 25+ clicks
+- [ ] Eagle skin (`bodyShape: 'eagle'`, x2) via feather in the bag
+- [ ] `phoenix-svg.tsx`, phoenix event at the proposed 25000 (100 clicks per talon; threshold is OPEN), departure to the top-left focal point
+- [ ] Phoenix talon 1: looping sizzle (source a CC0 clip, upload with `scripts/upload-chicken-sounds.mjs`), sweating chicken face (`distress` prop on `chicken-svg.tsx`), sweat drops, mild steam
+- [ ] Phoenix talon 2: heat pulses every 5 taps, warm flash (capped opacity), bare-skin circle with darkening burn stages, toasted feather particles collectible to the bag (cap 10)
+- [ ] Permanent char: store per skin id in `localStorage['chicken-skin-char-v1']`, render under translucent feathers, regrow animation after release
+- [ ] Resolve open questions in `docs/chicken-game-eagle-phoenix.md` (threshold, toasted feather use, phoenix feather, char removal)
+- [ ] Bridge hooks: `forceBird`, `setScore`, `state().bird`
+- [ ] Playwright `e2e/eagle-phoenix.spec.ts` per the plan in `docs/chicken-game-eagle-phoenix.md`
+- Location: `src/components/game/chicken-game.tsx`, `src/components/game/eagle-svg.tsx`, `src/components/game/phoenix-svg.tsx`, `src/components/game/chicken-svg.tsx`, `src/components/game/chicken-skins.ts`, `src/lib/chicken-audio.ts`, `public/sounds/chicken/`, `src/app/globals.css`, `e2e/eagle-phoenix.spec.ts`, spec `docs/chicken-game-eagle-phoenix.md`

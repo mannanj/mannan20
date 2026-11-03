@@ -1,0 +1,16 @@
+### Task 305: Chicken Game — Hawk event at 2000 points (+ aftermath, feather, hawk skin)
+- [ ] Choose scream source (see candidates in `docs/chicken-game-hawk.md`), trim, add to `public/sounds/chicken/`, run `scripts/upload-chicken-sounds.mjs`
+- [ ] `chicken-audio.ts`: `HAWKS` def, `playHawk()` with voice pool, `SoundEvent` type, loader progress
+- [ ] `hawk-svg.tsx`: facing-viewer pose, front right talon, staggered left talon, hit areas, `data-look` head turn
+- [ ] `tap-cursor-icon.tsx` adapted from `/Users/manblack/Documents/sun/frontend/app/components/RightClickHint.tsx`
+- [ ] Hawk state machine (approach, grab, right, recoil, left, release, hover, depart, recede), clamped intercept, joint drift, event suppression in `animate`
+- [ ] Hints: 10s red X + arrow + tapping cursor, left talon label after 30s more
+- [ ] Look at player every 5 taps on the 2nd talon and once on release
+- [ ] Pre-hawk snapshot/restore (speed, heat, velocity, facing, mode); `calm` mode with `HAWK_CALM_MS` and 25 free clicks (resolve Q9 first)
+- [ ] Departure: flaps every 2s, depart at 5s, multi-flap at 6s, recede into focal point (center) over ~10s via the shared `birdDeparture`
+- [ ] Easter egg: 25 clicks on the receding hawk drops a full-size hawk feather that falls and is picked up (flies to the bag, see task-308)
+- [ ] Float score accumulator + `skinMultRef` in `awardClick`; floor for display, thresholds and leaderboard submit
+- [ ] `bodyShape`/`multiplier` fields on `ChickenSkin`, hawk body paths in `chicken-svg.tsx`, `hawk` skin x1.25, unlocked-skins localStorage
+- [ ] Bridge hooks: `forceHawk`, `setScore`, `placeChicken`, `state().hawk` (incl. snapshot, phase), `giveItem`
+- [ ] Playwright `e2e/hawk.spec.ts` per the plan in `docs/chicken-game-hawk.md`
+- Location: `src/components/game/chicken-game.tsx`, `src/components/game/hawk-svg.tsx`, `src/components/game/tap-cursor-icon.tsx`, `src/components/game/chicken-skins.ts`, `src/components/game/chicken-svg.tsx`, `src/lib/chicken-audio.ts`, `public/sounds/chicken/`, `e2e/hawk.spec.ts`, spec `docs/chicken-game-hawk.md`

@@ -1,0 +1,15 @@
+### Task 303: Chicken Game — Hold-to-toss, ragdoll, split & bandaid
+- [ ] Design doc `docs/chicken-game-toss-split.md` (done; resolve its open questions with Mannan before building)
+- [ ] `src/components/game/chicken-split.ts`: types, named constants, pure helpers (ragdoll/toss step, split fan, centroid, peel stage)
+- [ ] Hold detection: replace root `onClick={hit}` with pointer handlers; 1.5s hold, grace/slack, size-based held drift; quick click still squeezes for 1
+- [ ] `hold-toss-hud.tsx`: "hold to toss" label + count-up bar near cursor
+- [ ] Ragdoll held dangle + toss flight (gravity, drag, bounces, spin, squash on impact) via CSS custom props on existing squash layers
+- [ ] Split into 3 on impact, 3 levels max; pieces tuned by size, same tier/skin; `chicks` state + motion refs modeled on kids
+- [ ] Group merge/reform cascade to the root; gate root-only systems while `rootSplitRef` is set
+- [ ] `ChickenSvg` wound + bandaid (peel stages) and `globals.css` peel/flash keyframes
+- [ ] Bandaid rules: appears after 3-level split + reform; 3 tosses to destroy; rainbow burst + leak
+- [ ] `chicken-effects.ts`: rainbow drops and ground pools (cap, fade, cached gradients)
+- [ ] `hit(e, id)`: pieces score 1, no hyper/teleport bonuses; toss itself scores 0
+- [ ] Extend `window.__chicken` bridge (state fields + forcers) and write the Playwright cases in the design doc; perf check at 27 chickens
+- [ ] Update `docs/chicken-game-logic.md`; run `bun run mcp:build` only if site content changes (it should not)
+- Location: `src/components/game/chicken-game.tsx`, `src/components/game/chicken-split.ts`, `src/components/game/chicken-effects.ts`, `src/components/game/chicken-svg.tsx`, `src/components/game/hold-toss-hud.tsx`, `src/app/globals.css`, `e2e/chicken-game.spec.ts`, `docs/chicken-game-toss-split.md`

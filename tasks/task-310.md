@@ -1,0 +1,11 @@
+### Task 310: Chicken Game — Cosmos journey, Jupiter & Martians
+- [ ] Resolve open questions in `docs/chicken-game-cosmos-jupiter.md` (eagle order, Martian click scoring, x3 vs phoenix, band widths) before building
+- [ ] Extend `EscapeStage` with `cosmos` and `jupiter`, add thresholds (10,000 gated by the eagle latch, 17,000), and `cosmosProgress(score)`
+- [ ] `CosmosSky` in `escape-scenery.tsx`: Earth orbit, Moon, Mars (Phobos/Deimos), asteroid belt, Jupiter approach; parallax via `--cosmos-p`, no new dependencies, no SVG filters
+- [ ] `JupiterGround` ("Cloud Meadow", imaginary solid ground) with background Martians, tripod silhouettes and a drifting saucer
+- [ ] Original Martian art (Pip, Moss, Zap) as SVG, with idle animations and entrances
+- [ ] Foreground Martian friends: spawn cadence and cap, click counter (100, persisted), progress ring, reward flies to the bag as `martian-token`
+- [ ] `martian` skin with x3 multiplier (one skin worn at a time), bag action to wear it
+- [ ] Performance: stay in the `tasks/task-309.md` budgets; unmount `GameScenery` in escape stages
+- [ ] Playwright `e2e/chicken-cosmos.spec.ts` using `window.__chicken.boost` and `state().stage`
+- Location: `src/components/game/escape-stages.ts`, `src/components/game/escape-scenery.tsx`, `src/components/game/chicken-game.tsx`, `e2e/`, `docs/chicken-game-cosmos-jupiter.md`
