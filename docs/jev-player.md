@@ -18,7 +18,7 @@ Two requests stay in flight (about 120 ms each). The player aims ahead using the
 ## Run it
 
 ```sh
-TYPESAFE_API_KEY=$(security find-generic-password -a "$USER" -s typesafe-chicken-game -w) PLAY_MINUTES=4 node scripts/jev-player.mjs
+TYPESAFE_API_KEY=$(security find-generic-password -a "$USER" -s typesafe-chicken-game -w) PLAY_MINUTES=4 node scripts/jev/player.mjs
 ```
 
 - Env options: `GAME_URL` (default `https://mannan.is/game?variant=2`), `SUBMIT_SCORE=0` to skip posting, `FORCE_BOARD_EVERY_S=12` to test closing the leaderboard (needs the v2 `openSheet` hook), `OUT_DIR` (default `~/Desktop`).

@@ -86,3 +86,12 @@ Fire waves and sweat are CSS transform/opacity only. Max alive: 12 toasted feath
 4. Can the permanent char ever be removed?
 5. Should the phoenix's sizzle/heat obey a "reduce effects" accessibility setting? (Recommended yes: flashes are capped and low opacity regardless.)
 6. Eagle/phoenix art and sounds: SVG hand-drawn vs assets; scream source.
+
+## Art direction (Mannan, 2026-11-02) — PHOTOREALISTIC birds, not cartoons
+
+Mannan rejected cartoon/SVG birds. The hawk (red-tailed hawk), bald eagle and phoenix must look photo-real:
+- Source **real photographs** with a license that allows use on a public site: Wikimedia Commons (CC0 / CC BY / CC BY-SA, with attribution recorded), Unsplash, or Pexels. Mannan's references: a red-tailed hawk banking with wings spread (dorsal view, rufous tail fanned), the same bird soaring head-on with wings fully spread and talons tucked, and a perched hawk side view.
+- Cut each bird out to a transparent PNG/WebP locally (e.g. `rembg` in a uv venv), and clean the edges. Store under `public/game/birds/` and record source URL, author and license in `docs/chicken-sounds-sources.md`, or a new `docs/chicken-art-sources.md`.
+- Needed poses: (1) wings spread, approaching head-on (fly-in); (2) wings up, legs/talons extended forward (grab / landing pose: the game composites the chicken between the talons, with the right talon in front); (3) a small soaring silhouette for fly-off; (4) wing-flap frames, from 2–3 photos or a subtle CSS skew/rotate of the wing region.
+- Animate with transforms only (position, scale, rotate, slight skew for flaps); never redraw the bird as vector art. Talon hit areas are invisible ellipses placed over the photo's talons.
+- Phoenix: there is no real photo, so composite a real raptor photo with real fire/ember footage or photo layers (blend modes, glow) so it reads photo-real, not cartoon.

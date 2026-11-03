@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import os from 'node:os';
 
 const API = 'https://api.typesafe.ai/v1/systemone';
@@ -33,6 +34,9 @@ const SCENES = {
   moon: 'a grey moon surface under a black starry sky',
 };
 const ERROR_BACKOFF_MS = 1000;
+const STOP_TAIL_MS = 1500;
+const START_SETTLE_MS = 600;
+const STOP_POLL_MS = 200;
 const AUDIO_TIMESLICE_MS = 1000;
 
 const AUDIO_TAP = `(() => {
@@ -207,7 +211,15 @@ function iou(a, b) {
   return inter / (a.w * a.h + b.width * b.height - inter || 1);
 }
 
-async function main() {
+export async function play(opts = {}) {
+  const url = opts.url ?? URL_;
+  const minutes = opts.seconds ? opts.seconds / 60 : MINUTES;
+  const submit = opts.submit ?? SUBMIT;
+  const outDir = opts.outDir ?? OUT_DIR;
+  const label = opts.label ?? 'jev-plays-chicken';
+  const forceBoardEvery = opts.forceBoardEverySeconds ?? FORCE_BOARD_EVERY_S;
+  const tailMs = opts.tailMs ?? STOP_TAIL_MS;
+  mkdirSync(outDir, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const videoDir = path.join(os.tmpdir(), `jev-video-${stamp}`);
   mkdirSync(videoDir, { recursive: true });
@@ -218,12 +230,13 @@ async function main() {
   const page = await context.newPage();
   const savedOwner = readOwner();
   if (savedOwner) {
-    await context.addCookies([{ name: OWNER_COOKIE, value: savedOwner, url: new URL(URL_).origin }]);
+    await context.addCookies([{ name: OWNER_COOKIE, value: savedOwner, url: new URL(url).origin }]);
   }
-  await page.goto(URL_);
+  await page.goto(url);
   await page.waitForFunction(() => window.__chicken !== undefined, null, { timeout: 90_000 });
   await page.waitForSelector('[data-testid="chicken-loader"]', { state: 'detached', timeout: 30_000 }).catch(() => {});
   await overlay(page);
+  if (opts.setup) await opts.setup(page);
   await page.mouse.move(PARK.x, PARK.y);
 
   const track = [];
@@ -231,15 +244,18 @@ async function main() {
     requests: 0, errors: 0, clicks: 0, latency: [], ious: [], stagesSeen: new Set(), scene: '',
     boardForced: 0, boardSeen: 0, boardClosed: 0, boardMisses: 0, boardOpenedAt: 0, boardCloseMs: [],
   };
-  const forceTimer = FORCE_BOARD_EVERY_S > 0
+  const forceTimer = forceBoardEvery > 0
     ? setInterval(async () => {
         stats.boardForced++;
         stats.boardOpenedAt = Date.now();
         await page.evaluate(() => window.__chicken.openSheet?.()).catch(() => {});
-      }, FORCE_BOARD_EVERY_S * 1000)
+      }, forceBoardEvery * 1000)
     : null;
+  await page.waitForTimeout(START_SETTLE_MS);
+  const startScore = (await page.evaluate(() => window.__chicken.state().score)) ?? 0;
   const start = Date.now();
-  const deadline = start + MINUTES * 60_000;
+  const deadline = start + minutes * 60_000;
+  let stopReason = 'time';
   let lastBox = null;
   let inFlight = 0;
   let stopping = false;
@@ -343,14 +359,27 @@ async function main() {
       hud: [
         `JEV plays the chicken game  (${MODEL})`,
         `score ${s.score}   stage ${s.stage ?? 'classic'}   tier ${s.tier}`,
-        `clicks ${stats.clicks}   hit rate ${((s.score / Math.max(1, stats.clicks)) * 100).toFixed(0)}%`,
+        `clicks ${stats.clicks}   hit rate ${(((s.score - startScore) / Math.max(1, stats.clicks)) * 100).toFixed(0)}%`,
         `jev latency ${mean(stats.latency.slice(-20)).toFixed(0)} ms   box IoU ${mean(stats.ious.slice(-20)).toFixed(2)}`,
         `jev sees: ${stats.scene || '...'}`,
-        `time ${((Date.now() - start) / 1000).toFixed(0)}s / ${MINUTES * 60}s`,
+        `${opts.title ? `clip: ${opts.title}   ` : ''}time ${((Date.now() - start) / 1000).toFixed(0)}s / ${Math.round(minutes * 60)}s`,
       ].join('\n'),
     });
   }
 
+  const stopTimer = opts.stopWhen
+    ? setInterval(async () => {
+        if (stopping) return;
+        const s = await state().catch(() => null);
+        if (s && opts.stopWhen(s, stats)) {
+          stopReason = 'condition';
+          clearInterval(stopTimer);
+          setTimeout(() => {
+            stopping = true;
+          }, tailMs);
+        }
+      }, STOP_POLL_MS)
+    : null;
   await new Promise((resolve) => {
     const pump = () => {
       if (Date.now() > deadline) stopping = true;
@@ -376,9 +405,10 @@ async function main() {
   });
 
   if (forceTimer) clearInterval(forceTimer);
+  if (stopTimer) clearInterval(stopTimer);
   const final = await state();
   let submitted = null;
-  if (SUBMIT && final.score >= 1) {
+  if (submit && final.score >= 1) {
     submitted = await page.evaluate(
       async ({ name, score }) => {
         const r = await fetch('/api/game/leaderboard', {
@@ -402,7 +432,7 @@ async function main() {
   await browser.close();
 
   const webm = readdirSync(videoDir).find((f) => f.endsWith('.webm'));
-  const mp4 = path.join(OUT_DIR, `jev-plays-chicken-${stamp}.mp4`);
+  const mp4 = path.join(outDir, `${label}-${stamp}.mp4`);
   if (webm) {
     const video = ['-i', path.join(videoDir, webm)];
     const sound = audio ? ['-itsoffset', String(Math.max(0, (audio.startedAt - videoStartedAt) / 1000)), '-i', audioPath] : [];
@@ -411,14 +441,16 @@ async function main() {
   }
   const mean = (xs) => (xs.length ? xs.reduce((p, c) => p + c, 0) / xs.length : 0);
   const report = {
-    url: URL_,
+    url,
+    stopReason,
     model: MODEL,
-    minutes: MINUTES,
+    seconds: Math.round((Date.now() - start) / 1000),
     score: final.score,
     stage: final.stage ?? null,
     stagesSeen: [...stats.stagesSeen],
     clicks: stats.clicks,
-    hitRate: +(final.score / Math.max(1, stats.clicks)).toFixed(3),
+    startScore,
+    hitRate: +((final.score - startScore) / Math.max(1, stats.clicks)).toFixed(3),
     requests: stats.requests,
     errors: stats.errors,
     meanLatencyMs: Math.round(mean(stats.latency)),
@@ -435,9 +467,12 @@ async function main() {
   };
   writeFileSync(mp4.replace(/\.mp4$/, '.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
+  return report;
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  play().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

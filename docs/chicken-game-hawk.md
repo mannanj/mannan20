@@ -188,3 +188,32 @@ Via `__chicken` bridge: `setScore(1999)`, `forceHawk()`, `state().hawk`.
 12. If the player already owns the hawk skin, does the feather still spawn (stackable curio) or not?
 13. Cap combined multiplier (skin x orbs)?
 14. Separate leaderboard (or tag) per skin multiplier? Server has no score validation, so tagging is trust-based.
+
+## Art direction (Mannan, 2026-11-02) — PHOTOREALISTIC birds, not cartoons
+
+Mannan rejected cartoon/SVG birds. The hawk (red-tailed hawk), bald eagle and phoenix must look photo-real:
+- Source **real photographs** with a license that allows use on a public site: Wikimedia Commons (CC0 / CC BY / CC BY-SA, with attribution recorded), Unsplash, or Pexels. Mannan's references: a red-tailed hawk banking with wings spread (dorsal view, rufous tail fanned), the same bird soaring head-on with wings fully spread and talons tucked, and a perched hawk side view.
+- Cut each bird out to a transparent PNG/WebP locally (e.g. `rembg` in a uv venv), and clean the edges. Store under `public/game/birds/` and record source URL, author and license in `docs/chicken-sounds-sources.md`, or a new `docs/chicken-art-sources.md`.
+- Needed poses: (1) wings spread, approaching head-on (fly-in); (2) wings up, legs/talons extended forward (grab / landing pose: the game composites the chicken between the talons, with the right talon in front); (3) a small soaring silhouette for fly-off; (4) wing-flap frames, from 2–3 photos or a subtle CSS skew/rotate of the wing region.
+- Animate with transforms only (position, scale, rotate, slight skew for flaps); never redraw the bird as vector art. Talon hit areas are invisible ellipses placed over the photo's talons.
+- Phoenix: there is no real photo, so composite a real raptor photo with real fire/ember footage or photo layers (blend modes, glow) so it reads photo-real, not cartoon.
+
+## Grab positioning — Mannan's words (verbatim) and the acceptance checklist
+
+> "after 2000 points have a flying hawk come in and come to and grab your chicken, in its claws. have it stop at the point at which it intercepted the chicken, but make sure the spot is one where the chicken and hawk are fully visible on screen. i imagine the hawk coming in and grabbing and orienting itself to our view by being facing us its body facing bottom right, its right claw in the front and prominently visible, its left [claw] also visible but a bit staggered and behind the front right claw. its target and point of focus is the chicken."
+
+The first concept mockup (2026-11-02) failed every point: the hawk was perched on the rocket, square to the camera, both claws identical, chicken not gripped, overlapping the score. The composition must pass ALL of these, checked on a screenshot before it is shown to Mannan:
+
+1. **Intercept point**: the hawk flies in, meets the chicken where the chicken is, and stops there. It does not teleport or move to a preset spot. The stop point is then nudged only as much as needed so the whole hawk and the whole chicken are inside the viewport, with a margin, and clear of the score/label block at top center.
+2. **Gripped**: the chicken is held IN the talons, hanging just below and in front of the hawk's body. Any vehicle is gone or set aside, so the chicken itself is what's gripped and is fully visible.
+3. **Facing us**: three-quarter view, chest toward the viewer; NOT a profile and NOT a symmetric front-on spread.
+4. **Body toward bottom-right**: the body axis tilts down-right, about 30–40° from vertical, head upper-left, tail lower-right of the body.
+5. **Right claw in front, prominent**: the bird's right talon is nearest the viewer, larger, and drawn IN FRONT of the chicken, wrapped around it.
+6. **Left claw staggered behind**: the left talon is also visible, but offset up and behind the right one, partly behind the chicken (layered behind it).
+7. **Focus on the chicken**: the head and gaze point down at the chicken.
+8. **Layering**: wings and body behind; then the left talon; then the chicken; then the right talon on top.
+9. **Same composition** for the bald eagle and the phoenix.
+10. **Photoreal** (see Art direction): real cut-out photos, transformed, never vector cartoons.
+11. **Hint X on the claw itself**: the red X is drawn ON the target talon (the front-right one first, the back-left one second), anchored to it and moving with it every frame. It is never a fixed screen position beside the bird. (Mockup failure: the X floated beside the rocket, away from both claws.)
+12. **Arrow to that claw**: the arrow's head touches the X / target talon and follows it as the bird moves. The tapping-cursor icon sits at the arrow's tail, and the "click the claw" label (after 30s) sits next to the arrow, not covering the bird or the chicken.
+13. **Counter**: the claw counter ("front claw 3 / 25") is attached near the target talon, not at a random offset.
