@@ -148,3 +148,9 @@ takes 3 tosses to destroy before rainbow leaks and pools. Every squeeze scores 1
 ## Follow-up: cosmos, Jupiter, Martians (designed 2026-11-02)
 
 - [Cosmos journey from 10,000, Jupiter with imaginary ground, Martian friends (100 clicks -> item + x3 skin)](chicken-game-cosmos-jupiter.md) — task-310. Raw: [chicken-game-toss-orbs-hawk-raw.md](chicken-game-toss-orbs-hawk-raw.md).
+
+## Art direction for all new v2 features (Mannan, 2026-11-02)
+
+> "try to make the exposions look realistic too of th eplane real fires and stuff thanks" — "same for our other features thanks"
+
+Effects in every new feature are **photo-real**, not cartoon: the plane explosion, rocket exhaust and smoke, phoenix fire and heat shimmer, toasted feathers, black holes, rainbow-water pools, sweat, and the cosmos/Jupiter scenery and Martians. Use photographic sprite frames (licensed footage, or AI-generated and green-screen keyed via `scripts/birds/key.mjs`), with additive/screen blending, real smoke and ember particles, and lighting that matches the scene. Record every asset's source and cost in `docs/chicken-art-sources.md`. The chicken itself stays the existing rubber-chicken art. Existing shipped v2 effects that read as cartoon (rocket flame, black holes, rainbow pools, explosion debris) go on a polish pass after the feature chain.
