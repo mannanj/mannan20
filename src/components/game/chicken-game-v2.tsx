@@ -25,16 +25,52 @@ import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import {
   drawFeather,
+  drawBlackHoles,
   drawPortals,
   drawStreaks,
   makeFeather,
   makeTeleportStreaks,
   updateFeather,
+  type BlackHole,
   type Feather,
   type Portal,
   type PortalSide,
   type Streak,
 } from './chicken-effects';
+import {
+  BLACK_HOLE_LIFE_MS,
+  BLACK_HOLE_RADIUS,
+  CLONE_DRIFT_SPEED,
+  CLONE_SPAWN_SPREAD,
+  CURSOR_BUFF_MS,
+  CURSOR_EXTEND_PER_CLICK_MS,
+  CURSOR_HAND_HOT_X,
+  CURSOR_HAND_HOT_Y,
+  CURSOR_HAND_SIZE,
+  MAX_CHICKENS_ON_SCREEN,
+  MULTIPLY_BLINK_START_MS,
+  MULTIPLY_DURATION_MS,
+  MULTIPLY_FACTOR,
+  MULTIPLY_VANISH_EARLIEST_MS,
+  ORB_COLLECT_SHARDS,
+  ORB_DRIFT_SPEED,
+  ORB_FADE_MS,
+  ORB_LABELS,
+  ORB_LIFETIME_MS,
+  ORB_RADIUS,
+  ORB_SHARD_COLORS,
+  ORB_SPAWN_MARGIN,
+  ORB_THRESHOLDS,
+  ORB_WOBBLE_AMPLITUDE,
+  ORB_WOBBLE_FREQUENCY,
+  VANISH_FEATHERS,
+  buildCursorOffsets,
+  crossedOrbs,
+  pointInCircle,
+  pointInRect,
+  type CursorOffset,
+  type OrbKind,
+} from './chicken-orbs';
 import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, skinById } from './chicken-skins';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
@@ -325,6 +361,49 @@ interface KidMotion {
   mergeAt: number;
 }
 
+interface Orb {
+  id: number;
+  kind: OrbKind;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  bornAt: number;
+  phase: number;
+}
+
+interface CloneMotion {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  w: number;
+  h: number;
+  big: boolean;
+  tier: number;
+  vanishAt: number;
+  blinking: boolean;
+}
+
+interface CloneView {
+  id: number;
+  big: boolean;
+  tier: number;
+}
+
+interface OrbView {
+  id: number;
+  kind: OrbKind;
+}
+
+interface OrbSnapshot {
+  id: number;
+  kind: OrbKind;
+  label: string;
+  x: number;
+  y: number;
+}
+
 interface ScrambleState {
   phase: 'idle' | 'running';
   until: number;
@@ -396,6 +475,14 @@ interface ChickenStateSnapshot {
   bend: number;
   stage: EscapeStage;
   stagePhase: StagePhase;
+  orbs: OrbSnapshot[];
+  clones: number;
+  clonesBlinking: number;
+  vanished: number;
+  chickens: number;
+  cursors: number;
+  cursorOffsets: CursorOffset[];
+  cursorBuffMs: { x5: number; x3: number };
 }
 
 interface ChickenBridge {
@@ -412,6 +499,10 @@ interface ChickenBridge {
   forceVisit: () => void;
   forceMerge: () => void;
   openSheet: () => void;
+  setScore: (n: number) => void;
+  forceOrb: (kind: OrbKind) => void;
+  collectOrb: (kind: OrbKind) => void;
+  fastForward: (ms: number) => void;
 }
 
 interface BridgeWindow {
@@ -691,6 +782,24 @@ function ChickenGameInner() {
   const kidMotionRef = useRef(new Map<number, KidMotion>());
   const kidElsRef = useRef(new Map<number, HTMLDivElement>());
   const kidsCountRef = useRef(0);
+  const [orbViews, setOrbViews] = useState<OrbView[]>([]);
+  const [cloneViews, setCloneViews] = useState<CloneView[]>([]);
+  const [overlayOffsets, setOverlayOffsets] = useState<CursorOffset[]>([]);
+  const orbsRef = useRef<Orb[]>([]);
+  const orbElsRef = useRef(new Map<number, HTMLDivElement>());
+  const orbIdRef = useRef(0);
+  const orbFiredRef = useRef<Record<OrbKind, boolean>>({ multiply: false, cursor5: false, cursor3: false });
+  const cloneMotionRef = useRef(new Map<number, CloneMotion>());
+  const cloneElsRef = useRef(new Map<number, HTMLDivElement>());
+  const cloneIdRef = useRef(0);
+  const multiplyStartRef = useRef(0);
+  const vanishedRef = useRef(0);
+  const blackHolesRef = useRef<BlackHole[]>([]);
+  const cursorBuffRef = useRef({ x5Until: 0, x3Until: 0 });
+  const cursorOffsetsRef = useRef<CursorOffset[]>([{ dx: 0, dy: 0 }]);
+  const cursorKeyRef = useRef('00');
+  const cursorElsRef = useRef<HTMLDivElement[]>([]);
+  const cursorLayerRef = useRef<HTMLDivElement>(null);
   const chickenElRef = useRef<HTMLDivElement>(null);
   const facingElRef = useRef<HTMLDivElement>(null);
   const rubberElRef = useRef<HTMLDivElement>(null);
@@ -1009,8 +1118,198 @@ function ChickenGameInner() {
     setSheet((s) => (s === null ? s : null));
   }, []);
 
+  const removeOrb = useCallback((id: number) => {
+    orbsRef.current = orbsRef.current.filter((o) => o.id !== id);
+    orbElsRef.current.delete(id);
+    setOrbViews((v) => v.filter((o) => o.id !== id));
+  }, []);
+
+  const spawnOrb = useCallback((kind: OrbKind) => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const edge = Math.floor(Math.random() * 4);
+    const along = Math.random();
+    const x = edge === 0 ? ORB_SPAWN_MARGIN : edge === 1 ? vw - ORB_SPAWN_MARGIN : ORB_SPAWN_MARGIN + along * (vw - 2 * ORB_SPAWN_MARGIN);
+    const y = edge === 2 ? ORB_SPAWN_MARGIN : edge === 3 ? vh - ORB_SPAWN_MARGIN : ORB_SPAWN_MARGIN + along * (vh - 2 * ORB_SPAWN_MARGIN);
+    const heading = Math.atan2(vh / 2 - y, vw / 2 - x) + (Math.random() - 0.5) * 1.2;
+    const id = ++orbIdRef.current;
+    orbsRef.current.push({
+      id,
+      kind,
+      x,
+      y,
+      vx: Math.cos(heading) * ORB_DRIFT_SPEED,
+      vy: Math.sin(heading) * ORB_DRIFT_SPEED,
+      bornAt: performance.now(),
+      phase: Math.random() * Math.PI * 2,
+    });
+    setOrbViews((v) => [...v, { id, kind }]);
+  }, []);
+
+  const checkOrbSchedule = useCallback(
+    (prev: number, next: number) => {
+      for (const kind of crossedOrbs(prev, next, orbFiredRef.current)) {
+        orbFiredRef.current[kind] = true;
+        spawnOrb(kind);
+      }
+    },
+    [spawnOrb]
+  );
+
+  const removeClone = useCallback((id: number) => {
+    cloneMotionRef.current.delete(id);
+    cloneElsRef.current.delete(id);
+    setCloneViews((v) => v.filter((c) => c.id !== id));
+  }, []);
+
+  const applyMultiply = useCallback((now: number) => {
+    const p = physicsRef.current;
+    const vh = window.innerHeight;
+    const kidY = groundYFor(vh) - KID_H;
+    const sources: { x: number; y: number; big: boolean; tier: number }[] = [
+      { x: p.x, y: p.y, big: true, tier: tierRef.current },
+    ];
+    for (const motion of kidMotionRef.current.values()) {
+      sources.push({ x: motion.x, y: kidY, big: false, tier: Math.floor(Math.random() * (tierRef.current + 1)) });
+    }
+    for (const motion of cloneMotionRef.current.values()) {
+      sources.push({ x: motion.x, y: motion.y, big: motion.big, tier: motion.tier });
+    }
+    let total = sources.length;
+    const added: CloneView[] = [];
+    for (const src of sources) {
+      for (let i = 0; i < MULTIPLY_FACTOR - 1 && total < MAX_CHICKENS_ON_SCREEN; i++) {
+        const id = ++cloneIdRef.current;
+        const angle = Math.random() * Math.PI * 2;
+        cloneMotionRef.current.set(id, {
+          x: src.x + (Math.random() - 0.5) * CLONE_SPAWN_SPREAD,
+          y: src.y + (Math.random() - 0.5) * CLONE_SPAWN_SPREAD,
+          vx: Math.cos(angle) * CLONE_DRIFT_SPEED,
+          vy: Math.sin(angle) * CLONE_DRIFT_SPEED,
+          w: src.big ? CHICKEN_W : KID_W,
+          h: src.big ? CHICKEN_H : KID_H,
+          big: src.big,
+          tier: src.tier,
+          vanishAt: 0,
+          blinking: false,
+        });
+        added.push({ id, big: src.big, tier: src.tier });
+        total++;
+      }
+    }
+    multiplyStartRef.current = now;
+    for (const motion of cloneMotionRef.current.values()) {
+      motion.blinking = false;
+      motion.vanishAt =
+        now + MULTIPLY_VANISH_EARLIEST_MS + Math.random() * (MULTIPLY_DURATION_MS - MULTIPLY_VANISH_EARLIEST_MS);
+    }
+    for (const el of cloneElsRef.current.values()) el.classList.remove('chicken-clone-blink');
+    setCloneViews((v) => [...v, ...added]);
+  }, []);
+
+  const collectOrb = useCallback(
+    (id: number) => {
+      const orb = orbsRef.current.find((o) => o.id === id);
+      if (!orb) return;
+      const now = performance.now();
+      removeOrb(id);
+      for (const color of ORB_SHARD_COLORS) spawnShards(orb.x, orb.y, ORB_COLLECT_SHARDS / 2, color);
+      const riser = playPowerUp(false);
+      recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
+      const buff = cursorBuffRef.current;
+      if (orb.kind === 'multiply') applyMultiply(now);
+      else if (orb.kind === 'cursor5') buff.x5Until = Math.max(now, buff.x5Until) + CURSOR_BUFF_MS;
+      else buff.x3Until = Math.max(now, buff.x3Until) + CURSOR_BUFF_MS;
+    },
+    [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply]
+  );
+
+  const tickAbilities = useCallback(
+    (ts: number, dtMs: number, vw: number, vh: number) => {
+      const orbs = orbsRef.current;
+      for (let i = orbs.length - 1; i >= 0; i--) {
+        const orb = orbs[i];
+        const age = ts - orb.bornAt;
+        if (age >= ORB_LIFETIME_MS) {
+          removeOrb(orb.id);
+          continue;
+        }
+        orb.x += orb.vx * dtMs;
+        orb.y += orb.vy * dtMs;
+        if (orb.x < ORB_SPAWN_MARGIN || orb.x > vw - ORB_SPAWN_MARGIN) orb.vx = -orb.vx;
+        if (orb.y < ORB_SPAWN_MARGIN || orb.y > vh - ORB_SPAWN_MARGIN) orb.vy = -orb.vy;
+        orb.x = Math.max(ORB_SPAWN_MARGIN, Math.min(vw - ORB_SPAWN_MARGIN, orb.x));
+        orb.y = Math.max(ORB_SPAWN_MARGIN, Math.min(vh - ORB_SPAWN_MARGIN, orb.y));
+        const el = orbElsRef.current.get(orb.id);
+        if (el) {
+          const wobble = Math.sin(ts * ORB_WOBBLE_FREQUENCY + orb.phase) * ORB_WOBBLE_AMPLITUDE;
+          el.style.transform = `translate(${orb.x - ORB_RADIUS}px, ${orb.y + wobble - ORB_RADIUS}px)`;
+          const remaining = ORB_LIFETIME_MS - age;
+          el.style.opacity = remaining < ORB_FADE_MS ? String(remaining / ORB_FADE_MS) : '1';
+        }
+      }
+
+      const clones = cloneMotionRef.current;
+      if (clones.size > 0) {
+        const sinceStart = ts - multiplyStartRef.current;
+        for (const [id, motion] of clones) {
+          if (ts >= motion.vanishAt) {
+            const cx = motion.x + motion.w / 2;
+            const cy = motion.y + motion.h / 2;
+            blackHolesRef.current.push({ x: cx, y: cy, bornAt: ts });
+            streaksRef.current.push(...makeTeleportStreaks(cx, cy, ts, 6));
+            spawnFeathers(cx, cy, VANISH_FEATHERS);
+            vanishedRef.current++;
+            removeClone(id);
+            continue;
+          }
+          motion.x += motion.vx * dtMs;
+          motion.y += motion.vy * dtMs;
+          if (motion.x < 0 || motion.x > vw - motion.w) motion.vx = -motion.vx;
+          if (motion.y < 0 || motion.y > vh - motion.h) motion.vy = -motion.vy;
+          motion.x = Math.max(0, Math.min(vw - motion.w, motion.x));
+          motion.y = Math.max(0, Math.min(vh - motion.h, motion.y));
+          const el = cloneElsRef.current.get(id);
+          if (el) {
+            el.style.transform = `translate(${motion.x}px, ${motion.y}px) scaleX(${motion.vx < 0 ? -1 : 1})`;
+            if (!motion.blinking && sinceStart >= MULTIPLY_BLINK_START_MS) {
+              motion.blinking = true;
+              el.classList.add('chicken-clone-blink');
+              el.dataset.blinking = '1';
+            }
+          }
+        }
+      }
+      const holes = blackHolesRef.current;
+      for (let i = holes.length - 1; i >= 0; i--) {
+        if (ts - holes[i].bornAt > BLACK_HOLE_LIFE_MS) holes.splice(i, 1);
+      }
+
+      const buff = cursorBuffRef.current;
+      const x5 = ts < buff.x5Until;
+      const x3 = ts < buff.x3Until;
+      const key = `${x5 ? 1 : 0}${x3 ? 1 : 0}`;
+      if (key !== cursorKeyRef.current) {
+        cursorKeyRef.current = key;
+        const offsets = buildCursorOffsets(x5, x3);
+        cursorOffsetsRef.current = offsets;
+        setOverlayOffsets(offsets.filter((o) => o.dx !== 0 || o.dy !== 0));
+      }
+      const mouse = mouseRef.current;
+      const els = cursorElsRef.current;
+      const overlays = cursorOffsetsRef.current.filter((o) => o.dx !== 0 || o.dy !== 0);
+      for (let i = 0; i < overlays.length; i++) {
+        const el = els[i];
+        if (el) {
+          el.style.transform = `translate(${mouse.x + overlays[i].dx - CURSOR_HAND_HOT_X}px, ${mouse.y + overlays[i].dy - CURSOR_HAND_HOT_Y}px)`;
+        }
+      }
+    },
+    [removeOrb, removeClone, spawnFeathers]
+  );
+
   const hit = useCallback(
-    (e?: ReactMouseEvent<HTMLDivElement>) => {
+    (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean) => {
       const now = performance.now();
       const p = physicsRef.current;
       let award = 1;
@@ -1034,9 +1333,14 @@ function ChickenGameInner() {
         visit.phase = 'idle';
         visit.cooldownUntil = now + VISIT_COOLDOWN_MIN_MS + Math.random() * VISIT_COOLDOWN_SPREAD_MS;
       }
-      const next = scoreRef.current + award;
+      const prevScore = scoreRef.current;
+      const next = prevScore + award;
       scoreRef.current = next;
       setScore(next);
+      checkOrbSchedule(prevScore, next);
+      const buff = cursorBuffRef.current;
+      if (now < buff.x5Until) buff.x5Until += CURSOR_EXTEND_PER_CLICK_MS;
+      if (now < buff.x3Until) buff.x3Until += CURSOR_EXTEND_PER_CLICK_MS;
       speedRef.current = speedForScore(next);
       const nextStage = stageForScore(next);
       if (nextStage !== stageRef.current) enterStage(nextStage, now);
@@ -1065,7 +1369,7 @@ function ChickenGameInner() {
         const count = FEATHERS_PER_CLICK + (Math.random() < FEATHER_EXTRA_CHANCE ? 1 : 0);
         spawnFeathers(cx, cy, count);
       }
-      applySquash(e);
+      if (!extra) applySquash(e);
       const ceremony = ceremonyRef.current;
       if (
         ceremony.phase === 'idle' &&
@@ -1080,7 +1384,7 @@ function ChickenGameInner() {
         setCountdown(ceremony.value);
       }
     },
-    [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash, enterStage]
+    [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash, enterStage, checkOrbSchedule]
   );
 
   useEffect(() => {
@@ -1135,6 +1439,17 @@ function ChickenGameInner() {
         bend: bendRef.current,
         stage: stageRef.current,
         stagePhase: stagePhaseRef.current,
+        orbs: orbsRef.current.map((o) => ({ id: o.id, kind: o.kind, label: ORB_LABELS[o.kind], x: o.x, y: o.y })),
+        clones: cloneMotionRef.current.size,
+        clonesBlinking: [...cloneMotionRef.current.values()].filter((c) => c.blinking).length,
+        vanished: vanishedRef.current,
+        chickens: 1 + kidMotionRef.current.size + cloneMotionRef.current.size,
+        cursors: cursorOffsetsRef.current.length,
+        cursorOffsets: cursorOffsetsRef.current,
+        cursorBuffMs: {
+          x5: Math.max(0, cursorBuffRef.current.x5Until - performance.now()),
+          x3: Math.max(0, cursorBuffRef.current.x3Until - performance.now()),
+        },
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -1204,12 +1519,34 @@ function ChickenGameInner() {
         if (ids.length > 0) startKidMerge(ids[0]);
       },
       openSheet: () => setSheet('board'),
+      setScore: (n: number) => {
+        for (const kind of Object.keys(ORB_THRESHOLDS) as OrbKind[]) {
+          if (ORB_THRESHOLDS[kind] < n) orbFiredRef.current[kind] = true;
+        }
+        scoreRef.current = n - 1;
+        hit();
+      },
+      forceOrb: (kind: OrbKind) => {
+        orbFiredRef.current[kind] = true;
+        spawnOrb(kind);
+      },
+      collectOrb: (kind: OrbKind) => {
+        const orb = orbsRef.current.find((o) => o.kind === kind);
+        if (orb) collectOrb(orb.id);
+      },
+      fastForward: (ms: number) => {
+        for (const o of orbsRef.current) o.bornAt -= ms;
+        for (const c of cloneMotionRef.current.values()) c.vanishAt -= ms;
+        multiplyStartRef.current -= ms;
+        cursorBuffRef.current.x5Until -= ms;
+        cursorBuffRef.current.x3Until -= ms;
+      },
     };
     bridgeWindow().__chicken = bridge;
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb]);
 
   useEffect(() => {
     const p = physicsRef.current;
@@ -1239,6 +1576,45 @@ function ChickenGameInner() {
     window.addEventListener('mousemove', onMove);
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      if (target?.closest(SHEET_SAFE_SELECTOR)) return;
+      const p = physicsRef.current;
+      const kidY = groundYFor(window.innerHeight) - KID_H;
+      for (const offset of cursorOffsetsRef.current) {
+        if (offset.dx === 0 && offset.dy === 0) continue;
+        const px = e.clientX + offset.dx;
+        const py = e.clientY + offset.dy;
+        const orb = orbsRef.current.find((o) => pointInCircle(px, py, o.x, o.y, ORB_RADIUS));
+        if (orb) {
+          collectOrb(orb.id);
+          continue;
+        }
+        if (pointInRect(px, py, p.x, p.y, CHICKEN_W, CHICKEN_H)) hit(undefined, true);
+        for (const [id, motion] of kidMotionRef.current) {
+          if (pointInRect(px, py, motion.x, kidY, KID_W, KID_H)) {
+            clickKid(id);
+            hit(undefined, true);
+          }
+        }
+        for (const motion of cloneMotionRef.current.values()) {
+          if (pointInRect(px, py, motion.x, motion.y, motion.w, motion.h)) hit(undefined, true);
+        }
+      }
+    };
+    const onDown = () => cursorLayerRef.current?.setAttribute('data-pressed', 'true');
+    const onUp = () => cursorLayerRef.current?.setAttribute('data-pressed', 'false');
+    window.addEventListener('click', onClick);
+    window.addEventListener('mousedown', onDown);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('click', onClick);
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [hit, collectOrb, clickKid]);
 
   useEffect(() => {
     return () => {
@@ -1882,6 +2258,8 @@ function ChickenGameInner() {
         }
       }
 
+      tickAbilities(performance.now(), dtMs, vw, vh);
+
       if (ts >= ghostSweepAtRef.current) {
         ghostSweepAtRef.current = ts + 500;
         const alive = ghostsRef.current.filter((g) => ts - g.born < 1400);
@@ -2023,6 +2401,7 @@ function ChickenGameInner() {
 
         drawStreaks(ctx, streaksRef.current, now, dt, auraRgb);
         drawPortals(ctx, portalsRef.current, now);
+        drawBlackHoles(ctx, blackHolesRef.current, performance.now(), BLACK_HOLE_LIFE_MS, BLACK_HOLE_RADIUS);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -2032,7 +2411,7 @@ function ChickenGameInner() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge]);
+  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge, tickAbilities]);
 
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
@@ -2178,6 +2557,27 @@ function ChickenGameInner() {
         </div>
       ))}
 
+      {cloneViews.map((clone) => (
+        <div
+          key={clone.id}
+          data-testid="chicken-clone"
+          ref={(el) => {
+            if (el) cloneElsRef.current.set(clone.id, el);
+            else cloneElsRef.current.delete(clone.id);
+          }}
+          onClick={() => hit(undefined, true)}
+          className="absolute top-0 left-0 will-change-transform"
+        >
+          <ChickenSvg
+            className={clone.big ? 'w-[70px]' : 'w-[26px]'}
+            tier={clone.tier}
+            morph={clone.big ? morph : 0}
+            eyes="calm"
+            skin={clone.big ? skin : undefined}
+          />
+        </div>
+      ))}
+
       {parked && stage === 'moon' && <ParkedRocket x={parked.x} y={parked.y} />}
 
       <div
@@ -2210,6 +2610,60 @@ function ChickenGameInner() {
           <EscapeVehicleFront stage={stage} phase={stagePhase} />
         </div>
         <EscapeGiggle show={stage === 'pilot' && stagePhase === 'intro-a'} />
+      </div>
+
+      {orbViews.map((orb) => (
+        <div
+          key={orb.id}
+          data-testid="chicken-orb"
+          data-kind={orb.kind}
+          ref={(el) => {
+            if (el) orbElsRef.current.set(orb.id, el);
+            else orbElsRef.current.delete(orb.id);
+          }}
+          onClick={() => collectOrb(orb.id)}
+          className="absolute top-0 left-0 z-20 h-[88px] w-[88px] cursor-pointer rounded-full will-change-transform"
+        >
+          <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
+          <div className="absolute inset-[5px] flex items-center justify-center rounded-full bg-[#0b0b0b]/85 px-1 text-center text-[12px] font-bold leading-tight text-white">
+            {ORB_LABELS[orb.kind]}
+          </div>
+        </div>
+      ))}
+
+      <div
+        ref={cursorLayerRef}
+        data-pressed="false"
+        className="group pointer-events-none absolute inset-0 z-40"
+      >
+        {overlayOffsets.map((offset, i) => (
+          <div
+            key={`${offset.dx},${offset.dy}`}
+            data-testid="chicken-extra-cursor"
+            ref={(el) => {
+              if (el) {
+                cursorElsRef.current[i] = el;
+                el.style.transform = `translate(${mouseRef.current.x + offset.dx - CURSOR_HAND_HOT_X}px, ${mouseRef.current.y + offset.dy - CURSOR_HAND_HOT_Y}px)`;
+              }
+            }}
+            className="absolute top-0 left-0 will-change-transform"
+          >
+            <svg
+              width={CURSOR_HAND_SIZE}
+              height={CURSOR_HAND_SIZE}
+              viewBox="0 0 40 40"
+              className="transition-transform duration-75 group-data-[pressed=true]:scale-[0.82]"
+            >
+              <g stroke="#4a2e1a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+                <path
+                  d="M12 23 Q10.6 15.5 13.6 14.2 Q15.6 13.4 16.6 15 L16.6 10.6 Q16.6 8.2 18.6 8.2 Q20.6 8.2 20.6 10.6 L20.6 9 Q20.6 6.6 22.6 6.6 Q24.6 6.6 24.6 9 L24.6 10.8 Q24.6 8.8 26.4 8.8 Q28.4 8.8 28.4 11.2 L28.4 15.4 Q29.8 14 31.2 15.6 Q32.6 17.4 30.8 20 L26.2 26.6 Q24.2 29.6 20 29.6 Q15 29.6 13.2 26 Z"
+                  fill="#F2B279"
+                />
+                <path d="M20.6 10.6 L20.6 16.2 M24.6 10.8 L24.6 16.4 M28.4 13.2 L27.8 17.2" fill="none" stroke="#c98f5c" strokeWidth="1.3" />
+              </g>
+            </svg>
+          </div>
+        ))}
       </div>
 
       <LeaderboardPanel

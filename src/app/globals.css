@@ -1563,3 +1563,23 @@ body.gem-rain-active #header > div:first-child {
 .escape-earth-recede {
   animation: escapeEarthRecede 14s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
+
+@keyframes orbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cloneBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.12;
+  }
+}
+
+.chicken-clone-blink {
+  animation: cloneBlink 220ms steps(1, end) infinite;
+}

@@ -265,3 +265,36 @@ export function drawPortals(
     ctx.restore();
   }
 }
+
+export interface BlackHole {
+  x: number;
+  y: number;
+  bornAt: number;
+}
+
+export function drawBlackHoles(
+  ctx: CanvasRenderingContext2D,
+  holes: BlackHole[],
+  now: number,
+  lifeMs: number,
+  radius: number
+): void {
+  for (const hole of holes) {
+    const t = (now - hole.bornAt) / lifeMs;
+    if (t < 0 || t > 1) continue;
+    const grow = t < 0.25 ? t / 0.25 : 1 - (t - 0.25) / 0.75;
+    const r = radius * Math.max(0.05, grow);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, grow * 1.4);
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(hole.x, hole.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(160,110,255,0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(hole.x, hole.y, r * 1.35, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
