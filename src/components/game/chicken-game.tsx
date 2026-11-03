@@ -3,6 +3,24 @@
 import { useEffect, useRef, useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { ChickenSvg } from './chicken-svg';
 import { GameScenery } from './game-scenery';
+import { EscapeScenery } from './escape-scenery';
+import { EscapeGiggle, EscapeVehicleBack, EscapeVehicleFront, ParkedRocket, type StagePhase } from './escape-vehicle';
+import {
+  GOGGLE_PHASE_FRAC,
+  MOON_DESCENT_FRAC,
+  ROCKET_LEG_BOTTOM,
+  ROCKET_MIN_SCALE,
+  ROCKET_ZOOM_MS,
+  SURF_BOARD_BOTTOM,
+  SURF_PULL,
+  SURF_TILT,
+  drawSurf,
+  introMsFor,
+  stageForScore,
+  surfSlopeDeg,
+  surfSurfaceY,
+  type EscapeStage,
+} from './escape-stages';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import {
@@ -374,6 +392,8 @@ interface ChickenStateSnapshot {
   visit: 'idle' | 'seeking' | 'visiting';
   sizeBoost: number;
   bend: number;
+  stage: EscapeStage;
+  stagePhase: StagePhase;
 }
 
 interface ChickenBridge {
@@ -552,6 +572,14 @@ function drawAura(
 
 function ChickenGameInner() {
   const [score, setScore] = useState(0);
+  const [stage, setStage] = useState<EscapeStage>('none');
+  const [stagePhase, setStagePhase] = useState<StagePhase>('live');
+  const [parked, setParked] = useState<{ x: number; y: number } | null>(null);
+  const stageRef = useRef<EscapeStage>('none');
+  const stagePhaseRef = useRef<StagePhase>('live');
+  const stageStartRef = useRef(0);
+  const stageAnchorRef = useRef({ x: 0, y: 0 });
+  const surfYRef = useRef(0);
   const [tier, setTier] = useState(0);
   const [flashTier, setFlashTier] = useState<number | null>(null);
   const [mercyCaption, setMercyCaption] = useState(false);
@@ -947,6 +975,20 @@ function ChickenGameInner() {
     [squeak, recordPlay, startFrantic]
   );
 
+  const enterStage = useCallback((next: EscapeStage, now: number) => {
+    const p = physicsRef.current;
+    stageRef.current = next;
+    stageStartRef.current = now;
+    stageAnchorRef.current = { x: p.x, y: p.y };
+    surfYRef.current = p.y;
+    const phase: StagePhase = introMsFor(next) > 0 ? 'intro-a' : 'live';
+    stagePhaseRef.current = phase;
+    setStagePhase(phase);
+    setStage(next);
+    if (next === 'pilot' || next === 'rocket' || next === 'moon') modeRef.current = 'flying';
+    if (next !== 'moon') setParked(null);
+  }, []);
+
   const hit = useCallback(
     (e?: ReactMouseEvent<HTMLDivElement>) => {
       const now = performance.now();
@@ -976,6 +1018,8 @@ function ChickenGameInner() {
       scoreRef.current = next;
       setScore(next);
       speedRef.current = speedForScore(next);
+      const nextStage = stageForScore(next);
+      if (nextStage !== stageRef.current) enterStage(nextStage, now);
       heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
       lastHitRef.current = now;
       const cx = p.x + CHICKEN_W / 2;
@@ -1016,7 +1060,7 @@ function ChickenGameInner() {
         setCountdown(ceremony.value);
       }
     },
-    [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash]
+    [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash, enterStage]
   );
 
   useEffect(() => {
@@ -1069,6 +1113,8 @@ function ChickenGameInner() {
         visit: visitRef.current.phase,
         sizeBoost: sizeBoostRef.current,
         bend: bendRef.current,
+        stage: stageRef.current,
+        stagePhase: stagePhaseRef.current,
       }),
       boost: (n: number) => {
         for (let i = 0; i < n; i++) hit();
@@ -1624,7 +1670,7 @@ function ChickenGameInner() {
         }
 
         const visit = visitRef.current;
-        if (visit.phase === 'idle' && kidsCountRef.current > 0 && mercy < VISIT_MERCY_THRESHOLD) {
+        if (visit.phase === 'idle' && kidsCountRef.current > 0 && mercy < VISIT_MERCY_THRESHOLD && stageRef.current === 'none') {
           if (!visit.nextRollAt) {
             visit.nextRollAt = ts + VISIT_ROLL_MS;
           } else if (ts >= visit.nextRollAt) {
@@ -1686,9 +1732,61 @@ function ChickenGameInner() {
       bendRef.current += (bendTarget - bendRef.current) * Math.min(1, BEND_LERP * dt);
       if (bendRef.current < 0.05 && bendTarget === 0) bendRef.current = 0;
 
+      let stageScale = 1;
+      const st = stageRef.current;
+      if (st !== 'none') {
+        const elapsed = ts - stageStartRef.current;
+        const intro = introMsFor(st);
+        const splitFrac = st === 'pilot' ? GOGGLE_PHASE_FRAC : st === 'moon' ? MOON_DESCENT_FRAC : 1;
+        const phase: StagePhase =
+          elapsed >= intro ? 'live' : elapsed >= intro * splitFrac ? 'intro-b' : 'intro-a';
+        if (phase !== stagePhaseRef.current) {
+          stagePhaseRef.current = phase;
+          setStagePhase(phase);
+          if (st === 'moon' && phase === 'intro-b') {
+            setParked({ x: p.x, y: p.y });
+            modeRef.current = 'ground';
+          }
+        }
+        const anchor = stageAnchorRef.current;
+        if (phase !== 'live' && st !== 'moon') {
+          p.x = anchor.x + (st === 'rocket' ? (Math.random() - 0.5) * 3 : 0);
+          p.y = anchor.y;
+          p.vx = 0;
+          p.vy = 0;
+        }
+        if (st === 'surf' && portal.phase === 'idle') {
+          const footX = p.x + CHICKEN_W / 2;
+          const target = surfSurfaceY(footX, ts, vh, heatRef.current) - SURF_BOARD_BOTTOM;
+          surfYRef.current += (target - surfYRef.current) * Math.min(1, SURF_PULL * dt);
+          p.y = surfYRef.current;
+          p.vy = 0;
+          p.rotation +=
+            (surfSlopeDeg(footX, ts, heatRef.current) * SURF_TILT - p.rotation) * Math.min(1, 0.2 * dt);
+        }
+        if (st === 'pilot' || st === 'rocket') {
+          if (modeRef.current === 'ground') modeRef.current = 'flying';
+        }
+        if (st === 'rocket') {
+          stageScale = 1 - (1 - ROCKET_MIN_SCALE) * smoothstep(Math.min(1, elapsed / ROCKET_ZOOM_MS));
+        }
+        if (st === 'moon' && phase === 'intro-a') {
+          const t = Math.min(1, elapsed / (intro * MOON_DESCENT_FRAC));
+          const eased = 1 - (1 - t) * (1 - t);
+          const start = -CHICKEN_H * 2;
+          p.x = Math.max(vw * 0.2, Math.min(anchor.x, vw * 0.8 - CHICKEN_W));
+          p.y = start + (groundYFor(vh) - ROCKET_LEG_BOTTOM - start) * eased;
+          p.vx = 0;
+          p.vy = 0;
+          p.rotation = 0;
+          p.bank = 0;
+          stageScale = ROCKET_MIN_SCALE + (1 - ROCKET_MIN_SCALE) * eased;
+        }
+      }
+
       if (chickenElRef.current) {
         chickenElRef.current.style.transform =
-          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${(1 + sizeBoostRef.current).toFixed(3)})`;
+          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${((1 + sizeBoostRef.current) * stageScale).toFixed(3)})`;
         chickenElRef.current.style.setProperty('--bend', `${bendRef.current.toFixed(1)}deg`);
         if (flapMs !== flapMsRef.current) {
           flapMsRef.current = flapMs;
@@ -1839,6 +1937,7 @@ function ChickenGameInner() {
       const ctx = canvas?.getContext('2d');
       if (ctx && canvas) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (stageRef.current === 'surf') drawSurf(ctx, vw, vh, ts, heatRef.current);
 
         const auraRgb = auraRgbFor(sc);
         drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
@@ -1930,6 +2029,7 @@ function ChickenGameInner() {
       className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
     >
       <GameScenery tier={tier} />
+      <EscapeScenery stage={stage} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
       <div className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
@@ -2055,6 +2155,8 @@ function ChickenGameInner() {
         </div>
       ))}
 
+      {parked && stage === 'moon' && <ParkedRocket x={parked.x} y={parked.y} />}
+
       <div
         ref={chickenElRef}
         data-testid="chicken"
@@ -2068,8 +2170,10 @@ function ChickenGameInner() {
           ref={facingElRef}
           data-testid="chicken-facing"
           data-facing="1"
+          className="relative"
           style={{ transition: 'transform 160ms ease-out', transformOrigin: 'center' }}
         >
+          <EscapeVehicleBack stage={stage} phase={stagePhase} />
           <div ref={rubberElRef} className="chicken-rubber" data-squashed="0" data-sqmode="hug">
             <ChickenSvg
               className="w-[70px]"
@@ -2080,7 +2184,9 @@ function ChickenGameInner() {
               skin={skin}
             />
           </div>
+          <EscapeVehicleFront stage={stage} phase={stagePhase} />
         </div>
+        <EscapeGiggle show={stage === 'pilot' && stagePhase === 'intro-a'} />
       </div>
 
       <LeaderboardPanel
