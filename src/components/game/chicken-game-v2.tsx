@@ -14,18 +14,71 @@ import { GameScenery } from './game-scenery';
 import { EscapeScenery } from './escape-scenery';
 import { orbFont } from './orb-font';
 import { EscapeGiggle, EscapeVehicleBack, EscapeVehicleFront, ParkedRocket, type StagePhase } from './escape-vehicle';
+import { BackgroundRocket, DetachedPlane, Explosion } from './escape-sequence-visuals';
+import {
+  APPROACH_MS,
+  APPROACH_SWAY_CYCLES,
+  APPROACH_SWAY_PX,
+  BOARDING_MS,
+  BOARD_CHICKEN_SCALE,
+  BOARD_INSIDE_SCALE,
+  CANVAS_FADE_OUT_MS,
+  CLIMB_END_MS,
+  CLIMB_START_MS,
+  DRIFT_MS,
+  EXPLODE_CLICKS,
+  EXPLODE_FALLBACK_MS,
+  EXPLODE_MS,
+  EXPLODE_SCALE,
+  FLIGHT_MS,
+  FLIGHT_SKIP_MS,
+  GATE_COUNT_FROM,
+  GATE_COUNT_TICK_MS,
+  FLIGHT_PX_PER_MS,
+  FLIGHT_SWAY_ROT,
+  FLIGHT_SWAY_X,
+  FLIGHT_SWAY_Y,
+  FLIGHT_TARGET_X_FRAC,
+  FLIGHT_TARGET_Y_FRAC,
+  INSIDE_FADE_MS,
+  LIFTOFF_HOLD_MS,
+  LIFTOFF_RISE_MS,
+  LIFTOFF_SHAKE_PX,
+  PLANE_BODY_SCALE,
+  PLANE_EXIT_MS,
+  PLANE_EXIT_SCALE,
+  PUSH_DECAY_PER_MS,
+  PUSH_PX_PER_MS,
+  PUSH_RADIUS,
+  ROCKET_BG_MAX_SCALE,
+  ROCKET_BG_X_FRAC,
+  ROCKET_BG_Y_FRAC,
+  ROCKET_DOOR_OFFSET_Y,
+  createFlight,
+  doorOpenAt,
+  driftSpeedScale,
+  rocketLook,
+  smooth01,
+  stepFlight,
+  type FlightKind,
+  type PlaneFlight,
+  type RocketSeq,
+} from './escape-sequence';
+import dynamic from 'next/dynamic';
+import { SpaceGate, type SpaceGateState } from './space-gate';
+import { getSpaceProgress, startSpacePreload } from './space-preload';
 import {
   GOGGLE_PHASE_FRAC,
   MOON_DESCENT_FRAC,
   ROCKET_LEG_BOTTOM,
   ROCKET_MIN_SCALE,
-  ROCKET_ZOOM_MS,
   SURF_BOARD_BOTTOM,
   SURF_PULL,
   SURF_TILT,
   drawSurf,
   introMsFor,
   stageForScore,
+  stageRank,
   surfSlopeDeg,
   surfSurfaceY,
   type EscapeStage,
@@ -560,6 +613,12 @@ interface ChickenStateSnapshot {
   bend: number;
   stage: EscapeStage;
   stagePhase: StagePhase;
+  seq: RocketSeq;
+  pos: { x: number; y: number };
+  flightRoll: number;
+  scene3dReady: boolean;
+  scene3dProgress: number;
+  scene3dGate: SpaceGateState;
   orbs: OrbSnapshot[];
   clones: number;
   clonesBlinking: number;
@@ -639,6 +698,7 @@ interface ChickenBridge {
   holdMsOverride: (ms: number) => void;
   inventory: () => InventoryItem[];
   grantItem: (id: string, fromX?: number, fromY?: number) => void;
+  setSeqTimeScale: (n: number) => void;
 }
 
 type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather'>;
@@ -655,6 +715,15 @@ export function onUseItem(itemId: string): void {
 
 interface BridgeWindow {
   __chicken?: ChickenBridge;
+}
+
+const loadSpaceFlight = () => import('./space-flight-3d');
+const SpaceFlight3D = dynamic(loadSpaceFlight, { ssr: false });
+const PRELOAD_IDLE_TIMEOUT_MS = 4000;
+const PRELOAD_FALLBACK_DELAY_MS = 1500;
+
+function isScriptedStage(stage: EscapeStage): boolean {
+  return stage === 'pilot' || stage === 'rocket';
 }
 
 function bridgeWindow(): BridgeWindow {
@@ -823,6 +892,30 @@ function ChickenGameInner() {
   const stagePhaseRef = useRef<StagePhase>('live');
   const stageStartRef = useRef(0);
   const stageAnchorRef = useRef({ x: 0, y: 0 });
+  const [seq, setSeq] = useState<RocketSeq>('none');
+  const [doorOpen, setDoorOpen] = useState(false);
+  const [space3dOn, setSpace3dOn] = useState(false);
+  const seqRef = useRef<RocketSeq>('none');
+  const seqStartRef = useRef(0);
+  const seqScaleRef = useRef(1);
+  const seqClicksRef = useRef(0);
+  const doorOpenRef = useRef(false);
+  const flightRef = useRef<PlaneFlight>(createFlight(0));
+  const planeFlightRef = useRef<PlaneFlight>(createFlight(0));
+  const planeBodyRef = useRef({ x: 0, y: 0 });
+  const pushRef = useRef({ x: 0, y: 0 });
+  const rollRef = useRef(1);
+  const approachFromRef = useRef({ x: 0, y: 0 });
+  const moonFromRef = useRef<{ y: number } | null>(null);
+  const flightProgressRef = useRef(0);
+  const scene3dReadyRef = useRef(false);
+  const [gate, setGate] = useState<SpaceGateState>('none');
+  const [gateCount, setGateCount] = useState(GATE_COUNT_FROM);
+  const gateRef = useRef<SpaceGateState>('none');
+  const pauseStartRef = useRef(0);
+  const skip3dRef = useRef(false);
+  const planeElRef = useRef<HTMLDivElement>(null);
+  const bgRocketElRef = useRef<HTMLDivElement>(null);
   const surfYRef = useRef(0);
   const [tier, setTier] = useState(0);
   const [flashTier, setFlashTier] = useState<number | null>(null);
@@ -1794,8 +1887,15 @@ function ChickenGameInner() {
     [squeak, recordPlay, startFrantic]
   );
 
+  const enterSeq = useCallback((next: RocketSeq, now: number) => {
+    seqRef.current = next;
+    seqStartRef.current = now;
+    setSeq(next);
+  }, []);
+
   const enterStage = useCallback((next: EscapeStage, now: number) => {
     const p = physicsRef.current;
+    const prev = stageRef.current;
     stageRef.current = next;
     stageStartRef.current = now;
     stageAnchorRef.current = { x: p.x, y: p.y };
@@ -1806,7 +1906,124 @@ function ChickenGameInner() {
     setStage(next);
     if (next === 'pilot' || next === 'rocket' || next === 'moon') modeRef.current = 'flying';
     if (next !== 'moon') setParked(null);
+    if (isScriptedStage(next)) {
+      hyperRef.current.phase = 'idle';
+      scrambleRef.current.phase = 'idle';
+      if (teleportRef.current.phase !== 'idle') {
+        teleportRef.current.phase = 'idle';
+        if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
+      }
+    }
+    if (next === 'pilot') flightRef.current = createFlight(facingRef.current >= 0 ? 0 : Math.PI);
+    if (next === 'rocket') {
+      seqClicksRef.current = 0;
+      pushRef.current = { x: 0, y: 0 };
+      if (prev === 'pilot') {
+        planeFlightRef.current = flightRef.current;
+        planeBodyRef.current = { x: p.x, y: p.y };
+        flightRef.current = createFlight(-Math.PI / 2 + (Math.random() - 0.5) * 0.5);
+        enterSeq('planeExit', now);
+      } else {
+        flightRef.current = createFlight(-Math.PI / 2);
+        enterSeq('drift', now);
+      }
+    } else if (next === 'moon') {
+      moonFromRef.current = prev === 'rocket' ? { y: p.y } : null;
+      enterSeq('none', now);
+    } else {
+      enterSeq('none', now);
+    }
+  }, [enterSeq]);
+
+  const shiftTimers = useCallback((ms: number) => {
+    for (const o of orbsRef.current) o.bornAt += ms;
+    for (const c of cloneMotionRef.current.values()) c.vanishAt += ms;
+    multiplyStartRef.current += ms;
+    cursorBuffRef.current.x5Until += ms;
+    cursorBuffRef.current.x3Until += ms;
+    for (const pool of poolsRef.current) pool.born += ms;
+    lastHitRef.current += ms;
   }, []);
+
+  const openGate = useCallback(() => {
+    startSpacePreload(loadSpaceFlight).catch(() => {});
+    pauseStartRef.current = performance.now();
+    const next: SpaceGateState = getSpaceProgress().done ? 'ready' : 'downloading';
+    gateRef.current = next;
+    setGate(next);
+  }, []);
+
+  const resumeFromGate = useCallback(
+    (skip: boolean) => {
+      const now = performance.now();
+      shiftTimers(now - pauseStartRef.current);
+      skip3dRef.current = skip;
+      gateRef.current = 'none';
+      setGate('none');
+      enterSeq('flight3d', now);
+    },
+    [shiftTimers, enterSeq]
+  );
+
+  const startGateCountdown = useCallback(() => {
+    if (gateRef.current !== 'ready') return;
+    gateRef.current = 'countdown';
+    setGateCount(GATE_COUNT_FROM);
+    setGate('countdown');
+  }, []);
+
+  useEffect(() => {
+    if (gate !== 'downloading') return;
+    const id = setInterval(() => {
+      if (getSpaceProgress().done && gateRef.current === 'downloading') {
+        gateRef.current = 'ready';
+        setGate('ready');
+      }
+    }, 150);
+    return () => clearInterval(id);
+  }, [gate]);
+
+  useEffect(() => {
+    if (gate !== 'countdown') return;
+    const id = setInterval(() => setGateCount((c) => c - 1), GATE_COUNT_TICK_MS);
+    return () => clearInterval(id);
+  }, [gate]);
+
+  useEffect(() => {
+    if (gate === 'countdown' && gateCount <= 0) resumeFromGate(false);
+  }, [gate, gateCount, resumeFromGate]);
+
+  useEffect(() => {
+    if (loaderPhase !== 'done') return;
+    let cancelled = false;
+    const start = () => {
+      startSpacePreload(loadSpaceFlight)
+        .then(() => {
+          if (!cancelled) scene3dReadyRef.current = true;
+        })
+        .catch(() => {});
+    };
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o: { timeout: number }) => number }).requestIdleCallback;
+    if (idle) {
+      idle(start, { timeout: PRELOAD_IDLE_TIMEOUT_MS });
+    } else {
+      setTimeout(start, PRELOAD_FALLBACK_DELAY_MS);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [loaderPhase]);
+
+  useEffect(() => {
+    if (seq === 'flight3d') {
+      if (!skip3dRef.current) setSpace3dOn(true);
+      return;
+    }
+    if (stage === 'moon' && space3dOn) {
+      const id = setTimeout(() => setSpace3dOn(false), CANVAS_FADE_OUT_MS + 200);
+      return () => clearTimeout(id);
+    }
+  }, [seq, stage, space3dOn]);
 
   const { items: inventoryItems, grant: grantItem } = useInventory();
   const itemsRef = useRef(inventoryItems);
@@ -2019,6 +2236,7 @@ function ChickenGameInner() {
 
   const hit = useCallback(
     (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }) => {
+      if (gateRef.current !== 'none') return;
       const now = performance.now();
       const p = physicsRef.current;
       const plain = source !== undefined;
@@ -2054,8 +2272,16 @@ function ChickenGameInner() {
       if (now < buff.x5Until) buff.x5Until += CURSOR_EXTEND_PER_CLICK_MS;
       if (now < buff.x3Until) buff.x3Until += CURSOR_EXTEND_PER_CLICK_MS;
       speedRef.current = speedForScore(next);
-      const nextStage = stageForScore(next);
-      if (nextStage !== stageRef.current) enterStage(nextStage, now);
+      const currentStage = stageRef.current;
+      const scoreStage = stageForScore(next);
+      const nextStage = scoreStage === 'moon' && currentStage === 'pilot' ? 'rocket' : scoreStage;
+      if (seqRef.current === 'planeExit') seqClicksRef.current += 1;
+      if (
+        stageRank(nextStage) > stageRank(currentStage) &&
+        !(nextStage === 'moon' && currentStage === 'rocket')
+      ) {
+        enterStage(nextStage, now);
+      }
       heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
       lastHitRef.current = now;
       const cx = source ? source.x : p.x + CHICKEN_W / 2;
@@ -2085,6 +2311,7 @@ function ChickenGameInner() {
       const ceremony = ceremonyRef.current;
       if (
         !plain &&
+        !isScriptedStage(stageRef.current) &&
         !rootSplitRef.current &&
         !holdRef.current &&
         ceremony.phase === 'idle' &&
@@ -2158,6 +2385,12 @@ function ChickenGameInner() {
         bend: bendRef.current,
         stage: stageRef.current,
         stagePhase: stagePhaseRef.current,
+        seq: seqRef.current,
+        pos: { x: physicsRef.current.x, y: physicsRef.current.y },
+        flightRoll: rollRef.current,
+        scene3dReady: scene3dReadyRef.current,
+        scene3dProgress: getSpaceProgress().pct,
+        scene3dGate: gateRef.current,
         orbs: orbsRef.current.map((o) => ({ id: o.id, kind: o.kind, label: ORB_LABELS[o.kind], x: o.x, y: o.y })),
         clones: cloneMotionRef.current.size,
         clonesBlinking: [...cloneMotionRef.current.values()].filter((c) => c.blinking).length,
@@ -2250,6 +2483,9 @@ function ChickenGameInner() {
         if (ids.length > 0) startKidMerge(ids[0]);
       },
       openSheet: () => setSheet('board'),
+      setSeqTimeScale: (n: number) => {
+        seqScaleRef.current = n;
+      },
       setScore: (n: number) => {
         for (const kind of Object.keys(ORB_THRESHOLDS) as OrbKind[]) {
           if (ORB_THRESHOLDS[kind] < n) orbFiredRef.current[kind] = true;
@@ -2389,6 +2625,11 @@ function ChickenGameInner() {
 
   useEffect(() => {
     const animate = (ts: number) => {
+      if (gateRef.current !== 'none') {
+        lastTimeRef.current = ts;
+        rafRef.current = requestAnimationFrame(animate);
+        return;
+      }
       if (!lastTimeRef.current) lastTimeRef.current = ts;
       const rawDt = ts - lastTimeRef.current;
       const dtMs = Math.min(rawDt, MAX_DT);
@@ -2459,7 +2700,20 @@ function ChickenGameInner() {
       const rootBusy = rootSplitRef.current || holdRef.current !== null;
 
       const hyper = hyperRef.current;
-      if (flying && !rootBusy && sc >= HYPER_MIN_SCORE) {
+      const stNow = stageRef.current;
+      const scripted = isScriptedStage(stNow);
+      const seqNow = seqRef.current;
+      const seqElapsed = (ts - seqStartRef.current) * seqScaleRef.current;
+      const flightKind: FlightKind =
+        stNow === 'pilot' && stagePhaseRef.current === 'live'
+          ? 'plane'
+          : stNow === 'rocket'
+            ? seqNow === 'planeExit' || seqNow === 'explode' || seqNow === 'drift'
+              ? 'float'
+              : 'scripted'
+            : 'none';
+      rollRef.current = 1;
+      if (flying && !rootBusy && !scripted && sc >= HYPER_MIN_SCORE) {
         if (hyper.phase === 'idle') {
           if (!hyper.nextAt) {
             hyper.nextAt = ts + HYPER_DELAY_MIN_MS + Math.random() * HYPER_DELAY_SPREAD_MS;
@@ -2544,6 +2798,7 @@ function ChickenGameInner() {
       if (
         flying &&
         !rootBusy &&
+        !scripted &&
         (sc >= TELEPORT_MIN_SCORE || tp.forcedDecoys !== null) &&
         tp.phase === 'idle' &&
         portal.phase === 'idle' &&
@@ -2649,6 +2904,46 @@ function ChickenGameInner() {
         else if (p.vx < -0.01) facingRef.current = -1;
       } else if (portal.phase !== 'idle') {
         p.bank = 0;
+      } else if (flightKind !== 'none') {
+        if (flightKind === 'scripted') {
+          p.vx = 0;
+          p.vy = 0;
+          p.rv = 0;
+          p.bank = 0;
+        } else {
+          const speedScale =
+            flightKind === 'plane'
+              ? 1
+              : seqNow === 'planeExit'
+                ? PLANE_EXIT_SCALE
+                : seqNow === 'explode'
+                  ? EXPLODE_SCALE
+                  : driftSpeedScale(seqElapsed);
+          const out = stepFlight(
+            flightRef.current,
+            p.x + CHICKEN_W / 2,
+            p.y + CHICKEN_H / 2,
+            vw,
+            vh,
+            dtMs,
+            ts,
+            FLIGHT_PX_PER_MS * speedScale,
+            { barrels: flightKind === 'plane', tiltScale: flightKind === 'plane' ? 1 : 0.5 }
+          );
+          const push = pushRef.current;
+          p.x += out.dx + push.x * dtMs;
+          p.y += out.dy + push.y * dtMs;
+          const decay = Math.exp(-PUSH_DECAY_PER_MS * dtMs);
+          push.x *= decay;
+          push.y *= decay;
+          p.vx = out.dx / Math.max(dtMs, 1);
+          p.vy = out.dy / Math.max(dtMs, 1);
+          p.rotation = out.rotation;
+          p.rv = 0;
+          p.bank = 0;
+          rollRef.current = out.rollY;
+          facingRef.current = out.facing;
+        }
       } else if (scrambleRef.current.phase === 'running') {
         const scramble = scrambleRef.current;
         if (ts >= scramble.until) {
@@ -2719,6 +3014,7 @@ function ChickenGameInner() {
         } else if (
           ts >= scramble.nextAt &&
           !rootBusy &&
+          !scripted &&
           sc >= SCRAMBLE_MIN_SCORE &&
           ts - lastHitRef.current < CLICK_ACTIVE_WINDOW_MS &&
           hyper.phase !== 'burst' &&
@@ -2767,7 +3063,7 @@ function ChickenGameInner() {
           p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH * 1.5;
         };
         const tryEdgeSpecial = (side: PortalSide): boolean => {
-          if (rootBusy || ts < portal.cooldownUntil || portal.phase !== 'idle' || tp.phase !== 'idle') {
+          if (scripted || rootBusy || ts < portal.cooldownUntil || portal.phase !== 'idle' || tp.phase !== 'idle') {
             return false;
           }
           const portalChance = ts < portal.hotUntil ? EDGE_PORTAL_HOT_CHANCE : EDGE_PORTAL_CHANCE;
@@ -2906,6 +3202,9 @@ function ChickenGameInner() {
         if (phase !== stagePhaseRef.current) {
           stagePhaseRef.current = phase;
           setStagePhase(phase);
+          if (st === 'pilot' && phase === 'live') {
+            flightRef.current = createFlight(facingRef.current >= 0 ? 0 : Math.PI);
+          }
           if (st === 'moon' && phase === 'intro-b') {
             setParked({ x: p.x, y: p.y });
             modeRef.current = 'ground';
@@ -2931,12 +3230,129 @@ function ChickenGameInner() {
           if (modeRef.current === 'ground') modeRef.current = 'flying';
         }
         if (st === 'rocket') {
-          stageScale = 1 - (1 - ROCKET_MIN_SCALE) * smoothstep(Math.min(1, elapsed / ROCKET_ZOOM_MS));
+          const se = seqElapsed;
+          const rcx = vw * ROCKET_BG_X_FRAC;
+          const rcy = vh * ROCKET_BG_Y_FRAC;
+          const cxNow = p.x + CHICKEN_W / 2;
+          const cyNow = p.y + CHICKEN_H / 2;
+          const placeCenter = (x: number, y: number) => {
+            p.x = x - CHICKEN_W / 2;
+            p.y = y - CHICKEN_H / 2;
+          };
+          const bg = bgRocketElRef.current;
+          const writeBg = (opacity: number, scale: number) => {
+            if (!bg) return;
+            bg.style.opacity = opacity.toFixed(3);
+            bg.style.transform = `translate(${rcx - CHICKEN_W / 2}px, ${rcy - CHICKEN_H / 2}px) scale(${scale.toFixed(3)})`;
+          };
+          if (seqNow === 'planeExit') {
+            const pb = planeBodyRef.current;
+            const o = stepFlight(
+              planeFlightRef.current,
+              pb.x + CHICKEN_W / 2,
+              pb.y + CHICKEN_H / 2,
+              vw,
+              vh,
+              dtMs,
+              ts,
+              FLIGHT_PX_PER_MS * PLANE_BODY_SCALE,
+              { barrels: true, tiltScale: 1 }
+            );
+            pb.x += o.dx;
+            pb.y += o.dy;
+            if (planeElRef.current) {
+              planeElRef.current.style.transform = `translate(${pb.x}px, ${pb.y}px) rotate(${o.rotation}deg) scale(${o.facing}, ${o.rollY.toFixed(3)})`;
+            }
+            const readyToBlow =
+              (se >= PLANE_EXIT_MS && seqClicksRef.current >= EXPLODE_CLICKS) ||
+              se >= PLANE_EXIT_MS + EXPLODE_FALLBACK_MS;
+            if (readyToBlow) {
+              const awayX = cxNow - (pb.x + CHICKEN_W / 2);
+              const awayY = cyNow - (pb.y + CHICKEN_H / 2);
+              const away = Math.hypot(awayX, awayY) || 1;
+              const strength = Math.max(0, 1 - away / PUSH_RADIUS) * PUSH_PX_PER_MS;
+              pushRef.current = { x: (awayX / away) * strength, y: (awayY / away) * strength };
+              if (planeElRef.current) planeElRef.current.style.transform = `translate(${pb.x}px, ${pb.y}px)`;
+              enterSeq('explode', ts);
+            }
+          } else if (seqNow === 'explode') {
+            if (se >= EXPLODE_MS) enterSeq('drift', ts);
+          } else if (seqNow === 'drift') {
+            const look = rocketLook('drift', se);
+            writeBg(look.opacity, look.scale);
+            if (se >= DRIFT_MS) {
+              approachFromRef.current = { x: cxNow, y: cyNow };
+              enterSeq('rocketApproach', ts);
+            }
+          } else if (seqNow === 'rocketApproach') {
+            const look = rocketLook('rocketApproach', se);
+            writeBg(look.opacity, look.scale);
+            const u = Math.min(1, se / APPROACH_MS);
+            const e = smooth01(u);
+            const from = approachFromRef.current;
+            const doorX = rcx;
+            const doorY = rcy + ROCKET_DOOR_OFFSET_Y * look.scale;
+            const dxv = doorX - from.x;
+            const dyv = doorY - from.y;
+            const len = Math.hypot(dxv, dyv) || 1;
+            const phaseAngle = u * Math.PI * 2 * APPROACH_SWAY_CYCLES;
+            const sway = Math.sin(phaseAngle) * APPROACH_SWAY_PX * (1 - e);
+            placeCenter(from.x + dxv * e - (dyv / len) * sway, from.y + dyv * e + (dxv / len) * sway);
+            stageScale = 1 + (BOARD_CHICKEN_SCALE - 1) * e;
+            p.rotation = Math.cos(phaseAngle) * 8 * (1 - e);
+            facingRef.current = dxv >= 0 ? 1 : -1;
+            if (se >= APPROACH_MS) enterSeq('boarding', ts);
+          } else if (seqNow === 'boarding') {
+            const look = rocketLook('boarding', se);
+            writeBg(look.opacity, look.scale);
+            const open = doorOpenAt(se);
+            if (open !== doorOpenRef.current) {
+              doorOpenRef.current = open;
+              setDoorOpen(open);
+            }
+            const v = smooth01((se - CLIMB_START_MS) / (CLIMB_END_MS - CLIMB_START_MS));
+            const doorY = rcy + ROCKET_DOOR_OFFSET_Y * look.scale;
+            placeCenter(rcx, doorY - 14 * v + Math.sin(ts * 0.004) * (1 - v) * 3);
+            stageScale = BOARD_CHICKEN_SCALE + (BOARD_INSIDE_SCALE - BOARD_CHICKEN_SCALE) * v;
+            p.rotation = 0;
+            facingRef.current = 1;
+            if (chickenElRef.current) {
+              chickenElRef.current.style.opacity = (1 - smooth01((v - 0.5) / 0.5)).toFixed(3);
+            }
+            if (se >= BOARDING_MS) openGate();
+          } else if (seqNow === 'flight3d') {
+            const tx = vw * FLIGHT_TARGET_X_FRAC;
+            const ty = vh * FLIGHT_TARGET_Y_FRAC;
+            let fx = rcx;
+            let fy = rcy;
+            let fScale = ROCKET_BG_MAX_SCALE;
+            let v = 0;
+            if (se < LIFTOFF_HOLD_MS) {
+              fx += (Math.random() - 0.5) * LIFTOFF_SHAKE_PX * 2;
+              fy += (Math.random() - 0.5) * LIFTOFF_SHAKE_PX * 2;
+            } else {
+              v = smooth01((se - LIFTOFF_HOLD_MS) / LIFTOFF_RISE_MS);
+              fx = rcx + (tx - rcx) * v + Math.sin(se / 1300) * FLIGHT_SWAY_X * v;
+              fy = rcy + (ty - rcy) * v + Math.cos(se / 1700) * FLIGHT_SWAY_Y * v;
+              fScale = ROCKET_BG_MAX_SCALE + (ROCKET_MIN_SCALE - ROCKET_BG_MAX_SCALE) * v;
+            }
+            placeCenter(fx, fy);
+            stageScale = fScale;
+            p.rotation = Math.sin(se / 1700) * FLIGHT_SWAY_ROT * v;
+            facingRef.current = 1;
+            if (chickenElRef.current) {
+              chickenElRef.current.style.opacity = smooth01(se / INSIDE_FADE_MS).toFixed(3);
+            }
+            const flightMs = skip3dRef.current ? FLIGHT_SKIP_MS : FLIGHT_MS;
+            flightProgressRef.current = Math.min(1, se / flightMs);
+            if (se >= flightMs) enterStage('moon', ts);
+          }
         }
         if (st === 'moon' && phase === 'intro-a') {
           const t = Math.min(1, elapsed / (intro * MOON_DESCENT_FRAC));
-          const eased = 1 - (1 - t) * (1 - t);
-          const start = -CHICKEN_H * 2;
+          const arrivalFrom = moonFromRef.current;
+          const eased = arrivalFrom ? smooth01(t) : 1 - (1 - t) * (1 - t);
+          const start = arrivalFrom ? arrivalFrom.y : -CHICKEN_H * 2;
           p.x = Math.max(vw * 0.2, Math.min(anchor.x, vw * 0.8 - CHICKEN_W));
           p.y = start + (groundYFor(vh) - ROCKET_LEG_BOTTOM - start) * eased;
           p.vx = 0;
@@ -2956,7 +3372,7 @@ function ChickenGameInner() {
         const hidden = rootSplitRef.current ? 'hidden' : 'visible';
         if (chickenElRef.current.style.visibility !== hidden) chickenElRef.current.style.visibility = hidden;
         chickenElRef.current.style.transform =
-          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${((1 + sizeBoostRef.current) * stageScale).toFixed(3)})`;
+          `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${((1 + sizeBoostRef.current) * stageScale).toFixed(3)}, ${((1 + sizeBoostRef.current) * stageScale * rollRef.current).toFixed(3)})`;
         chickenElRef.current.style.setProperty('--bend', `${bendRef.current.toFixed(1)}deg`);
         if (flapMs !== flapMsRef.current) {
           flapMsRef.current = flapMs;
@@ -3187,7 +3603,7 @@ function ChickenGameInner() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge, tickAbilities, tickHold, tickChicks]);
+  }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge, tickAbilities, tickHold, tickChicks, enterStage, enterSeq, openGate]);
 
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
@@ -3208,7 +3624,9 @@ function ChickenGameInner() {
       className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
     >
       <GameScenery tier={tier} />
-      <EscapeScenery stage={stage} />
+      <EscapeScenery stage={stage} seq={seq} />
+      <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
+      {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon'} />}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
       <div className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
@@ -3387,6 +3805,27 @@ function ChickenGameInner() {
 
       {parked && stage === 'moon' && <ParkedRocket x={parked.x} y={parked.y} />}
 
+      {stage === 'rocket' && (seq === 'planeExit' || seq === 'explode') && (
+        <div
+          ref={planeElRef}
+          data-testid={seq === 'planeExit' ? 'detached-plane' : 'plane-wreck'}
+          className="absolute top-0 left-0 pointer-events-none w-[70px] h-[140px]"
+          style={{ transform: `translate(${planeBodyRef.current.x}px, ${planeBodyRef.current.y}px)` }}
+        >
+          {seq === 'planeExit' ? <DetachedPlane /> : <Explosion />}
+        </div>
+      )}
+
+      {stage === 'rocket' && (seq === 'drift' || seq === 'rocketApproach' || seq === 'boarding') && (
+        <div
+          ref={bgRocketElRef}
+          data-testid="background-rocket"
+          className="absolute top-0 left-0 pointer-events-none opacity-0 w-[70px] h-[140px]"
+        >
+          <BackgroundRocket doorOpen={doorOpen} />
+        </div>
+      )}
+
       <div
         ref={chickenElRef}
         data-testid="chicken"
@@ -3407,7 +3846,7 @@ function ChickenGameInner() {
           className="relative"
           style={{ transition: 'transform 160ms ease-out', transformOrigin: 'center' }}
         >
-          <EscapeVehicleBack stage={stage} phase={stagePhase} />
+          <EscapeVehicleBack stage={stage} phase={stagePhase} seq={seq} />
           <div ref={rubberElRef} className="chicken-rubber" data-squashed="0" data-sqmode="hug">
             <ChickenSvg
               className="w-[70px]"
@@ -3419,7 +3858,7 @@ function ChickenGameInner() {
               wound={wound}
             />
           </div>
-          <EscapeVehicleFront stage={stage} phase={stagePhase} />
+          <EscapeVehicleFront stage={stage} phase={stagePhase} seq={seq} />
         </div>
         <EscapeGiggle show={stage === 'pilot' && stagePhase === 'intro-a'} />
       </div>

@@ -4,7 +4,7 @@ export const ESCAPE_STAGES: { stage: EscapeStage; threshold: number; introMs: nu
   { stage: 'none', threshold: 0, introMs: 0 },
   { stage: 'surf', threshold: 250, introMs: 1100 },
   { stage: 'pilot', threshold: 350, introMs: 3800 },
-  { stage: 'rocket', threshold: 450, introMs: 1600 },
+  { stage: 'rocket', threshold: 450, introMs: 0 },
   { stage: 'moon', threshold: 540, introMs: 3400 },
 ];
 
@@ -90,4 +90,8 @@ export function drawSurf(
     ctx.stroke();
   }
   ctx.restore();
+}
+
+export function stageRank(stage: EscapeStage): number {
+  return ESCAPE_STAGES.findIndex((s) => s.stage === stage);
 }
