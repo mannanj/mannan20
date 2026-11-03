@@ -2471,7 +2471,7 @@ function ChickenGameInner() {
           recordPlay({ type: hawkCall ? 'hawk' : 'scream', key: played.key, rate: played.rate, at: Date.now() });
         }
         const count = FEATHERS_PER_CLICK + (Math.random() < FEATHER_EXTRA_CHANCE ? 1 : 0);
-        spawnFeathers(cx, cy, count);
+        if (!isBirdBusy(bird)) spawnFeathers(cx, cy, count);
       }
       if (!extra) applySquash(e);
       const ceremony = ceremonyRef.current;

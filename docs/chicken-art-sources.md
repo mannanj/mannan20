@@ -61,3 +61,7 @@ Task 307 spend: **$0.27** of the $0.60 allowance (budget file cap raised 3.00 ->
 Sizzle: synthesized at runtime with Web Audio (`EffectsSynth.sizzle` in `src/lib/chicken-audio.ts`: looped filtered noise with random pops, band-pass around 3.2 kHz that rises with heat). No clip was downloaded, so nothing to license. Bird cries on eagle and phoenix talon clicks reuse the hawk scream pool.
 
 Sweat drops, steam, the bare-skin/char circle, the eagle and phoenix skin patterns and the warm screen flash are vector/CSS layers on the existing rubber-chicken art (no assets).
+
+## Phoenix re-render to Mannan's reference (Task 307 follow-up)
+
+Golden-plumage phoenix (real layered feathers, eagle-like head with a crest, fire only at the feather edges, connected legs): `scripts/birds/jobs.mjs` `BIRDS.phoenix` prompt, 9 frames (`grab-body-v2`, `talon-right`, `talon-left`, `fly-up`, `fly-level`, `fly-down`, `bank`, `away-3q`, `away-far`) at ~$0.067 each = **$0.61**, logged in `scripts/birds/budget.json`; keyed with `key.mjs` (feet erase region re-tuned to `x 0.24-0.48, y 0.74-0.88`). The earlier flame-silhouette phoenix frames are superseded (raw PNGs overwritten in `scripts/birds/raw/phoenix/`). Task 307 total: $0.27 + $0.07 draft + $0.54 finals = **$0.88**.

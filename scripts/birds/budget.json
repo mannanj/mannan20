@@ -1,7 +1,7 @@
 {
   "cap_usd": 3.6,
   "stop_at_usd": 2.890466,
-  "spent_usd": 2.559713,
+  "spent_usd": 3.031503,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -306,6 +306,62 @@
       "purpose": "phoenix talon 2: heat pulse fire sprite (luminance alpha)",
       "cost_usd": 0.067259,
       "gen_id": "gen-1793673782-Ehh6eo3XIYbl7OZnpcKI"
+    },
+    {
+      "at": "2026-11-03T03:08:30.216Z",
+      "id": "phoenix-grab-body-v2",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose v2: head bowed over the feet",
+      "cost_usd": 0.067464,
+      "gen_id": "gen-1793675302-G54zN9ihB26YXDEL4v2E"
+    },
+    {
+      "at": "2026-11-03T03:10:07.785Z",
+      "id": "phoenix-talon-left",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: left (back) talon layer",
+      "cost_usd": 0.0673765,
+      "gen_id": "gen-1793675400-c8PGGhv5gOqKdIN0Uqhm"
+    },
+    {
+      "at": "2026-11-03T03:10:08.711Z",
+      "id": "phoenix-fly-up",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-up",
+      "cost_usd": 0.0673965,
+      "gen_id": "gen-1793675400-bwaXXlRxiqmAy85m7lYV"
+    },
+    {
+      "at": "2026-11-03T03:10:08.991Z",
+      "id": "phoenix-talon-right",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: right (front) talon layer",
+      "cost_usd": 0.0673765,
+      "gen_id": "gen-1793675400-pjxHOsRwopQmpXc4YNyl"
+    },
+    {
+      "at": "2026-11-03T03:10:15.523Z",
+      "id": "phoenix-fly-level",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-level",
+      "cost_usd": 0.0673895,
+      "gen_id": "gen-1793675407-iIgqYaar1eh08X8RTZbw"
+    },
+    {
+      "at": "2026-11-03T03:10:15.776Z",
+      "id": "phoenix-fly-down",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-down",
+      "cost_usd": 0.0673885,
+      "gen_id": "gen-1793675408-h9zg8idEOOsKkAKnW4dm"
+    },
+    {
+      "at": "2026-11-03T03:10:16.394Z",
+      "id": "phoenix-bank",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: bank",
+      "cost_usd": 0.067398,
+      "gen_id": "gen-1793675409-onYmRbeV1HhOBtk0JcCi"
     }
   ],
   "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89)."

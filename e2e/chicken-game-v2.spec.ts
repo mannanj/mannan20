@@ -1214,6 +1214,90 @@ test.describe('chicken game v2 eagle and phoenix events', () => {
   });
 });
 
+const GRAB_WIDTH: Record<'hawk' | 'eagle' | 'phoenix', number> = { hawk: 110, eagle: 120, phoenix: 150 };
+const MIN_TALON_HIT = 56;
+
+async function summonAny(page: Page, kind: 'hawk' | 'eagle' | 'phoenix') {
+  if (kind === 'hawk') await summonHawk(page);
+  else await summonBird(page, kind);
+}
+
+interface SpanSample {
+  span: number;
+  at: number;
+}
+
+const CONTINUITY_STEP = 0.1;
+const CONTINUITY_WINDOW_MS = 100;
+
+async function spanSamples(page: Page, count: number, everyMs: number): Promise<SpanSample[]> {
+  const out: SpanSample[] = [];
+  for (let i = 0; i < count; i++) {
+    const sample = await page.getByTestId('bird-flight').evaluate((el) => {
+      const img = el as HTMLImageElement;
+      return { span: Math.max(img.offsetWidth, img.offsetHeight), at: performance.now() };
+    });
+    out.push(sample);
+    await page.waitForTimeout(everyMs);
+  }
+  return out;
+}
+
+function expectContinuous(samples: SpanSample[]) {
+  for (let i = 1; i < samples.length; i++) {
+    const a = samples[i - 1];
+    const b = samples[i];
+    if (a.span < 8 || b.span < 8) continue;
+    const allowed = CONTINUITY_STEP * Math.max(1, (b.at - a.at) / CONTINUITY_WINDOW_MS);
+    expect(Math.abs(b.span / a.span - 1), `step ${i}: ${a.span.toFixed(1)} -> ${b.span.toFixed(1)} over ${(b.at - a.at).toFixed(0)}ms`).toBeLessThanOrEqual(allowed);
+  }
+}
+
+test.describe('chicken game v2 bird sizes, talon hit areas and frame continuity', () => {
+  for (const kind of ['hawk', 'eagle', 'phoenix'] as const) {
+    test(`${kind}: grab is about ${GRAB_WIDTH[kind]}px wide, talon hit areas are at least 56px, separate and clickable`, async ({ page }) => {
+      test.setTimeout(120_000);
+      await summonAny(page, kind);
+      const body = await rectOf(page, 'bird-body');
+      expect(body.width).toBeGreaterThan(GRAB_WIDTH[kind] * 0.85);
+      expect(body.width).toBeLessThan(GRAB_WIDTH[kind] * 1.15);
+      const chicken = await rectOf(page, 'chicken');
+      expect(chicken.width).toBeGreaterThan(60);
+      const hr = await rectOf(page, 'bird-talon-hit-right');
+      const hl = await rectOf(page, 'bird-talon-hit-left');
+      for (const r of [hr, hl]) {
+        expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(MIN_TALON_HIT);
+      }
+      const overlap = hr.left < hl.right && hl.left < hr.right && hr.top < hl.bottom && hl.top < hr.bottom;
+      expect(overlap).toBe(false);
+      const talonR = await rectOf(page, 'bird-talon-right');
+      expect(hr.left).toBeLessThan(talonR.right);
+      expect(hr.right).toBeGreaterThan(talonR.left);
+      await page.getByTestId('bird-talon-hit-right').click({ force: true });
+      expect((await birdState(page)).bird.rightClicks).toBe(1);
+      await page.getByTestId('bird-talon-hit-left').click({ force: true });
+      expect((await birdState(page)).bird.leftClicks).toBe(0);
+    });
+  }
+
+  test('the eagle keeps a continuous rendered size across flight-frame swaps on the way in and out', async ({ page }) => {
+    test.setTimeout(150_000);
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.setScore(9999));
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.placeChicken(820, 420));
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(1));
+    await expect.poll(async () => (await birdState(page)).bird.phase).toBe('approach');
+    expectContinuous(await spanSamples(page, 14, 80));
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'right', null, { timeout: 8000 });
+    await freeBird(page, 50);
+    await toRecede(page);
+    const samples = await spanSamples(page, 58, 100);
+    expectContinuous(samples);
+    expect(samples[samples.length - 1].span).toBeLessThan(samples[0].span);
+    await expect(page.getByTestId('bird-flight-prev')).toBeHidden();
+  });
+});
+
 type SeqBridge = {
   state: () => {
     score: number;

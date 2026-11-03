@@ -28,7 +28,7 @@ const BIRD_KEY = {
 const ERASE = {
   'hawk/grab-body': { x0: 0, x1: 0.38, y0: 0.82, y1: 1 },
   'eagle/grab-body': { x0: 0.18, x1: 0.5, y0: 0.84, y1: 1 },
-  'phoenix/grab-body': { x0: 0, x1: 0.38, y0: 0.65, y1: 0.81 },
+  'phoenix/grab-body': { x0: 0.24, x1: 0.48, y0: 0.74, y1: 0.88 },
 };
 const LEG_SPAN_FRAC = 0.4;
 const LEG_FADE_PX = 70;

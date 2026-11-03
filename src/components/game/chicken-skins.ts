@@ -115,7 +115,7 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
   {
     id: 'eagle',
     name: 'Bald Eagle',
-    tierBlend: 0.3,
+    tierBlend: 0.08,
     body: '#4A2F1C',
     bodyDark: '#2F1C0F',
     belly: '#5A3B24',
@@ -132,7 +132,7 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
   {
     id: 'phoenix',
     name: 'Phoenix',
-    tierBlend: 0.2,
+    tierBlend: 0.08,
     body: '#FF6A00',
     bodyDark: '#C62A00',
     belly: '#FFD54A',

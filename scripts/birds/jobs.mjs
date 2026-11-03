@@ -15,10 +15,10 @@ const BIRDS = {
     foot: 'massive bright yellow scaled toes and lower leg of a bald eagle with long sharp black hooked talons, dark brown feathered thigh at the top',
   },
   phoenix: {
-    name: 'photorealistic phoenix, a large raptor-shaped firebird the size and build of an eagle',
+    name: 'majestic photorealistic phoenix, a golden-eagle-sized firebird with REAL golden-orange plumage (not flames shaped like a bird)',
     plumage:
-      'its whole body, wings and long tail are made of REAL photographic fire: the feathers are tongues of orange and red flame with a white-hot yellow core at the chest and head, glowing orange embers and drifting sparks trail from the wingtips and the long streaming tail, realistic flame physics, heat shimmer, motion-blurred sparks, molten glowing feet, like a long-exposure photograph of real fire shaped into a bird',
-    foot: 'glowing molten-orange scaled toes and lower leg of a firebird with sharp black-red hooked talons, flame-feathered thigh at the top, real photographic fire and embers licking off the leg',
+      'layered, glossy, finely textured real feathers in warm amber, deep orange and bright golden yellow like a golden pheasant; a regal eagle-like head with a sharp hooked dark beak and an intense eye; a tall flowing swept-back crest of feathery plumes whose tips flicker into soft real flame; long primary wing feathers whose tips and trailing edges dissolve into real fire and glowing embers (fire only at the feather edges, the wing itself stays feathers); a long flowing plume-like tail of streaming golden feathers trailing off into fire and sparks; clearly visible connected legs: golden-orange feathered thighs, scaly orange-gold tarsi and dark sharp curved talons; backlit warm glow with a few floating embers',
+    foot: 'scaly orange-gold toes and lower leg of a golden firebird with dark, sharp, curved talons, a golden-orange feathered thigh at the top joining the leg, a few glowing embers drifting off the feathers',
   },
 };
 

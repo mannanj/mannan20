@@ -216,6 +216,7 @@ export function ChickenSvg({
   const belly = classic ? tierBelly : mixHex(skin.belly, tierBelly, skin.tierBlend);
   const wing = mixHex(bodyDark, '#161616', 0.24);
   const bodyFill = gold ? `url(#${goldId})` : rainbow ? `url(#${rainbowId})` : body;
+  const headFill = skin.pattern === 'eagle' ? '#F6F1E6' : bodyFill;
 
   return (
     <svg
@@ -331,7 +332,7 @@ export function ChickenSvg({
             opacity="0.85"
           />
         )}
-        <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
+        <ellipse cx="40" cy="28" rx="16" ry="14" fill={headFill} />
         <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill={skin.comb} />
         <path d="M55 25 L65 19 L66 38 L55 33 Z" fill={skin.mouth} />
         <path d="M55 21 L74 14 L58 27 Z" fill={skin.beakTop} />

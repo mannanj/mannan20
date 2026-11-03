@@ -44,3 +44,16 @@
 - The char is never removable (no fire-proof item exists); it is cosmetic only and keyed by skin id.
 - Collected toasted feathers have no use yet (collection only, 10 max); a crafting use is open.
 - Asset budget: $0.27 spent of the $0.60 allowance; `scripts/birds/budget.json` cap raised to 3.60 so the generator's stop line (now read from the file) allows it.
+
+#### Follow-up (sizes, connected talons, smoothness, swaps) — round log
+
+Sizes now hawk 110 / eagle 120 / phoenix 150 px (`BIRD_SPECS[kind].bodyWidth`), chicken 70 px. Talon layers and the chicken offset are laid out relative to the bird body (`TalonLayout.h/dx/dy` in body units, `chickenOffset`), so the leg emerges from the belly and the foot wraps the chicken's head and shoulders at every size. Separate invisible talon hit squares (`bird-talon-hit-right/left`, >= 56 px, never overlapping; X, arrow and counter anchor to them). Flight frames are placed by a normalized span (`spanRect`: the frame's longer side = the bird's span) and crossfade through a second layer (`bird-flight-prev`, 140 ms), hover bob starts at zero on release, recoil lift is eased in-out, look-at-you crossfades instead of toggling. Phoenix re-rendered to the golden-plumage reference (grab body + both talons + 6 flight frames, 9 x $0.067 = $0.61, logged). Proof: `/Users/manblack/Desktop/chicken-game-new-designs/6-eagle-phoenix/v2/r1..r4/*-sheet.png` (fly-in, grab, hint, recoil x4, back hint, last tap, release x4, recede swaps x6, skin).
+
+| Round | Issues found | Fixes |
+|---|---|---|
+| r1 (hawk, eagle) | Talons sized to the chicken towered above the 110/120 px body, detached; lifted claw floated over the head; feather litter from calm clicks; eagle skin muddy under tier tint | Body-relative talon layout and chicken offset; tuck 35%/-35deg; no feather emission while a bird is busy; eagle/phoenix `tierBlend` 0.08 and a white eagle head |
+| r2 (all three) | Hint arrow tail flipped above and crossed the wing; toasted feathers oversized and piling; back-claw counter grazed the tail; dark duplicate bird confirmed gone (look crossfade) | Arrow tail on the outer-lower side of the target talon; toasted 0.34x chicken width; back counter gap doubled |
+| r3 (all three) | Phoenix only: HUD avoidance pushes the 150 px bird down so the arrow flipped above the wing again; toasted feathers still lingered | Vertical flip replaced by a horizontal tail beside the talon; toasted life 1.6-2.8 s |
+| r4 (phoenix) | Nothing broken | — |
+
+Sweep notes: no flicker at swaps (prev layer hidden once the crossfade ends, asserted in e2e), no halos on the new phoenix key, z-order body < left talon < chicken < right talon kept, banner stays in the top slot, no clipping (settle clamp includes the talon rects). The parked rocket overlapping the score is the other agent's.

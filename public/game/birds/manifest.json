@@ -123,8 +123,8 @@
       "file": "/game/birds/phoenix/away-far.webp"
     },
     "bank": {
-      "width": 893,
-      "height": 932,
+      "width": 936,
+      "height": 862,
       "file": "/game/birds/phoenix/bank.webp"
     },
     "feather": {
@@ -133,37 +133,37 @@
       "file": "/game/birds/phoenix/feather.webp"
     },
     "fly-down": {
-      "width": 934,
-      "height": 732,
+      "width": 961,
+      "height": 846,
       "file": "/game/birds/phoenix/fly-down.webp"
     },
     "fly-level": {
-      "width": 932,
-      "height": 692,
+      "width": 974,
+      "height": 838,
       "file": "/game/birds/phoenix/fly-level.webp"
     },
     "fly-up": {
-      "width": 832,
-      "height": 906,
+      "width": 931,
+      "height": 881,
       "file": "/game/birds/phoenix/fly-up.webp"
     },
     "grab-body": {
-      "width": 702,
-      "height": 958,
+      "width": 871,
+      "height": 986,
       "file": "/game/birds/phoenix/grab-body.webp",
       "anchor": {
-        "x": 0.006,
-        "y": 0.634
+        "x": 0.246,
+        "y": 0.745
       }
     },
     "talon-left": {
-      "width": 447,
-      "height": 785,
+      "width": 659,
+      "height": 639,
       "file": "/game/birds/phoenix/talon-left.webp"
     },
     "talon-right": {
-      "width": 671,
-      "height": 749,
+      "width": 602,
+      "height": 570,
       "file": "/game/birds/phoenix/talon-right.webp"
     }
   },
