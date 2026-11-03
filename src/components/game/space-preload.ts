@@ -2,6 +2,8 @@ export interface SpaceBlobs {
   earthDay: Blob;
   earthNight: Blob;
   moon: Blob;
+  mars: Blob;
+  jupiter: Blob;
 }
 
 export interface SpaceProgress {
@@ -14,6 +16,8 @@ export const SPACE_URLS = {
   earthDay: '/game/space/earth-day-4k.webp',
   earthNight: '/game/space/earth-night-2k.webp',
   moon: '/game/space/moon-lroc-1k.webp',
+  mars: '/game/space/mars-viking-2k.webp',
+  jupiter: '/game/space/jupiter-cassini-2k.webp',
 } as const;
 
 type SpaceKey = keyof typeof SPACE_URLS;
@@ -22,13 +26,15 @@ const EXPECTED_BYTES: Record<SpaceKey, number> = {
   earthDay: 556_412,
   earthNight: 94_912,
   moon: 101_178,
+  mars: 459_714,
+  jupiter: 100_018,
 };
 const CHUNK_WEIGHT_BYTES = 700_000;
 const SPEED_SMOOTHING = 0.2;
 const MIN_SPEED_SAMPLE_MS = 120;
 const KEYS = Object.keys(SPACE_URLS) as SpaceKey[];
 
-const loaded: Record<SpaceKey, number> = { earthDay: 0, earthNight: 0, moon: 0 };
+const loaded: Record<SpaceKey, number> = { earthDay: 0, earthNight: 0, moon: 0, mars: 0, jupiter: 0 };
 const totals: Record<SpaceKey, number> = { ...EXPECTED_BYTES };
 let chunkDone = false;
 let started: Promise<SpaceBlobs> | null = null;
@@ -89,9 +95,9 @@ export function startSpacePreload(loadChunk: () => Promise<unknown>): Promise<Sp
     });
     const blobs = Promise.all(KEYS.map(fetchBlob));
     started = Promise.all([chunk, blobs])
-      .then(([, [earthDay, earthNight, moon]]) => {
+      .then(([, [earthDay, earthNight, moon, mars, jupiter]]) => {
         finished = true;
-        return { earthDay, earthNight, moon };
+        return { earthDay, earthNight, moon, mars, jupiter };
       })
       .catch((err: unknown) => {
         started = null;

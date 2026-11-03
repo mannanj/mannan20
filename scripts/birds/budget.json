@@ -1,7 +1,7 @@
 {
   "cap_usd": 3,
   "stop_at_usd": 2.55,
-  "spent_usd": 2.695098,
+  "spent_usd": 2.801124,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -322,6 +322,24 @@
       "purpose": "photoreal polish: legs",
       "cost_usd": 0.067786,
       "gen_id": "gen-1793673680-ajQy1QwCEt1YIHZKnw8F"
+    },
+    {
+      "at": "2026-11-03T03:10:40.507Z",
+      "task": 310,
+      "id": "cosmos-pip-draft",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "task 310 cosmos: pip",
+      "cost_usd": 0.038778,
+      "gen_id": "gen-1793675434-8d6BtnMhueBiZe7ZImLT"
+    },
+    {
+      "at": "2026-11-03T03:10:55.493Z",
+      "task": 310,
+      "id": "cosmos-ground-v1",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "task 310 cosmos: ground",
+      "cost_usd": 0.0672475,
+      "gen_id": "gen-1793675445-idQCInBHbQrghxx3b2nF"
     }
   ]
 }

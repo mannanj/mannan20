@@ -1,4 +1,4 @@
-export type EscapeStage = 'none' | 'surf' | 'pilot' | 'rocket' | 'moon';
+export type EscapeStage = 'none' | 'surf' | 'pilot' | 'rocket' | 'moon' | 'cosmos' | 'jupiter';
 
 export const ESCAPE_STAGES: { stage: EscapeStage; threshold: number; introMs: number }[] = [
   { stage: 'none', threshold: 0, introMs: 0 },
@@ -6,7 +6,39 @@ export const ESCAPE_STAGES: { stage: EscapeStage; threshold: number; introMs: nu
   { stage: 'pilot', threshold: 350, introMs: 3800 },
   { stage: 'rocket', threshold: 450, introMs: 0 },
   { stage: 'moon', threshold: 540, introMs: 3400 },
+  { stage: 'cosmos', threshold: 10_000, introMs: 0 },
+  { stage: 'jupiter', threshold: 17_000, introMs: 0 },
 ];
+
+export const COSMOS_START_SCORE = 10_000;
+export const COSMOS_FORCE_SCORE = 10_500;
+export const JUPITER_SCORE = 17_000;
+export const LIFTOFF_MS = 2600;
+export const DESCENT_MS = 6000;
+
+export type CosmosBand = 'earth' | 'moon' | 'mars' | 'belt' | 'jupiter-approach';
+
+const COSMOS_BAND_STARTS: { band: CosmosBand; from: number }[] = [
+  { band: 'earth', from: 0 },
+  { band: 'moon', from: 0.1 },
+  { band: 'mars', from: 0.2 },
+  { band: 'belt', from: 0.43 },
+  { band: 'jupiter-approach', from: 0.71 },
+];
+
+export function cosmosProgress(score: number): number {
+  return Math.max(0, Math.min(1, (score - COSMOS_START_SCORE) / (JUPITER_SCORE - COSMOS_START_SCORE)));
+}
+
+export function cosmosBand(p: number): CosmosBand {
+  let band: CosmosBand = 'earth';
+  for (const b of COSMOS_BAND_STARTS) if (p >= b.from) band = b.band;
+  return band;
+}
+
+export function isSpaceStage(stage: EscapeStage): boolean {
+  return stage === 'cosmos' || stage === 'jupiter';
+}
 
 export const SURF_LINE_FRAC = 0.7;
 export const SURF_AMPLITUDE = 22;

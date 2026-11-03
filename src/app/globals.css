@@ -1697,3 +1697,41 @@ body.gem-rain-active #header > div:first-child {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
+
+@keyframes martianIdle {
+  0%, 100% { transform: translateY(0) rotate(-0.8deg); }
+  50% { transform: translateY(-3px) rotate(0.8deg); }
+}
+
+@keyframes martianWalk {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(2deg); }
+}
+
+@keyframes martianPoke {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08, 0.94); }
+  100% { transform: scale(1); }
+}
+
+@keyframes martianStroll {
+  0% { transform: translateX(calc(var(--stroll) * -1)); }
+  100% { transform: translateX(var(--stroll)); }
+}
+
+@keyframes groundRise {
+  0% { transform: translateY(100%); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes cosmosLiftoff {
+  0% { transform: translateY(0); opacity: 1; }
+  25% { transform: translateY(6px); opacity: 1; }
+  100% { transform: translateY(-120vh); opacity: 0.2; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

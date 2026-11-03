@@ -216,6 +216,14 @@ export function ChickenSvg({
             opacity="0.85"
           />
         )}
+        {skin.accessory === 'antennae' && (
+          <g stroke={skin.legs} strokeWidth="1.8" strokeLinecap="round" fill="none">
+            <path d="M36 16 Q31 8 30 2" />
+            <path d="M45 15 Q50 7 51 1" />
+            <circle cx="30" cy="2" r="2.4" fill={skin.comb} stroke="none" />
+            <circle cx="51" cy="1" r="2.4" fill={skin.comb} stroke="none" />
+          </g>
+        )}
         <ellipse cx="40" cy="28" rx="16" ry="14" fill={bodyFill} />
         <path d="M33 16 L35 5 L38 15 L41 3 L44 14 L47 6 L49 16" fill={skin.comb} />
         <path d="M55 25 L65 19 L66 38 L55 33 Z" fill={skin.mouth} />

@@ -77,12 +77,25 @@ import {
   SURF_TILT,
   drawSurf,
   introMsFor,
+  COSMOS_FORCE_SCORE,
+  LIFTOFF_MS,
+  cosmosProgress,
+  isSpaceStage,
   stageForScore,
   stageRank,
   surfSlopeDeg,
   surfSurfaceY,
   type EscapeStage,
 } from './escape-stages';
+import { MartianLayer } from './martian-layer';
+import {
+  MARTIAN_ITEM_ID,
+  MARTIAN_SKIN_ID,
+  MARTIAN_KINDS,
+  readMartianClicks,
+  spawnMartianNow,
+  type MartianKind,
+} from './martians';
 import { LeaderboardPanel } from './leaderboard-panel';
 import { SoundLoader } from './sound-loader';
 import {
@@ -716,6 +729,8 @@ interface ChickenBridge {
   placeChicken: (x: number, y: number) => void;
   useItem: (id: string) => void;
   selectSkin: (id: string) => void;
+  spawnMartian: (kind?: string) => void;
+  martianClicks: () => number;
   collectOrb: (kind: OrbKind) => void;
   fastForward: (ms: number) => void;
   forceToss: (level?: number) => void;
@@ -727,10 +742,10 @@ interface ChickenBridge {
   setSeqTimeScale: (n: number) => void;
 }
 
-type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather'>;
+type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather' | 'martian-friend'>;
 
 function isFeatherSkinItem(id: string): id is FeatherSkinItemId {
-  return id === 'hawk-feather' || id === 'eagle-feather';
+  return id === 'hawk-feather' || id === 'eagle-feather' || id === MARTIAN_ITEM_ID;
 }
 
 let featherSkinHandler: ((id: FeatherSkinItemId) => void) | null = null;
@@ -750,6 +765,7 @@ interface BridgeWindow {
 const MOON_PARK_X_FRAC = 0.17;
 const loadSpaceFlight = () => import('./space-flight-3d');
 const SpaceFlight3D = dynamic(loadSpaceFlight, { ssr: false });
+const CosmosFlight = dynamic(() => import('./cosmos-3d'), { ssr: false });
 const PRELOAD_IDLE_TIMEOUT_MS = 4000;
 const PRELOAD_FALLBACK_DELAY_MS = 1500;
 
@@ -939,6 +955,7 @@ function ChickenGameInner() {
   const approachFromRef = useRef({ x: 0, y: 0 });
   const moonFromRef = useRef<{ y: number } | null>(null);
   const flightProgressRef = useRef(0);
+  const cosmosProgressRef = useRef(0);
   const scene3dReadyRef = useRef(false);
   const [gate, setGate] = useState<SpaceGateState>('none');
   const [gateCount, setGateCount] = useState(GATE_COUNT_FROM);
@@ -1791,7 +1808,8 @@ function ChickenGameInner() {
 
   useEffect(() => {
     featherSkinHandler = (id) => {
-      const skinId = id === 'hawk-feather' ? BIRD_SPECS.hawk.skinId : BIRD_SPECS.eagle.skinId;
+      const skinId =
+        id === MARTIAN_ITEM_ID ? MARTIAN_SKIN_ID : id === 'hawk-feather' ? BIRD_SPECS.hawk.skinId : BIRD_SPECS.eagle.skinId;
       if (skinById(skinId).id !== skinId) return;
       setUnlockedSkins(unlockSkin(skinId));
       selectSkin(skinId);
@@ -1979,7 +1997,14 @@ function ChickenGameInner() {
     setStagePhase(phase);
     setStage(next);
     if (next === 'pilot' || next === 'rocket' || next === 'moon') modeRef.current = 'flying';
-    if (next !== 'moon') setParked(null);
+    if (next !== 'moon' && next !== 'cosmos') setParked(null);
+    if (isSpaceStage(next)) {
+      modeRef.current = 'flying';
+      if (prev === 'moon') {
+        p.vy = -BASE_SPEED * 1.2;
+        p.vx = facingRef.current * BASE_SPEED * 0.8;
+      }
+    }
     if (isScriptedStage(next)) {
       hyperRef.current.phase = 'idle';
       scrambleRef.current.phase = 'idle';
@@ -2093,7 +2118,7 @@ function ChickenGameInner() {
       if (!skip3dRef.current) setSpace3dOn(true);
       return;
     }
-    if (stage === 'moon' && space3dOn) {
+    if ((stage === 'moon' || isSpaceStage(stage)) && space3dOn) {
       const id = setTimeout(() => setSpace3dOn(false), CANVAS_FADE_OUT_MS + 200);
       return () => clearTimeout(id);
     }
@@ -2137,6 +2162,19 @@ function ChickenGameInner() {
     },
     [grantItem]
   );
+
+  const onMartianReward = useCallback(
+    (x: number, y: number) => {
+      grantItem(MARTIAN_ITEM_ID, { x, y });
+    },
+    [grantItem]
+  );
+
+  useEffect(() => {
+    if (stage !== 'cosmos') return;
+    const id = setTimeout(() => setParked(null), LIFTOFF_MS + 300);
+    return () => clearTimeout(id);
+  }, [stage]);
 
   const toggleSheet = useCallback(() => {
     setSkinsOpen(false);
@@ -2390,7 +2428,10 @@ function ChickenGameInner() {
       if (now < buff.x3Until) buff.x3Until += CURSOR_EXTEND_PER_CLICK_MS;
       speedRef.current = speedForScore(shown);
       const currentStage = stageRef.current;
-      const scoreStage = stageForScore(shown);
+      const rawStage = stageForScore(shown);
+      const cosmosOpen = shown >= COSMOS_FORCE_SCORE || (!bird.pending && !isBirdBusy(bird));
+      const scoreStage = isSpaceStage(rawStage) && !cosmosOpen ? currentStage : rawStage;
+      cosmosProgressRef.current = cosmosProgress(shown);
       const nextStage = scoreStage === 'moon' && currentStage === 'pilot' ? 'rocket' : scoreStage;
       if (seqRef.current === 'planeExit') seqClicksRef.current += 1;
       if (
@@ -2641,6 +2682,8 @@ function ChickenGameInner() {
       },
       useItem: (id: string) => useItem(id),
       selectSkin: (id: string) => selectSkin(id),
+      spawnMartian: (kind?: string) => spawnMartianNow(MARTIAN_KINDS.find((k): k is MartianKind => k === kind)),
+      martianClicks: () => readMartianClicks(),
       fastForward: (ms: number) => {
         shiftBirdTime(birdRef.current, ms);
         for (const o of orbsRef.current) o.bornAt -= ms;
@@ -3842,10 +3885,21 @@ function ChickenGameInner() {
       className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
     >
       <GameScenery tier={tier} />
+      {isSpaceStage(stage) && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
       <EscapeScenery stage={stage} seq={seq} />
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
-      {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon'} />}
+      {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
+      <MartianLayer
+        active={stage === 'jupiter'}
+        blocked={birdUi.kind !== null || skinsOpen || sheet !== null || gate !== 'none'}
+        onReward={onMartianReward}
+      />
+      {parked && stage === 'cosmos' && (
+        <div data-testid="liftoff-rocket" className="absolute inset-0 z-[2] pointer-events-none animate-[cosmosLiftoff_2.6s_ease-in_forwards]">
+          <ParkedRocket x={parked.x} y={parked.y} />
+        </div>
+      )}
 
       <div data-hud="" className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
         Squeeze the chicken

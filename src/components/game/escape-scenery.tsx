@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import type { RocketSeq } from './escape-sequence';
-import type { EscapeStage } from './escape-stages';
+import { DESCENT_MS, isSpaceStage, type EscapeStage } from './escape-stages';
+import { BG_MARTIAN_COUNT, MARTIAN_KINDS, MARTIAN_SPECS } from './martians';
 
 const STAR_COUNT = 90;
 
@@ -108,6 +109,71 @@ function MoonScape() {
   );
 }
 
+const GROUND_SRC = '/game/martians/ground.webp';
+const BG_MARTIAN_HEIGHT_MIN = 46;
+const BG_MARTIAN_HEIGHT_SPREAD = 26;
+const BG_MARTIAN_DEPTH_MIN = 50;
+const BG_MARTIAN_DEPTH_SPREAD = 14;
+const BG_STROLL_MIN = 40;
+const BG_STROLL_SPREAD = 90;
+const BG_STROLL_SECONDS_MIN = 22;
+const BG_STROLL_SECONDS_SPREAD = 18;
+
+const BG_MARTIANS = Array.from({ length: BG_MARTIAN_COUNT }, (_, i) => ({
+  kind: MARTIAN_KINDS[i % MARTIAN_KINDS.length],
+  left: 6 + hash(i + 40) * 86,
+  bottom: BG_MARTIAN_DEPTH_MIN + hash(i + 50) * BG_MARTIAN_DEPTH_SPREAD,
+  height: BG_MARTIAN_HEIGHT_MIN + hash(i + 60) * BG_MARTIAN_HEIGHT_SPREAD,
+  stroll: BG_STROLL_MIN + hash(i + 70) * BG_STROLL_SPREAD,
+  seconds: BG_STROLL_SECONDS_MIN + hash(i + 80) * BG_STROLL_SECONDS_SPREAD,
+  flip: hash(i + 90) > 0.5 ? 1 : -1,
+})).sort((a, b) => b.bottom - a.bottom);
+
+function JupiterGround() {
+  return (
+    <div
+      data-testid="jupiter-ground"
+      className="absolute inset-x-0 bottom-0 h-[58%] animate-[groundRise_6s_ease-in-out_forwards]"
+      style={{ animationDuration: `${DESCENT_MS}ms` }}
+    >
+      <div className="absolute inset-x-0 top-0 h-[22%] bg-[linear-gradient(180deg,transparent,rgba(214,150,92,0.16))]" />
+      <img
+        src={GROUND_SRC}
+        alt=""
+        draggable={false}
+        className="absolute inset-x-0 bottom-0 h-[92%] w-full object-cover object-top [mask-image:linear-gradient(180deg,transparent,black_20%)]"
+      />
+      {BG_MARTIANS.map((b, i) => {
+        const spec = MARTIAN_SPECS[b.kind];
+        return (
+          <div
+            key={i}
+            data-testid="martian-bg"
+            className="absolute"
+            style={{ left: `${b.left}%`, bottom: `${b.bottom}%`, height: b.height, width: b.height * spec.aspect }}
+          >
+            <div
+              className="h-full w-full"
+              style={{
+                ['--stroll' as string]: `${b.stroll}px`,
+                animation: `martianStroll ${b.seconds}s ease-in-out infinite alternate`,
+              }}
+            >
+              <img
+                src={spec.src}
+                alt=""
+                draggable={false}
+                className="h-full w-full object-contain opacity-80 [filter:saturate(0.65)_brightness(0.82)_sepia(0.25)_blur(0.4px)]"
+                style={{ transform: `scaleX(${b.flip})` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const CROSSFADE_MS = 1800;
 
 export function EscapeScenery({ stage, seq = 'none' }: { stage: EscapeStage; seq?: RocketSeq }) {
@@ -132,12 +198,15 @@ export function EscapeScenery({ stage, seq = 'none' }: { stage: EscapeStage; seq
             data-testid="escape-scenery"
             data-stage={layer}
             aria-hidden
-            className={`absolute inset-0 pointer-events-none overflow-hidden ${i > 0 ? 'animate-[fadeIn_1.8s_ease-out]' : ''}`}
+            className={`absolute inset-0 pointer-events-none overflow-hidden ${
+              i > 0 ? (layer === 'cosmos' ? '' : 'animate-[fadeIn_1.8s_ease-out]') : shown.length > 1 && isSpaceStage(shown[1]) && !isSpaceStage(layer) ? 'animate-[fadeOut_1.8s_ease-in_forwards]' : ''
+            }`}
           >
             {layer === 'surf' && <SurfSky />}
             {layer === 'pilot' && <PilotSky />}
             {layer === 'rocket' && <RocketSky seq={seq} />}
             {layer === 'moon' && <MoonScape />}
+            {layer === 'jupiter' && <JupiterGround />}
           </div>
         )
       )}
