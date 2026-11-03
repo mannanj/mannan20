@@ -1624,3 +1624,8 @@ body.gem-rain-active #header > div:first-child {
   transform: rotate(var(--rag-legs, 0deg));
   transition: none;
 }
+
+[data-multicursor='1'],
+[data-multicursor='1'] * {
+  cursor: none !important;
+}

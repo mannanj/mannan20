@@ -42,38 +42,48 @@ export const VANISH_FEATHERS = 6;
 
 export const CURSOR_BUFF_MS = 30_000;
 export const CURSOR_EXTEND_PER_CLICK_MS = 100;
-export const CURSOR_X5_OFFSET = 48;
-export const CURSOR_X3_OFFSET = 30;
+export const CURSOR_X5_OFFSET = 30;
+export const CURSOR_X3_OFFSET = 21;
+export const CURSOR_RING_INNER_COUNT = 6;
+export const CURSOR_RING_INNER_RADIUS = 40;
+export const CURSOR_RING_OUTER_COUNT = 8;
+export const CURSOR_RING_OUTER_RADIUS = 78;
+const TRIANGLE_COS = Math.cos(Math.PI / 6);
+const TRIANGLE_SIN = Math.sin(Math.PI / 6);
 export const MAX_CURSORS = 15;
 export const CURSOR_HAND_SIZE = 40;
 export const CURSOR_HAND_HOT_X = 20;
 export const CURSOR_HAND_HOT_Y = 19;
 
+function ring(count: number, radius: number, phase: number): CursorOffset[] {
+  return Array.from({ length: count }, (_, i) => {
+    const a = phase + (i / count) * Math.PI * 2;
+    return { dx: Math.round(Math.cos(a) * radius), dy: Math.round(Math.sin(a) * radius) };
+  });
+}
+
 export function buildCursorOffsets(x5Active: boolean, x3Active: boolean): CursorOffset[] {
-  const arm = CURSOR_X5_OFFSET;
-  const base: CursorOffset[] = x5Active
-    ? [
-        { dx: 0, dy: 0 },
-        { dx: -arm, dy: -arm },
-        { dx: arm, dy: -arm },
-        { dx: -arm, dy: arm },
-        { dx: arm, dy: arm },
-      ]
-    : [{ dx: 0, dy: 0 }];
-  if (!x3Active) return base;
-  const spread = CURSOR_X3_OFFSET;
-  const seen = new Set<string>();
-  const out: CursorOffset[] = [];
-  for (const o of base) {
-    for (const shift of [0, -spread, spread]) {
-      const point = { dx: o.dx + shift, dy: o.dy };
-      const key = `${point.dx},${point.dy}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(point);
-    }
+  const anchor: CursorOffset = { dx: 0, dy: 0 };
+  if (x5Active && x3Active) {
+    return [
+      anchor,
+      ...ring(CURSOR_RING_INNER_COUNT, CURSOR_RING_INNER_RADIUS, -Math.PI / 2),
+      ...ring(CURSOR_RING_OUTER_COUNT, CURSOR_RING_OUTER_RADIUS, -Math.PI / 2 + Math.PI / CURSOR_RING_OUTER_COUNT),
+    ].slice(0, MAX_CURSORS);
   }
-  return out.slice(0, MAX_CURSORS);
+  if (x5Active) {
+    const arm = CURSOR_X5_OFFSET;
+    return [anchor, { dx: -arm, dy: -arm }, { dx: arm, dy: -arm }, { dx: -arm, dy: arm }, { dx: arm, dy: arm }];
+  }
+  if (x3Active) {
+    const r = CURSOR_X3_OFFSET;
+    return [
+      { dx: 0, dy: -r },
+      { dx: -Math.round(r * TRIANGLE_COS), dy: Math.round(r * TRIANGLE_SIN) },
+      { dx: Math.round(r * TRIANGLE_COS), dy: Math.round(r * TRIANGLE_SIN) },
+    ];
+  }
+  return [anchor];
 }
 
 export function crossedOrbs(prev: number, next: number, fired: Record<OrbKind, boolean>): OrbKind[] {

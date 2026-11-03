@@ -12,6 +12,7 @@ import { ChickenSvg } from './chicken-svg';
 import { HoldTossHud } from './hold-toss-hud';
 import { GameScenery } from './game-scenery';
 import { EscapeScenery } from './escape-scenery';
+import { orbFont } from './orb-font';
 import { EscapeGiggle, EscapeVehicleBack, EscapeVehicleFront, ParkedRocket, type StagePhase } from './escape-vehicle';
 import {
   GOGGLE_PHASE_FRAC,
@@ -3436,7 +3437,7 @@ function ChickenGameInner() {
           className="absolute top-0 left-0 z-20 h-[88px] w-[88px] cursor-pointer rounded-full will-change-transform"
         >
           <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-2 text-center text-[13px] font-extrabold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]">
+          <div className={`${orbFont.className} absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-2 text-center text-[15px] uppercase leading-[1.05] tracking-wide text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]`}>
             {ORB_LABELS[orb.kind]}
           </div>
         </div>
