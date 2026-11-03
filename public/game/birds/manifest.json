@@ -1,0 +1,155 @@
+{
+  "eagle": {
+    "away-3q": {
+      "width": 859,
+      "height": 605,
+      "file": "/game/birds/eagle/away-3q.webp"
+    },
+    "away-far": {
+      "width": 973,
+      "height": 396,
+      "file": "/game/birds/eagle/away-far.webp"
+    },
+    "bank": {
+      "width": 884,
+      "height": 838,
+      "file": "/game/birds/eagle/bank.webp"
+    },
+    "fly-down": {
+      "width": 684,
+      "height": 684,
+      "file": "/game/birds/eagle/fly-down.webp"
+    },
+    "fly-level": {
+      "width": 971,
+      "height": 419,
+      "file": "/game/birds/eagle/fly-level.webp"
+    },
+    "fly-up": {
+      "width": 928,
+      "height": 845,
+      "file": "/game/birds/eagle/fly-up.webp"
+    },
+    "grab-body": {
+      "width": 822,
+      "height": 903,
+      "file": "/game/birds/eagle/grab-body.webp",
+      "anchor": {
+        "x": 0.15,
+        "y": 0.86
+      }
+    },
+    "talon-left": {
+      "width": 476,
+      "height": 624,
+      "file": "/game/birds/eagle/talon-left.webp"
+    },
+    "talon-right": {
+      "width": 588,
+      "height": 770,
+      "file": "/game/birds/eagle/talon-right.webp"
+    }
+  },
+  "hawk": {
+    "away-3q": {
+      "width": 884,
+      "height": 779,
+      "file": "/game/birds/hawk/away-3q.webp"
+    },
+    "away-far": {
+      "width": 929,
+      "height": 613,
+      "file": "/game/birds/hawk/away-far.webp"
+    },
+    "bank": {
+      "width": 695,
+      "height": 943,
+      "file": "/game/birds/hawk/bank.webp"
+    },
+    "fly-down": {
+      "width": 782,
+      "height": 638,
+      "file": "/game/birds/hawk/fly-down.webp"
+    },
+    "fly-level": {
+      "width": 959,
+      "height": 465,
+      "file": "/game/birds/hawk/fly-level.webp"
+    },
+    "fly-up": {
+      "width": 796,
+      "height": 745,
+      "file": "/game/birds/hawk/fly-up.webp"
+    },
+    "grab-body": {
+      "width": 787,
+      "height": 995,
+      "file": "/game/birds/hawk/grab-body.webp",
+      "anchor": {
+        "x": -0.04,
+        "y": 0.795
+      }
+    },
+    "talon-left": {
+      "width": 615,
+      "height": 573,
+      "file": "/game/birds/hawk/talon-left.webp"
+    },
+    "talon-right": {
+      "width": 499,
+      "height": 634,
+      "file": "/game/birds/hawk/talon-right.webp"
+    }
+  },
+  "phoenix": {
+    "away-3q": {
+      "width": 912,
+      "height": 850,
+      "file": "/game/birds/phoenix/away-3q.webp"
+    },
+    "away-far": {
+      "width": 993,
+      "height": 762,
+      "file": "/game/birds/phoenix/away-far.webp"
+    },
+    "bank": {
+      "width": 893,
+      "height": 932,
+      "file": "/game/birds/phoenix/bank.webp"
+    },
+    "fly-down": {
+      "width": 934,
+      "height": 732,
+      "file": "/game/birds/phoenix/fly-down.webp"
+    },
+    "fly-level": {
+      "width": 932,
+      "height": 692,
+      "file": "/game/birds/phoenix/fly-level.webp"
+    },
+    "fly-up": {
+      "width": 832,
+      "height": 906,
+      "file": "/game/birds/phoenix/fly-up.webp"
+    },
+    "grab-body": {
+      "width": 702,
+      "height": 958,
+      "file": "/game/birds/phoenix/grab-body.webp",
+      "anchor": {
+        "x": 0.006,
+        "y": 0.634
+      }
+    },
+    "talon-left": {
+      "width": 447,
+      "height": 785,
+      "file": "/game/birds/phoenix/talon-left.webp"
+    },
+    "talon-right": {
+      "width": 671,
+      "height": 749,
+      "file": "/game/birds/phoenix/talon-right.webp"
+    }
+  }
+}

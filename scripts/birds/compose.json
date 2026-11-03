@@ -1,0 +1,17 @@
+{
+  "hawk": {
+    "body": { "width": 400, "anchorShift": { "x": 0.11, "y": -0.04 } },
+    "right": { "scale": 1.0, "dx": -0.38, "dy": -0.12, "rot": 0, "xMark": { "x": 0.55, "y": 0.7 } },
+    "left": { "scale": 0.85, "dx": 0.55, "dy": -0.45, "rot": 0 }
+  },
+  "eagle": {
+    "body": { "width": 440, "anchorShift": { "x": 0.09, "y": -0.03 } },
+    "right": { "scale": 1.0, "dx": -0.38, "dy": -0.12, "rot": 0, "xMark": { "x": 0.55, "y": 0.7 } },
+    "left": { "scale": 0.85, "dx": 0.55, "dy": -0.45, "rot": 0 }
+  },
+  "phoenix": {
+    "body": { "width": 400, "anchorShift": { "x": 0.1, "y": -0.03 } },
+    "right": { "scale": 0.95, "dx": -0.38, "dy": -0.12, "rot": 0, "xMark": { "x": 0.55, "y": 0.7 } },
+    "left": { "scale": 0.8, "dx": 0.55, "dy": -0.45, "rot": 0 }
+  }
+}

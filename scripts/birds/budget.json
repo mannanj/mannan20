@@ -1,0 +1,247 @@
+{
+  "cap_usd": 3,
+  "stop_at_usd": 2.55,
+  "spent_usd": 2.021204,
+  "calls": [
+    {
+      "at": "2026-11-03T01:38:13.627Z",
+      "id": "hawk-talon-right",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: right (front) talon layer",
+      "cost_usd": 0.0673605,
+      "gen_id": "gen-1793669885-CP50KXGV1YjEppYkkpze"
+    },
+    {
+      "at": "2026-11-03T01:38:14.229Z",
+      "id": "hawk-grab-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: body + wings layer",
+      "cost_usd": 0.067421,
+      "gen_id": "gen-1793669885-eNMyDo6o06J6bUFaW75x"
+    },
+    {
+      "at": "2026-11-03T01:38:49.665Z",
+      "id": "hawk-fly-down",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-down",
+      "cost_usd": 0.067342,
+      "gen_id": "gen-1793669921-IDaMSoSQjqMeLs3GhWtA"
+    },
+    {
+      "at": "2026-11-03T01:38:49.876Z",
+      "id": "hawk-fly-level",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-level",
+      "cost_usd": 0.067343,
+      "gen_id": "gen-1793669921-FaI21sY7pco0v1ZKXhpW"
+    },
+    {
+      "at": "2026-11-03T01:38:50.156Z",
+      "id": "hawk-fly-up",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-up",
+      "cost_usd": 0.06735,
+      "gen_id": "gen-1793669921-IuCwmMgFNcTRNQhuThPy"
+    },
+    {
+      "at": "2026-11-03T01:38:56.433Z",
+      "id": "hawk-away-3q",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: away-3q",
+      "cost_usd": 0.06735,
+      "gen_id": "gen-1793669929-yC1J0i8j4fSHVNMTASI8"
+    },
+    {
+      "at": "2026-11-03T01:38:57.546Z",
+      "id": "hawk-bank",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: bank",
+      "cost_usd": 0.0673515,
+      "gen_id": "gen-1793669929-RuBj2RW9quHQnfsa7YHV"
+    },
+    {
+      "at": "2026-11-03T01:39:03.858Z",
+      "id": "eagle-grab-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: body + wings layer",
+      "cost_usd": 0.067409,
+      "gen_id": "gen-1793669936-6YfBuCU7x1eUhR45QICW"
+    },
+    {
+      "at": "2026-11-03T01:39:08.907Z",
+      "id": "hawk-away-far",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: away-far",
+      "cost_usd": 0.067345,
+      "gen_id": "gen-1793669930-tRgV3WHJ2iNLr1P1EL9z"
+    },
+    {
+      "at": "2026-11-03T01:39:10.791Z",
+      "id": "eagle-fly-level",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-level",
+      "cost_usd": 0.067331,
+      "gen_id": "gen-1793669943-WnfDZk0Z4AoMkcCzlKmB"
+    },
+    {
+      "at": "2026-11-03T01:39:16.940Z",
+      "id": "eagle-fly-down",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-down",
+      "cost_usd": 0.06733,
+      "gen_id": "gen-1793669948-DKTOZKXEuGQDtxxAh71X"
+    },
+    {
+      "at": "2026-11-03T01:39:17.253Z",
+      "id": "eagle-fly-up",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-up",
+      "cost_usd": 0.067338,
+      "gen_id": "gen-1793669937-wl6RioxC3ixN7kZSq49H"
+    },
+    {
+      "at": "2026-11-03T01:39:19.263Z",
+      "id": "eagle-bank",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: bank",
+      "cost_usd": 0.0673395,
+      "gen_id": "gen-1793669950-zPXeQ5TlqZPmuiSEM3Fa"
+    },
+    {
+      "at": "2026-11-03T01:39:24.240Z",
+      "id": "eagle-away-3q",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: away-3q",
+      "cost_usd": 0.067338,
+      "gen_id": "gen-1793669956-gVwWUvtIJUY2Gg48yhMX"
+    },
+    {
+      "at": "2026-11-03T01:39:24.729Z",
+      "id": "eagle-away-far",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: away-far",
+      "cost_usd": 0.067333,
+      "gen_id": "gen-1793669957-qLsTf81w9KXvIE57IXBF"
+    },
+    {
+      "at": "2026-11-03T01:39:31.016Z",
+      "id": "phoenix-grab-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: body + wings layer",
+      "cost_usd": 0.0674355,
+      "gen_id": "gen-1793669959-obMYu2Ax0Hm7ff4tu5IZ"
+    },
+    {
+      "at": "2026-11-03T01:39:36.115Z",
+      "id": "phoenix-fly-level",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-level",
+      "cost_usd": 0.0673575,
+      "gen_id": "gen-1793669964-LfJ8vCATyRCwj7ShlYan"
+    },
+    {
+      "at": "2026-11-03T01:39:37.106Z",
+      "id": "phoenix-fly-up",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-up",
+      "cost_usd": 0.0673645,
+      "gen_id": "gen-1793669964-bmt9Lb1wcKnpG9WJpEXv"
+    },
+    {
+      "at": "2026-11-03T01:39:40.210Z",
+      "id": "phoenix-fly-down",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: fly-down",
+      "cost_usd": 0.0673565,
+      "gen_id": "gen-1793669971-PiGHJZe8R24BHOH5u1Px"
+    },
+    {
+      "at": "2026-11-03T01:39:44.836Z",
+      "id": "phoenix-bank",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: bank",
+      "cost_usd": 0.067366,
+      "gen_id": "gen-1793669976-sFMF4fTgN2yfcoRKOGZ6"
+    },
+    {
+      "at": "2026-11-03T01:39:46.504Z",
+      "id": "phoenix-away-3q",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: away-3q",
+      "cost_usd": 0.0673645,
+      "gen_id": "gen-1793669977-hPE8LdJwOu1acYwYuG3j"
+    },
+    {
+      "at": "2026-11-03T01:39:48.142Z",
+      "id": "phoenix-away-far",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "flight frame: away-far",
+      "cost_usd": 0.0675995,
+      "gen_id": "gen-1793669980-XbX1CLWvGcjrejRjjjuZ"
+    },
+    {
+      "at": "2026-11-03T01:41:18.544Z",
+      "id": "eagle-talon-right",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: right (front) talon layer",
+      "cost_usd": 0.0673605,
+      "gen_id": "gen-1793670070-LE83lNVlAKMEo0LX5BdY"
+    },
+    {
+      "at": "2026-11-03T01:41:19.037Z",
+      "id": "hawk-talon-left",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: left (back) talon layer",
+      "cost_usd": 0.0673605,
+      "gen_id": "gen-1793670070-0mDx5rE7ysTnHdpQbaCL"
+    },
+    {
+      "at": "2026-11-03T01:41:19.661Z",
+      "id": "eagle-talon-left",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: left (back) talon layer",
+      "cost_usd": 0.0673605,
+      "gen_id": "gen-1793670070-N4sLIRLh47St5yEcjelA"
+    },
+    {
+      "at": "2026-11-03T01:41:26.079Z",
+      "id": "phoenix-talon-left",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: left (back) talon layer",
+      "cost_usd": 0.067371,
+      "gen_id": "gen-1793670079-sKAAuT2GNTXbsKQ2oZCH"
+    },
+    {
+      "at": "2026-11-03T01:41:29.558Z",
+      "id": "phoenix-talon-right",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose: right (front) talon layer",
+      "cost_usd": 0.067371,
+      "gen_id": "gen-1793670078-IP56GYhpva9YvMoTSxlV"
+    },
+    {
+      "at": "2026-11-03T01:50:10.128Z",
+      "id": "eagle-grab-body-v2",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose v2: head bowed over the feet",
+      "cost_usd": 0.0674055,
+      "gen_id": "gen-1793670603-gqNAyII2arPSFOUb2kti"
+    },
+    {
+      "at": "2026-11-03T01:50:10.673Z",
+      "id": "phoenix-grab-body-v2",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose v2: head bowed over the feet",
+      "cost_usd": 0.067432,
+      "gen_id": "gen-1793670603-rZ86RD4q0pi1pQEc5HBl"
+    },
+    {
+      "at": "2026-11-03T01:50:10.708Z",
+      "id": "hawk-grab-body-v2",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "grab pose v2: head bowed over the feet",
+      "cost_usd": 0.0674175,
+      "gen_id": "gen-1793670603-ApB6z04yTwss3RA69q2I"
+    }
+  ]
+}
