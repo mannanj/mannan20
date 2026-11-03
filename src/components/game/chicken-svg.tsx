@@ -2,7 +2,7 @@
 
 import { useId } from 'react';
 import { TIERS, mixHex } from './chicken-tiers';
-import { skinById } from './chicken-skins';
+import { BURN_SPOT, BURN_STAGES, CHAR_FEATHER_OPACITY, skinById, type CharSpot } from './chicken-skins';
 
 interface ChickenSvgProps {
   className?: string;
@@ -13,7 +13,12 @@ interface ChickenSvgProps {
   eyes?: (typeof TIERS)[number]['eyes'];
   skin?: string;
   wound?: { hp: number; open: boolean } | null;
+  distress?: 0 | 1 | 2;
+  burn?: boolean;
+  char?: CharSpot[];
 }
+
+export type Distress = 0 | 1 | 2;
 
 function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
   if (kind === 'ascended') {
@@ -60,6 +65,81 @@ function Eye({ kind }: { kind: (typeof TIERS)[number]['eyes'] }) {
 }
 
 const FLAP_ANGLES = [0, -70, -28, 0];
+const SWEAT_DROPS = [
+  { x: 30, y: 44, delay: 0 },
+  { x: 52, y: 50, delay: 0.8 },
+  { x: 40, y: 70, delay: 1.5 },
+  { x: 22, y: 84, delay: 0.4 },
+  { x: 58, y: 90, delay: 1.1 },
+  { x: 46, y: 36, delay: 1.9 },
+];
+const SWEAT_LIGHT = 3;
+const STEAM_PUFFS = [
+  { x: 28, y: 12, delay: 0 },
+  { x: 54, y: 8, delay: 1.1 },
+];
+const EMBERS = [
+  { dx: -5, dy: -4 },
+  { dx: 4, dy: 3 },
+  { dx: 1, dy: -7 },
+];
+
+function SweatDrop({ x, y, delay, heavy, uid }: { x: number; y: number; delay: number; heavy: boolean; uid: string }) {
+  return (
+    <g className={`chicken-sweat${heavy ? ' chicken-sweat-heavy' : ''}`} style={{ animationDelay: `${delay}s`, transformBox: 'view-box', transformOrigin: `${x}px ${y}px` }} data-testid="chicken-sweat">
+      <path d={`M${x} ${y - 6.5} C ${x + 3.9} ${y - 0.8}, ${x + 4.2} ${y + 3.9}, ${x} ${y + 5.2} C ${x - 4.2} ${y + 3.9}, ${x - 3.9} ${y - 0.8}, ${x} ${y - 6.5} Z`} fill={`url(#${uid}-sweat)`} stroke="#8FCBEF" strokeWidth="0.5" />
+      <ellipse cx={x - 1.3} cy={y} rx="0.8" ry="1.6" fill="white" opacity="0.9" />
+    </g>
+  );
+}
+
+function DistressFace({ level }: { level: 1 | 2 }) {
+  if (level === 1) {
+    return (
+      <>
+        <path d="M44.5 25 q3.5 -3.4 7 0" stroke="#1a1a1a" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+        <path d="M42 17 L53 15" stroke="#1a1a1a" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M56 30 q2 -1.5 4 0 q2 1.5 4 0" stroke="#4A1A00" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+      </>
+    );
+  }
+  return (
+    <>
+      <circle cx="48" cy="24" r="4.2" fill="white" stroke="#1a1a1a" strokeWidth="1.2" />
+      <circle cx="48.5" cy="24.5" r="1.8" fill="#1a1a1a" />
+      <path d="M42 15 L54 18.5" stroke="#1a1a1a" strokeWidth="2.2" strokeLinecap="round" />
+      <ellipse cx="60" cy="30" rx="3.2" ry="3.8" fill="#4A1A00" />
+      <ellipse cx="60" cy="31.5" rx="1.8" ry="1.6" fill="#E53935" />
+    </>
+  );
+}
+
+function BurnSpot({ spot }: { spot: CharSpot }) {
+  const { x, y, r } = spot;
+  return (
+    <g data-testid="burn-spot" transform={`translate(${x} ${y})`}>
+      <ellipse rx={r} ry={r * 1.15} fill={BURN_STAGES[0]} stroke="#8D5A3A" strokeWidth="0.8" strokeDasharray="2.5 1.5" style={{ opacity: 'var(--burn-skin, 0)' }} />
+      <ellipse rx={r * 0.92} ry={r * 1.05} fill={BURN_STAGES[1]} style={{ opacity: 'var(--burn-1, 0)' }} />
+      <ellipse rx={r * 0.84} ry={r * 0.95} fill={BURN_STAGES[2]} style={{ opacity: 'var(--burn-2, 0)' }} />
+      <ellipse rx={r * 0.76} ry={r * 0.86} fill={BURN_STAGES[3]} style={{ opacity: 'var(--burn-3, 0)' }} />
+      {EMBERS.map((e) => (
+        <circle key={`${e.dx},${e.dy}`} cx={e.dx} cy={e.dy} r="0.9" fill="#FF8A1F" style={{ opacity: 'var(--burn-3, 0)' }} />
+      ))}
+    </g>
+  );
+}
+
+function CharSpotMark({ spot, feathers }: { spot: CharSpot; feathers: string }) {
+  const { x, y, r } = spot;
+  return (
+    <g data-testid="char-spot" transform={`translate(${x} ${y})`}>
+      <ellipse rx={r} ry={r * 1.15} fill={BURN_STAGES[0]} />
+      <ellipse rx={r * 0.88} ry={r * 1} fill={BURN_STAGES[2]} />
+      <ellipse rx={r * 0.74} ry={r * 0.84} fill={BURN_STAGES[3]} />
+      <ellipse data-testid="char-feathers" rx={r * 1.06} ry={r * 1.2} fill={feathers} style={{ opacity: `calc(var(--regrow, 1) * ${CHAR_FEATHER_OPACITY})` }} />
+    </g>
+  );
+}
 const RAINBOW_WOUND = ['#ff4d4d', '#ffb84d', '#f4ff4d', '#4dff88', '#4dc3ff', '#a64dff'];
 const WOUND_PATH = 'M29 94 L36 100 L33 106 L41 111 L38 117 L49 123';
 
@@ -110,6 +190,9 @@ export function ChickenSvg({
   eyes,
   skin: skinId,
   wound,
+  distress = 0,
+  burn = false,
+  char,
 }: ChickenSvgProps) {
   const uid = useId();
   const clampedTier = Math.max(0, Math.min(tier, TIERS.length - 1));
@@ -148,7 +231,17 @@ export function ChickenSvg({
       data-hair={current.hair}
       data-morph={clampedMorph.toFixed(2)}
       data-skin={skin.id}
+      data-distress={distress}
     >
+      {distress > 0 && (
+        <defs>
+          <radialGradient id={`${uid}-sweat`} cx="0.35" cy="0.3" r="0.8">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+            <stop offset="45%" stopColor="#BFE6FF" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#4FA3D1" stopOpacity="0.85" />
+          </radialGradient>
+        </defs>
+      )}
       {gold && (
         <defs>
           <linearGradient id={goldId} x1="0" y1="0" x2="1" y2="1">
@@ -195,6 +288,28 @@ export function ChickenSvg({
           <path d="M29 40 C 31 32, 36 29, 40 29 C 44 29, 49 32, 51 40 C 47 38, 44 37, 40 37 C 36 37, 33 38, 29 40 Z" fill="#5B3519" opacity="0.8" />
         </g>
       )}
+      {skin.pattern === 'eagle' && (
+        <g data-testid="chicken-eagle-pattern">
+          <path d="M18 128 L8 156 L18 150 L24 160 L30 148 L40 158 L46 146 Z" fill="#F6F1E6" stroke="#CFC6B4" strokeWidth="1" strokeLinejoin="round" />
+          <ellipse cx="40" cy="46" rx="14" ry="18" fill="#F6F1E6" />
+          <g stroke="#2F1C0F" strokeWidth="1.2" fill="none" opacity="0.35">
+            <path d="M22 100 q18 -6 36 0" />
+            <path d="M20 114 q20 -6 40 0" />
+            <path d="M22 128 q18 -6 36 0" />
+          </g>
+        </g>
+      )}
+      {skin.pattern === 'phoenix' && (
+        <g data-testid="chicken-phoenix-pattern">
+          <path d="M20 126 C 6 136, 2 150, 10 160 C 14 148, 22 142, 30 146 C 24 150, 20 156, 22 162 C 30 154, 38 150, 44 154 Z" fill="#FFB300" stroke="#E65100" strokeWidth="1" strokeLinejoin="round" opacity="0.95" />
+          <ellipse cx="40" cy="120" rx="14" ry="20" fill="#FFD54A" opacity="0.55" />
+          <ellipse cx="40" cy="126" rx="8" ry="12" fill="#FFF59D" opacity="0.6" />
+          <path d="M31 14 L33 2 L37 12 L40 0 L43 12 L47 2 L49 14" fill="#FFF176" opacity="0.9" />
+        </g>
+      )}
+      <ellipse cx="40" cy="104" rx="26" ry="44" fill="#FF7043" style={{ opacity: 'var(--heat-tint, 0)' }} />
+      {burn && <BurnSpot spot={BURN_SPOT} />}
+      {!burn && char?.map((c, i) => <CharSpotMark key={`${c.x},${c.y},${i}`} spot={c} feathers={bodyFill} />)}
       {sparkly && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
       {skin.accessory === 'spikes' && (
         <g fill={skin.comb} opacity="0.9">
@@ -222,7 +337,7 @@ export function ChickenSvg({
         <path d="M55 21 L74 14 L58 27 Z" fill={skin.beakTop} />
         <path d="M55 33 L72 44 L57 36 Z" fill={skin.beakBottom} />
         <g className="chicken-sq-eye">
-          <Eye kind={eyeKind} />
+          {distress === 0 ? <Eye kind={eyeKind} /> : <DistressFace level={distress} />}
         </g>
         {skin.accessory === 'visor' && (
           <g>
@@ -283,6 +398,14 @@ export function ChickenSvg({
           />
         </>
       )}
+      {distress > 0 &&
+        SWEAT_DROPS.slice(0, distress === 1 ? SWEAT_LIGHT : SWEAT_DROPS.length).map((d) => (
+          <SweatDrop key={`${d.x},${d.y}`} x={d.x} y={d.y} delay={d.delay} heavy={distress === 2} uid={uid} />
+        ))}
+      {distress === 1 &&
+        STEAM_PUFFS.map((p) => (
+          <ellipse key={`${p.x},${p.y}`} className="chicken-steam" cx={p.x} cy={p.y} rx="5" ry="3.2" fill="#FFFFFF" style={{ animationDelay: `${p.delay}s`, transformBox: 'view-box', transformOrigin: `${p.x}px ${p.y}px` }} />
+        ))}
       </g>
       <g className="chicken-sq-legs">
         <line x1="33" y1="144" x2="30" y2="152" stroke={skin.legs} strokeWidth="3.5" strokeLinecap="round" />

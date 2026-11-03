@@ -9,6 +9,8 @@ export type BirdKind = 'hawk' | 'eagle' | 'phoenix';
 export type BirdPhase = 'idle' | 'approach' | 'grab' | 'right' | 'recoil' | 'left' | 'hover' | 'depart' | 'recede' | 'done';
 export type TalonSide = 'right' | 'left';
 type FrameName = 'fly-up' | 'fly-level' | 'fly-down' | 'bank' | 'away-3q' | 'away-far' | 'grab-body' | 'talon-left' | 'talon-right' | 'feather';
+type FxName = 'fire-puff' | 'toasted-feather';
+export type HeatLevel = 0 | 1 | 2;
 
 interface FrameAsset {
   width: number;
@@ -37,9 +39,10 @@ export interface BirdSpec {
   itemId: GameItemId;
   multiplier: number;
   featherClicks: number;
+  heat: boolean;
 }
 
-const FRAMES = manifest as unknown as Record<BirdKind, Partial<Record<FrameName, FrameAsset>>>;
+const FRAMES = manifest as unknown as Record<BirdKind, Partial<Record<FrameName, FrameAsset>>> & { fx: Record<FxName, FrameAsset> };
 
 export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
   hawk: {
@@ -55,6 +58,7 @@ export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
     itemId: 'hawk-feather',
     multiplier: 1.25,
     featherClicks: 25,
+    heat: false,
   },
   eagle: {
     kind: 'eagle',
@@ -64,11 +68,12 @@ export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
     left: { scale: 0.85, dx: 0.55, dy: -0.45, xMark: { x: 0.45, y: 0.7 } },
     rightClicks: 50,
     leftClicks: 50,
-    focal: { x: 0.08, y: -0.08 },
+    focal: { x: 0.12, y: -0.1 },
     skinId: 'eagle',
     itemId: 'eagle-feather',
     multiplier: 2,
     featherClicks: 25,
+    heat: false,
   },
   phoenix: {
     kind: 'phoenix',
@@ -78,15 +83,43 @@ export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
     left: { scale: 0.8, dx: 0.55, dy: -0.45, xMark: { x: 0.45, y: 0.7 } },
     rightClicks: 100,
     leftClicks: 100,
-    focal: { x: -0.08, y: -0.08 },
+    focal: { x: -0.1, y: -0.12 },
     skinId: 'phoenix',
-    itemId: 'toasted-feather',
-    multiplier: 1,
+    itemId: 'phoenix-feather',
+    multiplier: 3,
     featherClicks: 25,
+    heat: true,
   },
 };
 
+export const BIRD_ORDER: BirdKind[] = ['hawk', 'eagle', 'phoenix'];
 export const BIRD_TRIGGER_SCORE: Record<BirdKind, number> = { hawk: 2000, eagle: 10_000, phoenix: 25_000 };
+export const BIRD_PULSE_EVERY_TAPS = 5;
+export const TOASTED_MAX = 10;
+export const TOASTED_ALIVE_MAX = 12;
+export const REGROW_MS = 3500;
+export const FLASH_MAX_OPACITY = 0.18;
+const FIRE_PULSE_MS = 520;
+const FIRE_SIZE_FRAC = 1.6;
+const SHIMMER_W_FRAC = 2.6;
+const SHIMMER_H_FRAC = 1.5;
+const TOASTED_LIFE_MIN_MS = 2500;
+const TOASTED_LIFE_SPREAD_MS = 1500;
+const TOASTED_W_FRAC = 0.55;
+const TOASTED_VX_MIN = 0.06;
+const TOASTED_VX_SPREAD = 0.1;
+const TOASTED_VY = -0.09;
+const TOASTED_GRAVITY = 0.00016;
+const TOASTED_SPIN_DEG_MS = 0.25;
+const GRIP_DX_VB = -13;
+const GRIP_DY_VB = 20;
+const CHICKEN_VB_W = 80;
+const CHICKEN_VB_H = 160;
+const SIZZLE_T1_BASE = 0.25;
+const SIZZLE_T1_GAIN = 0.35;
+const SIZZLE_T2_BASE = 0.65;
+const SIZZLE_T2_GAIN = 0.35;
+const HEAT_TINT_MAX = 0.14;
 export const BIRD_BANNER_TEXT = 'help the chicken escape!';
 export const BIRD_LABEL_TEXT = 'click the claw';
 export const BIRD_CALM_FREE_CLICKS = 25;
@@ -178,6 +211,18 @@ interface FeatherDrop {
   groundY: number;
 }
 
+export interface ToastedFeather {
+  alive: boolean;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rot: number;
+  spin: number;
+  born: number;
+  life: number;
+}
+
 export interface BirdState {
   kind: BirdKind | null;
   phase: BirdPhase;
@@ -219,6 +264,14 @@ export interface BirdState {
   feather: FeatherDrop | null;
   snapshot: BirdSnapshot | null;
   preload: HTMLImageElement[];
+  queue: BirdKind[];
+  finished: BirdKind[];
+  pulseAt: number;
+  pulses: number;
+  burn: number;
+  heat: HeatLevel;
+  toasted: ToastedFeather[];
+  toastedSpawned: number;
 }
 
 export function createBirdState(): BirdState {
@@ -264,6 +317,14 @@ export function createBirdState(): BirdState {
     feather: null,
     snapshot: null,
     preload: [],
+    queue: [],
+    finished: [],
+    pulseAt: 0,
+    pulses: 0,
+    burn: 0,
+    heat: 0,
+    toasted: Array.from({ length: TOASTED_ALIVE_MAX }, () => ({ alive: false, x: 0, y: 0, vx: 0, vy: 0, rot: 0, spin: 0, born: 0, life: 0 })),
+    toastedSpawned: 0,
   };
 }
 
@@ -285,6 +346,10 @@ export interface BirdEls {
   banner: HTMLDivElement | null;
   hitArea: HTMLDivElement | null;
   feather: HTMLImageElement | null;
+  fire: HTMLImageElement | null;
+  flash: HTMLDivElement | null;
+  shimmer: HTMLDivElement | null;
+  toasted: (HTMLImageElement | null)[];
 }
 
 export function createBirdEls(): BirdEls {
@@ -306,6 +371,10 @@ export function createBirdEls(): BirdEls {
     banner: null,
     hitArea: null,
     feather: null,
+    fire: null,
+    flash: null,
+    shimmer: null,
+    toasted: Array.from({ length: TOASTED_ALIVE_MAX }, () => null),
   };
 }
 
@@ -315,6 +384,57 @@ export function isGripping(phase: BirdPhase): boolean {
 
 export function isBirdBusy(s: BirdState): boolean {
   return (s.phase !== 'idle' && s.phase !== 'done') || s.calm;
+}
+
+export function queueBird(s: BirdState, kind: BirdKind): boolean {
+  if (s.kind === kind && s.phase !== 'done') return false;
+  if (s.finished.includes(kind) || s.queue.includes(kind)) return false;
+  s.queue.push(kind);
+  s.triggered = true;
+  return true;
+}
+
+export function queueBirdsForScore(s: BirdState, prevShown: number, shown: number): void {
+  for (const kind of BIRD_ORDER) {
+    const at = BIRD_TRIGGER_SCORE[kind];
+    if (prevShown < at && shown >= at) queueBird(s, kind);
+  }
+}
+
+export function nextBird(s: BirdState): BirdKind | null {
+  if (s.calm || (s.phase !== 'idle' && s.phase !== 'done')) return null;
+  return s.queue[0] ?? null;
+}
+
+export function anyToastedAlive(s: BirdState): number {
+  return s.toasted.filter((f) => f.alive).length;
+}
+
+export function collectToasted(s: BirdState, index: number): Point | null {
+  const f = s.toasted[index];
+  if (!f || !f.alive) return null;
+  f.alive = false;
+  return { x: f.x, y: f.y };
+}
+
+function gripPoint(hold: Point, chicken: { w: number; h: number }): Point {
+  return { x: hold.x + (GRIP_DX_VB / CHICKEN_VB_W) * chicken.w, y: hold.y + (GRIP_DY_VB / CHICKEN_VB_H) * chicken.h };
+}
+
+function spawnToasted(s: BirdState, at: Point, ts: number): void {
+  const slot = s.toasted.find((f) => !f.alive);
+  if (!slot) return;
+  const dir = Math.random() < 0.5 ? -1 : 1;
+  slot.alive = true;
+  slot.x = at.x;
+  slot.y = at.y;
+  slot.vx = dir * (TOASTED_VX_MIN + Math.random() * TOASTED_VX_SPREAD);
+  slot.vy = TOASTED_VY * (0.6 + Math.random() * 0.8);
+  slot.rot = Math.random() * 360;
+  slot.spin = (Math.random() - 0.5) * 2 * TOASTED_SPIN_DEG_MS;
+  slot.born = ts;
+  slot.life = TOASTED_LIFE_MIN_MS + Math.random() * TOASTED_LIFE_SPREAD_MS;
+  s.toastedSpawned += 1;
 }
 
 function frame(kind: BirdKind, name: FrameName): FrameAsset {
@@ -426,7 +546,8 @@ function settleAnchor(s: BirdState, spec: BirdSpec, vw: number, vh: number): voi
 
 export function startBird(s: BirdState, kind: BirdKind, ts: number, cx: number, cy: number, vw: number, vh: number, snapshot: BirdSnapshot, hud: HudRect | null, chicken: { w: number; h: number }): void {
   const fresh = createBirdState();
-  Object.assign(s, fresh, { kind, triggered: true, pending: false, snapshot, hud, chicken });
+  const queue = s.queue.filter((k) => k !== kind);
+  Object.assign(s, fresh, { kind, triggered: true, pending: false, snapshot, hud, chicken, queue, finished: s.finished });
   s.phase = 'approach';
   s.phaseAt = ts;
   const fromRight = cx < vw / 2;
@@ -454,6 +575,8 @@ export function shiftBirdTime(s: BirdState, ms: number): void {
   if (s.nextFlapAt) s.nextFlapAt -= ms;
   if (s.flapAt) s.flapAt -= ms;
   if (s.feather) s.feather.born -= ms;
+  if (s.pulseAt) s.pulseAt -= ms;
+  for (const f of s.toasted) if (f.alive) f.born -= ms;
 }
 
 export type TapResult = 'ignored' | 'scored' | 'freed-right' | 'freed-left';
@@ -480,6 +603,14 @@ export function tapTalon(s: BirdState, side: TalonSide, ts: number): TapResult {
     if (freed || s.leftClicks % BIRD_LOOK_EVERY_TAPS === 0) {
       s.lookUntil = ts + BIRD_LOOK_MS;
       s.looks += 1;
+    }
+    if (spec.heat) {
+      s.burn = clamp(s.leftClicks / spec.leftClicks, 0, 1);
+      if (s.leftClicks % BIRD_PULSE_EVERY_TAPS === 0) {
+        s.pulseAt = ts;
+        s.pulses += 1;
+      }
+      spawnToasted(s, gripPoint(s.anchor, s.chicken), ts);
     }
     if (freed) {
       const L = layoutFor(spec, s.anchor.x, s.anchor.y, s.chicken.w, s.chicken.h, s.fit);
@@ -543,6 +674,89 @@ export interface BirdTickResult {
   hold: Point | null;
   restore: boolean;
   grabbed: boolean;
+  heat: HeatLevel;
+  sizzle: number;
+  burn: number;
+  tint: number;
+}
+
+function fx(name: FxName): FrameAsset {
+  return FRAMES.fx[name];
+}
+
+function tickToasted(s: BirdState, els: BirdEls, ctx: BirdCtx): void {
+  const w = s.chicken.w * TOASTED_W_FRAC;
+  const a = fx('toasted-feather');
+  const h = (w * a.height) / a.width;
+  for (let i = 0; i < s.toasted.length; i++) {
+    const f = s.toasted[i];
+    const el = els.toasted[i];
+    if (f.alive) {
+      const age = ctx.ts - f.born;
+      if (age >= f.life || f.y > ctx.vh + h) f.alive = false;
+      else {
+        f.vy += TOASTED_GRAVITY * ctx.dtMs;
+        f.x += f.vx * ctx.dtMs;
+        f.y += f.vy * ctx.dtMs;
+        f.rot += f.spin * ctx.dtMs;
+        if (el) {
+          const fade = age > f.life - 500 ? (f.life - age) / 500 : 1;
+          place(el, { x: f.x - w / 2, y: f.y - h / 2, w, h }, ` rotate(${f.rot.toFixed(1)}deg)`);
+          show(el, true, fade);
+          el.style.pointerEvents = 'auto';
+          if (el.dataset.alive !== '1') el.dataset.alive = '1';
+        }
+        continue;
+      }
+    }
+    if (el && el.dataset.alive !== '0') {
+      el.dataset.alive = '0';
+      el.style.pointerEvents = 'none';
+      show(el, false);
+    }
+  }
+}
+
+function tickHeat(s: BirdState, els: BirdEls, ctx: BirdCtx, hold: Point, result: BirdTickResult): void {
+  const spec = s.kind ? BIRD_SPECS[s.kind] : null;
+  const root = els.root;
+  if (!spec || !spec.heat) {
+    show(els.fire, false);
+    show(els.flash, false);
+    show(els.shimmer, false);
+    return;
+  }
+  const second = s.phase === 'recoil' || s.phase === 'left';
+  const heat: HeatLevel = second ? 2 : 1;
+  const progress1 = clamp(s.rightClicks / spec.rightClicks, 0, 1);
+  result.heat = heat;
+  result.burn = s.burn;
+  result.sizzle = second ? SIZZLE_T2_BASE + SIZZLE_T2_GAIN * s.burn : SIZZLE_T1_BASE + SIZZLE_T1_GAIN * progress1;
+  result.tint = HEAT_TINT_MAX * (second ? 0.6 + 0.4 * s.burn : 0.5 * progress1);
+  const grip = gripPoint(hold, s.chicken);
+  const pt = s.pulseAt ? (ctx.ts - s.pulseAt) / FIRE_PULSE_MS : 2;
+  const pulsing = pt >= 0 && pt < 1;
+  if (els.fire) {
+    if (pulsing) {
+      const a = fx('fire-puff');
+      const size = s.chicken.w * FIRE_SIZE_FRAC * (0.55 + 0.85 * easeOut(pt));
+      const h = (size * a.height) / a.width;
+      place(els.fire, { x: grip.x - size / 2, y: grip.y - h * 0.62, w: size, h }, ` rotate(${(pt * 18).toFixed(1)}deg)`);
+    }
+    show(els.fire, pulsing, pulsing ? Math.sin(Math.PI * pt) : 0);
+  }
+  show(els.flash, pulsing, pulsing ? FLASH_MAX_OPACITY * Math.sin(Math.PI * pt) : 0);
+  if (els.shimmer) {
+    const w = s.chicken.w * SHIMMER_W_FRAC;
+    const h = s.chicken.h * SHIMMER_H_FRAC;
+    els.shimmer.style.height = `${h.toFixed(1)}px`;
+    place(els.shimmer, { x: hold.x - w / 2, y: hold.y - h / 2, w, h });
+    show(els.shimmer, second, 0.35 + 0.45 * s.burn);
+  }
+  if (root) {
+    const pulse = pulsing ? '1' : '0';
+    if (root.dataset.pulse !== pulse) root.dataset.pulse = pulse;
+  }
 }
 
 function setFrame(img: HTMLImageElement, kind: BirdKind, name: FrameName): FrameAsset {
@@ -622,12 +836,13 @@ function flapOpacity(s: BirdState, ts: number): number {
 }
 
 export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResult {
-  const result: BirdTickResult = { hold: null, restore: false, grabbed: false };
+  const result: BirdTickResult = { hold: null, restore: false, grabbed: false, heat: 0, sizzle: 0, burn: 0, tint: 0 };
   if (!s.kind || s.phase === 'idle') return result;
   const spec = BIRD_SPECS[s.kind];
   const { ts, vw, vh } = ctx;
   const root = els.root;
   if (root && root.dataset.phase !== s.phase) root.dataset.phase = s.phase;
+  tickToasted(s, els, ctx);
 
   if (s.calm && ts >= s.calmUntil) {
     s.calm = false;
@@ -706,6 +921,9 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
     }
     const hold = { x: s.grabFrom.x + (s.anchor.x - s.grabFrom.x) * ge, y: s.grabFrom.y + (s.anchor.y - s.grabFrom.y) * ge };
     result.hold = hold;
+    tickHeat(s, els, ctx, hold, result);
+    if (s.heat !== result.heat) s.heat = result.heat;
+    if (root && root.dataset.heat !== String(result.heat)) root.dataset.heat = String(result.heat);
     const L = layoutFor(spec, hold.x, hold.y, s.chicken.w, s.chicken.h, s.fit);
     const recoilKick = Math.sin(Math.PI * recoilT);
     const rightLift = s.phase === 'recoil' ? easeOut(recoilT) : s.phase === 'left' ? 1 : 0;
@@ -778,6 +996,15 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
   }
 
   if (s.calm) result.hold = { ...s.anchor };
+  if (spec.heat) result.burn = s.burn;
+  s.heat = 0;
+  show(els.fire, false);
+  show(els.flash, false);
+  show(els.shimmer, false);
+  if (root) {
+    if (root.dataset.heat !== '0') root.dataset.heat = '0';
+    if (root.dataset.pulse !== '0') root.dataset.pulse = '0';
+  }
   hideHint(els);
   show(els.counter, false);
   show(els.banner, false);
@@ -872,6 +1099,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
     if (t >= 1) {
       s.phase = 'done';
       s.phaseAt = ts;
+      s.finished.push(s.kind);
       show(els.hitArea, false);
     }
   } else {
@@ -932,6 +1160,13 @@ export function birdStateView(s: BirdState) {
     feathered: s.feathered,
     feather: s.feather ? { x: s.feather.x, y: s.feather.y } : null,
     snapshot: s.snapshot,
+    queue: [...s.queue],
+    finished: [...s.finished],
+    heat: s.heat,
+    pulses: s.pulses,
+    burn: s.burn,
+    toastedAlive: anyToastedAlive(s),
+    toastedSpawned: s.toastedSpawned,
   };
 }
 
@@ -946,9 +1181,12 @@ interface BirdLayerProps {
   onTalon: (side: TalonSide, x: number, y: number) => void;
   onBird: (x: number, y: number) => void;
   onFeather: (x: number, y: number) => void;
+  onToasted: (index: number, x: number, y: number) => void;
 }
 
-export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather }: BirdLayerProps) {
+const TOASTED_SLOTS = Array.from({ length: TOASTED_ALIVE_MAX }, (_, i) => i);
+
+export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted }: BirdLayerProps) {
   const spec = BIRD_SPECS[kind];
   const bind = <K extends keyof BirdEls>(key: K) => (el: BirdEls[K]) => {
     els.current[key] = el;
@@ -956,6 +1194,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather }: BirdL
   if (part === 'back') {
     return (
       <>
+        <div ref={bind('flash')} data-testid="bird-flash" className="bird-flash pointer-events-none fixed inset-0 z-20 [visibility:hidden]" />
         <img ref={bind('body')} src={frame(kind, 'grab-body').file} alt="" draggable={false} data-testid="bird-body" className={LAYER} style={FLIGHT_STYLE} />
         <img ref={bind('look')} alt="" draggable={false} data-testid="bird-look" className={LAYER} style={FLIGHT_STYLE} />
         <img
@@ -972,8 +1211,30 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather }: BirdL
     );
   }
   return (
-    <div ref={bind('root')} data-testid="bird-root" data-kind={kind} data-phase="idle" data-talon="" data-hint="0" data-label="0" data-look="0" className="contents">
+    <div ref={bind('root')} data-testid="bird-root" data-kind={kind} data-phase="idle" data-talon="" data-hint="0" data-label="0" data-look="0" data-heat="0" data-pulse="0" className="contents">
       <img ref={bind('flight')} alt="" draggable={false} data-testid="bird-flight" className={LAYER} style={FLIGHT_STYLE} />
+      {spec.heat && (
+        <>
+          <div ref={bind('shimmer')} data-testid="bird-shimmer" className="bird-shimmer pointer-events-none absolute top-0 left-0 will-change-transform [visibility:hidden]" />
+          <img ref={bind('fire')} src={fx('fire-puff').file} alt="" draggable={false} data-testid="bird-fire" className={`${LAYER} mix-blend-screen`} style={FLIGHT_STYLE} />
+          {TOASTED_SLOTS.map((i) => (
+            <img
+              key={i}
+              ref={(el) => {
+                els.current.toasted[i] = el;
+              }}
+              src={fx('toasted-feather').file}
+              alt=""
+              draggable={false}
+              data-testid="toasted-feather"
+              data-alive="0"
+              className={`${LAYER} cursor-pointer drop-shadow-[0_3px_5px_rgba(0,0,0,0.5)]`}
+              style={FLIGHT_STYLE}
+              onClick={(e) => onToasted(i, e.clientX, e.clientY)}
+            />
+          ))}
+        </>
+      )}
       <img
         ref={bind('talonR')}
         src={frame(kind, 'talon-right').file}

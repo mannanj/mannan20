@@ -28,6 +28,7 @@ export function useChickenSounds() {
   const playHawk = useCallback((): ScreamResult | null => getChickenAudio().playHawk(), []);
   const crackle = useCallback(() => getChickenAudio().crackle(), []);
   const squeak = useCallback((depth: number) => getChickenAudio().squeak(depth), []);
+  const sizzle = useCallback((level: number) => getChickenAudio().sizzle(level), []);
 
-  return { progress, playScream, playPowerUp, playHawk, crackle, squeak };
+  return { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle };
 }

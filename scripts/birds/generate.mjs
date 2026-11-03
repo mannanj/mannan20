@@ -63,8 +63,9 @@ console.log(`queued ${queue.length} jobs, spent so far $${spent().toFixed(4)}`);
 const results = [];
 async function worker() {
   while (queue.length) {
-    if (spent() >= STOP_AT_USD) {
-      console.log(`STOP: spent $${spent().toFixed(4)} >= $${STOP_AT_USD}`);
+    const stopAt = budget.stop_at_usd ?? STOP_AT_USD;
+    if (spent() >= stopAt) {
+      console.log(`STOP: spent $${spent().toFixed(4)} >= $${stopAt}`);
       queue.length = 0;
       return;
     }

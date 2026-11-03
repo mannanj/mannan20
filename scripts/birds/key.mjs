@@ -131,6 +131,21 @@ function fadeTop(d, w, h, frac) {
   }
 }
 
+const LUMA_ALPHA_PREFIX = 'fire';
+const LUMA_FLOOR = 10;
+const LUMA_GAIN = 1.5;
+
+function lumaToAlpha(d) {
+  for (let i = 0; i < d.length; i += 4) {
+    const lum = Math.max(d[i], d[i + 1], d[i + 2]);
+    const gain = lum > 0 ? 255 / lum : 0;
+    d[i] = Math.min(255, d[i] * gain);
+    d[i + 1] = Math.min(255, d[i + 1] * gain);
+    d[i + 2] = Math.min(255, d[i + 2] * gain);
+    d[i + 3] = Math.min(255, Math.max(0, lum - LUMA_FLOOR) * LUMA_GAIN);
+  }
+}
+
 async function processOne(bird, file) {
   const rawName = file.replace(/\.(png|jpg|webp)$/, '');
   if (SKIP_RAW.has(rawName)) return null;
@@ -138,7 +153,8 @@ async function processOne(bird, file) {
   const id = `${bird}/${name}`;
   const src = sharp(path.join(RAW_DIR, bird, file)).ensureAlpha();
   const { data, info } = await src.raw().toBuffer({ resolveWithObject: true });
-  keyPixels(data, info.width, info.height, BIRD_KEY[bird]);
+  if (rawName.startsWith(LUMA_ALPHA_PREFIX)) lumaToAlpha(data);
+  else keyPixels(data, info.width, info.height, BIRD_KEY[bird]);
   if (name.startsWith('talon')) cropToLeg(data, info.width, info.height);
   let img = sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png();
   const t = TRANSFORMS[id];

@@ -44,3 +44,20 @@ Three AI-generated photographic frames on pure black (fireball, smoke, embers) m
 ## Earth, Moon, Sun textures (Task 311)
 
 `public/game/space/` holds textures copied from Sun Signal (NASA Visible Earth / LROC public-domain imagery); see `public/game/space/LICENSES.txt`.
+
+## Eagle and phoenix event assets (Task 307)
+
+Four more AI-generated frames through OpenRouter (`google/gemini-3.1-flash-image`), prompts in `scripts/birds/jobs.mjs`, keyed by `scripts/birds/key.mjs`, each logged in `scripts/birds/budget.json`:
+
+| File | Purpose | Keying | Cost |
+|------|---------|--------|------|
+| `public/game/birds/eagle/feather.webp` | eagle fly-off easter egg drop (`eagle-feather` item, x2 skin) | green chroma key | $0.0673 |
+| `public/game/birds/phoenix/feather.webp` | phoenix fly-off drop (`phoenix-feather` item, x3 skin) | green chroma key | $0.0673 |
+| `public/game/birds/fx/toasted-feather.webp` | charred chicken feather particle shed during the phoenix's second talon; collectible (`toasted-feather`, max 10) | green chroma key | $0.0673 |
+| `public/game/birds/fx/fire-puff.webp` | heat-pulse fire sprite at the grip every 5 taps (screen blend) | luminance to alpha (`fire*` names in `key.mjs`) | $0.0673 |
+
+Task 307 spend: **$0.27** of the $0.60 allowance (budget file cap raised 3.00 -> 3.60, stop line 2.89; total logged $2.56).
+
+Sizzle: synthesized at runtime with Web Audio (`EffectsSynth.sizzle` in `src/lib/chicken-audio.ts`: looped filtered noise with random pops, band-pass around 3.2 kHz that rises with heat). No clip was downloaded, so nothing to license. Bird cries on eagle and phoenix talon clicks reuse the hawk scream pool.
+
+Sweat drops, steam, the bare-skin/char circle, the eagle and phoenix skin patterns and the warm screen flash are vector/CSS layers on the existing rubber-chicken art (no assets).

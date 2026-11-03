@@ -209,11 +209,17 @@ import {
   type SplitLevel,
   type Wound,
 } from './chicken-split';
-import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, UNLOCKABLE_SKINS, readUnlockedSkins, skinById, skinMultiplier, unlockSkin } from './chicken-skins';
+import { BURN_SPOT, DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, UNLOCKABLE_SKINS, readCharSpots, readUnlockedSkins, recordChar, skinById, skinMultiplier, unlockSkin, type CharSpot } from './chicken-skins';
 import {
   BIRD_SPECS,
-  BIRD_TRIGGER_SCORE,
   BirdLayer,
+  REGROW_MS,
+  TOASTED_MAX,
+  collectToasted,
+  nextBird,
+  queueBird,
+  queueBirdsForScore,
+  type HeatLevel,
   birdStateView,
   createBirdEls,
   createBirdState,
@@ -599,7 +605,7 @@ interface PortalTransit {
 }
 
 export interface SoundEvent {
-  type: 'scream' | 'powerup' | 'crackle' | 'squeak' | 'hawk';
+  type: 'scream' | 'powerup' | 'crackle' | 'squeak' | 'hawk' | 'sizzle';
   key?: string;
   rate?: number;
   synth?: boolean;
@@ -727,10 +733,22 @@ interface ChickenBridge {
   setSeqTimeScale: (n: number) => void;
 }
 
-type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather'>;
+type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather' | 'phoenix-feather'>;
 
 function isFeatherSkinItem(id: string): id is FeatherSkinItemId {
-  return id === 'hawk-feather' || id === 'eagle-feather';
+  return id === 'hawk-feather' || id === 'eagle-feather' || id === 'phoenix-feather';
+}
+
+const NO_CHAR: CharSpot[] = [];
+const BURN_STAGE_COUNT = 3;
+
+function writeHeatVars(el: HTMLElement, live: boolean, burn: number, tint: number, regrow: number): void {
+  el.style.setProperty('--burn-skin', live && burn > 0 ? '1' : '0');
+  for (let i = 0; i < BURN_STAGE_COUNT; i++) {
+    el.style.setProperty(`--burn-${i + 1}`, Math.max(0, Math.min(1, burn * BURN_STAGE_COUNT - i)).toFixed(3));
+  }
+  el.style.setProperty('--heat-tint', tint.toFixed(3));
+  el.style.setProperty('--regrow', regrow.toFixed(3));
 }
 
 let featherSkinHandler: ((id: FeatherSkinItemId) => void) | null = null;
@@ -961,6 +979,15 @@ function ChickenGameInner() {
   const [skinsOpen, setSkinsOpen] = useState(false);
   const [unlockedSkins, setUnlockedSkins] = useState<string[]>([]);
   const [birdUi, setBirdUi] = useState<{ kind: BirdKind | null; grip: boolean }>({ kind: null, grip: false });
+  const [distress, setDistress] = useState<HeatLevel>(0);
+  const distressRef = useRef<HeatLevel>(0);
+  const [burnLive, setBurnLive] = useState(false);
+  const burnLiveRef = useRef(false);
+  const [charSpots, setCharSpots] = useState<Record<string, CharSpot[]>>({});
+  const sizzleRef = useRef(0);
+  const regrowAtRef = useRef(0);
+  const heatVarsRef = useRef('');
+  const toastedGrantedRef = useRef(0);
   const birdUiRef = useRef(birdUi);
   const birdRef = useRef(createBirdState());
   const birdElsRef = useRef(createBirdEls());
@@ -1107,7 +1134,7 @@ function ChickenGameInner() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const { progress, playScream, playPowerUp, playHawk, crackle, squeak } = useChickenSounds();
+  const { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle } = useChickenSounds();
 
   const recordPlay = useCallback((event: SoundEvent) => {
     const log = playsRef.current;
@@ -1781,6 +1808,7 @@ function ChickenGameInner() {
     } catch {}
     const unlocked = readUnlockedSkins();
     setUnlockedSkins(unlocked);
+    setCharSpots(readCharSpots());
     if (saved && (SKINS.some((s) => s.id === saved) || unlocked.includes(saved))) {
       setSkin(saved);
       skinRef.current = saved;
@@ -1790,7 +1818,9 @@ function ChickenGameInner() {
 
   useEffect(() => {
     featherSkinHandler = (id) => {
-      const skinId = id === 'hawk-feather' ? BIRD_SPECS.hawk.skinId : BIRD_SPECS.eagle.skinId;
+      const spec = Object.values(BIRD_SPECS).find((b) => b.itemId === id);
+      if (!spec) return;
+      const skinId = spec.skinId;
       if (skinById(skinId).id !== skinId) return;
       setUnlockedSkins(unlockSkin(skinId));
       selectSkin(skinId);
@@ -2110,12 +2140,34 @@ function ChickenGameInner() {
 
   const onTalon = useCallback(
     (side: TalonSide, x: number, y: number) => {
-      const result = tapTalon(birdRef.current, side, performance.now());
+      const bird = birdRef.current;
+      const result = tapTalon(bird, side, performance.now());
       if (result === 'ignored') return;
       birdScoreClick(x, y);
-      if (result === 'freed-left') syncBirdUi(birdRef.current.kind, false);
+      if (result === 'freed-left') {
+        syncBirdUi(bird.kind, false);
+        if (bird.kind && BIRD_SPECS[bird.kind].heat) {
+          setCharSpots(recordChar(skinRef.current, BURN_SPOT));
+          regrowAtRef.current = performance.now();
+          burnLiveRef.current = false;
+          setBurnLive(false);
+        }
+      }
     },
     [birdScoreClick, syncBirdUi]
+  );
+
+  const onToasted = useCallback(
+    (index: number, x: number, y: number) => {
+      const point = collectToasted(birdRef.current, index);
+      if (!point) return;
+      const inBag = itemsRef.current.find((i) => i.id === 'toasted-feather')?.count ?? 0;
+      const have = Math.max(inBag, toastedGrantedRef.current);
+      if (have >= TOASTED_MAX) return;
+      toastedGrantedRef.current = have + 1;
+      grantItem('toasted-feather', { x, y });
+    },
+    [grantItem]
   );
 
   const onBird = useCallback(
@@ -2379,10 +2431,7 @@ function ChickenGameInner() {
       const shown = Math.floor(next);
       setScore(shown);
       checkOrbSchedule(Math.floor(prevScore), shown);
-      if (!bird.triggered && Math.floor(prevScore) < BIRD_TRIGGER_SCORE.hawk && shown >= BIRD_TRIGGER_SCORE.hawk) {
-        bird.triggered = true;
-        bird.pending = true;
-      }
+      queueBirdsForScore(bird, Math.floor(prevScore), shown);
       if (!plain && noteCalmClick(bird)) restoreBirdSnapshot();
       const buff = cursorBuffRef.current;
       if (now < buff.x5Until) buff.x5Until += CURSOR_EXTEND_PER_CLICK_MS;
@@ -2624,11 +2673,7 @@ function ChickenGameInner() {
         if (orb) collectOrb(orb.id);
       },
       forceBird: (kind: BirdKind) => {
-        const bird = birdRef.current;
-        if (bird.kind || bird.triggered) return;
-        bird.triggered = true;
-        bird.pending = true;
-        void kind;
+        queueBird(birdRef.current, kind);
       },
       placeChicken: (x: number, y: number) => {
         const p = physicsRef.current;
@@ -2672,7 +2717,7 @@ function ChickenGameInner() {
   }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin]);
 
   const startBirdNow = useCallback(
-    (ts: number) => {
+    (ts: number, kind: BirdKind) => {
       const bird = birdRef.current;
       const p = physicsRef.current;
       const snapshot: BirdSnapshot = {
@@ -2705,8 +2750,8 @@ function ChickenGameInner() {
             : { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
         }
       }
-      startBird(bird, 'hawk', ts, p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, window.innerWidth, window.innerHeight, snapshot, hud, { w: CHICKEN_W, h: CHICKEN_H });
-      syncBirdUi('hawk', false);
+      startBird(bird, kind, ts, p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, window.innerWidth, window.innerHeight, snapshot, hud, { w: CHICKEN_W, h: CHICKEN_H });
+      syncBirdUi(kind, false);
     },
     [removeKid, removeClone, syncBirdUi]
   );
@@ -2878,14 +2923,15 @@ function ChickenGameInner() {
       const flying = modeRef.current === 'flying';
       tickHold(ts, dtMs, dt);
       const bird = birdRef.current;
+      const upcoming = nextBird(bird);
       if (
-        bird.pending &&
+        upcoming &&
         !rootSplitRef.current &&
         holdRef.current === null &&
         portalRef.current.phase === 'idle' &&
         teleportRef.current.phase === 'idle'
       ) {
-        startBirdNow(ts);
+        startBirdNow(ts, upcoming);
       }
       const birdTick = tickBird(bird, birdElsRef.current, {
         ts,
@@ -2901,7 +2947,30 @@ function ChickenGameInner() {
         syncBirdUi(bird.kind, true);
         setParked(null);
       }
-      if (bird.phase === 'done' && !bird.feather) syncBirdUi(null, false);
+      if (bird.phase === 'done' && !bird.feather && !nextBird(bird)) syncBirdUi(null, false);
+      if (birdTick.heat !== distressRef.current) {
+        distressRef.current = birdTick.heat;
+        setDistress(birdTick.heat);
+      }
+      const liveBurn = birdTick.heat === 2;
+      if (liveBurn && !burnLiveRef.current) {
+        burnLiveRef.current = true;
+        setBurnLive(true);
+      }
+      if (birdTick.sizzle !== sizzleRef.current) {
+        if (sizzleRef.current === 0 && birdTick.sizzle > 0) recordPlay({ type: 'sizzle', at: Date.now() });
+        sizzleRef.current = birdTick.sizzle;
+        sizzle(birdTick.sizzle);
+      }
+      const regrow = regrowAtRef.current ? Math.min(1, (ts - regrowAtRef.current) / REGROW_MS) : 1;
+      if (regrow >= 1) regrowAtRef.current = 0;
+      if (chickenElRef.current) {
+        const key = `${burnLiveRef.current ? 1 : 0}|${birdTick.burn.toFixed(3)}|${birdTick.tint.toFixed(3)}|${regrow.toFixed(3)}`;
+        if (key !== heatVarsRef.current) {
+          heatVarsRef.current = key;
+          writeHeatVars(chickenElRef.current, burnLiveRef.current, birdTick.burn, birdTick.tint, regrow);
+        }
+      }
       const rootBusy = rootSplitRef.current || holdRef.current !== null || isBirdBusy(bird);
 
       const hyper = hyperRef.current;
@@ -4022,7 +4091,7 @@ function ChickenGameInner() {
 
       {parked && stage === 'moon' && !birdUi.grip && <ParkedRocket x={parked.x} y={parked.y} />}
 
-      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} />}
+      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
 
       {stage === 'rocket' && (seq === 'planeExit' || seq === 'explode') && (
         <div
@@ -4075,6 +4144,9 @@ function ChickenGameInner() {
               eyes={mood}
               skin={skin}
               wound={wound}
+              distress={distress}
+              burn={burnLive}
+              char={charSpots[skin] ?? NO_CHAR}
             />
           </div>
           <EscapeVehicleFront stage={birdUi.grip ? 'none' : stage} phase={stagePhase} seq={seq} />
@@ -4082,7 +4154,7 @@ function ChickenGameInner() {
         <EscapeGiggle show={stage === 'pilot' && stagePhase === 'intro-a'} />
       </div>
 
-      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} />}
+      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
 
       {orbViews.map((orb) => (
         <div

@@ -53,6 +53,7 @@ function GenericItem({ size }: { size: number }) {
 const ART: Record<string, (size: number) => ReactNode> = {
   'hawk-feather': (size) => <Feather size={size} fill="#b07a45" stroke="#4a2e1a" vein="#4a2e1a" />,
   'eagle-feather': (size) => <Feather size={size} fill="#f1e6cf" stroke="#3b2a18" vein="#6b4a2a" />,
+  'phoenix-feather': (size) => <Feather size={size} fill="#ff7a1a" stroke="#8d1b00" vein="#fff176" />,
   'toasted-feather': (size) => <Feather size={size} fill="#5b3a22" stroke="#1f1208" vein="#e09a4a" />,
   'martian-friend': (size) => <MartianFriend size={size} />,
 };

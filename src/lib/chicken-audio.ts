@@ -93,11 +93,70 @@ function loadWithFallback(def: SoundDef, onSettled: (howl: Howl | null) => void)
   attempt(0);
 }
 
+const SIZZLE_LOOP_S = 2.4;
+const SIZZLE_BASE_HZ = 3200;
+const SIZZLE_Q = 0.7;
+const SIZZLE_RAMP_S = 0.35;
+const SIZZLE_MAX_GAIN = 0.22;
+const SIZZLE_POP_CHANCE = 0.0006;
+const SIZZLE_POP_DECAY = 0.985;
+
 class EffectsSynth {
   private ctx: AudioContext;
+  private sizzleSource: AudioBufferSourceNode | null = null;
+  private sizzleGain: GainNode | null = null;
+  private sizzleFilter: BiquadFilterNode | null = null;
 
   constructor(ctx: AudioContext) {
     this.ctx = ctx;
+  }
+
+  sizzle(level: number): void {
+    const t = this.ctx.currentTime;
+    if (level <= 0) {
+      if (!this.sizzleSource || !this.sizzleGain) return;
+      const src = this.sizzleSource;
+      this.sizzleGain.gain.cancelScheduledValues(t);
+      this.sizzleGain.gain.linearRampToValueAtTime(0, t + SIZZLE_RAMP_S);
+      setTimeout(() => src.stop(), SIZZLE_RAMP_S * 1000 + 40);
+      this.sizzleSource = null;
+      this.sizzleGain = null;
+      this.sizzleFilter = null;
+      return;
+    }
+    if (!this.sizzleSource || !this.sizzleGain || !this.sizzleFilter) {
+      const length = Math.ceil(this.ctx.sampleRate * SIZZLE_LOOP_S);
+      const buffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let pop = 0;
+      let smooth = 0;
+      for (let i = 0; i < length; i++) {
+        if (Math.random() < SIZZLE_POP_CHANCE) pop = 0.6 + Math.random() * 0.4;
+        pop *= SIZZLE_POP_DECAY;
+        smooth = smooth * 0.3 + (Math.random() * 2 - 1) * 0.7;
+        data[i] = smooth * (0.35 + pop);
+      }
+      const src = this.ctx.createBufferSource();
+      src.buffer = buffer;
+      src.loop = true;
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = SIZZLE_BASE_HZ;
+      bp.Q.value = SIZZLE_Q;
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(bp);
+      bp.connect(gain);
+      gain.connect(this.ctx.destination);
+      src.start();
+      this.sizzleSource = src;
+      this.sizzleGain = gain;
+      this.sizzleFilter = bp;
+    }
+    const lv = Math.min(1, level);
+    this.sizzleGain.gain.cancelScheduledValues(t);
+    this.sizzleGain.gain.linearRampToValueAtTime(SIZZLE_MAX_GAIN * lv, t + SIZZLE_RAMP_S);
+    this.sizzleFilter.frequency.linearRampToValueAtTime(SIZZLE_BASE_HZ * (1 + lv * 0.6), t + SIZZLE_RAMP_S);
   }
 
   crackle(): void {
@@ -477,6 +536,11 @@ class ChickenAudio {
   squeak(depth: number): void {
     this.resumeContext();
     this.ensureSynth()?.squeak(depth);
+  }
+
+  sizzle(level: number): void {
+    if (level > 0) this.resumeContext();
+    this.ensureSynth()?.sizzle(level);
   }
 
   private ensureSynth(): EffectsSynth | null {

@@ -12,7 +12,7 @@ export interface ChickenSkin {
   wattle: string;
   legs: string;
   accessory: 'none' | 'visor' | 'spikes' | 'halo';
-  pattern?: 'hawk';
+  pattern?: 'hawk' | 'eagle' | 'phoenix';
   multiplier?: number;
 }
 
@@ -112,7 +112,81 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
     pattern: 'hawk',
     multiplier: 1.25,
   },
+  {
+    id: 'eagle',
+    name: 'Bald Eagle',
+    tierBlend: 0.3,
+    body: '#4A2F1C',
+    bodyDark: '#2F1C0F',
+    belly: '#5A3B24',
+    comb: '#F6F1E6',
+    mouth: '#8A5A12',
+    beakTop: '#F2B61C',
+    beakBottom: '#D9980F',
+    wattle: '#F6F1E6',
+    legs: '#F2B61C',
+    accessory: 'none',
+    pattern: 'eagle',
+    multiplier: 2,
+  },
+  {
+    id: 'phoenix',
+    name: 'Phoenix',
+    tierBlend: 0.2,
+    body: '#FF6A00',
+    bodyDark: '#C62A00',
+    belly: '#FFD54A',
+    comb: '#FFF176',
+    mouth: '#8D1B00',
+    beakTop: '#FFC400',
+    beakBottom: '#FF8F00',
+    wattle: '#FF3D00',
+    legs: '#B71C1C',
+    accessory: 'none',
+    pattern: 'phoenix',
+    multiplier: 3,
+  },
 ];
+
+export interface CharSpot {
+  x: number;
+  y: number;
+  r: number;
+}
+
+export const CHAR_STORAGE_KEY = 'chicken-skin-char-v1';
+export const BURN_SPOT: CharSpot = { x: 27, y: 100, r: 11 };
+export const BURN_STAGES = ['#F3C7A0', '#E0856B', '#9A5B3C', '#2B1B14'];
+export const CHAR_FEATHER_OPACITY = 0.55;
+
+function isCharSpot(v: unknown): v is CharSpot {
+  if (typeof v !== 'object' || v === null) return false;
+  const { x, y, r } = v as Record<string, unknown>;
+  return typeof x === 'number' && typeof y === 'number' && typeof r === 'number';
+}
+
+export function readCharSpots(): Record<string, CharSpot[]> {
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(CHAR_STORAGE_KEY) ?? '{}');
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return {};
+    const out: Record<string, CharSpot[]> = {};
+    for (const [id, spots] of Object.entries(parsed as Record<string, unknown>)) {
+      if (Array.isArray(spots)) out[id] = spots.filter(isCharSpot);
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export function recordChar(skinId: string, spot: CharSpot): Record<string, CharSpot[]> {
+  const all = readCharSpots();
+  all[skinId] = [...(all[skinId] ?? []), spot];
+  try {
+    window.localStorage.setItem(CHAR_STORAGE_KEY, JSON.stringify(all));
+  } catch {}
+  return all;
+}
 
 export const DEFAULT_SKIN_ID = 'classic';
 export const SKIN_STORAGE_KEY = 'chicken-skin';

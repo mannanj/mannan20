@@ -779,6 +779,15 @@ interface BirdView {
   feathered: boolean;
   feather: { x: number; y: number } | null;
   snapshot: { speed: number; mode: string } | null;
+  x: number;
+  y: number;
+  queue: string[];
+  finished: string[];
+  heat: number;
+  pulses: number;
+  burn: number;
+  toastedAlive: number;
+  toastedSpawned: number;
 }
 
 interface BirdBridge {
@@ -790,6 +799,8 @@ interface BirdBridge {
   forceBird: (kind: string) => void;
   useItem: (id: string) => void;
   inventory: () => { id: string; count: number }[];
+  selectSkin: (id: string) => void;
+  plays: { type: string }[];
 }
 
 const birdState = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state());
@@ -992,6 +1003,214 @@ test.describe('chicken game v2 hawk event', () => {
     expect(s.score).toBe(Math.floor(start + 5));
     await page.getByTestId('chicken-skins-toggle').click();
     await expect(page.getByTestId('chicken-skin-hawk')).toBeVisible();
+  });
+});
+
+const CHAR_KEY = 'chicken-skin-char-v1';
+const EAGLE_FOCAL = { x: 0.62, y: 0.4 };
+const PHOENIX_FOCAL = { x: 0.4, y: 0.38 };
+const VIEW = { w: 1280, h: 720 };
+
+async function summonBird(page: Page, kind: 'eagle' | 'phoenix') {
+  await gotoGame(page, '?variant=2');
+  const at = kind === 'eagle' ? 9999 : 24999;
+  await page.evaluate((n) => (window as unknown as { __chicken: BirdBridge }).__chicken.setScore(n), at);
+  await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.placeChicken(820, 420));
+  await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(1));
+  await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'right', null, { timeout: 8000 });
+  await page.waitForTimeout(150);
+}
+
+async function freeBird(page: Page, perTalon: number) {
+  await tapTalon(page, 'right', perTalon);
+  await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+  await tapTalon(page, 'left', perTalon);
+}
+
+async function toRecede(page: Page) {
+  await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(25));
+  await birdFf(page, 6300);
+  await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'recede', null, { timeout: 3000 });
+}
+
+async function dropFeatherAndMeasureFocal(page: Page) {
+  for (let i = 0; i < 25; i++) await page.getByTestId('bird-hit').click({ force: true });
+  expect((await birdState(page)).bird.feathered).toBe(true);
+  await birdFf(page, 9000);
+  await page.waitForTimeout(150);
+  const s = await birdState(page);
+  return { x: s.bird.x / VIEW.w, y: s.bird.y / VIEW.h };
+}
+
+async function useFeatherForSkin(page: Page, item: string, skin: string) {
+  await expect(page.getByTestId('bird-feather')).toHaveAttribute('data-landed', '1', { timeout: 6000 });
+  await page.getByTestId('bird-feather').click({ force: true });
+  await expect.poll(async () => (await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.inventory())).find((i) => i.id === item)?.count ?? 0, { timeout: 6000 }).toBe(1);
+  await page.evaluate((id) => (window as unknown as { __chicken: BirdBridge }).__chicken.useItem(id), item);
+  await expect.poll(async () => (await birdState(page)).skin).toBe(skin);
+}
+
+const distressOf = (page: Page) => page.getByTestId('chicken-svg').getAttribute('data-distress');
+const aliveToasted = (page: Page) => page.locator('[data-testid="toasted-feather"][data-alive="1"]');
+const toastedInBag = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.inventory()).then((items) => items.find((i) => i.id === 'toasted-feather')?.count ?? 0);
+
+test.describe('chicken game v2 eagle and phoenix events', () => {
+  test('the bald eagle flies in at 10,000 and each talon needs 50 clicks', async ({ page }) => {
+    test.setTimeout(120_000);
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.setScore(9999));
+    await page.waitForTimeout(300);
+    expect((await birdState(page)).bird.phase).toBe('idle');
+    await summonBird(page, 'eagle');
+    let s = await birdState(page);
+    expect(s.bird.kind).toBe('eagle');
+    expect(s.bird.queue).toEqual([]);
+    await expect(page.getByTestId('bird-root')).toHaveAttribute('data-kind', 'eagle');
+    await expect(page.getByTestId('bird-banner')).toHaveText('help the chicken escape!');
+    await expect(page.getByTestId('bird-counter')).toHaveText('front claw 0 / 50');
+    const before = s.score;
+    await tapTalon(page, 'right', 49);
+    s = await birdState(page);
+    expect(s.bird.phase).toBe('right');
+    expect(s.bird.rightClicks).toBe(49);
+    await tapTalon(page, 'right', 1);
+    expect((await birdState(page)).bird.phase).toBe('recoil');
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+    await birdFf(page, 10_100);
+    await page.waitForTimeout(200);
+    expect((await rootData(page)).hint).toBe('1');
+    await tapTalon(page, 'left', 49);
+    s = await birdState(page);
+    expect(s.bird.phase).toBe('left');
+    expect(s.bird.looks).toBe(9);
+    await tapTalon(page, 'left', 1);
+    s = await birdState(page);
+    expect(s.bird.phase).toBe('hover');
+    expect(s.bird.calm).toBe(true);
+    expect(s.score).toBe(before + 100);
+  });
+
+  test('the eagle recedes up-right of the hawk focal point; its feather applies the x2 eagle skin', async ({ page }) => {
+    test.setTimeout(120_000);
+    await summonBird(page, 'eagle');
+    await freeBird(page, 50);
+    await toRecede(page);
+    const focal = await dropFeatherAndMeasureFocal(page);
+    expect(focal.x).toBeGreaterThan(0.5 + 0.06);
+    expect(focal.y).toBeLessThan(0.5 - 0.05);
+    expect(Math.abs(focal.x - EAGLE_FOCAL.x)).toBeLessThan(0.03);
+    expect(Math.abs(focal.y - EAGLE_FOCAL.y)).toBeLessThan(0.03);
+    await useFeatherForSkin(page, 'eagle-feather', 'eagle');
+    let s = await birdState(page);
+    expect(s.mult).toBe(2);
+    await expect(page.getByTestId('chicken-eagle-pattern')).toBeAttached();
+    const start = s.scoreExact;
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(4));
+    s = await birdState(page);
+    expect(s.scoreExact).toBeCloseTo(start + 8, 6);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.selectSkin('hawk'));
+    await expect.poll(async () => (await birdState(page)).mult).toBe(1.25);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.selectSkin('classic'));
+    await expect.poll(async () => (await birdState(page)).mult).toBe(1);
+  });
+
+  test('the phoenix at 25,000: talon 1 sizzles and sweats, talon 2 pulses fire every 5 taps, bares skin and sheds toasted feathers; 100 per talon', async ({ page }) => {
+    test.setTimeout(150_000);
+    await summonBird(page, 'phoenix');
+    let s = await birdState(page);
+    expect(s.bird.kind).toBe('phoenix');
+    expect(s.bird.heat).toBe(1);
+    expect(await distressOf(page)).toBe('1');
+    await expect(page.getByTestId('chicken-sweat')).toHaveCount(3);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.plays.some((p) => p.type === 'sizzle'))).toBe(true);
+    await expect(page.getByTestId('bird-counter')).toHaveText('front claw 0 / 100');
+    await expect(page.getByTestId('burn-spot')).toHaveCount(0);
+    const before = s.score;
+    await tapTalon(page, 'right', 99);
+    expect((await birdState(page)).bird.phase).toBe('right');
+    await tapTalon(page, 'right', 1);
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+    await expect.poll(() => distressOf(page)).toBe('2');
+    expect((await rootData(page)).heat).toBe('2');
+    await expect(page.getByTestId('chicken-sweat')).toHaveCount(6);
+    await expect(page.getByTestId('burn-spot')).toBeAttached();
+    await expect(page.getByTestId('bird-shimmer')).toBeVisible();
+    await tapTalon(page, 'left', 4);
+    s = await birdState(page);
+    expect(s.bird.pulses).toBe(0);
+    expect(s.bird.toastedAlive).toBeGreaterThan(0);
+    await tapTalon(page, 'left', 1);
+    s = await birdState(page);
+    expect(s.bird.pulses).toBe(1);
+    expect((await rootData(page)).pulse).toBe('1');
+    await expect(page.getByTestId('bird-fire')).toBeVisible();
+    const b1 = s.bird.burn;
+    expect(b1).toBeCloseTo(0.05, 6);
+    await tapTalon(page, 'left', 45);
+    s = await birdState(page);
+    expect(s.bird.pulses).toBe(10);
+    expect(s.bird.burn).toBeGreaterThan(b1);
+    const b2 = s.bird.burn;
+    await tapTalon(page, 'left', 49);
+    s = await birdState(page);
+    expect(s.bird.phase).toBe('left');
+    expect(s.bird.burn).toBeGreaterThan(b2);
+    await tapTalon(page, 'left', 1);
+    s = await birdState(page);
+    expect(s.bird.phase).toBe('hover');
+    expect(s.bird.burn).toBe(1);
+    expect(s.score).toBe(before + 200);
+    await expect.poll(() => distressOf(page)).toBe('0');
+    await expect(page.getByTestId('burn-spot')).toHaveCount(0);
+    await expect(page.getByTestId('char-spot')).toBeAttached();
+  });
+
+  test('toasted feathers can be collected into the bag, capped at 10', async ({ page }) => {
+    test.setTimeout(150_000);
+    await summonBird(page, 'phoenix');
+    await tapTalon(page, 'right', 100);
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+    for (let i = 0; i < 14; i++) {
+      await tapTalon(page, 'left', 1);
+      await aliveToasted(page).first().click({ force: true });
+    }
+    await expect.poll(() => toastedInBag(page), { timeout: 10_000 }).toBe(10);
+    await page.waitForTimeout(800);
+    expect(await toastedInBag(page)).toBe(10);
+    expect((await birdState(page)).bird.toastedSpawned).toBeGreaterThanOrEqual(14);
+  });
+
+  test('the phoenix recedes top-left, drops the x3 phoenix feather, and the char stays on that skin across reload under translucent regrown feathers', async ({ page }) => {
+    test.setTimeout(150_000);
+    await summonBird(page, 'phoenix');
+    await freeBird(page, 100);
+    const feathers = page.getByTestId('char-feathers');
+    await expect(feathers).toBeAttached();
+    const early = Number(await feathers.evaluate((el) => getComputedStyle(el).opacity));
+    expect(early).toBeLessThan(0.55);
+    await page.waitForTimeout(3800);
+    const late = Number(await feathers.evaluate((el) => getComputedStyle(el).opacity));
+    expect(late).toBeCloseTo(0.55, 1);
+    const stored = await page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? '{}') as Record<string, { x: number; y: number; r: number }[]>, CHAR_KEY);
+    expect(stored.classic).toHaveLength(1);
+    expect(stored.classic[0]).toEqual({ x: 27, y: 100, r: 11 });
+    await toRecede(page);
+    const focal = await dropFeatherAndMeasureFocal(page);
+    expect(focal.x).toBeLessThan(0.5 - 0.05);
+    expect(focal.y).toBeLessThan(0.5 - 0.05);
+    expect(Math.abs(focal.x - PHOENIX_FOCAL.x)).toBeLessThan(0.03);
+    expect(Math.abs(focal.y - PHOENIX_FOCAL.y)).toBeLessThan(0.03);
+    await useFeatherForSkin(page, 'phoenix-feather', 'phoenix');
+    expect((await birdState(page)).mult).toBe(3);
+    await expect(page.getByTestId('chicken-phoenix-pattern')).toBeAttached();
+    await expect(page.getByTestId('char-spot')).toHaveCount(0);
+    await page.reload();
+    await page.waitForFunction(() => (window as unknown as { __chicken?: unknown }).__chicken !== undefined);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.selectSkin('classic'));
+    await expect(page.getByTestId('char-spot')).toHaveCount(1);
+    expect(Number(await page.getByTestId('char-feathers').evaluate((el) => getComputedStyle(el).opacity))).toBeCloseTo(0.55, 1);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.selectSkin('void'));
+    await expect(page.getByTestId('char-spot')).toHaveCount(0);
   });
 });
 

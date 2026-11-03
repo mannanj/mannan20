@@ -15,6 +15,11 @@
       "height": 838,
       "file": "/game/birds/eagle/bank.webp"
     },
+    "feather": {
+      "width": 717,
+      "height": 1024,
+      "file": "/game/birds/eagle/feather.webp"
+    },
     "fly-down": {
       "width": 684,
       "height": 684,
@@ -122,6 +127,11 @@
       "height": 932,
       "file": "/game/birds/phoenix/bank.webp"
     },
+    "feather": {
+      "width": 660,
+      "height": 805,
+      "file": "/game/birds/phoenix/feather.webp"
+    },
     "fly-down": {
       "width": 934,
       "height": 732,
@@ -155,6 +165,18 @@
       "width": 671,
       "height": 749,
       "file": "/game/birds/phoenix/talon-right.webp"
+    }
+  },
+  "fx": {
+    "fire-puff": {
+      "width": 910,
+      "height": 840,
+      "file": "/game/birds/fx/fire-puff.webp"
+    },
+    "toasted-feather": {
+      "width": 640,
+      "height": 750,
+      "file": "/game/birds/fx/toasted-feather.webp"
     }
   }
 }

@@ -68,4 +68,40 @@ jobs.push({
   prompt: `${STYLE} Subject: ONE single large flight feather of an adult red-tailed hawk, a secondary wing feather about 25 cm long, lying diagonally across the frame with the quill at the lower left and the tip at the upper right. Brown barred vane with darker brown bands and a pale cream edge, a slightly curved pale quill, a few soft downy afterfeather barbs near the base, one small split in the vane. Nothing else in the frame.`,
 });
 
+jobs.push({
+  id: 'eagle-feather',
+  bird: 'eagle',
+  name: 'feather',
+  aspect: '3:4',
+  purpose: 'easter egg: single bald eagle feather',
+  prompt: `${STYLE} Subject: ONE single large tail feather of an adult bald eagle, about 30 cm long, lying diagonally across the frame with the quill at the lower left and the tip at the upper right. Pure white vane with a faint pale-grey mottling and a few dark brown flecks near the base, a slightly curved cream quill, soft downy afterfeather barbs at the base, one small split in the vane. Nothing else in the frame.`,
+});
+
+jobs.push({
+  id: 'phoenix-feather',
+  bird: 'phoenix',
+  name: 'feather',
+  aspect: '3:4',
+  purpose: 'phoenix drop: single fire feather',
+  prompt: `${STYLE} Subject: ONE single large feather of a phoenix, about 30 cm long, lying diagonally across the frame with the quill at the lower left and the tip at the upper right. The feather is made of REAL photographic fire: the vane is tongues of orange and red flame with a white-hot yellow core along the shaft, the quill is molten glowing orange, glowing embers and a few motion-blurred sparks drift off the tip, like a long-exposure photograph of real fire shaped into a feather. Nothing else in the frame.`,
+});
+
+jobs.push({
+  id: 'fx-toasted-feather',
+  bird: 'fx',
+  name: 'toasted-feather',
+  aspect: '3:4',
+  purpose: 'phoenix talon 2: charred chicken feather particle',
+  prompt: `${STYLE} Subject: ONE single small body feather of a yellow chicken that has been toasted by fire, about 8 cm long, lying diagonally across the frame with the quill at the lower left and the tip at the upper right. The outer two thirds of the vane are scorched, curled and charred dark brown and black with a thin glowing orange ember rim along the burnt edge and a few tiny sparks, the base near the quill is still soft golden-yellow down, one thin wisp of grey smoke rising from the tip. Nothing else in the frame.`,
+});
+
+jobs.push({
+  id: 'fx-fire-puff',
+  bird: 'fx',
+  name: 'fire-puff',
+  aspect: '1:1',
+  purpose: 'phoenix talon 2: heat pulse fire sprite (luminance alpha)',
+  prompt: `Ultra-realistic high-speed photograph of a short compact burst of real fire, centered in the frame: a roaring flame puff about as wide as it is tall with a bright white-yellow core, orange and red tongues curling outward, a few glowing embers and motion-blurred sparks flying off, realistic flame physics. Isolated on a completely flat pure black (#000000) background that fills the whole frame edge to edge, no smoke, no ground, no objects, no text, no watermark. Photographic realism only, not an illustration, not a 3D render.`,
+});
+
 export default jobs;

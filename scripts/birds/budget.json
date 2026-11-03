@@ -1,7 +1,7 @@
 {
-  "cap_usd": 3,
-  "stop_at_usd": 2.55,
-  "spent_usd": 2.290466,
+  "cap_usd": 3.6,
+  "stop_at_usd": 2.890466,
+  "spent_usd": 2.559713,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -274,6 +274,39 @@
       "purpose": "photo-real plane explosion sprite on black (screen blend)",
       "cost_usd": 0.0672455,
       "gen_id": "gen-1793671581-WuNms0Gm8Xd6gxfvhOsb"
+    },
+    {
+      "at": "2026-11-03T02:43:02.605Z",
+      "id": "fx-toasted-feather",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "phoenix talon 2: charred chicken feather particle",
+      "cost_usd": 0.0673325,
+      "gen_id": "gen-1793673775-bvmjgqW5Qbb8f9RdJdM6"
+    },
+    {
+      "at": "2026-11-03T02:43:03.019Z",
+      "id": "eagle-feather",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "easter egg: single bald eagle feather",
+      "cost_usd": 0.067324,
+      "gen_id": "gen-1793673775-M1Lym2YOoaOL6BYfUeQb"
+    },
+    {
+      "at": "2026-11-03T02:43:04.725Z",
+      "id": "phoenix-feather",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "phoenix drop: single fire feather",
+      "cost_usd": 0.0673315,
+      "gen_id": "gen-1793673775-ImAxUyX50n60Rk3H8zB5"
+    },
+    {
+      "at": "2026-11-03T02:43:10.445Z",
+      "id": "fx-fire-puff",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "phoenix talon 2: heat pulse fire sprite (luminance alpha)",
+      "cost_usd": 0.067259,
+      "gen_id": "gen-1793673782-Ehh6eo3XIYbl7OZnpcKI"
     }
-  ]
+  ],
+  "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89)."
 }

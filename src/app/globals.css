@@ -1676,3 +1676,42 @@ body.gem-rain-active #header > div:first-child {
 .escape-debris-y {
   animation: escapeDebrisY 2.2s cubic-bezier(0.3, 0, 0.8, 0.6) both;
 }
+
+@keyframes chickenSweatRoll {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  12% { transform: translateY(5px) scale(1); opacity: 1; }
+  100% { transform: translateY(62px) scale(1.08); opacity: 0; }
+}
+
+.chicken-sweat {
+  animation: chickenSweatRoll 2.4s ease-in infinite;
+}
+
+.chicken-sweat-heavy {
+  animation-duration: 1.3s;
+}
+
+@keyframes chickenSteamRise {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  30% { opacity: 0.32; }
+  100% { transform: translateY(-24px) scale(1.5); opacity: 0; }
+}
+
+.chicken-steam {
+  animation: chickenSteamRise 2.2s ease-out infinite;
+}
+
+@keyframes birdHeatShimmer {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -220px; }
+}
+
+.bird-shimmer {
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0) 0 14px, rgba(255, 214, 150, 0.09) 14px 20px, rgba(255, 255, 255, 0) 20px 34px);
+  animation: birdHeatShimmer 1.4s linear infinite;
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+}
+
+.bird-flash {
+  background: radial-gradient(ellipse at center, rgba(255, 140, 40, 0) 45%, rgba(255, 120, 20, 0.9) 100%);
+}
