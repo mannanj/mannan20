@@ -36,3 +36,11 @@ Superseded raw renders kept in `scripts/birds/raw/<bird>/grab-body.png` (first g
 ## Licence
 
 Generated images; the prompts, keying and composition are ours. No third-party photos.
+
+## Plane explosion sprites (Task 311)
+
+Three AI-generated photographic frames on pure black (fireball, smoke, embers) made through OpenRouter (`google/gemini-3.1-flash-image`, 3 x about $0.067 = $0.20, logged in `scripts/birds/budget.json`). `scripts/fx/explosion.mjs` (branch chicken-311) generates them and converts luminance to alpha into `public/game/fx/*.webp`. No third-party footage.
+
+## Earth, Moon, Sun textures (Task 311)
+
+`public/game/space/` holds textures copied from Sun Signal (NASA Visible Earth / LROC public-domain imagery); see `public/game/space/LICENSES.txt`.

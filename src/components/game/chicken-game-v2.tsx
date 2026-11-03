@@ -3650,6 +3650,7 @@ function ChickenGameInner() {
           key={orb.id}
           data-testid="chicken-orb"
           data-kind={orb.kind}
+          aria-label={ORB_LABELS[orb.kind]}
           ref={(el) => {
             if (el) orbElsRef.current.set(orb.id, el);
             else orbElsRef.current.delete(orb.id);

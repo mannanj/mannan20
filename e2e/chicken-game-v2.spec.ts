@@ -144,7 +144,7 @@ test.describe('chicken game v2 ability orbs', () => {
       const orbs = (await snap(page)).orbs.filter((o) => o.kind === kind);
       expect(orbs).toHaveLength(1);
       expect(orbs[0].label).toBe(label);
-      await expect(page.locator(`[data-testid="chicken-orb"][data-kind="${kind}"]`)).toContainText(label);
+      await expect(page.locator(`[data-testid="chicken-orb"][data-kind="${kind}"]`)).toHaveAttribute('aria-label', label);
     }
   });
 
