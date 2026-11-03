@@ -29,3 +29,18 @@ ffmpeg 8.1.1: mono, 44.1 kHz, LAME VBR `-q:a 5`. Screams: silence-trimmed, loudn
 Freesound files are the publicly served 128 kbps HQ preview MP3s (originals require login; previews are the sanctioned no-auth method). Mixkit terms: free commercial use, no attribution, no standalone redistribution of the SFX themselves — usage here (game sound effects on a personal site) is squarely permitted.
 
 Re-upload after changing files: `bun scripts/upload-chicken-sounds.mjs` (needs `CLOUDFLARE_ACCOUNT_ID`).
+
+## Hawk screams (Task 305)
+
+Source: Freesound "R30-34-Red Tailed Hawk" by craigsmith — https://freesound.org/people/craigsmith/sounds/479610/ — **CC0**.
+Taken from the public HQ preview (14.7s). The narrator's "Red-tailed hawk" intro (0–1.4s) is cut; the three calls are split
+into single-click variants, mono 44.1 kHz, loudness-normalized to -16 LUFS, 40 ms fade-in / 120 ms fade-out.
+
+| File | Source range |
+|---|---|
+| `hawk-scream-1.mp3` | 2.50–4.45s |
+| `hawk-scream-2.mp3` | 7.45–9.25s |
+| `hawk-scream-3.mp3` | 11.80–13.75s |
+| `hawk-scream-full.mp3` | 2.50–14.60s (all three calls, no voice) |
+
+Not yet uploaded to R2 or wired into `src/lib/chicken-audio.ts`; that happens with the hawk build (Task 305).
