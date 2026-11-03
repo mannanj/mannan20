@@ -21,7 +21,7 @@ export const ORB_LABELS: Record<OrbKind, string> = {
 
 export const ORB_LIFETIME_MS = 30_000;
 export const ORB_FADE_MS = 2000;
-export const ORB_RADIUS = 44;
+export const ORB_RADIUS = 29;
 export const ORB_DRIFT_SPEED = 0.05;
 export const ORB_SPAWN_MARGIN = 80;
 export const ORB_WOBBLE_AMPLITUDE = 14;
