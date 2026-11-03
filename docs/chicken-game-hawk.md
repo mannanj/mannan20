@@ -217,3 +217,10 @@ The first concept mockup (2026-11-02) failed every point: the hawk was perched o
 11. **Hint X on the claw itself**: the red X is drawn ON the target talon (the front-right one first, the back-left one second), anchored to it and moving with it every frame. It is never a fixed screen position beside the bird. (Mockup failure: the X floated beside the rocket, away from both claws.)
 12. **Arrow to that claw**: the arrow's head touches the X / target talon and follows it as the bird moves. The tapping-cursor icon sits at the arrow's tail, and the "click the claw" label (after 30s) sits next to the arrow, not covering the bird or the chicken.
 13. **Counter**: the claw counter ("front claw 3 / 25") is attached near the target talon, not at a random offset.
+
+## Flight realism — Mannan's words (verbatim, 2026-11-02)
+
+> "when the hawk is flying that sohuld look liek a real hawk turning flying away etc not jut some silly cartoon fixed one also phoorealistic same style patterns introduce for the other birds"
+
+14. **Real flight, not a fixed sprite.** Fly-in, carrying, and fly-off must read as a real hawk: banking turns (roll into the turn), wingbeats with the wings actually changing shape (several real photo frames: wings up, level, down; a gliding frame), and turning away from the camera on the fly-off. Switch to rear and three-quarter-away photo frames as it recedes, never just one front-facing image shrinking. Use eased paths (curves, not straight lines), slight altitude bob per wingbeat, and a shadow or atmospheric fade as it recedes into the focal point.
+15. **Same pattern for every bird.** The eagle and phoenix reuse the same flight system (frame sets plus path plus banking), each with its own photo set.
