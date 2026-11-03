@@ -11,7 +11,12 @@ const URL_ = process.env.GAME_URL ?? 'https://mannan.is/game?variant=2';
 const MINUTES = Number(process.env.PLAY_MINUTES ?? 10);
 const OUT_DIR = process.env.OUT_DIR ?? path.join(os.homedir(), 'Desktop');
 const SUBMIT = process.env.SUBMIT_SCORE !== '0';
-const AGENT_NAME = 'jev';
+const AGENT_NAME = 'My Name Jev';
+const OWNER_COOKIE = 'chicken-owner';
+const OWNER_KEYCHAIN = 'chicken-game-jev-owner';
+const BOARD_OPEN_MIN = 0.6;
+const FORCE_BOARD_EVERY_S = Number(process.env.FORCE_BOARD_EVERY_S ?? 0);
+const TOGGLE_ZONE = { halfW: 90, h: 44 };
 const VIEW = { width: 1280, height: 800 };
 const IN_FLIGHT = 2;
 const VISIBLE_MIN = 0.5;
@@ -28,6 +33,53 @@ const SCENES = {
   moon: 'a grey moon surface under a black starry sky',
 };
 const ERROR_BACKOFF_MS = 1000;
+const AUDIO_TIMESLICE_MS = 1000;
+
+const AUDIO_TAP = `(() => {
+  const taps = new WeakMap();
+  window.__jevAudio = { recs: [] };
+  const original = AudioNode.prototype.connect;
+  AudioNode.prototype.connect = function (target, ...rest) {
+    const result = original.call(this, target, ...rest);
+    if (target instanceof AudioDestinationNode) {
+      const ctx = target.context;
+      let tap = taps.get(ctx);
+      if (!tap) {
+        tap = ctx.createMediaStreamDestination();
+        taps.set(ctx, tap);
+        const entry = { chunks: [], startedAt: Date.now(), rec: new MediaRecorder(tap.stream, { mimeType: 'audio/webm;codecs=opus' }) };
+        entry.rec.ondataavailable = (e) => e.data.size && entry.chunks.push(e.data);
+        entry.rec.start(${AUDIO_TIMESLICE_MS});
+        window.__jevAudio.recs.push(entry);
+      }
+      original.call(this, tap);
+    }
+    return result;
+  };
+})();`;
+
+async function collectAudio(page) {
+  return page.evaluate(async () => {
+    const recs = window.__jevAudio?.recs ?? [];
+    await Promise.all(
+      recs.map(
+        (e) =>
+          new Promise((r) => {
+            if (e.rec.state === 'inactive') return r();
+            e.rec.onstop = r;
+            e.rec.stop();
+          })
+      )
+    );
+    const size = (e) => e.chunks.reduce((s, c) => s + c.size, 0);
+    const best = recs.filter((e) => size(e) > 0).sort((a, b) => size(b) - size(a))[0];
+    if (!best) return null;
+    const buf = new Uint8Array(await new Blob(best.chunks, { type: 'audio/webm' }).arrayBuffer());
+    let bin = '';
+    for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return { b64: btoa(bin), startedAt: best.startedAt, contexts: recs.length };
+  });
+}
 
 if (!KEY) {
   console.error('TYPESAFE_API_KEY is not set');
@@ -55,6 +107,15 @@ async function ask(jpeg, questions) {
 }
 
 const FRAME_QUESTIONS = {
+  board_open: {
+    type: 'noul',
+    instructions:
+      'Is a dark "Leaderboard" panel (with Humans and Agents tabs, a name field, or a list of scores) slid up and covering the lower part of `screen`?',
+  },
+  board_toggle: {
+    type: 'box',
+    instructions: 'the small "Leaderboard" text with a little caret arrow, centered near the very bottom edge of `screen`',
+  },
   visible: {
     type: 'noul',
     instructions:
@@ -116,6 +177,18 @@ async function draw(page, d) {
   }, d);
 }
 
+function readOwner() {
+  try {
+    return execFileSync('security', ['find-generic-password', '-a', os.userInfo().username, '-s', OWNER_KEYCHAIN, '-w'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {
+    return null;
+  }
+}
+
+function saveOwner(value) {
+  execFileSync('security', ['add-generic-password', '-U', '-a', os.userInfo().username, '-s', OWNER_KEYCHAIN, '-w', value]);
+}
+
 function boxPx(edges, origin, scaleW, scaleH) {
   return {
     x: origin.x + edges.left * scaleW,
@@ -138,9 +211,15 @@ async function main() {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const videoDir = path.join(os.tmpdir(), `jev-video-${stamp}`);
   mkdirSync(videoDir, { recursive: true });
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const context = await browser.newContext({ viewport: VIEW, recordVideo: { dir: videoDir, size: VIEW } });
+  await context.addInitScript(AUDIO_TAP);
+  const videoStartedAt = Date.now();
   const page = await context.newPage();
+  const savedOwner = readOwner();
+  if (savedOwner) {
+    await context.addCookies([{ name: OWNER_COOKIE, value: savedOwner, url: new URL(URL_).origin }]);
+  }
   await page.goto(URL_);
   await page.waitForFunction(() => window.__chicken !== undefined, null, { timeout: 90_000 });
   await page.waitForSelector('[data-testid="chicken-loader"]', { state: 'detached', timeout: 30_000 }).catch(() => {});
@@ -148,7 +227,17 @@ async function main() {
   await page.mouse.move(PARK.x, PARK.y);
 
   const track = [];
-  const stats = { requests: 0, errors: 0, clicks: 0, latency: [], ious: [], stagesSeen: new Set(), scene: '' };
+  const stats = {
+    requests: 0, errors: 0, clicks: 0, latency: [], ious: [], stagesSeen: new Set(), scene: '',
+    boardForced: 0, boardSeen: 0, boardClosed: 0, boardMisses: 0, boardOpenedAt: 0, boardCloseMs: [],
+  };
+  const forceTimer = FORCE_BOARD_EVERY_S > 0
+    ? setInterval(async () => {
+        stats.boardForced++;
+        stats.boardOpenedAt = Date.now();
+        await page.evaluate(() => window.__chicken.openSheet?.()).catch(() => {});
+      }, FORCE_BOARD_EVERY_S * 1000)
+    : null;
   const start = Date.now();
   const deadline = start + MINUTES * 60_000;
   let lastBox = null;
@@ -170,6 +259,12 @@ async function main() {
     stats.requests++;
     const a = out.answers;
     stats.scene = a.scene?.choice ?? stats.scene;
+    if ((a.board_open?.noul ?? 0) >= BOARD_OPEN_MIN) {
+      await closeBoard(a.board_toggle);
+      stats.latency.push(Date.now() - t0);
+      return;
+    }
+    stats.boardMisses = 0;
     if ((a.visible?.noul ?? 0) < VISIBLE_MIN) {
       stats.latency.push(Date.now() - t0);
       return;
@@ -193,6 +288,26 @@ async function main() {
     await strike(b, capturedAt);
   }
 
+  async function closeBoard(toggle) {
+    stats.boardSeen++;
+    if (stats.boardMisses >= 2) {
+      await page.keyboard.press('Escape');
+    } else {
+      const t = boxPx(toggle.box, { x: 0, y: 0 }, VIEW.width, VIEW.height);
+      await page.mouse.click(t.x + t.w / 2, t.y + t.h / 2);
+      await page.mouse.move(PARK.x, PARK.y);
+    }
+    stats.boardMisses++;
+    const open = await page.evaluate(() => document.getElementById('chicken-leaderboard-panel')?.getAttribute('aria-hidden') === 'false');
+    if (!open) {
+      stats.boardClosed++;
+      if (stats.boardOpenedAt) stats.boardCloseMs.push(Date.now() - stats.boardOpenedAt);
+      stats.boardOpenedAt = 0;
+      stats.boardMisses = 0;
+    }
+    await draw(page, { box: null, aim: null, hud: `JEV: leaderboard is open, closing it first (${stats.boardClosed} closed)` });
+  }
+
   async function strike(b, capturedAt) {
     const now = Date.now();
     let vx = 0;
@@ -213,6 +328,9 @@ async function main() {
       x: Math.min(VIEW.width - 2, Math.max(2, b.x + b.w / 2 + lx)),
       y: Math.min(VIEW.height - 2, Math.max(2, b.y + b.h * 0.55 + ly)),
     };
+    if (Math.abs(aim.x - VIEW.width / 2) < TOGGLE_ZONE.halfW && aim.y > VIEW.height - TOGGLE_ZONE.h) {
+      aim.y = VIEW.height - TOGGLE_ZONE.h;
+    }
     await page.mouse.click(aim.x, aim.y);
     await page.mouse.move(PARK.x, PARK.y);
     stats.clicks++;
@@ -257,6 +375,7 @@ async function main() {
     pump();
   });
 
+  if (forceTimer) clearInterval(forceTimer);
   const final = await state();
   let submitted = null;
   if (SUBMIT && final.score >= 1) {
@@ -273,14 +392,22 @@ async function main() {
       { name: AGENT_NAME, score: final.score }
     );
   }
+  const owner = (await context.cookies()).find((c) => c.name === OWNER_COOKIE)?.value;
+  if (owner && owner !== savedOwner && submitted?.status === 200) saveOwner(owner);
   await page.waitForTimeout(1500);
+  const audio = await collectAudio(page).catch(() => null);
+  const audioPath = path.join(videoDir, 'audio.webm');
+  if (audio) writeFileSync(audioPath, Buffer.from(audio.b64, 'base64'));
   await context.close();
   await browser.close();
 
   const webm = readdirSync(videoDir).find((f) => f.endsWith('.webm'));
   const mp4 = path.join(OUT_DIR, `jev-plays-chicken-${stamp}.mp4`);
   if (webm) {
-    execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', path.join(videoDir, webm), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', mp4]);
+    const video = ['-i', path.join(videoDir, webm)];
+    const sound = audio ? ['-itsoffset', String(Math.max(0, (audio.startedAt - videoStartedAt) / 1000)), '-i', audioPath] : [];
+    const mux = audio ? ['-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '160k'] : [];
+    execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...video, ...sound, ...mux, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', mp4]);
   }
   const mean = (xs) => (xs.length ? xs.reduce((p, c) => p + c, 0) / xs.length : 0);
   const report = {
@@ -298,6 +425,13 @@ async function main() {
     meanBoxIoU: +mean(stats.ious).toFixed(3),
     submitted,
     video: webm ? mp4 : null,
+    audio: Boolean(audio),
+    leaderboard: {
+      forcedOpen: stats.boardForced,
+      seenOpenFrames: stats.boardSeen,
+      closed: stats.boardClosed,
+      meanCloseMs: Math.round(mean(stats.boardCloseMs)),
+    },
   };
   writeFileSync(mp4.replace(/\.mp4$/, '.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));

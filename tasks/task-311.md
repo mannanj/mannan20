@@ -1,0 +1,11 @@
+### Task 311: Chicken Game v2 — Plane polish, graceful stage transitions, 3D Earth→Moon
+- [ ] Plane never sticks on screen edges: steer away from edges with a soft margin force instead of bounce/clamp; disable edge portals/wraps while airborne in the plane
+- [ ] Plane flies with more personality: banking turns, barrel-roll twists, swooping arcs (heading-based flight model scoped to the pilot stage)
+- [ ] Suppress chicken set-pieces (portal, teleport, scramble, hyper, ceremony) during the pilot stage until the plane exits
+- [ ] Plane exit at the rocket threshold: the chicken floats out, the plane blows up (comedic, no gore) a few clicks later, and the chicken drifts in slow normal motion before ramping back to its normal speed
+- [ ] Rocket arrival: a rocket fades in in the background and becomes more prominent; the chicken slowly makes its way over, the door opens, the chicken climbs in, the door closes, liftoff
+- [ ] Flight Earth → Moon rendered in Three.js with a real Earth and Moon (reuse the globe/texture work in `~/Documents/sun`), lazy-loaded so v1 and early v2 stages pay nothing
+- [ ] Moon landing continues from the 3D scene into the Moon arena without a hard cut
+- [ ] Graceful transitions between every stage (crossfades, camera moves, no sudden swaps); review each stage boundary
+- [ ] Performance budget per Task 309 (3D scene only while it is on screen; dispose on exit)
+- Location: `src/components/game/chicken-game-v2.tsx`, `src/components/game/escape-*.tsx`, new `src/components/game/space-flight-3d.tsx`, `~/Documents/sun` (reference only)

@@ -222,6 +222,8 @@ const VISIT_COOLDOWN_SPREAD_MS = 30_000;
 const VISIT_NEAR_X = 70;
 const VISIT_NEAR_Y = 56;
 const VISIT_SPEED = 2.2;
+const LEADERBOARD_OPEN_GUARD_MS = 900;
+const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"]';
 
 interface Particle {
   x: number;
@@ -409,6 +411,7 @@ interface ChickenBridge {
   forceScramble: () => void;
   forceVisit: () => void;
   forceMerge: () => void;
+  openSheet: () => void;
 }
 
 interface BridgeWindow {
@@ -991,6 +994,21 @@ function ChickenGameInner() {
     if (next !== 'moon') setParked(null);
   }, []);
 
+  const toggleSheet = useCallback(() => {
+    setSkinsOpen(false);
+    setSheet((s) => {
+      if (s === 'board') return null;
+      if (performance.now() - lastHitRef.current < LEADERBOARD_OPEN_GUARD_MS) return s;
+      return 'board';
+    });
+  }, []);
+
+  const closeSheetOnOutside = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const target = e.target as Element | null;
+    if (target?.closest(SHEET_SAFE_SELECTOR)) return;
+    setSheet((s) => (s === null ? s : null));
+  }, []);
+
   const hit = useCallback(
     (e?: ReactMouseEvent<HTMLDivElement>) => {
       const now = performance.now();
@@ -1185,6 +1203,7 @@ function ChickenGameInner() {
         const ids = [...kidMotionRef.current.keys()];
         if (ids.length > 0) startKidMerge(ids[0]);
       },
+      openSheet: () => setSheet('board'),
     };
     bridgeWindow().__chicken = bridge;
     return () => {
@@ -2029,6 +2048,7 @@ function ChickenGameInner() {
     <div
       data-testid="chicken-stage"
       data-variant="2"
+      onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
       className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
     >
       <GameScenery tier={tier} />
@@ -2194,7 +2214,7 @@ function ChickenGameInner() {
 
       <LeaderboardPanel
         open={sheet === 'board'}
-        onToggle={() => setSheet((s) => (s === 'board' ? null : 'board'))}
+        onToggle={toggleSheet}
         onClose={() => setSheet(null)}
         score={score}
       />
