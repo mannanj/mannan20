@@ -747,6 +747,7 @@ interface BridgeWindow {
   __chicken?: ChickenBridge;
 }
 
+const MOON_PARK_X_FRAC = 0.17;
 const loadSpaceFlight = () => import('./space-flight-3d');
 const SpaceFlight3D = dynamic(loadSpaceFlight, { ssr: false });
 const PRELOAD_IDLE_TIMEOUT_MS = 4000;
@@ -3558,7 +3559,7 @@ function ChickenGameInner() {
           const arrivalFrom = moonFromRef.current;
           const eased = arrivalFrom ? smooth01(t) : 1 - (1 - t) * (1 - t);
           const start = arrivalFrom ? arrivalFrom.y : -CHICKEN_H * 2;
-          p.x = Math.max(vw * 0.2, Math.min(anchor.x, vw * 0.8 - CHICKEN_W));
+          p.x = anchor.x + (Math.min(vw * MOON_PARK_X_FRAC, anchor.x) - anchor.x) * eased;
           p.y = start + (groundYFor(vh) - ROCKET_LEG_BOTTOM - start) * eased;
           p.vx = 0;
           p.vy = 0;
@@ -4050,7 +4051,7 @@ function ChickenGameInner() {
         data-testid="chicken"
         data-tier={tier}
         data-squash="0"
-        className="absolute will-change-transform"
+        className="absolute z-[5] will-change-transform"
         style={{ left: 0, top: 0 }}
         onPointerDown={(e) => beginHold(0, e)}
         onClick={(e) => {

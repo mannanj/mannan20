@@ -248,7 +248,7 @@ export function EscapeGiggle({ show }: { show: boolean }) {
 export function ParkedRocket({ x, y }: { x: number; y: number }) {
   return (
     <div
-      className="absolute top-0 left-0 pointer-events-none"
+      className="absolute top-0 left-0 z-[1] pointer-events-none"
       style={{ transform: `translate(${x}px, ${y}px)`, width: 70, height: 140 }}
     >
       <RocketFront legs parked />
