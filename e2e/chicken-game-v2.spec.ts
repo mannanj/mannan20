@@ -105,8 +105,8 @@ interface OrbBridge {
 }
 
 const SHOT_DIR = process.env.ORB_SHOT_DIR;
-const X5_ARM = 48;
-const X3_SPREAD = 30;
+const X5_ARM = 30;
+const X3_SPREAD = 22;
 const HAND_HOT = { x: 20, y: 19 };
 const BUFF_MS = 30_000;
 const EXTEND_PER_CLICK_MS = 100;
@@ -224,7 +224,7 @@ test.describe('chicken game v2 ability orbs', () => {
     const my = 330;
     await page.mouse.move(mx, my);
     await collect(page, 'cursor5');
-    await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(4);
+    await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(5);
     await page.waitForTimeout(80);
     const boxes = await page.getByTestId('chicken-extra-cursor').evaluateAll((els) =>
       els.map((el) => {
@@ -235,9 +235,41 @@ test.describe('chicken game v2 ability orbs', () => {
     const found = boxes
       .map((b) => `${Math.round(b.x + HAND_HOT.x - mx)},${Math.round(b.y + HAND_HOT.y - my)}`)
       .sort();
-    const expected = [`-${X5_ARM},-${X5_ARM}`, `${X5_ARM},-${X5_ARM}`, `-${X5_ARM},${X5_ARM}`, `${X5_ARM},${X5_ARM}`].sort();
+    const expected = ['0,0', `-${X5_ARM},-${X5_ARM}`, `${X5_ARM},-${X5_ARM}`, `-${X5_ARM},${X5_ARM}`, `${X5_ARM},${X5_ARM}`].sort();
     expect(found).toEqual(expected);
     if (SHOT_DIR) await page.screenshot({ path: `${SHOT_DIR}/cursor-x5.png` });
+  });
+
+  test('cursor layouts: triangle of 3, X of 5 around the anchor, 15 as anchor + rings of 6 and 8', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.mouse.move(640, 330);
+    const offsets = () =>
+      page.evaluate(() => (window as unknown as { __chicken: { state: () => { cursorOffsets: { dx: number; dy: number }[] } } }).__chicken.state().cursorOffsets);
+    const radii = (os: { dx: number; dy: number }[]) => os.map((o) => Math.round(Math.hypot(o.dx, o.dy))).sort((a, b) => a - b);
+    await collect(page, 'cursor3');
+    const tri = await offsets();
+    expect(tri).toHaveLength(3);
+    const sides = [[0, 1], [1, 2], [0, 2]].map(([i, j]) => Math.hypot(tri[i].dx - tri[j].dx, tri[i].dy - tri[j].dy));
+    for (const side of sides) {
+      expect(side).toBeGreaterThan(30);
+      expect(side).toBeLessThan(42);
+    }
+    if (SHOT_DIR) await page.screenshot({ path: `${SHOT_DIR}/cursor-x3-triangle.png` });
+    await page.evaluate(() => (window as unknown as { __chicken: { fastForward: (ms: number) => void } }).__chicken.fastForward(31_000));
+    await page.waitForTimeout(100);
+    await collect(page, 'cursor5');
+    const x = await offsets();
+    expect(x).toContainEqual({ dx: 0, dy: 0 });
+    expect(x.filter((o) => o.dx !== 0 && Math.abs(o.dx) === Math.abs(o.dy))).toHaveLength(4);
+    if (SHOT_DIR) await page.screenshot({ path: `${SHOT_DIR}/cursor-x5-cross.png` });
+    await collect(page, 'cursor3');
+    const rings = await offsets();
+    expect(rings).toHaveLength(15);
+    const r = radii(rings);
+    expect(r[0]).toBe(0);
+    expect(r.filter((v) => v > 30 && v < 50)).toHaveLength(6);
+    expect(r.filter((v) => v > 65 && v < 90)).toHaveLength(8);
+    if (SHOT_DIR) await page.screenshot({ path: `${SHOT_DIR}/cursor-x15-rings.png` });
   });
 
   test('cursor x3 multiplies the set: 15 with x5, 3 alone', async ({ page }) => {
@@ -245,9 +277,9 @@ test.describe('chicken game v2 ability orbs', () => {
     await page.mouse.move(640, 330);
     await collect(page, 'cursor3');
     expect((await snap(page)).cursors).toBe(3);
-    await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(2);
+    await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(3);
     await collect(page, 'cursor5');
-    await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(14);
+    await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(15);
     expect((await snap(page)).cursors).toBe(15);
     await page.mouse.move(641, 331);
     if (SHOT_DIR) await page.screenshot({ path: `${SHOT_DIR}/cursor-x15.png` });
@@ -280,8 +312,16 @@ test.describe('chicken game v2 ability orbs', () => {
     const cx = box.x + box.width / 2;
     const cy = box.y + box.height / 2;
     const before = (await snap(page)).score;
-    await page.mouse.click(cx - X5_ARM, cy - X5_ARM);
-    expect((await snap(page)).score).toBe(before + 1);
+    const clickX = cx - X5_ARM;
+    const clickY = cy - X5_ARM;
+    const offsets = [[0, 0], [-X5_ARM, -X5_ARM], [X5_ARM, -X5_ARM], [-X5_ARM, X5_ARM], [X5_ARM, X5_ARM]];
+    const landing = offsets.filter(([dx, dy]) => {
+      const x = clickX + dx;
+      const y = clickY + dy;
+      return x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height;
+    }).length;
+    await page.mouse.click(clickX, clickY);
+    expect((await snap(page)).score).toBe(before + landing);
     await collect(page, 'cursor3');
     const box2 = await page.getByTestId('chicken').boundingBox();
     if (!box2) throw new Error('no chicken');
@@ -614,5 +654,106 @@ test.describe('chicken game v2 toss and split', () => {
     await page.mouse.up();
     await page.waitForTimeout(140);
     await page.screenshot({ path: `${TOSS_SHOT_DIR}/ragdoll-flight.png` });
+  });
+});
+
+const INVENTORY_KEY = 'article-inventory-v1';
+const FLIGHT_MS = 700;
+const INVENTORY_SHOT_DIR = process.env.INVENTORY_SHOT_DIR;
+
+interface InventoryBridge {
+  inventory: () => { id: string; label: string; count: number }[];
+  grantItem: (id: string, fromX?: number, fromY?: number) => void;
+}
+
+const grant = (page: Page, id: string, x?: number, y?: number) =>
+  page.evaluate(
+    ([i, px, py]) => (window as unknown as { __chicken: InventoryBridge }).__chicken.grantItem(i as string, px as number | undefined, py as number | undefined),
+    [id, x, y]
+  );
+
+const storedItems = (page: Page) =>
+  page.evaluate((key) => JSON.parse(window.localStorage.getItem(key) ?? '[]') as { id: string; count: number }[], INVENTORY_KEY);
+
+test.describe('chicken game v2 inventory bag', () => {
+  test('the bag renders only in variant 2', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await expect(page.getByTestId('inventory-bag')).toBeVisible();
+    await gotoGame(page, '');
+    await expect(page.getByTestId('inventory-bag')).toHaveCount(0);
+  });
+
+  test('grantItem flies into the bag and the count increments', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await grant(page, 'hawk-feather', 200, 200);
+    await expect(page.getByTestId('fly-to-bag')).toHaveCount(1);
+    await expect(page.getByTestId('fly-to-bag')).toHaveCount(0, { timeout: FLIGHT_MS * 3 });
+    await expect(page.getByTestId('inventory-total')).toHaveText('1');
+    await page.getByTestId('inventory-bag').click();
+    await expect(page.getByTestId('inventory-count-hawk-feather')).toHaveText('x1');
+    await expect(page.getByTestId('inventory-use-hawk-feather')).toBeVisible();
+    const items = await page.evaluate(() => (window as unknown as { __chicken: InventoryBridge }).__chicken.inventory());
+    expect(items).toEqual([{ id: 'hawk-feather', label: 'Hawk feather', count: 1 }]);
+  });
+
+  test('items persist across reload', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await grant(page, 'toasted-feather');
+    await grant(page, 'toasted-feather');
+    await expect(page.getByTestId('inventory-total')).toHaveText('2', { timeout: FLIGHT_MS * 3 });
+    await gotoGame(page, '?variant=2');
+    await expect(page.getByTestId('inventory-total')).toHaveText('2');
+    expect(await storedItems(page)).toEqual([expect.objectContaining({ id: 'toasted-feather', count: 2 })]);
+  });
+
+  test('garden-shaped items are kept', async ({ page }) => {
+    await page.addInitScript(
+      ([key]) => {
+        if (!window.localStorage.getItem(key)) {
+          window.localStorage.setItem(key, JSON.stringify([{ id: 'easter-egg', label: 'Easter egg', count: 3 }, { id: 'ruby-gem', label: 'Ruby gem', count: 1 }]));
+        }
+      },
+      [INVENTORY_KEY]
+    );
+    await gotoGame(page, '?variant=2');
+    await expect(page.getByTestId('inventory-total')).toHaveText('4');
+    await grant(page, 'hawk-feather');
+    await expect(page.getByTestId('inventory-total')).toHaveText('5', { timeout: FLIGHT_MS * 3 });
+    const stored = await storedItems(page);
+    expect(stored.map((i) => i.id)).toEqual(['easter-egg', 'ruby-gem', 'hawk-feather']);
+    expect(stored[0].count).toBe(3);
+  });
+
+  test('the bag does not block the leaderboard toggle', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.waitForTimeout(GUARD_MS + 100);
+    const bag = await page.getByTestId('inventory-bag').boundingBox();
+    const toggle = await page.getByTestId('chicken-leaderboard-link').boundingBox();
+    expect(bag && toggle).toBeTruthy();
+    expect(bag!.x).toBeGreaterThan(toggle!.x + toggle!.width);
+    await page.getByTestId('chicken-leaderboard-link').click();
+    expect(await sheetOpen(page)).toBe(true);
+  });
+
+  test('clicking the bag does not close an open leaderboard', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.waitForTimeout(GUARD_MS + 100);
+    await page.getByTestId('chicken-leaderboard-link').click();
+    expect(await sheetOpen(page)).toBe(true);
+    await page.getByTestId('inventory-bag').click();
+    await expect(page.getByTestId('inventory-panel')).toBeVisible();
+    expect(await sheetOpen(page)).toBe(true);
+  });
+
+  test('screenshots: bag closed, open, mid-flight', async ({ page }) => {
+    test.skip(!INVENTORY_SHOT_DIR, 'INVENTORY_SHOT_DIR not set');
+    await gotoGame(page, '?variant=2');
+    await page.screenshot({ path: `${INVENTORY_SHOT_DIR}/bag-closed.png` });
+    await grant(page, 'hawk-feather', 300, 300);
+    await page.waitForTimeout(FLIGHT_MS / 2);
+    await page.screenshot({ path: `${INVENTORY_SHOT_DIR}/fly-mid.png` });
+    await expect(page.getByTestId('inventory-total')).toHaveText('1');
+    await page.getByTestId('inventory-bag').click();
+    await page.screenshot({ path: `${INVENTORY_SHOT_DIR}/bag-open.png` });
   });
 });

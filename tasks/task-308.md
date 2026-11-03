@@ -1,10 +1,11 @@
 ### Task 308: Chicken Game — Shared inventory bag and game items
 - [ ] Extract `InventoryProvider`, `InventoryBag`, `BagIcon` from `src/components/garden/article-inventory.tsx` into `src/components/inventory/` (same storage key `article-inventory-v1`); remove the hardcoded pathname check in favor of a `visible` prop
-- [ ] Item registry prop (`label`, `max`, `art`) with the garden items as default
-- [ ] Generic `FlyToBag` + `useFlyToBag()` replacing duplicated `FlyingEgg/IdCard/Ruby`; reduced-motion fallback
+- [x] Item registry prop (`label`, `max`, `art`) with the garden items as default
+- [x] Generic `FlyToBag` + `useFlyToBag()` replacing duplicated `FlyingEgg/IdCard/Ruby`; reduced-motion fallback
 - [ ] Garden behavior unchanged (existing e2e specs pass untouched)
-- [ ] Mount the bag on `/game`, resolve overlap with the game's bottom-right controls
-- [ ] Game items: `hawk-feather`, `eagle-feather` (max 1, tap to unlock + wear skin), `toasted-feather` (max 10); item art components
+- [x] Mount the bag on `/game`, resolve overlap with the game's bottom-right controls
+- [x] Game items: `hawk-feather`, `eagle-feather` (max 1, tap to unlock + wear skin), `toasted-feather` (max 10); item art components
 - [ ] Skin unlock persistence `chicken-skins-unlocked` and skins sheet lock state
-- [ ] Bridge hook `giveItem`; `e2e/inventory.spec.ts`
+- [x] Bridge hook `giveItem`; `e2e/inventory.spec.ts`
+- [ ] Follow-up: move the garden onto the shared `src/components/inventory/` module (garden untouched in the v2-only build)
 - Location: `src/components/garden/article-inventory.tsx`, `src/components/inventory/`, `src/app/game/page.tsx`, `src/components/game/chicken-game.tsx`, `src/components/game/chicken-skins.ts`, `e2e/inventory.spec.ts`, spec `docs/chicken-game-inventory.md`

@@ -157,6 +157,7 @@ import {
 import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, skinById } from './chicken-skins';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
+import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
 import {
   FINAL_TIER,
   MERCY_DELAY_MS,
@@ -342,7 +343,7 @@ const VISIT_NEAR_X = 70;
 const VISIT_NEAR_Y = 56;
 const VISIT_SPEED = 2.2;
 const LEADERBOARD_OPEN_GUARD_MS = 900;
-const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"]';
+const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"], [data-testid="inventory-root"]';
 
 interface Particle {
   x: number;
@@ -635,6 +636,20 @@ interface ChickenBridge {
   forceReform: () => void;
   forceBandaid: () => void;
   holdMsOverride: (ms: number) => void;
+  inventory: () => InventoryItem[];
+  grantItem: (id: string, fromX?: number, fromY?: number) => void;
+}
+
+type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather'>;
+
+function isFeatherSkinItem(id: string): id is FeatherSkinItemId {
+  return id === 'hawk-feather' || id === 'eagle-feather';
+}
+
+function applyFeatherSkin(_id: FeatherSkinItemId): void {}
+
+export function onUseItem(itemId: string): void {
+  if (isFeatherSkinItem(itemId)) applyFeatherSkin(itemId);
 }
 
 interface BridgeWindow {
@@ -1792,6 +1807,10 @@ function ChickenGameInner() {
     if (next !== 'moon') setParked(null);
   }, []);
 
+  const { items: inventoryItems, grant: grantItem } = useInventory();
+  const itemsRef = useRef(inventoryItems);
+  itemsRef.current = inventoryItems;
+
   const toggleSheet = useCallback(() => {
     setSkinsOpen(false);
     setSheet((s) => {
@@ -1982,11 +2001,11 @@ function ChickenGameInner() {
         cursorKeyRef.current = key;
         const offsets = buildCursorOffsets(x5, x3);
         cursorOffsetsRef.current = offsets;
-        setOverlayOffsets(offsets.filter((o) => o.dx !== 0 || o.dy !== 0));
+        setOverlayOffsets(offsets.length > 1 ? offsets : []);
       }
       const mouse = mouseRef.current;
       const els = cursorElsRef.current;
-      const overlays = cursorOffsetsRef.current.filter((o) => o.dx !== 0 || o.dy !== 0);
+      const overlays = cursorOffsetsRef.current.length > 1 ? cursorOffsetsRef.current : [];
       for (let i = 0; i < overlays.length; i++) {
         const el = els[i];
         if (el) {
@@ -2263,12 +2282,17 @@ function ChickenGameInner() {
       holdMsOverride: (ms: number) => {
         holdMsOverrideRef.current = ms > 0 ? ms : null;
       },
+      inventory: () => itemsRef.current,
+      grantItem: (id: string, fromX?: number, fromY?: number) => {
+        if (!isGameItemId(id)) return;
+        grantItem(id, fromX !== undefined && fromY !== undefined ? { x: fromX, y: fromY } : undefined);
+      },
     };
     bridgeWindow().__chicken = bridge;
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem]);
 
   useEffect(() => {
     const p = physicsRef.current;
@@ -3178,6 +3202,7 @@ function ChickenGameInner() {
     <div
       data-testid="chicken-stage"
       data-variant="2"
+      data-multicursor={overlayOffsets.length > 0 ? '1' : '0'}
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
       className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
     >
@@ -3411,7 +3436,7 @@ function ChickenGameInner() {
           className="absolute top-0 left-0 z-20 h-[88px] w-[88px] cursor-pointer rounded-full will-change-transform"
         >
           <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
-          <div className="absolute inset-[5px] flex items-center justify-center rounded-full bg-[#0b0b0b]/85 px-1 text-center text-[12px] font-bold leading-tight text-white">
+          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-2 text-center text-[13px] font-extrabold leading-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]">
             {ORB_LABELS[orb.kind]}
           </div>
         </div>
@@ -3452,6 +3477,8 @@ function ChickenGameInner() {
         ))}
       </div>
 
+      <InventoryBag />
+
       <LeaderboardPanel
         open={sheet === 'board'}
         onToggle={toggleSheet}
@@ -3469,7 +3496,9 @@ function ChickenGameInner() {
 export function ChickenGameV2() {
   return (
     <AppProvider>
-      <ChickenGameInner />
+      <InventoryProvider onUse={onUseItem}>
+        <ChickenGameInner />
+      </InventoryProvider>
     </AppProvider>
   );
 }
