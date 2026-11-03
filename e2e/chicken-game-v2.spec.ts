@@ -760,3 +760,237 @@ test.describe('chicken game v2 inventory bag', () => {
     await page.screenshot({ path: `${INVENTORY_SHOT_DIR}/bag-open.png` });
   });
 });
+
+interface BirdView {
+  kind: string | null;
+  phase: string;
+  scale: number;
+  anchor: { x: number; y: number };
+  settled: { x: number; y: number };
+  intercept: { x: number; y: number };
+  nudge: { x: number; y: number };
+  rightClicks: number;
+  leftClicks: number;
+  hint: boolean;
+  looks: number;
+  calm: boolean;
+  calmClicks: number;
+  recoveryClicks: number;
+  feathered: boolean;
+  feather: { x: number; y: number } | null;
+  snapshot: { speed: number; mode: string } | null;
+}
+
+interface BirdBridge {
+  state: () => { score: number; scoreExact: number; speed: number; mode: string; mult: number; skin: string; bird: BirdView };
+  setScore: (n: number) => void;
+  boost: (n: number) => void;
+  placeChicken: (x: number, y: number) => void;
+  fastForward: (ms: number) => void;
+  forceBird: (kind: string) => void;
+  useItem: (id: string) => void;
+  inventory: () => { id: string; count: number }[];
+}
+
+const birdState = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state());
+const birdFf = (page: Page, ms: number) => page.evaluate((m) => (window as unknown as { __chicken: BirdBridge }).__chicken.fastForward(m), ms);
+const rootData = (page: Page) => page.evaluate(() => ({ ...document.querySelector<HTMLElement>('[data-testid="bird-root"]')?.dataset }));
+const rectOf = (page: Page, testId: string) => page.getByTestId(testId).evaluate((el) => el.getBoundingClientRect().toJSON() as { left: number; top: number; right: number; bottom: number; width: number; height: number });
+
+async function summonHawk(page: Page) {
+  await gotoGame(page, '?variant=2');
+  await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.setScore(1999));
+  await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.placeChicken(820, 420));
+  await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(1));
+  await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'right', null, { timeout: 8000 });
+  await page.waitForTimeout(150);
+}
+
+async function tapTalon(page: Page, side: 'right' | 'left', n: number) {
+  for (let i = 0; i < n; i++) await page.getByTestId(`bird-talon-${side}`).click({ force: true });
+}
+
+test.describe('chicken game v2 hawk event', () => {
+  test('no hawk below 2000; the hawk flies in when 2000 is reached', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.setScore(1999));
+    await page.waitForTimeout(300);
+    expect((await birdState(page)).bird.phase).toBe('idle');
+    await expect(page.getByTestId('bird-root')).toHaveCount(0);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(1));
+    await expect.poll(async () => (await birdState(page)).bird.phase, { timeout: 5000 }).toBe('approach');
+    const s = await birdState(page);
+    expect(s.score).toBe(2000);
+    expect(s.bird.snapshot).not.toBeNull();
+    await expect(page.getByTestId('bird-flight')).toBeVisible();
+  });
+
+  test('forceBird triggers the event once per run', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.forceBird('hawk'));
+    await page.waitForTimeout(300);
+    expect((await birdState(page)).bird.phase).toBe('approach');
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.forceBird('hawk'));
+    expect((await birdState(page)).bird.phase).toBe('approach');
+  });
+
+  test('grab composition: intercept point, nudge, everything on screen, X on the front talon', async ({ page }) => {
+    await summonHawk(page);
+    const s = await birdState(page);
+    expect(s.bird.settled.x - s.bird.intercept.x).toBeCloseTo(s.bird.nudge.x, 3);
+    expect(s.bird.settled.y - s.bird.intercept.y).toBeCloseTo(s.bird.nudge.y, 3);
+    expect(Math.hypot(s.bird.nudge.x, s.bird.nudge.y)).toBeLessThan(200);
+    const held = await rectOf(page, 'chicken');
+    const live = (await birdState(page)).bird.anchor;
+    expect(Math.abs(held.left + held.width / 2 - live.x)).toBeLessThan(6);
+    expect(Math.abs(held.top + held.height / 2 - live.y)).toBeLessThan(6);
+    await expect(page.getByTestId('bird-banner')).toHaveText('help the chicken escape!');
+    const vw = 1280;
+    const vh = 720;
+    for (const id of ['chicken', 'bird-body', 'bird-talon-right', 'bird-talon-left']) {
+      const r = await rectOf(page, id);
+      expect(r.left, id).toBeGreaterThanOrEqual(0);
+      expect(r.top, id).toBeGreaterThanOrEqual(0);
+      expect(r.right, id).toBeLessThanOrEqual(vw);
+      expect(r.bottom, id).toBeLessThanOrEqual(vh);
+    }
+    const chicken = await rectOf(page, 'chicken');
+    const right = await rectOf(page, 'bird-talon-right');
+    const left = await rectOf(page, 'bird-talon-left');
+    expect(right.left).toBeLessThan(chicken.left + chicken.width / 2);
+    expect(left.top).toBeLessThan(right.top);
+    const hud = await rectOf(page, 'chicken-stage');
+    expect(hud.width).toBe(vw);
+    expect((await rootData(page)).hint).toBe('0');
+    await birdFf(page, 10_100);
+    await page.waitForTimeout(200);
+    const data = await rootData(page);
+    expect(data.hint).toBe('1');
+    expect(data.talon).toBe('right');
+    const hintX = await page.getByTestId('bird-hint').getAttribute('data-x');
+    const [xc, yc] = (hintX ?? '').split(',').map(Number);
+    const talon = await rectOf(page, 'bird-talon-right');
+    expect(xc).toBeGreaterThan(talon.left);
+    expect(xc).toBeLessThan(talon.right);
+    expect(yc).toBeGreaterThan(talon.top);
+    expect(yc).toBeLessThan(talon.bottom);
+    await expect(page.getByTestId('bird-tap-cursor')).toBeVisible();
+    expect(data.label).toBe('0');
+  });
+
+  test('25 front-talon clicks score 25 and free the right claw; then the left claw with hint, label and look-at-you', async ({ page }) => {
+    test.setTimeout(120_000);
+    await summonHawk(page);
+    const before = (await birdState(page)).score;
+    await tapTalon(page, 'right', 24);
+    let s = await birdState(page);
+    expect(s.bird.phase).toBe('right');
+    expect(s.bird.rightClicks).toBe(24);
+    await tapTalon(page, 'right', 1);
+    s = await birdState(page);
+    expect(s.score).toBe(before + 25);
+    expect(s.bird.phase).toBe('recoil');
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+    await page.waitForTimeout(100);
+    let data = await rootData(page);
+    expect(data.talon).toBe('left');
+    expect(data.hint).toBe('0');
+    await birdFf(page, 10_100);
+    await page.waitForTimeout(200);
+    data = await rootData(page);
+    expect(data.hint).toBe('1');
+    expect(data.label).toBe('0');
+    await birdFf(page, 30_100);
+    await page.waitForTimeout(200);
+    data = await rootData(page);
+    expect(data.label).toBe('1');
+    await expect(page.getByTestId('bird-hint-label')).toHaveText('click the claw');
+    await tapTalon(page, 'left', 4);
+    expect((await rootData(page)).look).toBe('0');
+    await tapTalon(page, 'left', 1);
+    expect((await birdState(page)).bird.looks).toBe(1);
+    await expect.poll(async () => (await rootData(page)).look).toBe('1');
+    await tapTalon(page, 'left', 5);
+    expect((await birdState(page)).bird.looks).toBe(2);
+    await tapTalon(page, 'left', 15);
+    s = await birdState(page);
+    expect(s.bird.phase).toBe('hover');
+    expect(s.bird.calm).toBe(true);
+    expect(s.score).toBe(before + 50);
+  });
+
+  test('freed: hawk hovers, chicken stands still for 25 free clicks, then resumes its pre-hawk speed; fly-off shrinks', async ({ page }) => {
+    test.setTimeout(120_000);
+    await summonHawk(page);
+    await tapTalon(page, 'right', 25);
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+    await tapTalon(page, 'left', 25);
+    let s = await birdState(page);
+    expect(s.bird.phase).toBe('hover');
+    const snapshot = s.bird.snapshot;
+    expect(snapshot).not.toBeNull();
+    const c1 = await rectOf(page, 'chicken');
+    const h1 = await rectOf(page, 'bird-body');
+    await page.waitForTimeout(600);
+    const c2 = await rectOf(page, 'chicken');
+    const h2 = await rectOf(page, 'bird-body');
+    expect(Math.abs(c2.left - c1.left)).toBeLessThan(4);
+    expect(Math.abs(c2.top - c1.top)).toBeLessThan(4);
+    expect(Math.abs(h2.left - h1.left)).toBeLessThan(4);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(24));
+    s = await birdState(page);
+    expect(s.bird.calm).toBe(true);
+    expect(s.bird.calmClicks).toBe(24);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(1));
+    s = await birdState(page);
+    expect(s.bird.calm).toBe(false);
+    expect(s.speed).toBe(snapshot?.speed);
+    expect(s.mode).toBe(snapshot?.mode);
+    await birdFf(page, 6300);
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'recede', null, { timeout: 3000 });
+    await page.waitForTimeout(400);
+    const a = await birdState(page);
+    await page.waitForTimeout(1200);
+    const b = await birdState(page);
+    expect(a.bird.scale).toBeLessThan(1);
+    expect(b.bird.scale).toBeLessThan(a.bird.scale);
+    expect(['bank', 'away-3q', 'away-far']).toContain(await page.getByTestId('bird-flight').getAttribute('data-frame'));
+  });
+
+  test('25 clicks on the receding hawk drop a feather; it flies into the bag; using it applies the hawk skin and x1.25', async ({ page }) => {
+    test.setTimeout(120_000);
+    await summonHawk(page);
+    await tapTalon(page, 'right', 25);
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'left', null, { timeout: 3000 });
+    await tapTalon(page, 'left', 25);
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(25));
+    await birdFf(page, 6300);
+    await page.waitForFunction(() => (window as unknown as { __chicken: BirdBridge }).__chicken.state().bird.phase === 'recede', null, { timeout: 3000 });
+    const before = (await birdState(page)).score;
+    for (let i = 0; i < 24; i++) await page.getByTestId('bird-hit').click({ force: true });
+    let s = await birdState(page);
+    expect(s.bird.feathered).toBe(false);
+    expect(s.score).toBe(before + 24);
+    await page.getByTestId('bird-hit').click({ force: true });
+    s = await birdState(page);
+    expect(s.bird.feathered).toBe(true);
+    expect(s.bird.feather).not.toBeNull();
+    await expect(page.getByTestId('bird-feather')).toBeVisible();
+    await expect(page.getByTestId('bird-feather')).toHaveAttribute('data-landed', '1', { timeout: 5000 });
+    await page.getByTestId('bird-feather').click({ force: true });
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.inventory())).find((i) => i.id === 'hawk-feather')?.count ?? 0, { timeout: 5000 }).toBe(1);
+    expect((await birdState(page)).bird.feather).toBeNull();
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.useItem('hawk-feather'));
+    await expect.poll(async () => (await birdState(page)).skin).toBe('hawk');
+    s = await birdState(page);
+    expect(s.mult).toBe(1.25);
+    await expect(page.getByTestId('chicken-hawk-pattern')).toBeAttached();
+    const start = s.scoreExact;
+    await page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.boost(4));
+    s = await birdState(page);
+    expect(s.scoreExact).toBeCloseTo(start + 5, 6);
+    expect(s.score).toBe(Math.floor(start + 5));
+    await page.getByTestId('chicken-skins-toggle').click();
+    await expect(page.getByTestId('chicken-skin-hawk')).toBeVisible();
+  });
+});

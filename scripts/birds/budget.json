@@ -1,7 +1,7 @@
 {
   "cap_usd": 3,
   "stop_at_usd": 2.55,
-  "spent_usd": 2.021204,
+  "spent_usd": 2.290466,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -242,6 +242,38 @@
       "purpose": "grab pose v2: head bowed over the feet",
       "cost_usd": 0.0674175,
       "gen_id": "gen-1793670603-ApB6z04yTwss3RA69q2I"
+    },
+    {
+      "at": "2026-11-03T02:00:32.493Z",
+      "id": "hawk-feather",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "easter egg: single red-tailed hawk feather",
+      "cost_usd": 0.0675185,
+      "gen_id": "gen-1793671224-sOs8l2PNY7GB9r8ffmjP"
+    },
+    {
+      "at": "2026-11-03T02:06:13.805Z",
+      "id": "plane-explosion-fireball",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photo-real plane explosion sprite on black (screen blend)",
+      "cost_usd": 0.067253,
+      "gen_id": "gen-1793671566-CUcFZUbZXlz4hNQnh5hn"
+    },
+    {
+      "at": "2026-11-03T02:06:21.179Z",
+      "id": "plane-explosion-smoke",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photo-real plane explosion sprite on black (screen blend)",
+      "cost_usd": 0.0672455,
+      "gen_id": "gen-1793671573-n3b9Q92tJIZl7jmglLRJ"
+    },
+    {
+      "at": "2026-11-03T02:06:28.110Z",
+      "id": "plane-explosion-embers",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photo-real plane explosion sprite on black (screen blend)",
+      "cost_usd": 0.0672455,
+      "gen_id": "gen-1793671581-WuNms0Gm8Xd6gxfvhOsb"
     }
   ]
 }

@@ -75,6 +75,7 @@ import {
   ORB_LABELS,
   ORB_LIFETIME_MS,
   ORB_RADIUS,
+  ORB_LABEL_PX,
   ORB_SHARD_COLORS,
   ORB_SPAWN_MARGIN,
   ORB_THRESHOLDS,
@@ -155,7 +156,28 @@ import {
   type SplitLevel,
   type Wound,
 } from './chicken-split';
-import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, skinById } from './chicken-skins';
+import { DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, UNLOCKABLE_SKINS, readUnlockedSkins, skinById, skinMultiplier, unlockSkin } from './chicken-skins';
+import {
+  BIRD_SPECS,
+  BIRD_TRIGGER_SCORE,
+  BirdLayer,
+  birdStateView,
+  createBirdEls,
+  createBirdState,
+  isBirdBusy,
+  isGripping,
+  noteCalmClick,
+  shiftBirdTime,
+  startBird,
+  takeFeather,
+  tapRecedingBird,
+  tapTalon,
+  tickBird,
+  type BirdKind,
+  type BirdSnapshot,
+  type HudRect,
+  type TalonSide,
+} from './bird-event';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { AppProvider } from '@/context/app-context';
 import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
@@ -524,7 +546,7 @@ interface PortalTransit {
 }
 
 export interface SoundEvent {
-  type: 'scream' | 'powerup' | 'crackle' | 'squeak';
+  type: 'scream' | 'powerup' | 'crackle' | 'squeak' | 'hawk';
   key?: string;
   rate?: number;
   synth?: boolean;
@@ -631,6 +653,10 @@ interface ChickenBridge {
   openSheet: () => void;
   setScore: (n: number) => void;
   forceOrb: (kind: OrbKind) => void;
+  forceBird: (kind: BirdKind) => void;
+  placeChicken: (x: number, y: number) => void;
+  useItem: (id: string) => void;
+  selectSkin: (id: string) => void;
   collectOrb: (kind: OrbKind) => void;
   fastForward: (ms: number) => void;
   forceToss: (level?: number) => void;
@@ -647,7 +673,11 @@ function isFeatherSkinItem(id: string): id is FeatherSkinItemId {
   return id === 'hawk-feather' || id === 'eagle-feather';
 }
 
-function applyFeatherSkin(_id: FeatherSkinItemId): void {}
+let featherSkinHandler: ((id: FeatherSkinItemId) => void) | null = null;
+
+function applyFeatherSkin(id: FeatherSkinItemId): void {
+  featherSkinHandler?.(id);
+}
 
 export function onUseItem(itemId: string): void {
   if (isFeatherSkinItem(itemId)) applyFeatherSkin(itemId);
@@ -836,6 +866,13 @@ function ChickenGameInner() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [skin, setSkin] = useState(DEFAULT_SKIN_ID);
   const [skinsOpen, setSkinsOpen] = useState(false);
+  const [unlockedSkins, setUnlockedSkins] = useState<string[]>([]);
+  const [birdUi, setBirdUi] = useState<{ kind: BirdKind | null; grip: boolean }>({ kind: null, grip: false });
+  const birdUiRef = useRef(birdUi);
+  const birdRef = useRef(createBirdState());
+  const birdElsRef = useRef(createBirdEls());
+  const multRef = useRef(1);
+  const screamOverrideRef = useRef<'hawk' | null>(null);
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
   const physicsRef = useRef<Physics>({
@@ -977,7 +1014,7 @@ function ChickenGameInner() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const { progress, playScream, playPowerUp, crackle, squeak } = useChickenSounds();
+  const { progress, playScream, playPowerUp, playHawk, crackle, squeak } = useChickenSounds();
 
   const recordPlay = useCallback((event: SoundEvent) => {
     const log = playsRef.current;
@@ -1637,6 +1674,7 @@ function ChickenGameInner() {
   const selectSkin = useCallback((id: string) => {
     setSkin(id);
     skinRef.current = id;
+    multRef.current = skinMultiplier(id);
     try {
       window.localStorage.setItem(SKIN_STORAGE_KEY, id);
     } catch {}
@@ -1648,10 +1686,45 @@ function ChickenGameInner() {
     try {
       saved = window.localStorage.getItem(SKIN_STORAGE_KEY);
     } catch {}
-    if (saved && SKINS.some((s) => s.id === saved)) {
+    const unlocked = readUnlockedSkins();
+    setUnlockedSkins(unlocked);
+    if (saved && (SKINS.some((s) => s.id === saved) || unlocked.includes(saved))) {
       setSkin(saved);
       skinRef.current = saved;
+      multRef.current = skinMultiplier(saved);
     }
+  }, []);
+
+  useEffect(() => {
+    featherSkinHandler = (id) => {
+      const skinId = id === 'hawk-feather' ? BIRD_SPECS.hawk.skinId : BIRD_SPECS.eagle.skinId;
+      if (skinById(skinId).id !== skinId) return;
+      setUnlockedSkins(unlockSkin(skinId));
+      selectSkin(skinId);
+    };
+    return () => {
+      featherSkinHandler = null;
+    };
+  }, [selectSkin]);
+
+  const syncBirdUi = useCallback((kind: BirdKind | null, grip: boolean) => {
+    const cur = birdUiRef.current;
+    if (cur.kind === kind && cur.grip === grip) return;
+    const next = { kind, grip };
+    birdUiRef.current = next;
+    setBirdUi(next);
+  }, []);
+
+  const restoreBirdSnapshot = useCallback(() => {
+    const snap = birdRef.current.snapshot;
+    if (!snap) return;
+    const p = physicsRef.current;
+    modeRef.current = snap.mode;
+    speedRef.current = snap.speed;
+    heatRef.current = snap.heat;
+    p.vx = snap.vx;
+    p.vy = snap.vy;
+    facingRef.current = snap.facing;
   }, []);
 
   const beginPortal = useCallback((side: PortalSide, ts: number) => {
@@ -1808,9 +1881,44 @@ function ChickenGameInner() {
     if (next !== 'moon') setParked(null);
   }, []);
 
-  const { items: inventoryItems, grant: grantItem } = useInventory();
+  const { items: inventoryItems, grant: grantItem, use: useItem } = useInventory();
   const itemsRef = useRef(inventoryItems);
   itemsRef.current = inventoryItems;
+
+  const birdScoreClick = useCallback((x: number, y: number) => {
+    screamOverrideRef.current = 'hawk';
+    hitRef.current(undefined, true, { x, y });
+    screamOverrideRef.current = null;
+  }, []);
+
+  const onTalon = useCallback(
+    (side: TalonSide, x: number, y: number) => {
+      const result = tapTalon(birdRef.current, side, performance.now());
+      if (result === 'ignored') return;
+      birdScoreClick(x, y);
+      if (result === 'freed-left') syncBirdUi(birdRef.current.kind, false);
+    },
+    [birdScoreClick, syncBirdUi]
+  );
+
+  const onBird = useCallback(
+    (x: number, y: number) => {
+      const result = tapRecedingBird(birdRef.current, performance.now(), groundYFor(window.innerHeight));
+      if (result === 'ignored') return;
+      birdScoreClick(x, y);
+    },
+    [birdScoreClick]
+  );
+
+  const onFeather = useCallback(
+    (x: number, y: number) => {
+      const kind = birdRef.current.kind;
+      const point = takeFeather(birdRef.current);
+      if (!kind || !point) return;
+      grantItem(BIRD_SPECS[kind].itemId, { x, y });
+    },
+    [grantItem]
+  );
 
   const toggleSheet = useCallback(() => {
     setSkinsOpen(false);
@@ -2022,6 +2130,8 @@ function ChickenGameInner() {
       const now = performance.now();
       const p = physicsRef.current;
       const plain = source !== undefined;
+      const bird = birdRef.current;
+      if (!plain && isGripping(bird.phase)) return;
       let award = 1;
       const hyper = hyperRef.current;
       const tp = teleportRef.current;
@@ -2046,22 +2156,28 @@ function ChickenGameInner() {
         visit.cooldownUntil = now + VISIT_COOLDOWN_MIN_MS + Math.random() * VISIT_COOLDOWN_SPREAD_MS;
       }
       const prevScore = scoreRef.current;
-      const next = prevScore + award;
+      const next = prevScore + award * multRef.current;
       scoreRef.current = next;
-      setScore(next);
-      checkOrbSchedule(prevScore, next);
+      const shown = Math.floor(next);
+      setScore(shown);
+      checkOrbSchedule(Math.floor(prevScore), shown);
+      if (!bird.triggered && Math.floor(prevScore) < BIRD_TRIGGER_SCORE.hawk && shown >= BIRD_TRIGGER_SCORE.hawk) {
+        bird.triggered = true;
+        bird.pending = true;
+      }
+      if (!plain && noteCalmClick(bird)) restoreBirdSnapshot();
       const buff = cursorBuffRef.current;
       if (now < buff.x5Until) buff.x5Until += CURSOR_EXTEND_PER_CLICK_MS;
       if (now < buff.x3Until) buff.x3Until += CURSOR_EXTEND_PER_CLICK_MS;
-      speedRef.current = speedForScore(next);
-      const nextStage = stageForScore(next);
+      speedRef.current = speedForScore(shown);
+      const nextStage = stageForScore(shown);
       if (nextStage !== stageRef.current) enterStage(nextStage, now);
       heatRef.current = Math.min(HEAT_MAX, heatRef.current + HEAT_PER_CLICK);
       lastHitRef.current = now;
       const cx = source ? source.x : p.x + CHICKEN_W / 2;
       const cy = source ? source.y : p.y + CHICKEN_H / 2;
       const previousTier = tierRef.current;
-      const newTier = tierForScore(next);
+      const newTier = tierForScore(shown);
       if (newTier !== previousTier) {
         tierRef.current = newTier;
         setTier(newTier);
@@ -2074,9 +2190,10 @@ function ChickenGameInner() {
       } else {
         const rate =
           TIERS[newTier].screamRate * (1 - SCREAM_JITTER / 2 + Math.random() * SCREAM_JITTER);
-        const played = playScream(rate);
+        const hawkCall = screamOverrideRef.current === 'hawk';
+        const played = hawkCall ? playHawk() : playScream(rate);
         if (played) {
-          recordPlay({ type: 'scream', key: played.key, rate: played.rate, at: Date.now() });
+          recordPlay({ type: hawkCall ? 'hawk' : 'scream', key: played.key, rate: played.rate, at: Date.now() });
         }
         const count = FEATHERS_PER_CLICK + (Math.random() < FEATHER_EXTRA_CHANCE ? 1 : 0);
         spawnFeathers(cx, cy, count);
@@ -2087,6 +2204,7 @@ function ChickenGameInner() {
         !plain &&
         !rootSplitRef.current &&
         !holdRef.current &&
+        !isBirdBusy(bird) &&
         ceremony.phase === 'idle' &&
         now >= ceremony.cooldownUntil &&
         heatRef.current >= CEREMONY_HEAT &&
@@ -2099,7 +2217,7 @@ function ChickenGameInner() {
         setCountdown(ceremony.value);
       }
     },
-    [playPowerUp, playScream, recordPlay, spawnShards, spawnFeathers, applySquash, enterStage, checkOrbSchedule]
+    [playPowerUp, playScream, playHawk, recordPlay, spawnShards, spawnFeathers, applySquash, enterStage, checkOrbSchedule, restoreBirdSnapshot]
   );
 
   useEffect(() => {
@@ -2130,7 +2248,11 @@ function ChickenGameInner() {
     const bridge: ChickenBridge = {
       plays: playsRef.current,
       state: () => ({
-        score: scoreRef.current,
+        score: Math.floor(scoreRef.current),
+        scoreExact: scoreRef.current,
+        speed: speedRef.current,
+        mult: multRef.current,
+        bird: birdStateView(birdRef.current),
         tier: tierRef.current,
         mercy: mercyRef.current,
         morph: morphForScore(scoreRef.current),
@@ -2265,7 +2387,25 @@ function ChickenGameInner() {
         const orb = orbsRef.current.find((o) => o.kind === kind);
         if (orb) collectOrb(orb.id);
       },
+      forceBird: (kind: BirdKind) => {
+        const bird = birdRef.current;
+        if (bird.kind || bird.triggered) return;
+        bird.triggered = true;
+        bird.pending = true;
+        void kind;
+      },
+      placeChicken: (x: number, y: number) => {
+        const p = physicsRef.current;
+        p.x = x;
+        p.y = y;
+        p.vx = 0;
+        p.vy = 0;
+        if (modeRef.current === 'ground') modeRef.current = 'flying';
+      },
+      useItem: (id: string) => useItem(id),
+      selectSkin: (id: string) => selectSkin(id),
       fastForward: (ms: number) => {
+        shiftBirdTime(birdRef.current, ms);
         for (const o of orbsRef.current) o.bornAt -= ms;
         for (const c of cloneMotionRef.current.values()) c.vanishAt -= ms;
         multiplyStartRef.current -= ms;
@@ -2293,7 +2433,47 @@ function ChickenGameInner() {
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin]);
+
+  const startBirdNow = useCallback(
+    (ts: number) => {
+      const bird = birdRef.current;
+      const p = physicsRef.current;
+      const snapshot: BirdSnapshot = {
+        speed: speedRef.current,
+        heat: heatRef.current,
+        vx: p.vx,
+        vy: p.vy,
+        facing: facingRef.current,
+        mode: modeRef.current,
+      };
+      for (const id of [...kidMotionRef.current.keys()]) removeKid(id);
+      for (const id of [...cloneMotionRef.current.keys()]) removeClone(id);
+      orbsRef.current = [];
+      setOrbViews([]);
+      cursorBuffRef.current.x5Until = 0;
+      cursorBuffRef.current.x3Until = 0;
+      hyperRef.current.phase = 'idle';
+      scrambleRef.current.phase = 'idle';
+      visitRef.current.phase = 'idle';
+      sizeBoostRef.current = 0;
+      modeRef.current = 'flying';
+      setParked(null);
+      let hud: HudRect | null = null;
+      const stageEl = chickenElRef.current?.parentElement;
+      if (stageEl) {
+        for (const el of stageEl.querySelectorAll('[data-hud]')) {
+          const r = el.getBoundingClientRect();
+          hud = hud
+            ? { left: Math.min(hud.left, r.left), top: Math.min(hud.top, r.top), right: Math.max(hud.right, r.right), bottom: Math.max(hud.bottom, r.bottom) }
+            : { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        }
+      }
+      startBird(bird, 'hawk', ts, p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, window.innerWidth, window.innerHeight, snapshot, hud, { w: CHICKEN_W, h: CHICKEN_H });
+      syncBirdUi('hawk', false);
+    },
+    [removeKid, removeClone, syncBirdUi]
+  );
 
   useEffect(() => {
     const p = physicsRef.current;
@@ -2456,7 +2636,32 @@ function ChickenGameInner() {
       const sc = scoreRef.current;
       const flying = modeRef.current === 'flying';
       tickHold(ts, dtMs, dt);
-      const rootBusy = rootSplitRef.current || holdRef.current !== null;
+      const bird = birdRef.current;
+      if (
+        bird.pending &&
+        !rootSplitRef.current &&
+        holdRef.current === null &&
+        portalRef.current.phase === 'idle' &&
+        teleportRef.current.phase === 'idle'
+      ) {
+        startBirdNow(ts);
+      }
+      const birdTick = tickBird(bird, birdElsRef.current, {
+        ts,
+        dtMs,
+        vw,
+        vh,
+        chickenCx: p.x + CHICKEN_W / 2,
+        chickenCy: p.y + CHICKEN_H / 2,
+        groundY: groundYFor(vh),
+      });
+      if (birdTick.restore) restoreBirdSnapshot();
+      if (birdTick.grabbed) {
+        syncBirdUi(bird.kind, true);
+        setParked(null);
+      }
+      if (bird.phase === 'done' && !bird.feather) syncBirdUi(null, false);
+      const rootBusy = rootSplitRef.current || holdRef.current !== null || isBirdBusy(bird);
 
       const hyper = hyperRef.current;
       if (flying && !rootBusy && sc >= HYPER_MIN_SCORE) {
@@ -2952,7 +3157,19 @@ function ChickenGameInner() {
         p.x = rootHold.anchorX + rootHold.driftX;
         p.y = rootHold.anchorY + rootHold.driftY;
       }
+      if (birdTick.hold) {
+        p.x = birdTick.hold.x - CHICKEN_W / 2;
+        p.y = birdTick.hold.y - CHICKEN_H / 2;
+        p.vx = 0;
+        p.vy = 0;
+        p.rotation = 0;
+        p.rv = 0;
+        p.bank = 0;
+        modeRef.current = 'flying';
+      }
       if (chickenElRef.current) {
+        const gripped = isGripping(bird.phase) ? 'none' : '';
+        if (chickenElRef.current.style.pointerEvents !== gripped) chickenElRef.current.style.pointerEvents = gripped;
         const hidden = rootSplitRef.current ? 'hidden' : 'visible';
         if (chickenElRef.current.style.visibility !== hidden) chickenElRef.current.style.visibility = hidden;
         chickenElRef.current.style.transform =
@@ -2977,7 +3194,7 @@ function ChickenGameInner() {
         nextKidAtRef.current = ts + KID_DELAY_MIN_MS + Math.random() * KID_DELAY_SPREAD_MS;
       } else if (ts >= nextKidAtRef.current) {
         nextKidAtRef.current = ts + KID_DELAY_MIN_MS + Math.random() * KID_DELAY_SPREAD_MS;
-        if (kidMotions.size < KID_MAX) {
+        if (kidMotions.size < KID_MAX && !rootBusy) {
           const broodRoll = Math.random();
           const brood = Math.min(
             KID_MAX - kidMotions.size,
@@ -3211,7 +3428,7 @@ function ChickenGameInner() {
       <EscapeScenery stage={stage} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
-      <div className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
+      <div data-hud="" className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
         Squeeze the chicken
       </div>
 
@@ -3230,7 +3447,7 @@ function ChickenGameInner() {
             data-testid="chicken-skins-panel"
             className="flex gap-2 rounded-xl border border-white/10 bg-black/50 p-2 backdrop-blur-md"
           >
-            {SKINS.map((s) => (
+            {[...SKINS, ...UNLOCKABLE_SKINS.filter((s) => unlockedSkins.includes(s.id))].map((s) => (
               <button
                 key={s.id}
                 type="button"
@@ -3272,7 +3489,7 @@ function ChickenGameInner() {
         </div>
       )}
 
-      <div className="absolute top-[265px] left-1/2 -translate-x-1/2 text-5xl font-bold text-white tabular-nums pointer-events-none">
+      <div data-hud="" className="absolute top-[265px] left-1/2 -translate-x-1/2 text-5xl font-bold text-white tabular-nums pointer-events-none">
         {score}
       </div>
 
@@ -3385,7 +3602,9 @@ function ChickenGameInner() {
         </div>
       ))}
 
-      {parked && stage === 'moon' && <ParkedRocket x={parked.x} y={parked.y} />}
+      {parked && stage === 'moon' && !birdUi.grip && <ParkedRocket x={parked.x} y={parked.y} />}
+
+      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} />}
 
       <div
         ref={chickenElRef}
@@ -3407,7 +3626,7 @@ function ChickenGameInner() {
           className="relative"
           style={{ transition: 'transform 160ms ease-out', transformOrigin: 'center' }}
         >
-          <EscapeVehicleBack stage={stage} phase={stagePhase} />
+          <EscapeVehicleBack stage={birdUi.grip ? 'none' : stage} phase={stagePhase} />
           <div ref={rubberElRef} className="chicken-rubber" data-squashed="0" data-sqmode="hug">
             <ChickenSvg
               className="w-[70px]"
@@ -3419,10 +3638,12 @@ function ChickenGameInner() {
               wound={wound}
             />
           </div>
-          <EscapeVehicleFront stage={stage} phase={stagePhase} />
+          <EscapeVehicleFront stage={birdUi.grip ? 'none' : stage} phase={stagePhase} />
         </div>
         <EscapeGiggle show={stage === 'pilot' && stagePhase === 'intro-a'} />
       </div>
+
+      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} />}
 
       {orbViews.map((orb) => (
         <div
@@ -3434,11 +3655,15 @@ function ChickenGameInner() {
             else orbElsRef.current.delete(orb.id);
           }}
           onClick={() => collectOrb(orb.id)}
-          className="absolute top-0 left-0 z-20 h-[58px] w-[58px] cursor-pointer rounded-full will-change-transform"
+          style={{ fontSize: ORB_LABEL_PX[orb.kind] }}
+          className="absolute top-0 left-0 z-20 h-[41px] w-[41px] cursor-pointer rounded-full will-change-transform"
         >
           <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
-          <div className={`${orbFont.className} absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-1 text-center text-[9px] leading-[1.05] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]`}>
-            {ORB_LABELS[orb.kind]}
+          <div className={`${orbFont.className} absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-0.5 text-center leading-[0.8] tracking-[-0.01em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]`}>
+            <span className="flex flex-col items-center">
+              <span>{ORB_LABELS[orb.kind].split(' ')[0]}</span>
+              <span>{ORB_LABELS[orb.kind].split(' ').slice(1).join(' ')}</span>
+            </span>
           </div>
         </div>
       ))}

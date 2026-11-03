@@ -59,4 +59,13 @@ for (const [bird, b] of Object.entries(BIRDS)) {
   }
 }
 
+jobs.push({
+  id: 'hawk-feather',
+  bird: 'hawk',
+  name: 'feather',
+  aspect: '3:4',
+  purpose: 'easter egg: single red-tailed hawk feather',
+  prompt: `${STYLE} Subject: ONE single large flight feather of an adult red-tailed hawk, a secondary wing feather about 25 cm long, lying diagonally across the frame with the quill at the lower left and the tip at the upper right. Brown barred vane with darker brown bands and a pale cream edge, a slightly curved pale quill, a few soft downy afterfeather barbs near the base, one small split in the vane. Nothing else in the frame.`,
+});
+
 export default jobs;

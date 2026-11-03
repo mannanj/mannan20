@@ -171,9 +171,30 @@ export function ChickenSvg({
         </defs>
       )}
       <g className="chicken-bend-upper">
+      {skin.pattern === 'hawk' && (
+        <path d="M20 128 L4 150 L13 149 L9 159 L22 150 L21 161 L30 146 Z" fill="#B5472A" stroke="#7A2E18" strokeWidth="1" strokeLinejoin="round" />
+      )}
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
       <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
+      {skin.pattern === 'hawk' && (
+        <g data-testid="chicken-hawk-pattern">
+          <path d="M16 108 C 16 86, 26 68, 40 68 C 54 68, 64 86, 64 108 C 58 98, 50 94, 40 94 C 30 94, 22 98, 16 108 Z" fill="#5B3519" opacity="0.8" />
+          <ellipse cx="40" cy="122" rx="17" ry="20" fill="#E8D9BC" opacity="0.85" />
+          <g fill="#5B3519" opacity="0.9">
+            <ellipse cx="28" cy="118" rx="2" ry="5" />
+            <ellipse cx="34" cy="116" rx="2" ry="6" />
+            <ellipse cx="40" cy="117" rx="2" ry="6" />
+            <ellipse cx="46" cy="116" rx="2" ry="6" />
+            <ellipse cx="52" cy="118" rx="2" ry="5" />
+          </g>
+          <g stroke="#5B3519" strokeWidth="1.5" fill="none" opacity="0.5">
+            <path d="M26 130 q14 5 28 0" />
+            <path d="M28 137 q12 4 24 0" />
+          </g>
+          <path d="M29 40 C 31 32, 36 29, 40 29 C 44 29, 49 32, 51 40 C 47 38, 44 37, 40 37 C 36 37, 33 38, 29 40 Z" fill="#5B3519" opacity="0.8" />
+        </g>
+      )}
       {sparkly && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
       {skin.accessory === 'spikes' && (
         <g fill={skin.comb} opacity="0.9">

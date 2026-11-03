@@ -12,6 +12,8 @@ export interface ChickenSkin {
   wattle: string;
   legs: string;
   accessory: 'none' | 'visor' | 'spikes' | 'halo';
+  pattern?: 'hawk';
+  multiplier?: number;
 }
 
 export const SKINS: ChickenSkin[] = [
@@ -92,9 +94,51 @@ export const SKINS: ChickenSkin[] = [
   },
 ];
 
+export const UNLOCKABLE_SKINS: ChickenSkin[] = [
+  {
+    id: 'hawk',
+    name: 'Red-tail',
+    tierBlend: 0.3,
+    body: '#7A4A2B',
+    bodyDark: '#5B3519',
+    belly: '#E8D9BC',
+    comb: '#5B3519',
+    mouth: '#4A2A14',
+    beakTop: '#C9A227',
+    beakBottom: '#A98618',
+    wattle: '#7A4A2B',
+    legs: '#D9A92C',
+    accessory: 'none',
+    pattern: 'hawk',
+    multiplier: 1.25,
+  },
+];
+
 export const DEFAULT_SKIN_ID = 'classic';
 export const SKIN_STORAGE_KEY = 'chicken-skin';
+export const UNLOCKED_SKINS_KEY = 'chicken-skins-unlocked';
 
 export function skinById(id: string | null | undefined): ChickenSkin {
-  return SKINS.find((s) => s.id === id) ?? SKINS[0];
+  return SKINS.find((s) => s.id === id) ?? UNLOCKABLE_SKINS.find((s) => s.id === id) ?? SKINS[0];
+}
+
+export function skinMultiplier(id: string | null | undefined): number {
+  return skinById(id).multiplier ?? 1;
+}
+
+export function readUnlockedSkins(): string[] {
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(UNLOCKED_SKINS_KEY) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function unlockSkin(id: string): string[] {
+  const next = Array.from(new Set([...readUnlockedSkins(), id]));
+  try {
+    window.localStorage.setItem(UNLOCKED_SKINS_KEY, JSON.stringify(next));
+  } catch {}
+  return next;
 }

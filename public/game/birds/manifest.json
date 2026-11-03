@@ -66,6 +66,11 @@
       "height": 943,
       "file": "/game/birds/hawk/bank.webp"
     },
+    "feather": {
+      "width": 687,
+      "height": 1024,
+      "file": "/game/birds/hawk/feather.webp"
+    },
     "fly-down": {
       "width": 782,
       "height": 638,

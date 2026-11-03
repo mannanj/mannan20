@@ -24,6 +24,14 @@ export const RISERS: SoundDef[] = [
   { key: 'power-up-final', file: 'power-up-final.mp3', volume: 1 },
 ];
 
+export const HAWKS: SoundDef[] = [
+  { key: 'hawk-1', file: 'hawk-scream-1.mp3', volume: 0.8 },
+  { key: 'hawk-2', file: 'hawk-scream-2.mp3', volume: 0.8 },
+  { key: 'hawk-3', file: 'hawk-scream-3.mp3', volume: 0.8 },
+];
+const HAWK_MIN_GAP_MS = 60;
+const HAWK_RATE_JITTER = 0.1;
+
 export const SCREAM_TUNING: Record<string, { weight: number; rateMul: number }> = {
   panic: { weight: 0.5, rateMul: 1.22 },
   dramatic: { weight: 0.5, rateMul: 1.22 },
@@ -263,11 +271,14 @@ class EffectsSynth {
 class ChickenAudio {
   private screams = new Map<string, Howl>();
   private risers = new Map<string, Howl>();
+  private hawks = new Map<string, Howl>();
+  private hawkIndex = 0;
+  private lastHawkAt = 0;
   private listeners = new Set<ProgressListener>();
   private progress: LoadProgress = {
     loaded: 0,
     failed: 0,
-    total: SCREAMS.length + RISERS.length,
+    total: SCREAMS.length + RISERS.length + HAWKS.length,
     done: false,
   };
   private initialized = false;
@@ -293,6 +304,12 @@ class ChickenAudio {
     for (const def of RISERS) {
       loadWithFallback(def, (howl) => {
         if (howl) this.risers.set(def.key, howl);
+        this.settle(howl !== null);
+      });
+    }
+    for (const def of HAWKS) {
+      loadWithFallback(def, (howl) => {
+        if (howl) this.hawks.set(def.key, howl);
         this.settle(howl !== null);
       });
     }
@@ -419,6 +436,24 @@ class ChickenAudio {
     howl.rate(effectiveRate, id);
     this.lastPlay = { key, howl, id };
     return { key, rate: effectiveRate };
+  }
+
+  playHawk(): ScreamResult | null {
+    this.resumeContext();
+    const keys = HAWKS.map((d) => d.key).filter((k) => this.hawks.has(k));
+    if (keys.length === 0) return null;
+    const now = Date.now();
+    if (now - this.lastHawkAt < HAWK_MIN_GAP_MS) return null;
+    this.lastHawkAt = now;
+    const key = keys[this.hawkIndex % keys.length];
+    this.hawkIndex += 1;
+    const howl = this.hawks.get(key);
+    if (!howl) return null;
+    const rate = 1 - HAWK_RATE_JITTER / 2 + Math.random() * HAWK_RATE_JITTER;
+    const id = howl.play();
+    howl.volume(HAWKS.find((d) => d.key === key)?.volume ?? 0.8, id);
+    howl.rate(rate, id);
+    return { key, rate };
   }
 
   playRiser(final: boolean): RiserResult {

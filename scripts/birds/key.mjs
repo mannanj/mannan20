@@ -1,5 +1,6 @@
 import sharp from 'sharp';
-import { readdir, mkdir, writeFile } from 'node:fs/promises';
+import { readdir, mkdir, writeFile, readFile as readFileText } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const HERE = path.dirname(new URL(import.meta.url).pathname);
@@ -193,7 +194,8 @@ async function reviewSheet(bird, items) {
   await sharp(stripes).composite(comps).png().toFile(path.join(REVIEW_DIR, `${bird}.png`));
 }
 
-const manifest = {};
+const manifestPath = path.join(OUT_DIR, 'manifest.json');
+const manifest = only.size && existsSync(manifestPath) ? JSON.parse(await readFileText(manifestPath)) : {};
 for (const bird of await readdir(RAW_DIR)) {
   if (only.size && !only.has(bird)) continue;
   const files = (await readdir(path.join(RAW_DIR, bird))).filter((f) => /\.(png|jpg|webp)$/.test(f)).sort();
@@ -226,5 +228,5 @@ async function bodiesSheet() {
   await sharp({ create: { width: cell * birds.length, height: cell, channels: 4, background: '#444' } }).composite(comps).png().toFile(path.join(REVIEW_DIR, 'bodies.png'));
 }
 await bodiesSheet();
-await writeFile(path.join(OUT_DIR, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 console.log('manifest written');
