@@ -1374,7 +1374,7 @@ test.describe('chicken game v2 plane, rocket and 3D flight', () => {
       if (s.stage === 'moon') break;
       await page.waitForTimeout(150);
     }
-    const order = ['planeExit', 'explode', 'drift', 'rocketApproach', 'boarding', 'gate', 'flight3d', 'moon'];
+    const order = ['planeExit', 'explode', 'drift', 'rocketApproach', 'boarding', 'flight3d', 'moon'];
     expect(seen.filter((l) => order.includes(l))).toEqual(order);
   });
 
@@ -1418,11 +1418,28 @@ test.describe('chicken game v2 plane, rocket and 3D flight', () => {
     );
   });
 
-  test('ready, start, countdown, then the 3D flight', async ({ page }) => {
+  test('a fully preloaded scene starts directly with no gate', async ({ page }) => {
     await enterPilot(page);
     await page.waitForFunction(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state().scene3dReady);
     await page.evaluate((n) => (window as unknown as { __chicken: SeqBridge }).__chicken.setSeqTimeScale(n), 40);
     await toRocket(page);
+    await expect(page.getByTestId('space-flight-3d')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('space-gate')).toHaveCount(0);
+    expect((await seqState(page)).scene3dGate).toBe('none');
+  });
+
+  test('downloading gate, then ready, start, countdown, then the 3D flight', async ({ page }) => {
+    const delays: Record<string, number> = { 'earth-day-4k': 2500, 'earth-night-2k': 5000, 'moon-lroc-1k': 7500 };
+    await page.route('**/game/space/*.webp', async (route) => {
+      const name = Object.keys(delays).find((k) => route.request().url().includes(k)) ?? '';
+      const response = await route.fetch();
+      await new Promise((r) => setTimeout(r, delays[name] ?? 0));
+      await route.fulfill({ response });
+    });
+    await enterPilot(page);
+    await page.evaluate((n) => (window as unknown as { __chicken: SeqBridge }).__chicken.setSeqTimeScale(n), 40);
+    await toRocket(page);
+    await expect(page.getByTestId('space-gate')).toHaveAttribute('data-gate', 'downloading', { timeout: 60_000 });
     await expect(page.getByTestId('space-gate')).toHaveAttribute('data-gate', 'ready', { timeout: 60_000 });
     await page.getByTestId('gate-arrow').click();
     await expect(page.getByTestId('space-gate')).toHaveAttribute('data-gate', 'countdown');

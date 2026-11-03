@@ -116,8 +116,9 @@ const SUN_FRAGMENT = `
     color = mix(color, surface, smoothstep(0.4, 0.7, turb));
     float spots = smoothstep(0.62, 0.65, fbm(vUv * 8.0 + t * 0.3));
     color = mix(color, vec3(0.6, 0.2, 0.05), spots * 0.4);
-    float limb = pow(max(dot(vViewDir, vNormal), 0.0), 0.4);
-    gl_FragColor = vec4(color * limb * 2.5, 1.0);
+    float facing = clamp(dot(normalize(vViewDir), normalize(vNormal)), 0.0, 1.0);
+    float limb = mix(0.92, 1.0, facing);
+    gl_FragColor = vec4(mix(color * 2.2, vec3(1.0, 0.95, 0.8), 0.45) * limb, 1.0);
   }
 `;
 
@@ -359,7 +360,7 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
 
         const sunUniforms = { uTime: { value: 0 } };
         const sunGeo = new SphereGeometry(SUN_RADIUS, 48, 48);
-        const sunMat = new ShaderMaterial({ uniforms: sunUniforms, vertexShader: SUN_VERTEX, fragmentShader: SUN_FRAGMENT });
+        const sunMat = new ShaderMaterial({ uniforms: sunUniforms, vertexShader: SUN_VERTEX, fragmentShader: SUN_FRAGMENT, toneMapped: false, fog: false, lights: false });
         const sunMesh = new Mesh(sunGeo, sunMat);
         sunMesh.position.copy(SUN_POS);
         const glowTex = makeGlowTexture();
@@ -434,7 +435,7 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
         target="_blank"
         rel="noopener noreferrer"
         data-testid="sunsignal-credit"
-        className="pointer-events-auto absolute bottom-3 right-24 text-[11px] tracking-wide text-white/40 transition-colors hover:text-white/80"
+        className="pointer-events-auto absolute bottom-12 right-4 text-[11px] sm:bottom-3 sm:right-24 tracking-wide text-white/55 [text-shadow:0_0_2px_rgba(0,0,0,0.7),0_1px_8px_rgba(0,0,0,0.6)] transition-colors hover:text-white/80"
       >
         provided by sunsignal.app
       </a>

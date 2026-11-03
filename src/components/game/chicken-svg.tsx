@@ -129,7 +129,14 @@ function BurnSpot({ spot }: { spot: CharSpot }) {
   );
 }
 
-function CharSpotMark({ spot, feathers }: { spot: CharSpot; feathers: string }) {
+const CHAR_FLECK_OPACITY = 0.4;
+const CHAR_FEATHER_FLECKS = [
+  { dx: -0.4, dy: -0.35, rot: -25 },
+  { dx: 0.35, dy: -0.1, rot: 20 },
+  { dx: -0.1, dy: 0.45, rot: -10 },
+];
+
+function CharSpotMark({ spot, feathers, dark }: { spot: CharSpot; feathers: string; dark: string }) {
   const { x, y, r } = spot;
   return (
     <g data-testid="char-spot" transform={`translate(${x} ${y})`}>
@@ -137,6 +144,9 @@ function CharSpotMark({ spot, feathers }: { spot: CharSpot; feathers: string }) 
       <ellipse rx={r * 0.88} ry={r * 1} fill={BURN_STAGES[2]} />
       <ellipse rx={r * 0.74} ry={r * 0.84} fill={BURN_STAGES[3]} />
       <ellipse data-testid="char-feathers" rx={r * 1.06} ry={r * 1.2} fill={feathers} style={{ opacity: `calc(var(--regrow, 1) * ${CHAR_FEATHER_OPACITY})` }} />
+      {CHAR_FEATHER_FLECKS.map((f) => (
+        <ellipse key={`${f.dx},${f.dy}`} data-testid="char-feather-fleck" cx={r * f.dx} cy={r * f.dy} rx={r * 0.2} ry={r * 0.5} transform={`rotate(${f.rot} ${r * f.dx} ${r * f.dy})`} fill={dark} style={{ opacity: `calc(var(--regrow, 1) * ${CHAR_FLECK_OPACITY})` }} />
+      ))}
     </g>
   );
 }
@@ -266,17 +276,17 @@ export function ChickenSvg({
       )}
       <g className="chicken-bend-upper">
       {skin.pattern === 'hawk' && (
-        <path d="M20 128 L4 150 L13 149 L9 159 L22 150 L21 161 L30 146 Z" fill="#B5472A" stroke="#7A2E18" strokeWidth="1" strokeLinejoin="round" />
+        <path d="M20 128 L2 152 L13 150 L8 162 L22 152 L21 164 L31 147 Z" fill="#C2512A" stroke="#7A2E18" strokeWidth="1" strokeLinejoin="round" />
       )}
       <ellipse cx="40" cy="108" rx="24" ry="40" fill={bodyFill} />
       <ellipse cx="40" cy="58" rx="13" ry="26" fill={bodyFill} />
       <ellipse cx="40" cy="112" rx="18" ry="28" fill={belly} opacity="0.3" />
       {skin.pattern === 'hawk' && (
         <g data-testid="chicken-hawk-pattern">
-          <path d="M16 108 C 16 86, 26 68, 40 68 C 54 68, 64 86, 64 108 C 58 98, 50 94, 40 94 C 30 94, 22 98, 16 108 Z" fill="#5B3519" opacity="0.8" />
-          <ellipse cx="40" cy="122" rx="17" ry="20" fill="#E8D9BC" opacity="0.85" />
-          <g fill="#5B3519" opacity="0.9">
-            <ellipse cx="28" cy="118" rx="2" ry="5" />
+          <path d="M16 108 C 16 86, 26 68, 40 68 C 54 68, 64 86, 64 108 C 58 98, 50 94, 40 94 C 30 94, 22 98, 16 108 Z" fill="#5B3519" opacity="0.5" />
+          <ellipse cx="40" cy="120" rx="19" ry="26" fill="#F1E6CD" opacity="0.92" />
+          <g fill="#6B4020" opacity="0.8">
+            <ellipse cx="28" cy="118" rx="1.4" ry="5" />
             <ellipse cx="34" cy="116" rx="2" ry="6" />
             <ellipse cx="40" cy="117" rx="2" ry="6" />
             <ellipse cx="46" cy="116" rx="2" ry="6" />
@@ -286,7 +296,11 @@ export function ChickenSvg({
             <path d="M26 130 q14 5 28 0" />
             <path d="M28 137 q12 4 24 0" />
           </g>
-          <path d="M29 40 C 31 32, 36 29, 40 29 C 44 29, 49 32, 51 40 C 47 38, 44 37, 40 37 C 36 37, 33 38, 29 40 Z" fill="#5B3519" opacity="0.8" />
+          <g fill="#5B3519" opacity="0.55">
+            <ellipse cx="33" cy="33" rx="1.1" ry="3.2" />
+            <ellipse cx="40" cy="31" rx="1.1" ry="3.4" />
+            <ellipse cx="47" cy="33" rx="1.1" ry="3.2" />
+          </g>
         </g>
       )}
       {skin.pattern === 'eagle' && (
@@ -310,7 +324,7 @@ export function ChickenSvg({
       )}
       <ellipse cx="40" cy="104" rx="26" ry="44" fill="#FF7043" style={{ opacity: 'var(--heat-tint, 0)' }} />
       {burn && <BurnSpot spot={BURN_SPOT} />}
-      {!burn && char?.map((c, i) => <CharSpotMark key={`${c.x},${c.y},${i}`} spot={c} feathers={bodyFill} />)}
+      {!burn && char?.map((c, i) => <CharSpotMark key={`${c.x},${c.y},${i}`} spot={c} feathers={bodyFill} dark={bodyDark} />)}
       {sparkly && <ellipse cx="33" cy="95" rx="8" ry="18" fill="white" opacity="0.25" />}
       {skin.accessory === 'spikes' && (
         <g fill={skin.comb} opacity="0.9">

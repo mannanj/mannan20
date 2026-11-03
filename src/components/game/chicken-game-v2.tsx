@@ -347,7 +347,12 @@ const BEND_LERP = 0.07;
 const FEATHERS_PER_CLICK = 2;
 const FEATHER_EXTRA_CHANCE = 0.45;
 const FEATHERS_PER_TRANSFORM = 10;
-const MAX_FEATHERS = 64;
+const MAX_FEATHERS = 22;
+const FEATHER_SPAWN_GAP_MS = 140;
+const PARKED_AURA_CLEAR = 190;
+const FEATHER_LIFE_CAP_MS = 2600;
+const FEATHER_SIZE_CAP = 14;
+const AURA_SHIELD_STAGES: EscapeStage[] = ['surf', 'pilot', 'rocket', 'cosmos', 'jupiter'];
 const SQUASH_WINDOW_MS = 650;
 const SQUASH_BASE = 0.5;
 const SQUASH_PER_COMBO = 0.13;
@@ -438,6 +443,7 @@ const VISIT_NEAR_X = 70;
 const VISIT_NEAR_Y = 56;
 const VISIT_SPEED = 2.2;
 const LEADERBOARD_OPEN_GUARD_MS = 900;
+const TEXT_SCRIM = '[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)]';
 const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"], [data-testid="inventory-root"]';
 
 interface Particle {
@@ -787,6 +793,17 @@ const CosmosFlight = dynamic(() => import('./cosmos-3d'), { ssr: false });
 const PRELOAD_IDLE_TIMEOUT_MS = 4000;
 const PRELOAD_FALLBACK_DELAY_MS = 1500;
 
+const STREAK_MAX_LEN = 34;
+const STREAK_MAX_COUNT = 5;
+
+function shortStreaks(x: number, y: number, now: number, count = 10): Streak[] {
+  return makeTeleportStreaks(x, y, now, Math.min(count, STREAK_MAX_COUNT)).map((st) => ({
+    ...st,
+    len: Math.min(st.len, STREAK_MAX_LEN),
+    vy: st.vy * 0.4,
+  }));
+}
+
 function isScriptedStage(stage: EscapeStage): boolean {
   return stage === 'pilot' || stage === 'rocket';
 }
@@ -953,6 +970,8 @@ function ChickenGameInner() {
   const [stage, setStage] = useState<EscapeStage>('none');
   const [stagePhase, setStagePhase] = useState<StagePhase>('live');
   const [parked, setParked] = useState<{ x: number; y: number } | null>(null);
+  const parkedRef = useRef(parked);
+  parkedRef.current = parked;
   const stageRef = useRef<EscapeStage>('none');
   const stagePhaseRef = useRef<StagePhase>('live');
   const stageStartRef = useRef(0);
@@ -1041,6 +1060,7 @@ function ChickenGameInner() {
   const shardParticlesRef = useRef<ShardParticle[]>([]);
   const feathersRef = useRef<Feather[]>([]);
   const streaksRef = useRef<Streak[]>([]);
+  const lastFeatherAtRef = useRef(0);
   const arcsRef = useRef<Arc[]>([]);
   const nextArcAtRef = useRef(0);
   const lastCrackleAtRef = useRef(0);
@@ -1191,8 +1211,15 @@ function ChickenGameInner() {
     const tierDark = mixHex(def.bodyDark, nextDef.bodyDark, m);
     const body = skin.id === 'classic' ? tierBody : mixHex(skin.body, tierBody, skin.tierBlend);
     const dark = skin.id === 'classic' ? tierDark : mixHex(skin.bodyDark, tierDark, skin.tierBlend);
+    if (now - lastFeatherAtRef.current < FEATHER_SPAWN_GAP_MS) return;
+    lastFeatherAtRef.current = now;
     for (let i = 0; i < count && feathers.length < MAX_FEATHERS; i++) {
-      feathers.push(makeFeather(cx, cy, Math.random() < 0.5 ? body : dark, now));
+      const f = makeFeather(cx, cy, Math.random() < 0.5 ? body : dark, now);
+      f.elong = 1;
+      f.drifter = false;
+      f.size = Math.min(f.size, FEATHER_SIZE_CAP);
+      f.life = Math.min(f.life, FEATHER_LIFE_CAP_MS);
+      feathers.push(f);
     }
   }, []);
 
@@ -2072,14 +2099,6 @@ function ChickenGameInner() {
     lastHitRef.current += ms;
   }, []);
 
-  const openGate = useCallback(() => {
-    startSpacePreload(loadSpaceFlight).catch(() => {});
-    pauseStartRef.current = performance.now();
-    const next: SpaceGateState = getSpaceProgress().done ? 'ready' : 'downloading';
-    gateRef.current = next;
-    setGate(next);
-  }, []);
-
   const resumeFromGate = useCallback(
     (skip: boolean) => {
       const now = performance.now();
@@ -2091,6 +2110,17 @@ function ChickenGameInner() {
     },
     [shiftTimers, enterSeq]
   );
+
+  const openGate = useCallback(() => {
+    startSpacePreload(loadSpaceFlight).catch(() => {});
+    pauseStartRef.current = performance.now();
+    if (getSpaceProgress().done) {
+      resumeFromGate(false);
+      return;
+    }
+    gateRef.current = 'downloading';
+    setGate('downloading');
+  }, [resumeFromGate]);
 
   const startGateCountdown = useCallback(() => {
     if (gateRef.current !== 'ready') return;
@@ -2380,7 +2410,7 @@ function ChickenGameInner() {
             const cx = motion.x + motion.w / 2;
             const cy = motion.y + motion.h / 2;
             blackHolesRef.current.push({ x: cx, y: cy, bornAt: ts });
-            streaksRef.current.push(...makeTeleportStreaks(cx, cy, ts, 6));
+            streaksRef.current.push(...shortStreaks(cx, cy, ts, 6));
             spawnFeathers(cx, cy, VANISH_FEATHERS);
             vanishedRef.current++;
             removeClone(id);
@@ -3146,7 +3176,7 @@ function ChickenGameInner() {
           tp.target = { x: tx, y: ty };
           tp.decoys = tp.forcedDecoys ?? Math.random() < TELEPORT_DECOY_CHANCE;
           tp.forcedDecoys = null;
-          streaksRef.current.push(...makeTeleportStreaks(cx0, cy0, ts));
+          streaksRef.current.push(...shortStreaks(cx0, cy0, ts));
           if (chickenElRef.current) chickenElRef.current.style.opacity = '0';
           if (Math.random() < TELEPORT_PRE_CHANCE) {
             addGhost(tx - CHICKEN_W / 2, ty - CHICKEN_H / 2, true);
@@ -3160,7 +3190,7 @@ function ChickenGameInner() {
         const angle = Math.random() * Math.PI * 2;
         p.vx = Math.cos(angle) * BASE_SPEED;
         p.vy = Math.sin(angle) * BASE_SPEED;
-        streaksRef.current.push(...makeTeleportStreaks(tx, ty, ts));
+        streaksRef.current.push(...shortStreaks(tx, ty, ts));
         if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
         if (tp.origin && Math.random() < TELEPORT_AFTER_CHANCE) {
           addGhost(tp.origin.x - CHICKEN_W / 2, tp.origin.y - CHICKEN_H / 2, false);
@@ -3390,14 +3420,14 @@ function ChickenGameInner() {
           }
           if (roll < portalChance + EDGE_WRAP_CHANCE) {
             streaksRef.current.push(
-              ...makeTeleportStreaks(p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, ts, 6)
+              ...shortStreaks(p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, ts, 6)
             );
             if (side === 'left') p.x = vw - CHICKEN_W - 2;
             else if (side === 'right') p.x = 2;
             else if (side === 'top') p.y = vh - CHICKEN_H - 2;
             else p.y = 2;
             streaksRef.current.push(
-              ...makeTeleportStreaks(p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, ts, 6)
+              ...shortStreaks(p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, ts, 6)
             );
             portal.cooldownUntil = ts + EDGE_SPECIAL_COOLDOWN_MS;
             return true;
@@ -3793,7 +3823,7 @@ function ChickenGameInner() {
       const count = Math.ceil(intensity * dt * PARTICLE_EMISSION);
       const particles = particlesRef.current;
 
-      for (let i = 0; i < count && particles.length < MAX_PARTICLES; i++) {
+      for (let i = 0; i < count && particles.length < MAX_PARTICLES && !AURA_SHIELD_STAGES.includes(stNow) && !rootBusy; i++) {
         particles.push({
           x: cx + (Math.random() - 0.5) * 20,
           y: cy + (Math.random() - 0.5) * 20,
@@ -3830,7 +3860,10 @@ function ChickenGameInner() {
         if (!updateFeather(feathers[i], dt, ts)) feathers.splice(i, 1);
       }
 
-      const lightning = rootBusy ? null : lightningForScore(sc);
+      const parkedNow = parkedRef.current;
+      const nearParked = stNow === 'moon' && parkedNow !== null && Math.hypot(cx - parkedNow.x - CHICKEN_W / 2, cy - parkedNow.y - CHICKEN_H / 2) < PARKED_AURA_CLEAR;
+      const shielded = rootBusy || nearParked || AURA_SHIELD_STAGES.includes(stNow);
+      const lightning = shielded ? null : lightningForScore(sc);
       if (lightning) {
         if (!nextArcAtRef.current) nextArcAtRef.current = ts + lightning.intervalMs;
         if (ts >= nextArcAtRef.current) {
@@ -3857,7 +3890,7 @@ function ChickenGameInner() {
         if (stageRef.current === 'surf') drawSurf(ctx, vw, vh, ts, heatRef.current);
 
         const auraRgb = auraRgbFor(sc);
-        if (!rootBusy) drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
+        if (!shielded) drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
 
         const now = performance.now();
         const arcs = arcsRef.current;
@@ -3937,7 +3970,7 @@ function ChickenGameInner() {
   const renderAuraLevel = auraLevelFor(score, 1);
   const renderAuraRgb = auraRgbFor(score);
   const glowStyle =
-    renderAuraLevel > 0
+    renderAuraLevel > 0 && !AURA_SHIELD_STAGES.includes(stage) && !birdUi.grip && !(stage === 'moon' && parked !== null)
       ? {
           filter: `drop-shadow(0 0 ${6 + 10 * renderAuraLevel + tier * 2}px rgba(${renderAuraRgb.r}, ${renderAuraRgb.g}, ${renderAuraRgb.b}, ${Math.min(0.55, 0.15 + renderAuraLevel * 0.5)}))`,
         }
@@ -3949,7 +3982,7 @@ function ChickenGameInner() {
       data-variant="2"
       data-multicursor={overlayOffsets.length > 0 ? '1' : '0'}
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
-      className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor"
+      className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)]"
     >
       <GameScenery tier={tier} />
       {isSpaceStage(stage) && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
@@ -3968,7 +4001,14 @@ function ChickenGameInner() {
         </div>
       )}
 
-      <div data-hud="" className="absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/50 pointer-events-none">
+      {stage === 'jupiter' && (
+        <>
+          <div data-testid="hud-scrim" className="absolute top-[190px] left-1/2 h-[190px] w-[460px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.42),transparent_70%)] pointer-events-none" />
+          <div data-testid="ground-scrim" className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+        </>
+      )}
+
+      <div data-hud="" className={`absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/60 pointer-events-none ${TEXT_SCRIM}`}>
         Squeeze the chicken
       </div>
 
@@ -4029,14 +4069,14 @@ function ChickenGameInner() {
         </div>
       )}
 
-      <div data-hud="" className="absolute top-[265px] left-1/2 -translate-x-1/2 text-5xl font-bold text-white tabular-nums pointer-events-none">
+      <div data-hud="" className="absolute top-[265px] left-1/2 -translate-x-1/2 text-5xl font-bold text-white tabular-nums pointer-events-none [text-shadow:0_0_3px_rgba(0,0,0,0.6),0_2px_16px_rgba(0,0,0,0.55)]">
         {score}
       </div>
 
       {mercyCaption && (
         <div
           data-testid="chicken-mercy-caption"
-          className="absolute top-[330px] left-1/2 -translate-x-1/2 text-xs italic text-white/35 pointer-events-none animate-[fadeIn_0.6s_ease-out]"
+          className={`absolute top-[330px] left-1/2 -translate-x-1/2 text-xs italic text-white/50 pointer-events-none animate-[fadeIn_0.6s_ease-out] ${TEXT_SCRIM}`}
         >
           the chicken grows smug… and slow
         </div>

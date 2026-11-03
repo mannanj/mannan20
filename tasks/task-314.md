@@ -1,0 +1,12 @@
+### Task 314: QA round 1 - Floating Chicken Game v2 visual artifacts
+- [x] Sun in the 3D scene is self-lit: flat emissive shader, no lit-planet limb crescent
+- [x] Tier aura, lightning and aura particles suppressed in vehicle stages (surf, pilot, rocket, cosmos, jupiter), during bird grabs and held by a bird; DOM drop-shadow glow also removed
+- [x] Feather litter rate-limited (22 max, 140ms gap), no elongated or drifter feathers, life capped, small
+- [x] Streak lines shortened and fewer (v2 wrapper around teleport streaks; v1 untouched)
+- [x] Yellow blob by the exhaust: traced to aura glow/feathers around the rocket, suppressed by the shield
+- [x] Text readability: adaptive text shadow on HUD, score, caption, leaderboard link, credit; radial HUD scrim and bottom ground scrim on Jupiter
+- [x] Hawk skin: removed head cap that read as a visor, pale streaked belly, rufous tail
+- [x] Decision A: phoenix burn mark stays permanent; regrown translucent feathers use the current skin's body colour with bodyDark flecks (verified on classic, hawk, phoenix in 9-qa/r2)
+- [x] Decision B: 3D scene starts directly when fully downloaded at start time; otherwise downloading gate, then ready, start, 3-2-1. e2e covers both
+- Rounds: r1 (baseline), r2 (after fixes), r3 (verification) in ~/Desktop/chicken-game-new-designs/9-qa/
+- Location: `src/components/game/chicken-game-v2.tsx`, `space-flight-3d.tsx`, `chicken-svg.tsx`

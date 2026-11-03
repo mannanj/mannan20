@@ -128,6 +128,7 @@ const SIZZLE_T1_GAIN = 0.35;
 const SIZZLE_T2_BASE = 0.65;
 const SIZZLE_T2_GAIN = 0.35;
 const HEAT_TINT_MAX = 0.14;
+const COUNTER_EDGE_PAD = 6;
 export const BIRD_BANNER_TEXT = 'help the chicken escape!';
 export const BIRD_LABEL_TEXT = 'click the claw';
 export const BIRD_CALM_FREE_CLICKS = 25;
@@ -1067,10 +1068,10 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
         if (els.counter.textContent !== text) els.counter.textContent = text;
         const box = active === 'right' ? hits.right : hits.left;
         const y = box.y + box.h * 0.5 - 10;
-        els.counter.style.transform =
-          active === 'right'
-            ? `translate(${(box.x - COUNTER_GAP).toFixed(1)}px, ${y.toFixed(1)}px) translateX(-100%)`
-            : `translate(${(box.x + box.w + COUNTER_GAP * 2).toFixed(1)}px, ${y.toFixed(1)}px)`;
+        const width = els.counter.offsetWidth;
+        const rawX = active === 'right' ? box.x - COUNTER_GAP - width : box.x + box.w + COUNTER_GAP * 2;
+        const x = Math.max(COUNTER_EDGE_PAD, Math.min(rawX, window.innerWidth - width - COUNTER_EDGE_PAD));
+        els.counter.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
         show(els.counter, true, 1);
       }
     } else {
@@ -1395,7 +1396,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
       <div
         ref={bind('banner')}
         data-testid="bird-banner"
-        className="pointer-events-none fixed top-[14px] left-1/2 z-30 -translate-x-1/2 rounded-[10px] bg-black/55 px-4 py-2 text-[22px] leading-[1.2] font-semibold tracking-[0.01em] text-white [visibility:hidden]"
+        className="pointer-events-none fixed top-[14px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-[10px] bg-black/55 px-4 py-2 text-[clamp(15px,5vw,22px)] leading-[1.2] font-semibold tracking-[0.01em] text-white [visibility:hidden]"
       >
         {BIRD_BANNER_TEXT}
       </div>
