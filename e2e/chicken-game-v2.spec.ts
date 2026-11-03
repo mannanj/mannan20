@@ -994,3 +994,137 @@ test.describe('chicken game v2 hawk event', () => {
     await expect(page.getByTestId('chicken-skin-hawk')).toBeVisible();
   });
 });
+
+type SeqBridge = {
+  state: () => {
+    score: number;
+    stage: string;
+    seq: string;
+    portal: string;
+    hyper: string;
+    scramble: string;
+    pos: { x: number; y: number };
+    scene3dReady: boolean;
+    scene3dProgress: number;
+    scene3dGate: string;
+  };
+  boost: (n: number) => void;
+  setSeqTimeScale: (n: number) => void;
+};
+
+const SEQ_SPEEDUP = 12;
+const START_SCORE_QUERY = '?variant=2&start=345';
+const PLANE_VIEW = { width: 1280, height: 720 };
+
+async function enterPilot(page: Page) {
+  await gotoGame(page, START_SCORE_QUERY);
+  await page.waitForFunction(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state().score >= 345);
+  await page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.boost(10));
+  await page.waitForFunction(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state().stage === 'pilot');
+}
+
+async function toRocket(page: Page) {
+  await page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.boost(100));
+  await page.waitForFunction(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state().stage === 'rocket');
+}
+
+const seqState = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state());
+
+test.describe('chicken game v2 plane, rocket and 3D flight', () => {
+  test.setTimeout(150_000);
+
+  test('the plane flies without portals or set-pieces and never leaves the screen', async ({ page }) => {
+    await page.setViewportSize(PLANE_VIEW);
+    await enterPilot(page);
+    await page.waitForTimeout(4200);
+    let setPieces = 0;
+    let minEdge = Infinity;
+    for (let i = 0; i < 50; i++) {
+      const s = await seqState(page);
+      if (s.portal !== 'idle' || s.hyper !== 'idle' || s.scramble !== 'idle') setPieces += 1;
+      minEdge = Math.min(minEdge, s.pos.x + 35, PLANE_VIEW.width - s.pos.x - 35, s.pos.y + 70, PLANE_VIEW.height - s.pos.y - 70);
+      await page.waitForTimeout(250);
+    }
+    expect(setPieces).toBe(0);
+    expect(minEdge).toBeGreaterThan(0);
+  });
+
+  test('stages follow pilot, planeExit, explode, drift, rocketApproach, boarding, gate, flight3d, moon', async ({ page }) => {
+    await enterPilot(page);
+    await page.evaluate((n) => (window as unknown as { __chicken: SeqBridge }).__chicken.setSeqTimeScale(n), SEQ_SPEEDUP);
+    await toRocket(page);
+    const seen: string[] = [];
+    const deadline = Date.now() + 100_000;
+    let reachedGate = false;
+    while (Date.now() < deadline) {
+      const s = await seqState(page);
+      const label = s.stage === 'moon' ? 'moon' : s.scene3dGate !== 'none' ? 'gate' : s.seq;
+      if (seen[seen.length - 1] !== label) seen.push(label);
+      if (s.stage === 'rocket' && s.seq === 'planeExit') {
+        await page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.boost(1));
+      }
+      if (s.scene3dGate === 'ready' && !reachedGate) {
+        reachedGate = true;
+        await page.getByTestId('gate-start').click();
+      }
+      if (s.stage === 'moon') break;
+      await page.waitForTimeout(150);
+    }
+    const order = ['planeExit', 'explode', 'drift', 'rocketApproach', 'boarding', 'gate', 'flight3d', 'moon'];
+    expect(seen.filter((l) => order.includes(l))).toEqual(order);
+  });
+
+  test('the 3D scene is preloaded long before the rocket stage', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.waitForFunction(
+      () => (window as unknown as { __chicken: SeqBridge }).__chicken.state().scene3dReady,
+      undefined,
+      { timeout: 30_000 }
+    );
+    const s = await seqState(page);
+    expect(s.stage).toBe('none');
+    expect(s.scene3dProgress).toBe(100);
+  });
+
+  test('a slow download pauses the game behind a progress gate and skip continues to the moon', async ({ page }) => {
+    const delays: Record<string, number> = { 'earth-day-2k': 2500, 'earth-night-2k': 5000, 'moon-lroc-1k': 7500 };
+    await page.route('**/game/space/*.jpg', async (route) => {
+      const name = Object.keys(delays).find((k) => route.request().url().includes(k)) ?? '';
+      const response = await route.fetch();
+      await new Promise((r) => setTimeout(r, delays[name] ?? 0));
+      await route.fulfill({ response });
+    });
+    await enterPilot(page);
+    await page.evaluate((n) => (window as unknown as { __chicken: SeqBridge }).__chicken.setSeqTimeScale(n), 40);
+    await toRocket(page);
+    await page.getByTestId('space-gate').waitFor({ timeout: 60_000 });
+    await expect(page.getByTestId('space-gate')).toHaveAttribute('data-gate', 'downloading');
+    await expect(page.getByTestId('gate-skip')).toHaveText('skip instead?');
+    const first = (await seqState(page)).scene3dProgress;
+    const before = (await seqState(page)).score;
+    await page.mouse.click(640, 360);
+    expect((await seqState(page)).score).toBe(before);
+    await expect.poll(async () => (await seqState(page)).scene3dProgress, { timeout: 15_000 }).toBeGreaterThan(first);
+    await page.getByTestId('gate-skip').click();
+    await expect(page.getByTestId('space-gate')).toHaveCount(0);
+    await page.waitForFunction(
+      () => (window as unknown as { __chicken: SeqBridge }).__chicken.state().stage === 'moon',
+      undefined,
+      { timeout: 40_000 }
+    );
+  });
+
+  test('ready, start, countdown, then the 3D flight', async ({ page }) => {
+    await enterPilot(page);
+    await page.waitForFunction(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state().scene3dReady);
+    await page.evaluate((n) => (window as unknown as { __chicken: SeqBridge }).__chicken.setSeqTimeScale(n), 40);
+    await toRocket(page);
+    await expect(page.getByTestId('space-gate')).toHaveAttribute('data-gate', 'ready', { timeout: 60_000 });
+    await page.getByTestId('gate-arrow').click();
+    await expect(page.getByTestId('space-gate')).toHaveAttribute('data-gate', 'countdown');
+    await expect(page.getByTestId('gate-count')).toBeVisible();
+    await expect(page.getByTestId('space-flight-3d')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('sunsignal-credit')).toHaveAttribute('href', 'https://sunsignal.app');
+  });
+});

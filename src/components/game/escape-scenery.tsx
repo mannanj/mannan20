@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { RocketSeq } from './escape-sequence';
 import type { EscapeStage } from './escape-stages';
 
 const STAR_COUNT = 90;
@@ -60,14 +64,21 @@ function PilotSky() {
   );
 }
 
-function RocketSky() {
+const SPACE_FADE_SEQS: RocketSeq[] = ['rocketApproach', 'boarding', 'flight3d'];
+
+function RocketSky({ seq }: { seq: RocketSeq }) {
+  const spaceOn = SPACE_FADE_SEQS.includes(seq);
   return (
     <>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,#03050c_0%,#0b1630_70%,#1d3a66_100%)]" />
-      <div className="escape-star-rise absolute inset-0">
+      <PilotSky />
+      <div
+        data-testid="launch-sky"
+        data-on={spaceOn ? '1' : '0'}
+        className={`absolute inset-0 transition-opacity duration-[9000ms] ease-in-out ${spaceOn ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#03050c_0%,#0b1630_65%,#1d3a66_100%)]" />
         <Stars />
       </div>
-      <div className="escape-earth-recede origin-top absolute left-1/2 top-[78%] h-[160vw] w-[160vw] rounded-full bg-[radial-gradient(circle_at_50%_20%,#4aa3df_0%,#2a6fa8_35%,#1d4f7a_60%,#0c2340_100%)] shadow-[0_0_80px_20px_rgba(90,170,255,0.35)]" />
     </>
   );
 }
@@ -97,20 +108,39 @@ function MoonScape() {
   );
 }
 
-export function EscapeScenery({ stage }: { stage: EscapeStage }) {
-  if (stage === 'none') return null;
+const CROSSFADE_MS = 1800;
+
+export function EscapeScenery({ stage, seq = 'none' }: { stage: EscapeStage; seq?: RocketSeq }) {
+  const [shown, setShown] = useState<EscapeStage[]>([stage]);
+  const [prevStage, setPrevStage] = useState(stage);
+  if (stage !== prevStage) {
+    setPrevStage(stage);
+    setShown((s) => [s[s.length - 1], stage]);
+  }
+  useEffect(() => {
+    if (shown.length < 2) return;
+    const id = setTimeout(() => setShown((s) => [s[s.length - 1]]), CROSSFADE_MS + 100);
+    return () => clearTimeout(id);
+  }, [shown]);
+
   return (
-    <div
-      data-testid="escape-scenery"
-      data-stage={stage}
-      aria-hidden
-      key={stage}
-      className="absolute inset-0 pointer-events-none overflow-hidden animate-[fadeIn_1.2s_ease-out]"
-    >
-      {stage === 'surf' && <SurfSky />}
-      {stage === 'pilot' && <PilotSky />}
-      {stage === 'rocket' && <RocketSky />}
-      {stage === 'moon' && <MoonScape />}
-    </div>
+    <>
+      {shown.map((layer, i) =>
+        layer === 'none' ? null : (
+          <div
+            key={layer}
+            data-testid="escape-scenery"
+            data-stage={layer}
+            aria-hidden
+            className={`absolute inset-0 pointer-events-none overflow-hidden ${i > 0 ? 'animate-[fadeIn_1.8s_ease-out]' : ''}`}
+          >
+            {layer === 'surf' && <SurfSky />}
+            {layer === 'pilot' && <PilotSky />}
+            {layer === 'rocket' && <RocketSky seq={seq} />}
+            {layer === 'moon' && <MoonScape />}
+          </div>
+        )
+      )}
+    </>
   );
 }

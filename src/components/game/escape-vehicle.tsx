@@ -1,6 +1,7 @@
 'use client';
 
 import type { EscapeStage } from './escape-stages';
+import type { RocketSeq } from './escape-sequence';
 
 export type StagePhase = 'intro-a' | 'intro-b' | 'live';
 
@@ -16,7 +17,7 @@ const HULL_SHADE = '#c3cad6';
 const FIN = '#e0533d';
 const WINDOW_RIM = '#7a8aa0';
 
-function Layer({ children, className }: { children: React.ReactNode; className?: string }) {
+export function Layer({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <svg
       aria-hidden
@@ -73,7 +74,7 @@ function Goggles({ gag }: { gag: boolean }) {
   );
 }
 
-function PlaneBack() {
+export function PlaneBack() {
   return (
     <Layer>
       <g stroke={INK} strokeWidth="2" strokeLinejoin="round">
@@ -85,7 +86,7 @@ function PlaneBack() {
   );
 }
 
-function PlaneFront() {
+export function PlaneFront() {
   return (
     <Layer>
       <g data-testid="vehicle-plane" pointerEvents="visiblePainted" stroke={INK} strokeWidth="2" strokeLinejoin="round">
@@ -106,7 +107,7 @@ function PlaneFront() {
   );
 }
 
-function RocketBack({ ignite }: { ignite: boolean }) {
+export function RocketBack({ ignite }: { ignite: boolean }) {
   return (
     <Layer>
       <g className={ignite ? 'escape-flame escape-flame-big' : 'escape-flame'}>
@@ -117,7 +118,7 @@ function RocketBack({ ignite }: { ignite: boolean }) {
   );
 }
 
-function RocketFront({ legs, parked }: { legs: boolean; parked: boolean }) {
+export function RocketFront({ legs, parked }: { legs: boolean; parked: boolean }) {
   return (
     <Layer>
       <g data-testid={parked ? 'parked-rocket' : 'vehicle-rocket'} pointerEvents="visiblePainted" stroke={INK} strokeWidth="2" strokeLinejoin="round">
@@ -145,7 +146,7 @@ function RocketFront({ legs, parked }: { legs: boolean; parked: boolean }) {
   );
 }
 
-export function EscapeVehicleBack({ stage, phase }: { stage: EscapeStage; phase: StagePhase }) {
+export function EscapeVehicleBack({ stage, phase, seq = 'flight3d' }: { stage: EscapeStage; phase: StagePhase; seq?: RocketSeq }) {
   if (stage === 'surf') return <Surfboard splash={phase === 'intro-a'} />;
   if (stage === 'pilot' && phase !== 'intro-a') {
     return (
@@ -154,12 +155,12 @@ export function EscapeVehicleBack({ stage, phase }: { stage: EscapeStage; phase:
       </div>
     );
   }
-  if (stage === 'rocket') return <RocketBack ignite={phase === 'intro-a'} />;
+  if (stage === 'rocket') return seq === 'flight3d' ? <RocketBack ignite /> : null;
   if (stage === 'moon' && phase === 'intro-a') return <RocketBack ignite={false} />;
   return null;
 }
 
-export function EscapeVehicleFront({ stage, phase }: { stage: EscapeStage; phase: StagePhase }) {
+export function EscapeVehicleFront({ stage, phase, seq = 'flight3d' }: { stage: EscapeStage; phase: StagePhase; seq?: RocketSeq }) {
   if (stage === 'pilot') {
     return (
       <>
@@ -172,7 +173,7 @@ export function EscapeVehicleFront({ stage, phase }: { stage: EscapeStage; phase
       </>
     );
   }
-  if (stage === 'rocket') return <RocketFront legs={false} parked={false} />;
+  if (stage === 'rocket') return seq === 'flight3d' ? <RocketFront legs={false} parked={false} /> : null;
   if (stage === 'moon' && phase === 'intro-a') return <RocketFront legs parked={false} />;
   return null;
 }
