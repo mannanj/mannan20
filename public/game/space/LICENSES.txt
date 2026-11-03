@@ -2,3 +2,5 @@ earth-day-2k.jpg: downsized from earth-day-4k.jpg in the Sun Signal app (/Docume
 moon-lroc-1k.jpg: from the Sun Signal app (same folder). Based on NASA Lunar Reconnaissance Orbiter Camera (LROC) imagery (public domain, NASA media usage guidelines).
 Approach reused from the Sun Signal globe: textured SphereGeometry meshes with a directional sun light. No code imported across repos.
 earth-night-2k.jpg: downsized from earth-night.jpg in the Sun Signal app (same folder). Earth day/night + atmosphere shaders and the Sun surface/corona shaders are ported from Sun Signal (app/simulation/components/Earth.tsx, Sun.tsx) into space-flight-3d.tsx; credit 'provided by sunsignal.app' is shown in the scene.
+jupiter-cassini-2k.webp: downsized from "Jupiter Cylindrical Map - Dec 2000" (NASA/JPL/University of Arizona, Cassini, PIA07782), via Wikimedia Commons. Public domain (NASA media usage guidelines).
+mars-viking-2k.webp: downsized from the Viking MDIM 2.1 color mosaic (NASA/USGS Astrogeology), via Wikimedia Commons. Public domain.

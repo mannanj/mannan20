@@ -11,7 +11,7 @@ export interface ChickenSkin {
   beakBottom: string;
   wattle: string;
   legs: string;
-  accessory: 'none' | 'visor' | 'spikes' | 'halo';
+  accessory: 'none' | 'visor' | 'spikes' | 'halo' | 'antennae';
   pattern?: 'hawk' | 'eagle' | 'phoenix';
   multiplier?: number;
 }
@@ -144,6 +144,22 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
     legs: '#B71C1C',
     accessory: 'none',
     pattern: 'phoenix',
+    multiplier: 3,
+  },
+  {
+    id: 'martian',
+    name: 'Martian',
+    tierBlend: 0.25,
+    body: '#7FD1B9',
+    bodyDark: '#5FB59C',
+    belly: '#E0A83A',
+    comb: '#E0A83A',
+    mouth: '#2E6B3A',
+    beakTop: '#E0A83A',
+    beakBottom: '#C98A2A',
+    wattle: '#5FB59C',
+    legs: '#C9D1DC',
+    accessory: 'antennae',
     multiplier: 3,
   },
 ];

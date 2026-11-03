@@ -17,6 +17,9 @@ import {
   Scene,
   ShaderMaterial,
   SphereGeometry,
+  Sprite,
+  SpriteMaterial,
+  CanvasTexture,
   SRGBColorSpace,
   TextureLoader,
   Vector3,
@@ -30,7 +33,18 @@ const FOV = 55;
 const EARTH_RADIUS = 1;
 const MOON_RADIUS = 1;
 const SUN_RADIUS = 3.2;
-const CORONA_SCALE = 1.14;
+const GLOW_SCALE = 7.5;
+const GLOW_TEX_SIZE = 256;
+const GLOW_STOPS: ReadonlyArray<readonly [number, string]> = [
+  [0, 'rgba(255, 246, 215, 1)'],
+  [0.18, 'rgba(255, 220, 150, 0.68)'],
+  [0.4, 'rgba(255, 175, 85, 0.26)'],
+  [0.7, 'rgba(255, 130, 50, 0.05)'],
+  [1, 'rgba(255, 120, 40, 0)'],
+];
+const MAX_ANISOTROPY = 8;
+const SCRIM_CLASS =
+  'absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_32%_26%_at_50%_34%,rgba(2,3,10,0.5),rgba(2,3,10,0.2)_60%,transparent)]';
 const ATMOSPHERE_SCALE = 1.06;
 const MOON_POS = new Vector3(-1.2, 0.3, -17);
 const SUN_POS = new Vector3(-26, 9, -26);
@@ -42,6 +56,7 @@ const LOOK_SHIFT_SPAN = 0.8;
 const SUN_GLANCE_START = 0.3;
 const SUN_GLANCE_SPAN = 0.4;
 const SUN_GLANCE_WEIGHT = 0.55;
+const LOOK_LIFT = new Vector3(0, 0.75, 0);
 const STAR_COUNT = 1800;
 const STAR_RADIUS = 90;
 const STAR_SIZE = 1.4;
@@ -106,26 +121,16 @@ const SUN_FRAGMENT = `
   }
 `;
 
-const CORONA_FRAGMENT = `
-  uniform float uTime;
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  void main() {
-    float fresnel = pow(1.0 - dot(vViewDir, vNormal), 2.0);
-    float pulse = 0.8 + sin(uTime * 0.5) * 0.1 + sin(uTime * 1.3) * 0.05;
-    vec3 color = mix(vec3(1.0, 0.7, 0.2), vec3(1.0, 0.3, 0.05), fresnel);
-    gl_FragColor = vec4(color, fresnel * 0.8 * pulse);
-  }
-`;
-
 const EARTH_VERTEX = `
   varying vec3 vNormal;
+  varying vec3 vWorldPos;
   varying vec2 vUv;
   void main() {
     vNormal = normalize(mat3(modelMatrix) * normal);
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vWorldPos = world.xyz;
+    gl_Position = projectionMatrix * viewMatrix * world;
   }
 `;
 
@@ -133,20 +138,26 @@ const EARTH_FRAGMENT = `
   uniform sampler2D uDayMap;
   uniform sampler2D uNightMap;
   uniform vec3 uSunDirection;
+  uniform float uSpin;
   varying vec3 vNormal;
+  varying vec3 vWorldPos;
   varying vec2 vUv;
   void main() {
-    float sunDot = dot(vNormal, uSunDirection);
-    float dayMask = smoothstep(-0.15, 0.25, sunDot);
-    vec3 albedo = texture2D(uDayMap, vUv).rgb;
-    float ocean = 1.0 - smoothstep(0.05, 0.2, dot(albedo, vec3(0.3, 0.5, 0.2)));
-    albedo = mix(pow(albedo, vec3(0.8)) * 1.25, vec3(0.05, 0.2, 0.5), ocean * 0.8);
-    vec3 dayColor = albedo * (0.6 + 0.4 * max(0.0, sunDot));
-    vec3 nightColor = texture2D(uNightMap, vUv).rgb * 1.8;
+    vec3 n = normalize(vNormal);
+    float sunDot = dot(n, uSunDirection);
+    float dayMask = smoothstep(-0.12, 0.22, sunDot);
+    vec2 uv = vec2(fract(vUv.x - uSpin), vUv.y);
+    vec3 albedo = texture2D(uDayMap, uv).rgb;
+    float oceanness = smoothstep(0.02, 0.18, albedo.b - max(albedo.r, albedo.g * 0.9));
+    vec3 viewDir = normalize(cameraPosition - vWorldPos);
+    vec3 halfDir = normalize(uSunDirection + viewDir);
+    float glint = pow(max(dot(n, halfDir), 0.0), 90.0) * oceanness * 0.9;
+    vec3 dayColor = albedo * (0.34 + 0.9 * max(0.0, sunDot)) + vec3(1.0, 0.95, 0.85) * glint * dayMask;
+    vec3 nightColor = texture2D(uNightMap, uv).rgb * 1.6;
     vec3 color = mix(nightColor, dayColor, dayMask);
-    float terminator = pow(1.0 - abs(sunDot), 4.0) * smoothstep(-0.2, 0.2, sunDot);
-    color += vec3(1.0, 0.4, 0.1) * terminator * 0.5;
-    gl_FragColor = vec4(color, 1.0);
+    float terminator = pow(1.0 - abs(sunDot), 5.0) * smoothstep(-0.2, 0.2, sunDot);
+    color += vec3(1.0, 0.45, 0.15) * terminator * 0.18;
+    gl_FragColor = linearToOutputTexel(vec4(color, 1.0));
   }
 `;
 
@@ -201,6 +212,7 @@ function loadTexture(loader: TextureLoader, blob: Blob): Promise<Texture> {
       url,
       (tex) => {
         tex.colorSpace = SRGBColorSpace;
+        tex.anisotropy = MAX_ANISOTROPY;
         URL.revokeObjectURL(url);
         resolve(tex);
       },
@@ -240,6 +252,23 @@ function releaseTextures() {
     t.earthNight.dispose();
     t.moon.dispose();
   });
+}
+
+function makeGlowTexture(): CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = GLOW_TEX_SIZE;
+  canvas.height = GLOW_TEX_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const half = GLOW_TEX_SIZE / 2;
+    const g = ctx.createRadialGradient(half, half, 0, half, half, half);
+    GLOW_STOPS.forEach(([at, color]) => g.addColorStop(at, color));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, GLOW_TEX_SIZE, GLOW_TEX_SIZE);
+  }
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
+  return tex;
 }
 
 function smooth(t: number): number {
@@ -306,12 +335,12 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
             uDayMap: { value: textures.earthDay },
             uNightMap: { value: textures.earthNight },
             uSunDirection: { value: sunDir },
+            uSpin: { value: EARTH_START_YAW / (Math.PI * 2) },
           },
           vertexShader: EARTH_VERTEX,
           fragmentShader: EARTH_FRAGMENT,
         });
         const earth = new Mesh(earthGeo, earthMat);
-        earth.rotation.y = EARTH_START_YAW;
         const atmoGeo = new SphereGeometry(EARTH_RADIUS * ATMOSPHERE_SCALE, 48, 32);
         const atmoMat = new ShaderMaterial({
           uniforms: { uSunDirection: { value: sunDir } },
@@ -333,17 +362,11 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
         const sunMat = new ShaderMaterial({ uniforms: sunUniforms, vertexShader: SUN_VERTEX, fragmentShader: SUN_FRAGMENT });
         const sunMesh = new Mesh(sunGeo, sunMat);
         sunMesh.position.copy(SUN_POS);
-        const coronaGeo = new SphereGeometry(SUN_RADIUS * CORONA_SCALE, 48, 48);
-        const coronaMat = new ShaderMaterial({
-          uniforms: sunUniforms,
-          vertexShader: SUN_VERTEX,
-          fragmentShader: CORONA_FRAGMENT,
-          transparent: true,
-          side: BackSide,
-          depthWrite: false,
-        });
-        const corona = new Mesh(coronaGeo, coronaMat);
+        const glowTex = makeGlowTexture();
+        const glowMat = new SpriteMaterial({ map: glowTex, blending: AdditiveBlending, depthWrite: false, transparent: true });
+        const corona = new Sprite(glowMat);
         corona.position.copy(SUN_POS);
+        corona.scale.setScalar(SUN_RADIUS * GLOW_SCALE);
         scene.add(earth, atmosphere, moon, sunMesh, corona);
 
         const look = new Vector3();
@@ -361,8 +384,8 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
           look.lerpVectors(earthPos, MOON_POS, smooth((t - LOOK_SHIFT_START) / LOOK_SHIFT_SPAN));
           const glance = Math.sin(Math.PI * Math.max(0, Math.min(1, (t - SUN_GLANCE_START) / SUN_GLANCE_SPAN)));
           look.lerp(SUN_POS, glance * SUN_GLANCE_WEIGHT);
-          camera.lookAt(look);
-          earth.rotation.y += EARTH_SPIN * dt;
+          camera.lookAt(look.add(LOOK_LIFT));
+          earthMat.uniforms.uSpin.value += (EARTH_SPIN * dt) / (Math.PI * 2);
           moon.rotation.y += EARTH_SPIN * 0.3 * dt;
           sunUniforms.uTime.value = (now - began) / 1000;
           renderer.render(scene, camera);
@@ -385,8 +408,9 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
         teardown = () => {
           cancelAnimationFrame(raf);
           window.removeEventListener('resize', onResize);
-          [earthGeo, atmoGeo, moonGeo, sunGeo, coronaGeo, stars.geometry].forEach((g) => g.dispose());
-          [earthMat, atmoMat, moonMat, sunMat, coronaMat].forEach((m) => m.dispose());
+          [earthGeo, atmoGeo, moonGeo, sunGeo, stars.geometry].forEach((g) => g.dispose());
+          [earthMat, atmoMat, moonMat, sunMat, glowMat].forEach((m) => m.dispose());
+          glowTex.dispose();
           (stars.material as PointsMaterial).dispose();
           renderer.dispose();
           renderer.forceContextLoss();
@@ -404,6 +428,7 @@ export default function SpaceFlight3D({ progressRef, leaving }: SpaceFlight3DPro
 
   return (
     <div ref={hostRef} data-testid="space-flight-3d" className="absolute inset-0 pointer-events-none">
+      <div data-testid="space-scrim" className={SCRIM_CLASS} />
       <a
         href={CREDIT_URL}
         target="_blank"

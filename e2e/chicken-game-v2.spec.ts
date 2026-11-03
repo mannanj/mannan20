@@ -1391,8 +1391,8 @@ test.describe('chicken game v2 plane, rocket and 3D flight', () => {
   });
 
   test('a slow download pauses the game behind a progress gate and skip continues to the moon', async ({ page }) => {
-    const delays: Record<string, number> = { 'earth-day-2k': 2500, 'earth-night-2k': 5000, 'moon-lroc-1k': 7500 };
-    await page.route('**/game/space/*.jpg', async (route) => {
+    const delays: Record<string, number> = { 'earth-day-4k': 2500, 'earth-night-2k': 5000, 'moon-lroc-1k': 7500 };
+    await page.route('**/game/space/*.webp', async (route) => {
       const name = Object.keys(delays).find((k) => route.request().url().includes(k)) ?? '';
       const response = await route.fetch();
       await new Promise((r) => setTimeout(r, delays[name] ?? 0));
@@ -1429,5 +1429,99 @@ test.describe('chicken game v2 plane, rocket and 3D flight', () => {
     await expect(page.getByTestId('gate-count')).toBeVisible();
     await expect(page.getByTestId('space-flight-3d')).toBeVisible({ timeout: 10_000 });
     await expect(page.getByTestId('sunsignal-credit')).toHaveAttribute('href', 'https://sunsignal.app');
+  });
+});
+
+interface CosmosBridge {
+  setScore: (n: number) => void;
+  boost: (n: number) => void;
+  spawnMartian: (kind?: string) => void;
+  martianClicks: () => number;
+  useItem: (id: string) => void;
+  inventory: () => { id: string; count: number }[];
+  state: () => { stage: string; score: number; skin: string };
+}
+
+const cosmosBridge = (page: Page) => ({
+  setScore: (n: number) => page.evaluate((v) => (window as unknown as { __chicken: CosmosBridge }).__chicken.setScore(v), n),
+  boost: (n: number) => page.evaluate((v) => (window as unknown as { __chicken: CosmosBridge }).__chicken.boost(v), n),
+  spawn: (kind?: string) => page.evaluate((k) => (window as unknown as { __chicken: CosmosBridge }).__chicken.spawnMartian(k), kind),
+  state: () => page.evaluate(() => (window as unknown as { __chicken: CosmosBridge }).__chicken.state()),
+  inventory: () => page.evaluate(() => (window as unknown as { __chicken: CosmosBridge }).__chicken.inventory()),
+  useItem: (id: string) => page.evaluate((v) => (window as unknown as { __chicken: CosmosBridge }).__chicken.useItem(v), id),
+  clicks: () => page.evaluate(() => (window as unknown as { __chicken: CosmosBridge }).__chicken.martianClicks()),
+});
+
+async function pokeMartian(page: Page, times: number) {
+  await page.evaluate((n) => {
+    const el = document.querySelector('[data-testid="martian"]');
+    for (let i = 0; i < n; i++) el?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  }, times);
+}
+
+test.describe('chicken game v2 cosmos, Jupiter and Martians', () => {
+  test('stages run moon, cosmos, then Jupiter, with the credit and the 3D sky mounted', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=600');
+    const game = cosmosBridge(page);
+    await expect.poll(async () => (await game.state()).stage).toBe('moon');
+    await game.setScore(9999);
+    await expect.poll(async () => (await game.state()).stage).toBe('moon');
+    await game.setScore(10050);
+    await expect.poll(async () => (await game.state()).stage).toBe('cosmos');
+    await expect(page.getByTestId('cosmos-3d')).toBeAttached();
+    await expect(page.getByTestId('sunsignal-credit-cosmos')).toContainText('provided by sunsignal.app');
+    await game.setScore(17000);
+    await expect.poll(async () => (await game.state()).stage).toBe('jupiter');
+  });
+
+  test('the start marker lands in the cosmos and the band follows the score', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=10400');
+    const game = cosmosBridge(page);
+    await expect.poll(async () => (await game.state()).stage).toBe('cosmos');
+    await expect(page.getByTestId('cosmos-3d')).toHaveAttribute('data-band', 'earth', { timeout: 20_000 });
+    await game.setScore(14000);
+    await expect(page.getByTestId('cosmos-3d')).toHaveAttribute('data-band', 'belt', { timeout: 20_000 });
+  });
+
+  test('Jupiter arrival shows the ground and background Martians', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=17000');
+    await expect(page.getByTestId('jupiter-ground')).toBeVisible();
+    expect(await page.getByTestId('martian-bg').count()).toBeGreaterThanOrEqual(5);
+    await expect(page.getByTestId('martian')).toHaveCount(0);
+  });
+
+  test('friends walk in, never more than two at once', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=17000');
+    const game = cosmosBridge(page);
+    await expect.poll(async () => (await game.state()).stage).toBe('jupiter');
+    await game.spawn('moss');
+    await game.spawn('zap');
+    await game.spawn('pip');
+    await expect(page.getByTestId('martian')).toHaveCount(2);
+    await expect(page.getByTestId('martian').first()).toHaveAttribute('data-kind', 'moss');
+  });
+
+  test('100 clicks earn the item and the x3 skin; Martian clicks do not score', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=17000');
+    const game = cosmosBridge(page);
+    await expect.poll(async () => (await game.state()).stage).toBe('jupiter');
+    const before = (await game.state()).score;
+    await game.spawn('pip');
+    await expect(page.getByTestId('martian')).toHaveCount(1);
+    await pokeMartian(page, 99);
+    await expect(page.getByTestId('martian-progress')).toHaveText('99/100');
+    expect((await game.inventory()).some((i) => i.id === 'martian-friend')).toBe(false);
+    await pokeMartian(page, 1);
+    await expect.poll(async () => (await game.inventory()).some((i) => i.id === 'martian-friend')).toBe(true);
+    expect((await game.state()).score).toBe(before);
+    expect(await game.clicks()).toBe(100);
+    await page.reload();
+    await page.waitForFunction(() => (window as unknown as { __chicken?: unknown }).__chicken !== undefined);
+    expect(await game.clicks()).toBe(100);
+    await game.useItem('martian-friend');
+    await expect.poll(async () => (await game.state()).skin).toBe('martian');
+    const worn = (await game.state()).score;
+    await game.boost(1);
+    expect((await game.state()).score - worn).toBe(3);
   });
 });

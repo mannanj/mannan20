@@ -1537,9 +1537,7 @@ body.gem-rain-active #header > div:first-child {
   100% { transform: scaleY(1); }
 }
 .escape-legs {
-  transform-box: fill-box;
-  transform-origin: 50% 0%;
-  animation: escapeLegs 0.8s 0.6s ease-out both;
+  animation: escapeLegsIn 0.8s 0.6s ease-out both;
 }
 @keyframes escapeClouds {
   0% { transform: translateX(0); }
@@ -1714,4 +1712,65 @@ body.gem-rain-active #header > div:first-child {
 
 .bird-flash {
   background: radial-gradient(ellipse at center, rgba(255, 140, 40, 0) 45%, rgba(255, 120, 20, 0.9) 100%);
+}
+
+@keyframes escapePlume {
+  0%, 100% { transform: scaleY(1) scaleX(1); filter: brightness(1); }
+  35% { transform: scaleY(0.93) scaleX(1.04); filter: brightness(1.12); }
+  70% { transform: scaleY(1.04) scaleX(0.97); filter: brightness(0.94); }
+}
+.escape-plume {
+  transform-origin: 50% 0%;
+  animation: escapePlume 0.16s linear infinite;
+}
+@keyframes escapeExhaustSmoke {
+  0% { transform: translateY(0) scale(0.4); opacity: 0; }
+  20% { opacity: 0.55; }
+  100% { transform: translateY(150px) scale(1.5); opacity: 0; }
+}
+.escape-exhaust-smoke {
+  animation: escapeExhaustSmoke 1.5s ease-out infinite;
+  opacity: 0;
+}
+@keyframes escapeLegsIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes martianIdle {
+  0%, 100% { transform: translateY(0) rotate(-0.8deg); }
+  50% { transform: translateY(-3px) rotate(0.8deg); }
+}
+
+@keyframes martianWalk {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(2deg); }
+}
+
+@keyframes martianPoke {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08, 0.94); }
+  100% { transform: scale(1); }
+}
+
+@keyframes martianStroll {
+  0% { transform: translateX(calc(var(--stroll) * -1)); }
+  100% { transform: translateX(var(--stroll)); }
+}
+
+@keyframes groundRise {
+  0% { transform: translateY(100%); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes cosmosLiftoff {
+  0% { transform: translateY(0); opacity: 1; }
+  25% { transform: translateY(6px); opacity: 1; }
+  100% { transform: translateY(-120vh); opacity: 0.2; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }

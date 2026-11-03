@@ -1,6 +1,6 @@
 'use client';
 
-import { Layer, PlaneBack, PlaneFront, RocketFront } from './escape-vehicle';
+import { PlaneBack, PlaneFront, RocketDoorLayer, RocketFront } from './escape-vehicle';
 
 const FIREBALL_SRC = '/game/fx/fireball.webp';
 const SMOKE_SRC = '/game/fx/smoke.webp';
@@ -96,32 +96,7 @@ export function BackgroundRocket({ doorOpen }: { doorOpen: boolean }) {
   return (
     <>
       <RocketFront legs parked={false} />
-      <Layer>
-        <g data-testid="rocket-door" data-open={doorOpen ? '1' : '0'}>
-          <path
-            d="M17 148 L 17 108 C 17 90, 53 90, 53 108 L 53 148 Z"
-            fill="#0a0e16"
-            stroke="#1b1b1b"
-            strokeWidth="2"
-          />
-          <g
-            style={{
-              transformBox: 'fill-box',
-              transformOrigin: '0% 50%',
-              transform: doorOpen ? 'scaleX(0.12)' : 'scaleX(1)',
-              transition: 'transform 900ms cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          >
-            <path
-              d="M17 148 L 17 108 C 17 90, 53 90, 53 108 L 53 148 Z"
-              fill="#c3cad6"
-              stroke="#1b1b1b"
-              strokeWidth="2"
-            />
-            <circle cx="47" cy="126" r="2.4" fill="#1b1b1b" />
-          </g>
-        </g>
-      </Layer>
+      <RocketDoorLayer doorOpen={doorOpen} />
     </>
   );
 }

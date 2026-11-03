@@ -29,17 +29,7 @@ function Feather({ size, fill, stroke, vein }: FeatherProps) {
 }
 
 function MartianFriend({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M11 6 L9 2 M21 6 L23 2" stroke="#2e6b3a" strokeWidth="1.4" strokeLinecap="round" />
-      <circle cx="9" cy="2" r="1.6" fill="#7ed88a" />
-      <circle cx="23" cy="2" r="1.6" fill="#7ed88a" />
-      <ellipse cx="16" cy="16" rx="10" ry="11" fill="#7ed88a" stroke="#2e6b3a" strokeWidth="1.2" />
-      <ellipse cx="12" cy="15" rx="2.6" ry="3.6" fill="#10241a" />
-      <ellipse cx="20" cy="15" rx="2.6" ry="3.6" fill="#10241a" />
-      <path d="M13 22 Q16 24 19 22" stroke="#2e6b3a" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
-  );
+  return <img src="/game/martians/pip.webp" alt="" width={size} height={size} draggable={false} className="object-contain" />;
 }
 
 function GenericItem({ size }: { size: number }) {

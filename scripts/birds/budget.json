@@ -1,7 +1,7 @@
 {
   "cap_usd": 3.6,
   "stop_at_usd": 2.890466,
-  "spent_usd": 3.031503,
+  "spent_usd": 3.542161,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -276,6 +276,54 @@
       "gen_id": "gen-1793671581-WuNms0Gm8Xd6gxfvhOsb"
     },
     {
+      "at": "2026-11-03T02:40:31.094Z",
+      "id": "polish-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: body",
+      "cost_usd": 0.067274,
+      "gen_id": "gen-1793673623-2LdEPE4dbg72RfL3xFPW"
+    },
+    {
+      "at": "2026-11-03T02:40:39.234Z",
+      "id": "polish-plume",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: plume",
+      "cost_usd": 0.0672485,
+      "gen_id": "gen-1793673631-cm9JMB8ZHrJjWJeD0boi"
+    },
+    {
+      "at": "2026-11-03T02:40:47.421Z",
+      "id": "polish-hole",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: hole",
+      "cost_usd": 0.067248,
+      "gen_id": "gen-1793673639-iBMDLaBvvoXDCnwULLMl"
+    },
+    {
+      "at": "2026-11-03T02:41:12.268Z",
+      "id": "polish-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: body",
+      "cost_usd": 0.0672915,
+      "gen_id": "gen-1793673664-pyLaOX5ZR1mzbwXSZjUw"
+    },
+    {
+      "at": "2026-11-03T02:41:20.635Z",
+      "id": "polish-open",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: open",
+      "cost_usd": 0.067784,
+      "gen_id": "gen-1793673672-Nb07CslYbCsHsh94Ee5o"
+    },
+    {
+      "at": "2026-11-03T02:41:28.731Z",
+      "id": "polish-legs",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: legs",
+      "cost_usd": 0.067786,
+      "gen_id": "gen-1793673680-ajQy1QwCEt1YIHZKnw8F"
+    },
+    {
       "at": "2026-11-03T02:43:02.605Z",
       "id": "fx-toasted-feather",
       "model": "google/gemini-3.1-flash-image",
@@ -362,6 +410,24 @@
       "purpose": "flight frame: bank",
       "cost_usd": 0.067398,
       "gen_id": "gen-1793675409-onYmRbeV1HhOBtk0JcCi"
+    },
+    {
+      "at": "2026-11-03T03:10:40.507Z",
+      "task": 310,
+      "id": "cosmos-pip-draft",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "task 310 cosmos: pip",
+      "cost_usd": 0.038778,
+      "gen_id": "gen-1793675434-8d6BtnMhueBiZe7ZImLT"
+    },
+    {
+      "at": "2026-11-03T03:10:55.493Z",
+      "task": 310,
+      "id": "cosmos-ground-v1",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "task 310 cosmos: ground",
+      "cost_usd": 0.0672475,
+      "gen_id": "gen-1793675445-idQCInBHbQrghxx3b2nF"
     }
   ],
   "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89)."
