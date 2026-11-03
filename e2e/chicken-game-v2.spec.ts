@@ -247,7 +247,10 @@ test.describe('chicken game v2 ability orbs', () => {
       page.evaluate(() => (window as unknown as { __chicken: { state: () => { cursorOffsets: { dx: number; dy: number }[] } } }).__chicken.state().cursorOffsets);
     const radii = (os: { dx: number; dy: number }[]) => os.map((o) => Math.round(Math.hypot(o.dx, o.dy))).sort((a, b) => a - b);
     await collect(page, 'cursor3');
-    const tri = await offsets();
+    const all3 = await offsets();
+    expect(all3).toHaveLength(4);
+    expect(all3.filter((o) => (o as { hidden?: boolean }).hidden)).toEqual([{ dx: 0, dy: 0, hidden: true }]);
+    const tri = all3.filter((o) => !(o as { hidden?: boolean }).hidden);
     expect(tri).toHaveLength(3);
     const sides = [[0, 1], [1, 2], [0, 2]].map(([i, j]) => Math.hypot(tri[i].dx - tri[j].dx, tri[i].dy - tri[j].dy));
     for (const side of sides) {
@@ -276,7 +279,7 @@ test.describe('chicken game v2 ability orbs', () => {
     await gotoGame(page, '?variant=2');
     await page.mouse.move(640, 330);
     await collect(page, 'cursor3');
-    expect((await snap(page)).cursors).toBe(3);
+    expect((await snap(page)).cursors).toBe(4);
     await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(3);
     await collect(page, 'cursor5');
     await expect(page.getByTestId('chicken-extra-cursor')).toHaveCount(15);

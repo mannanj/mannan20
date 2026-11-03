@@ -2002,11 +2002,11 @@ function ChickenGameInner() {
         cursorKeyRef.current = key;
         const offsets = buildCursorOffsets(x5, x3);
         cursorOffsetsRef.current = offsets;
-        setOverlayOffsets(offsets.length > 1 ? offsets : []);
+        setOverlayOffsets(offsets.length > 1 ? offsets.filter((o) => !o.hidden) : []);
       }
       const mouse = mouseRef.current;
       const els = cursorElsRef.current;
-      const overlays = cursorOffsetsRef.current.length > 1 ? cursorOffsetsRef.current : [];
+      const overlays = cursorOffsetsRef.current.length > 1 ? cursorOffsetsRef.current.filter((o) => !o.hidden) : [];
       for (let i = 0; i < overlays.length; i++) {
         const el = els[i];
         if (el) {

@@ -3,6 +3,7 @@ export type OrbKind = 'multiply' | 'cursor5' | 'cursor3';
 export interface CursorOffset {
   dx: number;
   dy: number;
+  hidden?: boolean;
 }
 
 export const ORB_KINDS: OrbKind[] = ['multiply', 'cursor5', 'cursor3'];
@@ -78,6 +79,7 @@ export function buildCursorOffsets(x5Active: boolean, x3Active: boolean): Cursor
   if (x3Active) {
     const r = CURSOR_X3_OFFSET;
     return [
+      { dx: 0, dy: 0, hidden: true },
       { dx: 0, dy: -r },
       { dx: -Math.round(r * TRIANGLE_COS), dy: Math.round(r * TRIANGLE_SIN) },
       { dx: Math.round(r * TRIANGLE_COS), dy: Math.round(r * TRIANGLE_SIN) },
