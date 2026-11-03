@@ -2,6 +2,7 @@
 
 import type { EscapeStage } from './escape-stages';
 import type { RocketSeq } from './escape-sequence';
+import { ROCKET_ART, type ArtPlacement } from './rocket-art';
 
 export type StagePhase = 'intro-a' | 'intro-b' | 'live';
 
@@ -12,10 +13,6 @@ const INK = '#1b1b1b';
 const PLANE_RED = '#d9483b';
 const PLANE_DARK = '#a8322a';
 const CREAM = '#f3e7c9';
-const HULL = '#e9edf3';
-const HULL_SHADE = '#c3cad6';
-const FIN = '#e0533d';
-const WINDOW_RIM = '#7a8aa0';
 
 export function Layer({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
@@ -107,42 +104,100 @@ export function PlaneFront() {
   );
 }
 
+const ROCKET_BODY_SRC = '/game/rocket/body.webp';
+const ROCKET_OPEN_SRC = '/game/rocket/open.webp';
+const ROCKET_LEGS_SRC = '/game/rocket/legs.webp';
+const PLUME_SRC = '/game/rocket/plume.webp';
+const EXHAUST_SMOKE_SRC = '/game/fx/smoke.webp';
+const NOZZLE_Y = 172;
+const PLUME_SCALE_BIG = 0.8;
+const PLUME_SCALE_IDLE = 0.38;
+const PORTHOLE_RADIUS = 23;
+const EXHAUST_SMOKE = [
+  { size: 90, delay: 0, dx: -6 },
+  { size: 110, delay: 0.5, dx: 8 },
+  { size: 80, delay: 0.95, dx: 0 },
+];
+
+function placement(art: ArtPlacement) {
+  return { left: art.left, top: art.top, width: art.width, height: art.height };
+}
+
 export function RocketBack({ ignite }: { ignite: boolean }) {
+  const scale = ignite ? PLUME_SCALE_BIG : PLUME_SCALE_IDLE;
+  const left = 35 - ROCKET_ART.plume.width / 2;
   return (
-    <Layer>
-      <g className={ignite ? 'escape-flame escape-flame-big' : 'escape-flame'}>
-        <path d="M18 160 Q 35 236 52 160 Z" fill="#ff8a3d" />
-        <path d="M26 160 Q 35 206 44 160 Z" fill="#ffe08a" />
-      </g>
-    </Layer>
+    <>
+      {ignite &&
+        EXHAUST_SMOKE.map((m, i) => (
+          <img
+            key={i}
+            alt=""
+            src={EXHAUST_SMOKE_SRC}
+            draggable={false}
+            className="escape-exhaust-smoke absolute max-w-none pointer-events-none"
+            style={{
+              left: 35 - m.size / 2 + m.dx,
+              top: NOZZLE_Y + 60,
+              width: m.size,
+              height: m.size,
+              animationDelay: `${m.delay}s`,
+            }}
+          />
+        ))}
+      <img
+        alt=""
+        src={PLUME_SRC}
+        draggable={false}
+        data-testid="rocket-plume"
+        className="escape-plume absolute max-w-none pointer-events-none"
+        style={{ left, top: NOZZLE_Y, width: ROCKET_ART.plume.width, height: ROCKET_ART.plume.height, scale }}
+      />
+    </>
   );
 }
 
 export function RocketFront({ legs, parked }: { legs: boolean; parked: boolean }) {
   return (
-    <Layer>
-      <g data-testid={parked ? 'parked-rocket' : 'vehicle-rocket'} pointerEvents="visiblePainted" stroke={INK} strokeWidth="2" strokeLinejoin="round">
-        {legs && (
-          <g className="escape-legs" fill="none" stroke={HULL_SHADE} strokeWidth="3">
-            <path d="M-8 128 L -30 164 M -38 164 L -22 164" />
-            <path d="M78 128 L 100 164 M 92 164 L 108 164" />
-          </g>
-        )}
-        <path d="M-12 112 L -34 150 L -12 146 Z" fill={FIN} />
-        <path d="M82 112 L 104 150 L 82 146 Z" fill={FIN} />
-        <path
-          fillRule="evenodd"
-          fill={HULL}
-          d="M-12 150 L -12 -20 C -12 -46, 20 -72, 35 -84 C 50 -72, 82 -46, 82 -20 L 82 150 Z M35 2 a 21 21 0 1 0 0.01 0 Z"
+    <>
+      {parked && (
+        <div
+          className="absolute rounded-full bg-[#10161f]"
+          style={{ left: 35 - PORTHOLE_RADIUS, top: 23 - PORTHOLE_RADIUS, width: PORTHOLE_RADIUS * 2, height: PORTHOLE_RADIUS * 2 }}
         />
-        <path d="M60 -10 L 60 140" stroke={HULL_SHADE} strokeWidth="6" fill="none" />
-        <path d="M-12 -24 C 10 -30, 60 -30, 82 -24" fill="none" />
-        <path d="M35 -84 C 28 -76, 20 -66, 16 -58 L 54 -58 C 50 -66, 42 -76, 35 -84 Z" fill={FIN} />
-        <circle cx="35" cy="23" r="21" fill={parked ? '#10161f' : 'none'} stroke={WINDOW_RIM} strokeWidth="4" />
-        <path d="M12 150 L 18 162 L 52 162 L 58 150 Z" fill="#8a94a3" />
-        <path d="M-12 96 L 82 96" fill="none" strokeDasharray="5 6" />
-      </g>
-    </Layer>
+      )}
+      <img
+        alt=""
+        src={ROCKET_BODY_SRC}
+        draggable={false}
+        data-testid={parked ? 'parked-rocket' : 'vehicle-rocket'}
+        className="absolute max-w-none pointer-events-auto"
+        style={placement(ROCKET_ART.body)}
+      />
+      {legs && (
+        <img
+          alt=""
+          src={ROCKET_LEGS_SRC}
+          draggable={false}
+          className="escape-legs absolute max-w-none pointer-events-none"
+          style={placement(ROCKET_ART.legs)}
+        />
+      )}
+    </>
+  );
+}
+
+export function RocketDoorLayer({ doorOpen }: { doorOpen: boolean }) {
+  return (
+    <div data-testid="rocket-door" data-open={doorOpen ? '1' : '0'}>
+      <img
+        alt=""
+        src={ROCKET_OPEN_SRC}
+        draggable={false}
+        className="absolute max-w-none pointer-events-none transition-opacity duration-[900ms] ease-in-out"
+        style={{ ...placement(ROCKET_ART.open), opacity: doorOpen ? 1 : 0 }}
+      />
+    </div>
   );
 }
 

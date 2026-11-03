@@ -11,17 +11,17 @@ export interface SpaceProgress {
 }
 
 export const SPACE_URLS = {
-  earthDay: '/game/space/earth-day-2k.jpg',
-  earthNight: '/game/space/earth-night-2k.jpg',
-  moon: '/game/space/moon-lroc-1k.jpg',
+  earthDay: '/game/space/earth-day-4k.webp',
+  earthNight: '/game/space/earth-night-2k.webp',
+  moon: '/game/space/moon-lroc-1k.webp',
 } as const;
 
 type SpaceKey = keyof typeof SPACE_URLS;
 
 const EXPECTED_BYTES: Record<SpaceKey, number> = {
-  earthDay: 338_304,
-  earthNight: 244_864,
-  moon: 139_068,
+  earthDay: 556_412,
+  earthNight: 94_912,
+  moon: 101_178,
 };
 const CHUNK_WEIGHT_BYTES = 700_000;
 const SPEED_SMOOTHING = 0.2;
@@ -77,7 +77,7 @@ async function fetchBlob(key: SpaceKey): Promise<Blob> {
     sampleSpeed();
   }
   totals[key] = loaded[key];
-  return new Blob(chunks, { type: res.headers.get('content-type') ?? 'image/jpeg' });
+  return new Blob(chunks, { type: res.headers.get('content-type') ?? 'image/webp' });
 }
 
 export function startSpacePreload(loadChunk: () => Promise<unknown>): Promise<SpaceBlobs> {

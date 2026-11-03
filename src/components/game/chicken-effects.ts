@@ -273,6 +273,22 @@ export interface BlackHole {
   bornAt: number;
 }
 
+const BLACK_HOLE_SRC = '/game/fx/blackhole.webp';
+const BLACK_HOLE_SPAN = 4.6;
+const BLACK_HOLE_SHADOW = 0.62;
+const BLACK_HOLE_SPIN = 0.0016;
+const BLACK_HOLE_GROW_END = 0.25;
+let blackHoleImg: HTMLImageElement | null = null;
+
+function blackHoleSprite(): HTMLImageElement | null {
+  if (typeof Image === 'undefined') return null;
+  if (!blackHoleImg) {
+    blackHoleImg = new Image();
+    blackHoleImg.src = BLACK_HOLE_SRC;
+  }
+  return blackHoleImg.complete && blackHoleImg.naturalWidth > 0 ? blackHoleImg : null;
+}
+
 export function drawBlackHoles(
   ctx: CanvasRenderingContext2D,
   holes: BlackHole[],
@@ -280,22 +296,34 @@ export function drawBlackHoles(
   lifeMs: number,
   radius: number
 ): void {
+  const sprite = blackHoleSprite();
   for (const hole of holes) {
     const t = (now - hole.bornAt) / lifeMs;
     if (t < 0 || t > 1) continue;
-    const grow = t < 0.25 ? t / 0.25 : 1 - (t - 0.25) / 0.75;
+    const grow = t < BLACK_HOLE_GROW_END ? t / BLACK_HOLE_GROW_END : 1 - (t - BLACK_HOLE_GROW_END) / (1 - BLACK_HOLE_GROW_END);
     const r = radius * Math.max(0.05, grow);
+    const alpha = Math.min(1, grow * 1.4);
     ctx.save();
-    ctx.globalAlpha = Math.min(1, grow * 1.4);
-    ctx.fillStyle = '#000';
+    ctx.translate(hole.x, hole.y);
+    ctx.globalAlpha = alpha;
+    if (sprite) {
+      const span = r * BLACK_HOLE_SPAN;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.save();
+      ctx.rotate(now * BLACK_HOLE_SPIN);
+      ctx.drawImage(sprite, -span / 2, -span / 2, span, span);
+      ctx.restore();
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    const shadow = r * BLACK_HOLE_SHADOW;
+    const g = ctx.createRadialGradient(0, 0, shadow * 0.55, 0, 0, shadow);
+    g.addColorStop(0, 'rgba(0,0,0,1)');
+    g.addColorStop(0.8, 'rgba(0,0,0,0.96)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(hole.x, hole.y, r, 0, Math.PI * 2);
+    ctx.arc(0, 0, shadow, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(160,110,255,0.75)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(hole.x, hole.y, r * 1.35, 0, Math.PI * 2);
-    ctx.stroke();
     ctx.restore();
   }
 }
@@ -317,7 +345,7 @@ export interface Pool {
   ry: number;
   born: number;
   seed: number;
-  grad: CanvasGradient | null;
+  sprite: HTMLCanvasElement | null;
 }
 
 const DROP_HUE_STEP = 47;
@@ -361,7 +389,7 @@ export function makePool(x: number, groundY: number, born: number): Pool {
     ry: POOL_RY_MIN + Math.random() * POOL_RY_SPREAD,
     born,
     seed: Math.random() * Math.PI * 2,
-    grad: null,
+    sprite: null,
   };
 }
 
@@ -370,17 +398,98 @@ export function addPool(pools: Pool[], pool: Pool): void {
   if (pools.length > MAX_POOLS) pools.shift();
 }
 
+const DROP_REFRACT_RIM = 0.45;
+const DROP_GLOW_LIGHTNESS = 70;
+const DROP_SPRITE_R = 12;
+const DROP_HUE_BUCKETS = 24;
+const POOL_PAD = 3;
+const POOL_BODY_ALPHA = 0.72;
+const POOL_EDGE_DARK = 'rgba(20,10,50,0.5)';
+const dropSprites: HTMLCanvasElement[] = [];
+
+function newCanvas(w: number, h: number): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(w);
+  c.height = Math.ceil(h);
+  return c;
+}
+
+function renderDrop(hue: number): HTMLCanvasElement {
+  const r = DROP_SPRITE_R;
+  const c = newCanvas(r * 2 + 2, r * 2 + 2);
+  const ctx = c.getContext('2d');
+  if (!ctx) return c;
+  const x = r + 1;
+  const y = r + 1;
+  const body = ctx.createRadialGradient(x + r * 0.25, y + r * 0.3, r * 0.1, x, y, r);
+  body.addColorStop(0, `hsla(${hue} 90% ${DROP_GLOW_LIGHTNESS}% / 0.55)`);
+  body.addColorStop(0.7, `hsla(${hue} 85% 52% / 0.75)`);
+  body.addColorStop(1, `hsla(${(hue + 40) % 360} 80% 28% / 0.95)`);
+  ctx.fillStyle = body;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = `rgba(255,255,255,${DROP_REFRACT_RIM * 0.5})`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  ctx.ellipse(x - r * 0.32, y - r * 0.38, r * 0.3, r * 0.18, -0.6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = `hsla(${(hue + 60) % 360} 100% 80% / 0.55)`;
+  ctx.beginPath();
+  ctx.arc(x + r * 0.35, y + r * 0.4, r * 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  return c;
+}
+
 export function drawDrops(ctx: CanvasRenderingContext2D, drops: RainbowDrop[]): void {
   for (const d of drops) {
-    ctx.fillStyle = `hsl(${d.hue} 95% 62%)`;
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.beginPath();
-    ctx.arc(d.x - d.r * 0.3, d.y - d.r * 0.3, d.r * 0.35, 0, Math.PI * 2);
-    ctx.fill();
+    const bucket = Math.floor((((d.hue % 360) + 360) % 360) / (360 / DROP_HUE_BUCKETS));
+    const sprite = (dropSprites[bucket] ??= renderDrop((bucket + 0.5) * (360 / DROP_HUE_BUCKETS)));
+    const size = d.r * 2 * (1 + 2 / (DROP_SPRITE_R * 2));
+    ctx.drawImage(sprite, d.x - size / 2, d.y - size / 2, size, size);
   }
+}
+
+function renderPool(pool: Pool): HTMLCanvasElement {
+  const w = pool.rx * 2 + POOL_PAD * 2;
+  const h = pool.ry * 2 + POOL_PAD * 2;
+  const c = newCanvas(w, h);
+  const ctx = c.getContext('2d');
+  if (!ctx) return c;
+  const cx = c.width / 2;
+  const cy = c.height / 2;
+  const grad = ctx.createLinearGradient(cx - pool.rx, 0, cx + pool.rx, 0);
+  RAINBOW_STOPS.forEach((col, i) => grad.addColorStop(i / (RAINBOW_STOPS.length - 1), col));
+  ctx.globalAlpha = POOL_BODY_ALPHA;
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, pool.rx, pool.ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const depth = ctx.createRadialGradient(cx, cy - pool.ry * 0.2, pool.ry * 0.1, cx, cy, pool.rx);
+  depth.addColorStop(0, 'rgba(255,255,255,0.28)');
+  depth.addColorStop(0.65, 'rgba(255,255,255,0)');
+  depth.addColorStop(1, POOL_EDGE_DARK);
+  ctx.fillStyle = depth;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, pool.rx, pool.ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, pool.rx, pool.ry, 0, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  ctx.beginPath();
+  ctx.ellipse(cx - pool.rx * 0.32, cy - pool.ry * 0.38, pool.rx * 0.3, pool.ry * 0.14, -0.08, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(cx + pool.rx * 0.28, cy + pool.ry * 0.3, pool.rx * 0.14, pool.ry * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+  return c;
 }
 
 export function drawPools(ctx: CanvasRenderingContext2D, pools: Pool[], now: number): void {
@@ -388,24 +497,12 @@ export function drawPools(ctx: CanvasRenderingContext2D, pools: Pool[], now: num
     const age = now - pool.born;
     const fade = age > POOL_LIFE_MS - POOL_FADE_MS ? Math.max(0, (POOL_LIFE_MS - age) / POOL_FADE_MS) : 1;
     if (fade <= 0) continue;
-    if (!pool.grad) {
-      const g = ctx.createLinearGradient(pool.x - pool.rx, 0, pool.x + pool.rx, 0);
-      RAINBOW_STOPS.forEach((c, i) => g.addColorStop(i / (RAINBOW_STOPS.length - 1), c));
-      pool.grad = g;
-    }
-    const ry = pool.ry * (1 + POOL_SHIMMER * Math.sin(now * POOL_SHIMMER_FREQ + pool.seed));
-    ctx.globalAlpha = POOL_ALPHA * fade;
-    ctx.fillStyle = pool.grad;
-    ctx.beginPath();
-    ctx.ellipse(pool.x, pool.y, pool.rx, ry, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(40,20,80,0.45)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.beginPath();
-    ctx.ellipse(pool.x - pool.rx * 0.3, pool.y - ry * 0.35, pool.rx * 0.35, ry * 0.2, 0, 0, Math.PI * 2);
-    ctx.fill();
+    pool.sprite ??= renderPool(pool);
+    const squash = 1 + POOL_SHIMMER * Math.sin(now * POOL_SHIMMER_FREQ + pool.seed);
+    const w = pool.sprite.width;
+    const h = pool.sprite.height * squash;
+    ctx.globalAlpha = fade;
+    ctx.drawImage(pool.sprite, pool.x - w / 2, pool.y - h / 2, w, h);
   }
   ctx.globalAlpha = 1;
 }

@@ -1088,8 +1088,8 @@ test.describe('chicken game v2 plane, rocket and 3D flight', () => {
   });
 
   test('a slow download pauses the game behind a progress gate and skip continues to the moon', async ({ page }) => {
-    const delays: Record<string, number> = { 'earth-day-2k': 2500, 'earth-night-2k': 5000, 'moon-lroc-1k': 7500 };
-    await page.route('**/game/space/*.jpg', async (route) => {
+    const delays: Record<string, number> = { 'earth-day-4k': 2500, 'earth-night-2k': 5000, 'moon-lroc-1k': 7500 };
+    await page.route('**/game/space/*.webp', async (route) => {
       const name = Object.keys(delays).find((k) => route.request().url().includes(k)) ?? '';
       const response = await route.fetch();
       await new Promise((r) => setTimeout(r, delays[name] ?? 0));

@@ -1,7 +1,7 @@
 {
   "cap_usd": 3,
   "stop_at_usd": 2.55,
-  "spent_usd": 2.290466,
+  "spent_usd": 2.695098,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -274,6 +274,54 @@
       "purpose": "photo-real plane explosion sprite on black (screen blend)",
       "cost_usd": 0.0672455,
       "gen_id": "gen-1793671581-WuNms0Gm8Xd6gxfvhOsb"
+    },
+    {
+      "at": "2026-11-03T02:40:31.094Z",
+      "id": "polish-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: body",
+      "cost_usd": 0.067274,
+      "gen_id": "gen-1793673623-2LdEPE4dbg72RfL3xFPW"
+    },
+    {
+      "at": "2026-11-03T02:40:39.234Z",
+      "id": "polish-plume",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: plume",
+      "cost_usd": 0.0672485,
+      "gen_id": "gen-1793673631-cm9JMB8ZHrJjWJeD0boi"
+    },
+    {
+      "at": "2026-11-03T02:40:47.421Z",
+      "id": "polish-hole",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: hole",
+      "cost_usd": 0.067248,
+      "gen_id": "gen-1793673639-iBMDLaBvvoXDCnwULLMl"
+    },
+    {
+      "at": "2026-11-03T02:41:12.268Z",
+      "id": "polish-body",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: body",
+      "cost_usd": 0.0672915,
+      "gen_id": "gen-1793673664-pyLaOX5ZR1mzbwXSZjUw"
+    },
+    {
+      "at": "2026-11-03T02:41:20.635Z",
+      "id": "polish-open",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: open",
+      "cost_usd": 0.067784,
+      "gen_id": "gen-1793673672-Nb07CslYbCsHsh94Ee5o"
+    },
+    {
+      "at": "2026-11-03T02:41:28.731Z",
+      "id": "polish-legs",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "photoreal polish: legs",
+      "cost_usd": 0.067786,
+      "gen_id": "gen-1793673680-ajQy1QwCEt1YIHZKnw8F"
     }
   ]
 }

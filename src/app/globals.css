@@ -1537,9 +1537,7 @@ body.gem-rain-active #header > div:first-child {
   100% { transform: scaleY(1); }
 }
 .escape-legs {
-  transform-box: fill-box;
-  transform-origin: 50% 0%;
-  animation: escapeLegs 0.8s 0.6s ease-out both;
+  animation: escapeLegsIn 0.8s 0.6s ease-out both;
 }
 @keyframes escapeClouds {
   0% { transform: translateX(0); }
@@ -1675,4 +1673,27 @@ body.gem-rain-active #header > div:first-child {
 }
 .escape-debris-y {
   animation: escapeDebrisY 2.2s cubic-bezier(0.3, 0, 0.8, 0.6) both;
+}
+
+@keyframes escapePlume {
+  0%, 100% { transform: scaleY(1) scaleX(1); filter: brightness(1); }
+  35% { transform: scaleY(0.93) scaleX(1.04); filter: brightness(1.12); }
+  70% { transform: scaleY(1.04) scaleX(0.97); filter: brightness(0.94); }
+}
+.escape-plume {
+  transform-origin: 50% 0%;
+  animation: escapePlume 0.16s linear infinite;
+}
+@keyframes escapeExhaustSmoke {
+  0% { transform: translateY(0) scale(0.4); opacity: 0; }
+  20% { opacity: 0.55; }
+  100% { transform: translateY(150px) scale(1.5); opacity: 0; }
+}
+.escape-exhaust-smoke {
+  animation: escapeExhaustSmoke 1.5s ease-out infinite;
+  opacity: 0;
+}
+@keyframes escapeLegsIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
