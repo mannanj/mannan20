@@ -38,6 +38,25 @@ describe("portfolio state durable object", () => {
     await expect(stub.boards()).resolves.toEqual({ human: [{ name: "Ada", score: 80 }], agent: [] });
   });
 
+  it("admin board rename moves a name's rows to a new owned name, once", async () => {
+    const stub = state();
+    await stub.submitScore({ opId: "admin-rename-s1", kind: "agent", name: "jev", score: 1098, ownerId: "lost_owner_0001" });
+    await stub.submitScore({ opId: "admin-rename-s2", kind: "human", name: "Ada", score: 5, ownerId: "ada_owner_00001" });
+    await expect(stub.adminBoardRename({ opId: "admin-rename-1", from: "jev", to: "My Name Jev", ownerId: "jev_owner_00001" })).resolves.toEqual({ ok: true, moved: 1 });
+    await expect(stub.adminBoardRename({ opId: "admin-rename-1", from: "jev", to: "My Name Jev", ownerId: "jev_owner_00001" })).resolves.toEqual({ ok: true, moved: 1 });
+    await expect(stub.adminBoardRename({ opId: "admin-rename-2", from: "nobody", to: "X", ownerId: "jev_owner_00001" })).resolves.toEqual({ ok: false, code: "not-found" });
+    await expect(stub.adminBoardRename({ opId: "admin-rename-3", from: "My Name Jev", to: "Ada", ownerId: "jev_owner_00001" })).resolves.toEqual({ ok: false, code: "taken" });
+    const boards = await stub.boards();
+    expect(boards.agent).toEqual([{ name: "My Name Jev", score: 1098 }]);
+    await expect(stub.submitScore({ opId: "admin-rename-s3", kind: "agent", name: "My Name Jev", score: 1200, ownerId: "jev_owner_00001" })).resolves.toEqual({ ok: true, finalName: "My Name Jev" });
+    await expect(stub.submitScore({ opId: "admin-rename-s4", kind: "agent", name: "My Name Jev", score: 1, ownerId: "someone_else_01" })).resolves.toMatchObject({ ok: false, code: "taken" });
+  });
+
+  it("rejects admin board rename without the service key", async () => {
+    const res = await SELF.fetch("https://portfolio-state-worker/v1/admin/board-rename", { method: "POST", body: JSON.stringify({ opId: "x".repeat(16), from: "jev", to: "My Name Jev", ownerId: "jev_owner_00001" }) });
+    expect(res.status).toBe(401);
+  });
+
   it("consumes do1 magic tokens once, merges identity names, and renames scores", async () => {
     const stub = state();
     await stub.submitScore({ opId: "magic-score-0001", kind: "human", name: "Before", score: 8, ownerId: "device_owner_001" });

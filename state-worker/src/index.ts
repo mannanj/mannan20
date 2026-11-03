@@ -282,6 +282,22 @@ export class PortfolioState extends DurableObject<Env> {
     return { names, email: this.one<{ email: string }>("SELECT email FROM identity_emails WHERE owner_id = ?", ownerId)?.email ?? null };
   }
 
+  adminBoardRename(input: { opId: string; from: string; to: string; ownerId: string }): { ok: true; moved: number } | { ok: false; code: "not-found" | "taken" } {
+    return this.operation("admin.board-rename", input.opId, () => {
+      const moved = this.one<{ n: number }>("SELECT COUNT(*) AS n FROM board_entries WHERE name = ?", input.from)?.n ?? 0;
+      if (!moved) return { ok: false as const, code: "not-found" as const };
+      const lower = input.to.toLowerCase();
+      const existing = this.one<{ owner_id: string }>("SELECT owner_id FROM owners WHERE lower_name = ?", lower);
+      if (existing && existing.owner_id !== input.ownerId) return { ok: false as const, code: "taken" as const };
+      if (!existing) this.ctx.storage.sql.exec("INSERT INTO owners(lower_name, owner_id, display_name, email_bound) VALUES (?, ?, ?, 0)", lower, input.ownerId, input.to);
+      this.ctx.storage.sql.exec("INSERT OR IGNORE INTO identity_names(owner_id, lower_name) VALUES (?, ?)", input.ownerId, lower);
+      this.ctx.storage.sql.exec("UPDATE board_entries SET name = ? WHERE name = ?", input.to, input.from);
+      const oldLower = input.from.toLowerCase();
+      if (oldLower !== lower) this.ctx.storage.sql.exec("UPDATE owners SET renamed_to = ? WHERE lower_name = ?", lower, oldLower);
+      return { ok: true as const, moved };
+    });
+  }
+
   renameIdentity(input: { opId: string; ownerId: string; to: string; from?: string | null }): { ok: true } | { ok: false; code: "taken" | "no-names" } {
     return this.operation("identity.rename", input.opId, () => {
       const verified = this.verified(input.ownerId);
@@ -545,6 +561,7 @@ export default {
         const result = await state.limit({ opId, kind, subject });
         return "error" in result ? fail(503, result.error) : json(result);
       }
+      if (path === "/v1/admin/board-rename") { const from = validName(body.from), to = validName(body.to), ownerId = validOwner(body.ownerId); return from && to && ownerId ? json(await state.adminBoardRename({ opId, from, to, ownerId })) : fail(400, "invalid_input"); }
       if (path === "/v1/admin/import") return isObject(body.data) ? json(await state.adminImport({ opId, data: body.data })) : fail(400, "invalid_input");
       return fail(404, "not_found");
     } catch (error) {
