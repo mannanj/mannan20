@@ -4587,7 +4587,13 @@ function ChickenGameInner() {
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
       className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
     >
-      <GameScenery tier={tier} />
+      <div
+        data-testid="ground-scenery"
+        data-hidden={stage === 'none' ? '0' : '1'}
+        className={`absolute inset-0 pointer-events-none transition-[opacity,visibility] duration-[1800ms] ${stage === 'none' ? 'visible opacity-100' : 'invisible opacity-0'}`}
+      >
+        <GameScenery tier={tier} />
+      </div>
       {isSpaceStage(stage) && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
       <EscapeScenery stage={stage} seq={seq} />
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type MutableRefObject } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import {
   AmbientLight,
   BufferGeometry,
@@ -143,6 +143,7 @@ export default function CosmosFlight({ progressRef, landing }: CosmosFlightProps
   const hostRef = useRef<HTMLDivElement>(null);
   const landingRef = useRef(landing);
   landingRef.current = landing;
+  const [noWebGl, setNoWebGl] = useState(false);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -180,6 +181,8 @@ export default function CosmosFlight({ progressRef, landing }: CosmosFlightProps
         try {
           renderer = new WebGLRenderer({ antialias: true, alpha: false });
         } catch {
+          host.style.opacity = '1';
+          setNoWebGl(true);
           return;
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
@@ -321,7 +324,16 @@ export default function CosmosFlight({ progressRef, landing }: CosmosFlightProps
   }, [progressRef]);
 
   return (
-    <div ref={hostRef} data-testid="cosmos-3d" className="absolute inset-0 pointer-events-none bg-[#02030a]">
+    <div ref={hostRef} data-testid="cosmos-3d" data-webgl={noWebGl ? '0' : '1'} className="absolute inset-0 pointer-events-none bg-[#02030a]">
+      {noWebGl && (
+        <div data-testid="cosmos-fallback" className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 opacity-70 [background-image:radial-gradient(1px_1px_at_12%_18%,#fff,transparent),radial-gradient(1px_1px_at_68%_9%,#fff,transparent),radial-gradient(1.5px_1.5px_at_84%_42%,#fff,transparent),radial-gradient(1px_1px_at_33%_61%,#fff,transparent),radial-gradient(1px_1px_at_52%_28%,#fff,transparent),radial-gradient(1.5px_1.5px_at_7%_77%,#fff,transparent),radial-gradient(1px_1px_at_91%_83%,#fff,transparent)]" />
+          <div
+            className={`absolute left-1/2 -translate-x-1/2 rounded-full bg-cover bg-center shadow-[inset_-40px_-30px_80px_rgba(0,0,0,0.75),0_0_60px_rgba(255,200,140,0.15)] transition-all duration-[3000ms] ${landing ? 'top-[-35vmin] h-[150vmin] w-[150vmin] opacity-100' : 'top-[8vmin] h-[24vmin] w-[24vmin] opacity-80'}`}
+            style={{ backgroundImage: "url('/game/space/jupiter-cassini-2k.webp')" }}
+          />
+        </div>
+      )}
       <a
         href={CREDIT_URL}
         target="_blank"
