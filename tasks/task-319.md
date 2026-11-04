@@ -10,3 +10,7 @@ Mannan (2026-11-03, verbatim):
 - [ ] Reuse the `animal-event` / `bird-event` patterns (spec registry, enter/act/leave timeline, HUD safe zone, aura suppression, claw-like click targets with ≥56px hit areas and anchored hints), and register them as endless-phase eras (a "Myth" era) in `docs/chicken-orb-pacing.md`.
 - [ ] Sounds (licensed/CC0 or synthesized; record sources); Jev strategy entries; e2e cases; screenshots to `~/Desktop/chicken-game-new-designs/13-greek-monsters/`; performance per Task 309.
 - Location: `src/components/game/` (new monster modules), `public/game/monsters/`, `docs/chicken-orb-pacing.md`, `docs/chicken-art-sources.md`
+
+#### Addendum — drops (Mannan, verbatim)
+> "let some of them drop interesting items on click and interaction, not all of them will be interactable"
+- [ ] Mix of interactable and non-interactable creatures: some are clickable and can drop interesting items into the bag (shown with FlyToBag), others are pure spectacle (no click targets). Decide per creature in the endless-phase design (`docs/chicken-orb-pacing.md` registry): drop chance, the item, and its use (e.g. a buff, skin, cosmetic, or a key for a later event). Items should be fun and useful, not clutter.
