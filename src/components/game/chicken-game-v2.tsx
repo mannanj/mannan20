@@ -313,6 +313,8 @@ import {
   type TalonSide,
 } from './bird-event';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
+import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type OutlineFrame, type OutlinePoint } from './chicken-outline';
+import { drawEmbers, drawHeatShimmer, drawIgnition, drawOutlineFlames, drawFireBody, drawSilhouetteAura, emitEmbers, fireFilterFor, fireLevelFor, FIRE_BODY_START, lightningStyleFor, makeIgnition, strokeLightning, tickIgnition, updateEmbers, type Ember, type IgnitionState, type LightningStyle } from './chicken-fire';
 import { AppProvider } from '@/context/app-context';
 import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
 import {
@@ -414,7 +416,13 @@ const FEATHER_SPAWN_GAP_MS = 140;
 const PARKED_AURA_CLEAR = 190;
 const FEATHER_LIFE_CAP_MS = 2600;
 const FEATHER_SIZE_CAP = 14;
-const AURA_SHIELD_STAGES: EscapeStage[] = ['surf', 'pilot', 'rocket', 'cosmos', 'jupiter'];
+const AURA_SHIELD_STAGES: EscapeStage[] = ['surf', 'pilot', 'rocket', 'cosmos'];
+const SQUASH_HUG_X = 0.3;
+const SQUASH_HUG_Y = 0.2;
+const SQUASH_STOMP_X = 0.34;
+const SQUASH_STOMP_Y = 0.4;
+const EMBERS_PER_FRAME = 0.6;
+const IGNITION_FORCE_MS = 1600;
 const HUD_SCRIM_SEQS: RocketSeq[] = ['explode'];
 const ORB_HUD_HALF = 26;
 const MARTIAN_AVOID_Y_FRAC = 0.5;
@@ -545,12 +553,14 @@ interface Arc {
   points: { x: number; y: number }[];
   born: number;
   color: Rgb;
+  style: LightningStyle;
 }
 
 interface Lightning {
   intervalMs: number;
   color: Rgb;
   intensity: number;
+  style: LightningStyle;
 }
 
 interface Physics {
@@ -742,6 +752,10 @@ interface ChickenStateSnapshot {
   vy: number;
   mood: string;
   lightning: Lightning | null;
+  fire: number;
+  ignition: boolean;
+  ignitionBursts: number;
+  auraDrawn: boolean;
   arcs: number;
   mode: 'ground' | 'flying';
   feathers: number;
@@ -865,6 +879,8 @@ interface ChickenBridge {
   inventory: () => InventoryItem[];
   grantItem: (id: string, fromX?: number, fromY?: number) => void;
   setSeqTimeScale: (n: number) => void;
+  auraEmitters: () => { frame: OutlineFrame; svg: { x: number; y: number }[]; canvas: { x: number; y: number }[] };
+  forceIgnition: () => void;
 }
 
 type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather' | 'phoenix-feather' | 'martian-friend'>;
@@ -900,6 +916,7 @@ interface BridgeWindow {
 }
 
 const MOON_PARK_X_FRAC = 0.17;
+if (typeof window !== 'undefined') warmOutlines();
 const loadSpaceFlight = () => import('./space-flight-3d');
 const SpaceFlight3D = dynamic(loadSpaceFlight, { ssr: false });
 const CosmosFlight = dynamic(() => import('./cosmos-3d'), { ssr: false });
@@ -947,9 +964,10 @@ function lightningForScore(score: number): Lightning | null {
   const t = Math.min(1, (score - LIGHTNING_START) / (LIGHTNING_FULL - LIGHTNING_START));
   const intervalMs =
     LIGHTNING_INTERVAL_RARE + (LIGHTNING_INTERVAL_FREQUENT - LIGHTNING_INTERVAL_RARE) * t;
+  const style = lightningStyleFor(score);
   const color =
-    t < 0.5 ? lerpRgb(LIGHT_BLUE, LIGHT_RED, t / 0.5) : lerpRgb(LIGHT_RED, LIGHT_WHITE, (t - 0.5) / 0.5);
-  return { intervalMs, color, intensity: 0.4 + 0.6 * t };
+    style !== 'ramp' ? LIGHT_RED : t < 0.5 ? lerpRgb(LIGHT_BLUE, LIGHT_RED, t / 0.5) : lerpRgb(LIGHT_RED, LIGHT_WHITE, (t - 0.5) / 0.5);
+  return { intervalMs, color, intensity: 0.4 + 0.6 * t, style };
 }
 
 function mercyTargetFor(idleMs: number): number {
@@ -1004,7 +1022,7 @@ function makeChainArc(x0: number, y0: number, x1: number, y1: number): ChainArc 
   return { points, born: performance.now() };
 }
 
-function makeArc(cx: number, cy: number, color: Rgb): Arc {
+function makeArc(cx: number, cy: number, color: Rgb, style: LightningStyle): Arc {
   const points: { x: number; y: number }[] = [];
   const baseAngle = Math.random() * Math.PI * 2;
   const startR = ARC_START_R_MIN + Math.random() * ARC_START_R_SPREAD;
@@ -1015,7 +1033,7 @@ function makeArc(cx: number, cy: number, color: Rgb): Arc {
     const a = baseAngle + (Math.random() - 0.5) * 1.0;
     points.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r * 1.35 });
   }
-  return { points, born: performance.now(), color };
+  return { points, born: performance.now(), color, style };
 }
 
 function groundYFor(vh: number): number {
@@ -1024,77 +1042,13 @@ function groundYFor(vh: number): number {
 
 function drawAura(
   ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
+  pts: OutlinePoint[],
   ts: number,
   tier: number,
   level: number,
   rgb: Rgb
 ): void {
-  if (level <= 0) return;
-  const { r, g, b } = rgb;
-  ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
-
-  const gy = cy - 14 * level;
-  const glow = ctx.createRadialGradient(cx, gy, 8, cx, gy, 96 + 46 * level);
-  glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.2 * level})`);
-  glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.ellipse(cx, gy, 70 + 30 * level, 104 + 48 * level, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  const hotR = Math.min(255, r + 90);
-  const hotG = Math.min(255, g + 90);
-  const hotB = Math.min(255, b + 90);
-  const core = ctx.createRadialGradient(cx, cy - 4, 3, cx, cy - 4, 54 + 26 * level);
-  core.addColorStop(0, `rgba(255, 255, 255, ${0.42 * level})`);
-  core.addColorStop(0.5, `rgba(${hotR}, ${hotG}, ${hotB}, ${0.26 * level})`);
-  core.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  ctx.fillStyle = core;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - 6, 46 + 16 * level, 76 + 24 * level, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  const tongues = AURA_TONGUES + tier * 2;
-  const baseRx = 32 + tier * 1.5;
-  const baseRy = 58 + tier * 2;
-  const flickA = ts * 0.012;
-  const flickB = ts * 0.02;
-  for (let k = 0; k < tongues; k++) {
-    const angle = (k / tongues) * Math.PI * 2;
-    const ca = Math.cos(angle);
-    const sa = Math.sin(angle);
-    const upward = -sa;
-    const upFactor = 0.5 + 0.5 * upward;
-    const flick = 0.55 + 0.45 * Math.sin(flickA + k * 2.3) * Math.sin(flickB + k * 1.1);
-    const len = (16 + 54 * level) * (0.35 + upFactor) * flick;
-    const bx = cx + ca * baseRx;
-    const by = cy + sa * baseRy;
-    const tx = cx + ca * (baseRx + len * 0.6);
-    const ty = cy + sa * (baseRy + len * 0.4) - len * upFactor;
-    const w = (4.5 + 4 * level) * (0.5 + 0.5 * upFactor);
-    const px = -sa * w;
-    const py = ca * w;
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(0.16 + 0.26 * level) * (0.6 + 0.4 * flick)})`;
-    ctx.beginPath();
-    ctx.moveTo(bx + px, by + py);
-    ctx.lineTo(tx, ty);
-    ctx.lineTo(bx - px, by - py);
-    ctx.closePath();
-    ctx.fill();
-    const ix = cx + ca * (baseRx + len * 0.42);
-    const iy = cy + sa * (baseRy + len * 0.28) - len * upFactor * 0.72;
-    ctx.fillStyle = `rgba(255, 250, 235, ${(0.1 + 0.22 * level) * flick})`;
-    ctx.beginPath();
-    ctx.moveTo(bx + px * 0.5, by + py * 0.5);
-    ctx.lineTo(ix, iy);
-    ctx.lineTo(bx - px * 0.5, by - py * 0.5);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.restore();
+  drawSilhouetteAura(ctx, pts, ts, tier, level, rgb);
 }
 
 function ChickenGameInner() {
@@ -1157,6 +1111,15 @@ function ChickenGameInner() {
   const sizzleRef = useRef(0);
   const regrowAtRef = useRef(0);
   const heatVarsRef = useRef('');
+  const renderRotRef = useRef(0);
+  const renderScaleRef = useRef({ sx: 1, sy: 1 });
+  const outlineScratchRef = useRef<OutlinePoint[]>([]);
+  const lastFrameRef = useRef<OutlineFrame>({ cx: 0, cy: 0, facing: 1, sx: 1, sy: 1, rot: 0 });
+  const embersRef = useRef<Ember[]>([]);
+  const ignitionRef = useRef<IgnitionState>(makeIgnition());
+  const auraDrawnRef = useRef(false);
+  const [ignitionUi, setIgnitionUi] = useState(false);
+  const ignitionUiRef = useRef(false);
   const toastedGrantedRef = useRef(0);
   const birdUiRef = useRef(birdUi);
   const birdRef = useRef(createBirdState());
@@ -3056,6 +3019,10 @@ function ChickenGameInner() {
         vy: physicsRef.current.vy,
         mood: moodRef.current,
         lightning: lightningForScore(scoreRef.current),
+        fire: fireLevelFor(scoreRef.current),
+        ignition: ignitionRef.current.active,
+        ignitionBursts: ignitionRef.current.bursts,
+        auraDrawn: auraDrawnRef.current,
         arcs: arcsRef.current.length,
         mode: modeRef.current,
         feathers: feathersRef.current.length,
@@ -3193,6 +3160,23 @@ function ChickenGameInner() {
       openSheet: () => setSheet('board'),
       setSeqTimeScale: (n: number) => {
         seqScaleRef.current = n;
+      },
+      auraEmitters: () => {
+        const pattern = outlinePatternFor(skinById(skinRef.current).pattern);
+        return {
+          frame: { ...lastFrameRef.current },
+          svg: chickenOutline(pattern).map((p) => ({ x: p.x, y: p.y })),
+          canvas: outlineScratchRef.current.map((p) => ({ x: p.x, y: p.y })),
+        };
+      },
+      forceIgnition: () => {
+        const ig = ignitionRef.current;
+        ig.active = true;
+        ig.forced = true;
+        ig.bursts += 1;
+        ig.start = performance.now();
+        ig.until = ig.start + IGNITION_FORCE_MS;
+        ig.nextAt = ig.until;
       },
       setScore: (n: number) => {
         for (const kind of Object.keys(ORB_THRESHOLDS) as OrbKind[]) {
@@ -4293,6 +4277,9 @@ function ChickenGameInner() {
         if (chickenElRef.current.style.pointerEvents !== gripped) chickenElRef.current.style.pointerEvents = gripped;
         const hidden = rootSplitRef.current ? 'hidden' : 'visible';
         if (chickenElRef.current.style.visibility !== hidden) chickenElRef.current.style.visibility = hidden;
+        renderRotRef.current = ((p.rotation + wobble + p.bank) * Math.PI) / 180;
+        renderScaleRef.current.sx = (1 + sizeBoostRef.current) * stageScale;
+        renderScaleRef.current.sy = (1 + sizeBoostRef.current) * stageScale * rollRef.current;
         chickenElRef.current.style.transform =
           `translate(${p.x}px, ${p.y}px) rotate(${p.rotation + wobble + p.bank}deg) scale(${((1 + sizeBoostRef.current) * stageScale).toFixed(3)}, ${((1 + sizeBoostRef.current) * stageScale * rollRef.current).toFixed(3)})`;
         chickenElRef.current.style.setProperty('--bend', `${bendRef.current.toFixed(1)}deg`);
@@ -4387,10 +4374,23 @@ function ChickenGameInner() {
       const count = Math.ceil(intensity * dt * PARTICLE_EMISSION);
       const particles = particlesRef.current;
 
+      const sq = squashRef.current;
+      const hug = sqModeRef.current === 'hug';
+      const frame = lastFrameRef.current;
+      frame.cx = cx;
+      frame.cy = cy;
+      frame.facing = facingRef.current;
+      frame.sx = renderScaleRef.current.sx * (hug ? 1 - SQUASH_HUG_X * sq : 1 + SQUASH_STOMP_X * sq);
+      frame.sy = renderScaleRef.current.sy * (hug ? 1 + SQUASH_HUG_Y * sq : 1 - SQUASH_STOMP_Y * sq);
+      frame.rot = renderRotRef.current;
+      const outlinePts = projectOutline(chickenOutline(outlinePatternFor(skinById(skinRef.current).pattern)), frame, outlineScratchRef.current);
+      const fireLevel = fireLevelFor(sc);
+
       for (let i = 0; i < count && particles.length < MAX_PARTICLES && !AURA_SHIELD_STAGES.includes(stNow) && !rootBusy; i++) {
+        const op = outlinePts[Math.floor(Math.random() * outlinePts.length)];
         particles.push({
-          x: cx + (Math.random() - 0.5) * 20,
-          y: cy + (Math.random() - 0.5) * 20,
+          x: op.x + op.nx * 2,
+          y: op.y + op.ny * 2,
           vx: (Math.random() - 0.5) * 0.5,
           vy: (Math.random() - 0.5) * 0.5,
           alpha: 0.05 + Math.random() * 0.05,
@@ -4434,7 +4434,7 @@ function ChickenGameInner() {
           nextArcAtRef.current = ts + lightning.intervalMs * (0.6 + Math.random() * 0.8);
           const burst = ARCS_PER_BURST_MIN + Math.floor(Math.random() * ARCS_PER_BURST_SPREAD);
           for (let i = 0; i < burst && arcsRef.current.length < MAX_ARCS; i++) {
-            arcsRef.current.push(makeArc(cx, cy, lightning.color));
+            arcsRef.current.push(makeArc(cx, cy, lightning.color, lightning.style));
           }
           if (ts - lastCrackleAtRef.current > CRACKLE_MIN_GAP_MS) {
             lastCrackleAtRef.current = ts;
@@ -4447,6 +4447,11 @@ function ChickenGameInner() {
         arcsRef.current = [];
       }
 
+      const ignitionEnv = tickIgnition(ignitionRef.current, birdTick.heat === 2, ts);
+      if (ignitionRef.current.active !== ignitionUiRef.current) {
+        ignitionUiRef.current = ignitionRef.current.active;
+        setIgnitionUi(ignitionRef.current.active);
+      }
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
       if (ctx && canvas) {
@@ -4454,7 +4459,17 @@ function ChickenGameInner() {
         if (stageRef.current === 'surf') drawSurf(ctx, vw, vh, ts, heatRef.current);
 
         const auraRgb = auraRgbFor(sc);
-        if (!shielded) drawAura(ctx, cx, cy, ts, currentTier, auraLevelFor(sc, mercy), auraRgb);
+        const auraLevelNow = auraLevelFor(sc, mercy);
+        auraDrawnRef.current = !shielded && (auraLevelNow > 0 || fireLevel > 0);
+        if (!shielded && fireLevel > 0) {
+          emitEmbers(embersRef.current, outlinePts, Math.ceil(EMBERS_PER_FRAME * fireLevel * dt), physicsRef.current.vx, ts);
+          drawOutlineFlames(ctx, outlinePts, ts, fireLevel, frame.sx);
+          drawHeatShimmer(ctx, cx, cy - CHICKEN_H * 0.5 * frame.sy, CHICKEN_W * frame.sx, ts, fireLevel);
+        } else if (!shielded) {
+          drawAura(ctx, outlinePts, ts, currentTier, auraLevelNow, auraRgb);
+        }
+        updateEmbers(embersRef.current, dt, ts);
+        drawEmbers(ctx, embersRef.current, ts);
 
         const now = performance.now();
         const arcs = arcsRef.current;
@@ -4466,24 +4481,7 @@ function ChickenGameInner() {
           }
           const alpha = 1 - age / ARC_LIFE_MS;
           const pts = arcs[i].points;
-          const col = arcs[i].color;
-          ctx.lineJoin = 'round';
-          ctx.lineCap = 'round';
-          const trace = () => {
-            ctx.beginPath();
-            ctx.moveTo(pts[0].x, pts[0].y);
-            for (let j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.stroke();
-          };
-          ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.28 * alpha})`;
-          ctx.lineWidth = 3.2;
-          trace();
-          ctx.strokeStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${0.75 * alpha})`;
-          ctx.lineWidth = 1.5;
-          trace();
-          ctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * alpha})`;
-          ctx.lineWidth = 0.85;
-          trace();
+          strokeLightning(ctx, pts, arcs[i].style, arcs[i].color, alpha);
         }
 
         for (const pt of particles) {
@@ -4526,6 +4524,8 @@ function ChickenGameInner() {
       const cctx = chainCanvas?.getContext('2d');
       if (cctx && chainCanvas) {
         cctx.clearRect(0, 0, chainCanvas.width, chainCanvas.height);
+        if (!shielded && fireLevel > FIRE_BODY_START) drawFireBody(cctx, outlinePts, ts, fireLevel);
+        if (ignitionEnv > 0 && !rootSplitRef.current) drawIgnition(cctx, outlinePts, ts, ignitionEnv, frame.sx);
         const now = performance.now();
         const chainArcs = chainArcsRef.current;
         for (let i = chainArcs.length - 1; i >= 0; i--) {
@@ -4568,8 +4568,12 @@ function ChickenGameInner() {
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
   const renderAuraRgb = auraRgbFor(score);
-  const glowStyle =
-    renderAuraLevel > 0 && !AURA_SHIELD_STAGES.includes(stage) && !birdUi.grip && !(stage === 'moon' && parked !== null)
+  const auraVisible = !AURA_SHIELD_STAGES.includes(stage) && !birdUi.grip && !(stage === 'moon' && parked !== null);
+  const renderFire = fireLevelFor(score);
+  const fireFilter = fireFilterFor(auraVisible ? renderFire : 0, ignitionUi ? 1 : 0);
+  const glowStyle = fireFilter
+    ? { filter: fireFilter }
+    : renderAuraLevel > 0 && auraVisible
       ? {
           filter: `drop-shadow(0 0 ${6 + 10 * renderAuraLevel + tier * 2}px rgba(${renderAuraRgb.r}, ${renderAuraRgb.g}, ${renderAuraRgb.b}, ${Math.min(0.55, 0.15 + renderAuraLevel * 0.5)}))`,
         }
