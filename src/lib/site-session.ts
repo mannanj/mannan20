@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { issuedAtMs, isSessionRevoked } from './session-revocation';
 
 const COOKIE_NAME = '__Host-mannan-session';
@@ -17,6 +17,8 @@ interface SignedSessionPayload {
   email: string;
   role: SiteSessionRole;
   exp: number;
+  /** Makes each session its own: two sign-ins in one second must not share a cookie, or ending one ends both. */
+  sid: string;
 }
 
 function base64UrlEncode(input: string): string {
@@ -109,6 +111,7 @@ export async function createSiteSessionCookie(input: {
     email: input.email.trim().toLowerCase(),
     role: input.role,
     exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SEC,
+    sid: randomUUID(),
   };
   const encoded = base64UrlEncode(JSON.stringify(payload));
   return `${COOKIE_NAME}=${await sessionValue(encoded)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SEC}`;
