@@ -41,6 +41,8 @@ export const TEST_SCENES: Record<string, number> = {
   tree: 57_100,
   sword: 57_200,
   'swarm-1000': 57_300,
+  'lap-2': 65_000,
+  mystery: 73_000,
 };
 
 export function testStartScene(value: string | string[] | undefined): string | undefined {

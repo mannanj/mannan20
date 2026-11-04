@@ -2308,8 +2308,8 @@ test.describe('chicken game v2 big-cats HUD', () => {
 });
 
 import { CERBERUS_HEAD_CLICKS, CYCLOPS_STAY_MS, HYDRA_HEADS_MAX, HYDRA_HEADS_START, HYDRA_HEAD_CLICKS, HYDRA_KNOCKBACKS_TO_WIN, HYDRA_REGROW_MS } from '../src/components/game/creature-event';
-import { GATE_KEY_ERA_ID, REAL_CHICKEN_UNLOCK_SCORE } from '../src/components/game/endless-eras';
 import { BIRD_SPECS } from '../src/components/game/bird-event';
+import { GATE_KEY_ERA_ID, REAL_CHICKEN_UNLOCK_SCORE } from '../src/components/game/endless-eras';
 import { talonNeed, talonWeightFor } from '../src/components/game/chicken-pacing';
 
 interface MythBridge extends CreatureBridge {
@@ -2669,5 +2669,181 @@ test.describe('Chicken v2 endless: forest, trees, sword and the render tiers', (
     expect(s.swordEquipped).toBe(true);
     expect(s.renderTier).toBe('lod');
     expect((await eraOf(page)).id).toBe(GATE_KEY_ERA_ID);
+  });
+});
+
+import { CREATURE_DURATION_FLOOR, CREATURE_SPEED_PER_LAP, PHOENIX2_FIRE_SKY_MS, PHOENIX2_TALON_SCALE, ROTATION_DROP_SCALE, ROTATION_FIRST_INDEX, ROTATION_LENGTH, creatureDurationScale, dropScaleForLap, eraIndexForStep, lapForStep, lapStartScore, poolForLap, stepForIndex } from '../src/components/game/endless-eras';
+import { MYSTERY_EFFECTS, pickMysteryEffect } from '../src/components/game/chicken-orbs';
+
+interface RotationBridge extends ForestBridge {
+  era: () => ReturnType<ForestBridge['era']> & { step: number; lap: number; phoenixDue: boolean; fireSkyUntilMs: number };
+  state: () => ReturnType<ForestBridge['state']> & { lap: number; mysteryLast: OrbKind | null; scene: string | null; bird: { kind: string | null; phase: string; rightNeed: number; leftNeed: number } };
+  creature: () => ReturnType<ForestBridge['creature']> & { speed: number; dropped: boolean };
+  collectOrb: (kind: OrbKind) => void;
+  forceOrb: (kind: OrbKind) => void;
+}
+
+const rotation = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken);
+const rotState = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.state());
+const rotEra = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.era());
+const rotCreature = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.creature());
+const jumpTo = (page: Page, score: number) =>
+  page.evaluate((n) => {
+    const b = (window as unknown as { __chicken: RotationBridge }).__chicken;
+    b.setScore(n - 1);
+    b.boost(1);
+  }, score);
+const ROTATION_IDS = ENDLESS_ERAS.slice(ROTATION_FIRST_INDEX).map((e) => e.id);
+const MYSTERY_KINDS = MYSTERY_EFFECTS.map((e) => e.kind);
+const MYSTERY_DRAWS = 8;
+const SWORD_MIN_HIT_PX = 56;
+const SWORD_TRUNK_X: [number, number] = [0.15, 0.85];
+const SWORD_TRUNK_Y: [number, number] = [0.45, 0.95];
+const SWORD_PROBE_PULLS = 10;
+const clipBottomPct = (clip: string) => Number(/inset\(0(?:px)? 0(?:px)? ([\d.]+)% 0(?:px)?\)/.exec(clip)?.[1] ?? NaN);
+
+test.describe('Chicken v2 endless: rotation, phoenix 2 and the Mystery orb', () => {
+  test('after the forest the eras rotate big cats, myth, the gate, the forest; speed, drops and pools vary per lap', () => {
+    expect(ROTATION_LENGTH).toBe(4);
+    expect(lapStartScore(2)).toBe(ENDLESS_FROM + ERA_SCORE_STEP * (ROTATION_LENGTH + 1));
+    const laps = [1, 2, 3].map((lap) => ROTATION_IDS.map((_, i) => ENDLESS_ERAS[eraIndexForStep(stepForIndex(ROTATION_FIRST_INDEX + i, lap))].id));
+    expect(laps).toEqual([ROTATION_IDS, ROTATION_IDS, ROTATION_IDS]);
+    expect(lapForStep(ROTATION_FIRST_INDEX + ROTATION_LENGTH)).toBe(2);
+    expect(lapForStep(ROTATION_FIRST_INDEX + ROTATION_LENGTH * 2)).toBe(3);
+    expect(eraIndexForStep(0)).toBe(0);
+    expect(creatureDurationScale(1)).toBe(1);
+    expect(creatureDurationScale(2)).toBeCloseTo(1 / (1 + CREATURE_SPEED_PER_LAP), 5);
+    expect(creatureDurationScale(3)).toBeCloseTo(1 / (1 + CREATURE_SPEED_PER_LAP * 2), 5);
+    expect(creatureDurationScale(20)).toBe(CREATURE_DURATION_FLOOR);
+    expect(dropScaleForLap(1)).toBe(1);
+    expect(dropScaleForLap(2)).toBe(ROTATION_DROP_SCALE);
+    for (const era of ENDLESS_ERAS) {
+      expect(poolForLap(era, 1)).not.toContain('mystery');
+      expect(poolForLap(era, 2)).toContain('mystery');
+    }
+    let last: OrbKind | null = null;
+    for (let i = 0; i < 200; i++) {
+      const kind = pickMysteryEffect(last, Math.random);
+      expect(MYSTERY_KINDS).toContain(kind);
+      expect(kind).not.toBe(last);
+      expect(kind).not.toBe('mystery');
+      last = kind;
+    }
+  });
+
+  test('lap 2 opens with phoenix 2 (150 + 150) in the fire sky, then runs the four eras; lap 3 opens with it again', async ({ page }) => {
+    test.setTimeout(90_000);
+    await gotoGame(page, '?variant=2');
+    await jumpTo(page, lapStartScore(2));
+    await expect.poll(async () => (await rotEra(page)).lap).toBe(2);
+    expect((await rotEra(page)).id).toBe(ROTATION_IDS[0]);
+    await expect(page.getByTestId('era-label')).toHaveAttribute('data-lap', '2');
+    await expect(page.getByTestId('era-label')).toContainText('lap 2');
+    await expect.poll(async () => (await rotState(page)).bird.kind, { timeout: 10_000 }).toBe('phoenix');
+    await expect.poll(async () => (await rotState(page)).scene).toBe('fire-sky');
+    const st = await rotState(page);
+    expect(st.bird.rightNeed).toBe(Math.ceil(BIRD_SPECS.phoenix.rightClicks * PHOENIX2_TALON_SCALE));
+    expect(st.bird.leftNeed).toBe(Math.ceil(BIRD_SPECS.phoenix.leftClicks * PHOENIX2_TALON_SCALE));
+    expect(st.lap).toBe(2);
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'fire-sky');
+    await page.evaluate((ms) => (window as unknown as { __chicken: RotationBridge }).__chicken.fastForward(ms), PHOENIX2_FIRE_SKY_MS + 500);
+    await expect.poll(async () => (await rotState(page)).scene, { timeout: 5000 }).toBe(ENDLESS_ERAS[ROTATION_FIRST_INDEX].scene);
+    for (let i = 1; i < ROTATION_LENGTH; i++) {
+      await jumpTo(page, lapStartScore(2) + ERA_SCORE_STEP * i);
+      await expect.poll(async () => (await rotEra(page)).id, { timeout: 30_000 }).toBe(ROTATION_IDS[i]);
+      expect((await rotEra(page)).lap).toBe(2);
+      expect((await rotEra(page)).phoenixDue).toBe(false);
+    }
+    await gotoGame(page, '?variant=2');
+    await jumpTo(page, lapStartScore(3));
+    await expect.poll(async () => (await rotEra(page)).lap).toBe(3);
+    expect((await rotEra(page)).id).toBe(ROTATION_IDS[0]);
+    await expect.poll(async () => (await rotState(page)).bird.kind, { timeout: 10_000 }).toBe('phoenix');
+    expect((await rotState(page)).bird.rightNeed).toBe(Math.ceil(BIRD_SPECS.phoenix.rightClicks * PHOENIX2_TALON_SCALE));
+    await expect(page.getByTestId('era-label')).toContainText('lap 3');
+  });
+
+  test('creatures run 20 % faster per lap, bounded by the floor, and repeat drops roll at half chance', async ({ page }) => {
+    test.setTimeout(120_000);
+    await gotoGame(page, '?variant=2');
+    await jumpTo(page, lapStartScore(2) + ERA_SCORE_STEP);
+    await expect.poll(async () => (await rotEra(page)).id, { timeout: 15_000 }).toBe(ROTATION_IDS[1]);
+    expect((await rotEra(page)).lap).toBe(2);
+    const b = await rotation(page);
+    expect(b).toBeTruthy();
+    const yarnBefore = (await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.inventory())).find((i) => i.id === 'yarn-ball')?.count ?? 0;
+    const lap1Roll = CREATURE_SPECS.kitty.dropChance * 0.8;
+    await page.evaluate((roll) => (window as unknown as { __chicken: RotationBridge }).__chicken.setDropRoll(roll), lap1Roll);
+    await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.forceCreature('kitty'));
+    await waitCreaturePhase(page, ['enter', 'stalk', 'pounce', 'hold'], 20_000);
+    expect((await rotCreature(page)).speed).toBeCloseTo(1 + CREATURE_SPEED_PER_LAP, 5);
+    await expect.poll(async () => (await rotCreature(page)).dropped, { timeout: KITTY_HOLD_MS[1] + 20_000 }).toBe(true);
+    await expect.poll(async () => (await rotCreature(page)).phase, { timeout: 20_000 }).toBe('done');
+    expect((await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.inventory())).find((i) => i.id === 'yarn-ball')?.count ?? 0).toBe(yarnBefore);
+    await page.evaluate((roll) => (window as unknown as { __chicken: RotationBridge }).__chicken.setDropRoll(roll), CREATURE_SPECS.kitty.dropChance * ROTATION_DROP_SCALE * 0.5);
+    await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.forceCreature('kitty'));
+    await expect.poll(async () => (await rotCreature(page)).dropped, { timeout: KITTY_HOLD_MS[1] + 30_000 }).toBe(true);
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.inventory())).find((i) => i.id === 'yarn-ball')?.count ?? 0, { timeout: 10_000 }).toBe(yarnBefore + 1);
+    await gotoGame(page, '?variant=2');
+    await enterEra(page, 'myth-1');
+    await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.forceCreature('kitty'));
+    await waitCreaturePhase(page, ['enter', 'stalk', 'pounce', 'hold'], 20_000);
+    expect((await rotCreature(page)).speed).toBe(1);
+  });
+
+  test('the Mystery ??? orb turns into a valid effect that never repeats the previous one and shows a reveal', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=mystery');
+    const orb = page.locator('[data-testid="chicken-orb"][data-kind="mystery"]');
+    await expect(orb).toBeVisible({ timeout: 15_000 });
+    await expect(orb).toHaveAttribute('aria-label', 'Mystery ???');
+    await expect(orb).toContainText('???');
+    const seen: string[] = [];
+    for (let i = 0; i < MYSTERY_DRAWS; i++) {
+      if (i > 0) await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.forceOrb('mystery'));
+      await expect(orb).toBeVisible();
+      await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.collectOrb('mystery'));
+      const last = (await rotState(page)).mysteryLast;
+      expect(last).not.toBeNull();
+      expect(MYSTERY_KINDS).toContain(last);
+      if (seen.length > 0) expect(last).not.toBe(seen[seen.length - 1]);
+      seen.push(last as string);
+      if (i === 0) {
+        const reveal = page.getByTestId('mystery-reveal');
+        await expect(reveal).toBeVisible();
+        await expect(reveal).toHaveAttribute('data-kind', last as string);
+        await expect(reveal).toContainText('???');
+      }
+    }
+    expect(new Set(seen).size).toBeGreaterThan(1);
+  });
+
+  test('the sword sits in the trunk: a 56 px+ target over the tree, the blade clipped into the bark and sliding out as it is pulled', async ({ page }) => {
+    test.setTimeout(90_000);
+    await gotoGame(page, '?variant=2&start=sword');
+    await waitCreaturePhase(page, ['hold'], 60_000);
+    const hit = page.getByTestId('creature-target-sword');
+    await expect(hit).toBeVisible();
+    const sword = page.getByTestId('tree-sword');
+    await expect(sword).toBeVisible();
+    await expect(page.getByTestId('tree-sword-slit')).toBeVisible();
+    const box = await hit.boundingBox();
+    const tree = await page.getByTestId('creature-img').boundingBox();
+    if (!box || !tree) throw new Error('sword or tree missing');
+    expect(box.width).toBeGreaterThanOrEqual(SWORD_MIN_HIT_PX);
+    expect(box.height).toBeGreaterThanOrEqual(SWORD_MIN_HIT_PX);
+    const relX = (box.x + box.width / 2 - tree.x) / tree.width;
+    const relY = (box.y + box.height / 2 - tree.y) / tree.height;
+    expect(relX).toBeGreaterThanOrEqual(SWORD_TRUNK_X[0]);
+    expect(relX).toBeLessThanOrEqual(SWORD_TRUNK_X[1]);
+    expect(relY).toBeGreaterThanOrEqual(SWORD_TRUNK_Y[0]);
+    expect(relY).toBeLessThanOrEqual(SWORD_TRUNK_Y[1]);
+    const clip0 = clipBottomPct(await sword.evaluate((el) => el.style.clipPath));
+    expect(clip0).toBeGreaterThan(0);
+    const y0 = (await sword.boundingBox())?.y ?? 0;
+    for (let i = 0; i < SWORD_PROBE_PULLS; i++) await hit.click({ force: true });
+    await expect.poll(async () => (await rotCreature(page)).swordPulls).toBe(SWORD_PROBE_PULLS);
+    const clip1 = clipBottomPct(await sword.evaluate((el) => el.style.clipPath));
+    expect(clip1).toBeLessThan(clip0);
+    expect(((await sword.boundingBox())?.y ?? 0) < y0).toBe(true);
   });
 });

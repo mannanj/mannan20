@@ -286,6 +286,7 @@ export interface BirdState {
   preload: HTMLImageElement[];
   queue: BirdKind[];
   finished: BirdKind[];
+  talonScale: number;
   pulseAt: number;
   pulses: number;
   burn: number;
@@ -341,6 +342,7 @@ export function createBirdState(): BirdState {
     preload: [],
     queue: [],
     finished: [],
+    talonScale: 1,
     pulseAt: 0,
     pulses: 0,
     burn: 0,
@@ -421,6 +423,11 @@ export function queueBird(s: BirdState, kind: BirdKind): boolean {
   s.queue.push(kind);
   s.triggered = true;
   return true;
+}
+
+export function requeueBird(s: BirdState, kind: BirdKind): boolean {
+  s.finished = s.finished.filter((k) => k !== kind);
+  return queueBird(s, kind);
 }
 
 export function queueBirdsForScore(s: BirdState, prevShown: number, shown: number): void {
@@ -622,7 +629,7 @@ export function tapTalon(s: BirdState, side: TalonSide, ts: number): TapResult {
   if (side === 'right' && s.phase === 'right') {
     s.rightClicks += 1;
     s.lastTapAt = ts;
-    if (s.rightClicks >= talonNeed(spec.rightClicks, s.talonWeight)) {
+    if (s.rightClicks >= talonNeed(spec.rightClicks * s.talonScale, s.talonWeight)) {
       s.phase = 'recoil';
       s.phaseAt = ts;
       s.hintShownAt = 0;
@@ -634,13 +641,13 @@ export function tapTalon(s: BirdState, side: TalonSide, ts: number): TapResult {
   if (side === 'left' && s.phase === 'left') {
     s.leftClicks += 1;
     s.lastTapAt = ts;
-    const freed = s.leftClicks >= talonNeed(spec.leftClicks, s.talonWeight);
+    const freed = s.leftClicks >= talonNeed(spec.leftClicks * s.talonScale, s.talonWeight);
     if (freed || s.leftClicks % BIRD_LOOK_EVERY_TAPS === 0) {
       s.lookUntil = ts + BIRD_LOOK_MS;
       s.looks += 1;
     }
     if (spec.heat) {
-      s.burn = clamp(s.leftClicks / talonNeed(spec.leftClicks, s.talonWeight), 0, 1);
+      s.burn = clamp(s.leftClicks / talonNeed(spec.leftClicks * s.talonScale, s.talonWeight), 0, 1);
       if (s.leftClicks % BIRD_PULSE_EVERY_TAPS === 0) {
         s.pulseAt = ts;
         s.pulses += 1;
@@ -763,7 +770,7 @@ function tickHeat(s: BirdState, els: BirdEls, ctx: BirdCtx, hold: Point, result:
   }
   const second = s.phase === 'recoil' || s.phase === 'left';
   const heat: HeatLevel = second ? 2 : 1;
-  const progress1 = clamp(s.rightClicks / talonNeed(spec.rightClicks, s.talonWeight), 0, 1);
+  const progress1 = clamp(s.rightClicks / talonNeed(spec.rightClicks * s.talonScale, s.talonWeight), 0, 1);
   result.heat = heat;
   result.burn = s.burn;
   result.sizzle = second ? SIZZLE_T2_BASE + SIZZLE_T2_GAIN * s.burn : SIZZLE_T1_BASE + SIZZLE_T1_GAIN * progress1;
@@ -1073,7 +1080,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
       }
       if (els.counter) {
         const n = active === 'right' ? s.rightClicks : s.leftClicks;
-        const total = talonNeed(active === 'right' ? spec.rightClicks : spec.leftClicks, s.talonWeight);
+        const total = talonNeed((active === 'right' ? spec.rightClicks : spec.leftClicks) * s.talonScale, s.talonWeight);
         const text = `${active === 'right' ? 'front' : 'back'} claw ${n} / ${total}`;
         if (els.counter.textContent !== text) els.counter.textContent = text;
         const box = active === 'right' ? hits.right : hits.left;
@@ -1255,8 +1262,8 @@ export function birdStateView(s: BirdState) {
     fit: s.fit,
     rightClicks: s.rightClicks,
     leftClicks: s.leftClicks,
-    rightNeed: talonNeed(BIRD_SPECS[s.kind ?? 'hawk'].rightClicks, s.talonWeight),
-    leftNeed: talonNeed(BIRD_SPECS[s.kind ?? 'hawk'].leftClicks, s.talonWeight),
+    rightNeed: talonNeed(BIRD_SPECS[s.kind ?? 'hawk'].rightClicks * s.talonScale, s.talonWeight),
+    leftNeed: talonNeed(BIRD_SPECS[s.kind ?? 'hawk'].leftClicks * s.talonScale, s.talonWeight),
     hint: s.hintShownAt !== 0,
     looks: s.looks,
     calm: s.calm,

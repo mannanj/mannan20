@@ -21,7 +21,7 @@ Event helpers
 - [ ] **Vacuum** — pulls every chicken/clone to the center for 6s for a mass-click (pairs with Multiply).
 
 Surprise
-- [ ] **Mystery ???** — a random effect from the list above (ties into the "???" codes idea in Task 313).
+- [x] **Mystery ???** — a random effect from the list above (ties into the "???" codes idea in Task 313). Shipped with the endless rotation (lap 2+ pools): weighted pick over the existing orb effects, never the previous one, with a "??? → effect" reveal pill; dev scene `?start=mystery`.
 
 Rollout
 - [ ] Pick 3–4 to build first (suggested: Slow-mo, Giant, Chain Lightning, Golden Eggs), wire them into the catch-up picker by how far behind the player is, add e2e cases and Jev strategy entries (collect immediately), screenshot each.
