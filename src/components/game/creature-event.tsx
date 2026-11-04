@@ -26,6 +26,7 @@ interface PoseAsset {
   head: Rel;
   extraHeads?: Record<string, Rel>;
   eye?: Rel;
+  fadeBottom?: boolean;
 }
 
 export interface ClickTarget {
@@ -45,6 +46,7 @@ interface CreatureBehaviour {
   outerFirst: boolean;
   catchOnSwipe: number | null;
   holdAtHead: boolean;
+  sinkFrac: number;
 }
 
 export interface CreatureSpec extends CreatureBehaviour {
@@ -87,14 +89,27 @@ const HYDRA_STRIKE_MS = 480;
 const HYDRA_STRIKE_HOLD_MS = 260;
 const HYDRA_RETURN_MS = 420;
 const HYDRA_RECOIL_MS = 600;
-const HYDRA_REACH_FRAC = 1.35;
-const HYDRA_HEAD_FRAC = 0.3;
+const HYDRA_REACH_FRAC = 1.0;
+const HYDRA_HEAD_FRAC = 0.34;
 const HYDRA_HEAD_ASPECT = 2.82;
 const HYDRA_HEAD_PIVOT = 0.74;
-const HYDRA_NECK_FRAC = 0.66;
-const HYDRA_NECK_STAGGER_FRAC = 0.24;
+const HYDRA_NECK_ROOT = 0.06;
+const HYDRA_SPRITE_MIN_ASPECT = 2.0;
+const HYDRA_SPRITE_MAX_ASPECT = 4.6;
+const HYDRA_NECK_FRAC = 0.5;
+const HYDRA_NECK_STAGGER_FRAC = 0.22;
 const HYDRA_NECK_THICK_FRAC = 0.3;
-const HYDRA_FAN_DEG = [-72, -48, -24, 0, 24, 48, 72];
+const HYDRA_FAN_DEG = [-70, -47, -23, 0, 23, 47, 70];
+const HYDRA_ANCHOR_SPREAD_FRAC = 0.05;
+const HYDRA_ANCHOR_DROP_FRAC = 0.1;
+const HYDRA_TARGET_DROP_FRAC = 0.35;
+const HYDRA_NECK_BASE_FRAC = 0.8;
+const HYDRA_NECK_TIP_FRAC = 0.5;
+const HYDRA_NECK_SAMPLES = 14;
+const HYDRA_NECK_RISE_FRAC = 0.5;
+const HYDRA_HEAD_OVERLAP_FRAC = 0.58;
+export const HYDRA_SCALES_PATTERN_ID = 'hydra-scales';
+const HYDRA_SCALES_TILE_PX = 140;
 const HYDRA_START_SLOTS = [1, 3, 5];
 const HYDRA_SWAY_DEG = 6;
 const HYDRA_SWAY_MS = 900;
@@ -103,6 +118,8 @@ const CYCLOPS_SWAT_MS = 1400;
 const CYCLOPS_PUPIL_FRAC = 0.34;
 const CYCLOPS_PUPIL_TRAVEL = 0.22;
 const EDGE_STAND_FRAC = 0.42;
+const CYCLOPS_SINK_FRAC = 0.26;
+const CYCLOPS_FADE_MASK = 'linear-gradient(180deg, #000 72%, transparent 97%)';
 const SLEEP_SINK_FRAC = 0.1;
 export const KITTY_HOLD_MS: [number, number] = [4000, 6000];
 export const KITTY_HOLD_FLOOR_MS = 2000;
@@ -153,7 +170,7 @@ function sizeBasis(vw: number, vh: number): number {
   return Math.min(vh, vw * PORTRAIT_SIZE_BASIS);
 }
 
-function pose(file: string, aspect: number, faces: 1 | -1, scale: number, head: Rel, extra: Pick<PoseAsset, 'extraHeads' | 'eye'> = {}): PoseAsset {
+function pose(file: string, aspect: number, faces: 1 | -1, scale: number, head: Rel, extra: Pick<PoseAsset, 'extraHeads' | 'eye' | 'fadeBottom'> = {}): PoseAsset {
   return { file: `${ASSET_BASE}/${file}.webp`, aspect, faces, scale, head, ...extra };
 }
 
@@ -167,6 +184,7 @@ const CAT_BEHAVIOUR: CreatureBehaviour = {
   outerFirst: false,
   catchOnSwipe: null,
   holdAtHead: false,
+  sinkFrac: GROUND_SINK_FRAC,
 };
 
 const CERBERUS_STAND_HEADS: Record<string, Rel> = { left: { x: 0.3, y: 0, w: 0.22, h: 0.3 }, right: { x: 0.74, y: 0.08, w: 0.26, h: 0.26 } };
@@ -184,13 +202,14 @@ export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
     maxSwipes: 1,
     swipeLift: 0.06,
     clearsChicken: false,
+    sinkFrac: CYCLOPS_SINK_FRAC,
     kind: 'cyclops',
     mode: 'spectacle',
     label: 'cyclops',
     banner: 'a cyclops looms over the temple',
     heightFrac: 0.92,
     poses: {
-      walk: pose('cyclops', 0.63, -1, 1, { x: 0.45, y: 0.2, w: 0.45, h: 0.22 }, { eye: { x: 0.62, y: 0.32, w: 0.17, h: 0.075 } }),
+      walk: pose('cyclops', 0.63, -1, 1, { x: 0.45, y: 0.2, w: 0.45, h: 0.22 }, { eye: { x: 0.62, y: 0.32, w: 0.17, h: 0.075 }, fadeBottom: true }),
     },
     targets: [],
     bodyTarget: false,
@@ -458,7 +477,7 @@ export interface CreatureEls {
   banner: HTMLDivElement | null;
   feathers: (HTMLDivElement | null)[];
   eye: HTMLDivElement | null;
-  heads: { img: HTMLImageElement | null; neck: HTMLDivElement | null; hit: HTMLDivElement | null }[];
+  heads: { img: HTMLImageElement | null; hit: HTMLDivElement | null }[];
 }
 
 export function createCreatureEls(): CreatureEls {
@@ -474,7 +493,7 @@ export function createCreatureEls(): CreatureEls {
     banner: null,
     feathers: Array.from({ length: FEATHER_SLOTS }, () => null),
     eye: null,
-    heads: Array.from({ length: HYDRA_HEADS_MAX }, () => ({ img: null, neck: null, hit: null })),
+    heads: Array.from({ length: HYDRA_HEADS_MAX }, () => ({ img: null, hit: null })),
   };
 }
 
@@ -550,7 +569,7 @@ function sizeFor(spec: CreatureSpec, p: Pose, vh: number): { w: number; h: numbe
 
 function groundCenterY(spec: CreatureSpec, p: Pose, vh: number, groundY: number): number {
   const { h } = sizeFor(spec, p, vh);
-  return groundY - h / 2 + h * GROUND_SINK_FRAC;
+  return groundY - h / 2 + h * spec.sinkFrac;
 }
 
 export function startCreature(s: CreatureState, kind: CreatureKind, ctx: CreatureStartCtx): void {
@@ -774,11 +793,16 @@ function hydraNeck(spec: CreatureSpec, s: CreatureState, vh: number): Point {
   return { x: head.x + head.w / 2, y: head.y + head.h * 0.3 };
 }
 
-function hydraRest(neck: Point, slot: number, bodyH: number, ts: number): Point {
+function hydraAnchor(neck: Point, slot: number, bodyW: number, bodyH: number): Point {
+  return { x: neck.x + ((slot - (HYDRA_HEADS_MAX - 1) / 2) / 3) * bodyW * HYDRA_ANCHOR_SPREAD_FRAC, y: neck.y + bodyH * HYDRA_ANCHOR_DROP_FRAC };
+}
+
+function hydraRest(neck: Point, slot: number, bodyW: number, bodyH: number, ts: number): Point {
+  const anchor = hydraAnchor(neck, slot, bodyW, bodyH);
   const sway = Math.sin(ts / HYDRA_SWAY_MS + slot) * HYDRA_SWAY_DEG;
   const rad = ((HYDRA_FAN_DEG[slot] + sway) * Math.PI) / 180;
   const len = bodyH * (HYDRA_NECK_FRAC + (slot % 2) * HYDRA_NECK_STAGGER_FRAC);
-  return { x: neck.x + Math.sin(rad) * len, y: neck.y - Math.cos(rad) * len };
+  return { x: anchor.x + Math.sin(rad) * len, y: anchor.y - Math.cos(rad) * len };
 }
 
 function regrowSlots(s: CreatureState, from: number): number[] {
@@ -791,7 +815,7 @@ function regrowSlots(s: CreatureState, from: number): number[] {
 function tickHydra(spec: CreatureSpec, s: CreatureState, ctx: CreatureTickCtx, vh: number, result: CreatureTickResult): void {
   const { ts, vw, groundY } = ctx;
   const elapsed = ts - s.phaseAt;
-  const bodyH = sizeFor(spec, 'walk', vh).h;
+  const { w: bodyW, h: bodyH } = sizeFor(spec, 'walk', vh);
   s.pos.y = groundCenterY(spec, 'walk', vh, groundY);
   if (s.bitingHead === null) {
     const dx = ctx.chickenCx - s.pos.x;
@@ -806,7 +830,7 @@ function tickHydra(spec: CreatureSpec, s: CreatureState, ctx: CreatureTickCtx, v
     const dy = chicken.y - neck.y;
     const d = Math.hypot(dx, dy) || 1;
     const k = Math.min(1, reach / d);
-    return { x: neck.x + dx * k, y: Math.min(neck.y + dy * k, groundY - bodyH * 0.1) };
+    return { x: neck.x + dx * k, y: Math.min(neck.y + dy * k, neck.y + bodyH * HYDRA_TARGET_DROP_FRAC) };
   };
   if (ts >= s.nextStrikeAt) {
     s.nextStrikeAt = ts + HYDRA_STRIKE_EVERY_MS;
@@ -817,7 +841,7 @@ function tickHydra(spec: CreatureSpec, s: CreatureState, ctx: CreatureTickCtx, v
     }
   }
   s.heads.forEach((head, slot) => {
-    const rest = hydraRest(neck, slot, bodyH, ts);
+    const rest = hydraRest(neck, slot, bodyW, bodyH, ts);
     const age = ts - head.at;
     if (head.state === 'ready') {
       head.pos = rest;
@@ -1018,7 +1042,7 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
       s.heads.forEach((head, slot) => {
         if (head.state === 'empty') return;
         const fade = clamp((ts - head.at) / HYDRA_RECOIL_MS, 0, 1);
-        const rest = hydraRest(neck, slot, sizeFor(spec, 'walk', vh).h, ts);
+        const rest = hydraRest(neck, slot, sizeFor(spec, 'walk', vh).w, sizeFor(spec, 'walk', vh).h, ts);
         head.pos = { x: rest.x + (neck.x - rest.x) * fade, y: rest.y + (neck.y - rest.y) * fade };
       });
     }
@@ -1087,44 +1111,39 @@ function showHint(el: HTMLDivElement, text: string, anchor: Rect, vw: number): v
 }
 
 function renderHydraHeads(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx, vh: number): void {
-  const bodyH = sizeFor(spec, 'walk', vh).h;
+  const { w: bodyW, h: bodyH } = sizeFor(spec, 'walk', vh);
   const neck = hydraNeck(spec, s, vh);
   const headH = bodyH * HYDRA_HEAD_FRAC;
-  const headW = headH * HYDRA_HEAD_ASPECT;
   const headFile = `${ASSET_BASE}/snake-head.webp`;
+  const span = HYDRA_HEAD_PIVOT - HYDRA_NECK_ROOT;
   s.heads.forEach((head, slot) => {
     const el = els.heads[slot];
     if (!el) return;
     const live = head.state !== 'empty' && head.state !== 'gone' && s.phase !== 'done';
     if (!live) {
       hide(el.img);
-      hide(el.neck);
       hide(el.hit);
       return;
     }
-    const dx = head.pos.x - neck.x;
-    const dy = head.pos.y - neck.y;
-    const len = Math.hypot(dx, dy);
+    const anchor = hydraAnchor(neck, slot, bodyW, bodyH);
+    const dx = head.pos.x - anchor.x;
+    const dy = head.pos.y - anchor.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const spriteW = clamp(dist / span, headH * HYDRA_SPRITE_MIN_ASPECT, headH * HYDRA_SPRITE_MAX_ASPECT);
     const deg = (Math.atan2(dy, dx) * 180) / Math.PI;
     const faceLeft = dx < 0;
     const fade = head.state === 'knocked' ? 1 - clamp((ctx.ts - head.at) / HYDRA_RECOIL_MS, 0, 1) : clamp((ctx.ts - head.at) / XFADE_MS, 0.35, 1);
-    if (el.neck) {
-      const thick = headH * HYDRA_NECK_THICK_FRAC;
-      el.neck.style.opacity = String(fade);
-      el.neck.style.transformOrigin = '0 50%';
-      place(el.neck, { x: neck.x, y: neck.y - thick / 2, w: len, h: thick }, `rotate(${deg}deg)`);
-    }
+    const jaw = { x: anchor.x + (dx / dist) * spriteW * span, y: anchor.y + (dy / dist) * spriteW * span };
     if (el.img) {
       if (el.img.getAttribute('src') !== headFile) el.img.src = headFile;
       el.img.style.opacity = String(fade);
-      const flip = faceLeft ? 'scaleY(-1)' : '';
-      el.img.style.transformOrigin = `${headW * HYDRA_HEAD_PIVOT}px 50%`;
-      place(el.img, { x: head.pos.x - headW * HYDRA_HEAD_PIVOT, y: head.pos.y - headH / 2, w: headW, h: headH }, `rotate(${deg}deg) ${flip}`);
+      el.img.style.transformOrigin = `${spriteW * HYDRA_NECK_ROOT}px 50%`;
+      place(el.img, { x: anchor.x - spriteW * HYDRA_NECK_ROOT, y: anchor.y - headH / 2, w: spriteW, h: headH }, `rotate(${deg}deg) ${faceLeft ? 'scaleY(-1)' : ''}`);
       el.img.dataset.state = head.state;
     }
     if (el.hit) {
       if (head.state === 'knocked') hide(el.hit);
-      else place(el.hit, atLeast({ x: head.pos.x - headW / 2, y: head.pos.y - headH / 2, w: headW, h: headH }, MIN_HIT_PX));
+      else place(el.hit, atLeast({ x: jaw.x - headH * 0.7, y: jaw.y - headH / 2, w: headH * 1.4, h: headH }, MIN_HIT_PX));
       el.hit.dataset.clicks = String(head.clicks);
       el.hit.dataset.state = head.state;
     }
@@ -1146,6 +1165,9 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
   const prev = els.imgB;
   if (cur) {
     if (cur.getAttribute('src') !== asset.file) cur.src = asset.file;
+    const mask = asset.fadeBottom ? CYCLOPS_FADE_MASK : '';
+    cur.style.maskImage = mask;
+    cur.style.webkitMaskImage = mask;
     cur.style.opacity = String(fade);
     place(cur, { ...box, y: box.y - bob }, transform);
     cur.dataset.pose = s.pose;
@@ -1305,12 +1327,6 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
       {spec.mode === 'bite' &&
         HYDRA_SLOT_INDEXES.map((i) => (
           <div key={i} className="contents">
-            <div
-              ref={(el) => {
-                els.current.heads[i].neck = el;
-              }}
-              className="pointer-events-none absolute top-0 left-0 z-[4] rounded-full bg-[linear-gradient(180deg,#5d7a3a,#2c4420_55%,#17260f)] shadow-[0_3px_6px_rgba(0,0,0,0.45)] will-change-transform [visibility:hidden]"
-            />
             <img
               ref={(el) => {
                 els.current.heads[i].img = el;

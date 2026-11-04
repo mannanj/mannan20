@@ -939,6 +939,7 @@ let creatureItemHandler: ((id: string) => void) | null = null;
 const CREATURE_RELEASE_PUSH = 0.35;
 const CREATURE_FLY_UP_PUSH = 0.3;
 const CREATURE_TOP_MARGIN = 12;
+const SCENE_FLOOR_SINK = 0.15;
 const CREATURE_CLEAR_GAIN = 0.02;
 const MAGNET_FRAME_GAIN = 0.02;
 const HOLD_FLAP_MS = 160;
@@ -1186,6 +1187,8 @@ function ChickenGameInner() {
   const unlockToastShownRef = useRef(false);
   const [unlockToast, setUnlockToast] = useState<string | null>(null);
   const sceneCovers = sceneCoversStage(eraUi?.scene ?? null);
+  const sceneCoversRef = useRef(sceneCovers);
+  sceneCoversRef.current = sceneCovers;
   const [stageLayersGone, setStageLayersGone] = useState(false);
   useEffect(() => {
     if (!sceneCovers) {
@@ -4239,7 +4242,8 @@ function ChickenGameInner() {
             wildKick(side);
           }
         }
-        if (portal.phase === 'idle' && (p.y <= 0 || p.y >= vh - CHICKEN_H)) {
+        const floorY = sceneCoversRef.current ? groundYFor(vh) + CHICKEN_H * SCENE_FLOOR_SINK : vh;
+        if (portal.phase === 'idle' && (p.y <= 0 || p.y >= floorY - CHICKEN_H)) {
           const side: PortalSide = p.y <= 0 ? 'top' : 'bottom';
           if (!tryEdgeSpecial(side)) {
             p.vy *= -1;
@@ -4247,7 +4251,7 @@ function ChickenGameInner() {
             if (Math.random() < SPIN_BOUNCE_CHANCE) {
               p.rv += (Math.random() - 0.5) * SPIN_BOUNCE_STRENGTH;
             }
-            p.y = Math.max(0, Math.min(p.y, vh - CHICKEN_H));
+            p.y = Math.max(0, Math.min(p.y, floorY - CHICKEN_H));
             wildKick(side);
           }
         }
@@ -4502,6 +4506,13 @@ function ChickenGameInner() {
         }
       }
 
+      if (sceneCoversRef.current && portalRef.current.phase === 'idle') {
+        const sceneFloor = groundYFor(vh) + CHICKEN_H * SCENE_FLOOR_SINK - CHICKEN_H;
+        if (p.y > sceneFloor) {
+          p.y = sceneFloor;
+          p.vy = Math.min(p.vy, 0);
+        }
+      }
       const rootHold = holdRef.current;
       if (rootHold && !rootHold.grabbed && rootHold.id === 0) {
         p.x = rootHold.anchorX + rootHold.driftX;
