@@ -29,7 +29,16 @@ export const TEST_SCENES: Record<string, number> = {
   cosmos: 10_500,
   jupiter: 17_000,
   phoenix: 25_000,
+  'fire-era': 29_000,
+  kitty: 33_000,
+  tiger: 33_100,
+  lion: 33_200,
 };
+
+export function testStartScene(value: string | string[] | undefined): string | undefined {
+  const v = Array.isArray(value) ? value[0] : value;
+  return v && v in TEST_SCENES ? v : undefined;
+}
 
 export function testStartScore(value: string | string[] | undefined): number | null {
   const v = Array.isArray(value) ? value[0] : value;

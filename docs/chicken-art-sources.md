@@ -106,3 +106,37 @@ Total $0.24 of the $1.00 cap. No retries, no speculative variants.
 
 ## Task 316 — aura and fire
 No external assets. Flame tongues are procedural sprites (`chicken-fire.ts`, `flameSprite`): three teardrop canvases with layered red → orange → white linear gradients, drawn with `lighter` compositing.
+
+
+# Endless phase — creature art and sound sources (Task 318, 2026-11-03)
+
+Every image and sound used for the endless-phase creatures (`public/game/creatures/`, `public/sounds/chicken/`). All photos were cut out locally with `rembg` (isnet-general-use, alpha matting) and exported as WebP ≤ 1024 px. Mannan: review the licences before any commercial use; CC BY / CC BY-SA photos need attribution (and share-alike for derivatives).
+
+## Images (all Wikimedia Commons, free licences — no web-only or AI images were used)
+
+| File | Source | Licence |
+| --- | --- | --- |
+| kitty-walk.webp | https://commons.wikimedia.org/wiki/File:Blue_bengal_kitten_taste_of_freedom_-_3_(37011713593).jpg | CC0 |
+| kitty-stalk.webp | https://commons.wikimedia.org/wiki/File:Crouching_cat_in_Shifen.jpg | CC BY 2.0 |
+| kitty-pounce.webp (also the run-off pose) | https://commons.wikimedia.org/wiki/File:Running_Cat_01.JPG | CC BY-SA 3.0 |
+| kitty-hold.webp | https://commons.wikimedia.org/wiki/File:Tabby_Cat_with_Toy_Mouse.jpg | CC BY-SA 4.0 |
+| tiger-walk.webp | https://commons.wikimedia.org/wiki/File:Walking_tiger_female.jpg | CC BY-SA 4.0 |
+| tiger-pounce.webp | https://commons.wikimedia.org/wiki/File:Tiger_jumping_David_RaJU.jpg | CC BY-SA 4.0 |
+| tiger-run.webp | https://commons.wikimedia.org/wiki/File:Bengal_tiger_jumping_in_Sundarban.jpg | CC BY-SA 4.0 |
+| lion-walk.webp | https://commons.wikimedia.org/wiki/File:Lion_(Panthera_leo)_old_male_Chobe.jpg | CC BY-SA 4.0 |
+| lion-chase.webp | https://commons.wikimedia.org/wiki/File:002_Male_Lion_prowling_in_the_Serengeti_National_Park_Photo_by_Giles_Laurent.jpg | CC BY-SA 4.0 |
+| lion-pounce.webp | https://commons.wikimedia.org/wiki/File:Leaping_Lion.jpg | CC BY-SA 4.0 |
+| lion-sit.webp | https://commons.wikimedia.org/wiki/File:Lion_male.jpg | CC BY-SA 4.0 |
+
+## Sounds (Wikimedia Commons, converted to mono 64 kbps mp3 with ffmpeg)
+
+| File | Source | Licence | Notes |
+| --- | --- | --- | --- |
+| cat-meow.mp3 | https://commons.wikimedia.org/wiki/File:Meow_of_a_Siamese_cat_-_freemaster2.wav | CC0 | |
+| cat-hiss.mp3 | https://commons.wikimedia.org/wiki/File:Cat_hissing_-_Zabuhailo.wav | CC0 | |
+| tiger-growl.mp3 | https://commons.wikimedia.org/wiki/File:439280_schots_angry-tiger.wav | CC0 | first 3.2 s, faded out |
+| lion-roar.mp3 | same tiger clip as above | CC0 | no free lion roar found on Commons; the tiger clip pitched down 22 % and sped up 10 % as a stand-in — replace when a licensed roar turns up |
+
+## Spend
+
+AI image generation: $0.00 (none used).

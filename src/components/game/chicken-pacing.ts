@@ -86,6 +86,8 @@ export const ORB_REGISTRY: Record<OrbKind, OrbDef> = {
   multiply10: def('multiply10', 7000, 5, 5, { catchUp: true }),
   multiply25: def('multiply25', 11_000, 2, 7, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS, catchUp: true }),
   multiply100: def('multiply100', 18_000, 1, 8, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS }),
+  giant: def('giant', 25_000, 8, 5, { catchUp: true }),
+  magnet: def('magnet', 25_000, 8, 3),
 };
 
 export const ORB_REGISTRY_KINDS = Object.keys(ORB_REGISTRY) as OrbKind[];
@@ -106,7 +108,8 @@ export const ERA_REGISTRY: EraDef[] = [
   { id: 'moon-late', from: 5000, scene: 'moon', introduces: ['chain', 'multiply10'], event: null },
   { id: 'eagle', from: 10_000, scene: 'cosmos', introduces: ['multiply25'], event: 'eagle' },
   { id: 'jupiter', from: 17_000, scene: 'jupiter', introduces: ['multiply100'], event: 'martians' },
-  { id: 'phoenix', from: 25_000, scene: 'jupiter', introduces: [], event: 'phoenix' },
+  { id: 'phoenix', from: 25_000, scene: 'fire-sky', introduces: ['giant', 'magnet'], event: 'phoenix' },
+  { id: 'big-cats', from: 33_000, scene: 'night-yard', introduces: [], event: 'kitty' },
 ];
 
 export function eraForScore(score: number): EraDef {
@@ -155,6 +158,7 @@ export interface SchedulerContext {
   sinceBigMs: number;
   sinceMultiplyEndMs: number;
   rng: () => number;
+  pool?: OrbKind[];
 }
 
 export function orbWeight(kind: OrbKind, ctx: SchedulerContext): number {
@@ -174,7 +178,8 @@ export function orbWeight(kind: OrbKind, ctx: SchedulerContext): number {
 }
 
 export function pickOrbKind(ctx: SchedulerContext): OrbKind | null {
-  const pool = unlockedKinds(ctx.score, ctx.behind);
+  const unlocked = unlockedKinds(ctx.score, ctx.behind);
+  const pool = ctx.pool ? unlocked.filter((k) => ctx.pool?.includes(k)) : unlocked;
   if (pool.length === 0) return null;
   if (ctx.behind >= BEHIND_FORCE) {
     const strong = pool.filter((k) => orbWeight(k, ctx) > 0 || !ORB_REGISTRY[k].big);

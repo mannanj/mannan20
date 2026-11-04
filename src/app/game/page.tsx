@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ChickenGame } from '@/components/game/chicken-game';
 import { ChickenGameV2 } from '@/components/game/chicken-game-v2';
 import { TestStartMarker } from '@/components/game/test-start-marker';
-import { GAME_VARIANT_PARAM, isNextGameVariant, testStartScore } from '@/lib/game-variant';
+import { GAME_VARIANT_PARAM, isNextGameVariant, testStartScene, testStartScore } from '@/lib/game-variant';
 
 export const metadata: Metadata = {
   title: 'Floating Chicken Game',
@@ -20,7 +20,7 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   return (
     <>
       {game}
-      {start !== null && <TestStartMarker start={start} />}
+      {start !== null && <TestStartMarker start={start} scene={testStartScene(params.start)} />}
     </>
   );
 }

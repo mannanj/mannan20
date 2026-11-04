@@ -312,6 +312,26 @@ import {
   type HudRect,
   type TalonSide,
 } from './bird-event';
+import {
+  CLEARANCE_PX,
+  CREATURE_ORDER,
+  CreatureLayer,
+  createCreatureEls,
+  createCreatureState,
+  creatureOnScreen,
+  creatureStateView,
+  isCreatureHolding,
+  queueCreature,
+  shiftCreatureTime,
+  startCreature,
+  tapCreatureBody,
+  tapCreatureTarget,
+  tickCreature,
+  type CreatureKind,
+} from './creature-event';
+import { DROP_BEHIND_BONUS, ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, shiftEraTime, type EndlessEraDef } from './endless-eras';
+import { EndlessScenery } from './endless-scenery';
+import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type OutlineFrame, type OutlinePoint } from './chicken-outline';
 import { drawEmbers, drawHeatShimmer, drawIgnition, drawOutlineFlames, drawFireBody, drawSilhouetteAura, emitEmbers, fireFilterFor, fireLevelFor, FIRE_BODY_START, lightningStyleFor, makeIgnition, strokeLightning, tickIgnition, updateEmbers, type Ember, type IgnitionState, type LightningStyle } from './chicken-fire';
@@ -881,6 +901,12 @@ interface ChickenBridge {
   setSeqTimeScale: (n: number) => void;
   auraEmitters: () => { frame: OutlineFrame; svg: { x: number; y: number }[]; canvas: { x: number; y: number }[] };
   forceIgnition: () => void;
+  forceCreature: (kind: string) => boolean;
+  creature: () => ReturnType<typeof creatureStateView>;
+  setDropRoll: (roll: number | null) => void;
+  era: () => { id: string | null; index: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[] };
+  forceEra: (id: string) => void;
+  forceScene: (name: string) => void;
 }
 
 type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather' | 'phoenix-feather' | 'martian-friend'>;
@@ -907,8 +933,21 @@ function applyFeatherSkin(id: FeatherSkinItemId): void {
   featherSkinHandler?.(id);
 }
 
+let creatureItemHandler: ((id: string) => void) | null = null;
+const CREATURE_RELEASE_PUSH = 0.35;
+const CREATURE_FLY_UP_PUSH = 0.3;
+const CREATURE_TOP_MARGIN = 12;
+const CREATURE_CLEAR_GAIN = 0.02;
+const MAGNET_FRAME_GAIN = 0.02;
+const HOLD_FLAP_MS = 160;
+const HOLD_FLAP_PX = 4;
+const HOLD_FLAP_DEG = 10;
+const YARN_BALL_ITEM_ID = 'yarn-ball';
+const GOLDEN_MANE_ITEM_ID = 'golden-mane';
+
 export function onUseItem(itemId: string): void {
   if (isFeatherSkinItem(itemId)) applyFeatherSkin(itemId);
+  creatureItemHandler?.(itemId);
 }
 
 interface BridgeWindow {
@@ -1124,6 +1163,17 @@ function ChickenGameInner() {
   const birdUiRef = useRef(birdUi);
   const birdRef = useRef(createBirdState());
   const birdElsRef = useRef(createBirdEls());
+  const creatureRef = useRef(createCreatureState());
+  const creatureElsRef = useRef(createCreatureEls());
+  const creatureHoldRef = useRef<{ x: number; y: number } | null>(null);
+  const eraRef = useRef(createEraClock());
+  const giantUntilRef = useRef(0);
+  const magnetUntilRef = useRef(0);
+  const dropRollRef = useRef<number | null>(null);
+  const [creatureUi, setCreatureUi] = useState<{ kind: CreatureKind | null; hold: boolean }>({ kind: null, hold: false });
+  const creatureUiRef = useRef(creatureUi);
+  const [eraUi, setEraUi] = useState<EndlessEraDef | null>(null);
+  const [maneOn, setManeOn] = useState(false);
   const multRef = useRef(1);
   const screamOverrideRef = useRef<'hawk' | null>(null);
   const scoreRef = useRef(0);
@@ -1293,7 +1343,7 @@ function ChickenGameInner() {
   const chainCanvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle } = useChickenSounds();
+  const { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle, playCreature } = useChickenSounds();
 
   const recordPlay = useCallback((event: SoundEvent) => {
     const log = playsRef.current;
@@ -1990,8 +2040,13 @@ function ChickenGameInner() {
       setUnlockedSkins(unlockSkin(skinId));
       selectSkin(skinId);
     };
+    creatureItemHandler = (id) => {
+      if (id === YARN_BALL_ITEM_ID) magnetUntilRef.current = Math.max(performance.now(), magnetUntilRef.current) + MAGNET_DURATION_MS;
+      if (id === GOLDEN_MANE_ITEM_ID) setManeOn(true);
+    };
     return () => {
       featherSkinHandler = null;
+      creatureItemHandler = null;
     };
   }, [selectSkin]);
 
@@ -2411,7 +2466,9 @@ function ChickenGameInner() {
       gateRef.current !== 'none' ||
       ORB_BLOCKING_SEQS.includes(seqRef.current) ||
       bird.pending ||
-      (bird.phase !== 'idle' && bird.phase !== 'done')
+      (bird.phase !== 'idle' && bird.phase !== 'done') ||
+      isCreatureHolding(creatureRef.current) ||
+      creatureRef.current.pending !== null
     );
   }, []);
 
@@ -2464,6 +2521,12 @@ function ChickenGameInner() {
     [orbsBlocked, spawnOrb]
   );
 
+  const eraPool = useCallback((): OrbKind[] | undefined => {
+    const era = currentEra(eraRef.current);
+    if (!era) return undefined;
+    return creatureOnScreen(creatureRef.current) ? era.pool.filter((k) => multiplyFactor(k) === null) : era.pool;
+  }, []);
+
   const schedulerContext = useCallback((): SchedulerContext => {
     const now = performance.now();
     const { behind, ahead } = paceNow();
@@ -2484,8 +2547,9 @@ function ChickenGameInner() {
       sinceBigMs: now - lastBigAtRef.current,
       sinceMultiplyEndMs: now - multiplyEndedAtRef.current,
       rng: Math.random,
+      pool: eraPool(),
     };
-  }, [paceNow]);
+  }, [paceNow, eraPool]);
 
   const runPaceCheck = useCallback(
     (force = false) => {
@@ -2582,6 +2646,8 @@ function ChickenGameInner() {
       else if (orb.kind === 'cursor3') buff.x3Until = Math.min(Math.max(now, buff.x3Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
       else if (orb.kind === 'chain') chainUntilRef.current = Math.max(now, chainUntilRef.current) + CHAIN_DURATION_MS;
       else if (orb.kind === 'eggs') layingRef.current = { left: layingRef.current.left + EGG_LAY_COUNT, nextAt: now };
+      else if (orb.kind === 'giant') giantUntilRef.current = Math.max(now, giantUntilRef.current) + GIANT_DURATION_MS;
+      else if (orb.kind === 'magnet') magnetUntilRef.current = Math.max(now, magnetUntilRef.current) + MAGNET_DURATION_MS;
     },
     [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply]
   );
@@ -2903,7 +2969,7 @@ function ChickenGameInner() {
       }
       const prevScore = scoreRef.current;
       const frenzyOn = now < frenzyUntilRef.current;
-      const next = prevScore + award * multRef.current * (frenzyOn ? FRENZY_FACTOR : 1);
+      const next = prevScore + award * multRef.current * (frenzyOn ? FRENZY_FACTOR : 1) * (now < giantUntilRef.current ? GIANT_FACTOR : 1);
       scoreRef.current = next;
       const shown = Math.floor(next);
       setScore(shown);
@@ -3010,6 +3076,10 @@ function ChickenGameInner() {
         speed: speedRef.current,
         mult: multRef.current,
         bird: birdStateView(birdRef.current),
+        creature: creatureStateView(creatureRef.current),
+        era: currentEra(eraRef.current)?.id ?? null,
+        giantMs: Math.max(0, giantUntilRef.current - performance.now()),
+        magnetMs: Math.max(0, magnetUntilRef.current - performance.now()),
         tier: tierRef.current,
         mercy: mercyRef.current,
         morph: morphForScore(scoreRef.current),
@@ -3169,6 +3239,28 @@ function ChickenGameInner() {
           canvas: outlineScratchRef.current.map((p) => ({ x: p.x, y: p.y })),
         };
       },
+      forceCreature,
+      creature: () => creatureStateView(creatureRef.current),
+      setDropRoll: (roll: number | null) => {
+        dropRollRef.current = roll;
+        creatureRef.current.dropRoll = roll;
+      },
+      era: () => ({
+        id: currentEra(eraRef.current)?.id ?? null,
+        index: eraRef.current.index,
+        byTime: eraRef.current.byTime,
+        enteredAtMs: eraRef.current.enteredAtMs,
+        playMs: playMsRef.current,
+        queued: eraRef.current.queue.map((c) => c.kind),
+      }),
+      forceEra,
+      forceScene: (name: string) => {
+        if (name === 'fire-era') forceEra('fire');
+        if (CREATURE_ORDER.some((k) => k === name)) {
+          forceEra('big-cats');
+          forceCreature(name);
+        }
+      },
       forceIgnition: () => {
         const ig = ignitionRef.current;
         ig.active = true;
@@ -3213,6 +3305,10 @@ function ChickenGameInner() {
         playMsRef.current += ms;
         frenzyUntilRef.current -= ms;
         shiftBirdTime(birdRef.current, ms);
+        shiftCreatureTime(creatureRef.current, ms);
+        shiftEraTime(eraRef.current, ms);
+        giantUntilRef.current -= ms;
+        magnetUntilRef.current -= ms;
         for (const o of orbsRef.current) o.bornAt -= ms;
         for (const c of cloneMotionRef.current.values()) c.vanishAt -= ms;
         multiplyStartRef.current -= ms;
@@ -3250,6 +3346,40 @@ function ChickenGameInner() {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
   }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin, orbsBlocked, runPaceCheck]);
+
+  const syncCreatureUi = useCallback((kind: CreatureKind | null, hold: boolean) => {
+    const cur = creatureUiRef.current;
+    if (cur.kind === kind && cur.hold === hold) return;
+    const next = { kind, hold };
+    creatureUiRef.current = next;
+    setCreatureUi(next);
+  }, []);
+
+  const onCreatureBody = useCallback(() => {
+    tapCreatureBody(creatureRef.current);
+  }, []);
+
+  const onCreatureTarget = useCallback(
+    (id: string, x: number, y: number) => {
+      const tap = tapCreatureTarget(creatureRef.current, id);
+      if (!tap) return;
+      hit(undefined, true, { x, y }, tap.raw);
+    },
+    [hit]
+  );
+
+  const forceEra = useCallback((id: string) => {
+    const index = ENDLESS_ERAS.findIndex((e) => e.id === id);
+    if (index < 0) return;
+    setEraUi(enterEra(eraRef.current, index, scoreRef.current, playMsRef.current));
+  }, []);
+
+  const forceCreature = useCallback((kind: string): boolean => {
+    const known = CREATURE_ORDER.find((k) => k === kind);
+    if (!known) return false;
+    eraRef.current.queue = eraRef.current.queue.filter((c) => c.kind !== known);
+    return queueCreature(creatureRef.current, known);
+  }, []);
 
   const startBirdNow = useCallback(
     (ts: number, kind: BirdKind) => {
@@ -3525,6 +3655,77 @@ function ChickenGameInner() {
       if (birdTick.heat !== distressRef.current) {
         distressRef.current = birdTick.heat;
         setDistress(birdTick.heat);
+      }
+      const creature = creatureRef.current;
+      const clock = eraRef.current;
+      if (sc >= ENDLESS_FROM) {
+        const nextIdx = nextEraIndex(clock, sc, playMsRef.current);
+        if (nextIdx !== null && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
+          setEraUi(enterEra(clock, nextIdx, sc, playMsRef.current));
+        }
+        const due = dueCreature(clock, playMsRef.current);
+        if (due) queueCreature(creature, due);
+      }
+      if (
+        creature.pending &&
+        !isBirdBusy(bird) &&
+        !bird.pending &&
+        !rootSplitRef.current &&
+        holdRef.current === null &&
+        portalRef.current.phase === 'idle' &&
+        teleportRef.current.phase === 'idle' &&
+        gateRef.current === 'none'
+      ) {
+        const kind = creature.pending;
+        creature.pending = null;
+        startCreature(creature, kind, { ts, vw, vh, groundY: groundYFor(vh), chickenCx: p.x + CHICKEN_W / 2, rng: Math.random, dropBonus: clock.byTime ? DROP_BEHIND_BONUS : 1 });
+        creature.dropRoll = dropRollRef.current;
+        modeRef.current = 'flying';
+        syncCreatureUi(kind, false);
+      }
+      const ct = tickCreature(creature, creatureElsRef.current, {
+        ts,
+        dtMs,
+        vw,
+        vh,
+        groundY: groundYFor(vh),
+        chickenCx: p.x + CHICKEN_W / 2,
+        chickenCy: p.y + CHICKEN_H / 2,
+        chickenW: CHICKEN_W,
+        chickenH: CHICKEN_H,
+        rng: Math.random,
+      });
+      const push = pushRef.current;
+      if (ct.sound) playCreature(ct.sound);
+      if (ct.grabbed) syncCreatureUi(creature.kind, true);
+      if (ct.released) {
+        syncCreatureUi(creature.kind, false);
+        push.y -= CREATURE_RELEASE_PUSH;
+      }
+      if (ct.flyUp) {
+        modeRef.current = 'flying';
+        push.y -= CREATURE_FLY_UP_PUSH;
+        push.x += (p.x + CHICKEN_W / 2 >= creature.pos.x ? 1 : -1) * CREATURE_FLY_UP_PUSH * 0.5;
+      }
+      if (ct.clearY !== null && p.y + CHICKEN_H > ct.clearY) {
+        modeRef.current = 'flying';
+        const over = p.y + CHICKEN_H - ct.clearY;
+        push.y = Math.min(push.y, -over * CREATURE_CLEAR_GAIN);
+        p.y = ct.clearY - CHICKEN_H;
+      }
+      if (creatureOnScreen(creature) && p.y < CREATURE_TOP_MARGIN) {
+        p.y = CREATURE_TOP_MARGIN;
+        push.y = Math.max(push.y, 0);
+      }
+      if (ct.hold) modeRef.current = 'flying';
+      if (ct.drop) grantItem(ct.drop.id, { x: ct.drop.x, y: ct.drop.y });
+      creatureHoldRef.current = ct.hold;
+      if (ct.done) syncCreatureUi(null, false);
+      if (ts < magnetUntilRef.current && m.x >= 0 && flying && !ct.hold) {
+        const dx = m.x - (p.x + CHICKEN_W / 2);
+        const dy = m.y - (p.y + CHICKEN_H / 2);
+        push.x = Math.max(-MAGNET_MAX_SPEED, Math.min(MAGNET_MAX_SPEED, push.x + dx * MAGNET_PULL_PER_MS * MAGNET_FRAME_GAIN));
+        push.y = Math.max(-MAGNET_MAX_SPEED, Math.min(MAGNET_MAX_SPEED, push.y + dy * MAGNET_PULL_PER_MS * MAGNET_FRAME_GAIN));
       }
       const liveBurn = birdTick.heat === 2;
       if (liveBurn && !burnLiveRef.current) {
@@ -3820,6 +4021,14 @@ function ChickenGameInner() {
           p.vy = out.dy / Math.max(dtMs, 1);
           p.rotation = out.rotation;
           p.rv = 0;
+          const holdPt = creatureHoldRef.current;
+          if (holdPt) {
+            p.x = holdPt.x - CHICKEN_W / 2 + Math.sin(ts / HOLD_FLAP_MS) * HOLD_FLAP_PX;
+            p.y = holdPt.y - CHICKEN_H / 2;
+            p.vx = 0;
+            p.vy = 0;
+            p.rotation = Math.sin(ts / HOLD_FLAP_MS) * HOLD_FLAP_DEG;
+          }
           p.bank = 0;
           rollRef.current = out.rollY;
           facingRef.current = out.facing;
@@ -4426,7 +4635,7 @@ function ChickenGameInner() {
 
       const parkedNow = parkedRef.current;
       const nearParked = stNow === 'moon' && parkedNow !== null && Math.hypot(cx - parkedNow.x - CHICKEN_W / 2, cy - parkedNow.y - CHICKEN_H / 2) < PARKED_AURA_CLEAR;
-      const shielded = rootBusy || nearParked || AURA_SHIELD_STAGES.includes(stNow);
+      const shielded = rootBusy || nearParked || AURA_SHIELD_STAGES.includes(stNow) || isCreatureHolding(creatureRef.current);
       const lightning = shielded ? null : lightningForScore(sc);
       if (lightning) {
         if (!nextArcAtRef.current) nextArcAtRef.current = ts + lightning.intervalMs;
@@ -4568,7 +4777,7 @@ function ChickenGameInner() {
   const morph = morphForScore(score);
   const renderAuraLevel = auraLevelFor(score, 1);
   const renderAuraRgb = auraRgbFor(score);
-  const auraVisible = !AURA_SHIELD_STAGES.includes(stage) && !birdUi.grip && !(stage === 'moon' && parked !== null);
+  const auraVisible = !AURA_SHIELD_STAGES.includes(stage) && !birdUi.grip && !creatureUi.hold && !(stage === 'moon' && parked !== null);
   const renderFire = fireLevelFor(score);
   const fireFilter = fireFilterFor(auraVisible ? renderFire : 0, ignitionUi ? 1 : 0);
   const glowStyle = fireFilter
@@ -4598,6 +4807,7 @@ function ChickenGameInner() {
       <EscapeScenery stage={stage} seq={seq} />
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
       {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
+      <EndlessScenery scene={eraUi?.scene ?? null} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
       <canvas ref={chainCanvasRef} data-testid="chicken-chain-canvas" className="pointer-events-none absolute inset-0 z-[25]" />
       <MartianLayer
@@ -4832,6 +5042,12 @@ function ChickenGameInner() {
 
       {parked && stage === 'moon' && !birdUi.grip && <ParkedRocket x={parked.x} y={parked.y} />}
 
+      {eraUi && (
+        <div data-testid="era-label" data-era={eraUi.id} data-hud="" className="pointer-events-none absolute top-[200px] left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/55">
+          {eraUi.label} era
+        </div>
+      )}
+      {creatureUi.kind && <CreatureLayer kind={creatureUi.kind} els={creatureElsRef} onBody={onCreatureBody} onTarget={onCreatureTarget} />}
       {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
 
       {stage === 'rocket' && (seq === 'planeExit' || seq === 'explode') && (
@@ -4868,6 +5084,12 @@ function ChickenGameInner() {
           hit(e);
         }}
       >
+        {maneOn && (
+          <div
+            data-testid="golden-mane"
+            className="pointer-events-none absolute left-1/2 top-[16%] z-[6] h-[52px] w-[52px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[repeating-conic-gradient(#f2b632_0_18deg,#b8700a_18deg_30deg)] opacity-90 [mask-image:radial-gradient(circle,transparent_38%,#000_42%)]"
+          />
+        )}
         <div
           ref={facingElRef}
           data-testid="chicken-facing"

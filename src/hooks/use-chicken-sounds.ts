@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   getChickenAudio,
+  type CreatureSoundKey,
   type LoadProgress,
   type RiserResult,
   type ScreamResult,
@@ -29,6 +30,7 @@ export function useChickenSounds() {
   const crackle = useCallback(() => getChickenAudio().crackle(), []);
   const squeak = useCallback((depth: number) => getChickenAudio().squeak(depth), []);
   const sizzle = useCallback((level: number) => getChickenAudio().sizzle(level), []);
+  const playCreature = useCallback((key: CreatureSoundKey) => getChickenAudio().playCreature(key), []);
 
-  return { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle };
+  return { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle, playCreature };
 }

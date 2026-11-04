@@ -8,7 +8,9 @@ export type OrbKind =
   | 'chain'
   | 'multiply10'
   | 'multiply25'
-  | 'multiply100';
+  | 'multiply100'
+  | 'giant'
+  | 'magnet';
 
 export interface CursorOffset {
   dx: number;
@@ -29,6 +31,8 @@ export const ORB_THRESHOLDS: Record<OrbKind, number> = {
   multiply10: Number.POSITIVE_INFINITY,
   multiply25: Number.POSITIVE_INFINITY,
   multiply100: Number.POSITIVE_INFINITY,
+  giant: Number.POSITIVE_INFINITY,
+  magnet: Number.POSITIVE_INFINITY,
 };
 
 export const ORB_LABELS: Record<OrbKind, string> = {
@@ -42,6 +46,8 @@ export const ORB_LABELS: Record<OrbKind, string> = {
   multiply10: 'Multiply x10',
   multiply25: 'Multiply x25',
   multiply100: 'Multiply x100',
+  giant: 'Giant x2.5',
+  magnet: 'Magnet pull',
 };
 
 export const ORB_LIFETIME_MS = 30_000;
@@ -58,7 +64,15 @@ export const ORB_LABEL_PX: Record<OrbKind, number> = {
   multiply10: 10.5,
   multiply25: 10.5,
   multiply100: 9.5,
+  giant: 11,
+  magnet: 11,
 };
+export const GIANT_FACTOR = 2.5;
+export const GIANT_DURATION_MS = 15_000;
+export const GIANT_SCALE = 1.6;
+export const MAGNET_DURATION_MS = 10_000;
+export const MAGNET_PULL_PER_MS = 0.0022;
+export const MAGNET_MAX_SPEED = 0.9;
 export const ORB_DRIFT_SPEED = 0.05;
 export const ORB_SPAWN_MARGIN = 80;
 export const ORB_WOBBLE_AMPLITUDE = 14;

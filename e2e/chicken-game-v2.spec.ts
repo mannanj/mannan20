@@ -2054,3 +2054,204 @@ test.describe('chicken game v2 silhouette aura, late lightning and fire form', (
     expect((await auraState(page)).auraDrawn).toBe(false);
   });
 });
+
+import { BIG_CAT_STAY_MS, CREATURE_ORDER, CREATURE_SPECS, KITTY_HOLD_MS, LION_MANE_CLICKS } from '../src/components/game/creature-event';
+import { ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_SCORE_STEP } from '../src/components/game/endless-eras';
+
+interface CreatureView {
+  kind: string | null;
+  phase: string;
+  holdMs: number;
+  stayMs: number;
+  misses: number;
+  minClearance: number | null;
+  tamed: boolean;
+  dropped: boolean;
+  enteredAt: number;
+  leftAt: number;
+}
+
+interface CreatureBridge {
+  setScore: (n: number) => void;
+  boost: (n: number) => void;
+  fastForward: (ms: number) => void;
+  forceCreature: (kind: string) => boolean;
+  creature: () => CreatureView;
+  setDropRoll: (roll: number | null) => void;
+  era: () => { id: string | null; index: number; byTime: boolean; queued: string[] };
+  forceEra: (id: string) => void;
+  inventory: () => { id: string; count: number }[];
+  state: () => { score: number; auraDrawn: boolean; era: string | null };
+}
+
+const creatureOf = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.creature());
+const eraOf = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.era());
+const forceCreature = (page: Page, kind: string) => page.evaluate((k) => (window as unknown as { __chicken: CreatureBridge }).__chicken.forceCreature(k), kind);
+const waitCreaturePhase = (page: Page, phases: string[], timeout = 20_000) =>
+  page.waitForFunction((ps) => ps.includes((window as unknown as { __chicken: CreatureBridge }).__chicken.creature().phase), phases, { timeout });
+
+async function enterBigCats(page: Page) {
+  await gotoGame(page, '?variant=2');
+  await page.evaluate((target) => {
+    const b = (window as unknown as { __chicken: CreatureBridge }).__chicken;
+    b.setScore(target - 1);
+    b.boost(1);
+  }, ENDLESS_FROM + ERA_SCORE_STEP);
+  await expect.poll(async () => (await eraOf(page)).id, { timeout: 5000 }).toBe('big-cats');
+}
+
+test.describe('chicken game v2 endless eras', () => {
+  test('the endless registry steps by 8,000 and orders the cats kitty, tiger, lion', () => {
+    expect(ENDLESS_ERAS[0].from).toBe(ENDLESS_FROM);
+    for (let i = 1; i < ENDLESS_ERAS.length; i++) expect(ENDLESS_ERAS[i].from - ENDLESS_ERAS[i - 1].from).toBe(ERA_SCORE_STEP);
+    const cats = ENDLESS_ERAS.find((e) => e.id === 'big-cats');
+    expect(cats?.creatures.map((c) => c.kind)).toEqual(CREATURE_ORDER);
+    for (let i = 1; i < (cats?.creatures.length ?? 0); i++) expect(cats!.creatures[i].atMs).toBeGreaterThan(cats!.creatures[i - 1].atMs);
+    expect(ENDLESS_ERAS[0].pool).toEqual(expect.arrayContaining(['giant', 'magnet']));
+    expect(ERA_REGISTRY.find((e) => e.id === 'big-cats')?.from).toBe(ENDLESS_FROM + ERA_SCORE_STEP);
+    expect(ERA_REGISTRY.find((e) => e.from === ENDLESS_FROM)?.introduces).toEqual(['giant', 'magnet']);
+  });
+
+  test('pickOrbKind respects an era pool', () => {
+    const ctx: SchedulerContext = {
+      score: 30_000,
+      behind: 0,
+      ahead: false,
+      lastKinds: [],
+      activeKinds: [],
+      clones: 0,
+      goldens: 0,
+      sinceBigMs: 0,
+      sinceMultiplyEndMs: 0,
+      rng: Math.random,
+      pool: ENDLESS_ERAS[0].pool,
+    };
+    for (let i = 0; i < 200; i++) {
+      const kind = pickOrbKind(ctx);
+      expect(kind).not.toBeNull();
+      expect(ENDLESS_ERAS[0].pool).toContain(kind);
+    }
+  });
+
+  test('eras switch by score and by the 3 minute clock', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await page.evaluate(() => {
+      const b = (window as unknown as { __chicken: CreatureBridge }).__chicken;
+      b.setScore(24_999);
+      b.boost(1);
+    });
+    await expect.poll(async () => (await eraOf(page)).id, { timeout: 5000 }).toBe('fire');
+    expect((await eraOf(page)).byTime).toBe(false);
+    await expect(page.getByTestId('era-label')).toHaveAttribute('data-era', 'fire');
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'fire-sky');
+    await page.evaluate((ms) => (window as unknown as { __chicken: CreatureBridge }).__chicken.fastForward(ms), ERA_MAX_MS + 100);
+    await expect.poll(async () => (await eraOf(page)).id, { timeout: 5000 }).toBe('big-cats');
+    expect((await eraOf(page)).byTime).toBe(true);
+    expect((await eraOf(page)).queued).toEqual(CREATURE_ORDER);
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'night-yard');
+    await expect(page.getByTestId('creature-root')).toHaveCount(0);
+  });
+});
+
+test.describe('chicken game v2 kitty', () => {
+  test('the kitty stalks, pounces, holds 4-6 s with the aura off and clicks scoring, then runs off', async ({ page }) => {
+    await enterBigCats(page);
+    await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.setDropRoll(0.99));
+    expect(await forceCreature(page, 'kitty')).toBe(true);
+    await waitCreaturePhase(page, ['enter'], 8000);
+    await expect(page.getByTestId('creature-root')).toHaveAttribute('data-kind', 'kitty');
+    await waitCreaturePhase(page, ['hold']);
+    const held = await creatureOf(page);
+    expect(held.holdMs).toBeGreaterThanOrEqual(KITTY_HOLD_MS[0]);
+    expect(held.holdMs).toBeLessThanOrEqual(KITTY_HOLD_MS[1]);
+    await expect(page.getByTestId('creature-banner')).toHaveCSS('opacity', '1');
+    const holdStart = Date.now();
+    await page.waitForTimeout(300);
+    const before = await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.state());
+    expect(before.auraDrawn).toBe(false);
+    await expect
+      .poll(
+        async () => {
+          await page.getByTestId('chicken').click({ force: true });
+          await page.waitForTimeout(250);
+          return page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.state().score);
+        },
+        { timeout: 3000 }
+      )
+      .toBeGreaterThan(before.score);
+    await waitCreaturePhase(page, ['leave', 'done']);
+    const heldFor = Date.now() - holdStart;
+    expect(heldFor).toBeGreaterThanOrEqual(KITTY_HOLD_MS[0] - 400);
+    expect(heldFor).toBeLessThanOrEqual(KITTY_HOLD_MS[1] + 800);
+    await waitCreaturePhase(page, ['done'], 6000);
+    await expect(page.getByTestId('creature-root')).toHaveCount(0);
+    expect((await creatureOf(page)).dropped).toBe(true);
+    expect(await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.inventory())).not.toContainEqual(expect.objectContaining({ id: 'yarn-ball' }));
+  });
+
+  test('clicking the kitty shortens the hold; a forced roll drops the yarn ball into the bag', async ({ page }) => {
+    await enterBigCats(page);
+    await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.setDropRoll(0));
+    await forceCreature(page, 'kitty');
+    await waitCreaturePhase(page, ['hold']);
+    const t0 = Date.now();
+    for (let i = 0; i < 9; i++) await page.getByTestId('creature-body').click({ force: true });
+    await waitCreaturePhase(page, ['leave', 'done']);
+    expect(Date.now() - t0).toBeLessThan(KITTY_HOLD_MS[0]);
+    await expect.poll(
+      async () => (await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.inventory())).find((i) => i.id === 'yarn-ball')?.count ?? 0,
+      { timeout: 5000 }
+    ).toBe(1);
+  });
+});
+
+test.describe('chicken game v2 tiger and lion', () => {
+  test('the tiger chases, always misses, and leaves within 5-10 s; nothing else can join it', async ({ page }) => {
+    await enterBigCats(page);
+    expect(await forceCreature(page, 'tiger')).toBe(true);
+    await waitCreaturePhase(page, ['enter'], 8000);
+    expect(await forceCreature(page, 'lion')).toBe(false);
+    await expect(page.getByTestId('creature-root')).toHaveCount(1);
+    await expect(page.getByTestId('creature-body')).toHaveCount(0);
+    await waitCreaturePhase(page, ['done'], BIG_CAT_STAY_MS[1] + 6000);
+    const v = await creatureOf(page);
+    expect(v.misses).toBeGreaterThanOrEqual(1);
+    expect(v.minClearance).not.toBeNull();
+    expect(v.minClearance ?? -1).toBeGreaterThan(0);
+    expect(v.stayMs).toBeGreaterThanOrEqual(BIG_CAT_STAY_MS[0]);
+    expect(v.stayMs).toBeLessThanOrEqual(BIG_CAT_STAY_MS[1]);
+    const onScreen = v.leftAt - v.enteredAt;
+    expect(onScreen).toBeGreaterThanOrEqual(BIG_CAT_STAY_MS[0] - 1000);
+    expect(onScreen).toBeLessThanOrEqual(BIG_CAT_STAY_MS[1] + 1000);
+    expect(await forceCreature(page, 'lion')).toBe(true);
+    await waitCreaturePhase(page, ['enter', 'act'], 8000);
+    await expect(page.getByTestId('creature-root')).toHaveAttribute('data-kind', 'lion');
+  });
+
+  test('the lion misses too; 15 mane clicks tame it and a forced roll drops the golden mane', async ({ page }) => {
+    await enterBigCats(page);
+    await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.setDropRoll(0));
+    await forceCreature(page, 'lion');
+    await waitCreaturePhase(page, ['act']);
+    const mane = page.getByTestId('creature-target-mane');
+    await expect(mane).toBeVisible();
+    const box = await mane.boundingBox();
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(56);
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(56);
+    const before = await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.state().score);
+    for (let i = 0; i < LION_MANE_CLICKS; i++) await mane.click({ force: true });
+    const v = await creatureOf(page);
+    expect(v.tamed).toBe(true);
+    expect(await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.state().score)).toBeGreaterThanOrEqual(before + LION_MANE_CLICKS * CREATURE_SPECS.lion.targets[0].raw);
+    await expect(page.getByTestId('fly-to-bag')).toBeVisible();
+    await expect.poll(
+      async () => (await page.evaluate(() => (window as unknown as { __chicken: CreatureBridge }).__chicken.inventory())).find((i) => i.id === 'golden-mane')?.count ?? 0,
+      { timeout: 5000 }
+    ).toBe(1);
+    await waitCreaturePhase(page, ['done'], BIG_CAT_STAY_MS[1] + 6000);
+    const done = await creatureOf(page);
+    if (done.minClearance !== null) expect(done.minClearance).toBeGreaterThan(0);
+    await page.evaluate(() => (window as unknown as { __chicken: { useItem: (id: string) => void } }).__chicken.useItem('golden-mane'));
+    await expect(page.getByTestId('golden-mane')).toBeVisible();
+  });
+});

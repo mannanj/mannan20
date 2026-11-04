@@ -40,6 +40,14 @@ export const SCREAM_TUNING: Record<string, { weight: number; rateMul: number }> 
 const SCREAM_VOLUMES = new Map(SCREAMS.map((def) => [def.key, def.volume]));
 const SCREAM_FADE_OUT_MS = 28;
 
+export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar';
+export const CREATURE_SOUNDS: Record<CreatureSoundKey, SoundDef> = {
+  meow: { key: 'meow', file: 'cat-meow.mp3', volume: 0.7 },
+  hiss: { key: 'hiss', file: 'cat-hiss.mp3', volume: 0.6 },
+  growl: { key: 'growl', file: 'tiger-growl.mp3', volume: 0.7 },
+  roar: { key: 'roar', file: 'lion-roar.mp3', volume: 0.75 },
+};
+
 export interface LoadProgress {
   loaded: number;
   failed: number;
@@ -332,6 +340,7 @@ class ChickenAudio {
   private risers = new Map<string, Howl>();
   private hawks = new Map<string, Howl>();
   private hawkIndex = 0;
+  private creatures = new Map<CreatureSoundKey, Howl>();
   private lastHawkAt = 0;
   private listeners = new Set<ProgressListener>();
   private progress: LoadProgress = {
@@ -526,6 +535,17 @@ class ChickenAudio {
     }
     this.ensureSynth()?.riser(final);
     return { key, synth: true };
+  }
+
+  playCreature(key: CreatureSoundKey): void {
+    this.resumeContext();
+    const def = CREATURE_SOUNDS[key];
+    let howl = this.creatures.get(key);
+    if (!howl) {
+      howl = new Howl({ src: [`${LOCAL_SOUND_BASE}/${def.file}`], volume: def.volume });
+      this.creatures.set(key, howl);
+    }
+    howl.play();
   }
 
   crackle(): void {
