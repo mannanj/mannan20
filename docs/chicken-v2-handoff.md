@@ -38,3 +38,18 @@ Phoenix at 25,000; collected toasted feathers have no use yet; the char is never
 
 ## Worktrees
 `.worktrees/chicken-escape` (main line; dev server :3861), plus `chicken-311`, `chicken-polish` and `chicken-cosmos` (all merged, safe to remove).
+
+
+## Status (2026-11-04): endless phase deployed
+Prod site version `0f431f60` (39/39 bindings). Live behind `?variant=2`:
+- Pacing (catch-up, Frenzy, Multiply x3–x100, Chain Lightning, Golden Eggs/golden chickens), ~11–14 min to the phoenix.
+- Silhouette aura, red → black/red lightning, the fire arc and fire form.
+- Endless eras: fire (25k), big cats (33k: kitty hold, tiger and lion always miss), Myth I (41k: cyclops, hydra), Myth II (49k: Cerberus, gate key, real-chicken toast at 50k), enchanted forest (57k: living trees, the sword, up to 1,000 chickens at ~60 fps), then laps from 65k with phoenix 2, faster creatures, half-chance repeat drops and the Mystery ??? orb.
+- Fixes during review: chalk scenery hidden in escape stages, no-WebGL Jupiter fallback, readable HUD in every era (z-[8]), kitty-hold clicks score, toast/banner/HP-bar placement.
+- Jev: claw-aware, orb/skin/creature strategy (`scripts/jev/strategy.mjs`), ~$0.017/min; eagle-feather fix in `d7df22a`. Full prod run: 195,278 posted as My Name Jev. Fable's strategy review: `scripts/jev/STRATEGY-REVIEW.md`.
+
+## Follow-ups
+- Real-chicken mode (Task 313: codes in the bag, camera squeezes, saved progress, crowned leaderboards), your-world mode (Task 312), more orbs from Task 315.
+- The phoenix-feather Jev clip passes 3/4 (bag use after Jupiter Martians occasionally misses).
+- Known timing flakes under load: hawk feather, belly hug, eagle talon sizes, hydra regrow (all pass on retry).
+- Art sources (free / web / AI) are logged in `docs/chicken-art-sources.md`; AI image spend in `scripts/birds/budget.json`.
