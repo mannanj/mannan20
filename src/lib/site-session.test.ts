@@ -113,6 +113,12 @@ describe('public-key (Ed25519) session signature', () => {
 });
 
 describe('a revoked session', () => {
+  test('two sign-ins in the same second are different sessions', async () => {
+    process.env.MANNAN_SESSION_SECRET = 'test-secret-with-enough-entropy';
+    const [a, b] = await Promise.all([1, 2].map(() => session.createSiteSessionCookie({ email: 'a@b.c', role: 'user' })));
+    expect(a.split(';')[0]).not.toBe(b.split(';')[0]);
+  });
+
   test('stops reading as signed in, judged on the exact cookie', async () => {
     process.env.MANNAN_SESSION_SECRET = 'test-secret-with-enough-entropy';
     const cookie = (await session.createSiteSessionCookie({ email: 'a@b.c', role: 'user' })).split(';')[0];
