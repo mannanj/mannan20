@@ -16,14 +16,19 @@ Everything below lives on `main` (latest `652ccd0`) and is served only at `/game
 ## Tests
 `e2e/chicken-game-v2.spec.ts` + `e2e/chicken-game.spec.ts`: 98 passed, 3 skipped, 1 timing-flaky under full load ("hawk skin x1.25"; passes alone). State worker: 11/11.
 
-## Remaining (resume here, in order)
-1. **QA round** with an independent screenshot-only reviewer. Known artifacts: the Sun shows a crescent shadow (shaded like a planet); the chicken's purple aura spikes show around vehicles; purple feather litter; a yellow blob in the exhaust over Earth; thin vertical streaks in the black-hole scene; text over Jupiter's bright clouds and ground needs a scrim; the hawk skin's belly reads like a visor.
-2. **Deploy v2 to prod** (approved): `rm -rf .next`; `bunx opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion`; mint the `full-stack-project` token; deploy `--env production`; diff the 38 bindings; verify that `/game` is unchanged and `?variant=2` works.
-3. **Deploy the state worker** (`-c state-worker/wrangler.jsonc`), then run the admin rename `jev` → "My Name Jev" (owner session from keychain `mannan-session-secret`; save the new owner id to keychain `chicken-game-jev-owner`). Verify the route returns 404 without a session and 200 with one.
-4. **Upload the hawk screams** to R2: `bun scripts/upload-chicken-sounds.mjs`.
-5. **Next 16** (approved): rebase branch `next16-upgrade` (`.claude/worktrees/agent-aee559fc191cebb8f`, commit 87ffbc1) onto main, re-run the build without the flag plus the suites, deploy, verify, and roll back if broken. Then drop `--dangerouslyUseUnsupportedNextVersion`.
-6. **Final Jev walkthrough** on prod `?variant=2`, recorded with audio to the Desktop, posted as "My Name Jev".
-7. Future ideas: Task 312 (your-world mode) and Task 313 (real-chicken squeezes, codes, saved progress, crowned boards).
+## Status (2026-11-03): DEPLOYED
+- QA: internal round + independent screenshot-only review (1 blocker / 14 majors) + Fable fix round; re-reviewed; no blockers/majors left (`tasks/task-314.md`, `~/Desktop/chicken-game-new-designs/9-qa/`).
+- Next.js 16.4.3 + @opennextjs/cloudflare 1.20.13 on main; prod deployed (site version `d235a3a1`, 38/38 bindings), no unsupported-version flag.
+- Prod verified: `/`, `/garden`, `/upload`, `/mcp`, `/game` (original), `/game?variant=2` (v2).
+- State worker deployed (`a02590bd`, admin board rename); old `jev` row renamed to **My Name Jev**; route 404 without owner session, 200 with. Jev owner id in keychain `chicken-game-jev-owner`.
+- Hawk screams uploaded to R2 (`sounds/chicken/hawk-scream-*.mp3`).
+- Final Jev walkthrough on prod: `~/Desktop/jev-plays-chicken-2026-11-04T00-57-40.mp4` (8 min, audio), score 2,041 posted as My Name Jev.
+
+## Follow-ups
+- Jev player: add a talon Box question so it can free the chicken from birds (final run stalled at the hawk with front claw 1/25 for ~4 min).
+- Minors from the independent review (logged in task-314): chalk start scene, cartoon plane/clouds, orb label size, bag panel contrast, small header tap targets, asteroid belt detail.
+- `AGENTS.md` was rewritten by Next's install in the next16 worktree; left uncommitted for review.
+- Tasks 312 (your-world mode) and 313 (real squeezes, codes, saved progress, crowned boards) are future ideas.
 
 ## Spend
 Images (OpenRouter): $3.54 session total (`scripts/birds/budget.json`); about $1.25 of that counts against the $5 approved for remaining generation. Jev (TypeSafe): about $0.6–0.7.
