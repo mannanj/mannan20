@@ -9,3 +9,12 @@ CREATE TABLE IF NOT EXISTS revoked_site_session (
   expires_at INTEGER NOT NULL,
   revoked_by TEXT NOT NULL
 );
+
+-- "Sign out everywhere": every session this account was issued before
+-- not_before (ms) is refused. One row per account, so it covers sessions nothing
+-- ever recorded.
+CREATE TABLE IF NOT EXISTS session_cutoff (
+  email TEXT PRIMARY KEY,
+  not_before INTEGER NOT NULL,
+  revoked_by TEXT NOT NULL
+);

@@ -12,7 +12,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
  */
 
 interface D1Like {
-  prepare(sql: string): { bind(...values: unknown[]): { first(): Promise<unknown>; run(): Promise<unknown> } };
+  prepare(sql: string): { bind(...values: unknown[]): { first(): Promise<unknown>; run(): Promise<unknown>; all(): Promise<{ results: unknown[] }> } };
 }
 
 export const hashSession = (cookieValue: string) => createHash('sha256').update(cookieValue).digest('hex');
@@ -25,10 +25,23 @@ function database(): D1Like | null {
   }
 }
 
-export async function isSessionRevoked(cookieValue: string, db: D1Like | null = database()): Promise<boolean> {
+/** When a session was issued, in ms. Sessions always live this long, so `exp` tells. */
+export const issuedAtMs = (expSeconds: number, ttlSeconds: number) => (expSeconds - ttlSeconds) * 1000;
+
+export async function isSessionRevoked(
+  cookieValue: string,
+  session: { email: string; issuedAt: number },
+  db: D1Like | null = database(),
+): Promise<boolean> {
   if (!db) return false;
   try {
-    const hit = await db.prepare('SELECT 1 AS hit FROM revoked_site_session WHERE session_hash = ?').bind(hashSession(cookieValue)).first();
+    const hit = await db
+      .prepare(
+        `SELECT 1 AS hit WHERE EXISTS (SELECT 1 FROM revoked_site_session WHERE session_hash = ?)
+            OR EXISTS (SELECT 1 FROM session_cutoff WHERE email = ? AND not_before > ?)`,
+      )
+      .bind(hashSession(cookieValue), session.email, session.issuedAt)
+      .first();
     return hit !== null && hit !== undefined;
   } catch (error) {
     console.error('Could not read the session revocation list:', error);
@@ -46,6 +59,27 @@ export async function revokeSession(
     .bind(input.sessionHash, input.email, Date.now(), input.expiresAt, input.revokedBy)
     .run();
   return true;
+}
+
+/** End every session this account holds, this browser's included. */
+export async function revokeAllSessions(email: string, revokedBy: string, now = Date.now(), db: D1Like | null = database()): Promise<boolean> {
+  if (!db) return false;
+  await db
+    .prepare('INSERT OR REPLACE INTO session_cutoff (email, not_before, revoked_by) VALUES (?, ?, ?)')
+    .bind(email, now, revokedBy)
+    .run();
+  return true;
+}
+
+/** Everything still in force, for an app that checks sessions itself. */
+export async function revocationList(now = Date.now(), db: D1Like | null = database()): Promise<{ hashes: string[]; cutoffs: Record<string, number> } | null> {
+  if (!db) return null;
+  const hashes = await db.prepare('SELECT session_hash FROM revoked_site_session WHERE expires_at > ?').bind(now).all();
+  const cutoffs = await db.prepare('SELECT email, not_before FROM session_cutoff').bind().all();
+  return {
+    hashes: (hashes.results as { session_hash: string }[]).map((r) => r.session_hash),
+    cutoffs: Object.fromEntries((cutoffs.results as { email: string; not_before: number }[]).map((r) => [r.email, r.not_before])),
+  };
 }
 
 /** `Authorization: Bearer <secret>`, compared in constant time. No secret set refuses everyone. */

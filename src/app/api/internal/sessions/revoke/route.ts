@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { authorizedToRevoke, revokeSession } from '@/lib/session-revocation';
+import { authorizedToRevoke, revocationList, revokeSession } from '@/lib/session-revocation';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,4 +20,13 @@ export async function POST(request: Request) {
   }
   const saved = await revokeSession({ sessionHash, email, expiresAt, revokedBy });
   return saved ? NextResponse.json({ success: true }) : NextResponse.json({ error: 'Unavailable' }, { status: 503 });
+}
+
+/** The list itself, for an app that checks sessions without calling here each time. */
+export async function GET(request: Request) {
+  if (!authorizedToRevoke(request.headers.get('authorization'), process.env.SESSION_REVOKE_SECRET)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+  const list = await revocationList();
+  return list ? NextResponse.json(list, { headers: { 'Cache-Control': 'no-store' } }) : NextResponse.json({ error: 'Unavailable' }, { status: 503 });
 }

@@ -119,6 +119,11 @@ describe('a revoked session', () => {
     const value = cookie.slice(cookie.indexOf('=') + 1);
     expect(await session.readSiteSession(cookie, async () => false)).not.toBeNull();
     expect(await session.readSiteSession(cookie, async (v) => v === value)).toBeNull();
+    let asked: { email: string; issuedAt: number } | undefined;
+    const started = Date.now();
+    await session.readSiteSession(cookie, async (_v, s) => ((asked = s), false));
+    expect(asked?.email).toBe('a@b.c');
+    expect(Math.abs((asked?.issuedAt ?? 0) - started)).toBeLessThan(5_000);
   });
 
   test('an invalid session never costs a read', async () => {
