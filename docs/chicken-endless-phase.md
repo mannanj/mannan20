@@ -70,3 +70,8 @@ Each step ships alone behind `?variant=2`, with e2e cases in `e2e/chicken-game-v
 1. Cyclops as pure spectacle (the eye blinks but scores nothing), so the mix is 5 interactable / 2 spectacle. OK, or should the eye be a target with a drop?
 2. The gate key skips the rest of an era. Fine, or should it only open the forest gate once?
 3. Rotation variation is speed + half-chance drops + phoenix 2. Enough for v1 of the endless phase, or do you want creature pairs (tiger + lion together) from the second rotation?
+
+## Decisions (Mannan, 2026-11-03)
+- **Images:** "just grab images from google that look good this is a personal project ill figure out copyright later. and or find free open source ones, theres plenty to use". Use free/open-licensed photos first (Wikimedia Commons, Unsplash, Pexels, Pixabay), and web-found images where nothing free fits. Record EVERY image's source URL and license (or "unknown — web") in `docs/chicken-art-sources.md` so Mannan can review copyright later. Cut out backgrounds locally (rembg or keying); AI generation only as a last resort, within the remaining ~$3.75.
+- **Cyclops:** spectacle only.
+- **Gate key:** opens the enchanted forest once (straight into the forest era with the trees and the sword).
