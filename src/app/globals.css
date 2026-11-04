@@ -1820,3 +1820,8 @@ body.gem-rain-active #header > div:first-child {
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+.chicken-sword-cursor,
+.chicken-sword-cursor * {
+  cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cg stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M4 4 L23 23 L26 20 L7 1 Z' fill='%23dfe7ef' stroke='%235b6773' stroke-width='1.2'/%3E%3Cpath d='M6 4.5 L22 20.5' stroke='%23ffffff' stroke-width='1'/%3E%3Cpath d='M20 27 L27 20' stroke='%23b8860b' stroke-width='4'/%3E%3Cpath d='M23.5 23.5 L31 31' stroke='%235a3a12' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='2.4' fill='%23ffd700' stroke='%235a3a12' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E") 4 4, crosshair !important;
+}

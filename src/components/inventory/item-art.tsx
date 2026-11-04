@@ -32,6 +32,10 @@ function MartianFriend({ size }: { size: number }) {
   return <img src="/game/martians/pip.webp" alt="" width={size} height={size} draggable={false} className="object-contain" />;
 }
 
+function Sword({ size }: { size: number }) {
+  return <img src="/game/creatures/sword.webp" alt="" width={size} height={size} draggable={false} className="object-contain" />;
+}
+
 function GenericItem({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -87,6 +91,7 @@ const ART: Record<string, (size: number) => ReactNode> = {
   'golden-mane': (size) => <GoldenMane size={size} />,
   'hydra-scale': (size) => <HydraScale size={size} />,
   'gate-key': (size) => <GateKey size={size} />,
+  sword: (size) => <Sword size={size} />,
   'hawk-feather': (size) => <Feather size={size} fill="#b07a45" stroke="#4a2e1a" vein="#4a2e1a" />,
   'eagle-feather': (size) => <Feather size={size} fill="#f1e6cf" stroke="#3b2a18" vein="#6b4a2a" />,
   'phoenix-feather': (size) => <Feather size={size} fill="#ff7a1a" stroke="#8d1b00" vein="#fff176" />,

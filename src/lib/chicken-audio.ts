@@ -40,7 +40,7 @@ export const SCREAM_TUNING: Record<string, { weight: number; rateMul: number }> 
 const SCREAM_VOLUMES = new Map(SCREAMS.map((def) => [def.key, def.volume]));
 const SCREAM_FADE_OUT_MS = 28;
 
-export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar' | 'rumble' | 'snake' | 'bark';
+export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar' | 'rumble' | 'snake' | 'bark' | 'creak' | 'chop' | 'swordpull' | 'slash';
 export const CREATURE_SOUNDS: Record<CreatureSoundKey, SoundDef> = {
   meow: { key: 'meow', file: 'cat-meow.mp3', volume: 0.7 },
   hiss: { key: 'hiss', file: 'cat-hiss.mp3', volume: 0.6 },
@@ -49,6 +49,10 @@ export const CREATURE_SOUNDS: Record<CreatureSoundKey, SoundDef> = {
   rumble: { key: 'rumble', file: 'giant-rumble.mp3', volume: 0.6 },
   snake: { key: 'snake', file: 'snake-hiss.mp3', volume: 0.65 },
   bark: { key: 'bark', file: 'dog-bark.mp3', volume: 0.7 },
+  creak: { key: 'creak', file: 'tree-creak.mp3', volume: 0.7 },
+  chop: { key: 'chop', file: 'wood-chop.mp3', volume: 0.55 },
+  swordpull: { key: 'swordpull', file: 'sword-pull.mp3', volume: 0.7 },
+  slash: { key: 'slash', file: 'sword-slash.mp3', volume: 0.45 },
 };
 
 export interface LoadProgress {

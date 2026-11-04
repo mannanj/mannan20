@@ -1,7 +1,7 @@
 {
   "cap_usd": 4.29,
   "stop_at_usd": 4.29,
-  "spent_usd": 3.968749,
+  "spent_usd": 4.08527,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -516,8 +516,42 @@
       "purpose": "cerberus lunging frame (retake 2: three-quarter view so the three heads read)",
       "cost_usd": 0.0388057,
       "gen_id": "gen-1793776877-W9bY9GETECslzVmDegwc"
+    },
+    {
+      "at": "2026-11-04T08:22:05.959Z",
+      "id": "forest-tree-walk",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "living tree walking frame",
+      "cost_usd": 0.0001357,
+      "gen_id": "gen-1793780525-zcXSsKgEDHqfGgobQ24W"
+    },
+    {
+      "at": "2026-11-04T08:22:10.650Z",
+      "id": "forest-tree-chipped",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "living tree chipped/releasing frame",
+      "cost_usd": 0.0387807,
+      "gen_id": "gen-1793780525-PI3gmi3NYK4wR44AApcz"
+    },
+    {
+      "at": "2026-11-04T08:22:11.129Z",
+      "id": "forest-tree-grab",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "living tree grabbing frame",
+      "cost_usd": 0.0388071,
+      "gen_id": "gen-1793780525-2VrdqM5ExKhW03CvyyrB"
+    },
+    {
+      "at": "2026-11-04T08:22:22.904Z",
+      "id": "forest-tree-walk",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "living tree walking frame",
+      "cost_usd": 0.0387982,
+      "gen_id": "gen-1793780537-TYSOYAoPe22TqRiSnHGI"
     }
   ],
   "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89).",
   "task_319_note": "Task 319 allowance: $0.75 on top of the $3.54 spent before it (cap 4.29, stop 4.29)."
+,
+  "task_317_note": "Task 317 allowance: $0.75 on top of the $3.93 spent before it (cap 4.68); spent $0.155 (4 calls)."
 }

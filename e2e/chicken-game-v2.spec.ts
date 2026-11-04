@@ -2352,12 +2352,13 @@ test.describe('chicken game v2 myth eras', () => {
     ENDLESS_ERAS.forEach((e, i) => expect(e.from).toBe(ENDLESS_FROM + ERA_SCORE_STEP * i));
     expect(ENDLESS_ERAS[2].creatures.map((c) => c.kind)).toEqual(['cyclops', 'hydra']);
     expect(ENDLESS_ERAS[3].creatures.map((c) => c.kind)).toEqual(['cerberus']);
+    expect(ENDLESS_ERAS[4].creatures.map((c) => c.kind)).toEqual(['tree', 'tree']);
     expect(CREATURE_SPECS.cyclops.mode).toBe('spectacle');
     expect(CREATURE_SPECS.cyclops.targets).toHaveLength(0);
     expect(CREATURE_SPECS.cerberus.dropChance).toBe(1);
   });
 
-  test('the temple, the gate and the forest scenes follow the eras and the forest placeholder reads', async ({ page }) => {
+  test('the temple, the gate and the forest scenes follow the eras and the forest photo fades in', async ({ page }) => {
     await enterEra(page, 'myth-1');
     await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'temple');
     await expect(page.getByTestId('era-label')).toHaveText(/myth era/i);
@@ -2365,7 +2366,8 @@ test.describe('chicken game v2 myth eras', () => {
     await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'temple-gate');
     await page.evaluate((id) => (window as unknown as { __chicken: MythBridge }).__chicken.forceEra(id), GATE_KEY_ERA_ID);
     await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'forest');
-    await expect(page.getByTestId('forest-scene')).toContainText('the forest awaits');
+    await expect(page.getByTestId('forest-scene')).toHaveCSS('background-image', /forest\.webp/);
+    await expect(page.getByTestId('forest-scene')).toHaveCSS('transition-duration', '5s');
   });
 
   test('the real-chicken toast shows once at 50,000', async ({ page }) => {
@@ -2468,6 +2470,7 @@ test.describe('chicken game v2 myth eras', () => {
     await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.useItem('gate-key'));
     await expect.poll(async () => (await eraOf(page)).id).toBe(GATE_KEY_ERA_ID);
     await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'forest');
+    expect((await eraOf(page)).queued).toEqual(['tree', 'tree']);
   });
 
   test('the lion counter sits by the mane, not by the chicken, and clears the score box', async ({ page }) => {
@@ -2481,5 +2484,190 @@ test.describe('chicken game v2 myth eras', () => {
     const dist = Math.hypot(h.x + h.width / 2 - (mane.x + mane.width / 2), h.y + h.height / 2 - (mane.y + mane.height / 2));
     expect(dist).toBeLessThanOrEqual(Math.max(img.width, img.height));
     expect(apart(h, score)).toBe(true);
+  });
+});
+
+import { SWORD_PULLS, TREE_HP, TREE_PECK_PER_S } from '../src/components/game/creature-event';
+import { CLONE_MERGE_MIN_MS, CLONE_MERGE_SPREAD_MS, CLONE_RETURN_TIMEOUT_MS, LOD_TIER_FROM, SWORD_CURSOR_CLASS, SWORD_MAX_CHICKENS } from '../src/components/game/sword';
+
+interface ForestBridge extends MythBridge {
+  swarm: (n: number) => void;
+  cut: (x0: number, y0: number, x1: number, y1: number) => number;
+  sword: () => { equipped: boolean; splits: number; renderTier: string; groups: number };
+  grantItem: (id: string, fromX?: number, fromY?: number) => void;
+  forceScene: (name: string) => void;
+  creature: () => CreatureView & { swordIn: boolean; swordPulls: number; hp: number | null; targetHits: Record<string, number>; tamed: boolean };
+  state: () => { score: number; auraDrawn: boolean; era: string | null; chickens: number; clones: number; spriteClones: number; renderTier: string; swordEquipped: boolean; swordSplits: number; cloneGroups: number; clonePieces: number; bird: { rightNeed: number } };
+}
+
+const forestState = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.state());
+const forestCreature = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.creature());
+const PERF_FRAMES = 300;
+const PERF_DROPPED_FRAC = 0.1;
+const MERGE_WAIT_MS = CLONE_MERGE_MIN_MS + CLONE_MERGE_SPREAD_MS + CLONE_RETURN_TIMEOUT_MS + 6000;
+
+const frameStats = (page: Page) =>
+  page.evaluate(
+    (frames) =>
+      new Promise<{ p95: number; dropped: number; avg: number }>((res) => {
+        const t: number[] = [];
+        let last = performance.now();
+        const step = (ts: number) => {
+          t.push(ts - last);
+          last = ts;
+          if (t.length < frames) requestAnimationFrame(step);
+          else {
+            const avg = t.reduce((a, b) => a + b, 0) / t.length;
+            const dropped = t.filter((x) => x > 33.4).length;
+            t.sort((a, b) => a - b);
+            res({ p95: t[Math.floor(t.length * 0.95)], dropped, avg });
+          }
+        };
+        requestAnimationFrame(step);
+      }),
+    PERF_FRAMES
+  );
+
+test.describe('Chicken v2 endless: forest, trees, sword and the render tiers', () => {
+  test('render tiers: DOM up to 60 clones, canvas sprites to 300, LOD above', async ({ page }) => {
+    await enterEra(page, GATE_KEY_ERA_ID);
+    expect((await forestState(page)).renderTier).toBe('dom');
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.swarm(100));
+    let s = await forestState(page);
+    expect(s.chickens).toBe(100);
+    expect(s.renderTier).toBe('sprite');
+    await expect(page.getByTestId('chicken-clone')).toHaveCount(CLONE_DOM_LIMIT);
+    expect(s.spriteClones).toBe(99 - CLONE_DOM_LIMIT);
+    await page.evaluate((n) => (window as unknown as { __chicken: ForestBridge }).__chicken.swarm(n), LOD_TIER_FROM + 50);
+    s = await forestState(page);
+    expect(s.renderTier).toBe('lod');
+    await expect(page.getByTestId('chicken-clone')).toHaveCount(CLONE_DOM_LIMIT);
+    await page.evaluate((n) => (window as unknown as { __chicken: ForestBridge }).__chicken.swarm(n), SWORD_MAX_CHICKENS + 500);
+    expect((await forestState(page)).chickens).toBeLessThanOrEqual(SWORD_MAX_CHICKENS);
+  });
+
+  test('1,000 chickens keep p95 frame time under budget with at most 10 % dropped frames', async ({ page }) => {
+    test.setTimeout(60_000);
+    await enterEra(page, GATE_KEY_ERA_ID);
+    await page.evaluate((n) => (window as unknown as { __chicken: ForestBridge }).__chicken.swarm(n), SWORD_MAX_CHICKENS);
+    await page.waitForTimeout(2000);
+    const s = await forestState(page);
+    expect(s.chickens).toBe(SWORD_MAX_CHICKENS);
+    expect(s.renderTier).toBe('lod');
+    const stats = await frameStats(page);
+    expect(stats.p95, JSON.stringify(stats)).toBeLessThan(PERF_P95_MS);
+    expect(stats.dropped, JSON.stringify(stats)).toBeLessThanOrEqual(PERF_FRAMES * PERF_DROPPED_FRAC);
+    await expect(page.getByTestId('chicken-score')).toBeVisible();
+  });
+
+  test('a living tree grabs the chicken; the chicken pecks on its own, bark clicks score and chip, 0 HP releases', async ({ page }) => {
+    test.setTimeout(90_000);
+    await enterEra(page, GATE_KEY_ERA_ID);
+    expect(await forceCreature(page, 'tree')).toBe(true);
+    await waitCreaturePhase(page, ['enter'], 20_000);
+    await expect(page.getByTestId('creature-img')).toHaveAttribute('src', /tree-walk/);
+    await waitCreaturePhase(page, ['hold'], 30_000);
+    await expect(page.getByTestId('creature-img')).toHaveAttribute('src', /tree-grab/);
+    expect((await forestState(page)).auraDrawn).toBe(false);
+    const hp = page.getByTestId('tree-hp');
+    await expect(hp).toBeVisible();
+    const bark = page.getByTestId('creature-target-bark');
+    await expect(bark).toBeVisible();
+    const c0 = await forestCreature(page);
+    await page.waitForTimeout(1500);
+    const c1 = await forestCreature(page);
+    expect(c1.hp).not.toBeNull();
+    expect(c1.hp as number).toBeLessThan(c0.hp as number);
+    expect((c0.hp as number) - (c1.hp as number)).toBeGreaterThanOrEqual(TREE_PECK_PER_S);
+    const before = (await forestState(page)).score;
+    for (let i = 0; i < 10; i++) await bark.click({ force: true });
+    const c2 = await forestCreature(page);
+    expect((c1.hp as number) - (c2.hp as number)).toBeGreaterThanOrEqual(10);
+    expect((await forestState(page)).score).toBeGreaterThanOrEqual(before + 10 * 3);
+    const [h, bar, sc, chicken] = await Promise.all([page.getByTestId('creature-hint').boundingBox(), hp.boundingBox(), page.getByTestId('chicken-score').boundingBox(), page.getByTestId('chicken').boundingBox()]);
+    expect(bar && sc && apart(bar, sc)).toBe(true);
+    if (h) expect(apart(h, sc as NonNullable<typeof sc>)).toBe(true);
+    const vw = page.viewportSize()?.width ?? 0;
+    const vh = page.viewportSize()?.height ?? 0;
+    expect(chicken && chicken.x >= 0 && chicken.y >= 0 && chicken.x + chicken.width <= vw && chicken.y + chicken.height <= vh).toBe(true);
+    for (let i = 0; i < TREE_HP; i++) {
+      if ((await forestCreature(page)).tamed) break;
+      await bark.click({ force: true });
+    }
+    expect((await forestCreature(page)).tamed).toBe(true);
+    await waitCreaturePhase(page, ['sit', 'leave', 'done'], 5000);
+    await expect(page.getByTestId('creature-img')).toHaveAttribute('src', /tree-chipped/);
+    await expect(hp).toBeHidden();
+    await expect(page.getByTestId('creature-banner')).toHaveText(/lets go/);
+  });
+
+  test('the sword tree: 25 pulls free the sword into the bag; equip, swipe-split a cluster, pieces merge back, toggle off', async ({ page }) => {
+    test.setTimeout(120_000);
+    await enterEra(page, GATE_KEY_ERA_ID);
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.forceScene('sword'));
+    await waitCreaturePhase(page, ['enter', 'act', 'hold'], 20_000);
+    const sword = page.getByTestId('creature-target-sword');
+    await expect(sword).toBeVisible();
+    await expect(page.getByTestId('tree-sword')).toBeVisible();
+    expect((await forestCreature(page)).swordIn).toBe(true);
+    await waitCreaturePhase(page, ['hold'], 30_000);
+    const before = (await forestState(page)).score;
+    for (let i = 0; i < SWORD_PULLS * 2 && (await forestCreature(page)).swordPulls < SWORD_PULLS - 1; i++) await sword.click({ force: true });
+    expect((await forestCreature(page)).swordPulls).toBe(SWORD_PULLS - 1);
+    await expect(sword).toHaveAttribute('data-clicks', String(SWORD_PULLS - 1));
+    await expect(page.getByTestId('creature-hint')).toContainText(`${SWORD_PULLS - 1} / ${SWORD_PULLS}`);
+    await sword.click({ force: true });
+    expect((await forestState(page)).score).toBe(before);
+    await expect(page.getByTestId('fly-to-bag')).toBeVisible();
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.inventory())).find((i) => i.id === 'sword')?.count ?? 0, { timeout: 5000 }).toBe(1);
+    await expect(sword).toBeHidden();
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.useItem('sword'));
+    expect((await forestState(page)).swordEquipped).toBe(true);
+    await expect(page.getByTestId('sword-equipped')).toBeVisible();
+    await expect(page.locator(`.${SWORD_CURSOR_CLASS}`)).toHaveCount(1);
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.swarm(90));
+    await page.waitForTimeout(300);
+    const s0 = await forestState(page);
+    const cutStart = await page.evaluate(() => {
+      const b = (window as unknown as { __chicken: ForestBridge }).__chicken;
+      let n = 0;
+      for (let i = 0; i < 5; i++) n += b.cut(0, 100 + i * 120, window.innerWidth, 120 + i * 120);
+      return n;
+    });
+    expect(cutStart).toBeGreaterThan(5);
+    const s1 = await forestState(page);
+    expect(s1.clonePieces).toBeGreaterThanOrEqual(cutStart * 2);
+    expect(s1.chickens).toBeGreaterThanOrEqual(s0.chickens + (cutStart - 1) * 2);
+    expect(s1.score).toBe(s0.score + cutStart);
+    expect(s1.swordSplits).toBe(cutStart);
+    expect(s1.cloneGroups).toBeGreaterThan(0);
+    await page.mouse.move(20, 400);
+    await page.mouse.down();
+    for (let x = 20; x < 600; x += 40) await page.mouse.move(x, 400);
+    await page.mouse.up();
+    expect((await forestState(page)).swordSplits).toBeGreaterThanOrEqual(cutStart);
+    const afterSwipe = (await forestState(page)).clonePieces;
+    await page.evaluate((ms) => (window as unknown as { __chicken: ForestBridge }).__chicken.fastForward(ms), CLONE_MERGE_MIN_MS + CLONE_MERGE_SPREAD_MS);
+    await expect.poll(async () => (await forestState(page)).clonePieces, { timeout: MERGE_WAIT_MS, intervals: [500] }).toBeLessThan(afterSwipe);
+    expect((await forestState(page)).chickens).toBeLessThanOrEqual(SWORD_MAX_CHICKENS);
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.useItem('sword'));
+    expect((await forestState(page)).swordEquipped).toBe(false);
+    await expect(page.getByTestId('sword-equipped')).toBeHidden();
+    await expect(page.locator(`.${SWORD_CURSOR_CLASS}`)).toHaveCount(0);
+  });
+
+  test('the gate key opens the forest once and the trees are queued; the swarm-1000 dev scene arrives equipped', async ({ page }) => {
+    await enterEra(page, 'myth-2');
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.grantItem('gate-key'));
+    await page.evaluate(() => (window as unknown as { __chicken: ForestBridge }).__chicken.useItem('gate-key'));
+    await expect.poll(async () => (await eraOf(page)).id).toBe(GATE_KEY_ERA_ID);
+    expect((await eraOf(page)).queued).toEqual(['tree', 'tree']);
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'forest');
+    await gotoGame(page, '?variant=2&start=swarm-1000');
+    await expect.poll(async () => (await forestState(page)).chickens, { timeout: 15_000 }).toBe(SWORD_MAX_CHICKENS);
+    const s = await forestState(page);
+    expect(s.swordEquipped).toBe(true);
+    expect(s.renderTier).toBe('lod');
+    expect((await eraOf(page)).id).toBe(GATE_KEY_ERA_ID);
   });
 });

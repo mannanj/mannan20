@@ -20,7 +20,7 @@ const HORIZON_HAZE_PX = 70;
 const TEMPLE_BG = '/game/scenes/temple-ruins.webp';
 const GATE_BG = '/game/scenes/temple-gate.webp';
 const GATE_PAN_PX = 60;
-const COLUMNS = [8, 20, 33, 47, 60, 74, 88] as const;
+const FOREST_BG = '/game/scenes/forest.webp';
 
 interface EndlessSceneryProps {
   scene: EndlessScene | null;
@@ -78,21 +78,15 @@ export function EndlessScenery({ scene, groundFrac }: EndlessSceneryProps) {
       </div>
       <div
         data-testid="forest-scene"
-        className={`absolute inset-0 bg-[linear-gradient(180deg,#061a10_0%,#0d3320_50%,#16502f_100%)] transition-opacity duration-[5000ms] ${scene === 'forest' ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 bg-cover bg-[position:50%_65%] transition-opacity duration-[5000ms] ${scene === 'forest' ? 'opacity-100' : 'opacity-0'}`}
+        style={{ backgroundImage: `url(${FOREST_BG})` }}
       >
-        {COLUMNS.map((x) => (
-          <div
-            key={x}
-            className="absolute bottom-[20%] w-[6%] rounded-t-full bg-[linear-gradient(90deg,#1a2e14,#2f4a22_45%,#142410)] opacity-80"
-            style={{ left: `${x}%`, height: `${38 + ((x * 7) % 23)}%` }}
-          />
-        ))}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,20,12,0.45),rgba(6,20,12,0.08)_45%,rgba(10,26,12,0.4))]" />
         <div
           data-testid="forest-ground"
-          className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,#1f4a22_0%,#143116_35%,#0a1a0b_100%)] shadow-[0_-1px_0_rgba(160,220,160,0.35)]"
+          className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,#3d5a2e_0%,#22371b_30%,#0a1a0b_100%)] shadow-[0_-1px_0_rgba(160,220,160,0.35)]"
           style={{ top: groundTop }}
         />
-        <div className="absolute left-1/2 top-[42%] -translate-x-1/2 text-sm uppercase tracking-[0.3em] text-[#bfe8c2]/70">the forest awaits</div>
       </div>
     </div>
   );

@@ -27,7 +27,10 @@ export interface EndlessEraDef {
   creatures: EraCreature[];
 }
 
-export const CAT_OFFSETS_MS: Record<CreatureKind, number> = { kitty: 15_000, tiger: 75_000, lion: 135_000, cyclops: 20_000, hydra: 90_000, cerberus: 30_000 };
+export const CAT_OFFSETS_MS: Record<CreatureKind, number> = { kitty: 15_000, tiger: 75_000, lion: 135_000, cyclops: 20_000, hydra: 90_000, cerberus: 30_000, tree: 20_000 };
+export const SECOND_TREE_AT_MS = 110_000;
+export const TREES_PER_FOREST = 2;
+export const LATER_SWORD_TREE_CHANCE = 0.3;
 
 export const ENDLESS_ERAS: EndlessEraDef[] = [
   {
@@ -74,8 +77,11 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'Enchanted forest',
     from: ENDLESS_FROM + ERA_SCORE_STEP * 4,
     scene: 'forest',
-    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'cursor3'],
-    creatures: [],
+    pool: ['eggs', 'frenzy', 'chain', 'multiply25', 'multiply100', 'cursor5'],
+    creatures: [
+      { kind: 'tree', atMs: CAT_OFFSETS_MS.tree },
+      { kind: 'tree', atMs: SECOND_TREE_AT_MS },
+    ],
   },
 ];
 

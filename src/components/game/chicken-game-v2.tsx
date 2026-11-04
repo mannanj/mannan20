@@ -327,8 +327,43 @@ import {
   tapCreatureBody,
   tapCreatureTarget,
   tickCreature,
+  swordPoint,
+  TREE_BARK_ID,
+  TREE_SWORD_ID,
   type CreatureKind,
 } from './creature-event';
+import {
+  CLONE_LEVEL_SCALE,
+  CLONE_MAX_SPLIT_LEVEL,
+  CLONE_MERGE_PROXIMITY,
+  CLONE_RETURN_SPEED,
+  CLONE_RETURN_TIMEOUT_MS,
+  CLONE_SCATTER_SPEED,
+  CLONE_SPLIT_COUNT,
+  LOD_SIZES,
+  LOD_TIER_FROM,
+  LOD_WOBBLE_PX,
+  SPRITE_WOBBLE_PX,
+  SWARM_PARTICLE_CAP,
+  SWORD_CURSOR_CLASS,
+  SWORD_HIT_PAD,
+  SWORD_ITEM_ID,
+  SWORD_MAX_CHICKENS,
+  SWORD_SPLIT_RAW,
+  SpatialGrid,
+  canCut,
+  cloneMergeDelayMs,
+  createSwordState,
+  drawSlashes,
+  flockRadiusFor,
+  lodSizeIndex,
+  mergePerSecond,
+  pushSlash,
+  renderTierFor,
+  segmentHitsRect,
+  wobbleOffset,
+} from './sword';
+import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
 import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, sceneCoversStage, shiftEraTime, type EndlessEraDef } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
 import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS } from './chicken-orbs';
@@ -656,6 +691,9 @@ interface Orb {
 }
 
 interface CloneMotion {
+  id: number;
+  level: number;
+  groupId: number;
   x: number;
   y: number;
   vx: number;
@@ -703,6 +741,20 @@ interface ChainArc {
 
 interface CloneView {
   id: number;
+  big: boolean;
+  tier: number;
+}
+
+interface CloneGroup {
+  id: number;
+  level: number;
+  parentGroupId: number;
+  members: Set<number>;
+  mergeAt: number;
+  returning: boolean;
+  returnSince: number;
+  cx: number;
+  cy: number;
   big: boolean;
   tier: number;
 }
@@ -909,6 +961,9 @@ interface ChickenBridge {
   forceEra: (id: string) => void;
   forceScene: (name: string) => void;
   shield: () => number;
+  swarm: (n: number) => void;
+  sword: () => { equipped: boolean; splits: number; renderTier: string; groups: number };
+  cut: (x0: number, y0: number, x1: number, y1: number) => number;
 }
 
 type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather' | 'phoenix-feather' | 'martian-friend'>;
@@ -952,7 +1007,13 @@ const GATE_KEY_ITEM_ID = 'gate-key';
 const SHIELD_TALON_WEIGHT = 2;
 const UNLOCK_TOAST_MS = 6000;
 const REAL_CHICKEN_TOAST = 'real-chicken mode unlocked';
-const SCENE_ERA: Record<CreatureKind, string> = { kitty: 'big-cats', tiger: 'big-cats', lion: 'big-cats', cyclops: 'myth-1', hydra: 'myth-1', cerberus: 'myth-2' };
+const SCENE_ERA: Record<CreatureKind, string> = { kitty: 'big-cats', tiger: 'big-cats', lion: 'big-cats', cyclops: 'myth-1', hydra: 'myth-1', cerberus: 'myth-2', tree: 'forest' };
+const FOREST_ERA_ID = 'forest';
+const CHIP_COLORS = ['#8b5a2b', '#c49a6c', '#5c3a1a'];
+const CHIPS_PER_CLICK = 4;
+const SWARM_LIFE_MS = 600_000;
+const SLASH_SOUND_GAP_MS = 120;
+const LOD_KEY_TIERS = 8;
 
 export function onUseItem(itemId: string): void {
   if (isFeatherSkinItem(itemId)) applyFeatherSkin(itemId);
@@ -1184,6 +1245,18 @@ function ChickenGameInner() {
   const [eraUi, setEraUi] = useState<EndlessEraDef | null>(null);
   const shieldRef = useRef(0);
   const gateKeyRef = useRef<(() => void) | null>(null);
+  const swordRef = useRef(createSwordState());
+  const gridRef = useRef(new SpatialGrid());
+  const cloneGroupsRef = useRef(new Map<number, CloneGroup>());
+  const cloneGroupIdRef = useRef(0);
+  const mergeBudgetRef = useRef(0);
+  const lodCacheRef = useRef({ skin: '', bitmaps: new Map<number, HTMLCanvasElement>() });
+  const treesThisEraRef = useRef({ era: -1, count: 0 });
+  const swordTreeNextRef = useRef(false);
+  const swordOwnedRef = useRef(false);
+  const lastSlashSoundRef = useRef(0);
+  const frameParityRef = useRef(0);
+  const cutAtRef = useRef<(x0: number, y0: number, x1: number, y1: number) => number>(() => 0);
   const unlockToastShownRef = useRef(false);
   const [unlockToast, setUnlockToast] = useState<string | null>(null);
   const sceneCovers = sceneCoversStage(eraUi?.scene ?? null);
@@ -1199,6 +1272,7 @@ function ChickenGameInner() {
     return () => window.clearTimeout(timer);
   }, [sceneCovers]);
   const [maneOn, setManeOn] = useState(false);
+  const [swordOn, setSwordOn] = useState(false);
   const multRef = useRef(1);
   const screamOverrideRef = useRef<'hawk' | null>(null);
   const scoreRef = useRef(0);
@@ -1671,7 +1745,7 @@ function ChickenGameInner() {
   );
 
   const beginHold = useCallback((id: number, e: ReactPointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0 || holdRef.current) return;
+    if (e.button !== 0 || holdRef.current || swordRef.current.equipped) return;
     const now = performance.now();
     const m = id === 0 ? null : chickMotionRef.current.get(id);
     if (id !== 0 && (!m || m.phase !== 'free' && m.phase !== 'returning' || now - m.spawnedAt < FRESH_PROTECT_MS)) return;
@@ -2070,6 +2144,13 @@ function ChickenGameInner() {
       if (id === GOLDEN_MANE_ITEM_ID) setManeOn(true);
       if (id === HYDRA_SCALE_ITEM_ID) shieldRef.current += 1;
       if (id === GATE_KEY_ITEM_ID && eraRef.current.index < eraIndexById(GATE_KEY_ERA_ID)) gateKeyRef.current?.();
+      if (id === SWORD_ITEM_ID) {
+        const sword = swordRef.current;
+        sword.equipped = !sword.equipped;
+        sword.lastX = -1;
+        sword.lastY = -1;
+        setSwordOn(sword.equipped);
+      }
     };
     return () => {
       featherSkinHandler = null;
@@ -2595,10 +2676,264 @@ function ChickenGameInner() {
   );
 
   const removeClone = useCallback((id: number) => {
+    const motion = cloneMotionRef.current.get(id);
+    if (motion && motion.groupId !== 0) {
+      const g = cloneGroupsRef.current.get(motion.groupId);
+      g?.members.delete(id);
+      if (g && g.members.size === 0) cloneGroupsRef.current.delete(g.id);
+    }
     cloneMotionRef.current.delete(id);
     cloneElsRef.current.delete(id);
-    setCloneViews((v) => v.filter((c) => c.id !== id));
+    if (!motion || !motion.sprite) setCloneViews((v) => v.filter((c) => c.id !== id));
   }, []);
+
+  const addClone = useCallback((motion: Omit<CloneMotion, 'id' | 'sprite'>, domCount: number): CloneMotion => {
+    const id = ++cloneIdRef.current;
+    const sprite = domCount >= CLONE_DOM_LIMIT || motion.level > 0;
+    const full: CloneMotion = { ...motion, id, sprite };
+    cloneMotionRef.current.set(id, full);
+    if (!sprite) setCloneViews((v) => [...v, { id, big: motion.big, tier: motion.tier }]);
+    return full;
+  }, []);
+
+  const domCloneCount = useCallback(() => {
+    let n = 0;
+    for (const c of cloneMotionRef.current.values()) if (!c.sprite) n++;
+    return n;
+  }, []);
+
+  const chickenCount = useCallback(() => 1 + cloneMotionRef.current.size + chickMotionRef.current.size, []);
+
+  const splitClone = useCallback(
+    (motion: CloneMotion, ts: number): boolean => {
+      if (motion.level >= CLONE_MAX_SPLIT_LEVEL || chickenCount() + CLONE_SPLIT_COUNT - 1 > SWORD_MAX_CHICKENS) return false;
+      const level = motion.level + 1;
+      const gid = ++cloneGroupIdRef.current;
+      const group: CloneGroup = {
+        id: gid,
+        level,
+        parentGroupId: motion.groupId,
+        members: new Set(),
+        mergeAt: ts + cloneMergeDelayMs(chickenCount()),
+        returning: false,
+        returnSince: 0,
+        cx: motion.x,
+        cy: motion.y,
+        big: motion.big,
+        tier: motion.tier,
+      };
+      const cx = motion.x + motion.w / 2;
+      const cy = motion.y + motion.h / 2;
+      const baseW = motion.w / CLONE_LEVEL_SCALE[motion.level];
+      const baseH = motion.h / CLONE_LEVEL_SCALE[motion.level];
+      removeClone(motion.id);
+      cloneGroupsRef.current.set(gid, group);
+      const w = baseW * CLONE_LEVEL_SCALE[level];
+      const h = baseH * CLONE_LEVEL_SCALE[level];
+      for (const deg of splitFan(CLONE_SPLIT_COUNT)) {
+        const angle = ((-90 + deg) * Math.PI) / 180;
+        const piece = addClone(
+          {
+            level,
+            groupId: gid,
+            x: cx - w / 2,
+            y: cy - h / 2,
+            vx: Math.cos(angle) * CLONE_SCATTER_SPEED,
+            vy: Math.sin(angle) * CLONE_SCATTER_SPEED,
+            w,
+            h,
+            big: motion.big,
+            tier: motion.tier,
+            vanishAt: motion.vanishAt,
+            blinking: motion.blinking,
+          },
+          CLONE_DOM_LIMIT
+        );
+        group.members.add(piece.id);
+      }
+      return true;
+    },
+    [addClone, chickenCount, removeClone]
+  );
+
+  const mergeCloneGroup = useCallback(
+    (g: CloneGroup, ts: number) => {
+      const members = [...g.members].map((id) => cloneMotionRef.current.get(id)).filter((m): m is CloneMotion => !!m);
+      if (members.length === 0) {
+        cloneGroupsRef.current.delete(g.id);
+        return;
+      }
+      let cx = 0;
+      let cy = 0;
+      for (const m of members) {
+        cx += m.x + m.w / 2;
+        cy += m.y + m.h / 2;
+      }
+      cx /= members.length;
+      cy /= members.length;
+      const baseW = members[0].w / CLONE_LEVEL_SCALE[g.level];
+      const baseH = members[0].h / CLONE_LEVEL_SCALE[g.level];
+      const vanishAt = members[0].vanishAt;
+      const blinking = members[0].blinking;
+      for (const m of members) removeClone(m.id);
+      cloneGroupsRef.current.delete(g.id);
+      const level = g.level - 1;
+      const w = baseW * CLONE_LEVEL_SCALE[level];
+      const h = baseH * CLONE_LEVEL_SCALE[level];
+      const parent = cloneGroupsRef.current.get(g.parentGroupId);
+      const merged = addClone(
+        { level, groupId: parent ? parent.id : 0, x: cx - w / 2, y: cy - h / 2, vx: 0, vy: 0, w, h, big: g.big, tier: g.tier, vanishAt, blinking },
+        level === 0 ? domCloneCount() : CLONE_DOM_LIMIT
+      );
+      if (parent) {
+        parent.members.add(merged.id);
+        parent.mergeAt = Math.max(parent.mergeAt, ts + cloneMergeDelayMs(chickenCount()) / 2);
+      }
+      if (cloneMotionRef.current.size < SWARM_PARTICLE_CAP) spawnFeathers(cx, cy, 2);
+    },
+    [addClone, chickenCount, domCloneCount, removeClone, spawnFeathers]
+  );
+
+  const tickCloneMerges = useCallback(
+    (ts: number, dtMs: number) => {
+      const groups = cloneGroupsRef.current;
+      if (groups.size === 0) return;
+      const count = chickenCount();
+      mergeBudgetRef.current = Math.min(mergeBudgetRef.current + (mergePerSecond(count) * dtMs) / 1000, 10);
+      for (const g of [...groups.values()]) {
+        if (g.members.size === 0) {
+          groups.delete(g.id);
+          continue;
+        }
+        if (!g.returning) {
+          if (g.members.size === CLONE_SPLIT_COUNT && ts >= g.mergeAt && mergeBudgetRef.current >= 1) {
+            mergeBudgetRef.current -= 1;
+            g.returning = true;
+            g.returnSince = ts;
+          }
+          continue;
+        }
+        if (g.members.size !== CLONE_SPLIT_COUNT) {
+          g.returning = false;
+          g.mergeAt = ts + cloneMergeDelayMs(count);
+          continue;
+        }
+        const members = [...g.members].map((id) => cloneMotionRef.current.get(id)).filter((m): m is CloneMotion => !!m);
+        let cx = 0;
+        let cy = 0;
+        for (const m of members) {
+          cx += m.x + m.w / 2;
+          cy += m.y + m.h / 2;
+        }
+        cx /= members.length;
+        cy /= members.length;
+        g.cx = cx;
+        g.cy = cy;
+        let close = true;
+        for (const m of members) {
+          const dx = cx - (m.x + m.w / 2);
+          const dy = cy - (m.y + m.h / 2);
+          const d = Math.hypot(dx, dy) || 1;
+          if (d > CLONE_MERGE_PROXIMITY) close = false;
+          m.vx = (dx / d) * CLONE_RETURN_SPEED;
+          m.vy = (dy / d) * CLONE_RETURN_SPEED;
+        }
+        if (close || ts - g.returnSince > CLONE_RETURN_TIMEOUT_MS) mergeCloneGroup(g, ts);
+      }
+    },
+    [chickenCount, mergeCloneGroup]
+  );
+
+  const spawnSwarm = useCallback(
+    (n: number) => {
+      const now = performance.now();
+      const p = physicsRef.current;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let domCount = domCloneCount();
+      while (chickenCount() < Math.min(n, SWORD_MAX_CHICKENS)) {
+        const angle = Math.random() * Math.PI * 2;
+        const sprite = domCount >= CLONE_DOM_LIMIT;
+        if (!sprite) domCount++;
+        addClone(
+          {
+            level: 0,
+            groupId: 0,
+            x: Math.random() * (vw - CHICKEN_W),
+            y: Math.random() * (vh - CHICKEN_H),
+            vx: Math.cos(angle) * CLONE_DRIFT_SPEED,
+            vy: Math.sin(angle) * CLONE_DRIFT_SPEED,
+            w: CHICKEN_W,
+            h: CHICKEN_H,
+            big: true,
+            tier: tierRef.current,
+            vanishAt: now + SWARM_LIFE_MS,
+            blinking: false,
+          },
+          sprite ? CLONE_DOM_LIMIT : 0
+        );
+      }
+      multiplyStartRef.current = now;
+      multiplyUntilRef.current = now + SWARM_LIFE_MS;
+      void p;
+    },
+    [addClone, chickenCount, domCloneCount]
+  );
+
+  const cutAt = useCallback(
+    (x0: number, y0: number, x1: number, y1: number): number => {
+      const sword = swordRef.current;
+      if (!sword.equipped || gateRef.current !== 'none') return 0;
+      const ts = performance.now();
+      let splits = 0;
+      const award = (x: number, y: number) => {
+        splits += 1;
+        hitRef.current(undefined, true, { x, y }, SWORD_SPLIT_RAW);
+      };
+      const point = x0 === x1 && y0 === y1;
+      const hits = point ? gridRef.current.queryPoint(x0, y0, SWORD_HIT_PAD) : gridRef.current.querySegment(x0, y0, x1, y1, SWORD_HIT_PAD);
+      for (const r of hits) {
+        const motion = cloneMotionRef.current.get(r.id);
+        if (!motion || !canCut(sword, r.id, ts)) continue;
+        if (splitClone(motion, ts)) award(r.x + r.w / 2, r.y + r.h / 2);
+      }
+      for (const m of [...chickMotionRef.current.values()]) {
+        if ((m.phase !== 'free' && m.phase !== 'returning') || m.level >= MAX_SPLIT_LEVEL) continue;
+        const size = chickSize(m.level);
+        const rx = m.x - size.w / 2 - SWORD_HIT_PAD;
+        const ry = m.y - size.h / 2 - SWORD_HIT_PAD;
+        const inside = point ? x0 >= rx && x0 <= rx + size.w + SWORD_HIT_PAD * 2 && y0 >= ry && y0 <= ry + size.h + SWORD_HIT_PAD * 2 : segmentHitsRect(x0, y0, x1, y1, rx, ry, size.w + SWORD_HIT_PAD * 2, size.h + SWORD_HIT_PAD * 2);
+        if (!inside || !canCut(sword, -m.id, ts) || chickenCount() + SPLIT_COUNT - 1 > SWORD_MAX_CHICKENS) continue;
+        splitChick(m, ts);
+        award(m.x, m.y);
+      }
+      if (!rootSplitRef.current && !creatureHoldRef.current && holdRef.current === null) {
+        const p = physicsRef.current;
+        const rx = p.x - SWORD_HIT_PAD;
+        const ry = p.y - SWORD_HIT_PAD;
+        const rw = CHICKEN_W + SWORD_HIT_PAD * 2;
+        const rh = CHICKEN_H + SWORD_HIT_PAD * 2;
+        const inside = point ? x0 >= rx && x0 <= rx + rw && y0 >= ry && y0 <= ry + rh : segmentHitsRect(x0, y0, x1, y1, rx, ry, rw, rh);
+        if (inside && canCut(sword, 0, ts) && chickenCount() + SPLIT_COUNT - 1 <= SWORD_MAX_CHICKENS) {
+          const m = convertRoot(ts);
+          splitChick(m, ts);
+          award(m.x, m.y);
+        }
+      }
+      if (splits > 0) {
+        sword.splits += splits;
+        if (ts - lastSlashSoundRef.current > SLASH_SOUND_GAP_MS) {
+          lastSlashSoundRef.current = ts;
+          playCreature('slash');
+        }
+      }
+      if (point) pushSlash(sword, x0 - 18, y0 + 14, x0 + 18, y0 - 14, ts);
+      else pushSlash(sword, x0, y0, x1, y1, ts);
+      return splits;
+    },
+    [chickenCount, convertRoot, playCreature, splitChick, splitClone]
+  );
+  cutAtRef.current = cutAt;
 
   const applyMultiply = useCallback((now: number, kind: OrbKind) => {
     const factor = multiplyFactor(kind) ?? MULTIPLY_FACTOR;
@@ -2621,14 +2956,18 @@ function ChickenGameInner() {
     let total = sources.length;
     let domCount = [...cloneMotionRef.current.values()].filter((c) => !c.sprite).length;
     const added: CloneView[] = [];
-    for (let round = 0; round < factor - 1 && total < MAX_CHICKENS_ON_SCREEN; round++) {
+    const cap = swordRef.current.equipped ? SWORD_MAX_CHICKENS : MAX_CHICKENS_ON_SCREEN;
+    for (let round = 0; round < factor - 1 && total < cap; round++) {
       for (const src of sources) {
-        if (total >= MAX_CHICKENS_ON_SCREEN) break;
+        if (total >= cap) break;
         const id = ++cloneIdRef.current;
         const angle = Math.random() * Math.PI * 2;
         const sprite = domCount >= CLONE_DOM_LIMIT;
         if (!sprite) domCount++;
         cloneMotionRef.current.set(id, {
+          id,
+          level: 0,
+          groupId: 0,
           x: src.x + (Math.random() - 0.5) * CLONE_SPAWN_SPREAD,
           y: src.y + (Math.random() - 0.5) * CLONE_SPAWN_SPREAD,
           vx: Math.cos(angle) * CLONE_DRIFT_SPEED,
@@ -2699,25 +3038,64 @@ function ChickenGameInner() {
     return null;
   }, []);
 
+  const lodBitmap = useCallback(
+    (img: HTMLImageElement, big: boolean, tier: number, sizeIdx: number, flip: boolean): HTMLCanvasElement => {
+      const cache = lodCacheRef.current;
+      if (cache.skin !== skinRef.current) {
+        cache.skin = skinRef.current;
+        cache.bitmaps.clear();
+      }
+      const key = (((big ? 1 : 0) * LOD_KEY_TIERS + tier) * LOD_SIZES.length + sizeIdx) * 2 + (flip ? 1 : 0);
+      const cached = cache.bitmaps.get(key);
+      if (cached) return cached;
+      const w = Math.max(8, Math.round((big ? CHICKEN_W : KID_W) * LOD_SIZES[sizeIdx]));
+      const h = Math.max(8, Math.round((big ? CHICKEN_H : KID_H) * LOD_SIZES[sizeIdx]));
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const cx = c.getContext('2d');
+      if (cx) {
+        if (flip) {
+          cx.translate(w, 0);
+          cx.scale(-1, 1);
+        }
+        cx.drawImage(img, 0, 0, w, h);
+      }
+      cache.bitmaps.set(key, c);
+      return c;
+    },
+    []
+  );
+
   const drawSpriteClones = useCallback(
-    (ctx: CanvasRenderingContext2D, ts: number) => {
+    (ctx: CanvasRenderingContext2D, ts: number, vw: number, vh: number) => {
+      const clones = cloneMotionRef.current;
+      const tier = renderTierFor(clones.size + 1);
       const blinkOff = Math.floor(ts / 220) % 2 === 1;
-      for (const motion of cloneMotionRef.current.values()) {
+      if (tier === 'lod') {
+        const sizeIdx = lodSizeIndex(clones.size + 1);
+        for (const motion of clones.values()) {
+          if (!motion.sprite || (motion.blinking && blinkOff)) continue;
+          if (motion.x + motion.w < 0 || motion.y + motion.h < 0 || motion.x > vw || motion.y > vh) continue;
+          const img = spriteFor(motion.big, motion.tier);
+          if (!img) continue;
+          const bmp = lodBitmap(img, motion.big, motion.tier, sizeIdx, motion.vx < 0);
+          const w = motion.w * LOD_SIZES[sizeIdx];
+          const h = motion.h * LOD_SIZES[sizeIdx];
+          ctx.drawImage(bmp, motion.x + (motion.w - w) / 2, motion.y + motion.h - h + wobbleOffset(motion.id, ts, LOD_WOBBLE_PX), w, h);
+        }
+        return;
+      }
+      for (const motion of clones.values()) {
         if (!motion.sprite || (motion.blinking && blinkOff)) continue;
+        if (motion.x + motion.w < 0 || motion.y + motion.h < 0 || motion.x > vw || motion.y > vh) continue;
         const img = spriteFor(motion.big, motion.tier);
         if (!img) continue;
-        if (motion.vx < 0) {
-          ctx.save();
-          ctx.translate(motion.x + motion.w, motion.y);
-          ctx.scale(-1, 1);
-          ctx.drawImage(img, 0, 0, motion.w, motion.h);
-          ctx.restore();
-        } else {
-          ctx.drawImage(img, motion.x, motion.y, motion.w, motion.h);
-        }
+        const bmp = lodBitmap(img, motion.big, motion.tier, 0, motion.vx < 0);
+        ctx.drawImage(bmp, motion.x, motion.y + wobbleOffset(motion.id, ts, SPRITE_WOBBLE_PX), motion.w, motion.h);
       }
     },
-    [spriteFor]
+    [lodBitmap, spriteFor]
   );
 
   const removeEgg = useCallback((id: number) => {
@@ -2872,18 +3250,25 @@ function ChickenGameInner() {
       }
 
       const clones = cloneMotionRef.current;
+      frameParityRef.current += 1;
+      gridRef.current.clear(vw);
       if (clones.size > 0) {
+        tickCloneMerges(ts, dtMs);
         const blinkFrom = multiplyUntilRef.current - MULTIPLY_BLINK_BEFORE_END_MS;
         const swarm = clones.size > CLONE_DOM_LIMIT;
+        const particlesOk = clones.size < SWARM_PARTICLE_CAP;
+        const flockRadius = flockRadiusFor(CLONE_FLOCK_RADIUS, clones.size);
+        const zone = hudZone(vw);
+        const lod = clones.size + 1 >= LOD_TIER_FROM;
         const hx = physicsRef.current.x + CHICKEN_W / 2;
         const hy = physicsRef.current.y + CHICKEN_H / 2;
         for (const [id, motion] of clones) {
           if (ts >= motion.vanishAt) {
             const cx = motion.x + motion.w / 2;
             const cy = motion.y + motion.h / 2;
-            blackHolesRef.current.push({ x: cx, y: cy, bornAt: ts });
+            if (particlesOk || blackHolesRef.current.length < SWARM_PARTICLE_CAP) blackHolesRef.current.push({ x: cx, y: cy, bornAt: ts });
             if (!swarm) streaksRef.current.push(...shortStreaks(cx, cy, ts, 6));
-            spawnFeathers(cx, cy, swarm ? VANISH_FEATHERS_SWARM : VANISH_FEATHERS);
+            if (particlesOk) spawnFeathers(cx, cy, swarm ? VANISH_FEATHERS_SWARM : VANISH_FEATHERS);
             vanishedRef.current++;
             removeClone(id);
             if (clones.size === 0) multiplyEndedAtRef.current = ts;
@@ -2892,7 +3277,7 @@ function ChickenGameInner() {
           const ox = hx - (motion.x + motion.w / 2);
           const oy = hy - (motion.y + motion.h / 2);
           const dist = Math.hypot(ox, oy);
-          if (dist > CLONE_FLOCK_RADIUS) {
+          if (motion.level === 0 && dist > flockRadius) {
             motion.vx += (ox / dist) * CLONE_HOMING * dtMs;
             motion.vy += (oy / dist) * CLONE_HOMING * dtMs;
             const speed = Math.hypot(motion.vx, motion.vy);
@@ -2903,11 +3288,12 @@ function ChickenGameInner() {
           }
           motion.x += motion.vx * dtMs;
           motion.y += motion.vy * dtMs;
-          keepOutOfHud(hudZone(vw), motion, motion.w / 2, motion.h / 2, false);
+          if (!lod || (id & 3) === (frameParityRef.current & 3)) keepOutOfHud(zone, motion, motion.w / 2, motion.h / 2, false);
           if (motion.x < 0 || motion.x > vw - motion.w) motion.vx = -motion.vx;
           if (motion.y < 0 || motion.y > vh - motion.h) motion.vy = -motion.vy;
           motion.x = Math.max(0, Math.min(vw - motion.w, motion.x));
           motion.y = Math.max(0, Math.min(vh - motion.h, motion.y));
+          gridRef.current.insert({ id, x: motion.x, y: motion.y, w: motion.w, h: motion.h });
           if (!motion.blinking && ts >= blinkFrom) motion.blinking = true;
           const el = cloneElsRef.current.get(id);
           if (el) {
@@ -2944,7 +3330,7 @@ function ChickenGameInner() {
         }
       }
     },
-    [removeOrb, removeClone, spawnFeathers, runPaceCheck, tickEggs]
+    [removeOrb, removeClone, spawnFeathers, runPaceCheck, tickEggs, tickCloneMerges]
   );
 
   const clickEgg = useCallback(
@@ -3157,6 +3543,11 @@ function ChickenGameInner() {
         chainMs: Math.max(0, chainUntilRef.current - performance.now()),
         multiplyMs: Math.max(0, multiplyUntilRef.current - performance.now()),
         spriteClones: [...cloneMotionRef.current.values()].filter((c) => c.sprite).length,
+        renderTier: renderTierFor(cloneMotionRef.current.size + 1),
+        swordEquipped: swordRef.current.equipped,
+        swordSplits: swordRef.current.splits,
+        cloneGroups: cloneGroupsRef.current.size,
+        clonePieces: [...cloneMotionRef.current.values()].filter((c) => c.level > 0).length,
         eggs: eggsRef.current.map((e) => ({ id: e.id, x: e.x, y: e.y, big: e.big, hatching: e.hatchingAt !== null, ageMs: performance.now() - e.bornAt })),
         goldens: [...goldenRef.current.entries()].map(([id, g]) => ({ id, x: g.x, msLeft: Math.max(0, g.until - performance.now()) })),
         chainArcs: chainArcsRef.current.length,
@@ -3284,6 +3675,20 @@ function ChickenGameInner() {
       forceScene: (name: string) => {
         if (name === 'fire-era') forceEra('fire');
         if (name === 'myth') forceEra('myth-1');
+        if (name === FOREST_ERA_ID) forceEra(FOREST_ERA_ID);
+        if (name === 'sword') {
+          swordTreeNextRef.current = true;
+          forceEra(FOREST_ERA_ID);
+          forceCreature('tree');
+        }
+        if (name === 'swarm-1000') {
+          forceEra(FOREST_ERA_ID);
+          grantItem(SWORD_ITEM_ID);
+          swordOwnedRef.current = true;
+          swordRef.current.equipped = true;
+          setSwordOn(true);
+          spawnSwarm(SWORD_MAX_CHICKENS);
+        }
         const kind = CREATURE_ORDER.find((k) => k === name);
         if (kind) {
           forceEra(SCENE_ERA[kind]);
@@ -3327,12 +3732,16 @@ function ChickenGameInner() {
         if (modeRef.current === 'ground') modeRef.current = 'flying';
       },
       useItem: (id: string) => useItem(id),
+      swarm: (n: number) => spawnSwarm(n),
+      sword: () => ({ equipped: swordRef.current.equipped, splits: swordRef.current.splits, renderTier: renderTierFor(cloneMotionRef.current.size + 1), groups: cloneGroupsRef.current.size }),
+      cut: (x0: number, y0: number, x1: number, y1: number) => cutAt(x0, y0, x1, y1),
       selectSkin: (id: string) => selectSkin(id),
       spawnMartian: (kind?: string) => spawnMartianNow(MARTIAN_KINDS.find((k): k is MartianKind => k === kind)),
       martianClicks: () => readMartianClicks(),
       forcePaceCheck: () => runPaceCheck(true),
       fastForward: (ms: number) => {
         playMsRef.current += ms;
+        for (const g of cloneGroupsRef.current.values()) g.mergeAt -= ms;
         frenzyUntilRef.current -= ms;
         shiftBirdTime(birdRef.current, ms);
         shiftCreatureTime(creatureRef.current, ms);
@@ -3401,9 +3810,23 @@ function ChickenGameInner() {
     (id: string, x: number, y: number) => {
       const tap = tapCreatureTarget(creatureRef.current, id);
       if (!tap) return;
+      if (id === TREE_SWORD_ID) {
+        if (tap.completed) {
+          swordOwnedRef.current = true;
+          playCreature('swordpull');
+          grantItem(SWORD_ITEM_ID, swordPoint(creatureRef.current, window.innerWidth, window.innerHeight));
+        } else {
+          playCreature('chop');
+        }
+        return;
+      }
+      if (id === TREE_BARK_ID) {
+        for (const color of CHIP_COLORS) spawnShards(x, y, CHIPS_PER_CLICK, color);
+        playCreature('chop');
+      }
       hit(undefined, true, { x, y }, tap.raw);
     },
-    [hit]
+    [grantItem, hit, playCreature, spawnShards]
   );
 
   const forceEra = useCallback((id: string) => {
@@ -3494,16 +3917,43 @@ function ChickenGameInner() {
     const onMove = (e: MouseEvent | PointerEvent) => {
       mouseRef.current.x = e.clientX;
       mouseRef.current.y = e.clientY;
+      const sword = swordRef.current;
+      if (e.type !== 'pointermove' || !sword.equipped || (e.buttons & 1) === 0) return;
+      if (sword.lastX >= 0) cutAtRef.current(sword.lastX, sword.lastY, e.clientX, e.clientY);
+      sword.lastX = e.clientX;
+      sword.lastY = e.clientY;
+    };
+    const interactive = 'button, a, input, [data-hud], [data-testid^="inventory"], [data-testid^="creature-target"], [data-testid="creature-body"], [data-testid^="chicken-orb"], [data-testid="chicken-egg"], [data-testid="chicken-golden"]';
+    const onDown = (e: PointerEvent) => {
+      const sword = swordRef.current;
+      if (e.button !== 0) return;
+      if (sword.equipped) {
+        if (e.target instanceof Element && e.target.closest(interactive)) return;
+        sword.lastX = e.clientX;
+        sword.lastY = e.clientY;
+        cutAtRef.current(e.clientX, e.clientY, e.clientX, e.clientY);
+        return;
+      }
+      if (e.target instanceof Element && e.target.closest(`${interactive}, [data-testid="chicken"], [data-testid="chicken-piece"], [data-testid="chicken-clone"]`)) return;
+      const hits = gridRef.current.queryPoint(e.clientX, e.clientY, SWORD_HIT_PAD);
+      if (hits.length > 0) hitRef.current(undefined, true, { x: e.clientX, y: e.clientY });
+    };
+    const onUp = () => {
+      swordRef.current.lastX = -1;
+      swordRef.current.lastY = -1;
+      endHold();
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', endHold);
-    window.addEventListener('pointercancel', endHold);
+    window.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
     return () => {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', endHold);
-      window.removeEventListener('pointercancel', endHold);
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
     };
   }, [endHold]);
 
@@ -3725,7 +4175,15 @@ function ChickenGameInner() {
       ) {
         const kind = creature.pending;
         creature.pending = null;
-        startCreature(creature, kind, { ts, vw, vh, groundY: groundYFor(vh), chickenCx: p.x + CHICKEN_W / 2, rng: Math.random, dropBonus: clock.byTime ? DROP_BEHIND_BONUS : 1 });
+        const trees = treesThisEraRef.current;
+        if (trees.era !== clock.index) {
+          trees.era = clock.index;
+          trees.count = 0;
+        }
+        if (kind === 'tree') trees.count += 1;
+        const swordTree = kind === 'tree' && (swordTreeNextRef.current || (trees.count === TREES_PER_FOREST && (!swordOwnedRef.current || Math.random() < LATER_SWORD_TREE_CHANCE)));
+        swordTreeNextRef.current = false;
+        startCreature(creature, kind, { ts, vw, vh, groundY: groundYFor(vh), chickenCx: p.x + CHICKEN_W / 2, rng: Math.random, dropBonus: clock.byTime ? DROP_BEHIND_BONUS : 1, sword: swordTree });
         creature.dropRoll = dropRollRef.current;
         modeRef.current = 'flying';
         syncCreatureUi(kind, false);
@@ -3766,6 +4224,7 @@ function ChickenGameInner() {
       }
       if (ct.hold) modeRef.current = 'flying';
       if (ct.drop) grantItem(ct.drop.id, { x: ct.drop.x, y: ct.drop.y });
+      if (ct.chips > 0 && ct.hold) spawnShards(ct.hold.x, ct.hold.y, ct.chips, CHIP_COLORS[ct.chips % CHIP_COLORS.length]);
       creatureHoldRef.current = ct.hold;
       if (ct.done) syncCreatureUi(null, false);
       if (ts < magnetUntilRef.current && m.x >= 0 && flying && !ct.hold) {
@@ -4780,7 +5239,7 @@ function ChickenGameInner() {
         }
         ctx.globalAlpha = 1;
 
-        drawSpriteClones(ctx, ts);
+        drawSpriteClones(ctx, ts, window.innerWidth, window.innerHeight);
         for (const f of feathers) {
           drawFeather(ctx, f, ts);
         }
@@ -4796,6 +5255,7 @@ function ChickenGameInner() {
       const cctx = chainCanvas?.getContext('2d');
       if (cctx && chainCanvas) {
         cctx.clearRect(0, 0, chainCanvas.width, chainCanvas.height);
+        drawSlashes(cctx, swordRef.current.slashes, ts);
         if (!shielded && fireLevel > FIRE_BODY_START) drawFireBody(cctx, outlinePts, ts, fireLevel);
         if (ignitionEnv > 0 && !rootSplitRef.current) drawIgnition(cctx, outlinePts, ts, ignitionEnv, frame.sx);
         const now = performance.now();
@@ -4857,7 +5317,7 @@ function ChickenGameInner() {
       data-variant="2"
       data-multicursor={overlayOffsets.length > 0 ? '1' : '0'}
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
-      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
+      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none ${swordOn ? SWORD_CURSOR_CLASS : 'chicken-hand-cursor'} [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
     >
       <div
         data-testid="ground-scenery"
@@ -4877,7 +5337,7 @@ function ChickenGameInner() {
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
       {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
       <EndlessScenery scene={eraUi?.scene ?? null} groundFrac={GROUND_FRAC} />
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
+      <canvas ref={canvasRef} data-testid="chicken-swarm-canvas" className="absolute inset-0 z-[3] pointer-events-none" />
       <canvas ref={chainCanvasRef} data-testid="chicken-chain-canvas" className="pointer-events-none absolute inset-0 z-[25]" />
       <MartianLayer
         occupiedRef={martianSpotsRef}
@@ -5039,7 +5499,7 @@ function ChickenGameInner() {
           }}
           onPointerDown={(e) => beginHold(c.id, e)}
           onClick={() => clickPiece(c.id)}
-          className="chicken-piece absolute top-0 left-0 touch-none will-change-transform"
+          className="chicken-piece absolute top-0 left-0 z-[5] touch-none will-change-transform"
         >
           <span className="absolute" style={{ inset: -hitPadFor(c.level) }} />
           <ChickenSvg
@@ -5064,7 +5524,7 @@ function ChickenGameInner() {
             else cloneElsRef.current.delete(clone.id);
           }}
           onClick={() => hit(undefined, true)}
-          className="absolute top-0 left-0 will-change-transform"
+          className="absolute top-0 left-0 z-[3] will-change-transform"
         >
           <ChickenSvg
             className={clone.big ? 'w-[70px]' : 'w-[26px]'}
@@ -5119,6 +5579,11 @@ function ChickenGameInner() {
       {unlockToast && (
         <div data-testid="unlock-toast" data-hud="" className="pointer-events-none absolute top-[128px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#ffd84d]/60 bg-black/75 px-4 py-1.5 text-sm font-semibold tracking-wide text-[#ffd84d] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
           {unlockToast}
+        </div>
+      )}
+      {swordOn && (
+        <div data-testid="sword-equipped" data-hud="" className={`pointer-events-none absolute left-4 top-[88px] ${HUD_LAYER} rounded-full bg-black/60 px-3 py-1 text-xs font-semibold tracking-wide text-[#e8eef5]`}>
+          sword equipped
         </div>
       )}
       {creatureUi.kind && <CreatureLayer kind={creatureUi.kind} els={creatureElsRef} onBody={onCreatureBody} onTarget={onCreatureTarget} />}

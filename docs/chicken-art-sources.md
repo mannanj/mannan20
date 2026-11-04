@@ -177,3 +177,30 @@ Rejected takes stay in `scripts/birds/raw/myth/*-v1.png`, `*-v2.png` (not shippe
 ## Spend
 
 AI image generation: 11 calls, $0.43 of the $0.75 allowance (logged in `scripts/birds/budget.json`). The Commons sweep that found the two backgrounds was done by a Sonnet researcher agent; only the two photos above were used.
+
+## Enchanted forest (Task 317: trees, sword, forest scene)
+
+Free photos first (Wikimedia Commons sweep by a Sonnet researcher agent, 7 candidates downloaded); Commons had no whole-trunk tree with a readable face on a cuttable background, so the three tree frames were generated on the cheap image model. Everything cut out locally with `rembg` (isnet-general-use, alpha matting), cropped to the alpha box, WebP ≤ 1024 px.
+
+| File | Source | Licence |
+| --- | --- | --- |
+| `public/game/scenes/forest.webp` | https://commons.wikimedia.org/wiki/File:Fanal_(Madeira,_Portugal),_Lorbeerwald_--_2025_--_1517.jpg (Dietmar Rabich, resized to 1920 px) | CC BY-SA 4.0 |
+| `public/game/creatures/sword.webp` (tree sword + bag icon) | https://commons.wikimedia.org/wiki/File:Longsword_from_16_to_19_elements-P5120145-gradient.jpg (Rama, museum longsword, rembg cut) | CC BY-SA 3.0 fr |
+| `public/game/creatures/tree-walk.webp` | gemini-2.5-flash-image: gnarled oak with a bark face, root legs mid-stride, white studio background | AI, $0.039 × 2 (first call returned no image) |
+| `public/game/creatures/tree-grab.webp` (grab + hold frame) | gemini-2.5-flash-image: same tree, arm-branches reaching forward, greedy grin | AI, $0.039 |
+| `public/game/creatures/tree-chipped.webp` (release frame) | gemini-2.5-flash-image: same tree, bark chipped to pale wood, arms open, gasping | AI, $0.039 |
+
+Commons candidates downloaded but not used: Facial_Carving_on_a_Dead_Tree_in_Lesnes_Abbey_Woods.jpg (CC BY-SA 4.0, face on a trunk in dense foliage), Ta_Prohm_Buddha_image_in_a_tree (CC BY 4.0), Szczecin_Jasne_Błonia_(find_face_tree) (CC BY 3.0), "Treebeard"_King_of_the_Ents_Fryston_wood (CC BY-SA 2.0), Foggy_Fanal_forest_in_Seixal (CC BY-SA 4.0). Raw AI takes stay in `scripts/birds/raw/forest/`.
+
+### Sounds (`public/sounds/chicken/`, synthesized with numpy/scipy, no external source)
+
+| File | Synthesis |
+| --- | --- |
+| tree-creak.mp3 (tree enter and grab) | 1.8 s sawtooth at 90 Hz with slow pitch wander and 11 Hz amplitude judder, plus a little noise |
+| wood-chop.mp3 (bark click, sword pull click) | 0.28 s band-passed noise burst (600–4000 Hz) over a 110 Hz thump |
+| sword-pull.mp3 (sword freed) | 1.1 s rising metallic tone 900 → 2700 Hz with 2nd/3rd partials and a high-passed scrape |
+| sword-slash.mp3 (sword split) | 0.32 s noise whoosh with a band-pass sweeping 800 → 6800 Hz |
+
+### Spend
+
+Task 317: 4 image calls, $0.155 (budget.json: $3.93 → $4.085 total). Sounds and cut-outs cost nothing.

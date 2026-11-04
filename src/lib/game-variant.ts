@@ -37,6 +37,10 @@ export const TEST_SCENES: Record<string, number> = {
   cyclops: 41_100,
   hydra: 41_200,
   cerberus: 49_000,
+  forest: 57_000,
+  tree: 57_100,
+  sword: 57_200,
+  'swarm-1000': 57_300,
 };
 
 export function testStartScene(value: string | string[] | undefined): string | undefined {

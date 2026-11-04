@@ -5,7 +5,7 @@ import type { GameItemId } from '@/components/inventory';
 import type { CreatureSoundKey } from '@/lib/chicken-audio';
 import { hudPushOut, hudZone } from './hud-safe-zone';
 
-export type CreatureKind = 'kitty' | 'tiger' | 'lion' | 'cyclops' | 'hydra' | 'cerberus';
+export type CreatureKind = 'kitty' | 'tiger' | 'lion' | 'cyclops' | 'hydra' | 'cerberus' | 'tree';
 export type CreatureMode = 'grab' | 'miss' | 'spectacle' | 'bite';
 export type CreaturePhase = 'idle' | 'enter' | 'act' | 'hold' | 'sit' | 'leave' | 'done';
 type Pose = 'walk' | 'stalk' | 'pounce' | 'hold' | 'sit';
@@ -47,6 +47,9 @@ interface CreatureBehaviour {
   catchOnSwipe: number | null;
   holdAtHead: boolean;
   sinkFrac: number;
+  holdX: number;
+  holdY: number;
+  pecksPerS: number;
 }
 
 export interface CreatureSpec extends CreatureBehaviour {
@@ -69,7 +72,25 @@ export interface CreatureSpec extends CreatureBehaviour {
   sounds: { enter: CreatureSoundKey | null; act: CreatureSoundKey | null };
 }
 
-export const CREATURE_ORDER: CreatureKind[] = ['kitty', 'tiger', 'lion', 'cyclops', 'hydra', 'cerberus'];
+export const CREATURE_ORDER: CreatureKind[] = ['kitty', 'tiger', 'lion', 'cyclops', 'hydra', 'cerberus', 'tree'];
+export const TREE_HP = 120;
+export const TREE_BARK_RAW = 3;
+export const TREE_PECK_PER_S = 2;
+export const TREE_HOLD_MS = 60_000;
+export const TREE_BARK_ID = 'bark';
+export const TREE_SWORD_ID = 'sword';
+export const SWORD_PULLS = 25;
+const TREE_SINK_FRAC = 0.1;
+const TREE_HOLD_X = 0.8;
+const TREE_HOLD_Y = 0.6;
+const TREE_HP_BAR_W_FRAC = 0.7;
+const TREE_HP_BAR_H = 10;
+const TREE_HP_BAR_GAP = 14;
+const TREE_SWORD_REL: Rel = { x: 0.3, y: 0.52, w: 0.14, h: 0.42 };
+const TREE_SWORD_IMG = `${'/game/creatures'}/sword.webp`;
+const TREE_SWORD_ASPECT = 0.22;
+const TREE_SWORD_TILT_DEG = -34;
+const TREE_SWORD_WOBBLE_DEG = 2.5;
 export const CYCLOPS_STAY_MS: [number, number] = [10_000, 10_000];
 export const HYDRA_HEADS_START = 3;
 export const HYDRA_HEADS_MAX = 7;
@@ -185,7 +206,15 @@ const CAT_BEHAVIOUR: CreatureBehaviour = {
   catchOnSwipe: null,
   holdAtHead: false,
   sinkFrac: GROUND_SINK_FRAC,
+  holdX: HOLD_POINT_X,
+  holdY: HOLD_POINT_Y,
+  pecksPerS: 0,
 };
+
+const TREE_WALK_FACE: Rel = { x: 0.4, y: 0.33, w: 0.24, h: 0.18 };
+const TREE_GRAB_FACE: Rel = { x: 0.42, y: 0.42, w: 0.22, h: 0.2 };
+const TREE_CHIP_FACE: Rel = { x: 0.45, y: 0.42, w: 0.24, h: 0.2 };
+const TREE_BARK: Record<string, Rel> = { bark: { x: 0.3, y: 0.56, w: 0.34, h: 0.36 } };
 
 const CERBERUS_STAND_HEADS: Record<string, Rel> = { left: { x: 0.3, y: 0, w: 0.22, h: 0.3 }, right: { x: 0.74, y: 0.08, w: 0.26, h: 0.26 } };
 const CERBERUS_STAND_MIDDLE: Rel = { x: 0.52, y: 0.02, w: 0.23, h: 0.3 };
@@ -195,6 +224,37 @@ const CERBERUS_SLEEP_HEADS: Record<string, Rel> = { left: { x: 0.5, y: 0.1, w: 0
 const CERBERUS_SLEEP_MIDDLE: Rel = { x: 0.66, y: 0.1, w: 0.18, h: 0.6 };
 
 export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
+  tree: {
+    ...CAT_BEHAVIOUR,
+    chase: false,
+    targetsIn: 'hold',
+    sinkFrac: TREE_SINK_FRAC,
+    holdX: TREE_HOLD_X,
+    holdY: TREE_HOLD_Y,
+    pecksPerS: TREE_PECK_PER_S,
+    kind: 'tree',
+    mode: 'grab',
+    label: 'tree',
+    banner: 'the tree has the chicken! chip the bark',
+    heightFrac: 0.62,
+    poses: {
+      walk: pose('tree-walk', 0.72, 1, 1, TREE_WALK_FACE, { extraHeads: TREE_BARK }),
+      pounce: pose('tree-grab', 0.765, 1, 1.0, TREE_GRAB_FACE, { extraHeads: TREE_BARK }),
+      hold: pose('tree-grab', 0.765, 1, 1.0, TREE_GRAB_FACE, { extraHeads: TREE_BARK }),
+      sit: pose('tree-chipped', 0.645, 1, 1.0, TREE_CHIP_FACE, { extraHeads: TREE_BARK }),
+    },
+    targets: [{ id: TREE_BARK_ID, label: 'bark', clicks: TREE_HP, raw: TREE_BARK_RAW }],
+    bodyTarget: false,
+    enterMs: 3600,
+    stalkMs: 0,
+    pounceMs: 900,
+    holdMs: [TREE_HOLD_MS, TREE_HOLD_MS],
+    stayMs: null,
+    leaveMs: 2600,
+    dropId: null,
+    dropChance: 0,
+    sounds: { enter: 'creak', act: 'creak' },
+  },
   cyclops: {
     ...CAT_BEHAVIOUR,
     chase: false,
@@ -417,6 +477,9 @@ export interface CreatureState {
   lastTs: number;
   nextStrikeAt: number;
   caught: boolean;
+  swordIn: boolean;
+  swordPulls: number;
+  peckAcc: number;
 }
 
 function emptyHead(): HydraHead {
@@ -462,6 +525,9 @@ export function createCreatureState(): CreatureState {
     lastTs: 0,
     nextStrikeAt: 0,
     caught: false,
+    swordIn: false,
+    swordPulls: 0,
+    peckAcc: 0,
   };
 }
 
@@ -478,6 +544,10 @@ export interface CreatureEls {
   feathers: (HTMLDivElement | null)[];
   eye: HTMLDivElement | null;
   heads: { img: HTMLImageElement | null; hit: HTMLDivElement | null }[];
+  sword: HTMLImageElement | null;
+  swordHit: HTMLDivElement | null;
+  hp: HTMLDivElement | null;
+  hpFill: HTMLDivElement | null;
 }
 
 export function createCreatureEls(): CreatureEls {
@@ -494,6 +564,10 @@ export function createCreatureEls(): CreatureEls {
     feathers: Array.from({ length: FEATHER_SLOTS }, () => null),
     eye: null,
     heads: Array.from({ length: HYDRA_HEADS_MAX }, () => ({ img: null, hit: null })),
+    sword: null,
+    swordHit: null,
+    hp: null,
+    hpFill: null,
   };
 }
 
@@ -543,6 +617,7 @@ export interface CreatureStartCtx {
   chickenCx: number;
   rng: () => number;
   dropBonus: number;
+  sword?: boolean;
 }
 
 function setPose(s: CreatureState, next: Pose, ts: number): void {
@@ -579,6 +654,7 @@ export function startCreature(s: CreatureState, kind: CreatureKind, ctx: Creatur
   s.kind = kind;
   s.enteredAt = ctx.ts;
   s.dropBonus = ctx.dropBonus;
+  s.swordIn = kind === 'tree' && ctx.sword === true;
   const fromLeft = ctx.chickenCx >= ctx.vw / 2;
   s.dir = fromLeft ? 1 : -1;
   const vh = sizeBasis(ctx.vw, ctx.vh);
@@ -664,10 +740,26 @@ function tapHydraHead(s: CreatureState, targetId: string): TargetTap | null {
   return { raw: HYDRA_HEAD_RAW, completed: s.tamed };
 }
 
+export function tapSword(s: CreatureState): TargetTap | null {
+  if (!s.swordIn || !creatureOnScreen(s) || s.phase === 'leave') return null;
+  s.swordPulls += 1;
+  if (s.swordPulls < SWORD_PULLS) return { raw: 0, completed: false };
+  s.swordIn = false;
+  return { raw: 0, completed: true };
+}
+
+export function swordPoint(s: CreatureState, vw: number, vhRaw: number): Point {
+  if (!s.kind) return { ...s.pos };
+  const spec = CREATURE_SPECS[s.kind];
+  const r = swordRect(spec, s, sizeBasis(vw, vhRaw));
+  return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+}
+
 export function tapCreatureTarget(s: CreatureState, targetId: string): TargetTap | null {
   if (!s.kind) return null;
   const spec = CREATURE_SPECS[s.kind];
   if (spec.mode === 'bite') return tapHydraHead(s, targetId);
+  if (targetId === TREE_SWORD_ID) return tapSword(s);
   const target = spec.targets.find((t) => t.id === targetId);
   if (!target || !targetActive(spec, s, targetId)) return null;
   s.targetHits[targetId] = (s.targetHits[targetId] ?? 0) + 1;
@@ -707,6 +799,7 @@ export interface CreatureTickResult {
   drop: CreatureDrop | null;
   sound: CreatureSoundKey | null;
   done: boolean;
+  chips: number;
 }
 
 function rollDrop(s: CreatureState, spec: CreatureSpec, at: Point, rng: () => number): CreatureDrop | null {
@@ -775,8 +868,47 @@ function holdPoint(spec: CreatureSpec, s: CreatureState, vh: number): Point {
     const head = headRect(spec, s, { x: s.pos.x - w / 2, y: s.pos.y - h / 2, w, h }, flipped);
     return { x: head.x + head.w / 2, y: head.y + head.h * 0.7 };
   }
-  const relX = flipped ? 1 - HOLD_POINT_X : HOLD_POINT_X;
-  return { x: s.pos.x - w / 2 + w * relX, y: s.pos.y - h / 2 + h * HOLD_POINT_Y };
+  const relX = flipped ? 1 - spec.holdX : spec.holdX;
+  return { x: s.pos.x - w / 2 + w * relX, y: s.pos.y - h / 2 + h * spec.holdY };
+}
+
+function swordRect(spec: CreatureSpec, s: CreatureState, vh: number): Rect {
+  const box = currentBox(spec, s, vh);
+  const flipped = s.dir !== poseAsset(spec, s.pose).faces;
+  const relX = flipped ? 1 - TREE_SWORD_REL.x - TREE_SWORD_REL.w : TREE_SWORD_REL.x;
+  const h = TREE_SWORD_REL.h * box.h;
+  const w = h * TREE_SWORD_ASPECT;
+  return { x: box.x + relX * box.w + (TREE_SWORD_REL.w * box.w - w) / 2, y: box.y + TREE_SWORD_REL.y * box.h, w, h };
+}
+
+function renderTree(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx, vh: number, box: Rect): void {
+  const visible = creatureOnScreen(s) && s.phase !== 'leave';
+  if (els.sword && els.swordHit) {
+    if (s.swordIn && visible) {
+      const r = swordRect(spec, s, vh);
+      const wobble = Math.sin(ctx.ts / HOLD_WOBBLE_MS) * TREE_SWORD_WOBBLE_DEG * (s.swordPulls / SWORD_PULLS);
+      place(els.sword, { ...r, y: r.y - s.swordPulls * (r.h / SWORD_PULLS) * 0.35 }, `rotate(${TREE_SWORD_TILT_DEG + wobble}deg)`);
+      place(els.swordHit, atLeast(r, MIN_HIT_PX));
+      els.swordHit.dataset.clicks = String(s.swordPulls);
+    } else {
+      hide(els.sword);
+      hide(els.swordHit);
+    }
+  }
+  if (els.hp && els.hpFill) {
+    if (s.phase === 'hold' && !s.tamed) {
+      const w = box.w * TREE_HP_BAR_W_FRAC;
+      const hits = s.targetHits[TREE_BARK_ID] ?? 0;
+      const left = clamp(1 - hits / TREE_HP, 0, 1);
+      const bar = { x: box.x + box.w / 2 - w / 2, y: box.y - TREE_HP_BAR_GAP - TREE_HP_BAR_H, w, h: TREE_HP_BAR_H };
+      const push = hudPushOut(hudZone(ctx.vw), bar.x + bar.w / 2, bar.y + bar.h / 2, bar.w / 2, bar.h / 2);
+      place(els.hp, { ...bar, x: bar.x + push.dx, y: bar.y + push.dy });
+      els.hpFill.style.width = `${left * 100}%`;
+      els.hp.dataset.hp = String(Math.max(0, TREE_HP - hits));
+    } else {
+      hide(els.hp);
+    }
+  }
 }
 
 function beginLeave(s: CreatureState, ts: number, vw: number, pose: Pose): void {
@@ -902,7 +1034,7 @@ function tickHydra(spec: CreatureSpec, s: CreatureState, ctx: CreatureTickCtx, v
 }
 
 export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx): CreatureTickResult {
-  const result: CreatureTickResult = { hold: null, flyUp: false, clearY: null, grabbed: false, released: false, drop: null, sound: null, done: false };
+  const result: CreatureTickResult = { hold: null, flyUp: false, clearY: null, grabbed: false, released: false, drop: null, sound: null, done: false, chips: 0 };
   if (!s.kind || !creatureOnScreen(s)) return result;
   const spec = CREATURE_SPECS[s.kind];
   const { ts, vw, groundY } = ctx;
@@ -953,6 +1085,15 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
   } else if (s.phase === 'hold') {
     s.pos.y = groundCenterY(spec, 'hold', vh, groundY);
     result.hold = holdPoint(spec, s, vh);
+    if (spec.pecksPerS > 0 && !s.tamed) {
+      s.peckAcc += (spec.pecksPerS * ctx.dtMs) / 1000;
+      const pecks = Math.floor(s.peckAcc);
+      if (pecks > 0) {
+        s.peckAcc -= pecks;
+        result.chips = pecks;
+        for (let i = 0; i < pecks; i++) tapCreatureTarget(s, spec.targets[0].id);
+      }
+    }
     if (s.tamed) {
       setPhase(s, 'sit', ts);
       setPose(s, 'sit', ts);
@@ -1235,10 +1376,13 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
     el.dataset.clicks = String(s.targetHits[target.id] ?? 0);
   }
   if (spec.mode === 'bite') renderHydraHeads(spec, s, els, ctx, vh);
+  if (s.kind === 'tree') renderTree(spec, s, els, ctx, vh, box);
   if (els.hint) {
     const target = activeTargets[0];
     const hintDue = ts - s.phaseAt >= CREATURE_HINT_DELAY_MS;
-    if (spec.mode === 'bite' && s.phase === 'act' && hintDue) {
+    if (s.swordIn && s.phase !== 'leave' && hintDue) {
+      showHint(els.hint, `pull the sword ${s.swordPulls} / ${SWORD_PULLS}`, swordRect(spec, s, vh), vw);
+    } else if (spec.mode === 'bite' && s.phase === 'act' && hintDue) {
       const biting = s.bitingHead === null ? null : s.heads[s.bitingHead];
       const anchor = biting ? { x: biting.pos.x - MIN_HIT_PX / 2, y: biting.pos.y - MIN_HIT_PX / 2, w: MIN_HIT_PX, h: MIN_HIT_PX } : headRect(spec, s, box, flipped);
       showHint(els.hint, `heads knocked back ${s.knockbacks} / ${HYDRA_KNOCKBACKS_TO_WIN}`, anchor, vw);
@@ -1252,7 +1396,7 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
     const show = s.phase === 'hold' || (spec.mode !== 'grab' && (s.phase === 'act' || s.phase === 'enter')) || (spec.catchOnSwipe !== null && s.phase === 'act');
     els.banner.style.opacity = show ? '1' : '0';
     const biting = spec.mode === 'bite' && s.bitingHead !== null;
-    els.banner.textContent = s.tamed ? `the ${spec.label} is ${spec.holdAtHead ? 'asleep' : 'tamed'}` : biting ? 'a hydra head has the chicken! knock that head back' : spec.banner;
+    els.banner.textContent = s.tamed ? (s.kind === 'tree' ? 'the tree lets go' : `the ${spec.label} is ${spec.holdAtHead ? 'asleep' : 'tamed'}`) : biting ? 'a hydra head has the chicken! knock that head back' : spec.banner;
   }
   if (els.root) {
     els.root.dataset.phase = s.phase;
@@ -1286,12 +1430,16 @@ export function creatureStateView(s: CreatureState) {
     leftAt: s.leftAt,
     x: s.pos.x,
     y: s.pos.y,
+    swordIn: s.swordIn,
+    swordPulls: s.swordPulls,
+    hp: s.kind === 'tree' ? Math.max(0, TREE_HP - (s.targetHits[TREE_BARK_ID] ?? 0)) : null,
   };
 }
 
 const LAYER = 'pointer-events-none absolute top-0 left-0 max-w-none select-none object-contain will-change-transform [visibility:hidden]';
 const IMG_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
 const HIT = 'absolute top-0 left-0 z-[6] cursor-pointer will-change-transform [visibility:hidden]';
+const HIT_TOP = 'absolute top-0 left-0 z-[7] cursor-pointer will-change-transform [visibility:hidden]';
 const FEATHER_SLOT_INDEXES = Array.from({ length: FEATHER_SLOTS }, (_, i) => i);
 const HYDRA_SLOT_INDEXES = Array.from({ length: HYDRA_HEADS_MAX }, (_, i) => i);
 
@@ -1347,6 +1495,45 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
             />
           </div>
         ))}
+      {kind === 'tree' && (
+        <>
+          <img
+            ref={(el) => {
+              els.current.sword = el;
+            }}
+            alt=""
+            draggable={false}
+            src={TREE_SWORD_IMG}
+            data-testid="tree-sword"
+            className={`${LAYER} z-[5] brightness-110 drop-shadow-[0_0_4px_rgba(255,255,255,0.45)]`}
+            style={IMG_STYLE}
+          />
+          <div
+            ref={(el) => {
+              els.current.swordHit = el;
+            }}
+            data-testid="creature-target-sword"
+            data-clicks="0"
+            className={`${HIT_TOP} rounded-full`}
+            onClick={(e) => onTarget(TREE_SWORD_ID, e.clientX, e.clientY)}
+          />
+          <div
+            ref={(el) => {
+              els.current.hp = el;
+            }}
+            data-testid="tree-hp"
+            data-hp={TREE_HP}
+            className="pointer-events-none absolute top-0 left-0 z-30 overflow-hidden rounded-full border border-black/60 bg-black/55 [visibility:hidden]"
+          >
+            <div
+              ref={(el) => {
+                els.current.hpFill = el;
+              }}
+              className="h-full w-full bg-[linear-gradient(90deg,#7bd36b,#c9a24a_60%,#d2553c)] transition-[width] duration-150"
+            />
+          </div>
+        </>
+      )}
       {spec.targets.map((t) => (
         <div
           key={t.id}

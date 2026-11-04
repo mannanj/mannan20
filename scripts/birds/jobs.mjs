@@ -118,4 +118,12 @@ jobs.push(
   myth('cerberus-sleep', '4:3', 'cerberus calmed/asleep frame', 'Full-body side view of Cerberus: a huge black rottweiler-like hellhound with THREE heads on three thick necks side by side, lying down asleep with all three heads resting on its paws, eyes closed, facing RIGHT, in profile.')
 );
 
+const tree = (name, purpose, subject) => ({ id: `forest-${name}`, bird: 'forest', name, aspect: '3:4', model: MYTH_MODEL, purpose, prompt: `${subject} ${MYTH_STYLE}` });
+const TREE = 'ONE ancient gnarled living oak tree with a FACE formed in its bark: two deep dark eye hollows with glinting eyes, a thick knotted nose, a wide expressive mouth with bark lips; a thick textured mossy trunk, its root system split into two leg-like root clumps so it can walk, two heavy lower branches shaped like arms ending in twiggy fingers, a crown of green leaves at the top; the whole tree from leaf crown to root tips is in the frame; three-quarter view facing RIGHT.';
+jobs.push(
+  tree('tree-walk', 'living tree walking frame', `${TREE} It is mid-stride, one root-leg lifted forward, arms swinging, expression curious.`),
+  tree('tree-grab', 'living tree grabbing frame', `${TREE} It stands with both arm-branches reaching forward and down to the RIGHT, twig fingers curled as if closing around something small, mouth open in a greedy grin.`),
+  tree('tree-chipped', 'living tree chipped/releasing frame', `${TREE} Its trunk is badly chipped: large patches of bark broken off exposing pale raw wood and splinters, loose bark chips falling, its arm-branches drooping open wide to the sides, mouth open in a dismayed gasp.`)
+);
+
 export default jobs;
