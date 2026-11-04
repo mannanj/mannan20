@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { isSessionRevoked } from './session-revocation';
 
 const COOKIE_NAME = '__Host-mannan-session';
 const SESSION_TTL_SEC = 60 * 60 * 24 * 30;
@@ -134,7 +135,7 @@ export function clearSiteSessionCookie(): string {
   return `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
 
-export async function readSiteSession(cookieHeader: string | null): Promise<SiteSession | null> {
+export async function readSiteSession(cookieHeader: string | null, revoked: (value: string) => Promise<boolean> = isSessionRevoked): Promise<SiteSession | null> {
   const value = cookieValue(cookieHeader);
   if (!value) return null;
 
@@ -156,5 +157,7 @@ export async function readSiteSession(cookieHeader: string | null): Promise<Site
   const exp = typeof record.exp === 'number' ? record.exp : 0;
 
   if (!email || !role || exp < Math.floor(Date.now() / 1000)) return null;
+  // Last, so only a valid session costs a read.
+  if (await revoked(value)) return null;
   return { email, role, admin: role === 'admin', exp };
 }

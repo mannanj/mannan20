@@ -111,3 +111,19 @@ describe('public-key (Ed25519) session signature', () => {
     expect(await session.upgradeSiteSessionCookie(null)).toBeNull();
   });
 });
+
+describe('a revoked session', () => {
+  test('stops reading as signed in, judged on the exact cookie', async () => {
+    process.env.MANNAN_SESSION_SECRET = 'test-secret-with-enough-entropy';
+    const cookie = (await session.createSiteSessionCookie({ email: 'a@b.c', role: 'user' })).split(';')[0];
+    const value = cookie.slice(cookie.indexOf('=') + 1);
+    expect(await session.readSiteSession(cookie, async () => false)).not.toBeNull();
+    expect(await session.readSiteSession(cookie, async (v) => v === value)).toBeNull();
+  });
+
+  test('an invalid session never costs a read', async () => {
+    let asked = 0;
+    await session.readSiteSession('__Host-mannan-session=forged.value', async () => (asked++, false));
+    expect(asked).toBe(0);
+  });
+});
