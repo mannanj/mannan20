@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties, RefObject } from 'react';
+import { hudPushOut, hudZone } from './hud-safe-zone';
 import type { GameItemId } from '@/components/inventory';
 import manifest from '../../../public/game/birds/manifest.json';
 import { TapCursorGlyph } from './tap-cursor-icon';
@@ -1076,8 +1077,12 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
         const y = box.y + box.h * 0.5 - 10;
         const width = els.counter.offsetWidth;
         const rawX = active === 'right' ? box.x - COUNTER_GAP - width : box.x + box.w + COUNTER_GAP * 2;
-        const x = Math.max(COUNTER_EDGE_PAD, Math.min(rawX, window.innerWidth - width - COUNTER_EDGE_PAD));
-        els.counter.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+        const clampedX = Math.max(COUNTER_EDGE_PAD, Math.min(rawX, window.innerWidth - width - COUNTER_EDGE_PAD));
+        const height = els.counter.offsetHeight;
+        const push = hudPushOut(hudZone(window.innerWidth), clampedX + width / 2, y + height / 2, width / 2, height / 2);
+        const x = Math.max(COUNTER_EDGE_PAD, Math.min(clampedX + push.dx, window.innerWidth - width - COUNTER_EDGE_PAD));
+        const finalY = y + push.dy;
+        els.counter.style.transform = `translate(${x.toFixed(1)}px, ${finalY.toFixed(1)}px)`;
         show(els.counter, true, 1);
       }
     } else {
