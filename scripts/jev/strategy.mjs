@@ -135,6 +135,7 @@ export const STRATEGY = [
   { id: 'key', priority: 5, note: 'Gate key in the bag: open the bag and use it at once; it opens the enchanted forest' },
   { id: 'tree-bark', priority: 4, note: 'a living tree holds the chicken (banner "the tree has the chicken!"): click the bark target under the HP bar; each click scores 3 and chips it; if a sword is stuck in the trunk, pull it first (25 clicks, counter "pull the sword n / 25")' },
   { id: 'sword', priority: 6, note: 'Sword in the bag: use it to equip (pill "sword equipped"); then press and drag across the densest chicken cluster, every chicken crossed splits into three and scores 1; use it again to put it away' },
+  { id: 'mystery', priority: 3, note: 'Mystery ??? orb (rainbow orb labelled "???"): grab it at once; it turns into a random buff and a short pill names it ("??? → Frenzy x2")' },
   { id: 'bird', priority: 5, note: 'after release click the receding bird 25 times for the feather' },
   { id: 'feather', priority: 5, note: 'pick up the feather' },
   { id: 'bag', priority: 6, note: 'open the bag, use the best unworn skin item, close it' },

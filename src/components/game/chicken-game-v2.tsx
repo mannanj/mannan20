@@ -293,6 +293,7 @@ import {
   collectToasted,
   nextBird,
   queueBird,
+  requeueBird,
   queueBirdsForScore,
   type HeatLevel,
   birdStateView,
@@ -364,9 +365,9 @@ import {
   wobbleOffset,
 } from './sword';
 import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
-import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, sceneCoversStage, shiftEraTime, type EndlessEraDef } from './endless-eras';
+import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
-import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS } from './chicken-orbs';
+import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS, MYSTERY_REVEAL_MS, pickMysteryEffect } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type OutlineFrame, type OutlinePoint } from './chicken-outline';
 import { drawEmbers, drawHeatShimmer, drawIgnition, drawOutlineFlames, drawFireBody, drawSilhouetteAura, emitEmbers, fireFilterFor, fireLevelFor, FIRE_BODY_START, lightningStyleFor, makeIgnition, strokeLightning, tickIgnition, updateEmbers, type Ember, type IgnitionState, type LightningStyle } from './chicken-fire';
@@ -574,6 +575,8 @@ const VISIT_NEAR_Y = 56;
 const VISIT_SPEED = 2.2;
 const LEADERBOARD_OPEN_GUARD_MS = 900;
 const HUD_LAYER = 'z-[8]';
+const MYSTERY_REVEAL_EDGE_PX = 100;
+const MYSTERY_REVEAL_MIN_Y = 340;
 const TEXT_SCRIM = '[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)]';
 const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"], [data-testid="inventory-root"]';
 
@@ -816,6 +819,9 @@ export interface SoundEvent {
 
 interface ChickenStateSnapshot {
   score: number;
+  lap: number;
+  mysteryLast: OrbKind | null;
+  scene: EndlessScene | null;
   tier: number;
   mercy: number;
   morph: number;
@@ -957,7 +963,7 @@ interface ChickenBridge {
   forceCreature: (kind: string) => boolean;
   creature: () => ReturnType<typeof creatureStateView>;
   setDropRoll: (roll: number | null) => void;
-  era: () => { id: string | null; index: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[] };
+  era: () => { id: string | null; index: number; step: number; lap: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[]; phoenixDue: boolean; fireSkyUntilMs: number };
   forceEra: (id: string) => void;
   forceScene: (name: string) => void;
   shield: () => number;
@@ -1243,6 +1249,17 @@ function ChickenGameInner() {
   const [creatureUi, setCreatureUi] = useState<{ kind: CreatureKind | null; hold: boolean }>({ kind: null, hold: false });
   const creatureUiRef = useRef(creatureUi);
   const [eraUi, setEraUi] = useState<EndlessEraDef | null>(null);
+  const [lapUi, setLapUi] = useState(1);
+  const [sceneUi, setSceneUi] = useState<EndlessScene | null>(null);
+  const sceneRef = useRef<EndlessScene | null>(null);
+  const phoenix2Ref = useRef(false);
+  const mysteryLastRef = useRef<OrbKind | null>(null);
+  const [mysteryReveal, setMysteryReveal] = useState<{ kind: OrbKind; x: number; y: number } | null>(null);
+  const enterEraUi = useCallback((step: number) => {
+    const clock = eraRef.current;
+    setEraUi(enterEraStep(clock, step, scoreRef.current, playMsRef.current));
+    setLapUi(clock.lap);
+  }, []);
   const shieldRef = useRef(0);
   const gateKeyRef = useRef<(() => void) | null>(null);
   const swordRef = useRef(createSwordState());
@@ -2632,7 +2649,8 @@ function ChickenGameInner() {
   const eraPool = useCallback((): OrbKind[] | undefined => {
     const era = currentEra(eraRef.current);
     if (!era) return undefined;
-    return creatureOnScreen(creatureRef.current) ? era.pool.filter((k) => multiplyFactor(k) === null) : era.pool;
+    const pool = poolForLap(era, eraRef.current.lap);
+    return creatureOnScreen(creatureRef.current) ? pool.filter((k) => multiplyFactor(k) === null) : pool;
   }, []);
 
   const schedulerContext = useCallback((): SchedulerContext => {
@@ -3004,16 +3022,23 @@ function ChickenGameInner() {
       const riser = playPowerUp(false);
       recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
       const buff = cursorBuffRef.current;
-      lastKindsRef.current = [orb.kind, ...lastKindsRef.current].slice(0, 2);
-      if (ORB_REGISTRY[orb.kind].big) lastBigAtRef.current = now;
-      if (multiplyFactor(orb.kind) !== null) applyMultiply(now, orb.kind);
-      else if (orb.kind === 'frenzy') frenzyUntilRef.current = Math.min(Math.max(now, frenzyUntilRef.current) + FRENZY_DURATION_MS, now + FRENZY_CAP_MS);
-      else if (orb.kind === 'cursor5') buff.x5Until = Math.min(Math.max(now, buff.x5Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
-      else if (orb.kind === 'cursor3') buff.x3Until = Math.min(Math.max(now, buff.x3Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
-      else if (orb.kind === 'chain') chainUntilRef.current = Math.max(now, chainUntilRef.current) + CHAIN_DURATION_MS;
-      else if (orb.kind === 'eggs') layingRef.current = { left: layingRef.current.left + EGG_LAY_COUNT, nextAt: now };
-      else if (orb.kind === 'giant') giantUntilRef.current = Math.max(now, giantUntilRef.current) + GIANT_DURATION_MS;
-      else if (orb.kind === 'magnet') magnetUntilRef.current = Math.max(now, magnetUntilRef.current) + MAGNET_DURATION_MS;
+      let kind = orb.kind;
+      if (kind === 'mystery') {
+        kind = pickMysteryEffect(mysteryLastRef.current, Math.random);
+        mysteryLastRef.current = kind;
+        setMysteryReveal({ kind, x: Math.min(Math.max(orb.x, MYSTERY_REVEAL_EDGE_PX), window.innerWidth - MYSTERY_REVEAL_EDGE_PX), y: Math.max(orb.y, MYSTERY_REVEAL_MIN_Y) });
+        window.setTimeout(() => setMysteryReveal(null), MYSTERY_REVEAL_MS);
+      }
+      lastKindsRef.current = [kind, ...lastKindsRef.current].slice(0, 2);
+      if (ORB_REGISTRY[kind].big) lastBigAtRef.current = now;
+      if (multiplyFactor(kind) !== null) applyMultiply(now, kind);
+      else if (kind === 'frenzy') frenzyUntilRef.current = Math.min(Math.max(now, frenzyUntilRef.current) + FRENZY_DURATION_MS, now + FRENZY_CAP_MS);
+      else if (kind === 'cursor5') buff.x5Until = Math.min(Math.max(now, buff.x5Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
+      else if (kind === 'cursor3') buff.x3Until = Math.min(Math.max(now, buff.x3Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
+      else if (kind === 'chain') chainUntilRef.current = Math.max(now, chainUntilRef.current) + CHAIN_DURATION_MS;
+      else if (kind === 'eggs') layingRef.current = { left: layingRef.current.left + EGG_LAY_COUNT, nextAt: now };
+      else if (kind === 'giant') giantUntilRef.current = Math.max(now, giantUntilRef.current) + GIANT_DURATION_MS;
+      else if (kind === 'magnet') magnetUntilRef.current = Math.max(now, magnetUntilRef.current) + MAGNET_DURATION_MS;
     },
     [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply]
   );
@@ -3481,6 +3506,13 @@ function ChickenGameInner() {
   }, [loaderPhase]);
 
   useEffect(() => {
+    const jumpScore = (n: number) => {
+      for (const kind of Object.keys(ORB_THRESHOLDS) as OrbKind[]) {
+        if (ORB_THRESHOLDS[kind] < n) orbFiredRef.current[kind] = true;
+      }
+      scoreRef.current = n - 1;
+      hit();
+    };
     const bridge: ChickenBridge = {
       plays: playsRef.current,
       state: () => ({
@@ -3491,6 +3523,9 @@ function ChickenGameInner() {
         bird: birdStateView(birdRef.current),
         creature: creatureStateView(creatureRef.current),
         era: currentEra(eraRef.current)?.id ?? null,
+        lap: eraRef.current.lap,
+        mysteryLast: mysteryLastRef.current,
+        scene: sceneRef.current,
         giantMs: Math.max(0, giantUntilRef.current - performance.now()),
         magnetMs: Math.max(0, magnetUntilRef.current - performance.now()),
         tier: tierRef.current,
@@ -3666,14 +3701,23 @@ function ChickenGameInner() {
       era: () => ({
         id: currentEra(eraRef.current)?.id ?? null,
         index: eraRef.current.index,
+        step: eraRef.current.step,
+        lap: eraRef.current.lap,
         byTime: eraRef.current.byTime,
         enteredAtMs: eraRef.current.enteredAtMs,
         playMs: playMsRef.current,
         queued: eraRef.current.queue.map((c) => c.kind),
+        phoenixDue: eraRef.current.phoenixDue,
+        fireSkyUntilMs: eraRef.current.fireSkyUntilMs,
       }),
       forceEra,
       forceScene: (name: string) => {
         if (name === 'fire-era') forceEra('fire');
+        if (name === 'lap-2') jumpScore(lapStartScore(2));
+        if (name === 'mystery') {
+          orbFiredRef.current.mystery = true;
+          spawnOrb('mystery');
+        }
         if (name === 'myth') forceEra('myth-1');
         if (name === FOREST_ERA_ID) forceEra(FOREST_ERA_ID);
         if (name === 'sword') {
@@ -3705,13 +3749,7 @@ function ChickenGameInner() {
         ig.until = ig.start + IGNITION_FORCE_MS;
         ig.nextAt = ig.until;
       },
-      setScore: (n: number) => {
-        for (const kind of Object.keys(ORB_THRESHOLDS) as OrbKind[]) {
-          if (ORB_THRESHOLDS[kind] < n) orbFiredRef.current[kind] = true;
-        }
-        scoreRef.current = n - 1;
-        hit();
-      },
+      setScore: jumpScore,
       forceOrb: (kind: OrbKind) => {
         orbFiredRef.current[kind] = true;
         spawnOrb(kind);
@@ -3784,7 +3822,7 @@ function ChickenGameInner() {
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin, orbsBlocked, runPaceCheck]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin, orbsBlocked, runPaceCheck, enterEraUi]);
 
   const syncCreatureUi = useCallback((kind: CreatureKind | null, hold: boolean) => {
     const cur = creatureUiRef.current;
@@ -3829,11 +3867,14 @@ function ChickenGameInner() {
     [grantItem, hit, playCreature, spawnShards]
   );
 
-  const forceEra = useCallback((id: string) => {
-    const index = ENDLESS_ERAS.findIndex((e) => e.id === id);
-    if (index < 0) return;
-    setEraUi(enterEra(eraRef.current, index, scoreRef.current, playMsRef.current));
-  }, []);
+  const forceEra = useCallback(
+    (id: string) => {
+      const index = ENDLESS_ERAS.findIndex((e) => e.id === id);
+      if (index < 0) return;
+      enterEraUi(stepForIndex(index, Math.max(1, eraRef.current.lap)));
+    },
+    [enterEraUi]
+  );
 
   gateKeyRef.current = () => forceEra(GATE_KEY_ERA_ID);
 
@@ -3883,6 +3924,8 @@ function ChickenGameInner() {
       const shielded = shieldRef.current > 0;
       if (shielded) shieldRef.current -= 1;
       bird.talonWeight = talonWeightFor(kind, multRef.current) * (shielded ? SHIELD_TALON_WEIGHT : 1);
+      bird.talonScale = phoenix2Ref.current ? PHOENIX2_TALON_SCALE : 1;
+      phoenix2Ref.current = false;
       syncBirdUi(kind, false);
     },
     [removeKid, removeClone, syncBirdUi, clearField]
@@ -4156,12 +4199,22 @@ function ChickenGameInner() {
         window.setTimeout(() => setUnlockToast(null), UNLOCK_TOAST_MS);
       }
       if (sc >= ENDLESS_FROM) {
-        const nextIdx = nextEraIndex(clock, sc, playMsRef.current);
-        if (nextIdx !== null && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
-          setEraUi(enterEra(clock, nextIdx, sc, playMsRef.current));
+        const nextStep = nextEraStep(clock, sc, playMsRef.current);
+        if (nextStep !== null && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
+          enterEraUi(nextStep);
         }
         const due = dueCreature(clock, playMsRef.current);
         if (due) queueCreature(creature, due);
+        if (clock.phoenixDue && !isBirdBusy(bird) && !bird.pending && !creatureOnScreen(creature)) {
+          clock.phoenixDue = false;
+          phoenix2Ref.current = true;
+          requeueBird(bird, 'phoenix');
+        }
+        const scene = eraScene(clock, playMsRef.current);
+        if (scene !== sceneRef.current) {
+          sceneRef.current = scene;
+          setSceneUi(scene);
+        }
       }
       if (
         creature.pending &&
@@ -4183,7 +4236,7 @@ function ChickenGameInner() {
         if (kind === 'tree') trees.count += 1;
         const swordTree = kind === 'tree' && (swordTreeNextRef.current || (trees.count === TREES_PER_FOREST && (!swordOwnedRef.current || Math.random() < LATER_SWORD_TREE_CHANCE)));
         swordTreeNextRef.current = false;
-        startCreature(creature, kind, { ts, vw, vh, groundY: groundYFor(vh), chickenCx: p.x + CHICKEN_W / 2, rng: Math.random, dropBonus: clock.byTime ? DROP_BEHIND_BONUS : 1, sword: swordTree });
+        startCreature(creature, kind, { ts, vw, vh, groundY: groundYFor(vh), chickenCx: p.x + CHICKEN_W / 2, rng: Math.random, dropBonus: (clock.byTime ? DROP_BEHIND_BONUS : 1) * dropScaleForLap(clock.lap), sword: swordTree, durationScale: creatureDurationScale(clock.lap) });
         creature.dropRoll = dropRollRef.current;
         modeRef.current = 'flying';
         syncCreatureUi(kind, false);
@@ -5336,7 +5389,7 @@ function ChickenGameInner() {
       </div>
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
       {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
-      <EndlessScenery scene={eraUi?.scene ?? null} groundFrac={GROUND_FRAC} />
+      <EndlessScenery scene={sceneUi} groundFrac={GROUND_FRAC} />
       <canvas ref={canvasRef} data-testid="chicken-swarm-canvas" className="absolute inset-0 z-[3] pointer-events-none" />
       <canvas ref={chainCanvasRef} data-testid="chicken-chain-canvas" className="pointer-events-none absolute inset-0 z-[25]" />
       <MartianLayer
@@ -5572,8 +5625,8 @@ function ChickenGameInner() {
       {parked && stage === 'moon' && !birdUi.grip && <ParkedRocket x={parked.x} y={parked.y} />}
 
       {eraUi && (
-        <div data-testid="era-label" data-era={eraUi.id} data-hud="" className={`pointer-events-none absolute top-[200px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-xs uppercase tracking-[0.2em] text-white/55`}>
-          {eraUi.label} era
+        <div data-testid="era-label" data-era={eraUi.id} data-lap={lapUi} data-hud="" className={`pointer-events-none absolute top-[200px] left-1/2 -translate-x-1/2 ${HUD_LAYER} whitespace-nowrap text-xs uppercase tracking-[0.2em] text-white/55`}>
+          {eraUi.label} era{lapUi > 1 ? ` · lap ${lapUi}` : ''}
         </div>
       )}
       {unlockToast && (
@@ -5692,6 +5745,16 @@ function ChickenGameInner() {
         </div>
       ))}
 
+      {mysteryReveal && (
+        <div
+          data-testid="mystery-reveal"
+          data-kind={mysteryReveal.kind}
+          style={{ left: mysteryReveal.x, top: mysteryReveal.y }}
+          className="pointer-events-none absolute z-[21] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-white shadow-[0_0_0_2px_rgba(255,255,255,0.35)] animate-[bonusRise_1.8s_ease-out_forwards]"
+        >
+          ??? → {ORB_LABELS[mysteryReveal.kind]}
+        </div>
+      )}
       <div
         ref={cursorLayerRef}
         data-pressed="false"

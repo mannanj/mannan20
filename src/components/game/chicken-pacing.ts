@@ -88,6 +88,7 @@ export const ORB_REGISTRY: Record<OrbKind, OrbDef> = {
   multiply100: def('multiply100', 18_000, 1, 8, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS }),
   giant: def('giant', 25_000, 8, 5, { catchUp: true }),
   magnet: def('magnet', 25_000, 8, 3),
+  mystery: def('mystery', 25_000, 2, 4),
 };
 
 export const ORB_REGISTRY_KINDS = Object.keys(ORB_REGISTRY) as OrbKind[];
@@ -108,7 +109,7 @@ export const ERA_REGISTRY: EraDef[] = [
   { id: 'moon-late', from: 5000, scene: 'moon', introduces: ['chain', 'multiply10'], event: null },
   { id: 'eagle', from: 10_000, scene: 'cosmos', introduces: ['multiply25'], event: 'eagle' },
   { id: 'jupiter', from: 17_000, scene: 'jupiter', introduces: ['multiply100'], event: 'martians' },
-  { id: 'phoenix', from: 25_000, scene: 'fire-sky', introduces: ['giant', 'magnet'], event: 'phoenix' },
+  { id: 'phoenix', from: 25_000, scene: 'fire-sky', introduces: ['giant', 'magnet', 'mystery'], event: 'phoenix' },
   { id: 'big-cats', from: 33_000, scene: 'night-yard', introduces: [], event: 'kitty' },
 ];
 

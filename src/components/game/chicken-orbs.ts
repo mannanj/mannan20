@@ -10,7 +10,8 @@ export type OrbKind =
   | 'multiply25'
   | 'multiply100'
   | 'giant'
-  | 'magnet';
+  | 'magnet'
+  | 'mystery';
 
 export interface CursorOffset {
   dx: number;
@@ -33,6 +34,7 @@ export const ORB_THRESHOLDS: Record<OrbKind, number> = {
   multiply100: Number.POSITIVE_INFINITY,
   giant: Number.POSITIVE_INFINITY,
   magnet: Number.POSITIVE_INFINITY,
+  mystery: Number.POSITIVE_INFINITY,
 };
 
 export const ORB_LABELS: Record<OrbKind, string> = {
@@ -48,6 +50,7 @@ export const ORB_LABELS: Record<OrbKind, string> = {
   multiply100: 'Multiply x100',
   giant: 'Giant x2.5',
   magnet: 'Magnet pull',
+  mystery: 'Mystery ???',
 };
 
 export const ORB_LIFETIME_MS = 30_000;
@@ -66,7 +69,21 @@ export const ORB_LABEL_PX: Record<OrbKind, number> = {
   multiply100: 9.5,
   giant: 11,
   magnet: 11,
+  mystery: 11,
 };
+export const MYSTERY_REVEAL_MS = 1800;
+export const MYSTERY_EFFECTS: { kind: OrbKind; weight: number }[] = [
+  { kind: 'frenzy', weight: 8 },
+  { kind: 'cursor5', weight: 6 },
+  { kind: 'cursor3', weight: 4 },
+  { kind: 'eggs', weight: 6 },
+  { kind: 'multiply5', weight: 6 },
+  { kind: 'multiply10', weight: 4 },
+  { kind: 'chain', weight: 6 },
+  { kind: 'giant', weight: 6 },
+  { kind: 'magnet', weight: 5 },
+  { kind: 'multiply25', weight: 2 },
+];
 export const GIANT_FACTOR = 2.5;
 export const GIANT_DURATION_MS = 15_000;
 export const GIANT_SCALE = 1.6;
@@ -159,6 +176,17 @@ export const MAX_CURSORS = 15;
 export const CURSOR_HAND_SIZE = 40;
 export const CURSOR_HAND_HOT_X = 20;
 export const CURSOR_HAND_HOT_Y = 19;
+
+export function pickMysteryEffect(last: OrbKind | null, rng: () => number): OrbKind {
+  const options = MYSTERY_EFFECTS.filter((e) => e.kind !== last);
+  const total = options.reduce((sum, e) => sum + e.weight, 0);
+  let roll = rng() * total;
+  for (const e of options) {
+    roll -= e.weight;
+    if (roll < 0) return e.kind;
+  }
+  return options[options.length - 1].kind;
+}
 
 export function multiplyFactor(kind: OrbKind): number | null {
   return MULTIPLY_FACTORS[kind] ?? null;

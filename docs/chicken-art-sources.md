@@ -186,6 +186,7 @@ Free photos first (Wikimedia Commons sweep by a Sonnet researcher agent, 7 candi
 | --- | --- | --- |
 | `public/game/scenes/forest.webp` | https://commons.wikimedia.org/wiki/File:Fanal_(Madeira,_Portugal),_Lorbeerwald_--_2025_--_1517.jpg (Dietmar Rabich, resized to 1920 px) | CC BY-SA 4.0 |
 | `public/game/creatures/sword.webp` (tree sword + bag icon) | https://commons.wikimedia.org/wiki/File:Longsword_from_16_to_19_elements-P5120145-gradient.jpg (Rama, museum longsword, rembg cut) | CC BY-SA 3.0 fr |
+| (same file, endless step 8) the sword is now drawn at 0.9 of the tree height, tilted -42°, with the lower 60 % clipped into the trunk base behind a dark slit; pulls slide it out. No new asset. | as above | CC BY-SA 3.0 fr |
 | `public/game/creatures/tree-walk.webp` | gemini-2.5-flash-image: gnarled oak with a bark face, root legs mid-stride, white studio background | AI, $0.039 × 2 (first call returned no image) |
 | `public/game/creatures/tree-grab.webp` (grab + hold frame) | gemini-2.5-flash-image: same tree, arm-branches reaching forward, greedy grin | AI, $0.039 |
 | `public/game/creatures/tree-chipped.webp` (release frame) | gemini-2.5-flash-image: same tree, bark chipped to pale wood, arms open, gasping | AI, $0.039 |
