@@ -4,6 +4,8 @@ import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import os from 'node:os';
+import sharp from 'sharp';
+import { SKIN_RANK, TIMING, buildQuestions, decide, questionKeys } from './strategy.mjs';
 
 const API = 'https://api.typesafe.ai/v1/systemone';
 const MODEL = process.env.JEV_MODEL ?? 'jev-latest';
@@ -19,20 +21,25 @@ const BOARD_OPEN_MIN = 0.6;
 const FORCE_BOARD_EVERY_S = Number(process.env.FORCE_BOARD_EVERY_S ?? 0);
 const TOGGLE_ZONE = { halfW: 90, h: 44 };
 const VIEW = { width: 1280, height: 800 };
-const IN_FLIGHT = 2;
-const VISIBLE_MIN = 0.5;
-const REFINE_BELOW = 0.45;
-const CROP = 420;
+const IN_FLIGHT = Number(process.env.IN_FLIGHT ?? 2);
+const SHOT_WIDTH = Number(process.env.JEV_W ?? 960);
+const SHOT_QUALITY = Number(process.env.JEV_Q ?? 50);
+const STUCK_SECONDS = Number(process.env.STUCK_SECONDS ?? 30);
+const GRIP_STUCK_FACTOR = 3;
+const STUCK_POLL_MS = 500;
+const HIT_WINDOW = 40;
+const BAG_SETTLE_MS = 250;
+const PRICE_PER_MTOK = 0.042;
+const DEBUG = process.env.JEV_DEBUG === '1';
+const GRIP_ACTIVE_MS = 10000;
+const GRIP_RESET_MS = 5000;
+const BAG_EXPECT_MS = 6000;
+const LEAD_MAX_GAP_MS = 2500;
+const LEAD_MAX_SPEED = 600;
 const VELOCITY_WINDOW_MS = 1500;
 const MAX_LEAD_PX = 220;
-const PARK = { x: VIEW.width - 6, y: VIEW.height - 6 };
-const SCENES = {
-  landscape: 'a near-black background with faint hand-drawn line art of hills, mountains, trees or buildings',
-  ocean: 'a dark blue sea with a bright white wavy water line across the screen and a sun',
-  sky: 'a light, medium-blue daytime sky with soft white cloud bars and a dark mountain silhouette along the bottom',
-  space: 'outer space with stars and the Earth below',
-  moon: 'a grey moon surface under a black starry sky',
-};
+const PARK = { x: 6, y: VIEW.height - 6 };
+const PICKUP_BAG_DELAY_MS = 2000;
 const ERROR_BACKOFF_MS = 1000;
 const STOP_TAIL_MS = 1500;
 const START_SETTLE_MS = 600;
@@ -90,6 +97,12 @@ if (!KEY) {
   process.exit(1);
 }
 
+const usage = { input: 0, requests: 0 };
+
+async function shrink(jpeg) {
+  return SHOT_WIDTH >= VIEW.width ? jpeg : sharp(jpeg).resize({ width: SHOT_WIDTH }).jpeg({ quality: SHOT_QUALITY }).toBuffer();
+}
+
 async function ask(jpeg, questions) {
   const ref = `screen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const form = new FormData();
@@ -107,42 +120,11 @@ async function ask(jpeg, questions) {
     body: form,
   });
   if (!res.ok) throw new Error(`jev ${res.status} ${(await res.text()).slice(0, 200)}`);
-  return res.json();
+  const json = await res.json();
+  usage.input += json.usage?.input_tokens ?? 0;
+  usage.requests++;
+  return json;
 }
-
-const FRAME_QUESTIONS = {
-  board_open: {
-    type: 'noul',
-    instructions:
-      'Is a dark "Leaderboard" panel (with Humans and Agents tabs, a name field, or a list of scores) slid up and covering the lower part of `screen`?',
-  },
-  board_toggle: {
-    type: 'box',
-    instructions: 'the small "Leaderboard" text with a little caret arrow, centered near the very bottom edge of `screen`',
-  },
-  visible: {
-    type: 'noul',
-    instructions:
-      'Is the cartoon rubber chicken visible anywhere in `screen`? It may be riding a surfboard, flying a red biplane, sitting inside a white rocket, or standing on the ground.',
-  },
-  chicken: {
-    type: 'box',
-    instructions:
-      'the cartoon rubber chicken in `screen`, together with the surfboard, red biplane or white rocket it is riding if there is one. Not the big score number, not small baby chicks.',
-  },
-  scene: {
-    type: 'choice',
-    instructions: 'Which background scene is `screen` showing?',
-    criteria: SCENES,
-  },
-};
-
-const CROP_QUESTIONS = {
-  chicken: {
-    type: 'box',
-    instructions: 'the cartoon rubber chicken, or the rocket, plane or surfboard carrying it, in `screen`',
-  },
-};
 
 async function overlay(page) {
   await page.evaluate(() => {
@@ -242,7 +224,7 @@ export async function play(opts = {}) {
   const track = [];
   const stats = {
     requests: 0, errors: 0, clicks: 0, latency: [], ious: [], stagesSeen: new Set(), scene: '',
-    boardForced: 0, boardSeen: 0, boardClosed: 0, boardMisses: 0, boardOpenedAt: 0, boardCloseMs: [],
+    debug: [], rules: {}, birdPhases: [], skinUpgrades: [], itemsUsed: [], bestSkinRank: 1, lastRule: '', boardForced: 0, boardSeen: 0, boardClosed: 0, boardMisses: 0, boardOpenedAt: 0, boardCloseMs: [],
   };
   const forceTimer = forceBoardEvery > 0
     ? setInterval(async () => {
@@ -254,6 +236,7 @@ export async function play(opts = {}) {
   await page.waitForTimeout(START_SETTLE_MS);
   const startScore = (await page.evaluate(() => window.__chicken.state().score)) ?? 0;
   const start = Date.now();
+  const usageStart = usage.input;
   const deadline = start + minutes * 60_000;
   let stopReason = 'time';
   let lastBox = null;
@@ -267,41 +250,185 @@ export async function play(opts = {}) {
       return r ? { x: r.x, y: r.y, width: r.width, height: r.height } : null;
     });
 
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const ctx = {
+    now: 0, wornRank: 1, bagReadyAt: 0, bagMisses: 0, stuckMs: 0, hitRate: 1, gripStage: 0, score: startScore, scene: '', martianClicks: 0,
+    askedAt: { scene: 0, board: 0, badge: 0 }, orbSeenAt: -Infinity, lastGripAt: -Infinity, pickupAt: -Infinity, bagOpenExpected: false, bagOpenedAt: 0,
+    gateStage: false, gripping: false, gripEpisodes: 0, pendingUse: null, jupiterSeenAt: -Infinity, chickenMissing: false,
+  };
+  let gripFrames = 0;
+  let gripFlat = 0;
+  let gripTotal = -1;
+  let lastRise = Date.now();
+  let lastScore = startScore;
+  let lastPhase = '';
+  const stuckLimitMs = (opts.stuckSeconds ?? STUCK_SECONDS) * 1000;
+
+  const poll = setInterval(async () => {
+    const s = await state().catch(() => null);
+    if (!s) return;
+    if (s.score > lastScore) {
+      lastScore = s.score;
+      lastRise = Date.now();
+    }
+    const phase = s.bird?.phase ?? '';
+    if (phase !== lastPhase) {
+      stats.birdPhases.push({ t: +((Date.now() - start) / 1000).toFixed(1), kind: s.bird?.kind ?? null, phase });
+      lastPhase = phase;
+    }
+    const worn = SKIN_RANK[s.skin] ?? 1;
+    if (worn > stats.bestSkinRank) {
+      stats.skinUpgrades.push({ t: +((Date.now() - start) / 1000).toFixed(1), skin: s.skin, mult: worn });
+      stats.bestSkinRank = worn;
+    }
+    ctx.score = s.score;
+    ctx.gateStage = (s.stage === 'rocket' || s.stage === 'moon') && s.stagePhase !== 'live';
+    if (s.stage === 'jupiter' || ctx.scene === 'jupiter') ctx.martianClicks = await page.evaluate(() => window.__chicken.martianClicks?.() ?? 0).catch(() => 0);
+    const gripActive = Date.now() - ctx.lastGripAt < GRIP_ACTIVE_MS;
+    const limit = stuckLimitMs * (gripActive ? GRIP_STUCK_FACTOR : 1);
+    if (Date.now() - lastRise > limit && !stopping) {
+      stopReason = 'stuck';
+      stopping = true;
+    }
+  }, STUCK_POLL_MS);
+
+  const clickAt = async (x, y) => {
+    await page.mouse.click(x, y);
+    stats.clicks++;
+  };
+
   async function frame() {
     const capturedAt = Date.now();
-    const [jpeg, truth] = await Promise.all([page.screenshot({ type: 'jpeg', quality: 70 }), truthRect()]);
+    const [jpeg, truth] = await Promise.all([page.screenshot({ type: 'jpeg', quality: SHOT_QUALITY }), truthRect()]);
     const t0 = Date.now();
-    const out = await ask(jpeg, FRAME_QUESTIONS);
+    ctx.now = Date.now();
+    const keys = questionKeys(ctx);
+    for (const [group, probe] of [['scene', 'scene'], ['board', 'board_open'], ['badge', 'badge']]) if (keys.includes(probe)) ctx.askedAt[group] = ctx.now;
+    const out = await ask(await shrink(jpeg), buildQuestions(keys));
     stats.requests++;
-    const a = out.answers;
-    stats.scene = a.scene?.choice ?? stats.scene;
-    if ((a.board_open?.noul ?? 0) >= BOARD_OPEN_MIN) {
-      await closeBoard(a.board_toggle);
-      stats.latency.push(Date.now() - t0);
-      return;
+    stats.scene = out.answers.scene?.choice ?? stats.scene;
+    ctx.scene = stats.scene;
+    if (ctx.scene === 'jupiter') ctx.jupiterSeenAt = Date.now();
+    ctx.now = Date.now();
+    ctx.stuckMs = ctx.now - lastRise;
+    ctx.hitRate = stats.clicks > 20 ? (lastScore - startScore) / stats.clicks : 1;
+    if (ctx.bagOpenExpected && ctx.now - ctx.bagOpenedAt > BAG_EXPECT_MS) {
+      ctx.bagOpenExpected = false;
+      ctx.bagReadyAt = ctx.now + TIMING.bagCooldownMs[Math.min(ctx.bagMisses, TIMING.bagCooldownMs.length - 1)];
+      ctx.bagMisses++;
     }
-    stats.boardMisses = 0;
-    if ((a.visible?.noul ?? 0) < VISIBLE_MIN) {
-      stats.latency.push(Date.now() - t0);
-      return;
+    const plan = decide(out.answers, ctx, VIEW);
+    if (DEBUG) {
+      const at = +((Date.now() - start) / 1000).toFixed(1);
+      const n = (k) => (out.answers[k]?.noul ?? out.answers[k]?.confidence ?? null);
+      stats.debug.push({ t: at, rule: plan.rule, source: plan.target?.source, x: Math.round(plan.target?.x ?? 0), y: Math.round(plan.target?.y ?? 0), side: out.answers.claw_side?.choice, bird: n('bird_fly'), birdBox: out.answers.bird_box?.confidence, feather: n('feather'), badge: n('badge'), bagOpen: n('bag_open'), rc: await page.evaluate(() => window.__chicken.state().bird?.recoveryClicks), bx: Math.round(plan.target?.w ?? 0), bh: Math.round(plan.target?.h ?? 0), scene: ctx.scene, mc: ctx.martianClicks, mart: n('martian'), hit: Math.round(ctx.hitRate * 100) / 100, panel: await page.evaluate(() => Boolean(document.querySelector('[data-testid="inventory-panel"]'))), items: await page.evaluate(() => window.__chicken.inventory?.().map((i) => i.id).join(',')), keys: keys.length });
     }
-    let b = { ...boxPx(a.chicken.box, { x: 0, y: 0 }, VIEW.width, VIEW.height), conf: a.chicken.confidence, refined: false };
-    if (b.conf < REFINE_BELOW) {
-      const cx = Math.min(Math.max(b.x + b.w / 2 - CROP / 2, 0), VIEW.width - CROP);
-      const cy = Math.min(Math.max(b.y + b.h / 2 - CROP / 2, 0), VIEW.height - CROP);
-      const crop = await page.screenshot({ type: 'jpeg', quality: 80, clip: { x: cx, y: cy, width: CROP, height: CROP } });
-      const r = await ask(crop, CROP_QUESTIONS);
-      stats.requests++;
-      if (r.answers.chicken.confidence > b.conf) {
-        b = { ...boxPx(r.answers.chicken.box, { x: cx, y: cy }, CROP, CROP), conf: r.answers.chicken.confidence, refined: true };
-      }
-    }
+    stats.rules[plan.rule] = (stats.rules[plan.rule] ?? 0) + 1;
     stats.latency.push(Date.now() - t0);
-    if (truth) stats.ious.push(iou(b, truth));
-    track.push({ t: capturedAt, x: b.x + b.w / 2, y: b.y + b.h / 2 });
-    while (track.length && capturedAt - track[0].t > VELOCITY_WINDOW_MS) track.shift();
-    lastBox = b;
-    await strike(b, capturedAt);
+    stats.lastRule = plan.rule;
+    if (ctx.pendingUse && (out.answers.bag_open?.noul ?? 0) >= 0.6 && (out.answers[`has_${ctx.pendingUse}`]?.noul ?? 1) < 0.6) {
+      ctx.wornRank = Math.max(ctx.wornRank, SKIN_RANK[ctx.pendingUse]);
+      ctx.pendingUse = null;
+    }
+    ctx.chickenMissing = Boolean(plan.chickenMissing);
+    if (gripFrames >= TIMING.gripEpisodeMinFrames && ctx.now - ctx.lastGripAt > TIMING.gripLostMs) {
+      ctx.gripEpisodes++;
+      gripFrames = 0;
+    }
+    ctx.gripping = gripFrames > 0 && ctx.now - ctx.lastGripAt < TIMING.gripLostMs;
+    if (plan.orb) ctx.orbSeenAt = ctx.now;
+    if (plan.grip) {
+      if (ctx.now - ctx.lastGripAt > GRIP_RESET_MS) {
+        ctx.gripStage = 0;
+        gripFlat = 0;
+        gripTotal = -1;
+      }
+      ctx.lastGripAt = ctx.now;
+      gripFrames++;
+    }
+    if (plan.kind === 'wait') {
+      await draw(page, { box: null, aim: null, hud: hudText(plan) });
+      await sleep(plan.restMs);
+      return;
+    }
+    if (plan.kind === 'close-board') return closeBoard(plan.target);
+    const t = plan.target;
+    const box = { x: t.left, y: t.top, w: t.w, h: t.h, conf: t.conf ?? 1 };
+    if (plan.kind === 'chicken') {
+      if (truth) stats.ious.push(iou(box, truth));
+      track.push({ t: capturedAt, x: t.x, y: t.y });
+      while (track.length && capturedAt - track[0].t > VELOCITY_WINDOW_MS) track.shift();
+      await strike(box, capturedAt);
+      return;
+    }
+    const v = leadVelocity(plan.rule, capturedAt, t);
+    const clicks = plan.clicks ?? 1;
+    for (let i = 0; i < clicks; i++) {
+      const lag = Date.now() - capturedAt;
+      await clickAt(clampTo(t.x + v.vx * lag, VIEW.width), clampTo(t.y + v.vy * lag, VIEW.height));
+      if (i < clicks - 1) await sleep(plan.gapMs ?? TIMING.clickGapMs);
+    }
+    await page.mouse.move(PARK.x, PARK.y);
+    if (plan.grip) await checkGripProgress();
+    afterAction(plan);
+    await draw(page, { box, aim: { x: t.x, y: t.y }, hud: hudText(plan) });
+    if (plan.kind === 'open-bag' || plan.kind === 'use' || plan.kind === 'close-bag') await sleep(BAG_SETTLE_MS);
+  }
+
+  const lastTarget = new Map();
+  const clampTo = (v, max) => Math.min(max - 2, Math.max(2, v));
+
+  function leadVelocity(rule, at, t) {
+    const prev = lastTarget.get(rule);
+    lastTarget.set(rule, { at, x: t.x, y: t.y });
+    if (!prev) return { vx: 0, vy: 0 };
+    const dt = at - prev.at;
+    if (dt <= 0 || dt > LEAD_MAX_GAP_MS) return { vx: 0, vy: 0 };
+    const vx = (t.x - prev.x) / dt;
+    const vy = (t.y - prev.y) / dt;
+    return Math.hypot(vx, vy) * 1000 > LEAD_MAX_SPEED ? { vx: 0, vy: 0 } : { vx, vy };
+  }
+
+  async function checkGripProgress() {
+    const s = await state();
+    const total = (s.bird?.leftClicks ?? 0) + (s.bird?.rightClicks ?? 0);
+    gripFlat = total === gripTotal ? gripFlat + 1 : 0;
+    gripTotal = total;
+    if (gripFlat >= TIMING.gripFlatBursts) {
+      ctx.gripStage++;
+      gripFlat = 0;
+    }
+  }
+
+  function afterAction(plan) {
+    const now = Date.now();
+    if (plan.kind === 'open-bag') {
+      ctx.bagOpenExpected = true;
+      ctx.bagOpenedAt = now;
+    }
+    if (plan.pickup) {
+      ctx.pickupAt = now;
+      ctx.bagMisses = 0;
+      ctx.bagReadyAt = now + PICKUP_BAG_DELAY_MS;
+    }
+    if (plan.kind === 'use') {
+      ctx.pendingUse = plan.item;
+      ctx.bagMisses = 0;
+      stats.itemsUsed.push({ t: +((now - start) / 1000).toFixed(1), item: plan.item });
+    }
+    if (plan.kind === 'close-bag') {
+      ctx.bagOpenExpected = false;
+      ctx.bagReadyAt = now + TIMING.bagCooldownMs[Math.min(ctx.bagMisses, TIMING.bagCooldownMs.length - 1)];
+      ctx.bagMisses++;
+    }
+  }
+
+  function hudText(plan) {
+    return [
+      `JEV  (${MODEL})   rule: ${plan.rule}`,
+      `score ${lastScore}   clicks ${stats.clicks}   worn x${ctx.wornRank}`,
+      `${opts.title ? `clip: ${opts.title}   ` : ''}time ${((Date.now() - start) / 1000).toFixed(0)}s / ${Math.round(minutes * 60)}s`,
+    ].join('\n');
   }
 
   async function closeBoard(toggle) {
@@ -309,8 +436,7 @@ export async function play(opts = {}) {
     if (stats.boardMisses >= 2) {
       await page.keyboard.press('Escape');
     } else {
-      const t = boxPx(toggle.box, { x: 0, y: 0 }, VIEW.width, VIEW.height);
-      await page.mouse.click(t.x + t.w / 2, t.y + t.h / 2);
+      await page.mouse.click(toggle.x, toggle.y);
       await page.mouse.move(PARK.x, PARK.y);
     }
     stats.boardMisses++;
@@ -324,32 +450,31 @@ export async function play(opts = {}) {
     await draw(page, { box: null, aim: null, hud: `JEV: leaderboard is open, closing it first (${stats.boardClosed} closed)` });
   }
 
+  function velocity() {
+    if (track.length < 2) return { vx: 0, vy: 0 };
+    const first = track[0];
+    const last = track[track.length - 1];
+    const dt = last.t - first.t;
+    return dt > 0 ? { vx: (last.x - first.x) / dt, vy: (last.y - first.y) / dt } : { vx: 0, vy: 0 };
+  }
+
   async function strike(b, capturedAt) {
-    const now = Date.now();
-    let vx = 0;
-    let vy = 0;
-    if (track.length >= 2) {
-      const first = track[0];
-      const last = track[track.length - 1];
-      const dt = last.t - first.t;
-      if (dt > 0) {
-        vx = (last.x - first.x) / dt;
-        vy = (last.y - first.y) / dt;
-      }
+    const { vx, vy } = velocity();
+    const slow = Math.hypot(vx, vy) * 1000 < TIMING.slowSpeedPxPerS;
+    const n = slow ? TIMING.clicksSlow : TIMING.clicksMoving;
+    const baseX = b.x + b.w / 2;
+    const baseY = b.y + b.h * 0.55;
+    let aim = { x: baseX, y: baseY };
+    for (let i = 0; i < n; i++) {
+      const lead = Date.now() - capturedAt;
+      const lx = Math.max(-MAX_LEAD_PX, Math.min(MAX_LEAD_PX, vx * lead));
+      const ly = Math.max(-MAX_LEAD_PX, Math.min(MAX_LEAD_PX, vy * lead));
+      aim = { x: Math.min(VIEW.width - 2, Math.max(2, baseX + lx)), y: Math.min(VIEW.height - 2, Math.max(2, baseY + ly)) };
+      if (Math.abs(aim.x - VIEW.width / 2) < TOGGLE_ZONE.halfW && aim.y > VIEW.height - TOGGLE_ZONE.h) aim.y = VIEW.height - TOGGLE_ZONE.h;
+      await clickAt(aim.x, aim.y);
+      if (i < n - 1) await sleep(TIMING.clickGapMs);
     }
-    const lead = now - capturedAt;
-    const lx = Math.max(-MAX_LEAD_PX, Math.min(MAX_LEAD_PX, vx * lead));
-    const ly = Math.max(-MAX_LEAD_PX, Math.min(MAX_LEAD_PX, vy * lead));
-    const aim = {
-      x: Math.min(VIEW.width - 2, Math.max(2, b.x + b.w / 2 + lx)),
-      y: Math.min(VIEW.height - 2, Math.max(2, b.y + b.h * 0.55 + ly)),
-    };
-    if (Math.abs(aim.x - VIEW.width / 2) < TOGGLE_ZONE.halfW && aim.y > VIEW.height - TOGGLE_ZONE.h) {
-      aim.y = VIEW.height - TOGGLE_ZONE.h;
-    }
-    await page.mouse.click(aim.x, aim.y);
     await page.mouse.move(PARK.x, PARK.y);
-    stats.clicks++;
     const s = await state();
     if (s.stage) stats.stagesSeen.add(s.stage);
     const mean = (xs) => (xs.length ? xs.reduce((p, c) => p + c, 0) / xs.length : 0);
@@ -358,13 +483,14 @@ export async function play(opts = {}) {
       aim,
       hud: [
         `JEV plays the chicken game  (${MODEL})`,
-        `score ${s.score}   stage ${s.stage ?? 'classic'}   tier ${s.tier}`,
+        `score ${s.score}   stage ${s.stage ?? 'classic'}   tier ${s.tier}   x${ctx.wornRank}`,
         `clicks ${stats.clicks}   hit rate ${(((s.score - startScore) / Math.max(1, stats.clicks)) * 100).toFixed(0)}%`,
         `jev latency ${mean(stats.latency.slice(-20)).toFixed(0)} ms   box IoU ${mean(stats.ious.slice(-20)).toFixed(2)}`,
         `jev sees: ${stats.scene || '...'}`,
         `${opts.title ? `clip: ${opts.title}   ` : ''}time ${((Date.now() - start) / 1000).toFixed(0)}s / ${Math.round(minutes * 60)}s`,
       ].join('\n'),
     });
+    if (slow) await sleep(TIMING.slowRestMs);
   }
 
   const stopTimer = opts.stopWhen
@@ -387,7 +513,7 @@ export async function play(opts = {}) {
         if (inFlight === 0) resolve();
         return;
       }
-      while (inFlight < IN_FLIGHT) {
+      while (inFlight < (ctx.gripping || ctx.bagOpenExpected ? 1 : IN_FLIGHT)) {
         inFlight++;
         frame()
           .catch((e) => {
@@ -406,6 +532,7 @@ export async function play(opts = {}) {
 
   if (forceTimer) clearInterval(forceTimer);
   if (stopTimer) clearInterval(stopTimer);
+  clearInterval(poll);
   const final = await state();
   let submitted = null;
   if (submit && final.score >= 1) {
@@ -431,7 +558,7 @@ export async function play(opts = {}) {
   await context.close();
   await browser.close();
 
-  const webm = readdirSync(videoDir).find((f) => f.endsWith('.webm'));
+  const webm = readdirSync(videoDir).find((f) => f.endsWith('.webm') && f !== 'audio.webm');
   const mp4 = path.join(outDir, `${label}-${stamp}.mp4`);
   if (webm) {
     const video = ['-i', path.join(videoDir, webm)];
@@ -440,9 +567,24 @@ export async function play(opts = {}) {
     execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...video, ...sound, ...mux, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', mp4]);
   }
   const mean = (xs) => (xs.length ? xs.reduce((p, c) => p + c, 0) / xs.length : 0);
+  const spent = usage.input - usageStart;
+  const elapsedMin = Math.max(1e-6, (Date.now() - start) / 60_000);
   const report = {
+    inputTokens: spent,
+    costUsd: +((spent * PRICE_PER_MTOK) / 1e6).toFixed(4),
+    tokensPerMin: Math.round(spent / elapsedMin),
+    usdPerMin: +((spent * PRICE_PER_MTOK) / 1e6 / elapsedMin).toFixed(4),
+    scorePerMin: +((final.score - startScore) / elapsedMin).toFixed(1),
+    scorePerUsd: spent ? Math.round((final.score - startScore) / ((spent * PRICE_PER_MTOK) / 1e6)) : 0,
+    settings: { width: SHOT_WIDTH, quality: SHOT_QUALITY, inFlight: IN_FLIGHT },
+    rules: stats.rules,
+    ...(DEBUG ? { debug: stats.debug } : {}),
+    birdPhases: stats.birdPhases,
+    skinUpgrades: stats.skinUpgrades,
+    itemsUsed: stats.itemsUsed,
     url,
     stopReason,
+    finalState: { skin: final.skin, mult: final.mult, clones: final.clones, cursors: final.cursors, stage: final.stage ?? null, stagePhase: final.stagePhase ?? null, bird: { kind: final.bird?.kind ?? null, phase: final.bird?.phase ?? null } },
     model: MODEL,
     seconds: Math.round((Date.now() - start) / 1000),
     score: final.score,
