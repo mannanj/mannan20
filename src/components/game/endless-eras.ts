@@ -103,3 +103,9 @@ export function shiftEraTime(clock: EraClock, ms: number): void {
   clock.enteredAtMs -= ms;
   clock.transitionUntilMs -= ms;
 }
+
+const STAGE_COVERING_SCENES: EndlessScene[] = ['night-yard'];
+
+export function sceneCoversStage(scene: EndlessScene | null): boolean {
+  return scene !== null && STAGE_COVERING_SCENES.includes(scene);
+}

@@ -329,7 +329,7 @@ import {
   tickCreature,
   type CreatureKind,
 } from './creature-event';
-import { DROP_BEHIND_BONUS, ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, shiftEraTime, type EndlessEraDef } from './endless-eras';
+import { DROP_BEHIND_BONUS, ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, sceneCoversStage, shiftEraTime, type EndlessEraDef } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
 import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
@@ -538,6 +538,7 @@ const VISIT_NEAR_X = 70;
 const VISIT_NEAR_Y = 56;
 const VISIT_SPEED = 2.2;
 const LEADERBOARD_OPEN_GUARD_MS = 900;
+const HUD_LAYER = 'z-[3]';
 const TEXT_SCRIM = '[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)]';
 const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"], [data-testid="inventory-root"]';
 
@@ -1173,6 +1174,16 @@ function ChickenGameInner() {
   const [creatureUi, setCreatureUi] = useState<{ kind: CreatureKind | null; hold: boolean }>({ kind: null, hold: false });
   const creatureUiRef = useRef(creatureUi);
   const [eraUi, setEraUi] = useState<EndlessEraDef | null>(null);
+  const sceneCovers = sceneCoversStage(eraUi?.scene ?? null);
+  const [stageLayersGone, setStageLayersGone] = useState(false);
+  useEffect(() => {
+    if (!sceneCovers) {
+      setStageLayersGone(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setStageLayersGone(true), ERA_TRANSITION_MS);
+    return () => window.clearTimeout(timer);
+  }, [sceneCovers]);
   const [maneOn, setManeOn] = useState(false);
   const multRef = useRef(1);
   const screamOverrideRef = useRef<'hawk' | null>(null);
@@ -4013,7 +4024,7 @@ function ChickenGameInner() {
           if (flightKind === 'plane') {
             p.x = Math.max(PLANE_HALF_W - CHICKEN_W / 2, Math.min(vw - PLANE_HALF_W - CHICKEN_W / 2, p.x));
           }
-          keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false);
+          keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false, vw);
           const decay = Math.exp(-PUSH_DECAY_PER_MS * dtMs);
           push.x *= decay;
           push.y *= decay;
@@ -4138,7 +4149,7 @@ function ChickenGameInner() {
         }
         p.x += dx;
         p.y += dy;
-        keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false);
+        keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false, vw);
         if (stageRef.current === 'jupiter' && p.y + CHICKEN_H > vh * MARTIAN_AVOID_Y_FRAC) {
           const cxc = p.x + CHICKEN_W / 2;
           for (const spot of martianSpotsRef.current) {
@@ -4481,6 +4492,14 @@ function ChickenGameInner() {
         p.bank = 0;
         modeRef.current = 'flying';
       }
+      const creatureHold = creatureHoldRef.current;
+      if (creatureHold) {
+        p.x = creatureHold.x - CHICKEN_W / 2 + Math.sin(ts / HOLD_FLAP_MS) * HOLD_FLAP_PX;
+        p.y = creatureHold.y - CHICKEN_H / 2;
+        p.vx = 0;
+        p.vy = 0;
+        p.rotation = Math.sin(ts / HOLD_FLAP_MS) * HOLD_FLAP_DEG;
+      }
       if (chickenElRef.current) {
         const gripped = isGripping(bird.phase) ? 'none' : '';
         if (chickenElRef.current.style.pointerEvents !== gripped) chickenElRef.current.style.pointerEvents = gripped;
@@ -4803,17 +4822,23 @@ function ChickenGameInner() {
       >
         <GameScenery tier={tier} />
       </div>
-      {isSpaceStage(stage) && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
-      <EscapeScenery stage={stage} seq={seq} />
+      <div
+        data-testid="stage-layers"
+        data-covered={sceneCovers ? '1' : '0'}
+        className={`absolute inset-0 pointer-events-none transition-opacity duration-[3000ms] ${sceneCovers ? 'opacity-0' : 'opacity-100'}`}
+      >
+        {isSpaceStage(stage) && !stageLayersGone && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
+        {!stageLayersGone && <EscapeScenery stage={stage} seq={seq} />}
+      </div>
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
       {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
-      <EndlessScenery scene={eraUi?.scene ?? null} />
+      <EndlessScenery scene={eraUi?.scene ?? null} groundFrac={GROUND_FRAC} />
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
       <canvas ref={chainCanvasRef} data-testid="chicken-chain-canvas" className="pointer-events-none absolute inset-0 z-[25]" />
       <MartianLayer
         occupiedRef={martianSpotsRef}
         avoidXFrac={() => (physicsRef.current.x + CHICKEN_W / 2) / window.innerWidth}
-        active={stage === 'jupiter'}
+        active={stage === 'jupiter' && !sceneCovers}
         blocked={birdUi.kind !== null || skinsOpen || sheet !== null || gate !== 'none'}
         onReward={onMartianReward}
       />
@@ -4823,17 +4848,17 @@ function ChickenGameInner() {
         </div>
       )}
 
-      {stage === 'jupiter' && (
-        <div data-testid="hud-scrim" className="absolute top-[170px] left-1/2 h-[220px] w-[520px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.6),rgba(0,0,0,0.26)_45%,transparent_70%)] pointer-events-none" />
+      {(stage === 'jupiter' || sceneCovers) && (
+        <div data-testid="hud-scrim" className="absolute top-[170px] z-[3] left-1/2 h-[220px] w-[520px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.6),rgba(0,0,0,0.26)_45%,transparent_70%)] pointer-events-none" />
       )}
       {stage === 'rocket' && HUD_SCRIM_SEQS.includes(seq) && (
         <div data-testid="hud-scrim" className="absolute top-[170px] left-1/2 h-[220px] w-[520px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.34),rgba(0,0,0,0.12)_45%,transparent_70%)] pointer-events-none" />
       )}
-      {stage === 'jupiter' && (
+      {stage === 'jupiter' && !sceneCovers && (
         <div data-testid="ground-scrim" className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
       )}
 
-      <div data-hud="" className={`absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/60 pointer-events-none ${TEXT_SCRIM}`}>
+      <div data-hud="" className={`absolute top-[225px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-base text-white/60 pointer-events-none ${TEXT_SCRIM}`}>
         Squeeze the chicken
       </div>
 
@@ -4888,13 +4913,13 @@ function ChickenGameInner() {
           key={bonus.id}
           data-testid="chicken-bonus-caption"
           onAnimationEnd={() => setBonus(null)}
-          className="absolute top-[235px] left-1/2 text-2xl font-bold text-[#FFD700] pointer-events-none animate-[bonusRise_0.9s_ease-out_forwards]"
+          className={`absolute top-[235px] left-1/2 ${HUD_LAYER} text-2xl font-bold text-[#FFD700] pointer-events-none animate-[bonusRise_0.9s_ease-out_forwards]`}
         >
           +{bonus.amount}
         </div>
       )}
 
-      <div data-hud="" className="absolute top-[265px] left-1/2 -translate-x-1/2 text-5xl font-bold text-white tabular-nums pointer-events-none [text-shadow:0_0_3px_rgba(0,0,0,0.6),0_2px_16px_rgba(0,0,0,0.55)]">
+      <div data-testid="chicken-score" data-hud="" className={`absolute top-[265px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-5xl font-bold text-white tabular-nums pointer-events-none [text-shadow:0_0_3px_rgba(0,0,0,0.6),0_2px_16px_rgba(0,0,0,0.55)]`}>
         {score}
       </div>
 
@@ -5043,7 +5068,7 @@ function ChickenGameInner() {
       {parked && stage === 'moon' && !birdUi.grip && <ParkedRocket x={parked.x} y={parked.y} />}
 
       {eraUi && (
-        <div data-testid="era-label" data-era={eraUi.id} data-hud="" className="pointer-events-none absolute top-[200px] left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/55">
+        <div data-testid="era-label" data-era={eraUi.id} data-hud="" className={`pointer-events-none absolute top-[200px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-xs uppercase tracking-[0.2em] text-white/55`}>
           {eraUi.label} era
         </div>
       )}

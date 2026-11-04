@@ -119,7 +119,7 @@ Every image and sound used for the endless-phase creatures (`public/game/creatur
 | kitty-walk.webp | https://commons.wikimedia.org/wiki/File:Blue_bengal_kitten_taste_of_freedom_-_3_(37011713593).jpg | CC0 |
 | kitty-stalk.webp | https://commons.wikimedia.org/wiki/File:Crouching_cat_in_Shifen.jpg | CC BY 2.0 |
 | kitty-pounce.webp (also the run-off pose) | https://commons.wikimedia.org/wiki/File:Running_Cat_01.JPG | CC BY-SA 3.0 |
-| kitty-hold.webp | https://commons.wikimedia.org/wiki/File:Tabby_Cat_with_Toy_Mouse.jpg | CC BY-SA 4.0 |
+| kitty-hold.webp | https://commons.wikimedia.org/wiki/File:Brown_spotted_tabby_bengal_cat.jpg (cat only, rembg isnet cut; replaced the Tabby_Cat_with_Toy_Mouse cut that kept the bed and toy) | CC BY-SA 3.0 |
 | tiger-walk.webp | https://commons.wikimedia.org/wiki/File:Walking_tiger_female.jpg | CC BY-SA 4.0 |
 | tiger-pounce.webp | https://commons.wikimedia.org/wiki/File:Tiger_jumping_David_RaJU.jpg | CC BY-SA 4.0 |
 | tiger-run.webp | https://commons.wikimedia.org/wiki/File:Bengal_tiger_jumping_in_Sundarban.jpg | CC BY-SA 4.0 |

@@ -3,6 +3,7 @@
 import type { CSSProperties, RefObject } from 'react';
 import type { GameItemId } from '@/components/inventory';
 import type { CreatureSoundKey } from '@/lib/chicken-audio';
+import { hudPushOut, hudZone } from './hud-safe-zone';
 
 export type CreatureKind = 'kitty' | 'tiger' | 'lion';
 export type CreatureMode = 'grab' | 'miss' | 'spectacle';
@@ -79,8 +80,13 @@ const STALK_SQUASH = 0.9;
 const XFADE_MS = 160;
 const HOLD_WOBBLE_DEG = 9;
 const HOLD_WOBBLE_MS = 180;
-const HOLD_POINT_X = 0.3;
-const HOLD_POINT_Y = 0.72;
+const HOLD_POINT_X = 0.78;
+const HOLD_POINT_Y = 0.6;
+const PAW_FRONT_CLIP = 'inset(60% 2% 0 66%)';
+const SHADOW_W_FRAC = 0.62;
+const SHADOW_H_FRAC = 0.13;
+const SHADOW_MAX_OPACITY = 0.55;
+const SHADOW_MIN_STRENGTH = 0.25;
 const FEATHER_SLOTS = 6;
 const FEATHER_EVERY_MS = 380;
 const FEATHER_LIFE_MS = 1400;
@@ -90,6 +96,11 @@ const FEATHER_SPIN_DEG_MS = 0.3;
 const HINT_GAP_PX = 10;
 const HINT_EDGE_PAD = 12;
 const SPAWN_OFFSET_FRAC = 0.6;
+const PORTRAIT_SIZE_BASIS = 1.3;
+
+function sizeBasis(vw: number, vh: number): number {
+  return Math.min(vh, vw * PORTRAIT_SIZE_BASIS);
+}
 
 function pose(file: string, aspect: number, faces: 1 | -1, scale: number, head: Rel): PoseAsset {
   return { file: `${ASSET_BASE}/${file}.webp`, aspect, faces, scale, head };
@@ -106,7 +117,7 @@ export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
       walk: pose('kitty-walk', 2.88, 1, 1, { x: 0.78, y: 0, w: 0.22, h: 0.6 }),
       stalk: pose('kitty-stalk', 0.81, 1, 1.3, { x: 0.2, y: 0, w: 0.6, h: 0.5 }),
       pounce: pose('kitty-pounce', 2.4, 1, 0.95, { x: 0.75, y: 0, w: 0.25, h: 0.7 }),
-      hold: pose('kitty-hold', 0.99, 1, 1.7, { x: 0.45, y: 0, w: 0.55, h: 0.5 }),
+      hold: pose('kitty-hold', 2.39, 1, 1.2, { x: 0.68, y: 0, w: 0.32, h: 0.5 }),
     },
     targets: [],
     bodyTarget: true,
@@ -259,6 +270,8 @@ export interface CreatureEls {
   root: HTMLDivElement | null;
   imgA: HTMLImageElement | null;
   imgB: HTMLImageElement | null;
+  front: HTMLImageElement | null;
+  shadow: HTMLDivElement | null;
   body: HTMLDivElement | null;
   targets: Record<string, HTMLDivElement | null>;
   hint: HTMLDivElement | null;
@@ -267,7 +280,7 @@ export interface CreatureEls {
 }
 
 export function createCreatureEls(): CreatureEls {
-  return { root: null, imgA: null, imgB: null, body: null, targets: {}, hint: null, banner: null, feathers: Array.from({ length: FEATHER_SLOTS }, () => null) };
+  return { root: null, imgA: null, imgB: null, front: null, shadow: null, body: null, targets: {}, hint: null, banner: null, feathers: Array.from({ length: FEATHER_SLOTS }, () => null) };
 }
 
 export function isCreatureBusy(s: CreatureState): boolean {
@@ -350,8 +363,9 @@ export function startCreature(s: CreatureState, kind: CreatureKind, ctx: Creatur
   s.dropBonus = ctx.dropBonus;
   const fromLeft = ctx.chickenCx >= ctx.vw / 2;
   s.dir = fromLeft ? 1 : -1;
-  const { w } = sizeFor(spec, 'walk', ctx.vh);
-  s.pos = { x: fromLeft ? -w * SPAWN_OFFSET_FRAC : ctx.vw + w * SPAWN_OFFSET_FRAC, y: groundCenterY(spec, 'walk', ctx.vh, ctx.groundY) };
+  const vh = sizeBasis(ctx.vw, ctx.vh);
+  const { w } = sizeFor(spec, 'walk', vh);
+  s.pos = { x: fromLeft ? -w * SPAWN_OFFSET_FRAC : ctx.vw + w * SPAWN_OFFSET_FRAC, y: groundCenterY(spec, 'walk', vh, ctx.groundY) };
   const stand = ctx.chickenCx - s.dir * ctx.vw * STAND_DIST_FRAC;
   s.standX = clamp(stand, w / 2 + EDGE_MARGIN, ctx.vw - w / 2 - EDGE_MARGIN);
   s.holdMs = spec.holdMs ? rand(spec.holdMs, ctx.rng) : 0;
@@ -497,7 +511,8 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
   const result: CreatureTickResult = { hold: null, flyUp: false, clearY: null, grabbed: false, released: false, drop: null, sound: null, done: false };
   if (!s.kind || !creatureOnScreen(s)) return result;
   const spec = CREATURE_SPECS[s.kind];
-  const { ts, vw, vh, groundY } = ctx;
+  const { ts, vw, groundY } = ctx;
+  const vh = sizeBasis(vw, ctx.vh);
   const elapsed = ts - s.phaseAt;
   const chickenBottom = ctx.chickenCy + ctx.chickenH / 2;
 
@@ -525,8 +540,8 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
   } else if (s.phase === 'act' && spec.mode === 'grab') {
     const t = clamp(elapsed / spec.pounceMs, 0, 1);
     setPose(s, 'pounce', ts);
-    const { h } = sizeFor(spec, 'hold', vh);
-    const targetX = ctx.chickenCx;
+    const { w, h } = sizeFor(spec, 'hold', vh);
+    const targetX = clamp(ctx.chickenCx, w / 2 + EDGE_MARGIN, vw - w / 2 - EDGE_MARGIN);
     const targetY = groundCenterY(spec, 'hold', vh, groundY);
     s.pos.x = s.swipeFrom.x + (targetX - s.swipeFrom.x) * easeInOut(t);
     s.pos.y = s.swipeFrom.y + (targetY - s.swipeFrom.y) * easeInOut(t) - Math.sin(t * Math.PI) * h * 0.5;
@@ -638,7 +653,8 @@ function walkBob(s: CreatureState, ts: number): number {
 }
 
 function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx): void {
-  const { ts, vh, vw } = ctx;
+  const { ts, vw } = ctx;
+  const vh = sizeBasis(vw, ctx.vh);
   const box = currentBox(spec, s, vh);
   const asset = poseAsset(spec, s.pose);
   const flipped = s.dir !== asset.faces;
@@ -666,6 +682,22 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
       hide(prev);
     }
   }
+  if (els.front) {
+    if (s.phase === 'hold' && fade >= 1) {
+      if (els.front.getAttribute('src') !== asset.file) els.front.src = asset.file;
+      place(els.front, box, transform);
+    } else {
+      hide(els.front);
+    }
+  }
+  if (els.shadow) {
+    const lift = groundCenterY(spec, s.pose, vh, ctx.groundY) - s.pos.y;
+    const strength = clamp(1 - lift / box.h, SHADOW_MIN_STRENGTH, 1);
+    const sw = box.w * SHADOW_W_FRAC * strength;
+    const sh = box.h * SHADOW_H_FRAC * strength;
+    els.shadow.style.opacity = String(SHADOW_MAX_OPACITY * strength);
+    place(els.shadow, { x: s.pos.x - sw / 2, y: ctx.groundY - sh / 2, w: sw, h: sh });
+  }
   if (els.body) {
     if (spec.bodyTarget && s.phase === 'hold') place(els.body, atLeast(box, MIN_HIT_PX));
     else hide(els.body);
@@ -689,8 +721,12 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
       els.hint.textContent = `click the ${target.label} ${s.targetClicks} / ${target.clicks}`;
       const w = els.hint.offsetWidth || 160;
       const hh = els.hint.offsetHeight || 28;
-      const x = clamp(head.x + head.w / 2 - w / 2, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD);
-      const y = Math.max(HINT_EDGE_PAD, head.y - hh - HINT_GAP_PX);
+      const x0 = clamp(head.x + head.w / 2 - w / 2, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD);
+      const y0 = Math.max(HINT_EDGE_PAD, head.y - hh - HINT_GAP_PX);
+      const zone = hudZone(vw);
+      const push = hudPushOut(zone, x0 + w / 2, y0 + hh / 2, w / 2, hh / 2);
+      const x = clamp(x0 + push.dx, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD);
+      const y = push.dy < 0 ? zone.bottom + HINT_GAP_PX : Math.max(HINT_EDGE_PAD, y0 + push.dy);
       els.hint.style.visibility = 'visible';
       els.hint.style.transform = `translate3d(${x}px, ${y}px, 0)`;
     } else {
@@ -744,13 +780,17 @@ interface CreatureLayerProps {
 
 export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProps) {
   const spec = CREATURE_SPECS[kind];
-  const bind = <K extends 'root' | 'imgA' | 'imgB' | 'body' | 'hint' | 'banner'>(key: K) => (el: CreatureEls[K]) => {
+  const bind = <K extends 'root' | 'imgA' | 'imgB' | 'front' | 'shadow' | 'body' | 'hint' | 'banner'>(key: K) => (el: CreatureEls[K]) => {
     els.current[key] = el;
   };
   return (
     <div ref={bind('root')} data-testid="creature-root" data-kind={kind} data-mode={spec.mode} data-phase="idle" data-misses="0" data-tamed="0" className="contents">
+      <div ref={bind('shadow')} data-testid="creature-shadow" className="pointer-events-none absolute top-0 left-0 z-[3] rounded-[50%] bg-black/60 blur-[6px] will-change-transform [visibility:hidden]" />
       <img ref={bind('imgB')} alt="" draggable={false} data-testid="creature-prev" className={`${LAYER} z-[4]`} style={IMG_STYLE} />
       <img ref={bind('imgA')} alt="" draggable={false} data-testid="creature-img" className={`${LAYER} z-[4] drop-shadow-[0_10px_14px_rgba(0,0,0,0.45)]`} style={IMG_STYLE} />
+      {spec.bodyTarget && (
+        <img ref={bind('front')} alt="" draggable={false} data-testid="creature-front" className={`${LAYER} z-[6]`} style={{ ...IMG_STYLE, clipPath: PAW_FRONT_CLIP }} />
+      )}
       {spec.bodyTarget && <div ref={bind('body')} data-testid="creature-body" className={HIT} onClick={(e) => onBody(e.clientX, e.clientY)} />}
       {spec.targets.map((t) => (
         <div

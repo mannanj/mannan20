@@ -2255,3 +2255,49 @@ test.describe('chicken game v2 tiger and lion', () => {
     await expect(page.getByTestId('golden-mane')).toBeVisible();
   });
 });
+
+test.describe('chicken game v2 big-cats HUD', () => {
+  const BOX_SLACK_PX = 1;
+  const SAMPLES = 4;
+  const SAMPLE_GAP_MS = 250;
+  const translateX = (transform: string) => Number(/translate\((-?[\d.]+)px/.exec(transform)?.[1] ?? Number.NaN);
+  for (const vp of [
+    { width: 1280, height: 800 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`the score stays readable and creature counters avoid it at ${vp.width}x${vp.height}`, async ({ page }) => {
+      await page.setViewportSize(vp);
+      await enterBigCats(page);
+      await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'night-yard');
+      await expect(page.getByTestId('stage-layers')).toHaveAttribute('data-covered', '1');
+      await expect(page.getByTestId('hud-scrim')).toHaveCount(1);
+      const hud = await page.evaluate(() => {
+        const score = document.querySelector<HTMLElement>('[data-testid=chicken-score]');
+        const scene = document.querySelector<HTMLElement>('[data-testid=endless-scene]');
+        if (!score || !scene) return null;
+        let opacity = 1;
+        for (let el: HTMLElement | null = score; el; el = el.parentElement) opacity *= Number(getComputedStyle(el).opacity);
+        return { opacity, color: getComputedStyle(score).color, scoreZ: Number(getComputedStyle(score).zIndex), sceneZ: Number(getComputedStyle(scene).zIndex) };
+      });
+      expect(hud).not.toBeNull();
+      expect(hud!.opacity).toBeGreaterThan(0.95);
+      expect(hud!.color).toBe('rgb(255, 255, 255)');
+      expect(hud!.scoreZ).toBeGreaterThan(hud!.sceneZ);
+      expect(await forceCreature(page, 'lion')).toBe(true);
+      const hint = page.getByTestId('creature-hint');
+      await expect(hint).toBeVisible({ timeout: 15_000 });
+      const score = page.getByTestId('chicken-score');
+      for (let i = 0; i < SAMPLES; i++) {
+        const [h, s] = await Promise.all([hint.boundingBox(), score.boundingBox()]);
+        if (h && s) {
+          const apart = h.x + h.width <= s.x || s.x + s.width <= h.x || h.y + h.height <= s.y || s.y + s.height <= h.y;
+          expect(apart).toBe(true);
+        }
+        const x = translateX(await page.getByTestId('chicken').evaluate((el) => (el as HTMLElement).style.transform));
+        expect(x).toBeGreaterThanOrEqual(-BOX_SLACK_PX);
+        expect(x).toBeLessThanOrEqual(vp.width - 70 + BOX_SLACK_PX);
+        await page.waitForTimeout(SAMPLE_GAP_MS);
+      }
+    });
+  }
+});

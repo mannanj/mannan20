@@ -48,16 +48,26 @@ export function hudPushOut(zone: HudZone, cx: number, cy: number, halfW: number,
   return { dx: 0, dy: cy < zone.cy ? -overlapY : overlapY };
 }
 
+export function hudPushOutOnScreen(zone: HudZone, cx: number, cy: number, halfW: number, halfH: number, vw: number): Push {
+  const push = hudPushOut(zone, cx, cy, halfW, halfH);
+  if (push.dx === 0) return push;
+  const nx = cx + push.dx;
+  if (nx - halfW >= 0 && nx + halfW <= vw) return push;
+  const overlapY = Math.min(cy + halfH - zone.top, zone.bottom - (cy - halfH));
+  return { dx: 0, dy: cy < zone.cy ? -overlapY : overlapY };
+}
+
 export function keepOutOfHud(
   zone: HudZone,
   body: { x: number; y: number; vx: number; vy: number },
   halfW: number,
   halfH: number,
-  center: boolean
+  center: boolean,
+  vw?: number
 ): void {
   const cx = center ? body.x : body.x + halfW;
   const cy = center ? body.y : body.y + halfH;
-  const push = hudPushOut(zone, cx, cy, halfW, halfH);
+  const push = vw === undefined ? hudPushOut(zone, cx, cy, halfW, halfH) : hudPushOutOnScreen(zone, cx, cy, halfW, halfH, vw);
   if (push.dx === 0 && push.dy === 0) return;
   body.x += push.dx;
   body.y += push.dy;
