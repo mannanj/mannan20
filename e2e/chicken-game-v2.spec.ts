@@ -2056,6 +2056,8 @@ test.describe('chicken game v2 silhouette aura, late lightning and fire form', (
 });
 
 import { BIG_CAT_STAY_MS, CREATURE_ORDER, CREATURE_SPECS, KITTY_HOLD_MS, LION_MANE_CLICKS } from '../src/components/game/creature-event';
+
+const BIG_CAT_ORDER = CREATURE_ORDER.filter((k) => k === 'kitty' || k === 'tiger' || k === 'lion');
 import { ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_SCORE_STEP } from '../src/components/game/endless-eras';
 
 interface CreatureView {
@@ -2108,7 +2110,7 @@ test.describe('chicken game v2 endless eras', () => {
     expect(ENDLESS_ERAS[0].from).toBe(ENDLESS_FROM);
     for (let i = 1; i < ENDLESS_ERAS.length; i++) expect(ENDLESS_ERAS[i].from - ENDLESS_ERAS[i - 1].from).toBe(ERA_SCORE_STEP);
     const cats = ENDLESS_ERAS.find((e) => e.id === 'big-cats');
-    expect(cats?.creatures.map((c) => c.kind)).toEqual(CREATURE_ORDER);
+    expect(cats?.creatures.map((c) => c.kind)).toEqual(BIG_CAT_ORDER);
     for (let i = 1; i < (cats?.creatures.length ?? 0); i++) expect(cats!.creatures[i].atMs).toBeGreaterThan(cats!.creatures[i - 1].atMs);
     expect(ENDLESS_ERAS[0].pool).toEqual(expect.arrayContaining(['giant', 'magnet']));
     expect(ERA_REGISTRY.find((e) => e.id === 'big-cats')?.from).toBe(ENDLESS_FROM + ERA_SCORE_STEP);
@@ -2150,7 +2152,7 @@ test.describe('chicken game v2 endless eras', () => {
     await page.evaluate((ms) => (window as unknown as { __chicken: CreatureBridge }).__chicken.fastForward(ms), ERA_MAX_MS + 100);
     await expect.poll(async () => (await eraOf(page)).id, { timeout: 5000 }).toBe('big-cats');
     expect((await eraOf(page)).byTime).toBe(true);
-    expect((await eraOf(page)).queued).toEqual(CREATURE_ORDER);
+    expect((await eraOf(page)).queued).toEqual(BIG_CAT_ORDER);
     await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'night-yard');
     await expect(page.getByTestId('creature-root')).toHaveCount(0);
   });

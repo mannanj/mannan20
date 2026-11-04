@@ -3385,9 +3385,17 @@ function ChickenGameInner() {
     setCreatureUi(next);
   }, []);
 
-  const onCreatureBody = useCallback(() => {
-    tapCreatureBody(creatureRef.current);
-  }, []);
+  const onCreatureBody = useCallback(
+    (x: number, y: number) => {
+      const r = chickenElRef.current?.getBoundingClientRect();
+      if (r && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+        hit();
+        return;
+      }
+      tapCreatureBody(creatureRef.current);
+    },
+    [hit]
+  );
 
   const onCreatureTarget = useCallback(
     (id: string, x: number, y: number) => {
