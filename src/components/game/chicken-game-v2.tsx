@@ -128,20 +128,58 @@ import {
   type Streak,
 } from './chicken-effects';
 import {
+  BIG_EGG_CHANCE,
+  BIG_EGG_POINTS,
+  BIG_EGG_SCALE,
   BLACK_HOLE_LIFE_MS,
   BLACK_HOLE_RADIUS,
+  CHAIN_ARC_JITTER,
+  CHAIN_ARC_LIFE_MS,
+  CHAIN_ARC_SEGMENTS,
+  CHAIN_BLINK_MS,
+  CHAIN_DURATION_MS,
+  CHAIN_MAX_ARCS,
+  CHAIN_RADIUS,
+  CLONE_DOM_LIMIT,
   CLONE_DRIFT_SPEED,
+  CLONE_FLOCK_RADIUS,
+  CLONE_HOMING,
+  CLONE_MAX_SPEED,
   CLONE_SPAWN_SPREAD,
   CURSOR_BUFF_MS,
+  CURSOR_CAP_MS,
   CURSOR_EXTEND_PER_CLICK_MS,
+  EGG_DROP_MS,
+  EGG_H,
+  EGG_HATCH_ANIM_MS,
+  EGG_HATCH_MS,
+  EGG_LAY_COUNT,
+  EGG_LAY_INTERVAL_MS,
+  EGG_POINTS,
+  EGG_W,
+  GOLDEN_BLINK_MS,
+  GOLDEN_BURST_FEATHERS,
+  GOLDEN_BURST_SHARDS,
+  GOLDEN_COLORS,
+  GOLDEN_H,
+  GOLDEN_HIT_VALUE,
+  GOLDEN_LIFE_MS,
+  GOLDEN_SPEED,
+  GOLDEN_TURN_MIN_MS,
+  GOLDEN_TURN_SPREAD_MS,
+  GOLDEN_W,
+  MAX_GOLDEN_CHICKENS,
+  MULTIPLY_BLINK_BEFORE_END_MS,
+  MULTIPLY_VANISH_SPREAD_MS,
+  VANISH_FEATHERS_SWARM,
+  multiplyDurationMs,
+  multiplyFactor,
+  orbLabelLines,
   CURSOR_HAND_HOT_X,
   CURSOR_HAND_HOT_Y,
   CURSOR_HAND_SIZE,
   MAX_CHICKENS_ON_SCREEN,
-  MULTIPLY_BLINK_START_MS,
-  MULTIPLY_DURATION_MS,
   MULTIPLY_FACTOR,
-  MULTIPLY_VANISH_EARLIEST_MS,
   ORB_COLLECT_SHARDS,
   ORB_DRIFT_SPEED,
   ORB_FADE_MS,
@@ -163,18 +201,21 @@ import {
   type OrbKind,
 } from './chicken-orbs';
 import {
-  CATCHUP_CHECK_MS,
-  CATCHUP_COOLDOWN_MS,
   FRENZY_BLINK_MS,
   FRENZY_CAP_MS,
   FRENZY_DURATION_MS,
   FRENZY_EXTEND_PER_CLICK_MS,
   FRENZY_FACTOR,
-  PACE_END_SCORE,
+  ORB_FIRST_GAP_MS,
+  ORB_REGISTRY,
+  SCHEDULE_TICK_MS,
   behindFraction,
-  catchUpKind,
+  isAhead,
+  orbGapMs,
   paceTarget,
+  pickOrbKind,
   talonWeightFor,
+  type SchedulerContext,
 } from './chicken-pacing';
 import {
   BANDAID_HP,
@@ -594,6 +635,39 @@ interface CloneMotion {
   tier: number;
   vanishAt: number;
   blinking: boolean;
+  sprite: boolean;
+}
+
+interface Egg {
+  id: number;
+  x: number;
+  y0: number;
+  y: number;
+  bornAt: number;
+  big: boolean;
+  hatchingAt: number | null;
+}
+
+interface EggView {
+  id: number;
+  big: boolean;
+}
+
+interface GoldenMotion {
+  x: number;
+  vx: number;
+  nextTurnAt: number;
+  until: number;
+  blinking: boolean;
+}
+
+interface GoldenView {
+  id: number;
+}
+
+interface ChainArc {
+  points: { x: number; y: number }[];
+  born: number;
 }
 
 interface CloneView {
@@ -702,8 +776,16 @@ interface ChickenStateSnapshot {
   cursorOffsets: CursorOffset[];
   cursorBuffMs: { x5: number; x3: number };
   frenzyMs: number;
+  chainMs: number;
+  multiplyMs: number;
+  spriteClones: number;
+  eggs: { id: number; x: number; y: number; big: boolean; hatching: boolean; ageMs: number }[];
+  goldens: { id: number; x: number; msLeft: number }[];
+  chainArcs: number;
+  lastKinds: OrbKind[];
+  orbsBlocked: boolean;
   pilotTeleports: number;
-  pace: { target: number; actual: number; behindPct: number; nextCheckIn: number; playMs: number };
+  pace: { target: number; actual: number; behindPct: number; nextCheckIn: number; nextSpawnIn: number; playMs: number };
   pieces: number;
   splitLevels: number[];
   held: boolean;
@@ -901,6 +983,25 @@ function auraRgbFor(score: number): { r: number; g: number; b: number } {
     g: channel(current.g, next.g),
     b: channel(current.b, next.b),
   };
+}
+
+const ORB_BLOCKING_SEQS: RocketSeq[] = ['planeExit', 'explode', 'rocketApproach', 'boarding', 'flight3d'];
+const CHAIN_CLICK_WINDOW_MS = 40;
+const CHAIN_MIN_DISTANCE = 8;
+const CHAIN_GLOW: Rgb = { r: 120, g: 190, b: 255 };
+
+function makeChainArc(x0: number, y0: number, x1: number, y1: number): ChainArc {
+  const points: { x: number; y: number }[] = [{ x: x0, y: y0 }];
+  const nx = -(y1 - y0);
+  const ny = x1 - x0;
+  const len = Math.hypot(nx, ny) || 1;
+  for (let i = 1; i < CHAIN_ARC_SEGMENTS; i++) {
+    const t = i / CHAIN_ARC_SEGMENTS;
+    const j = (Math.random() - 0.5) * 2 * CHAIN_ARC_JITTER * Math.sin(t * Math.PI);
+    points.push({ x: x0 + (x1 - x0) * t + (nx / len) * j, y: y0 + (y1 - y0) * t + (ny / len) * j });
+  }
+  points.push({ x: x1, y: y1 });
+  return { points, born: performance.now() };
 }
 
 function makeArc(cx: number, cy: number, color: Rgb): Arc {
@@ -1179,21 +1280,38 @@ function ChickenGameInner() {
   const hudBarRef = useRef<HTMLDivElement>(null);
   const hudReadoutRef = useRef<HTMLSpanElement>(null);
   const hudFullRef = useRef(false);
-  const hitRef = useRef<(e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }) => void>(() => undefined);
+  const hitRef = useRef<(e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }, raw?: number) => void>(() => undefined);
   const [orbViews, setOrbViews] = useState<OrbView[]>([]);
   const [cloneViews, setCloneViews] = useState<CloneView[]>([]);
   const [overlayOffsets, setOverlayOffsets] = useState<CursorOffset[]>([]);
   const orbsRef = useRef<Orb[]>([]);
   const orbElsRef = useRef(new Map<number, HTMLDivElement>());
   const orbIdRef = useRef(0);
-  const orbFiredRef = useRef<Record<OrbKind, boolean>>({ multiply: false, cursor5: false, cursor3: false, frenzy: false });
+  const orbFiredRef = useRef<Partial<Record<OrbKind, boolean>>>({});
   const frenzyUntilRef = useRef(0);
+  const chainUntilRef = useRef(0);
+  const chainArcsRef = useRef<ChainArc[]>([]);
+  const chainElRef = useRef<HTMLDivElement | null>(null);
+  const multiplyUntilRef = useRef(0);
+  const multiplyEndedAtRef = useRef(Number.NEGATIVE_INFINITY);
+  const nextSpawnAtRef = useRef(ORB_FIRST_GAP_MS);
+  const lastKindsRef = useRef<OrbKind[]>([]);
+  const lastBigAtRef = useRef(Number.NEGATIVE_INFINITY);
+  const fixedQueueRef = useRef<OrbKind[]>([]);
+  const eggsRef = useRef<Egg[]>([]);
+  const eggElsRef = useRef(new Map<number, HTMLDivElement>());
+  const eggIdRef = useRef(0);
+  const [eggViews, setEggViews] = useState<EggView[]>([]);
+  const layingRef = useRef({ left: 0, nextAt: 0 });
+  const goldenRef = useRef(new Map<number, GoldenMotion>());
+  const goldenElsRef = useRef(new Map<number, HTMLDivElement>());
+  const goldenIdRef = useRef(0);
+  const [goldenViews, setGoldenViews] = useState<GoldenView[]>([]);
+  const spriteCacheRef = useRef(new Map<string, HTMLImageElement>());
   const pilotTeleportsRef = useRef(0);
   const frenzyElRef = useRef<HTMLDivElement | null>(null);
   const playMsRef = useRef(0);
   const lastCheckMsRef = useRef(0);
-  const lastCatchUpMsRef = useRef(Number.NEGATIVE_INFINITY);
-  const catchUpCountRef = useRef(0);
   const cloneMotionRef = useRef(new Map<number, CloneMotion>());
   const cloneElsRef = useRef(new Map<number, HTMLDivElement>());
   const cloneIdRef = useRef(0);
@@ -1209,6 +1327,7 @@ function ChickenGameInner() {
   const facingElRef = useRef<HTMLDivElement>(null);
   const rubberElRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chainCanvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
   const { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle } = useChickenSounds();
@@ -2139,6 +2258,14 @@ function ChickenGameInner() {
     cursorBuffRef.current.x5Until += ms;
     cursorBuffRef.current.x3Until += ms;
     frenzyUntilRef.current += ms;
+    chainUntilRef.current += ms;
+    multiplyUntilRef.current += ms;
+    layingRef.current.nextAt += ms;
+    for (const egg of eggsRef.current) {
+      egg.bornAt += ms;
+      if (egg.hatchingAt !== null) egg.hatchingAt += ms;
+    }
+    for (const g of goldenRef.current.values()) g.until += ms;
     for (const pool of poolsRef.current) pool.born += ms;
     lastHitRef.current += ms;
   }, []);
@@ -2315,11 +2442,31 @@ function ChickenGameInner() {
     setSheet((s) => (s === null ? s : null));
   }, []);
 
-  const removeOrb = useCallback((id: number) => {
-    orbsRef.current = orbsRef.current.filter((o) => o.id !== id);
-    orbElsRef.current.delete(id);
-    setOrbViews((v) => v.filter((o) => o.id !== id));
+  const orbsBlocked = useCallback(() => {
+    const bird = birdRef.current;
+    return (
+      gateRef.current !== 'none' ||
+      ORB_BLOCKING_SEQS.includes(seqRef.current) ||
+      bird.pending ||
+      (bird.phase !== 'idle' && bird.phase !== 'done')
+    );
   }, []);
+
+  const paceNow = useCallback(() => {
+    const target = paceTarget(playMsRef.current);
+    return { behind: behindFraction(target, scoreRef.current), ahead: isAhead(target, scoreRef.current) };
+  }, []);
+
+  const removeOrb = useCallback(
+    (id: number) => {
+      orbsRef.current = orbsRef.current.filter((o) => o.id !== id);
+      orbElsRef.current.delete(id);
+      setOrbViews((v) => v.filter((o) => o.id !== id));
+      const { behind, ahead } = paceNow();
+      nextSpawnAtRef.current = playMsRef.current + orbGapMs(behind, ahead, Math.random);
+    },
+    [paceNow]
+  );
 
   const spawnOrb = useCallback((kind: OrbKind) => {
     const vw = window.innerWidth;
@@ -2347,32 +2494,51 @@ function ChickenGameInner() {
     (prev: number, next: number) => {
       for (const kind of crossedOrbs(prev, next, orbFiredRef.current)) {
         orbFiredRef.current[kind] = true;
-        spawnOrb(kind);
+        if (orbsRef.current.length === 0 && !orbsBlocked()) spawnOrb(kind);
+        else fixedQueueRef.current.push(kind);
       }
     },
-    [spawnOrb]
+    [orbsBlocked, spawnOrb]
   );
 
-  const runPaceCheck = useCallback(() => {
-    lastCheckMsRef.current = playMsRef.current;
-    const bird = birdRef.current;
-    if (
-      scoreRef.current >= PACE_END_SCORE ||
-      orbsRef.current.length > 0 ||
-      gateRef.current !== 'none' ||
-      bird.pending ||
-      isBirdBusy(bird) ||
-      playMsRef.current - lastCatchUpMsRef.current < CATCHUP_COOLDOWN_MS
-    ) {
-      return;
-    }
-    const behind = behindFraction(paceTarget(playMsRef.current), scoreRef.current);
-    const kind = catchUpKind(behind, catchUpCountRef.current);
-    if (!kind) return;
-    catchUpCountRef.current += 1;
-    lastCatchUpMsRef.current = playMsRef.current;
-    spawnOrb(kind);
-  }, [spawnOrb]);
+  const schedulerContext = useCallback((): SchedulerContext => {
+    const now = performance.now();
+    const { behind, ahead } = paceNow();
+    const active: OrbKind[] = [];
+    if (now < cursorBuffRef.current.x5Until) active.push('cursor5');
+    if (now < cursorBuffRef.current.x3Until) active.push('cursor3');
+    if (now < frenzyUntilRef.current) active.push('frenzy');
+    if (now < chainUntilRef.current) active.push('chain');
+    if (layingRef.current.left > 0) active.push('eggs');
+    return {
+      score: scoreRef.current,
+      behind,
+      ahead,
+      lastKinds: lastKindsRef.current,
+      activeKinds: active,
+      clones: cloneMotionRef.current.size,
+      goldens: goldenRef.current.size,
+      sinceBigMs: now - lastBigAtRef.current,
+      sinceMultiplyEndMs: now - multiplyEndedAtRef.current,
+      rng: Math.random,
+    };
+  }, [paceNow]);
+
+  const runPaceCheck = useCallback(
+    (force = false) => {
+      lastCheckMsRef.current = playMsRef.current;
+      if (orbsRef.current.length > 0 || orbsBlocked()) return;
+      const fixed = fixedQueueRef.current.shift();
+      if (fixed) {
+        spawnOrb(fixed);
+        return;
+      }
+      if (!force && playMsRef.current < nextSpawnAtRef.current) return;
+      const kind = pickOrbKind(schedulerContext());
+      if (kind) spawnOrb(kind);
+    },
+    [orbsBlocked, schedulerContext, spawnOrb]
+  );
 
   const removeClone = useCallback((id: number) => {
     cloneMotionRef.current.delete(id);
@@ -2380,13 +2546,18 @@ function ChickenGameInner() {
     setCloneViews((v) => v.filter((c) => c.id !== id));
   }, []);
 
-  const applyMultiply = useCallback((now: number) => {
+  const applyMultiply = useCallback((now: number, kind: OrbKind) => {
+    const factor = multiplyFactor(kind) ?? MULTIPLY_FACTOR;
+    const duration = multiplyDurationMs(kind);
     const p = physicsRef.current;
     const vh = window.innerHeight;
     const kidY = groundYFor(vh) - KID_H;
     const sources: { x: number; y: number; big: boolean; tier: number }[] = [
       { x: p.x, y: p.y, big: true, tier: tierRef.current },
     ];
+    for (const motion of goldenRef.current.values()) {
+      sources.push({ x: motion.x, y: groundYFor(vh) - GOLDEN_H, big: true, tier: tierRef.current });
+    }
     for (const motion of kidMotionRef.current.values()) {
       sources.push({ x: motion.x, y: kidY, big: false, tier: Math.floor(Math.random() * (tierRef.current + 1)) });
     }
@@ -2394,11 +2565,15 @@ function ChickenGameInner() {
       sources.push({ x: motion.x, y: motion.y, big: motion.big, tier: motion.tier });
     }
     let total = sources.length;
+    let domCount = [...cloneMotionRef.current.values()].filter((c) => !c.sprite).length;
     const added: CloneView[] = [];
-    for (const src of sources) {
-      for (let i = 0; i < MULTIPLY_FACTOR - 1 && total < MAX_CHICKENS_ON_SCREEN; i++) {
+    for (let round = 0; round < factor - 1 && total < MAX_CHICKENS_ON_SCREEN; round++) {
+      for (const src of sources) {
+        if (total >= MAX_CHICKENS_ON_SCREEN) break;
         const id = ++cloneIdRef.current;
         const angle = Math.random() * Math.PI * 2;
+        const sprite = domCount >= CLONE_DOM_LIMIT;
+        if (!sprite) domCount++;
         cloneMotionRef.current.set(id, {
           x: src.x + (Math.random() - 0.5) * CLONE_SPAWN_SPREAD,
           y: src.y + (Math.random() - 0.5) * CLONE_SPAWN_SPREAD,
@@ -2410,19 +2585,20 @@ function ChickenGameInner() {
           tier: src.tier,
           vanishAt: 0,
           blinking: false,
+          sprite,
         });
-        added.push({ id, big: src.big, tier: src.tier });
+        if (!sprite) added.push({ id, big: src.big, tier: src.tier });
         total++;
       }
     }
     multiplyStartRef.current = now;
+    multiplyUntilRef.current = now + duration;
     for (const motion of cloneMotionRef.current.values()) {
       motion.blinking = false;
-      motion.vanishAt =
-        now + MULTIPLY_VANISH_EARLIEST_MS + Math.random() * (MULTIPLY_DURATION_MS - MULTIPLY_VANISH_EARLIEST_MS);
+      motion.vanishAt = now + duration - Math.random() * MULTIPLY_VANISH_SPREAD_MS;
     }
     for (const el of cloneElsRef.current.values()) el.classList.remove('chicken-clone-blink');
-    setCloneViews((v) => [...v, ...added]);
+    if (added.length > 0) setCloneViews((v) => [...v, ...added]);
   }, []);
 
   const collectOrb = useCallback(
@@ -2435,19 +2611,170 @@ function ChickenGameInner() {
       const riser = playPowerUp(false);
       recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
       const buff = cursorBuffRef.current;
-      if (orb.kind === 'multiply') applyMultiply(now);
-      else if (orb.kind === 'frenzy') frenzyUntilRef.current = Math.max(now, frenzyUntilRef.current) + FRENZY_DURATION_MS;
-      else if (orb.kind === 'cursor5') buff.x5Until = Math.max(now, buff.x5Until) + CURSOR_BUFF_MS;
-      else buff.x3Until = Math.max(now, buff.x3Until) + CURSOR_BUFF_MS;
+      lastKindsRef.current = [orb.kind, ...lastKindsRef.current].slice(0, 2);
+      if (ORB_REGISTRY[orb.kind].big) lastBigAtRef.current = now;
+      if (multiplyFactor(orb.kind) !== null) applyMultiply(now, orb.kind);
+      else if (orb.kind === 'frenzy') frenzyUntilRef.current = Math.min(Math.max(now, frenzyUntilRef.current) + FRENZY_DURATION_MS, now + FRENZY_CAP_MS);
+      else if (orb.kind === 'cursor5') buff.x5Until = Math.min(Math.max(now, buff.x5Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
+      else if (orb.kind === 'cursor3') buff.x3Until = Math.min(Math.max(now, buff.x3Until) + CURSOR_BUFF_MS, now + CURSOR_CAP_MS);
+      else if (orb.kind === 'chain') chainUntilRef.current = Math.max(now, chainUntilRef.current) + CHAIN_DURATION_MS;
+      else if (orb.kind === 'eggs') layingRef.current = { left: layingRef.current.left + EGG_LAY_COUNT, nextAt: now };
     },
     [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply]
+  );
+
+  const spriteFor = useCallback((big: boolean, tier: number): HTMLImageElement | null => {
+    const key = `${big ? 'big' : 'kid'}-${tier}-${skinRef.current}`;
+    const cached = spriteCacheRef.current.get(key);
+    if (cached) return cached.complete && cached.naturalWidth > 0 ? cached : null;
+    let svg: SVGSVGElement | null = null;
+    for (const [id, el] of cloneElsRef.current) {
+      const motion = cloneMotionRef.current.get(id);
+      if (motion && motion.big === big && motion.tier === tier) {
+        svg = el.querySelector('svg');
+        break;
+      }
+    }
+    if (!svg && big) svg = chickenElRef.current?.querySelector('svg') ?? null;
+    if (!svg) return null;
+    const img = new Image();
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(svg))}`;
+    spriteCacheRef.current.set(key, img);
+    return null;
+  }, []);
+
+  const drawSpriteClones = useCallback(
+    (ctx: CanvasRenderingContext2D, ts: number) => {
+      const blinkOff = Math.floor(ts / 220) % 2 === 1;
+      for (const motion of cloneMotionRef.current.values()) {
+        if (!motion.sprite || (motion.blinking && blinkOff)) continue;
+        const img = spriteFor(motion.big, motion.tier);
+        if (!img) continue;
+        if (motion.vx < 0) {
+          ctx.save();
+          ctx.translate(motion.x + motion.w, motion.y);
+          ctx.scale(-1, 1);
+          ctx.drawImage(img, 0, 0, motion.w, motion.h);
+          ctx.restore();
+        } else {
+          ctx.drawImage(img, motion.x, motion.y, motion.w, motion.h);
+        }
+      }
+    },
+    [spriteFor]
+  );
+
+  const removeEgg = useCallback((id: number) => {
+    eggsRef.current = eggsRef.current.filter((e) => e.id !== id);
+    eggElsRef.current.delete(id);
+    setEggViews((v) => v.filter((e) => e.id !== id));
+  }, []);
+
+  const removeGolden = useCallback((id: number) => {
+    goldenRef.current.delete(id);
+    goldenElsRef.current.delete(id);
+    setGoldenViews((v) => v.filter((g) => g.id !== id));
+  }, []);
+
+  const clearField = useCallback(() => {
+    for (const id of [...goldenRef.current.keys()]) removeGolden(id);
+    for (const egg of [...eggsRef.current]) removeEgg(egg.id);
+    layingRef.current = { left: 0, nextAt: 0 };
+    chainUntilRef.current = 0;
+    chainArcsRef.current = [];
+    fixedQueueRef.current = [];
+  }, [removeEgg, removeGolden]);
+
+  const spawnGolden = useCallback((x: number, now: number) => {
+    const id = ++goldenIdRef.current;
+    goldenRef.current.set(id, {
+      x,
+      vx: (Math.random() < 0.5 ? -1 : 1) * GOLDEN_SPEED,
+      nextTurnAt: now + GOLDEN_TURN_MIN_MS + Math.random() * GOLDEN_TURN_SPREAD_MS,
+      until: now + GOLDEN_LIFE_MS,
+      blinking: false,
+    });
+    setGoldenViews((v) => [...v, { id }]);
+  }, []);
+
+  const layEgg = useCallback((now: number) => {
+    const p = physicsRef.current;
+    const vh = window.innerHeight;
+    const id = ++eggIdRef.current;
+    const big = Math.random() < BIG_EGG_CHANCE;
+    const scale = big ? BIG_EGG_SCALE : 1;
+    const x = Math.max(0, Math.min(window.innerWidth - EGG_W * scale, p.x + CHICKEN_W / 2 - (EGG_W * scale) / 2));
+    const y0 = Math.min(p.y + CHICKEN_H - EGG_H * scale, groundYFor(vh) - EGG_H * scale);
+    eggsRef.current.push({ id, x, y0, y: y0, bornAt: now, big, hatchingAt: null });
+    setEggViews((v) => [...v, { id, big }]);
+  }, []);
+
+  const tickEggs = useCallback(
+    (ts: number, dtMs: number, vw: number, vh: number) => {
+      const laying = layingRef.current;
+      if (laying.left > 0 && ts >= laying.nextAt && !orbsBlocked()) {
+        laying.left -= 1;
+        laying.nextAt = ts + EGG_LAY_INTERVAL_MS;
+        layEgg(ts);
+      }
+      const groundY = groundYFor(vh);
+      for (const egg of [...eggsRef.current]) {
+        const scale = egg.big ? BIG_EGG_SCALE : 1;
+        const restY = groundY - EGG_H * scale;
+        const drop = Math.min(1, (ts - egg.bornAt) / EGG_DROP_MS);
+        egg.y = egg.y0 + (restY - egg.y0) * drop * drop;
+        const age = ts - egg.bornAt;
+        const el = eggElsRef.current.get(egg.id);
+        if (egg.hatchingAt === null && age >= EGG_HATCH_MS && goldenRef.current.size < MAX_GOLDEN_CHICKENS) {
+          egg.hatchingAt = ts;
+          el?.classList.add('egg-hatching');
+        }
+        if (egg.hatchingAt !== null && ts - egg.hatchingAt >= EGG_HATCH_ANIM_MS) {
+          const cx = egg.x + (EGG_W * scale) / 2;
+          for (const color of GOLDEN_COLORS) spawnShards(cx, egg.y + (EGG_H * scale) / 2, 4, color);
+          removeEgg(egg.id);
+          spawnGolden(Math.max(0, Math.min(vw - GOLDEN_W, cx - GOLDEN_W / 2)), ts);
+          continue;
+        }
+        if (el) el.style.transform = `translate(${egg.x}px, ${egg.y}px)`;
+      }
+      const goldY = groundY - GOLDEN_H;
+      for (const [id, g] of goldenRef.current) {
+        if (ts >= g.until) {
+          const cx = g.x + GOLDEN_W / 2;
+          const cy = goldY + GOLDEN_H / 2;
+          for (const color of GOLDEN_COLORS) spawnShards(cx, cy, GOLDEN_BURST_SHARDS / GOLDEN_COLORS.length, color);
+          spawnFeathers(cx, cy, GOLDEN_BURST_FEATHERS);
+          streaksRef.current.push(...shortStreaks(cx, cy, ts, 12));
+          removeGolden(id);
+          continue;
+        }
+        if (ts >= g.nextTurnAt) {
+          g.vx = -g.vx;
+          g.nextTurnAt = ts + GOLDEN_TURN_MIN_MS + Math.random() * GOLDEN_TURN_SPREAD_MS;
+        }
+        g.x += g.vx * dtMs;
+        if (g.x < 0 || g.x > vw - GOLDEN_W) g.vx = -g.vx;
+        g.x = Math.max(0, Math.min(vw - GOLDEN_W, g.x));
+        if (!g.blinking && g.until - ts < GOLDEN_BLINK_MS) g.blinking = true;
+        const el = goldenElsRef.current.get(id);
+        if (el) {
+          el.style.transform = `translate(${g.x}px, ${goldY}px) scaleX(${g.vx < 0 ? -1 : 1})`;
+          if (g.blinking && !el.dataset.blinking) {
+            el.classList.add('chicken-clone-blink');
+            el.dataset.blinking = '1';
+          }
+        }
+      }
+    },
+    [layEgg, orbsBlocked, removeEgg, removeGolden, spawnFeathers, spawnGolden, spawnShards]
   );
 
   const tickAbilities = useCallback(
     (ts: number, dtMs: number, vw: number, vh: number) => {
       if (scoreRef.current > 0 && gateRef.current === 'none' && !document.hidden) {
         playMsRef.current += dtMs;
-        if (playMsRef.current - lastCheckMsRef.current >= CATCHUP_CHECK_MS) runPaceCheck();
+        if (playMsRef.current - lastCheckMsRef.current >= SCHEDULE_TICK_MS) runPaceCheck();
       }
       const frenzyLeft = frenzyUntilRef.current - ts;
       const frenzyEl = frenzyElRef.current;
@@ -2456,6 +2783,14 @@ function ChickenGameInner() {
         frenzyEl.style.opacity = live ? (frenzyLeft < FRENZY_BLINK_MS && Math.floor(ts / 250) % 2 === 0 ? '0.45' : '1') : '0';
         if (live) frenzyEl.textContent = `Frenzy x2 ${Math.ceil(frenzyLeft / 1000)}s`;
       }
+      const chainLeft = chainUntilRef.current - ts;
+      const chainEl = chainElRef.current;
+      if (chainEl) {
+        const live = chainLeft > 0;
+        chainEl.style.opacity = live ? (chainLeft < CHAIN_BLINK_MS && Math.floor(ts / 250) % 2 === 0 ? '0.45' : '1') : '0';
+        if (live) chainEl.textContent = `Chain Lightning ${Math.ceil(chainLeft / 1000)}s`;
+      }
+      tickEggs(ts, dtMs, vw, vh);
       const orbs = orbsRef.current;
       for (let i = orbs.length - 1; i >= 0; i--) {
         const orb = orbs[i];
@@ -2482,17 +2817,33 @@ function ChickenGameInner() {
 
       const clones = cloneMotionRef.current;
       if (clones.size > 0) {
-        const sinceStart = ts - multiplyStartRef.current;
+        const blinkFrom = multiplyUntilRef.current - MULTIPLY_BLINK_BEFORE_END_MS;
+        const swarm = clones.size > CLONE_DOM_LIMIT;
+        const hx = physicsRef.current.x + CHICKEN_W / 2;
+        const hy = physicsRef.current.y + CHICKEN_H / 2;
         for (const [id, motion] of clones) {
           if (ts >= motion.vanishAt) {
             const cx = motion.x + motion.w / 2;
             const cy = motion.y + motion.h / 2;
             blackHolesRef.current.push({ x: cx, y: cy, bornAt: ts });
-            streaksRef.current.push(...shortStreaks(cx, cy, ts, 6));
-            spawnFeathers(cx, cy, VANISH_FEATHERS);
+            if (!swarm) streaksRef.current.push(...shortStreaks(cx, cy, ts, 6));
+            spawnFeathers(cx, cy, swarm ? VANISH_FEATHERS_SWARM : VANISH_FEATHERS);
             vanishedRef.current++;
             removeClone(id);
+            if (clones.size === 0) multiplyEndedAtRef.current = ts;
             continue;
+          }
+          const ox = hx - (motion.x + motion.w / 2);
+          const oy = hy - (motion.y + motion.h / 2);
+          const dist = Math.hypot(ox, oy);
+          if (dist > CLONE_FLOCK_RADIUS) {
+            motion.vx += (ox / dist) * CLONE_HOMING * dtMs;
+            motion.vy += (oy / dist) * CLONE_HOMING * dtMs;
+            const speed = Math.hypot(motion.vx, motion.vy);
+            if (speed > CLONE_MAX_SPEED) {
+              motion.vx = (motion.vx / speed) * CLONE_MAX_SPEED;
+              motion.vy = (motion.vy / speed) * CLONE_MAX_SPEED;
+            }
           }
           motion.x += motion.vx * dtMs;
           motion.y += motion.vy * dtMs;
@@ -2501,11 +2852,11 @@ function ChickenGameInner() {
           if (motion.y < 0 || motion.y > vh - motion.h) motion.vy = -motion.vy;
           motion.x = Math.max(0, Math.min(vw - motion.w, motion.x));
           motion.y = Math.max(0, Math.min(vh - motion.h, motion.y));
+          if (!motion.blinking && ts >= blinkFrom) motion.blinking = true;
           const el = cloneElsRef.current.get(id);
           if (el) {
             el.style.transform = `translate(${motion.x}px, ${motion.y}px) scaleX(${motion.vx < 0 ? -1 : 1})`;
-            if (!motion.blinking && sinceStart >= MULTIPLY_BLINK_START_MS) {
-              motion.blinking = true;
+            if (motion.blinking && !el.dataset.blinking) {
               el.classList.add('chicken-clone-blink');
               el.dataset.blinking = '1';
             }
@@ -2537,11 +2888,27 @@ function ChickenGameInner() {
         }
       }
     },
-    [removeOrb, removeClone, spawnFeathers, runPaceCheck]
+    [removeOrb, removeClone, spawnFeathers, runPaceCheck, tickEggs]
+  );
+
+  const clickEgg = useCallback(
+    (id: number) => {
+      const egg = eggsRef.current.find((x) => x.id === id);
+      if (!egg || egg.hatchingAt !== null) return;
+      const scale = egg.big ? BIG_EGG_SCALE : 1;
+      const cx = egg.x + (EGG_W * scale) / 2;
+      const cy = egg.y + (EGG_H * scale) / 2;
+      removeEgg(id);
+      for (const color of GOLDEN_COLORS) spawnShards(cx, cy, egg.big ? 6 : 3, color);
+      const points = (egg.big ? BIG_EGG_POINTS : EGG_POINTS) / Math.max(1, multRef.current);
+      hitRef.current(undefined, true, { x: cx, y: cy }, points);
+      setBonus({ amount: egg.big ? BIG_EGG_POINTS : EGG_POINTS, id: performance.now() });
+    },
+    [removeEgg, spawnShards]
   );
 
   const hit = useCallback(
-    (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }) => {
+    (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }, raw = 1) => {
       if (gateRef.current !== 'none') return;
       const now = performance.now();
       const p = physicsRef.current;
@@ -2552,7 +2919,7 @@ function ChickenGameInner() {
       const hyper = hyperRef.current;
       const tp = teleportRef.current;
       if (plain) {
-        award = 1;
+        award = raw;
       } else if (hyper.phase === 'burst') {
         award = HYPER_BONUS;
         hyper.phase = 'recover';
@@ -2560,7 +2927,7 @@ function ChickenGameInner() {
       } else if (tp.decoys && tp.arrivedFrames >= 0 && tp.arrivedFrames <= TELEPORT_BONUS_FRAMES) {
         award = TELEPORT_BONUS;
       }
-      if (award > 1) setBonus({ amount: award, id: now });
+      if (award > 1 && !plain) setBonus({ amount: award, id: now });
       if (!plain && modeRef.current === 'ground') {
         modeRef.current = 'flying';
         p.vy = -BASE_SPEED * 1.2;
@@ -2718,16 +3085,25 @@ function ChickenGameInner() {
         clones: cloneMotionRef.current.size,
         clonesBlinking: [...cloneMotionRef.current.values()].filter((c) => c.blinking).length,
         vanished: vanishedRef.current,
-        chickens: 1 + kidMotionRef.current.size + cloneMotionRef.current.size,
+        chickens: 1 + kidMotionRef.current.size + cloneMotionRef.current.size + goldenRef.current.size,
         cursors: cursorOffsetsRef.current.length,
         cursorOffsets: cursorOffsetsRef.current,
         pilotTeleports: pilotTeleportsRef.current,
         frenzyMs: Math.max(0, frenzyUntilRef.current - performance.now()),
+        chainMs: Math.max(0, chainUntilRef.current - performance.now()),
+        multiplyMs: Math.max(0, multiplyUntilRef.current - performance.now()),
+        spriteClones: [...cloneMotionRef.current.values()].filter((c) => c.sprite).length,
+        eggs: eggsRef.current.map((e) => ({ id: e.id, x: e.x, y: e.y, big: e.big, hatching: e.hatchingAt !== null, ageMs: performance.now() - e.bornAt })),
+        goldens: [...goldenRef.current.entries()].map(([id, g]) => ({ id, x: g.x, msLeft: Math.max(0, g.until - performance.now()) })),
+        chainArcs: chainArcsRef.current.length,
+        lastKinds: lastKindsRef.current,
+        orbsBlocked: orbsBlocked(),
         pace: {
           target: paceTarget(playMsRef.current),
           actual: scoreRef.current,
           behindPct: behindFraction(paceTarget(playMsRef.current), scoreRef.current) * 100,
-          nextCheckIn: Math.max(0, CATCHUP_CHECK_MS - (playMsRef.current - lastCheckMsRef.current)),
+          nextCheckIn: Math.max(0, SCHEDULE_TICK_MS - (playMsRef.current - lastCheckMsRef.current)),
+          nextSpawnIn: Math.max(0, nextSpawnAtRef.current - playMsRef.current),
           playMs: playMsRef.current,
         },
         cursorBuffMs: {
@@ -2848,7 +3224,7 @@ function ChickenGameInner() {
       selectSkin: (id: string) => selectSkin(id),
       spawnMartian: (kind?: string) => spawnMartianNow(MARTIAN_KINDS.find((k): k is MartianKind => k === kind)),
       martianClicks: () => readMartianClicks(),
-      forcePaceCheck: () => runPaceCheck(),
+      forcePaceCheck: () => runPaceCheck(true),
       fastForward: (ms: number) => {
         playMsRef.current += ms;
         frenzyUntilRef.current -= ms;
@@ -2856,6 +3232,15 @@ function ChickenGameInner() {
         for (const o of orbsRef.current) o.bornAt -= ms;
         for (const c of cloneMotionRef.current.values()) c.vanishAt -= ms;
         multiplyStartRef.current -= ms;
+        multiplyUntilRef.current -= ms;
+        chainUntilRef.current -= ms;
+        layingRef.current.nextAt -= ms;
+        lastBigAtRef.current -= ms;
+        for (const egg of eggsRef.current) {
+          egg.bornAt -= ms;
+          if (egg.hatchingAt !== null) egg.hatchingAt -= ms;
+        }
+        for (const g of goldenRef.current.values()) g.until -= ms;
         cursorBuffRef.current.x5Until -= ms;
         cursorBuffRef.current.x3Until -= ms;
         for (const pool of poolsRef.current) pool.born -= ms;
@@ -2880,7 +3265,7 @@ function ChickenGameInner() {
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin, runPaceCheck]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin, orbsBlocked, runPaceCheck]);
 
   const startBirdNow = useCallback(
     (ts: number, kind: BirdKind) => {
@@ -2896,6 +3281,7 @@ function ChickenGameInner() {
       };
       for (const id of [...kidMotionRef.current.keys()]) removeKid(id);
       for (const id of [...cloneMotionRef.current.keys()]) removeClone(id);
+      clearField();
       orbsRef.current = [];
       setOrbViews([]);
       cursorBuffRef.current.x5Until = 0;
@@ -2920,7 +3306,7 @@ function ChickenGameInner() {
       bird.talonWeight = talonWeightFor(kind, multRef.current);
       syncBirdUi(kind, false);
     },
-    [removeKid, removeClone, syncBirdUi]
+    [removeKid, removeClone, syncBirdUi, clearField]
   );
 
   useEffect(() => {
@@ -2937,6 +3323,11 @@ function ChickenGameInner() {
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      const chainCanvas = chainCanvasRef.current;
+      if (chainCanvas) {
+        chainCanvas.width = window.innerWidth;
+        chainCanvas.height = window.innerHeight;
+      }
     };
     resize();
     window.addEventListener('resize', resize);
@@ -2967,10 +3358,18 @@ function ChickenGameInner() {
       if (performance.now() < suppressClickUntilRef.current) return;
       const p = physicsRef.current;
       const kidY = groundYFor(window.innerHeight) - KID_H;
+      const goldY = groundYFor(window.innerHeight) - GOLDEN_H;
       for (const offset of cursorOffsetsRef.current) {
-        if (offset.dx === 0 && offset.dy === 0) continue;
         const px = e.clientX + offset.dx;
         const py = e.clientY + offset.dy;
+        if (offset.dx === 0 && offset.dy === 0) {
+          for (const motion of cloneMotionRef.current.values()) {
+            if (motion.sprite && pointInRect(px, py, motion.x, motion.y, motion.w, motion.h)) {
+              hit(undefined, true, { x: motion.x + motion.w / 2, y: motion.y + motion.h / 2 });
+            }
+          }
+          continue;
+        }
         const orb = orbsRef.current.find((o) => pointInCircle(px, py, o.x, o.y, ORB_RADIUS));
         if (orb) {
           collectOrb(orb.id);
@@ -2992,6 +3391,30 @@ function ChickenGameInner() {
         for (const motion of cloneMotionRef.current.values()) {
           if (pointInRect(px, py, motion.x, motion.y, motion.w, motion.h)) hit(undefined, true);
         }
+        for (const g of goldenRef.current.values()) {
+          if (pointInRect(px, py, g.x, goldY, GOLDEN_W, GOLDEN_H)) hit(undefined, true, { x: g.x + GOLDEN_W / 2, y: goldY + GOLDEN_H / 2 }, GOLDEN_HIT_VALUE);
+        }
+        for (const egg of [...eggsRef.current]) {
+          const scale = egg.big ? BIG_EGG_SCALE : 1;
+          if (pointInRect(px, py, egg.x, egg.y, EGG_W * scale, EGG_H * scale)) clickEgg(egg.id);
+        }
+      }
+      const now = performance.now();
+      if (now < chainUntilRef.current && now - lastHitRef.current < CHAIN_CLICK_WINDOW_MS) {
+        const targets: { x: number; y: number }[] = [];
+        for (const motion of cloneMotionRef.current.values()) targets.push({ x: motion.x + motion.w / 2, y: motion.y + motion.h / 2 });
+        for (const g of goldenRef.current.values()) targets.push({ x: g.x + GOLDEN_W / 2, y: goldY + GOLDEN_H / 2 });
+        for (const motion of kidMotionRef.current.values()) targets.push({ x: motion.x + KID_W / 2, y: kidY + KID_H / 2 });
+        if (!rootSplitRef.current) targets.push({ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2 });
+        const near = targets
+          .map((t) => ({ t, d: Math.hypot(t.x - e.clientX, t.y - e.clientY) }))
+          .filter((n) => n.d > CHAIN_MIN_DISTANCE && n.d <= CHAIN_RADIUS)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, CHAIN_MAX_ARCS);
+        for (const { t } of near) {
+          chainArcsRef.current.push(makeChainArc(e.clientX, e.clientY, t.x, t.y));
+          hit(undefined, true, t);
+        }
       }
     };
     const onDown = () => cursorLayerRef.current?.setAttribute('data-pressed', 'true');
@@ -3004,7 +3427,7 @@ function ChickenGameInner() {
       window.removeEventListener('mousedown', onDown);
       window.removeEventListener('mouseup', onUp);
     };
-  }, [hit, collectOrb, clickKid]);
+  }, [hit, collectOrb, clickKid, clickEgg]);
 
   useEffect(() => {
     return () => {
@@ -4087,16 +4510,50 @@ function ChickenGameInner() {
         }
         ctx.globalAlpha = 1;
 
+        drawSpriteClones(ctx, ts);
         for (const f of feathers) {
           drawFeather(ctx, f, ts);
         }
-
         drawPools(ctx, poolsRef.current, now);
         drawDrops(ctx, dropsRef.current);
         if (AURA_SHIELD_STAGES.includes(stageRef.current)) streaksRef.current.length = 0;
         drawStreaks(ctx, streaksRef.current, now, dt, auraRgb);
         drawPortals(ctx, portalsRef.current, now);
         drawBlackHoles(ctx, blackHolesRef.current, performance.now(), BLACK_HOLE_LIFE_MS, BLACK_HOLE_RADIUS);
+      }
+
+      const chainCanvas = chainCanvasRef.current;
+      const cctx = chainCanvas?.getContext('2d');
+      if (cctx && chainCanvas) {
+        cctx.clearRect(0, 0, chainCanvas.width, chainCanvas.height);
+        const now = performance.now();
+        const chainArcs = chainArcsRef.current;
+        for (let i = chainArcs.length - 1; i >= 0; i--) {
+          const age = now - chainArcs[i].born;
+          if (age > CHAIN_ARC_LIFE_MS) {
+            chainArcs.splice(i, 1);
+            continue;
+          }
+          const alpha = 1 - age / CHAIN_ARC_LIFE_MS;
+          const pts = chainArcs[i].points;
+          cctx.lineJoin = 'round';
+          cctx.lineCap = 'round';
+          const trace = () => {
+            cctx.beginPath();
+            cctx.moveTo(pts[0].x, pts[0].y);
+            for (let j = 1; j < pts.length; j++) cctx.lineTo(pts[j].x, pts[j].y);
+            cctx.stroke();
+          };
+          cctx.strokeStyle = `rgba(${CHAIN_GLOW.r}, ${CHAIN_GLOW.g}, ${CHAIN_GLOW.b}, ${0.3 * alpha})`;
+          cctx.lineWidth = 7;
+          trace();
+          cctx.strokeStyle = `rgba(${CHAIN_GLOW.r}, ${CHAIN_GLOW.g}, ${CHAIN_GLOW.b}, ${0.7 * alpha})`;
+          cctx.lineWidth = 2.6;
+          trace();
+          cctx.strokeStyle = `rgba(255, 255, 255, ${0.95 * alpha})`;
+          cctx.lineWidth = 1.1;
+          trace();
+        }
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -4132,6 +4589,7 @@ function ChickenGameInner() {
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />
       {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
+      <canvas ref={chainCanvasRef} data-testid="chicken-chain-canvas" className="pointer-events-none absolute inset-0 z-[25]" />
       <MartianLayer
         occupiedRef={martianSpotsRef}
         avoidXFrac={() => (physicsRef.current.x + CHICKEN_W / 2) / window.innerWidth}
@@ -4329,6 +4787,39 @@ function ChickenGameInner() {
         </div>
       ))}
 
+      {eggViews.map((egg) => (
+        <div
+          key={egg.id}
+          data-testid="chicken-egg"
+          data-big={egg.big ? '1' : '0'}
+          ref={(el) => {
+            if (el) eggElsRef.current.set(egg.id, el);
+            else eggElsRef.current.delete(egg.id);
+          }}
+          onClick={() => clickEgg(egg.id)}
+          className="absolute top-0 left-0 z-10 cursor-pointer will-change-transform"
+          style={{ width: EGG_W * (egg.big ? BIG_EGG_SCALE : 1), height: EGG_H * (egg.big ? BIG_EGG_SCALE : 1) }}
+        >
+          <div className="golden-egg h-full w-full rounded-[50%_50%_50%_50%/58%_58%_42%_42%] bg-[radial-gradient(ellipse_at_36%_26%,#fffbe6_0%,#ffe27a_22%,#f2b705_55%,#b57600_84%,#7a4d00_100%)] shadow-[0_5px_8px_rgba(0,0,0,0.35),inset_-5px_-7px_12px_rgba(110,60,0,0.5),inset_3px_4px_8px_rgba(255,255,255,0.45)]" />
+          {egg.big && <div className="pointer-events-none absolute -inset-2 rounded-full bg-[radial-gradient(circle,rgba(255,220,110,0.55),transparent_70%)]" />}
+        </div>
+      ))}
+
+      {goldenViews.map((g) => (
+        <div
+          key={g.id}
+          data-testid="chicken-golden"
+          ref={(el) => {
+            if (el) goldenElsRef.current.set(g.id, el);
+            else goldenElsRef.current.delete(g.id);
+          }}
+          onClick={() => hit(undefined, true, { x: (goldenRef.current.get(g.id)?.x ?? 0) + GOLDEN_W / 2, y: groundYFor(window.innerHeight) - GOLDEN_H / 2 }, GOLDEN_HIT_VALUE)}
+          className="absolute top-0 left-0 z-10 cursor-pointer will-change-transform [filter:sepia(1)_saturate(5)_hue-rotate(-8deg)_brightness(1.12)_drop-shadow(0_0_10px_rgba(255,200,60,0.85))]"
+        >
+          <ChickenSvg className="w-[70px]" tier={tier} morph={morph} eyes="calm" skin={skin} />
+        </div>
+      ))}
+
       {parked && stage === 'moon' && !birdUi.grip && <ParkedRocket x={parked.x} y={parked.y} />}
 
       {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
@@ -4401,6 +4892,11 @@ function ChickenGameInner() {
         data-testid="chicken-frenzy"
         className="pointer-events-none fixed bottom-6 left-6 z-[60] rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white opacity-0 shadow-[0_0_0_2px_#ffb02e]"
       />
+      <div
+        ref={chainElRef}
+        data-testid="chicken-chain"
+        className="pointer-events-none fixed bottom-[4.25rem] left-6 z-[60] rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white opacity-0 shadow-[0_0_0_2px_#78beff]"
+      />
       {orbViews.map((orb) => (
         <div
           key={orb.id}
@@ -4418,8 +4914,8 @@ function ChickenGameInner() {
           <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
           <div className={`${orbFont.className} absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-0.5 text-center leading-[0.8] tracking-[-0.01em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]`}>
             <span className="flex flex-col items-center">
-              <span>{ORB_LABELS[orb.kind].split(' ')[0]}</span>
-              <span>{ORB_LABELS[orb.kind].split(' ').slice(1).join(' ')}</span>
+              <span>{orbLabelLines(orb.kind)[0]}</span>
+              <span>{orbLabelLines(orb.kind)[1]}</span>
             </span>
           </div>
         </div>

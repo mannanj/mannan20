@@ -73,3 +73,7 @@ Past the phoenix the scheduler keeps running; new content plugs in through one r
 3. **Fast players may finish in ~7–8 min**: no extra damping when far ahead.
 4. **Endless framework: yes.** A new era every ~3 min or 8,000 points (rotating scenes, returning birds, rarer orbs: Giant, Magnet, Freeze, Helper Chick, Mystery ???), real-chicken mode at 50,000. Build the framework now with one or two eras; more later as registry entries.
 - Also: Golden egg +100, big golden egg +500 (points, not a multiplier); an egg left 10s hatches a golden chicken worth 5× the normal click value. Multiply tiers x5/x10/x25/x100 with the clone cap raised to 150. No slow-mo.
+
+## Implemented (2026-11-03)
+
+Shipped in `chicken-pacing.ts` (registry, eras, scheduler) and `chicken-game-v2.tsx`; the live constants and the final sim table are in `docs/chicken-game-features.md` > "Pacing & catch-up". Differences from the proposal above: no caps (decision 2); golden chickens expire after 33 s (decision 1); egg points are flat (100 / 500) and do not take the skin multiplier; per-click buff extension is 50 ms instead of 100 ms; base gap 20 s with a steeper behind response (`1 - min(2 x behind, 0.7)`, floor 8 s); behind thresholds 0.2 (weight boost) and 0.4 (forced strongest); clones flock back toward the chicken so Multiply keeps paying after the first second; clones above 60 render as canvas sprites. The endless-era framework (section 6) is data-ready in `ERA_REGISTRY` but no post-phoenix era is defined yet.
