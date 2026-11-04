@@ -95,3 +95,25 @@ Measured: ~443 score/min on the ground at 1 point per click, $0.018/min. Skin mu
 | **Total** | | **~40 min** |
 
 Plan for ~46 min with 15% headroom, about $0.85 of Jev. The game's new pacing curve will shorten this; re-estimate after it is deployed. Total Jev spend for building and testing this: about $0.45 (10.6M input tokens).
+
+## New orbs, eggs and the pacing build (2026-11-03, local clips in `~/Desktop/jev-clips/new/`)
+
+Added: orb wording for Multiply x5-x100, Frenzy x2 and Chain Lightning, asked on every frame from score 250 (the new scheduler spawns them at any score); a golden-egg Noul plus Box (the first 14s of an egg wave are left alone so up to 3 eggs hatch, after that eggs are clicked); a golden-chicken Noul plus Box (golden chickens are preferred targets, asked only after an egg was seen); the bag opens only within 90s of a feather/Martian pickup or a grip (an empty bag no longer gets opened and left open); `MAX_TOKENS` (25M) stops a run with `stopReason:'tokens'`.
+
+| Clip | Result | Metric |
+|---|---|---|
+| plane-exit | PASS | pilot, then rocket |
+| gate-start | PASS (direct start) | reaches Moon live |
+| hawk-free / eagle-free / phoenix-free | PASS | 5s / 24s / 30s |
+| hawk / eagle / phoenix feather | PASS | x1.25 / x2 / x3 |
+| martian | PASS | x3 |
+| leaderboard-close | PASS | |
+| frenzy / chain | PASS | active in 4-7s |
+| eggs | PASS | 2 golden chickens hatched in 18s |
+| multiply-x5 / x10 / x25 / x100 | PASS | clones in 5-6s |
+| orb-collect, cursor-x5, skin-upgrade | PASS | |
+
+## Full prod playthrough (2026-11-03, `https://mannan.is/game?variant=2`)
+
+25-minute cap, no stall: 1,544s, **score 195,278** posted as My Name Jev, 15,827 clicks, stages none, surf, pilot, rocket, moon, cosmos, Jupiter. Hawk grab at 98s (x1.25 worn at 128s), eagle at 472s (its feather was missed, so no x2), phoenix grab at 838s (phoenix feather used at 927s, x3), Martian item used at 958s. 4,881 requests, 10.35M input tokens, $0.43 ($0.017/min, 7,587 points/min, about 449k points per $). The earlier 40-minute estimate was for the old pacing; with the new scheduler the game reaches 25,000 in about 14 minutes. Video: `~/Desktop/jev-plays-chicken-2026-11-04T03-39-40.mp4`.
+Where it lost time: the eagle feather (bird window missed, no x2), 48 bag opens for 136 bag frames, and 475 idle frames.

@@ -24,6 +24,7 @@ const VIEW = { width: 1280, height: 800 };
 const IN_FLIGHT = Number(process.env.IN_FLIGHT ?? 2);
 const SHOT_WIDTH = Number(process.env.JEV_W ?? 960);
 const SHOT_QUALITY = Number(process.env.JEV_Q ?? 50);
+const MAX_TOKENS = Number(process.env.MAX_TOKENS ?? 25_000_000);
 const STUCK_SECONDS = Number(process.env.STUCK_SECONDS ?? 30);
 const GRIP_STUCK_FACTOR = 3;
 const STUCK_POLL_MS = 500;
@@ -34,6 +35,7 @@ const DEBUG = process.env.JEV_DEBUG === '1';
 const GRIP_ACTIVE_MS = 10000;
 const GRIP_RESET_MS = 5000;
 const BAG_EXPECT_MS = 6000;
+const EGG_RESET_MS = 40000;
 const LEAD_MAX_GAP_MS = 2500;
 const LEAD_MAX_SPEED = 600;
 const VELOCITY_WINDOW_MS = 1500;
@@ -254,7 +256,7 @@ export async function play(opts = {}) {
   const ctx = {
     now: 0, wornRank: 1, bagReadyAt: 0, bagMisses: 0, stuckMs: 0, hitRate: 1, gripStage: 0, score: startScore, scene: '', martianClicks: 0,
     askedAt: { scene: 0, board: 0, badge: 0 }, orbSeenAt: -Infinity, lastGripAt: -Infinity, pickupAt: -Infinity, bagOpenExpected: false, bagOpenedAt: 0,
-    gateStage: false, gripping: false, gripEpisodes: 0, pendingUse: null, jupiterSeenAt: -Infinity, chickenMissing: false,
+    gateStage: false, gripping: false, gripEpisodes: 0, pendingUse: null, firstEggAt: null, jupiterSeenAt: -Infinity, chickenMissing: false,
   };
   let gripFrames = 0;
   let gripFlat = 0;
@@ -286,6 +288,10 @@ export async function play(opts = {}) {
     if (s.stage === 'jupiter' || ctx.scene === 'jupiter') ctx.martianClicks = await page.evaluate(() => window.__chicken.martianClicks?.() ?? 0).catch(() => 0);
     const gripActive = Date.now() - ctx.lastGripAt < GRIP_ACTIVE_MS;
     const limit = stuckLimitMs * (gripActive ? GRIP_STUCK_FACTOR : 1);
+    if (usage.input - usageStart > MAX_TOKENS && !stopping) {
+      stopReason = 'tokens';
+      stopping = true;
+    }
     if (Date.now() - lastRise > limit && !stopping) {
       stopReason = 'stuck';
       stopping = true;
@@ -302,6 +308,7 @@ export async function play(opts = {}) {
     const [jpeg, truth] = await Promise.all([page.screenshot({ type: 'jpeg', quality: SHOT_QUALITY }), truthRect()]);
     const t0 = Date.now();
     ctx.now = Date.now();
+    ctx.pickupAt = Math.max(ctx.pickupAt, globalThis.__jevPickupAt ?? -Infinity);
     const keys = questionKeys(ctx);
     for (const [group, probe] of [['scene', 'scene'], ['board', 'board_open'], ['badge', 'badge']]) if (keys.includes(probe)) ctx.askedAt[group] = ctx.now;
     const out = await ask(await shrink(jpeg), buildQuestions(keys));
@@ -337,6 +344,7 @@ export async function play(opts = {}) {
     }
     ctx.gripping = gripFrames > 0 && ctx.now - ctx.lastGripAt < TIMING.gripLostMs;
     if (plan.orb) ctx.orbSeenAt = ctx.now;
+    if (plan.rule !== 'egg' && ctx.firstEggAt !== null && ctx.now - ctx.firstEggAt > EGG_RESET_MS) ctx.firstEggAt = null;
     if (plan.grip) {
       if (ctx.now - ctx.lastGripAt > GRIP_RESET_MS) {
         ctx.gripStage = 0;

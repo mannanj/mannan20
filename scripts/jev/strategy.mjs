@@ -18,6 +18,8 @@ const box = (instructions) => ({ type: 'box', instructions });
 
 export const QUESTIONS = {
   chicken: box('the cartoon rainbow rubber chicken in `screen`, with the board, plane or rocket it rides if any; not the score, not the baby chicks. If golden chickens are present, box the golden one'),
+  golden: noul('Is there a golden-coloured rubber chicken in `screen`?'),
+  golden_box: box('the golden-coloured rubber chicken in `screen`'),
   egg: noul('Is there a shiny golden egg falling or lying in `screen`?'),
   egg_box: box('the shiny golden egg in `screen`'),
   scene: { type: 'choice', instructions: 'Which background scene is `screen` showing?', criteria: SCENES },
@@ -55,6 +57,7 @@ export const THRESHOLDS = {
   gate: 0.6,
   orb: 0.5,
   egg: 0.5,
+  golden: 0.5,
   grip: 0.6,
   counterMin: 0.6,
   bird: 0.3,
@@ -88,6 +91,8 @@ export const TIMING = {
   martianScore: 16900,
   eggScore: 500,
   eggClicks: 3,
+  eggHatchGateMs: 14000,
+  badgeWindowMs: 90000,
   martianGoal: 100,
   martianClicks: 6,
   martianGapMs: 40,
@@ -100,7 +105,7 @@ export const TIMING = {
   pickupClicks: 2,
   birdWindowMs: [0, 22000],
   featherWindowMs: 35000,
-  orbScore: [480, 1300],
+  orbScore: [250],
   orbHoldMs: 30000,
   boardEveryMs: 3000,
   sceneEveryMs: 10000,
@@ -115,6 +120,7 @@ export const STRATEGY = [
   { id: 'board', priority: 2, note: 'close the leaderboard when it is open' },
   { id: 'orb', priority: 3, note: 'ability orbs: 2 clicks, collect first' },
   { id: 'egg', priority: 3, note: 'golden eggs: collect, let up to 3 hatch, prefer golden chickens as targets' },
+  { id: 'golden', priority: 8, note: 'golden chickens (5x click value) are the preferred target over the normal chicken' },
   { id: 'grip', priority: 4, note: 'bird gripping: tap the talon (counter anchor, then talon box, then chicken top); chicken clicks score 0' },
   { id: 'bird', priority: 5, note: 'after release click the receding bird 25 times for the feather' },
   { id: 'feather', priority: 5, note: 'pick up the feather' },
@@ -128,18 +134,18 @@ export function questionKeys(ctx) {
   const keys = new Set(['chicken']);
   const since = (at) => ctx.now - at;
   if (ctx.score >= t.eggScore) ['egg', 'egg_box'].forEach((k) => keys.add(k));
+  if (ctx.firstEggAt !== null) ['golden', 'golden_box'].forEach((k) => keys.add(k));
   if (since(ctx.askedAt.scene) > t.sceneEveryMs) keys.add('scene');
   if (since(ctx.askedAt.board) > t.boardEveryMs || ctx.chickenMissing) ['board_open', 'board_toggle'].forEach((k) => keys.add(k));
   if (ctx.gateStage) ['gate_ready', 'gate_start', 'gate_download', 'gate_skip'].forEach((k) => keys.add(k));
-  const orbWindow = ctx.score >= t.orbScore[0] && ctx.score <= t.orbScore[1];
-  if (orbWindow || since(ctx.orbSeenAt) < t.orbHoldMs) ['orb', 'orb_box'].forEach((k) => keys.add(k));
+  if (ctx.score >= t.orbScore[0]) ['orb', 'orb_box'].forEach((k) => keys.add(k));
   const due = t.gripScores.filter((g) => ctx.score >= g).length;
   if (due > ctx.gripEpisodes || ctx.gripping) ['grip', 'counter', 'claw_side', 'talon'].forEach((k) => keys.add(k));
   const sinceGrip = since(ctx.lastGripAt);
   if (sinceGrip > t.birdWindowMs[0] && sinceGrip < t.birdWindowMs[1]) ['bird_fly', 'bird_box'].forEach((k) => keys.add(k));
   if (sinceGrip < t.featherWindowMs || since(ctx.pickupAt) < t.featherWindowMs) ['feather', 'feather_box'].forEach((k) => keys.add(k));
   if (ctx.bagOpenExpected) ['bag_open', 'bag', ...USE_ORDER.flatMap((i) => [`has_${i}`, `use_${i}`])].forEach((k) => keys.add(k));
-  else if (since(ctx.askedAt.badge) > t.badgeEveryMs && ctx.now >= ctx.bagReadyAt) ['badge', 'bag'].forEach((k) => keys.add(k));
+  else if (since(ctx.askedAt.badge) > t.badgeEveryMs && ctx.now >= ctx.bagReadyAt && Math.min(since(ctx.pickupAt), since(ctx.lastGripAt)) < t.badgeWindowMs) ['badge', 'bag'].forEach((k) => keys.add(k));
   if ((ctx.score >= t.martianScore || since(ctx.jupiterSeenAt) < t.jupiterStickyMs) && ctx.martianClicks < t.martianGoal) ['martian', 'martian_box'].forEach((k) => keys.add(k));
   if (ctx.gripping) ['bag_open'].forEach((k) => keys.delete(k));
   return [...keys];
@@ -211,7 +217,8 @@ export function decide(a, ctx, view) {
     if (target) return { rule: 'orb', kind: 'click', target, clicks: TIMING.orbClicks, orb: true };
   }
   if (noulOf(a, 'egg') >= t.egg) {
-    const target = boxOf(a, 'egg_box', t.boxMin, view);
+    if (ctx.firstEggAt === null) ctx.firstEggAt = ctx.now;
+    const target = ctx.now - ctx.firstEggAt > TIMING.eggHatchGateMs ? boxOf(a, 'egg_box', t.boxMin, view) : null;
     if (target) return { rule: 'egg', kind: 'click', target, clicks: TIMING.eggClicks };
   }
   if (noulOf(a, 'grip') >= t.grip) {
@@ -239,6 +246,8 @@ export function decide(a, ctx, view) {
     const target = boxOf(a, 'martian_box', t.boxMin, view);
     if (target && target.h / view.height >= t.martianMinHeight) return { rule: 'martian', kind: 'click', target, clicks: TIMING.martianClicks, gapMs: TIMING.martianGapMs, pickup: true };
   }
+  const golden = noulOf(a, 'golden') >= t.golden ? boxOf(a, 'golden_box', t.boxMin, view) : null;
+  if (golden) return { rule: 'golden', kind: 'chicken', target: golden };
   const chicken = boxOf(a, 'chicken', t.chicken, view);
   if (chicken) return { rule: 'chicken', kind: 'chicken', target: chicken };
   return { rule: 'idle', kind: 'wait', restMs: 150, chickenMissing: true };
