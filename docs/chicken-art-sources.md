@@ -140,3 +140,40 @@ Every image and sound used for the endless-phase creatures (`public/game/creatur
 ## Spend
 
 AI image generation: $0.00 (none used).
+
+# Myth eras — creature art and sound sources (Task 319, 2026-11-04)
+
+Images cut out locally with `rembg` (isnet-general-use, alpha matting), cropped to the alpha box and exported as WebP ≤ 1024 px. Free photos were tried first (Wikimedia Commons sweep: no maned lion mid-leap, no open-jawed striking snake, no three-headed dog and no usable cyclops with an eye turned up), so the creature frames were generated on `google/gemini-2.5-flash-image` over OpenRouter; the two scene backgrounds are Commons photos. Mannan: the Commons photos are CC BY-SA 4.0 and need attribution before commercial use.
+
+## Backgrounds (`public/game/scenes/`, Wikimedia Commons)
+
+| File | Source | Licence |
+| --- | --- | --- |
+| temple-ruins.webp (Myth era) | https://commons.wikimedia.org/wiki/File:Temple_of_Poseidon_at_sunset_2.jpg | CC BY-SA 4.0 |
+| temple-gate.webp (The gate era) | https://commons.wikimedia.org/wiki/File:Lion_Gate,_Mycenae,_201505.jpg | CC BY-SA 4.0 |
+
+## Creature frames (`public/game/creatures/`, AI-generated, white studio background, rembg cut)
+
+| File | Model | Prompt gist | Cost |
+| --- | --- | --- | --- |
+| lion-pounce.webp (replaces the Leaping_Lion.jpg lioness so every lion frame has a mane) | gemini-2.5-flash-image | maned male lion mid-leap, side view facing right | $0.039 |
+| snake-head.webp (hydra head, mirrored per side) | gemini-2.5-flash-image | emerald serpent head striking, jaws open, neck to the left edge | $0.039 |
+| hydra-body.webp | gemini-2.5-flash-image | coiled serpent body with three neck stumps, no heads | $0.039 |
+| cyclops.webp | gemini-2.5-flash-image | giant one-eyed cyclops leaning in, hand raised, facing left | $0.039 |
+| cerberus-stand.webp | gemini-2.5-flash-image | three-headed black dog, front three-quarter view (third take: the two side-view takes gave two heads) | $0.039 × 3 |
+| cerberus-lunge.webp (snap + hold frame) | gemini-2.5-flash-image | same, lunging with jaws open (third take) | $0.039 × 3 |
+| cerberus-sleep.webp | gemini-2.5-flash-image | same, lying asleep | $0.039 |
+
+Rejected takes stay in `scripts/birds/raw/myth/*-v1.png`, `*-v2.png` (not shipped). Items (Hydra scale, Gate key) are SVG in `src/components/inventory/item-art.tsx`.
+
+## Sounds (`public/sounds/chicken/`, synthesized with numpy, no external source)
+
+| File | Synthesis |
+| --- | --- |
+| giant-rumble.mp3 (cyclops enter) | low-passed brown noise, 2.4 s swell, 38 Hz throb |
+| snake-hiss.mp3 (hydra enter and bite) | high-passed white noise, fast attack, 1.4 s decay |
+| dog-bark.mp3 (cerberus enter and catch) | two 0.22 s square/sine bursts sweeping 580 → 160 Hz with noise |
+
+## Spend
+
+AI image generation: 11 calls, $0.43 of the $0.75 allowance (logged in `scripts/birds/budget.json`). The Commons sweep that found the two backgrounds was done by a Sonnet researcher agent; only the two photos above were used.

@@ -329,7 +329,7 @@ import {
   tickCreature,
   type CreatureKind,
 } from './creature-event';
-import { DROP_BEHIND_BONUS, ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, sceneCoversStage, shiftEraTime, type EndlessEraDef } from './endless-eras';
+import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, currentEra, dueCreature, enterEra, nextEraIndex, sceneCoversStage, shiftEraTime, type EndlessEraDef } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
 import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
@@ -908,6 +908,7 @@ interface ChickenBridge {
   era: () => { id: string | null; index: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[] };
   forceEra: (id: string) => void;
   forceScene: (name: string) => void;
+  shield: () => number;
 }
 
 type FeatherSkinItemId = Extract<GameItemId, 'hawk-feather' | 'eagle-feather' | 'phoenix-feather' | 'martian-friend'>;
@@ -945,6 +946,12 @@ const HOLD_FLAP_PX = 4;
 const HOLD_FLAP_DEG = 10;
 const YARN_BALL_ITEM_ID = 'yarn-ball';
 const GOLDEN_MANE_ITEM_ID = 'golden-mane';
+const HYDRA_SCALE_ITEM_ID = 'hydra-scale';
+const GATE_KEY_ITEM_ID = 'gate-key';
+const SHIELD_TALON_WEIGHT = 2;
+const UNLOCK_TOAST_MS = 6000;
+const REAL_CHICKEN_TOAST = 'real-chicken mode unlocked';
+const SCENE_ERA: Record<CreatureKind, string> = { kitty: 'big-cats', tiger: 'big-cats', lion: 'big-cats', cyclops: 'myth-1', hydra: 'myth-1', cerberus: 'myth-2' };
 
 export function onUseItem(itemId: string): void {
   if (isFeatherSkinItem(itemId)) applyFeatherSkin(itemId);
@@ -1174,6 +1181,10 @@ function ChickenGameInner() {
   const [creatureUi, setCreatureUi] = useState<{ kind: CreatureKind | null; hold: boolean }>({ kind: null, hold: false });
   const creatureUiRef = useRef(creatureUi);
   const [eraUi, setEraUi] = useState<EndlessEraDef | null>(null);
+  const shieldRef = useRef(0);
+  const gateKeyRef = useRef<(() => void) | null>(null);
+  const unlockToastShownRef = useRef(false);
+  const [unlockToast, setUnlockToast] = useState<string | null>(null);
   const sceneCovers = sceneCoversStage(eraUi?.scene ?? null);
   const [stageLayersGone, setStageLayersGone] = useState(false);
   useEffect(() => {
@@ -2054,6 +2065,8 @@ function ChickenGameInner() {
     creatureItemHandler = (id) => {
       if (id === YARN_BALL_ITEM_ID) magnetUntilRef.current = Math.max(performance.now(), magnetUntilRef.current) + MAGNET_DURATION_MS;
       if (id === GOLDEN_MANE_ITEM_ID) setManeOn(true);
+      if (id === HYDRA_SCALE_ITEM_ID) shieldRef.current += 1;
+      if (id === GATE_KEY_ITEM_ID && eraRef.current.index < eraIndexById(GATE_KEY_ERA_ID)) gateKeyRef.current?.();
     };
     return () => {
       featherSkinHandler = null;
@@ -3267,11 +3280,14 @@ function ChickenGameInner() {
       forceEra,
       forceScene: (name: string) => {
         if (name === 'fire-era') forceEra('fire');
-        if (CREATURE_ORDER.some((k) => k === name)) {
-          forceEra('big-cats');
-          forceCreature(name);
+        if (name === 'myth') forceEra('myth-1');
+        const kind = CREATURE_ORDER.find((k) => k === name);
+        if (kind) {
+          forceEra(SCENE_ERA[kind]);
+          forceCreature(kind);
         }
       },
+      shield: () => shieldRef.current,
       forceIgnition: () => {
         const ig = ignitionRef.current;
         ig.active = true;
@@ -3385,6 +3401,8 @@ function ChickenGameInner() {
     setEraUi(enterEra(eraRef.current, index, scoreRef.current, playMsRef.current));
   }, []);
 
+  gateKeyRef.current = () => forceEra(GATE_KEY_ERA_ID);
+
   const forceCreature = useCallback((kind: string): boolean => {
     const known = CREATURE_ORDER.find((k) => k === kind);
     if (!known) return false;
@@ -3428,7 +3446,9 @@ function ChickenGameInner() {
         }
       }
       startBird(bird, kind, ts, p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, window.innerWidth, window.innerHeight, snapshot, hud, { w: CHICKEN_W, h: CHICKEN_H });
-      bird.talonWeight = talonWeightFor(kind, multRef.current);
+      const shielded = shieldRef.current > 0;
+      if (shielded) shieldRef.current -= 1;
+      bird.talonWeight = talonWeightFor(kind, multRef.current) * (shielded ? SHIELD_TALON_WEIGHT : 1);
       syncBirdUi(kind, false);
     },
     [removeKid, removeClone, syncBirdUi, clearField]
@@ -3669,6 +3689,11 @@ function ChickenGameInner() {
       }
       const creature = creatureRef.current;
       const clock = eraRef.current;
+      if (sc >= REAL_CHICKEN_UNLOCK_SCORE && !unlockToastShownRef.current) {
+        unlockToastShownRef.current = true;
+        setUnlockToast(REAL_CHICKEN_TOAST);
+        window.setTimeout(() => setUnlockToast(null), UNLOCK_TOAST_MS);
+      }
       if (sc >= ENDLESS_FROM) {
         const nextIdx = nextEraIndex(clock, sc, playMsRef.current);
         if (nextIdx !== null && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
@@ -5070,6 +5095,11 @@ function ChickenGameInner() {
       {eraUi && (
         <div data-testid="era-label" data-era={eraUi.id} data-hud="" className={`pointer-events-none absolute top-[200px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-xs uppercase tracking-[0.2em] text-white/55`}>
           {eraUi.label} era
+        </div>
+      )}
+      {unlockToast && (
+        <div data-testid="unlock-toast" data-hud="" className="pointer-events-none absolute top-[128px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#ffd84d]/60 bg-black/75 px-4 py-1.5 text-sm font-semibold tracking-wide text-[#ffd84d] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+          {unlockToast}
         </div>
       )}
       {creatureUi.kind && <CreatureLayer kind={creatureUi.kind} els={creatureElsRef} onBody={onCreatureBody} onTarget={onCreatureTarget} />}

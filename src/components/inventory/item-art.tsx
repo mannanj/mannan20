@@ -62,9 +62,31 @@ function GoldenMane({ size }: { size: number }) {
   );
 }
 
+function HydraScale({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M20 3 C32 8 36 18 34 30 Q27 38 20 37 Q13 38 6 30 C4 18 8 8 20 3 Z" fill="#2f7d5a" stroke="#0d3b2a" strokeWidth="1.5" />
+      <path d="M20 8 C28 12 30 20 29 29 Q24 34 20 33 Q16 34 11 29 C10 20 12 12 20 8 Z" fill="#5fc08c" opacity="0.75" />
+      <path d="M20 12 L20 31 M14 18 L26 18 M13 24 L27 24" fill="none" stroke="#0d3b2a" strokeWidth="1" opacity="0.6" />
+    </svg>
+  );
+}
+
+function GateKey({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="12" cy="14" r="8" fill="none" stroke="#c99a2e" strokeWidth="4" />
+      <path d="M18 19 L34 35 M28 29 L32 25 M24 25 L28 21" fill="none" stroke="#c99a2e" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="12" cy="14" r="2.5" fill="#6b4a00" />
+    </svg>
+  );
+}
+
 const ART: Record<string, (size: number) => ReactNode> = {
   'yarn-ball': (size) => <YarnBall size={size} />,
   'golden-mane': (size) => <GoldenMane size={size} />,
+  'hydra-scale': (size) => <HydraScale size={size} />,
+  'gate-key': (size) => <GateKey size={size} />,
   'hawk-feather': (size) => <Feather size={size} fill="#b07a45" stroke="#4a2e1a" vein="#4a2e1a" />,
   'eagle-feather': (size) => <Feather size={size} fill="#f1e6cf" stroke="#3b2a18" vein="#6b4a2a" />,
   'phoenix-feather': (size) => <Feather size={size} fill="#ff7a1a" stroke="#8d1b00" vein="#fff176" />,

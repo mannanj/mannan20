@@ -8,8 +8,10 @@ export const ERA_TRANSITION_MS = 6_000;
 export const ERA_OVERRUN_MS = 20_000;
 export const DROP_BEHIND_BONUS = 1.5;
 export const FIRE_FORM_SCORE = 29_000;
+export const REAL_CHICKEN_UNLOCK_SCORE = 50_000;
+export const GATE_KEY_ERA_ID = 'forest';
 
-export type EndlessScene = 'fire-sky' | 'night-yard';
+export type EndlessScene = 'fire-sky' | 'night-yard' | 'temple' | 'temple-gate' | 'forest';
 
 export interface EraCreature {
   kind: CreatureKind;
@@ -25,7 +27,7 @@ export interface EndlessEraDef {
   creatures: EraCreature[];
 }
 
-export const CAT_OFFSETS_MS: Record<CreatureKind, number> = { kitty: 15_000, tiger: 75_000, lion: 135_000 };
+export const CAT_OFFSETS_MS: Record<CreatureKind, number> = { kitty: 15_000, tiger: 75_000, lion: 135_000, cyclops: 20_000, hydra: 90_000, cerberus: 30_000 };
 
 export const ENDLESS_ERAS: EndlessEraDef[] = [
   {
@@ -48,7 +50,38 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
       { kind: 'lion', atMs: CAT_OFFSETS_MS.lion },
     ],
   },
+  {
+    id: 'myth-1',
+    label: 'Myth',
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 2,
+    scene: 'temple',
+    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'giant'],
+    creatures: [
+      { kind: 'cyclops', atMs: CAT_OFFSETS_MS.cyclops },
+      { kind: 'hydra', atMs: CAT_OFFSETS_MS.hydra },
+    ],
+  },
+  {
+    id: 'myth-2',
+    label: 'The gate',
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 3,
+    scene: 'temple-gate',
+    pool: ['eggs', 'frenzy', 'multiply10', 'cursor5', 'magnet'],
+    creatures: [{ kind: 'cerberus', atMs: CAT_OFFSETS_MS.cerberus }],
+  },
+  {
+    id: GATE_KEY_ERA_ID,
+    label: 'Enchanted forest',
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 4,
+    scene: 'forest',
+    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'cursor3'],
+    creatures: [],
+  },
 ];
+
+export function eraIndexById(id: string): number {
+  return ENDLESS_ERAS.findIndex((e) => e.id === id);
+}
 
 export interface EraClock {
   index: number;
@@ -104,7 +137,7 @@ export function shiftEraTime(clock: EraClock, ms: number): void {
   clock.transitionUntilMs -= ms;
 }
 
-const STAGE_COVERING_SCENES: EndlessScene[] = ['night-yard'];
+const STAGE_COVERING_SCENES: EndlessScene[] = ['night-yard', 'temple', 'temple-gate', 'forest'];
 
 export function sceneCoversStage(scene: EndlessScene | null): boolean {
   return scene !== null && STAGE_COVERING_SCENES.includes(scene);

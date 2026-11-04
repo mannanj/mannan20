@@ -21,6 +21,8 @@ export const GAME_ITEMS = {
   'martian-friend': { label: 'Martian friend', max: 1, usable: true },
   'yarn-ball': { label: 'Yarn ball', max: 3, usable: true },
   'golden-mane': { label: 'Golden mane', max: 1, usable: true },
+  'hydra-scale': { label: 'Hydra scale', max: 2, usable: true },
+  'gate-key': { label: 'Gate key', max: 1, usable: true },
 } as const satisfies Record<string, ItemDefinition>;
 
 export type GameItemId = keyof typeof GAME_ITEMS;

@@ -1,7 +1,7 @@
 {
-  "cap_usd": 3.6,
-  "stop_at_usd": 2.890466,
-  "spent_usd": 3.542161,
+  "cap_usd": 4.29,
+  "stop_at_usd": 4.29,
+  "spent_usd": 3.968749,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -428,7 +428,96 @@
       "purpose": "task 310 cosmos: ground",
       "cost_usd": 0.0672475,
       "gen_id": "gen-1793675445-idQCInBHbQrghxx3b2nF"
+    },
+    {
+      "at": "2026-11-04T07:17:15.431Z",
+      "id": "myth-snake-head",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "hydra head frame (mirrored for the other side)",
+      "cost_usd": 0.038751,
+      "gen_id": "gen-1793776630-YUJEK89KNH7rf6Ep9lll"
+    },
+    {
+      "at": "2026-11-04T07:17:15.669Z",
+      "id": "myth-hydra-body",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "hydra body: coiled serpent base without heads",
+      "cost_usd": 0.0387528,
+      "gen_id": "gen-1793776630-RPdMukLEqjiCMvtFs7lP"
+    },
+    {
+      "at": "2026-11-04T07:17:16.205Z",
+      "id": "myth-lion-leap",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "maned male lion pounce frame (replaces the lioness leap)",
+      "cost_usd": 0.0388381,
+      "gen_id": "gen-1793776630-MVOciQ8ri7U29axYKyQ2"
+    },
+    {
+      "at": "2026-11-04T07:17:20.931Z",
+      "id": "myth-cerberus-stand",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus standing frame with three heads",
+      "cost_usd": 0.038791,
+      "gen_id": "gen-1793776635-L9MTIx5JRMYKJTwm6W81"
+    },
+    {
+      "at": "2026-11-04T07:17:21.418Z",
+      "id": "myth-cyclops",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cyclops looming frame (spectacle only)",
+      "cost_usd": 0.0387579,
+      "gen_id": "gen-1793776635-X9VtIKLCnYDxL2CvIyPj"
+    },
+    {
+      "at": "2026-11-04T07:17:21.598Z",
+      "id": "myth-cerberus-lunge",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus snapping/lunging frame (also the hold frame)",
+      "cost_usd": 0.0387537,
+      "gen_id": "gen-1793776636-J1myxXOGbWax1SlUUsIu"
+    },
+    {
+      "at": "2026-11-04T07:17:26.113Z",
+      "id": "myth-cerberus-sleep",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus calmed/asleep frame",
+      "cost_usd": 0.038751,
+      "gen_id": "gen-1793776640-lEtzhbPIbkZwUdrYyfbT"
+    },
+    {
+      "at": "2026-11-04T07:19:05.823Z",
+      "id": "myth-cerberus-lunge",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus snapping/lunging frame (retake: heads fanned so all three show)",
+      "cost_usd": 0.0387914,
+      "gen_id": "gen-1793776740-s1fRB9vApXbBJFc2rJKz"
+    },
+    {
+      "at": "2026-11-04T07:19:05.976Z",
+      "id": "myth-cerberus-stand",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus standing frame with three heads (retake: heads fanned so all three show)",
+      "cost_usd": 0.0387964,
+      "gen_id": "gen-1793776740-vDmoKp0erUWSRIxslseR"
+    },
+    {
+      "at": "2026-11-04T07:21:22.775Z",
+      "id": "myth-cerberus-stand",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus standing frame (retake 2: three-quarter view so the three heads read)",
+      "cost_usd": 0.0387992,
+      "gen_id": "gen-1793776877-6EL9BOUIRQ0EwmTXPIuL"
+    },
+    {
+      "at": "2026-11-04T07:21:23.227Z",
+      "id": "myth-cerberus-lunge",
+      "model": "google/gemini-2.5-flash-image",
+      "purpose": "cerberus lunging frame (retake 2: three-quarter view so the three heads read)",
+      "cost_usd": 0.0388057,
+      "gen_id": "gen-1793776877-W9bY9GETECslzVmDegwc"
     }
   ],
-  "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89)."
+  "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89).",
+  "task_319_note": "Task 319 allowance: $0.75 on top of the $3.54 spent before it (cap 4.29, stop 4.29)."
 }

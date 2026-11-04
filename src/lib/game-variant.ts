@@ -33,6 +33,10 @@ export const TEST_SCENES: Record<string, number> = {
   kitty: 33_000,
   tiger: 33_100,
   lion: 33_200,
+  myth: 41_000,
+  cyclops: 41_100,
+  hydra: 41_200,
+  cerberus: 49_000,
 };
 
 export function testStartScene(value: string | string[] | undefined): string | undefined {

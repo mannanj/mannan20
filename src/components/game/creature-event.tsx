@@ -5,10 +5,11 @@ import type { GameItemId } from '@/components/inventory';
 import type { CreatureSoundKey } from '@/lib/chicken-audio';
 import { hudPushOut, hudZone } from './hud-safe-zone';
 
-export type CreatureKind = 'kitty' | 'tiger' | 'lion';
-export type CreatureMode = 'grab' | 'miss' | 'spectacle';
+export type CreatureKind = 'kitty' | 'tiger' | 'lion' | 'cyclops' | 'hydra' | 'cerberus';
+export type CreatureMode = 'grab' | 'miss' | 'spectacle' | 'bite';
 export type CreaturePhase = 'idle' | 'enter' | 'act' | 'hold' | 'sit' | 'leave' | 'done';
 type Pose = 'walk' | 'stalk' | 'pounce' | 'hold' | 'sit';
+type HydraHeadState = 'empty' | 'ready' | 'strike' | 'bite' | 'knocked' | 'gone';
 
 interface Rel {
   x: number;
@@ -23,6 +24,8 @@ interface PoseAsset {
   faces: 1 | -1;
   scale: number;
   head: Rel;
+  extraHeads?: Record<string, Rel>;
+  eye?: Rel;
 }
 
 export interface ClickTarget {
@@ -32,7 +35,19 @@ export interface ClickTarget {
   raw: number;
 }
 
-export interface CreatureSpec {
+interface CreatureBehaviour {
+  chase: boolean;
+  edgeStand: boolean;
+  maxSwipes: number | null;
+  swipeLift: number;
+  clearsChicken: boolean;
+  targetsIn: CreaturePhase;
+  outerFirst: boolean;
+  catchOnSwipe: number | null;
+  holdAtHead: boolean;
+}
+
+export interface CreatureSpec extends CreatureBehaviour {
   kind: CreatureKind;
   mode: CreatureMode;
   label: string;
@@ -52,7 +67,43 @@ export interface CreatureSpec {
   sounds: { enter: CreatureSoundKey | null; act: CreatureSoundKey | null };
 }
 
-export const CREATURE_ORDER: CreatureKind[] = ['kitty', 'tiger', 'lion'];
+export const CREATURE_ORDER: CreatureKind[] = ['kitty', 'tiger', 'lion', 'cyclops', 'hydra', 'cerberus'];
+export const CYCLOPS_STAY_MS: [number, number] = [10_000, 10_000];
+export const HYDRA_HEADS_START = 3;
+export const HYDRA_HEADS_MAX = 7;
+export const HYDRA_HEAD_CLICKS = 5;
+export const HYDRA_HEAD_RAW = 5;
+export const HYDRA_STRIKE_EVERY_MS = 2500;
+export const HYDRA_REGROW_MS = 4000;
+export const HYDRA_KNOCKBACKS_TO_WIN = 12;
+export const HYDRA_FIGHT_MS = 45_000;
+export const CERBERUS_HEAD_CLICKS = 8;
+export const CERBERUS_HEAD_RAW = 5;
+export const CERBERUS_HOLD_MS = 40_000;
+export const CERBERUS_SNAPS = 3;
+export const CERBERUS_HEAD_IDS = ['left', 'right', 'middle'] as const;
+const CERBERUS_MIDDLE = 'middle';
+const HYDRA_STRIKE_MS = 480;
+const HYDRA_STRIKE_HOLD_MS = 260;
+const HYDRA_RETURN_MS = 420;
+const HYDRA_RECOIL_MS = 600;
+const HYDRA_REACH_FRAC = 1.35;
+const HYDRA_HEAD_FRAC = 0.3;
+const HYDRA_HEAD_ASPECT = 2.82;
+const HYDRA_HEAD_PIVOT = 0.74;
+const HYDRA_NECK_FRAC = 0.66;
+const HYDRA_NECK_STAGGER_FRAC = 0.24;
+const HYDRA_NECK_THICK_FRAC = 0.3;
+const HYDRA_FAN_DEG = [-72, -48, -24, 0, 24, 48, 72];
+const HYDRA_START_SLOTS = [1, 3, 5];
+const HYDRA_SWAY_DEG = 6;
+const HYDRA_SWAY_MS = 900;
+const HYDRA_BITE_RADIUS_FRAC = 1.3;
+const CYCLOPS_SWAT_MS = 1400;
+const CYCLOPS_PUPIL_FRAC = 0.34;
+const CYCLOPS_PUPIL_TRAVEL = 0.22;
+const EDGE_STAND_FRAC = 0.42;
+const SLEEP_SINK_FRAC = 0.1;
 export const KITTY_HOLD_MS: [number, number] = [4000, 6000];
 export const KITTY_HOLD_FLOOR_MS = 2000;
 export const KITTY_CLICKS_PER_SHORTEN = 3;
@@ -102,12 +153,111 @@ function sizeBasis(vw: number, vh: number): number {
   return Math.min(vh, vw * PORTRAIT_SIZE_BASIS);
 }
 
-function pose(file: string, aspect: number, faces: 1 | -1, scale: number, head: Rel): PoseAsset {
-  return { file: `${ASSET_BASE}/${file}.webp`, aspect, faces, scale, head };
+function pose(file: string, aspect: number, faces: 1 | -1, scale: number, head: Rel, extra: Pick<PoseAsset, 'extraHeads' | 'eye'> = {}): PoseAsset {
+  return { file: `${ASSET_BASE}/${file}.webp`, aspect, faces, scale, head, ...extra };
 }
 
+const CAT_BEHAVIOUR: CreatureBehaviour = {
+  chase: true,
+  edgeStand: false,
+  maxSwipes: null,
+  swipeLift: POUNCE_LIFT_FRAC,
+  clearsChicken: true,
+  targetsIn: 'act',
+  outerFirst: false,
+  catchOnSwipe: null,
+  holdAtHead: false,
+};
+
+const CERBERUS_STAND_HEADS: Record<string, Rel> = { left: { x: 0.3, y: 0, w: 0.22, h: 0.3 }, right: { x: 0.74, y: 0.08, w: 0.26, h: 0.26 } };
+const CERBERUS_STAND_MIDDLE: Rel = { x: 0.52, y: 0.02, w: 0.23, h: 0.3 };
+const CERBERUS_LUNGE_HEADS: Record<string, Rel> = { left: { x: 0.38, y: 0.05, w: 0.21, h: 0.33 }, right: { x: 0.81, y: 0.16, w: 0.19, h: 0.26 } };
+const CERBERUS_LUNGE_MIDDLE: Rel = { x: 0.61, y: 0, w: 0.24, h: 0.3 };
+const CERBERUS_SLEEP_HEADS: Record<string, Rel> = { left: { x: 0.5, y: 0.1, w: 0.18, h: 0.6 }, right: { x: 0.82, y: 0.2, w: 0.18, h: 0.6 } };
+const CERBERUS_SLEEP_MIDDLE: Rel = { x: 0.66, y: 0.1, w: 0.18, h: 0.6 };
+
 export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
+  cyclops: {
+    ...CAT_BEHAVIOUR,
+    chase: false,
+    edgeStand: true,
+    maxSwipes: 1,
+    swipeLift: 0.06,
+    clearsChicken: false,
+    kind: 'cyclops',
+    mode: 'spectacle',
+    label: 'cyclops',
+    banner: 'a cyclops looms over the temple',
+    heightFrac: 0.92,
+    poses: {
+      walk: pose('cyclops', 0.63, -1, 1, { x: 0.45, y: 0.2, w: 0.45, h: 0.22 }, { eye: { x: 0.62, y: 0.32, w: 0.17, h: 0.075 } }),
+    },
+    targets: [],
+    bodyTarget: false,
+    enterMs: 2600,
+    stalkMs: 0,
+    pounceMs: CYCLOPS_SWAT_MS,
+    holdMs: null,
+    stayMs: CYCLOPS_STAY_MS,
+    leaveMs: 2200,
+    dropId: null,
+    dropChance: 0,
+    sounds: { enter: 'rumble', act: null },
+  },
+  hydra: {
+    ...CAT_BEHAVIOUR,
+    clearsChicken: false,
+    kind: 'hydra',
+    mode: 'bite',
+    label: 'hydra',
+    banner: 'the hydra! knock its heads back',
+    heightFrac: 0.3,
+    poses: {
+      walk: pose('hydra-body', 1.07, 1, 1, { x: 0.3, y: 0, w: 0.4, h: 0.3 }),
+    },
+    targets: [],
+    bodyTarget: false,
+    enterMs: 2200,
+    stalkMs: 0,
+    pounceMs: HYDRA_STRIKE_MS,
+    holdMs: null,
+    stayMs: null,
+    leaveMs: 1800,
+    dropId: 'hydra-scale',
+    dropChance: 0.5,
+    sounds: { enter: 'snake', act: 'snake' },
+  },
+  cerberus: {
+    ...CAT_BEHAVIOUR,
+    targetsIn: 'hold',
+    outerFirst: true,
+    catchOnSwipe: CERBERUS_SNAPS,
+    holdAtHead: true,
+    kind: 'cerberus',
+    mode: 'grab',
+    label: 'cerberus',
+    banner: 'cerberus guards the gate! calm its heads',
+    heightFrac: 0.34,
+    poses: {
+      walk: pose('cerberus-stand', 1.13, 1, 1, CERBERUS_STAND_MIDDLE, { extraHeads: CERBERUS_STAND_HEADS }),
+      pounce: pose('cerberus-lunge', 1.2, 1, 1.1, CERBERUS_LUNGE_MIDDLE, { extraHeads: CERBERUS_LUNGE_HEADS }),
+      hold: pose('cerberus-lunge', 1.2, 1, 1.1, CERBERUS_LUNGE_MIDDLE, { extraHeads: CERBERUS_LUNGE_HEADS }),
+      sit: pose('cerberus-sleep', 2.67, 1, 0.55, CERBERUS_SLEEP_MIDDLE, { extraHeads: CERBERUS_SLEEP_HEADS }),
+    },
+    targets: CERBERUS_HEAD_IDS.map((id) => ({ id, label: `${id} head`, clicks: CERBERUS_HEAD_CLICKS, raw: CERBERUS_HEAD_RAW })),
+    bodyTarget: false,
+    enterMs: 1600,
+    stalkMs: 0,
+    pounceMs: SWIPE_MS,
+    holdMs: [CERBERUS_HOLD_MS, CERBERUS_HOLD_MS],
+    stayMs: [CERBERUS_HOLD_MS, CERBERUS_HOLD_MS],
+    leaveMs: 1400,
+    dropId: 'gate-key',
+    dropChance: 1,
+    sounds: { enter: 'bark', act: 'bark' },
+  },
   kitty: {
+    ...CAT_BEHAVIOUR,
     kind: 'kitty',
     mode: 'grab',
     label: 'kitty',
@@ -132,6 +282,7 @@ export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
     sounds: { enter: 'meow', act: 'hiss' },
   },
   tiger: {
+    ...CAT_BEHAVIOUR,
     kind: 'tiger',
     mode: 'spectacle',
     label: 'tiger',
@@ -155,6 +306,7 @@ export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
     sounds: { enter: 'growl', act: null },
   },
   lion: {
+    ...CAT_BEHAVIOUR,
     kind: 'lion',
     mode: 'miss',
     label: 'lion',
@@ -163,7 +315,7 @@ export const CREATURE_SPECS: Record<CreatureKind, CreatureSpec> = {
     poses: {
       walk: pose('lion-walk', 1.43, -1, 1, { x: 0, y: 0, w: 0.42, h: 0.62 }),
       stalk: pose('lion-chase', 1.09, -1, 1.1, { x: 0.2, y: 0, w: 0.6, h: 0.55 }),
-      pounce: pose('lion-pounce', 1.27, 1, 1.15, { x: 0.55, y: 0, w: 0.45, h: 0.55 }),
+      pounce: pose('lion-pounce', 2.08, 1, 0.82, { x: 0.68, y: 0, w: 0.32, h: 0.62 }),
       sit: pose('lion-sit', 2.11, -1, 0.85, { x: 0, y: 0, w: 0.45, h: 0.9 }),
     },
     targets: [{ id: 'mane', label: 'mane', clicks: LION_MANE_CLICKS, raw: LION_MANE_RAW }],
@@ -200,6 +352,14 @@ interface Feather {
   spin: number;
 }
 
+export interface HydraHead {
+  state: HydraHeadState;
+  at: number;
+  clicks: number;
+  target: Point;
+  pos: Point;
+}
+
 export interface CreatureState {
   kind: CreatureKind | null;
   phase: CreaturePhase;
@@ -230,6 +390,18 @@ export interface CreatureState {
   dropBonus: number;
   pending: CreatureKind | null;
   enterSoundDone: boolean;
+  targetHits: Record<string, number>;
+  heads: HydraHead[];
+  knockbacks: number;
+  bitingHead: number | null;
+  releasePending: boolean;
+  lastTs: number;
+  nextStrikeAt: number;
+  caught: boolean;
+}
+
+function emptyHead(): HydraHead {
+  return { state: 'empty', at: 0, clicks: 0, target: { x: 0, y: 0 }, pos: { x: 0, y: 0 } };
 }
 
 export function createCreatureState(): CreatureState {
@@ -263,6 +435,14 @@ export function createCreatureState(): CreatureState {
     dropBonus: 1,
     pending: null,
     enterSoundDone: false,
+    targetHits: {},
+    heads: Array.from({ length: HYDRA_HEADS_MAX }, emptyHead),
+    knockbacks: 0,
+    bitingHead: null,
+    releasePending: false,
+    lastTs: 0,
+    nextStrikeAt: 0,
+    caught: false,
   };
 }
 
@@ -277,10 +457,25 @@ export interface CreatureEls {
   hint: HTMLDivElement | null;
   banner: HTMLDivElement | null;
   feathers: (HTMLDivElement | null)[];
+  eye: HTMLDivElement | null;
+  heads: { img: HTMLImageElement | null; neck: HTMLDivElement | null; hit: HTMLDivElement | null }[];
 }
 
 export function createCreatureEls(): CreatureEls {
-  return { root: null, imgA: null, imgB: null, front: null, shadow: null, body: null, targets: {}, hint: null, banner: null, feathers: Array.from({ length: FEATHER_SLOTS }, () => null) };
+  return {
+    root: null,
+    imgA: null,
+    imgB: null,
+    front: null,
+    shadow: null,
+    body: null,
+    targets: {},
+    hint: null,
+    banner: null,
+    feathers: Array.from({ length: FEATHER_SLOTS }, () => null),
+    eye: null,
+    heads: Array.from({ length: HYDRA_HEADS_MAX }, () => ({ img: null, neck: null, hit: null })),
+  };
 }
 
 export function isCreatureBusy(s: CreatureState): boolean {
@@ -288,7 +483,11 @@ export function isCreatureBusy(s: CreatureState): boolean {
 }
 
 export function isCreatureHolding(s: CreatureState): boolean {
-  return s.phase === 'hold';
+  return s.phase === 'hold' || s.bitingHead !== null;
+}
+
+export function hydraHeadsAlive(s: CreatureState): number {
+  return s.heads.filter((h) => h.state === 'ready' || h.state === 'strike' || h.state === 'bite').length;
 }
 
 export function creatureOnScreen(s: CreatureState): boolean {
@@ -366,8 +565,9 @@ export function startCreature(s: CreatureState, kind: CreatureKind, ctx: Creatur
   const vh = sizeBasis(ctx.vw, ctx.vh);
   const { w } = sizeFor(spec, 'walk', vh);
   s.pos = { x: fromLeft ? -w * SPAWN_OFFSET_FRAC : ctx.vw + w * SPAWN_OFFSET_FRAC, y: groundCenterY(spec, 'walk', vh, ctx.groundY) };
-  const stand = ctx.chickenCx - s.dir * ctx.vw * STAND_DIST_FRAC;
-  s.standX = clamp(stand, w / 2 + EDGE_MARGIN, ctx.vw - w / 2 - EDGE_MARGIN);
+  const stand = spec.edgeStand ? (fromLeft ? w * EDGE_STAND_FRAC : ctx.vw - w * EDGE_STAND_FRAC) : ctx.chickenCx - s.dir * ctx.vw * STAND_DIST_FRAC;
+  s.standX = spec.edgeStand ? stand : clamp(stand, w / 2 + EDGE_MARGIN, ctx.vw - w / 2 - EDGE_MARGIN);
+  if (kind === 'hydra') for (const slot of HYDRA_START_SLOTS) s.heads[slot] = { ...emptyHead(), state: 'ready', at: ctx.ts };
   s.holdMs = spec.holdMs ? rand(spec.holdMs, ctx.rng) : 0;
   s.stayMs = spec.stayMs ? rand(spec.stayMs, ctx.rng) : 0;
   s.pose = 'walk';
@@ -388,7 +588,10 @@ export function shiftCreatureTime(s: CreatureState, ms: number): void {
   s.holdEndsAt -= ms;
   s.swipeAt -= ms;
   s.nextFeatherAt -= ms;
+  s.nextStrikeAt -= ms;
+  s.lastTs -= ms;
   for (const f of s.feathers) f.born -= ms;
+  for (const h of s.heads) h.at -= ms;
 }
 
 export function tapCreatureBody(s: CreatureState): boolean {
@@ -406,12 +609,51 @@ export interface TargetTap {
   completed: boolean;
 }
 
-export function tapCreatureTarget(s: CreatureState, targetId: string): TargetTap | null {
-  if (!s.kind || s.phase !== 'act') return null;
-  const target = CREATURE_SPECS[s.kind].targets.find((t) => t.id === targetId);
-  if (!target || s.tamed) return null;
+function targetDone(spec: CreatureSpec, s: CreatureState, id: string): boolean {
+  const target = spec.targets.find((t) => t.id === id);
+  return target !== undefined && (s.targetHits[id] ?? 0) >= target.clicks;
+}
+
+export function targetActive(spec: CreatureSpec, s: CreatureState, id: string): boolean {
+  if (s.phase !== spec.targetsIn || s.tamed || targetDone(spec, s, id)) return false;
+  if (!spec.outerFirst || id !== CERBERUS_MIDDLE) return true;
+  return spec.targets.every((t) => t.id === CERBERUS_MIDDLE || targetDone(spec, s, t.id));
+}
+
+const HYDRA_TARGET_PREFIX = 'head-';
+
+export function hydraTargetId(slot: number): string {
+  return `${HYDRA_TARGET_PREFIX}${slot}`;
+}
+
+function tapHydraHead(s: CreatureState, targetId: string): TargetTap | null {
+  if (s.phase !== 'act' || !targetId.startsWith(HYDRA_TARGET_PREFIX)) return null;
+  const slot = Number(targetId.slice(HYDRA_TARGET_PREFIX.length));
+  const head = s.heads[slot];
+  if (!head || (head.state !== 'ready' && head.state !== 'strike' && head.state !== 'bite')) return null;
+  head.clicks += 1;
   s.targetClicks += 1;
-  if (s.targetClicks >= target.clicks) {
+  if (head.clicks < HYDRA_HEAD_CLICKS) return { raw: HYDRA_HEAD_RAW, completed: false };
+  head.state = 'knocked';
+  head.at = s.lastTs;
+  s.knockbacks += 1;
+  if (s.bitingHead === slot) {
+    s.bitingHead = null;
+    s.releasePending = true;
+  }
+  if (s.knockbacks >= HYDRA_KNOCKBACKS_TO_WIN) s.tamed = true;
+  return { raw: HYDRA_HEAD_RAW, completed: s.tamed };
+}
+
+export function tapCreatureTarget(s: CreatureState, targetId: string): TargetTap | null {
+  if (!s.kind) return null;
+  const spec = CREATURE_SPECS[s.kind];
+  if (spec.mode === 'bite') return tapHydraHead(s, targetId);
+  const target = spec.targets.find((t) => t.id === targetId);
+  if (!target || !targetActive(spec, s, targetId)) return null;
+  s.targetHits[targetId] = (s.targetHits[targetId] ?? 0) + 1;
+  s.targetClicks += 1;
+  if (spec.targets.every((t) => targetDone(spec, s, t.id))) {
     s.tamed = true;
     return { raw: target.raw, completed: true };
   }
@@ -507,6 +749,134 @@ function tickFeathers(s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx, 
   });
 }
 
+function holdPoint(spec: CreatureSpec, s: CreatureState, vh: number): Point {
+  const { w, h } = sizeFor(spec, 'hold', vh);
+  const flipped = s.dir !== poseAsset(spec, 'hold').faces;
+  if (spec.holdAtHead) {
+    const head = headRect(spec, s, { x: s.pos.x - w / 2, y: s.pos.y - h / 2, w, h }, flipped);
+    return { x: head.x + head.w / 2, y: head.y + head.h * 0.7 };
+  }
+  const relX = flipped ? 1 - HOLD_POINT_X : HOLD_POINT_X;
+  return { x: s.pos.x - w / 2 + w * relX, y: s.pos.y - h / 2 + h * HOLD_POINT_Y };
+}
+
+function beginLeave(s: CreatureState, ts: number, vw: number, pose: Pose): void {
+  setPhase(s, 'leave', ts);
+  setPose(s, pose, ts);
+  s.swipeFrom = { ...s.pos };
+  s.dir = s.pos.x < vw / 2 ? -1 : 1;
+  s.feathers = [];
+}
+
+function hydraNeck(spec: CreatureSpec, s: CreatureState, vh: number): Point {
+  const box = currentBox(spec, s, vh);
+  const head = headRect(spec, s, box, false);
+  return { x: head.x + head.w / 2, y: head.y + head.h * 0.3 };
+}
+
+function hydraRest(neck: Point, slot: number, bodyH: number, ts: number): Point {
+  const sway = Math.sin(ts / HYDRA_SWAY_MS + slot) * HYDRA_SWAY_DEG;
+  const rad = ((HYDRA_FAN_DEG[slot] + sway) * Math.PI) / 180;
+  const len = bodyH * (HYDRA_NECK_FRAC + (slot % 2) * HYDRA_NECK_STAGGER_FRAC);
+  return { x: neck.x + Math.sin(rad) * len, y: neck.y - Math.cos(rad) * len };
+}
+
+function regrowSlots(s: CreatureState, from: number): number[] {
+  const free = s.heads.map((h, i) => (h.state === 'empty' || h.state === 'gone' ? i : -1)).filter((i) => i >= 0 && i !== from);
+  free.sort((a, b) => Math.abs(a - from) - Math.abs(b - from));
+  const room = HYDRA_HEADS_MAX - hydraHeadsAlive(s);
+  return [from, ...free].slice(0, Math.min(2, room));
+}
+
+function tickHydra(spec: CreatureSpec, s: CreatureState, ctx: CreatureTickCtx, vh: number, result: CreatureTickResult): void {
+  const { ts, vw, groundY } = ctx;
+  const elapsed = ts - s.phaseAt;
+  const bodyH = sizeFor(spec, 'walk', vh).h;
+  s.pos.y = groundCenterY(spec, 'walk', vh, groundY);
+  if (s.bitingHead === null) {
+    const dx = ctx.chickenCx - s.pos.x;
+    const step = Math.min(Math.abs(dx), CHASE_SPEED * 0.5 * ctx.dtMs);
+    s.pos.x += Math.sign(dx) * step;
+  }
+  const neck = hydraNeck(spec, s, vh);
+  const reach = bodyH * HYDRA_REACH_FRAC;
+  const chicken = { x: ctx.chickenCx, y: ctx.chickenCy };
+  const aimAt = (): Point => {
+    const dx = chicken.x - neck.x;
+    const dy = chicken.y - neck.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const k = Math.min(1, reach / d);
+    return { x: neck.x + dx * k, y: Math.min(neck.y + dy * k, groundY - bodyH * 0.1) };
+  };
+  if (ts >= s.nextStrikeAt) {
+    s.nextStrikeAt = ts + HYDRA_STRIKE_EVERY_MS;
+    const ready = s.heads.map((h, i) => (h.state === 'ready' ? i : -1)).filter((i) => i >= 0);
+    if (ready.length) {
+      const slot = ready[Math.floor(ctx.rng() * ready.length)];
+      s.heads[slot] = { ...s.heads[slot], state: 'strike', at: ts, target: aimAt() };
+    }
+  }
+  s.heads.forEach((head, slot) => {
+    const rest = hydraRest(neck, slot, bodyH, ts);
+    const age = ts - head.at;
+    if (head.state === 'ready') {
+      head.pos = rest;
+    } else if (head.state === 'strike') {
+      if (age < HYDRA_STRIKE_MS) {
+        head.target = aimAt();
+        const t = easeOut(age / HYDRA_STRIKE_MS);
+        head.pos = { x: rest.x + (head.target.x - rest.x) * t, y: rest.y + (head.target.y - rest.y) * t };
+      } else if (age < HYDRA_STRIKE_MS + HYDRA_STRIKE_HOLD_MS) {
+        head.pos = head.target;
+        const near = Math.hypot(chicken.x - head.target.x, chicken.y - head.target.y) <= ctx.chickenW * HYDRA_BITE_RADIUS_FRAC;
+        if (near && s.bitingHead === null && !s.tamed) {
+          head.state = 'bite';
+          head.at = ts;
+          s.bitingHead = slot;
+          result.grabbed = true;
+          result.sound = spec.sounds.act;
+        }
+      } else {
+        const t = easeInOut(clamp((age - HYDRA_STRIKE_MS - HYDRA_STRIKE_HOLD_MS) / HYDRA_RETURN_MS, 0, 1));
+        head.pos = { x: head.target.x + (rest.x - head.target.x) * t, y: head.target.y + (rest.y - head.target.y) * t };
+        if (t >= 1) {
+          head.state = 'ready';
+          head.at = ts;
+        }
+      }
+    } else if (head.state === 'bite') {
+      head.pos = head.target;
+      result.hold = { x: head.target.x, y: head.target.y };
+    } else if (head.state === 'knocked') {
+      const t = easeOut(clamp(age / HYDRA_RECOIL_MS, 0, 1));
+      const away = { x: rest.x + (rest.x - neck.x) * 0.4, y: rest.y - bodyH * 0.25 };
+      head.pos = { x: head.pos.x + (away.x - head.pos.x) * t, y: head.pos.y + (away.y - head.pos.y) * t };
+      if (age >= HYDRA_RECOIL_MS) {
+        head.state = 'gone';
+      }
+    } else if (head.state === 'gone' && age >= HYDRA_REGROW_MS && !s.tamed && s.phase === 'act') {
+      for (const target of regrowSlots(s, slot)) s.heads[target] = { ...emptyHead(), state: 'ready', at: ts, pos: neck };
+      if (s.heads[slot].state === 'gone') s.heads[slot] = emptyHead();
+    }
+  });
+  if (s.releasePending) {
+    s.releasePending = false;
+    result.released = true;
+  }
+  if (s.tamed || elapsed >= HYDRA_FIGHT_MS) {
+    if (s.bitingHead !== null) {
+      s.heads[s.bitingHead].state = 'knocked';
+      s.heads[s.bitingHead].at = ts;
+      s.bitingHead = null;
+      result.released = true;
+      result.hold = null;
+    }
+    if (s.tamed) result.drop = rollDrop(s, spec, neck, ctx.rng);
+    for (const head of s.heads) if (head.state !== 'empty' && head.state !== 'gone') head.state = 'knocked';
+    beginLeave(s, ts, vw, 'walk');
+  }
+}
+
 export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx): CreatureTickResult {
   const result: CreatureTickResult = { hold: null, flyUp: false, clearY: null, grabbed: false, released: false, drop: null, sound: null, done: false };
   if (!s.kind || !creatureOnScreen(s)) return result;
@@ -515,6 +885,8 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
   const vh = sizeBasis(vw, ctx.vh);
   const elapsed = ts - s.phaseAt;
   const chickenBottom = ctx.chickenCy + ctx.chickenH / 2;
+  s.lastTs = ts;
+  const pounceGrab = spec.mode === 'grab' && spec.catchOnSwipe === null;
 
   if (s.phase === 'enter') {
     if (!s.enterSoundDone) {
@@ -525,7 +897,7 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
     const start = s.dir === 1 ? -sizeFor(spec, 'walk', vh).w * SPAWN_OFFSET_FRAC : vw + sizeFor(spec, 'walk', vh).w * SPAWN_OFFSET_FRAC;
     s.pos.x = start + (s.standX - start) * easeOut(t);
     s.pos.y = groundCenterY(spec, s.pose, vh, groundY);
-    if (spec.mode !== 'grab') result.clearY = reachTopFor(spec, vh, groundY) - CLEARANCE_PX;
+    if (spec.clearsChicken && !pounceGrab) result.clearY = reachTopFor(spec, vh, groundY) - CLEARANCE_PX;
     if (t >= 1) {
       if (spec.stalkMs > 0 && elapsed < spec.enterMs + spec.stalkMs) {
         setPose(s, spec.poses.stalk ? 'stalk' : 'walk', ts);
@@ -533,11 +905,12 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
         setPhase(s, 'act', ts);
         s.swipeAt = ts;
         s.swipeFrom = { ...s.pos };
-        if (spec.mode === 'grab') result.sound = spec.sounds.act;
-        if (spec.mode !== 'grab') setPose(s, spec.poses.stalk ? 'stalk' : 'walk', ts);
+        s.nextStrikeAt = ts + HYDRA_STRIKE_EVERY_MS / 2;
+        if (pounceGrab) result.sound = spec.sounds.act;
+        if (!pounceGrab) setPose(s, spec.poses.stalk ? 'stalk' : 'walk', ts);
       }
     }
-  } else if (s.phase === 'act' && spec.mode === 'grab') {
+  } else if (s.phase === 'act' && pounceGrab) {
     const t = clamp(elapsed / spec.pounceMs, 0, 1);
     setPose(s, 'pounce', ts);
     const { w, h } = sizeFor(spec, 'hold', vh);
@@ -554,70 +927,85 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
       result.grabbed = true;
     }
   } else if (s.phase === 'hold') {
-    const { w, h } = sizeFor(spec, 'hold', vh);
     s.pos.y = groundCenterY(spec, 'hold', vh, groundY);
-    const flipped = s.dir !== poseAsset(spec, 'hold').faces;
-    const relX = flipped ? 1 - HOLD_POINT_X : HOLD_POINT_X;
-    result.hold = { x: s.pos.x - w / 2 + w * relX, y: s.pos.y - h / 2 + h * HOLD_POINT_Y };
-    if (ts >= s.holdEndsAt) {
-      setPhase(s, 'leave', ts);
-      setPose(s, 'pounce', ts);
-      s.swipeFrom = { ...s.pos };
-      s.dir = s.pos.x < vw / 2 ? -1 : 1;
+    result.hold = holdPoint(spec, s, vh);
+    if (s.tamed) {
+      setPhase(s, 'sit', ts);
+      setPose(s, 'sit', ts);
       s.feathers = [];
       result.released = true;
       result.drop = rollDrop(s, spec, result.hold, ctx.rng);
+      result.hold = null;
+    } else if (ts >= s.holdEndsAt) {
+      const drop = spec.targets.length ? null : rollDrop(s, spec, result.hold, ctx.rng);
+      beginLeave(s, ts, vw, 'pounce');
+      result.released = true;
+      result.drop = drop;
     }
+  } else if (s.phase === 'act' && spec.mode === 'bite') {
+    tickHydra(spec, s, ctx, vh, result);
   } else if (s.phase === 'act') {
-    const actMs = Math.max(SWIPE_MS, s.stayMs - spec.enterMs - spec.leaveMs);
+    const actMs = Math.max(spec.pounceMs, s.stayMs - spec.enterMs - spec.leaveMs);
     const { h } = sizeFor(spec, 'pounce', vh);
     const since = ts - s.swipeAt;
-    if (!s.swiping && since >= SWIPE_EVERY_MS && elapsed + SWIPE_MS < actMs) {
+    const swipesLeft = spec.maxSwipes === null || s.misses < spec.maxSwipes;
+    if (!s.swiping && swipesLeft && since >= SWIPE_EVERY_MS && elapsed + spec.pounceMs < actMs) {
       s.swiping = true;
       s.swipeAt = ts;
       s.swipeFrom = { ...s.pos };
       s.misses += 1;
-      result.flyUp = true;
+      s.caught = spec.catchOnSwipe !== null && s.misses >= spec.catchOnSwipe;
+      result.flyUp = !s.caught;
+      if (s.caught) result.sound = spec.sounds.act;
       setPose(s, 'pounce', ts);
     }
     if (s.swiping) {
-      const t = clamp((ts - s.swipeAt) / SWIPE_MS, 0, 1);
+      const t = clamp((ts - s.swipeAt) / spec.pounceMs, 0, 1);
       const base = groundCenterY(spec, 'pounce', vh, groundY);
-      s.pos.y = base - Math.sin(t * Math.PI) * h * POUNCE_LIFT_FRAC;
+      s.pos.y = base - Math.sin(t * Math.PI) * h * spec.swipeLift;
+      if (s.caught) {
+        const { w } = sizeFor(spec, 'hold', vh);
+        const targetX = clamp(ctx.chickenCx, w / 2 + EDGE_MARGIN, vw - w / 2 - EDGE_MARGIN);
+        s.pos.x = s.swipeFrom.x + (targetX - s.swipeFrom.x) * easeInOut(t);
+      }
       if (t >= 1) {
         s.swiping = false;
         s.swipeAt = ts;
-        setPose(s, spec.poses.stalk ? 'stalk' : 'walk', ts);
+        if (s.caught) {
+          setPhase(s, 'hold', ts);
+          setPose(s, 'hold', ts);
+          s.holdEndsAt = ts + s.holdMs;
+          s.nextFeatherAt = ts;
+          result.grabbed = true;
+        } else {
+          setPose(s, spec.poses.stalk ? 'stalk' : 'walk', ts);
+        }
       }
-    } else {
+    } else if (spec.chase) {
       s.pos.y = groundCenterY(spec, s.pose, vh, groundY);
       const dx = ctx.chickenCx - s.pos.x;
       const step = Math.min(Math.abs(dx), CHASE_SPEED * ctx.dtMs);
       s.pos.x += Math.sign(dx) * step;
       if (Math.abs(dx) > ctx.chickenW) s.dir = dx >= 0 ? 1 : -1;
+    } else {
+      s.pos.y = groundCenterY(spec, s.pose, vh, groundY);
     }
-    result.clearY = reachTopFor(spec, vh, groundY) - CLEARANCE_PX;
-    if (s.swiping) s.minClearance = Math.min(s.minClearance, reachTopFor(spec, vh, groundY) - chickenBottom);
-    if (s.tamed) {
+    if (spec.clearsChicken) result.clearY = reachTopFor(spec, vh, groundY) - CLEARANCE_PX;
+    if (s.swiping && !s.caught) s.minClearance = Math.min(s.minClearance, reachTopFor(spec, vh, groundY) - chickenBottom);
+    if (s.phase === 'act' && s.tamed) {
       setPhase(s, 'sit', ts);
       setPose(s, 'sit', ts);
       s.swiping = false;
       const box = currentBox(spec, s, vh);
       const head = headRect(spec, s, box, s.dir !== poseAsset(spec, s.pose).faces);
       result.drop = rollDrop(s, spec, { x: head.x + head.w / 2, y: head.y + head.h / 2 }, ctx.rng);
-    } else if (elapsed >= actMs) {
-      setPhase(s, 'leave', ts);
-      setPose(s, 'walk', ts);
-      s.swipeFrom = { ...s.pos };
-      s.dir = s.pos.x < vw / 2 ? -1 : 1;
+    } else if (s.phase === 'act' && elapsed >= actMs) {
+      beginLeave(s, ts, vw, 'walk');
     }
   } else if (s.phase === 'sit') {
-    s.pos.y = groundCenterY(spec, 'sit', vh, groundY);
-    if (elapsed >= SIT_MS) {
-      setPhase(s, 'leave', ts);
-      setPose(s, 'walk', ts);
-      s.swipeFrom = { ...s.pos };
-      s.dir = s.pos.x < vw / 2 ? -1 : 1;
+    s.pos.y = groundCenterY(spec, 'sit', vh, groundY) + (spec.holdAtHead ? sizeFor(spec, 'sit', vh).h * SLEEP_SINK_FRAC : 0);
+    if (elapsed >= SIT_MS * (spec.holdAtHead ? 2 : 1)) {
+      beginLeave(s, ts, vw, 'walk');
     }
   } else if (s.phase === 'leave') {
     const { w } = sizeFor(spec, s.pose, vh);
@@ -625,6 +1013,15 @@ export function tickCreature(s: CreatureState, els: CreatureEls, ctx: CreatureTi
     const t = clamp(elapsed / (spec.leaveMs / LEAVE_SPEED_BOOST), 0, 1);
     s.pos.x = s.swipeFrom.x + (exitX - s.swipeFrom.x) * t;
     s.pos.y = groundCenterY(spec, s.pose, vh, groundY);
+    if (spec.mode === 'bite') {
+      const neck = hydraNeck(spec, s, vh);
+      s.heads.forEach((head, slot) => {
+        if (head.state === 'empty') return;
+        const fade = clamp((ts - head.at) / HYDRA_RECOIL_MS, 0, 1);
+        const rest = hydraRest(neck, slot, sizeFor(spec, 'walk', vh).h, ts);
+        head.pos = { x: rest.x + (neck.x - rest.x) * fade, y: rest.y + (neck.y - rest.y) * fade };
+      });
+    }
     if (t >= 1) {
       setPhase(s, 'done', ts);
       s.leftAt = ts;
@@ -650,6 +1047,88 @@ function currentBox(spec: CreatureSpec, s: CreatureState, vh: number): Rect {
 function walkBob(s: CreatureState, ts: number): number {
   const moving = s.phase === 'enter' || s.phase === 'leave' || (s.phase === 'act' && !s.swiping);
   return moving && s.pose !== 'stalk' ? Math.abs(Math.sin(ts / WALK_BOB_MS)) * WALK_BOB_PX : 0;
+}
+
+function targetRect(spec: CreatureSpec, s: CreatureState, box: Rect, flipped: boolean, id: string): Rect {
+  const rel = poseAsset(spec, s.pose).extraHeads?.[id];
+  if (!rel) return headRect(spec, s, box, flipped);
+  const relX = flipped ? 1 - rel.x - rel.w : rel.x;
+  return { x: box.x + relX * box.w, y: box.y + rel.y * box.h, w: rel.w * box.w, h: rel.h * box.h };
+}
+
+function hintSpot(anchor: Rect, w: number, hh: number, vw: number): Point {
+  const zone = hudZone(vw);
+  const cx = anchor.x + anchor.w / 2;
+  const candidates: Point[] = [
+    { x: cx - w / 2, y: anchor.y - hh - HINT_GAP_PX },
+    { x: anchor.x + anchor.w + HINT_GAP_PX, y: anchor.y + anchor.h / 2 - hh / 2 },
+    { x: anchor.x - w - HINT_GAP_PX, y: anchor.y + anchor.h / 2 - hh / 2 },
+    { x: cx - w / 2, y: anchor.y + anchor.h + HINT_GAP_PX },
+  ];
+  for (const c of candidates) {
+    const onScreen = c.x >= HINT_EDGE_PAD && c.x + w <= vw - HINT_EDGE_PAD && c.y >= HINT_EDGE_PAD;
+    const push = hudPushOut(zone, c.x + w / 2, c.y + hh / 2, w / 2, hh / 2);
+    if (onScreen && push.dx === 0 && push.dy === 0) return c;
+  }
+  const c = candidates[0];
+  const x0 = clamp(c.x, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD);
+  const y0 = Math.max(HINT_EDGE_PAD, c.y);
+  const push = hudPushOut(zone, x0 + w / 2, y0 + hh / 2, w / 2, hh / 2);
+  return { x: clamp(x0 + push.dx, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD), y: push.dy < 0 ? zone.bottom + HINT_GAP_PX : Math.max(HINT_EDGE_PAD, y0 + push.dy) };
+}
+
+function showHint(el: HTMLDivElement, text: string, anchor: Rect, vw: number): void {
+  el.textContent = text;
+  const w = el.offsetWidth || 160;
+  const hh = el.offsetHeight || 28;
+  const spot = hintSpot(anchor, w, hh, vw);
+  el.style.visibility = 'visible';
+  el.style.transform = `translate3d(${spot.x}px, ${spot.y}px, 0)`;
+}
+
+function renderHydraHeads(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx, vh: number): void {
+  const bodyH = sizeFor(spec, 'walk', vh).h;
+  const neck = hydraNeck(spec, s, vh);
+  const headH = bodyH * HYDRA_HEAD_FRAC;
+  const headW = headH * HYDRA_HEAD_ASPECT;
+  const headFile = `${ASSET_BASE}/snake-head.webp`;
+  s.heads.forEach((head, slot) => {
+    const el = els.heads[slot];
+    if (!el) return;
+    const live = head.state !== 'empty' && head.state !== 'gone' && s.phase !== 'done';
+    if (!live) {
+      hide(el.img);
+      hide(el.neck);
+      hide(el.hit);
+      return;
+    }
+    const dx = head.pos.x - neck.x;
+    const dy = head.pos.y - neck.y;
+    const len = Math.hypot(dx, dy);
+    const deg = (Math.atan2(dy, dx) * 180) / Math.PI;
+    const faceLeft = dx < 0;
+    const fade = head.state === 'knocked' ? 1 - clamp((ctx.ts - head.at) / HYDRA_RECOIL_MS, 0, 1) : clamp((ctx.ts - head.at) / XFADE_MS, 0.35, 1);
+    if (el.neck) {
+      const thick = headH * HYDRA_NECK_THICK_FRAC;
+      el.neck.style.opacity = String(fade);
+      el.neck.style.transformOrigin = '0 50%';
+      place(el.neck, { x: neck.x, y: neck.y - thick / 2, w: len, h: thick }, `rotate(${deg}deg)`);
+    }
+    if (el.img) {
+      if (el.img.getAttribute('src') !== headFile) el.img.src = headFile;
+      el.img.style.opacity = String(fade);
+      const flip = faceLeft ? 'scaleY(-1)' : '';
+      el.img.style.transformOrigin = `${headW * HYDRA_HEAD_PIVOT}px 50%`;
+      place(el.img, { x: head.pos.x - headW * HYDRA_HEAD_PIVOT, y: head.pos.y - headH / 2, w: headW, h: headH }, `rotate(${deg}deg) ${flip}`);
+      el.img.dataset.state = head.state;
+    }
+    if (el.hit) {
+      if (head.state === 'knocked') hide(el.hit);
+      else place(el.hit, atLeast({ x: head.pos.x - headW / 2, y: head.pos.y - headH / 2, w: headW, h: headH }, MIN_HIT_PX));
+      el.hit.dataset.clicks = String(head.clicks);
+      el.hit.dataset.state = head.state;
+    }
+  });
 }
 
 function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: CreatureTickCtx): void {
@@ -702,7 +1181,26 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
     if (spec.bodyTarget && s.phase === 'hold') place(els.body, atLeast(box, MIN_HIT_PX));
     else hide(els.body);
   }
-  const activeTargets = s.phase === 'act' && !s.tamed ? spec.targets : [];
+  if (els.eye && asset.eye) {
+    const eyeRel = asset.eye;
+    const relX = flipped ? 1 - eyeRel.x - eyeRel.w : eyeRel.x;
+    const eye = { x: box.x + relX * box.w, y: box.y + eyeRel.y * box.h, w: eyeRel.w * box.w, h: eyeRel.h * box.h };
+    const size = Math.min(eye.w, eye.h) * CYCLOPS_PUPIL_FRAC;
+    const cx = eye.x + eye.w / 2;
+    const cy = eye.y + eye.h / 2;
+    const dx = ctx.chickenCx - cx;
+    const dy = ctx.chickenCy - cy;
+    const d = Math.hypot(dx, dy) || 1;
+    const travel = Math.min(1, d / (vw / 2)) * CYCLOPS_PUPIL_TRAVEL;
+    const px = cx + (dx / d) * eye.w * travel - size / 2;
+    const py = cy + (dy / d) * eye.h * travel - size / 2;
+    const visible = s.phase !== 'done' && fade >= 1;
+    if (visible) place(els.eye, { x: px, y: py, w: size, h: size });
+    else hide(els.eye);
+  } else if (els.eye) {
+    hide(els.eye);
+  }
+  const activeTargets = spec.targets.filter((t) => targetActive(spec, s, t.id));
   for (const target of spec.targets) {
     const el = els.targets[target.id];
     if (!el) continue;
@@ -710,39 +1208,38 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
       hide(el);
       continue;
     }
-    const head = atLeast(headRect(spec, s, box, flipped), MIN_HIT_PX);
+    const head = atLeast(targetRect(spec, s, box, flipped, target.id), MIN_HIT_PX);
     place(el, head);
-    el.dataset.clicks = String(s.targetClicks);
+    el.dataset.clicks = String(s.targetHits[target.id] ?? 0);
   }
+  if (spec.mode === 'bite') renderHydraHeads(spec, s, els, ctx, vh);
   if (els.hint) {
     const target = activeTargets[0];
-    if (target && ts - s.phaseAt >= CREATURE_HINT_DELAY_MS) {
-      const head = headRect(spec, s, box, flipped);
-      els.hint.textContent = `click the ${target.label} ${s.targetClicks} / ${target.clicks}`;
-      const w = els.hint.offsetWidth || 160;
-      const hh = els.hint.offsetHeight || 28;
-      const x0 = clamp(head.x + head.w / 2 - w / 2, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD);
-      const y0 = Math.max(HINT_EDGE_PAD, head.y - hh - HINT_GAP_PX);
-      const zone = hudZone(vw);
-      const push = hudPushOut(zone, x0 + w / 2, y0 + hh / 2, w / 2, hh / 2);
-      const x = clamp(x0 + push.dx, HINT_EDGE_PAD, vw - w - HINT_EDGE_PAD);
-      const y = push.dy < 0 ? zone.bottom + HINT_GAP_PX : Math.max(HINT_EDGE_PAD, y0 + push.dy);
-      els.hint.style.visibility = 'visible';
-      els.hint.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    const hintDue = ts - s.phaseAt >= CREATURE_HINT_DELAY_MS;
+    if (spec.mode === 'bite' && s.phase === 'act' && hintDue) {
+      const biting = s.bitingHead === null ? null : s.heads[s.bitingHead];
+      const anchor = biting ? { x: biting.pos.x - MIN_HIT_PX / 2, y: biting.pos.y - MIN_HIT_PX / 2, w: MIN_HIT_PX, h: MIN_HIT_PX } : headRect(spec, s, box, flipped);
+      showHint(els.hint, `heads knocked back ${s.knockbacks} / ${HYDRA_KNOCKBACKS_TO_WIN}`, anchor, vw);
+    } else if (target && hintDue) {
+      showHint(els.hint, `click the ${target.label} ${s.targetHits[target.id] ?? 0} / ${target.clicks}`, targetRect(spec, s, box, flipped, target.id), vw);
     } else {
       hide(els.hint);
     }
   }
   if (els.banner) {
-    const show = s.phase === 'hold' || (spec.mode !== 'grab' && (s.phase === 'act' || s.phase === 'enter'));
+    const show = s.phase === 'hold' || (spec.mode !== 'grab' && (s.phase === 'act' || s.phase === 'enter')) || (spec.catchOnSwipe !== null && s.phase === 'act');
     els.banner.style.opacity = show ? '1' : '0';
-    els.banner.textContent = s.tamed ? `the ${spec.label} is tamed` : spec.banner;
+    const biting = spec.mode === 'bite' && s.bitingHead !== null;
+    els.banner.textContent = s.tamed ? `the ${spec.label} is ${spec.holdAtHead ? 'asleep' : 'tamed'}` : biting ? 'a hydra head has the chicken! knock that head back' : spec.banner;
   }
   if (els.root) {
     els.root.dataset.phase = s.phase;
     els.root.dataset.pose = s.pose;
     els.root.dataset.misses = String(s.misses);
     els.root.dataset.tamed = s.tamed ? '1' : '0';
+    els.root.dataset.heads = String(hydraHeadsAlive(s));
+    els.root.dataset.knockbacks = String(s.knockbacks);
+    els.root.dataset.biting = s.bitingHead === null ? '0' : '1';
   }
 }
 
@@ -757,6 +1254,10 @@ export function creatureStateView(s: CreatureState) {
     minClearance: Number.isFinite(s.minClearance) ? s.minClearance : null,
     bodyClicks: s.bodyClicks,
     targetClicks: s.targetClicks,
+    targetHits: { ...s.targetHits },
+    headsAlive: hydraHeadsAlive(s),
+    knockbacks: s.knockbacks,
+    biting: s.bitingHead,
     tamed: s.tamed,
     dropped: s.dropped,
     enteredAt: s.enteredAt,
@@ -770,6 +1271,7 @@ const LAYER = 'pointer-events-none absolute top-0 left-0 max-w-none select-none 
 const IMG_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
 const HIT = 'absolute top-0 left-0 z-[6] cursor-pointer will-change-transform [visibility:hidden]';
 const FEATHER_SLOT_INDEXES = Array.from({ length: FEATHER_SLOTS }, (_, i) => i);
+const HYDRA_SLOT_INDEXES = Array.from({ length: HYDRA_HEADS_MAX }, (_, i) => i);
 
 interface CreatureLayerProps {
   kind: CreatureKind;
@@ -780,11 +1282,12 @@ interface CreatureLayerProps {
 
 export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProps) {
   const spec = CREATURE_SPECS[kind];
-  const bind = <K extends 'root' | 'imgA' | 'imgB' | 'front' | 'shadow' | 'body' | 'hint' | 'banner'>(key: K) => (el: CreatureEls[K]) => {
+  const bind = <K extends 'root' | 'imgA' | 'imgB' | 'front' | 'shadow' | 'body' | 'hint' | 'banner' | 'eye'>(key: K) => (el: CreatureEls[K]) => {
     els.current[key] = el;
   };
+  const hasEye = Object.values(spec.poses).some((p) => p.eye !== undefined);
   return (
-    <div ref={bind('root')} data-testid="creature-root" data-kind={kind} data-mode={spec.mode} data-phase="idle" data-misses="0" data-tamed="0" className="contents">
+    <div ref={bind('root')} data-testid="creature-root" data-kind={kind} data-mode={spec.mode} data-phase="idle" data-misses="0" data-tamed="0" data-heads="0" data-knockbacks="0" data-biting="0" className="contents">
       <div ref={bind('shadow')} data-testid="creature-shadow" className="pointer-events-none absolute top-0 left-0 z-[3] rounded-[50%] bg-black/60 blur-[6px] will-change-transform [visibility:hidden]" />
       <img ref={bind('imgB')} alt="" draggable={false} data-testid="creature-prev" className={`${LAYER} z-[4]`} style={IMG_STYLE} />
       <img ref={bind('imgA')} alt="" draggable={false} data-testid="creature-img" className={`${LAYER} z-[4] drop-shadow-[0_10px_14px_rgba(0,0,0,0.45)]`} style={IMG_STYLE} />
@@ -792,6 +1295,42 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
         <img ref={bind('front')} alt="" draggable={false} data-testid="creature-front" className={`${LAYER} z-[6]`} style={{ ...IMG_STYLE, clipPath: PAW_FRONT_CLIP }} />
       )}
       {spec.bodyTarget && <div ref={bind('body')} data-testid="creature-body" className={HIT} onClick={(e) => onBody(e.clientX, e.clientY)} />}
+      {hasEye && (
+        <div
+          ref={bind('eye')}
+          data-testid="creature-eye"
+          className="pointer-events-none absolute top-0 left-0 z-[5] rounded-full bg-[radial-gradient(circle_at_35%_35%,#5a3a1a_0_18%,#120a04_45%,#000_100%)] shadow-[0_0_6px_rgba(0,0,0,0.6)] will-change-transform [visibility:hidden]"
+        />
+      )}
+      {spec.mode === 'bite' &&
+        HYDRA_SLOT_INDEXES.map((i) => (
+          <div key={i} className="contents">
+            <div
+              ref={(el) => {
+                els.current.heads[i].neck = el;
+              }}
+              className="pointer-events-none absolute top-0 left-0 z-[4] rounded-full bg-[linear-gradient(180deg,#5d7a3a,#2c4420_55%,#17260f)] shadow-[0_3px_6px_rgba(0,0,0,0.45)] will-change-transform [visibility:hidden]"
+            />
+            <img
+              ref={(el) => {
+                els.current.heads[i].img = el;
+              }}
+              alt=""
+              draggable={false}
+              data-testid="hydra-head"
+              className={`${LAYER} z-[5] drop-shadow-[0_6px_8px_rgba(0,0,0,0.45)]`}
+            />
+            <div
+              ref={(el) => {
+                els.current.heads[i].hit = el;
+              }}
+              data-testid={`creature-target-${hydraTargetId(i)}`}
+              data-clicks="0"
+              className={`${HIT} rounded-full`}
+              onClick={(e) => onTarget(hydraTargetId(i), e.clientX, e.clientY)}
+            />
+          </div>
+        ))}
       {spec.targets.map((t) => (
         <div
           key={t.id}

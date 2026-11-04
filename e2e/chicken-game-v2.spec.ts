@@ -2069,6 +2069,9 @@ interface CreatureView {
   dropped: boolean;
   enteredAt: number;
   leftAt: number;
+  knockbacks: number;
+  headsAlive: number;
+  targetHits: Record<string, number>;
 }
 
 interface CreatureBridge {
@@ -2300,4 +2303,181 @@ test.describe('chicken game v2 big-cats HUD', () => {
       }
     });
   }
+});
+
+import { CERBERUS_HEAD_CLICKS, CYCLOPS_STAY_MS, HYDRA_HEADS_MAX, HYDRA_HEADS_START, HYDRA_HEAD_CLICKS, HYDRA_KNOCKBACKS_TO_WIN, HYDRA_REGROW_MS } from '../src/components/game/creature-event';
+import { GATE_KEY_ERA_ID, REAL_CHICKEN_UNLOCK_SCORE } from '../src/components/game/endless-eras';
+import { BIRD_SPECS } from '../src/components/game/bird-event';
+import { talonNeed, talonWeightFor } from '../src/components/game/chicken-pacing';
+
+interface MythBridge extends CreatureBridge {
+  useItem: (id: string) => void;
+  forceBird: (kind: string) => void;
+  shield: () => number;
+  state: () => { score: number; auraDrawn: boolean; era: string | null; bird: { rightNeed: number } };
+}
+
+async function enterEra(page: Page, id: string) {
+  const era = ENDLESS_ERAS.find((e) => e.id === id);
+  if (!era) throw new Error(`unknown era ${id}`);
+  await gotoGame(page, '?variant=2');
+  await page.evaluate((target) => {
+    const b = (window as unknown as { __chicken: MythBridge }).__chicken;
+    b.setScore(target - 1);
+    b.boost(1);
+  }, era.from);
+  await expect.poll(async () => (await eraOf(page)).id, { timeout: 5000 }).toBe(id);
+}
+
+const HYDRA_LIVE_STATES = ['ready', 'strike', 'bite'];
+const liveHydraHead = (page: Page) => page.locator(HYDRA_LIVE_STATES.map((st) => `[data-testid^="creature-target-head-"][data-state="${st}"]`).join(', ')).first();
+
+async function knockOneHead(page: Page) {
+  const before = (await creatureOf(page)).knockbacks;
+  for (let i = 0; i < HYDRA_HEAD_CLICKS + 2; i++) {
+    await liveHydraHead(page).click({ force: true });
+    if ((await creatureOf(page)).knockbacks > before) return;
+  }
+  throw new Error('head not knocked back');
+}
+
+const apart = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
+  a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y;
+
+test.describe('chicken game v2 myth eras', () => {
+  test('the registry orders fire, big cats, myth, the gate and the forest 8,000 apart', () => {
+    expect(ENDLESS_ERAS.map((e) => e.id)).toEqual(['fire', 'big-cats', 'myth-1', 'myth-2', GATE_KEY_ERA_ID]);
+    ENDLESS_ERAS.forEach((e, i) => expect(e.from).toBe(ENDLESS_FROM + ERA_SCORE_STEP * i));
+    expect(ENDLESS_ERAS[2].creatures.map((c) => c.kind)).toEqual(['cyclops', 'hydra']);
+    expect(ENDLESS_ERAS[3].creatures.map((c) => c.kind)).toEqual(['cerberus']);
+    expect(CREATURE_SPECS.cyclops.mode).toBe('spectacle');
+    expect(CREATURE_SPECS.cyclops.targets).toHaveLength(0);
+    expect(CREATURE_SPECS.cerberus.dropChance).toBe(1);
+  });
+
+  test('the temple, the gate and the forest scenes follow the eras and the forest placeholder reads', async ({ page }) => {
+    await enterEra(page, 'myth-1');
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'temple');
+    await expect(page.getByTestId('era-label')).toHaveText(/myth era/i);
+    await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.forceEra('myth-2'));
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'temple-gate');
+    await page.evaluate((id) => (window as unknown as { __chicken: MythBridge }).__chicken.forceEra(id), GATE_KEY_ERA_ID);
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'forest');
+    await expect(page.getByTestId('forest-scene')).toContainText('the forest awaits');
+  });
+
+  test('the real-chicken toast shows once at 50,000', async ({ page }) => {
+    await enterEra(page, 'myth-2');
+    await page.evaluate((target) => {
+      const b = (window as unknown as { __chicken: MythBridge }).__chicken;
+      b.setScore(target - 1);
+      b.boost(1);
+    }, REAL_CHICKEN_UNLOCK_SCORE);
+    await expect(page.getByTestId('unlock-toast')).toHaveText(/real-chicken mode unlocked/);
+  });
+
+  test('the cyclops is spectacle only: no targets, the eye tracks, the chicken still scores, it leaves in time', async ({ page }) => {
+    await enterEra(page, 'myth-1');
+    expect(await forceCreature(page, 'cyclops')).toBe(true);
+    await waitCreaturePhase(page, ['act']);
+    await expect(page.locator('[data-testid^="creature-target-"]:visible')).toHaveCount(0);
+    await expect(page.getByTestId('creature-eye')).toBeVisible();
+    const before = await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.state().score);
+    await page.getByTestId('chicken').click({ force: true });
+    expect(await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.state().score)).toBeGreaterThan(before);
+    await waitCreaturePhase(page, ['done'], CYCLOPS_STAY_MS[1] + 8000);
+    const v = await creatureOf(page);
+    expect(v.leftAt - v.enteredAt).toBeLessThanOrEqual(CYCLOPS_STAY_MS[1] + 4000);
+  });
+
+  test('hydra heads regrow as two up to the cap, 12 knock-backs win, the scale shields the next bird', async ({ page }) => {
+    test.setTimeout(120_000);
+    await enterEra(page, 'myth-1');
+    await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.setDropRoll(0));
+    expect(await forceCreature(page, 'hydra')).toBe(true);
+    await waitCreaturePhase(page, ['act']);
+    await expect(page.getByTestId('creature-root')).toHaveAttribute('data-heads', String(HYDRA_HEADS_START));
+    const head = liveHydraHead(page);
+    await expect(head).toBeVisible();
+    const box = await head.boundingBox();
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(56);
+    const score0 = await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.state().score);
+    await knockOneHead(page);
+    expect((await creatureOf(page)).knockbacks).toBe(1);
+    expect(await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.state().score)).toBeGreaterThanOrEqual(score0 + HYDRA_HEAD_CLICKS * CREATURE_SPECS.hydra.targets.length + HYDRA_HEAD_CLICKS * 5);
+    const REGROW_WAIT_MS = HYDRA_REGROW_MS + 4000;
+    const alive = async () => (await creatureOf(page)).headsAlive;
+    for (let i = 1; i < HYDRA_HEADS_START; i++) await knockOneHead(page);
+    await expect.poll(alive, { timeout: REGROW_WAIT_MS }).toBe(HYDRA_HEADS_START * 2);
+    await knockOneHead(page);
+    await expect.poll(alive, { timeout: REGROW_WAIT_MS }).toBe(HYDRA_HEADS_MAX);
+    await knockOneHead(page);
+    await page.waitForTimeout(REGROW_WAIT_MS);
+    expect(await alive()).toBe(HYDRA_HEADS_MAX);
+    while ((await creatureOf(page)).knockbacks < HYDRA_KNOCKBACKS_TO_WIN) {
+      const v = await creatureOf(page);
+      expect(v.headsAlive).toBeLessThanOrEqual(HYDRA_HEADS_MAX);
+      if (v.headsAlive === 0) {
+        await page.waitForTimeout(250);
+        continue;
+      }
+      await knockOneHead(page);
+    }
+    expect((await creatureOf(page)).tamed).toBe(true);
+    await expect(page.getByTestId('fly-to-bag')).toBeVisible();
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.inventory())).find((i) => i.id === 'hydra-scale')?.count ?? 0, { timeout: 5000 }).toBe(1);
+    await waitCreaturePhase(page, ['done'], 10_000);
+    await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.useItem('hydra-scale'));
+    expect(await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.shield())).toBe(1);
+    await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.forceBird('hawk'));
+    await expect.poll(async () => page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.state().bird.rightNeed), { timeout: 10_000 }).toBe(talonNeed(BIRD_SPECS.hawk.rightClicks, talonWeightFor('hawk', 1) * 2));
+    expect(await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.shield())).toBe(0);
+  });
+
+  test('cerberus catches on the third snap; outer heads first, 8 clicks each; the gate key always drops and opens the forest', async ({ page }) => {
+    test.setTimeout(90_000);
+    await enterEra(page, 'myth-2');
+    await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.setDropRoll(0.99));
+    expect(await forceCreature(page, 'cerberus')).toBe(true);
+    await waitCreaturePhase(page, ['hold'], 30_000);
+    expect(await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.state().auraDrawn)).toBe(false);
+    const left = page.getByTestId('creature-target-left');
+    const right = page.getByTestId('creature-target-right');
+    const middle = page.getByTestId('creature-target-middle');
+    await expect(left).toBeVisible();
+    await expect(right).toBeVisible();
+    await expect(middle).toBeHidden();
+    const hint = page.getByTestId('creature-hint');
+    await expect(hint).toBeVisible({ timeout: 5000 });
+    const [h, sc] = await Promise.all([hint.boundingBox(), page.getByTestId('chicken-score').boundingBox()]);
+    expect(h && sc && apart(h, sc)).toBe(true);
+    for (let i = 0; i < CERBERUS_HEAD_CLICKS; i++) await left.click({ force: true });
+    await expect(left).toBeHidden();
+    await expect(middle).toBeHidden();
+    for (let i = 0; i < CERBERUS_HEAD_CLICKS; i++) await right.click({ force: true });
+    await expect(middle).toBeVisible();
+    for (let i = 0; i < CERBERUS_HEAD_CLICKS; i++) await middle.click({ force: true });
+    const v = await creatureOf(page);
+    expect(v.tamed).toBe(true);
+    expect(v.targetHits).toEqual({ left: CERBERUS_HEAD_CLICKS, right: CERBERUS_HEAD_CLICKS, middle: CERBERUS_HEAD_CLICKS });
+    await waitCreaturePhase(page, ['sit', 'leave', 'done'], 5000);
+    await expect(page.getByTestId('fly-to-bag')).toBeVisible();
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.inventory())).find((i) => i.id === 'gate-key')?.count ?? 0, { timeout: 5000 }).toBe(1);
+    await page.evaluate(() => (window as unknown as { __chicken: MythBridge }).__chicken.useItem('gate-key'));
+    await expect.poll(async () => (await eraOf(page)).id).toBe(GATE_KEY_ERA_ID);
+    await expect(page.getByTestId('endless-scene')).toHaveAttribute('data-scene', 'forest');
+  });
+
+  test('the lion counter sits by the mane, not by the chicken, and clears the score box', async ({ page }) => {
+    await enterBigCats(page);
+    expect(await forceCreature(page, 'lion')).toBe(true);
+    const hint = page.getByTestId('creature-hint');
+    await expect(hint).toBeVisible({ timeout: 15_000 });
+    const [h, mane, img, score] = await Promise.all([hint.boundingBox(), page.getByTestId('creature-target-mane').boundingBox(), page.getByTestId('creature-img').boundingBox(), page.getByTestId('chicken-score').boundingBox()]);
+    expect(h && mane && img && score).toBeTruthy();
+    if (!h || !mane || !img || !score) return;
+    const dist = Math.hypot(h.x + h.width / 2 - (mane.x + mane.width / 2), h.y + h.height / 2 - (mane.y + mane.height / 2));
+    expect(dist).toBeLessThanOrEqual(Math.max(img.width, img.height));
+    expect(apart(h, score)).toBe(true);
+  });
 });

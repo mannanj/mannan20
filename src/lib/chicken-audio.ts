@@ -40,12 +40,15 @@ export const SCREAM_TUNING: Record<string, { weight: number; rateMul: number }> 
 const SCREAM_VOLUMES = new Map(SCREAMS.map((def) => [def.key, def.volume]));
 const SCREAM_FADE_OUT_MS = 28;
 
-export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar';
+export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar' | 'rumble' | 'snake' | 'bark';
 export const CREATURE_SOUNDS: Record<CreatureSoundKey, SoundDef> = {
   meow: { key: 'meow', file: 'cat-meow.mp3', volume: 0.7 },
   hiss: { key: 'hiss', file: 'cat-hiss.mp3', volume: 0.6 },
   growl: { key: 'growl', file: 'tiger-growl.mp3', volume: 0.7 },
   roar: { key: 'roar', file: 'lion-roar.mp3', volume: 0.75 },
+  rumble: { key: 'rumble', file: 'giant-rumble.mp3', volume: 0.6 },
+  snake: { key: 'snake', file: 'snake-hiss.mp3', volume: 0.65 },
+  bark: { key: 'bark', file: 'dog-bark.mp3', volume: 0.7 },
 };
 
 export interface LoadProgress {
