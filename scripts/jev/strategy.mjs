@@ -39,8 +39,8 @@ export const QUESTIONS = {
     criteria: { front: 'the label starts with the words front claw', back: 'the label starts with the words back claw', none: 'no claw counter label is visible' },
   },
   talon: box("the bird's yellow scaly foot gripping the top of the chicken's head in `screen`"),
-  bird_fly: noul('Is a large photoreal hawk, eagle or phoenix (not the cartoon chicken) flying across `screen`?'),
-  bird_box: box('the large brown photoreal bird in `screen`, not the cartoon chicken'),
+  bird_fly: noul('Is a photoreal hawk, eagle or phoenix (not the cartoon chicken) in `screen`, hovering, flying away with its back to us, or a small dark bird shape flying off into the distance, up and to the right?'),
+  bird_box: box('the photoreal bird in `screen` (it may be small, dark, brown or far away, with spread wings seen from behind), not the cartoon chicken, not a feather'),
   feather: noul('Is a single brown, orange or golden bird feather falling through the air or lying on the ground in `screen`?'),
   feather_box: box('the single bird feather falling or lying in `screen`'),
   badge: noul('Is there a small cream-coloured round number badge on the brown leather bag icon at the bottom right of `screen`?'),
@@ -60,14 +60,14 @@ export const THRESHOLDS = {
   golden: 0.5,
   grip: 0.6,
   counterMin: 0.6,
-  bird: 0.3,
+  bird: 0.2,
   feather: 0.4,
   badge: 0.6,
   bag: 0.6,
   martian: 0.4,
   chicken: 0.4,
   boxMin: 0.25,
-  birdBoxMin: 0.4,
+  birdBoxMin: 0.25,
   useMin: 0.5,
   hasMin: 0.6,
   martianMinHeight: 0.04,
@@ -101,9 +101,13 @@ export const TIMING = {
   counterAgreePx: 70,
   orbClicks: 2,
   birdClicks: 8,
+  birdRecedeClicks: 12,
+  birdRecedeRestFraction: 0.35,
+  birdFocal: { hawk: { x: 0, y: 0 }, eagle: { x: 0.12, y: -0.1 }, phoenix: { x: -0.1, y: -0.12 } },
+  birdBoxMaxAgeMs: 3000,
   birdGapMs: 30,
   pickupClicks: 2,
-  birdWindowMs: [0, 22000],
+  birdWindowMs: [0, 34000],
   featherWindowMs: 35000,
   orbScore: [250],
   orbHoldMs: 30000,
@@ -151,7 +155,8 @@ export function questionKeys(ctx) {
   const due = t.gripScores.filter((g) => ctx.score >= g).length;
   if (due > ctx.gripEpisodes || ctx.gripping) ['grip', 'counter', 'claw_side', 'talon'].forEach((k) => keys.add(k));
   const sinceGrip = since(ctx.lastGripAt);
-  if (sinceGrip > t.birdWindowMs[0] && sinceGrip < t.birdWindowMs[1]) ['bird_fly', 'bird_box'].forEach((k) => keys.add(k));
+  const flying = ctx.birdPhase === 'depart' || ctx.birdPhase === 'recede';
+  if (!ctx.birdFeathered && (flying || (sinceGrip > t.birdWindowMs[0] && sinceGrip < t.birdWindowMs[1]))) ['bird_fly', 'bird_box'].forEach((k) => keys.add(k));
   if (sinceGrip < t.featherWindowMs || since(ctx.pickupAt) < t.featherWindowMs) ['feather', 'feather_box'].forEach((k) => keys.add(k));
   if (ctx.bagOpenExpected) ['bag_open', 'bag', ...USE_ORDER.flatMap((i) => [`has_${i}`, `use_${i}`])].forEach((k) => keys.add(k));
   else if (since(ctx.askedAt.badge) > t.badgeEveryMs && ctx.now >= ctx.bagReadyAt && Math.min(since(ctx.pickupAt), since(ctx.lastGripAt)) < t.badgeWindowMs) ['badge', 'bag'].forEach((k) => keys.add(k));
@@ -207,6 +212,18 @@ export function bagChoice(a, ctx, view) {
   return null;
 }
 
+function predictBird(ctx, view) {
+  const last = ctx.birdLast;
+  if (!last || ctx.now - last.at > TIMING.birdBoxMaxAgeMs) return null;
+  const f = TIMING.birdFocal[ctx.birdKind] ?? TIMING.birdFocal.eagle;
+  const fx = view.width * (0.5 + f.x);
+  const fy = view.height * (0.5 + f.y);
+  const k = TIMING.birdRecedeRestFraction;
+  const x = last.x + (fx - last.x) * k;
+  const y = last.y + (fy - last.y) * k;
+  return { x, y, w: 40, h: 40, left: x - 20, top: y - 20, conf: 0 };
+}
+
 export function decide(a, ctx, view) {
   const t = THRESHOLDS;
   if (noulOf(a, 'gate_ready') >= t.gate) {
@@ -234,9 +251,16 @@ export function decide(a, ctx, view) {
     const target = gripTarget(a, ctx.gripStage, view);
     if (target) return { rule: 'grip', kind: 'click', target, clicks: TIMING.gripClicks, gapMs: TIMING.gripGapMs, grip: true };
   }
-  if (noulOf(a, 'bird_fly') >= t.bird) {
+  const receding = ctx.birdPhase === 'depart' || ctx.birdPhase === 'recede';
+  if (!ctx.birdFeathered && (noulOf(a, 'bird_fly') >= t.bird || receding)) {
     const target = boxOf(a, 'bird_box', t.birdBoxMin, view);
-    if (target) return { rule: 'bird', kind: 'click', target, clicks: TIMING.birdClicks, gapMs: TIMING.birdGapMs };
+    const clicks = receding ? TIMING.birdRecedeClicks : TIMING.birdClicks;
+    if (target) {
+      ctx.birdLast = { x: target.x, y: target.y, at: ctx.now };
+      return { rule: 'bird', kind: 'click', target, clicks, gapMs: TIMING.birdGapMs };
+    }
+    const predicted = receding ? predictBird(ctx, view) : null;
+    if (predicted) return { rule: 'bird-predict', kind: 'click', target: predicted, clicks, gapMs: TIMING.birdGapMs };
   }
   if (noulOf(a, 'feather') >= t.feather) {
     const target = boxOf(a, 'feather_box', t.boxMin, view);

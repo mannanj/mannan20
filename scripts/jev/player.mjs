@@ -255,7 +255,7 @@ export async function play(opts = {}) {
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const ctx = {
     now: 0, wornRank: 1, bagReadyAt: 0, bagMisses: 0, stuckMs: 0, hitRate: 1, gripStage: 0, score: startScore, scene: '', martianClicks: 0,
-    askedAt: { scene: 0, board: 0, badge: 0 }, orbSeenAt: -Infinity, lastGripAt: -Infinity, pickupAt: -Infinity, bagOpenExpected: false, bagOpenedAt: 0,
+    askedAt: { scene: 0, board: 0, badge: 0 }, orbSeenAt: -Infinity, lastGripAt: -Infinity, birdPhase: '', birdKind: null, birdLast: null, birdFeathered: false, pickupAt: -Infinity, bagOpenExpected: false, bagOpenedAt: 0,
     gateStage: false, gripping: false, gripEpisodes: 0, pendingUse: null, firstEggAt: null, jupiterSeenAt: -Infinity, chickenMissing: false,
   };
   let gripFrames = 0;
@@ -274,6 +274,9 @@ export async function play(opts = {}) {
       lastRise = Date.now();
     }
     const phase = s.bird?.phase ?? '';
+    ctx.birdPhase = phase;
+    ctx.birdKind = s.bird?.kind ?? null;
+    ctx.birdFeathered = Boolean(s.bird?.feathered);
     if (phase !== lastPhase) {
       stats.birdPhases.push({ t: +((Date.now() - start) / 1000).toFixed(1), kind: s.bird?.kind ?? null, phase });
       lastPhase = phase;
@@ -417,7 +420,7 @@ export async function play(opts = {}) {
     if (plan.pickup) {
       ctx.pickupAt = now;
       ctx.bagMisses = 0;
-      ctx.bagReadyAt = now + PICKUP_BAG_DELAY_MS;
+      if (plan.rule !== 'martian') ctx.bagReadyAt = now + PICKUP_BAG_DELAY_MS;
     }
     if (plan.kind === 'use') {
       ctx.pendingUse = plan.item;

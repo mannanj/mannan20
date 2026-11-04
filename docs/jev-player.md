@@ -117,3 +117,14 @@ Added: orb wording for Multiply x5-x100, Frenzy x2 and Chain Lightning, asked on
 
 25-minute cap, no stall: 1,544s, **score 195,278** posted as My Name Jev, 15,827 clicks, stages none, surf, pilot, rocket, moon, cosmos, Jupiter. Hawk grab at 98s (x1.25 worn at 128s), eagle at 472s (its feather was missed, so no x2), phoenix grab at 838s (phoenix feather used at 927s, x3), Martian item used at 958s. 4,881 requests, 10.35M input tokens, $0.43 ($0.017/min, 7,587 points/min, about 449k points per $). The earlier 40-minute estimate was for the old pacing; with the new scheduler the game reaches 25,000 in about 14 minutes. Video: `~/Desktop/jev-plays-chicken-2026-11-04T03-39-40.mp4`.
 Where it lost time: the eagle feather (bird window missed, no x2), 48 bag opens for 136 bag frames, and 475 idle frames.
+
+## Eagle feather fix (2026-11-04, local clips in `~/Desktop/jev-clips/eagle-fix/`)
+
+Cause: the bird questions were only asked within 22s of the last grip frame and the Box needed 0.4 confidence, so the small receding eagle was often outside the window or unboxed. Clicking the bird during `depart` also resets the bird's flap timer, which delays `recede`, so a bird rule that never stopped clicking after the feather dropped (phoenix: 1,800 clicks) starved the feather pickup and the bag.
+Fix: bird questions are also asked while the game reports `depart`/`recede` (scheduling only), wording covers a small dark bird seen from behind, lower bird thresholds, 12-click bursts while receding, a prediction toward the species focal point when the Box fails, bird clicks stop once the feather has dropped, and Martian clicks no longer push back the bag-open delay.
+
+| Clip | Result |
+|---|---|
+| eagle-feather | 5/5 PASS |
+| hawk-feather | PASS |
+| phoenix-feather | 1 PASS, 1 FAIL (the failure was before the stop-after-feather fix landed in the bag path; Jupiter Martians compete for clicks, bag open may still miss) |
