@@ -35,6 +35,7 @@ import {
   GATE_COUNT_FROM,
   GATE_COUNT_TICK_MS,
   FLIGHT_PX_PER_MS,
+  PLANE_HALF_W,
   FLIGHT_SWAY_ROT,
   FLIGHT_SWAY_X,
   FLIGHT_SWAY_Y,
@@ -65,6 +66,7 @@ import {
   type RocketSeq,
 } from './escape-sequence';
 import dynamic from 'next/dynamic';
+import { hudZone, keepOutOfHud } from './hud-safe-zone';
 import { SpaceGate, type SpaceGateState } from './space-gate';
 import { getSpaceProgress, startSpacePreload } from './space-preload';
 import {
@@ -87,7 +89,7 @@ import {
   surfSurfaceY,
   type EscapeStage,
 } from './escape-stages';
-import { MartianLayer } from './martian-layer';
+import { MartianLayer, type MartianSpot } from './martian-layer';
 import {
   MARTIAN_ITEM_ID,
   MARTIAN_SKIN_ID,
@@ -353,6 +355,11 @@ const PARKED_AURA_CLEAR = 190;
 const FEATHER_LIFE_CAP_MS = 2600;
 const FEATHER_SIZE_CAP = 14;
 const AURA_SHIELD_STAGES: EscapeStage[] = ['surf', 'pilot', 'rocket', 'cosmos', 'jupiter'];
+const HUD_SCRIM_SEQS: RocketSeq[] = ['explode'];
+const ORB_HUD_HALF = 26;
+const MARTIAN_AVOID_Y_FRAC = 0.5;
+const MARTIAN_AVOID_GAP = 16;
+const EXPLOSION_FULL_VW = 760;
 const SQUASH_WINDOW_MS = 650;
 const SQUASH_BASE = 0.5;
 const SQUASH_PER_COMBO = 0.13;
@@ -661,6 +668,7 @@ interface ChickenStateSnapshot {
   stage: EscapeStage;
   stagePhase: StagePhase;
   seq: RocketSeq;
+  gate: SpaceGateState;
   pos: { x: number; y: number };
   flightRoll: number;
   scene3dReady: boolean;
@@ -1016,6 +1024,7 @@ function ChickenGameInner() {
   const [skinsOpen, setSkinsOpen] = useState(false);
   const [unlockedSkins, setUnlockedSkins] = useState<string[]>([]);
   const [birdUi, setBirdUi] = useState<{ kind: BirdKind | null; grip: boolean }>({ kind: null, grip: false });
+  const martianSpotsRef = useRef<MartianSpot[]>([]);
   const [distress, setDistress] = useState<HeatLevel>(0);
   const distressRef = useRef<HeatLevel>(0);
   const [burnLive, setBurnLive] = useState(false);
@@ -2393,6 +2402,7 @@ function ChickenGameInner() {
         if (orb.y < ORB_SPAWN_MARGIN || orb.y > vh - ORB_SPAWN_MARGIN) orb.vy = -orb.vy;
         orb.x = Math.max(ORB_SPAWN_MARGIN, Math.min(vw - ORB_SPAWN_MARGIN, orb.x));
         orb.y = Math.max(ORB_SPAWN_MARGIN, Math.min(vh - ORB_SPAWN_MARGIN, orb.y));
+        keepOutOfHud(hudZone(vw), orb, ORB_HUD_HALF, ORB_HUD_HALF, true);
         const el = orbElsRef.current.get(orb.id);
         if (el) {
           const wobble = Math.sin(ts * ORB_WOBBLE_FREQUENCY + orb.phase) * ORB_WOBBLE_AMPLITUDE;
@@ -2418,6 +2428,7 @@ function ChickenGameInner() {
           }
           motion.x += motion.vx * dtMs;
           motion.y += motion.vy * dtMs;
+          keepOutOfHud(hudZone(vw), motion, motion.w / 2, motion.h / 2, false);
           if (motion.x < 0 || motion.x > vw - motion.w) motion.vx = -motion.vx;
           if (motion.y < 0 || motion.y > vh - motion.h) motion.vy = -motion.vy;
           motion.x = Math.max(0, Math.min(vw - motion.w, motion.x));
@@ -2627,6 +2638,7 @@ function ChickenGameInner() {
         stage: stageRef.current,
         stagePhase: stagePhaseRef.current,
         seq: seqRef.current,
+        gate: gateRef.current,
         pos: { x: physicsRef.current.x, y: physicsRef.current.y },
         flightRoll: rollRef.current,
         scene3dReady: scene3dReadyRef.current,
@@ -3274,11 +3286,15 @@ function ChickenGameInner() {
             dtMs,
             ts,
             FLIGHT_PX_PER_MS * speedScale,
-            { barrels: flightKind === 'plane', tiltScale: flightKind === 'plane' ? 1 : 0.5 }
+            { barrels: flightKind === 'plane', tiltScale: flightKind === 'plane' ? 1 : 0.5, avoid: hudZone(vw) }
           );
           const push = pushRef.current;
           p.x += out.dx + push.x * dtMs;
           p.y += out.dy + push.y * dtMs;
+          if (flightKind === 'plane') {
+            p.x = Math.max(PLANE_HALF_W - CHICKEN_W / 2, Math.min(vw - PLANE_HALF_W - CHICKEN_W / 2, p.x));
+          }
+          keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false);
           const decay = Math.exp(-PUSH_DECAY_PER_MS * dtMs);
           push.x *= decay;
           push.y *= decay;
@@ -3395,6 +3411,19 @@ function ChickenGameInner() {
         }
         p.x += dx;
         p.y += dy;
+        keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false);
+        if (stageRef.current === 'jupiter' && p.y + CHICKEN_H > vh * MARTIAN_AVOID_Y_FRAC) {
+          const cxc = p.x + CHICKEN_W / 2;
+          for (const spot of martianSpotsRef.current) {
+            const mx = spot.xFrac * vw + spot.width / 2;
+            const minGap = spot.width / 2 + CHICKEN_W / 2 + MARTIAN_AVOID_GAP;
+            const gap = cxc - mx;
+            if (Math.abs(gap) >= minGap) continue;
+            const dir = gap >= 0 ? 1 : -1;
+            p.x = Math.max(0, Math.min(vw - CHICKEN_W, mx + dir * minGap - CHICKEN_W / 2));
+            if (Math.sign(p.vx) !== dir) p.vx = -p.vx;
+          }
+        }
 
         const wildKick = (side: PortalSide) => {
           if (Math.random() >= EDGE_WILD_CHANCE) return;
@@ -3602,10 +3631,11 @@ function ChickenGameInner() {
               dtMs,
               ts,
               FLIGHT_PX_PER_MS * PLANE_BODY_SCALE,
-              { barrels: true, tiltScale: 1 }
+              { barrels: true, tiltScale: 1, avoid: hudZone(vw) }
             );
             pb.x += o.dx;
             pb.y += o.dy;
+            pb.x = Math.max(PLANE_HALF_W - CHICKEN_W / 2, Math.min(vw - PLANE_HALF_W - CHICKEN_W / 2, pb.x));
             if (planeElRef.current) {
               planeElRef.current.style.transform = `translate(${pb.x}px, ${pb.y}px) rotate(${o.rotation}deg) scale(${o.facing}, ${o.rollY.toFixed(3)})`;
             }
@@ -3952,6 +3982,7 @@ function ChickenGameInner() {
 
         drawPools(ctx, poolsRef.current, now);
         drawDrops(ctx, dropsRef.current);
+        if (AURA_SHIELD_STAGES.includes(stageRef.current)) streaksRef.current.length = 0;
         drawStreaks(ctx, streaksRef.current, now, dt, auraRgb);
         drawPortals(ctx, portalsRef.current, now);
         drawBlackHoles(ctx, blackHolesRef.current, performance.now(), BLACK_HOLE_LIFE_MS, BLACK_HOLE_RADIUS);
@@ -3991,6 +4022,8 @@ function ChickenGameInner() {
       {space3dOn && <SpaceFlight3D progressRef={flightProgressRef} leaving={stage === 'moon' || isSpaceStage(stage)} />}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
       <MartianLayer
+        occupiedRef={martianSpotsRef}
+        avoidXFrac={() => (physicsRef.current.x + CHICKEN_W / 2) / window.innerWidth}
         active={stage === 'jupiter'}
         blocked={birdUi.kind !== null || skinsOpen || sheet !== null || gate !== 'none'}
         onReward={onMartianReward}
@@ -4002,10 +4035,13 @@ function ChickenGameInner() {
       )}
 
       {stage === 'jupiter' && (
-        <>
-          <div data-testid="hud-scrim" className="absolute top-[190px] left-1/2 h-[190px] w-[460px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.42),transparent_70%)] pointer-events-none" />
-          <div data-testid="ground-scrim" className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
-        </>
+        <div data-testid="hud-scrim" className="absolute top-[170px] left-1/2 h-[220px] w-[520px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.6),rgba(0,0,0,0.26)_45%,transparent_70%)] pointer-events-none" />
+      )}
+      {stage === 'rocket' && HUD_SCRIM_SEQS.includes(seq) && (
+        <div data-testid="hud-scrim" className="absolute top-[170px] left-1/2 h-[220px] w-[520px] max-w-full -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.34),rgba(0,0,0,0.12)_45%,transparent_70%)] pointer-events-none" />
+      )}
+      {stage === 'jupiter' && (
+        <div data-testid="ground-scrim" className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
       )}
 
       <div data-hud="" className={`absolute top-[225px] left-1/2 -translate-x-1/2 text-base text-white/60 pointer-events-none ${TEXT_SCRIM}`}>
@@ -4193,7 +4229,7 @@ function ChickenGameInner() {
           className="absolute top-0 left-0 pointer-events-none w-[70px] h-[140px]"
           style={{ transform: `translate(${planeBodyRef.current.x}px, ${planeBodyRef.current.y}px)` }}
         >
-          {seq === 'planeExit' ? <DetachedPlane /> : <Explosion />}
+          {seq === 'planeExit' ? <DetachedPlane /> : <Explosion scale={Math.min(1, window.innerWidth / EXPLOSION_FULL_VW)} />}
         </div>
       )}
 
@@ -4308,7 +4344,7 @@ function ChickenGameInner() {
         ))}
       </div>
 
-      <InventoryBag />
+      <InventoryBag forceClosed={sheet !== null} onOpenChange={(open) => open && setSheet(null)} />
 
       <LeaderboardPanel
         open={sheet === 'board'}

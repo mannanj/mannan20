@@ -30,9 +30,9 @@ export function DetachedPlane() {
   );
 }
 
-export function Explosion() {
+export function Explosion({ scale }: { scale: number }) {
   return (
-    <div data-testid="plane-explosion" className="absolute left-[35px] top-[110px]">
+    <div data-testid="plane-explosion" className="absolute left-[35px] top-[110px]" style={{ scale }}>
       <div className="escape-flash absolute -left-40 -top-40 h-80 w-80 rounded-full bg-[radial-gradient(circle,#fff 0%,#ffe9a8 25%,rgba(255,170,60,0.55) 55%,transparent 72%)]" />
       {SMOKE.map((m, i) => (
         <img

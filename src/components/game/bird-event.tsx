@@ -186,6 +186,9 @@ const HINT_SIDE_DY = 14;
 const HINT_SIDE_STRETCH = 1.25;
 const HINT_HEAD_LEN = 16;
 const HINT_HEAD_HALF = 10;
+const HINT_EDGE_PAD = 44;
+const HINT_LABEL_W = 128;
+const HINT_LABEL_PAD = 8;
 const COUNTER_GAP = 10;
 const LOOK_WIDTH_FRAC = 0.9;
 const WINGBEAT_CYCLE: FrameName[] = ['fly-up', 'fly-level', 'fly-down', 'fly-level'];
@@ -890,6 +893,8 @@ function drawHint(els: BirdEls, target: Rect, mark: { x: number; y: number }, vw
     tail.x = xc + outward * HINT_TAIL_DX * HINT_SIDE_STRETCH;
     if (tail.x + 80 > vw || tail.x - 80 < 0) tail.x = xc - outward * HINT_TAIL_DX * HINT_SIDE_STRETCH;
   }
+  tail.x = Math.max(HINT_EDGE_PAD, Math.min(vw - HINT_EDGE_PAD, tail.x));
+  tail.y = Math.max(HINT_EDGE_PAD, Math.min(vh - HINT_EDGE_PAD, tail.y));
   const ang = Math.atan2(yc - tail.y, xc - tail.x);
   const cos = Math.cos(ang);
   const sin = Math.sin(ang);
@@ -907,8 +912,9 @@ function drawHint(els: BirdEls, target: Rect, mark: { x: number; y: number }, vw
   set(els.head, { points: `${head.x},${head.y} ${p1.x},${p1.y} ${p2.x},${p2.y}` });
   if (els.cursor) els.cursor.setAttribute('transform', `translate(${tail.x + 4} ${tail.y + 4})`);
   if (els.label) {
-    els.label.setAttribute('x', String(tail.x - 8));
-    els.label.setAttribute('y', String(tail.y + 84));
+    const labelY = tail.y + 84 > vh - HINT_LABEL_PAD ? tail.y - 40 : tail.y + 84;
+    els.label.setAttribute('x', String(Math.max(HINT_LABEL_PAD, Math.min(vw - HINT_LABEL_W - HINT_LABEL_PAD, tail.x - 8))));
+    els.label.setAttribute('y', String(labelY));
     els.label.style.visibility = label ? 'visible' : 'hidden';
   }
   if (els.hint) {
@@ -1396,7 +1402,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
       <div
         ref={bind('banner')}
         data-testid="bird-banner"
-        className="pointer-events-none fixed top-[14px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-[10px] bg-black/55 px-4 py-2 text-[clamp(15px,5vw,22px)] leading-[1.2] font-semibold tracking-[0.01em] text-white [visibility:hidden]"
+        className="pointer-events-none fixed top-[14px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-[10px] bg-black/55 px-4 py-2 text-[clamp(14px,4.2vw,22px)] max-sm:top-[44px] leading-[1.2] font-semibold tracking-[0.01em] text-white [visibility:hidden]"
       >
         {BIRD_BANNER_TEXT}
       </div>

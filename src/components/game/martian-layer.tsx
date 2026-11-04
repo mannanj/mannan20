@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
 import {
   MARTIAN_CLICKS_GOAL,
   MARTIAN_FIRST_SPAWN_MS,
@@ -35,11 +35,20 @@ interface MartianLayerProps {
   active: boolean;
   blocked: boolean;
   onReward: (x: number, y: number) => void;
+  avoidXFrac?: () => number | null;
+  occupiedRef?: MutableRefObject<MartianSpot[]>;
 }
 
 const RING_R = 22;
 const RING_LEN = 2 * Math.PI * RING_R;
 const SPAWN_ID_START = 1;
+const MARTIAN_CHICKEN_GAP_FRAC = 0.16;
+
+export interface MartianSpot {
+  xFrac: number;
+  width: number;
+}
+const MARTIAN_CHICKEN_GAP_PX = 170;
 
 function pickKind(): MartianKind {
   return MARTIAN_KINDS[Math.floor(Math.random() * MARTIAN_KINDS.length)];
@@ -136,7 +145,7 @@ function Friend({ walker, count, labelOn, onPoke }: FriendProps) {
   );
 }
 
-export function MartianLayer({ active, blocked, onReward }: MartianLayerProps) {
+export function MartianLayer({ active, blocked, onReward, avoidXFrac, occupiedRef }: MartianLayerProps) {
   const [walkers, setWalkers] = useState<Walker[]>([]);
   const [count, setCount] = useState(0);
   const [labelOn, setLabelOn] = useState(false);
@@ -155,10 +164,21 @@ export function MartianLayer({ active, blocked, onReward }: MartianLayerProps) {
     setCount(countRef.current);
   }, []);
 
-  const commit = useCallback((next: Walker[]) => {
-    walkersRef.current = next;
-    setWalkers(next);
-  }, []);
+  const commit = useCallback(
+    (next: Walker[]) => {
+      walkersRef.current = next;
+      if (occupiedRef) {
+        occupiedRef.current = next
+          .filter((w) => w.phase !== 'leave')
+          .map((w) => {
+            const spec = MARTIAN_SPECS[w.kind];
+            return { xFrac: w.slot / 100, width: spec.height * spec.aspect };
+          });
+      }
+      setWalkers(next);
+    },
+    [occupiedRef]
+  );
 
   const later = useCallback((fn: () => void, ms: number) => {
     const id = window.setTimeout(fn, ms);
@@ -184,14 +204,17 @@ export function MartianLayer({ active, blocked, onReward }: MartianLayerProps) {
       if (list.length >= MARTIAN_MAX_ON_SCREEN) return;
       const used = new Set(list.map((w) => w.slot));
       const free = MARTIAN_SLOTS.filter((s) => !used.has(s));
-      const slot = free[Math.floor(Math.random() * free.length)];
+      const avoid = avoidXFrac?.() ?? null;
+      const clear = avoid === null ? free : free.filter((s) => Math.abs(s / 100 - avoid) > Math.max(MARTIAN_CHICKEN_GAP_FRAC, MARTIAN_CHICKEN_GAP_PX / window.innerWidth));
+      const pool = clear.length > 0 ? clear : free;
+      const slot = pool[Math.floor(Math.random() * pool.length)];
       const id = nextIdRef.current++;
       const side: 1 | -1 = slot > 50 ? 1 : -1;
       commit([...list, { id, kind: kind ?? pickKind(), slot, side, phase: 'enter', hop: 0 }]);
       requestAnimationFrame(() => requestAnimationFrame(() => setPhase(id, 'idle')));
       later(() => leave(id), MARTIAN_STAY_MS + MARTIAN_WALK_MS);
     },
-    [commit, setPhase, leave, later]
+    [commit, setPhase, leave, later, avoidXFrac]
   );
 
   useEffect(() => {

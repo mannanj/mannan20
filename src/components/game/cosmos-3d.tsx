@@ -327,7 +327,7 @@ export default function CosmosFlight({ progressRef, landing }: CosmosFlightProps
         target="_blank"
         rel="noopener noreferrer"
         data-testid="sunsignal-credit-cosmos"
-        className="pointer-events-auto absolute bottom-3 right-24 z-[4] text-[11px] tracking-wide text-white/40 transition-colors hover:text-white/80"
+        className="pointer-events-auto absolute bottom-12 right-4 z-[4] text-[11px] tracking-wide text-white/40 transition-colors hover:text-white/80 sm:bottom-3 sm:right-24"
       >
         provided by sunsignal.app
       </a>

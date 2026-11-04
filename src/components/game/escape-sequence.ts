@@ -1,3 +1,5 @@
+import { HUD_SAFE_PAD, hudPenetration, type HudZone } from './hud-safe-zone';
+
 export type RocketSeq =
   | 'none'
   | 'planeExit'
@@ -32,6 +34,9 @@ export const PLANE_EXIT_SCALE = 0.4;
 export const EXPLODE_SCALE = 0.3;
 export const FLIGHT_MARGIN_MAX = 200;
 export const FLIGHT_MARGIN_FRAC = 0.24;
+export const FLIGHT_NARROW_VW = 600;
+export const FLIGHT_NARROW_MARGIN_FRAC = 0.36;
+export const PLANE_HALF_W = 125;
 export const FLIGHT_LOOKAHEAD_MS = 520;
 export const FLIGHT_MAX_TURN = 1.5;
 export const FLIGHT_AVOID_TURN = 2.7;
@@ -95,6 +100,7 @@ export interface FlightOutput {
 export interface FlightOptions {
   barrels: boolean;
   tiltScale: number;
+  avoid?: HudZone;
 }
 
 export function createFlight(heading: number): PlaneFlight {
@@ -148,19 +154,24 @@ export function stepFlight(
   speedPxPerMs: number,
   opts: FlightOptions
 ): FlightOutput {
-  const margin = Math.min(FLIGHT_MARGIN_MAX, Math.min(vw, vh) * FLIGHT_MARGIN_FRAC);
+  const baseMargin = Math.min(FLIGHT_MARGIN_MAX, Math.min(vw, vh) * FLIGHT_MARGIN_FRAC);
+  const margin = vw < FLIGHT_NARROW_VW ? Math.max(baseMargin, Math.min(FLIGHT_MARGIN_MAX, vw * FLIGHT_NARROW_MARGIN_FRAC)) : baseMargin;
   const lookX = cx + Math.cos(f.heading) * speedPxPerMs * FLIGHT_LOOKAHEAD_MS;
   const lookY = cy + Math.sin(f.heading) * speedPxPerMs * FLIGHT_LOOKAHEAD_MS;
-  const penetration = clamp(
+  const edgeWeight = clamp(
     Math.max(edgePenetration(lookX, lookY, vw, vh, margin), edgePenetration(cx, cy, vw, vh, margin)),
     0,
     1
   );
+  const zone = opts.avoid;
+  const hudWeight = zone ? Math.max(hudPenetration(zone, lookX, lookY, HUD_SAFE_PAD), hudPenetration(zone, cx, cy, HUD_SAFE_PAD)) : 0;
+  const penetration = Math.max(edgeWeight, hudWeight);
   if (ts >= f.nextTurnAt) {
     f.nextTurnAt = ts + FLIGHT_TURN_MIN_MS + Math.random() * FLIGHT_TURN_SPREAD_MS;
     f.turnTarget = (Math.random() - 0.5) * 2 * FLIGHT_MAX_TURN * (0.4 + Math.random() * 0.6);
   }
-  const inward = Math.atan2(vh / 2 - cy, vw / 2 - cx);
+  const inward =
+    zone && hudWeight > edgeWeight ? Math.atan2(cy - zone.cy, cx - zone.cx) : Math.atan2(vh / 2 - cy, vw / 2 - cx);
   const diff = wrapAngle(inward - f.heading);
   const avoid = clamp(diff * FLIGHT_AVOID_GAIN, -FLIGHT_AVOID_TURN, FLIGHT_AVOID_TURN);
   const weight = clamp(penetration * FLIGHT_AVOID_RAMP, 0, 1);

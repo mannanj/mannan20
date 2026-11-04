@@ -12,9 +12,33 @@ const TOOLTIP_MS = 3000;
 const BOUNCE_MS = 250;
 const BOUNCE_PEAK = 1.15;
 
-export function InventoryBag() {
+interface InventoryBagProps {
+  forceClosed?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function InventoryBag({ forceClosed = false, onOpenChange }: InventoryBagProps = {}) {
   const { items, hydrated, bounceKey, lastAdded, use } = useInventory();
   const [open, setOpen] = useState(false);
+  const onOpenChangeRef = useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
+
+  useEffect(() => {
+    if (forceClosed) setOpen(false);
+  }, [forceClosed]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  useEffect(() => {
+    onOpenChangeRef.current?.(open);
+  }, [open]);
   const [hover, setHover] = useState(false);
   const [tooltip, setTooltip] = useState<string | null>(null);
   const bagRef = useRef<HTMLButtonElement>(null);
