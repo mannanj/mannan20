@@ -5577,7 +5577,7 @@ function ChickenGameInner() {
         </div>
       )}
       {unlockToast && (
-        <div data-testid="unlock-toast" data-hud="" className="pointer-events-none absolute top-[128px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#ffd84d]/60 bg-black/75 px-4 py-1.5 text-sm font-semibold tracking-wide text-[#ffd84d] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+        <div data-testid="unlock-toast" data-hud="" className="pointer-events-none absolute top-[100px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#ffd84d]/60 bg-black/75 px-4 py-1.5 text-sm font-semibold tracking-wide text-[#ffd84d] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
           {unlockToast}
         </div>
       )}
