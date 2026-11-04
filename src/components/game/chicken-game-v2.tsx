@@ -538,7 +538,7 @@ const VISIT_NEAR_X = 70;
 const VISIT_NEAR_Y = 56;
 const VISIT_SPEED = 2.2;
 const LEADERBOARD_OPEN_GUARD_MS = 900;
-const HUD_LAYER = 'z-[3]';
+const HUD_LAYER = 'z-[8]';
 const TEXT_SCRIM = '[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)]';
 const SHEET_SAFE_SELECTOR = '#chicken-leaderboard-panel, [data-testid="chicken-leaderboard-link"], [data-testid="feedback-popup"], [data-testid="inventory-root"]';
 
