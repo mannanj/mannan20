@@ -103,3 +103,6 @@ Generated art (OpenRouter, green-screen keyed with `scripts/cosmos/key.mjs`, gen
 | `public/game/martians/ground.webp` | imaginary rocky plain, sky area cropped off (Jupiter's real banded sky comes from the 3D scene) | gemini-3.1-flash-image | $0.067 |
 
 Total $0.24 of the $1.00 cap. No retries, no speculative variants.
+
+## Task 316 — aura and fire
+No external assets. Flame tongues are procedural sprites (`chicken-fire.ts`, `flameSprite`): three teardrop canvases with layered red → orange → white linear gradients, drawn with `lighter` compositing.

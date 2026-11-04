@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { APPROACH_MS, BOARDING_MS, DRIFT_MS, EXPLODE_MS, LIFTOFF_HOLD_MS, LIFTOFF_RISE_MS } from '../src/components/game/escape-sequence';
 import { ESCAPE_STAGES } from '../src/components/game/escape-stages';
 import { ERA_REGISTRY, ORB_GAP_MIN_MS, ORB_REGISTRY, PACE_CURVE, SCHEDULE_TICK_MS, paceTarget, pickOrbKind, unlockedKinds, type SchedulerContext } from '../src/components/game/chicken-pacing';
+import { chickenOutline, insideChicken, OUTLINE_SAMPLES, type OutlinePattern } from '../src/components/game/chicken-outline';
+import { FIRE_FLAMING_SCORE, FIRE_FULL_SCORE, LIGHTNING_BLACK_SCORE, LIGHTNING_RED_SCORE } from '../src/components/game/chicken-fire';
 import { CLONE_DOM_LIMIT, GOLDEN_LIFE_MS, MAX_CHICKENS_ON_SCREEN, MAX_GOLDEN_CHICKENS, ORB_THRESHOLDS, type OrbKind } from '../src/components/game/chicken-orbs';
 
 const GUARD_MS = 900;
@@ -1932,5 +1934,123 @@ test.describe('chicken game v2 orbs: multiply tiers, chain lightning, golden egg
     await page.evaluate((ms) => (window as unknown as { __chicken: PaceBridge }).__chicken.fastForward(ms), GOLDEN_LIFE_MS);
     await expect.poll(async () => (await v2State(page)).goldens.filter((x) => x.id === g.id).length, { timeout: 4000 }).toBe(0);
     await expect.poll(async () => (await v2State(page)).goldens.length, { timeout: 4000 }).toBeLessThanOrEqual(MAX_GOLDEN_CHICKENS);
+  });
+});
+
+interface AuraBridge {
+  state: () => {
+    score: number;
+    stage: string;
+    auraDrawn: boolean;
+    fire: number;
+    ignition: boolean;
+    ignitionBursts: number;
+    lightning: { style: string } | null;
+    bird: { phase: string } | null;
+    pos: { x: number; y: number };
+  };
+  boost: (n: number) => void;
+  forceBird: (kind: string) => void;
+  forceIgnition: () => void;
+  auraEmitters: () => { svg: { x: number; y: number }[]; canvas: { x: number; y: number }[]; frame: { cx: number; cy: number; facing: number } };
+}
+
+const auraState = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: AuraBridge }).__chicken.state());
+const RAY_ORIGIN = { x: 40, y: 86 };
+const GRIP_PHASES = ['grab', 'right', 'recoil', 'left', 'hover'];
+
+test.describe('chicken game v2 silhouette aura, late lightning and fire form', () => {
+  test('the outline hugs the chicken silhouette for every skin pattern and is not an ellipse', () => {
+    for (const pattern of ['classic', 'hawk', 'eagle', 'phoenix'] as OutlinePattern[]) {
+      const pts = chickenOutline(pattern);
+      expect(pts).toHaveLength(OUTLINE_SAMPLES);
+      const radii: number[] = [];
+      for (const p of pts) {
+        const dx = p.x - RAY_ORIGIN.x;
+        const dy = p.y - RAY_ORIGIN.y;
+        const r = Math.hypot(dx, dy);
+        radii.push(r);
+        expect(r).toBeGreaterThan(10);
+        expect(insideChicken(pattern, p.x, p.y)).toBe(true);
+        expect(insideChicken(pattern, RAY_ORIGIN.x + (dx * (r + 1.2)) / r, RAY_ORIGIN.y + (dy * (r + 1.2)) / r)).toBe(false);
+      }
+      const half = OUTLINE_SAMPLES / 2;
+      const asymmetry = Math.max(...radii.slice(0, half).map((r, i) => Math.abs(r - radii[i + half])));
+      expect(asymmetry).toBeGreaterThan(8);
+    }
+  });
+
+  test('emitted aura points follow the live chicken frame and keep the head narrower than the body', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=17500');
+    await page.waitForFunction(() => (window as unknown as { __chicken: AuraBridge }).__chicken.state().auraDrawn, null, { timeout: 20_000 });
+    const sample = await page.evaluate(() => (window as unknown as { __chicken: AuraBridge }).__chicken.auraEmitters());
+    const expected = chickenOutline('classic');
+    expect(sample.svg).toHaveLength(expected.length);
+    expect(sample.canvas).toHaveLength(expected.length);
+    sample.svg.forEach((p, i) => {
+      expect(Math.abs(p.x - expected[i].x)).toBeLessThan(0.01);
+      expect(Math.abs(p.y - expected[i].y)).toBeLessThan(0.01);
+    });
+    const box = await page.getByTestId('chicken-svg').boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) return;
+    const margin = 14;
+    for (const p of sample.canvas) {
+      expect(p.x).toBeGreaterThan(box.x - margin);
+      expect(p.x).toBeLessThan(box.x + box.width + margin);
+      expect(p.y).toBeGreaterThan(box.y - margin);
+      expect(p.y).toBeLessThan(box.y + box.height + margin);
+    }
+    const width = (rows: { x: number }[]) => Math.max(...rows.map((p) => p.x)) - Math.min(...rows.map((p) => p.x));
+    const head = sample.canvas.filter((_, i) => expected[i].y < 40 && expected[i].x < 56);
+    const body = sample.canvas.filter((_, i) => expected[i].y > 95 && expected[i].y < 125);
+    expect(width(head)).toBeLessThan(width(body) * 0.75);
+  });
+
+  test('lightning turns red in the eagle era and black with a red core in the phoenix era', async ({ page }) => {
+    await gotoGame(page, `?variant=2&start=${LIGHTNING_RED_SCORE - 1}`);
+    expect((await auraState(page)).lightning?.style).toBe('ramp');
+    await squeeze(page);
+    await expect.poll(async () => (await auraState(page)).lightning?.style).toBe('red');
+    await gotoGame(page, `?variant=2&start=${LIGHTNING_BLACK_SCORE - 1}`);
+    expect((await auraState(page)).lightning?.style).toBe('red');
+    await squeeze(page);
+    await expect.poll(async () => (await auraState(page)).lightning?.style).toBe('black-red');
+  });
+
+  test('the fire form ramps from the phoenix era and is full at the fire threshold', async ({ page }) => {
+    await gotoGame(page, `?variant=2&start=${FIRE_FLAMING_SCORE - 1}`);
+    expect((await auraState(page)).fire).toBe(0);
+    await gotoGame(page, `?variant=2&start=${FIRE_FLAMING_SCORE + 100}`);
+    expect((await auraState(page)).fire).toBeGreaterThan(0);
+    expect((await auraState(page)).fire).toBeLessThan(1);
+    await gotoGame(page, `?variant=2&start=${FIRE_FULL_SCORE}`);
+    const st = await auraState(page);
+    expect(st.fire).toBe(1);
+    await expect.poll(async () => (await auraState(page)).auraDrawn, { timeout: 20_000 }).toBe(true);
+    const filter = await page.getByTestId('chicken-svg').evaluate((el) => getComputedStyle(el).filter);
+    expect(filter).toContain('sepia');
+  });
+
+  test('the phoenix heat phase ignites the chicken in short bursts', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=24000');
+    await page.evaluate(() => (window as unknown as { __chicken: AuraBridge }).__chicken.forceIgnition());
+    await expect.poll(async () => (await auraState(page)).ignition).toBe(true);
+    expect((await auraState(page)).ignitionBursts).toBeGreaterThanOrEqual(1);
+    await expect.poll(async () => (await auraState(page)).ignition, { timeout: 5_000 }).toBe(false);
+  });
+
+  test('aura and fire stay suppressed in vehicles and bird grabs', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=surf');
+    await page.waitForTimeout(600);
+    const surf = await auraState(page);
+    expect(surf.stage).toBe('surf');
+    expect(surf.auraDrawn).toBe(false);
+    await gotoGame(page, '?variant=2&start=17500');
+    await expect.poll(async () => (await auraState(page)).auraDrawn, { timeout: 20_000 }).toBe(true);
+    await page.evaluate(() => (window as unknown as { __chicken: AuraBridge }).__chicken.forceBird('hawk'));
+    await page.waitForFunction((phases) => phases.includes((window as unknown as { __chicken: AuraBridge }).__chicken.state().bird?.phase ?? ''), GRIP_PHASES, { timeout: 25_000 });
+    await page.waitForTimeout(200);
+    expect((await auraState(page)).auraDrawn).toBe(false);
   });
 });
