@@ -13,6 +13,7 @@ const EAGLE_FREE_MAX_S = 45;
 const PHOENIX_FREE_MAX_S = 80;
 const GRANT_DELAY_MS = 12000;
 const CLIP_STUCK_SECONDS = 45;
+const ORB_SETUP_DELAY_MS = 800;
 
 const at = (start) => `${LOCAL}/game?variant=2&start=${start}`;
 const stageIs = (stage, phase) => (s) => s.stage === stage && (!phase || s.stagePhase === phase);
@@ -32,6 +33,20 @@ const freeUnder = (max) => (r) => {
 const skinEnds = (skin, mult) => (r) => ({
   pass: r.finalState.skin === skin && r.skinUpgrades.some((u) => u.skin === skin && u.mult === mult),
   metric: { skin: r.finalState.skin, upgrades: r.skinUpgrades.map((u) => u.skin), itemsUsed: r.itemsUsed.map((i) => i.item) },
+});
+
+const forceOrb = (kind) => async (page) => {
+  await page.waitForTimeout(ORB_SETUP_DELAY_MS);
+  await page.evaluate((k) => window.__chicken.forceOrb(k), kind);
+};
+
+const multiplyClip = (start, kind) => ({
+  title: `${start} orb`,
+  start,
+  setup: forceOrb(kind),
+  seconds: 40,
+  stopWhen: (s) => (s.clones ?? 0) > 0,
+  check: (r) => ({ pass: r.stopReason === 'condition', metric: { seconds: r.seconds } }),
 });
 
 export const SCENARIOS = {
@@ -72,6 +87,13 @@ export const SCENARIOS = {
     check: (r) => ({ pass: r.stopReason === 'condition', metric: { orbFrames: r.rules.orb ?? 0, seconds: r.seconds } }),
   },
   'cursor-x5': { title: 'Cursor x5 orb', start: 'cursor-x5', seconds: 30, stopWhen: (s) => (s.cursors ?? 1) >= 5, check: (r) => ({ pass: r.stopReason === 'condition', metric: { seconds: r.seconds } }) },
+  frenzy: { title: 'Frenzy x2 orb', start: 'frenzy', setup: forceOrb('frenzy'), seconds: 40, stopWhen: (s) => (s.frenzyMs ?? 0) > 0, check: (r) => ({ pass: r.stopReason === 'condition', metric: { seconds: r.seconds } }) },
+  chain: { title: 'Chain Lightning orb', start: 'chain', setup: forceOrb('chain'), seconds: 40, stopWhen: (s) => (s.chainMs ?? 0) > 0, check: (r) => ({ pass: r.stopReason === 'condition', metric: { seconds: r.seconds } }) },
+  eggs: { title: 'Golden Eggs hatch into golden chickens', start: 'eggs', setup: forceOrb('eggs'), seconds: 60, stopWhen: (s) => (s.goldens?.length ?? 0) >= 2, check: (r) => ({ pass: r.stopReason === 'condition', metric: { seconds: r.seconds, goldenFrames: r.rules.golden ?? 0 } }) },
+  'multiply-x5': multiplyClip('multiply-x5', 'multiply5'),
+  'multiply-x10': multiplyClip('multiply-x10', 'multiply10'),
+  'multiply-x25': multiplyClip('multiply-x25', 'multiply25'),
+  'multiply-x100': multiplyClip('multiply-x100', 'multiply100'),
   'cursor-x3': { title: 'Cursor x3 orb', start: 'cursor-x3', seconds: 30, stopWhen: (s) => (s.cursors ?? 1) >= 3, check: (r) => ({ pass: r.stopReason === 'condition', metric: { seconds: r.seconds } }) },
   'hawk-free': { title: 'hawk grabs: free both claws', start: 'hawk', seconds: 60, stopWhen: freed, check: freeUnder(HAWK_FREE_MAX_S) },
   'hawk-feather': { title: 'hawk: feather, bag, skin x1.25', start: 'hawk', seconds: 90, stopWhen: skinIs('hawk'), check: skinEnds('hawk', 1.25) },
@@ -95,7 +117,11 @@ export const SCENARIOS = {
     seconds: 60,
     setup: async (page) => {
       await page.evaluate(() => window.__chicken.grantItem('hawk-feather'));
-      setTimeout(() => page.evaluate(() => window.__chicken.grantItem('eagle-feather')).catch(() => {}), GRANT_DELAY_MS);
+      globalThis.__jevPickupAt = Date.now();
+      setTimeout(() => {
+        globalThis.__jevPickupAt = Date.now();
+        page.evaluate(() => window.__chicken.grantItem('eagle-feather')).catch(() => {});
+      }, GRANT_DELAY_MS);
     },
     stopWhen: skinIs('eagle'),
     check: (r) => ({ pass: r.finalState.skin === 'eagle' && r.skinUpgrades.length >= 2, metric: { upgrades: r.skinUpgrades.map((u) => u.skin) } }),
