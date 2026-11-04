@@ -1397,7 +1397,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
       <div
         ref={bind('counter')}
         data-testid="bird-counter"
-        className="pointer-events-none absolute top-0 left-0 whitespace-nowrap text-base font-semibold text-[#ffd54a] [paint-order:stroke] [text-shadow:0_1px_0_#000,0_-1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_2px_6px_rgba(0,0,0,0.8)] will-change-transform [visibility:hidden]"
+        className="pointer-events-none absolute top-0 left-0 z-30 whitespace-nowrap rounded-md bg-black/50 px-1.5 py-0.5 text-base font-semibold text-[#ffd54a] [paint-order:stroke] [text-shadow:0_1px_0_#000,0_-1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_2px_6px_rgba(0,0,0,0.8)] will-change-transform [visibility:hidden]"
       />
       <div
         ref={bind('banner')}
