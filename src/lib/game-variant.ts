@@ -11,9 +11,9 @@ const MAX_TEST_START = 1_000_000;
 export const TEST_SCENES: Record<string, number> = {
   surf: 250,
   pilot: 350,
-  'plane-exit': 448,
-  rocket: 450,
-  moon: 540,
+  'plane-exit': 698,
+  rocket: 700,
+  moon: 800,
   multiply: 500,
   'cursor-x5': 750,
   'cursor-x3': 1250,

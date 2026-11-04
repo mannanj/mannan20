@@ -1,4 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
+import { APPROACH_MS, BOARDING_MS, DRIFT_MS, EXPLODE_MS, LIFTOFF_HOLD_MS, LIFTOFF_RISE_MS } from '../src/components/game/escape-sequence';
+import { ESCAPE_STAGES } from '../src/components/game/escape-stages';
+import { PACE_CURVE, paceTarget } from '../src/components/game/chicken-pacing';
 
 const GUARD_MS = 900;
 
@@ -1327,7 +1330,7 @@ async function enterPilot(page: Page) {
 }
 
 async function toRocket(page: Page) {
-  await page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.boost(100));
+  await page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.boost(400));
   await page.waitForFunction(() => (window as unknown as { __chicken: SeqBridge }).__chicken.state().stage === 'rocket');
 }
 
@@ -1478,7 +1481,7 @@ async function pokeMartian(page: Page, times: number) {
 
 test.describe('chicken game v2 cosmos, Jupiter and Martians', () => {
   test('stages run moon, cosmos, then Jupiter, with the credit and the 3D sky mounted', async ({ page }) => {
-    await gotoGame(page, '?variant=2&start=600');
+    await gotoGame(page, '?variant=2&start=900');
     const game = cosmosBridge(page);
     await expect.poll(async () => (await game.state()).stage).toBe('moon');
     await game.setScore(9999);
@@ -1540,5 +1543,207 @@ test.describe('chicken game v2 cosmos, Jupiter and Martians', () => {
     const worn = (await game.state()).score;
     await game.boost(1);
     expect((await game.state()).score - worn).toBe(3);
+  });
+});
+
+interface PaceBridge {
+  state: () => {
+    score: number;
+    mult: number;
+    frenzyMs: number;
+    pilotTeleports: number;
+    orbs: { id: number; kind: string }[];
+    pace: { target: number; actual: number; behindPct: number; nextCheckIn: number; playMs: number };
+    bird: { rightClicks: number; rightNeed: number; leftNeed: number; phase: string };
+  };
+  setScore: (n: number) => void;
+  fastForward: (ms: number) => void;
+  forcePaceCheck: () => void;
+  forceOrb: (kind: string) => void;
+  collectOrb: (kind: string) => void;
+  selectSkin: (id: string) => void;
+  placeChicken: (x: number, y: number) => void;
+  boost: (n: number) => void;
+}
+
+const paceBridge = <T>(page: Page, fn: (b: PaceBridge) => T) =>
+  page.evaluate(`(${fn.toString()})(window.__chicken)`) as Promise<T>;
+const paceState = (page: Page) => paceBridge(page, (b) => b.state());
+
+test.describe('chicken game v2 pacing and catch-up', () => {
+  test('a player behind pace gets a catch-up orb after a check, chosen by how far behind', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.setScore(330));
+    await paceBridge(page, (b) => b.fastForward(50_000));
+    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBe(1);
+    const s = await paceState(page);
+    expect(s.pace.behindPct).toBeGreaterThan(10);
+    expect(s.orbs[0].kind).toBe('multiply');
+  });
+
+  test('far behind pace spawns a Frenzy x2 orb; mildly behind spawns a cursor orb', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.setScore(20));
+    await paceBridge(page, (b) => b.fastForward(50_000));
+    await expect.poll(async () => (await paceState(page)).orbs.map((o) => o.kind), { timeout: 4000 }).toEqual(['frenzy']);
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.setScore(460));
+    await paceBridge(page, (b) => b.fastForward(50_000));
+    await expect.poll(async () => (await paceState(page)).orbs.map((o) => o.kind)[0], { timeout: 4000 }).toMatch(/^cursor[53]$/);
+  });
+
+  test('a player on pace gets no catch-up orb', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.setScore(600));
+    await paceBridge(page, (b) => b.fastForward(50_000));
+    await page.waitForTimeout(600);
+    await paceBridge(page, (b) => b.forcePaceCheck());
+    const s = await paceState(page);
+    expect(s.orbs).toHaveLength(0);
+    expect(s.pace.behindPct).toBe(0);
+    expect(s.pace.target).toBeGreaterThan(150);
+  });
+
+  test('pace readout exposes target, actual, behind and next check', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.setScore(10));
+    const s = await paceState(page);
+    expect(s.pace.actual).toBe(10);
+    expect(s.pace.nextCheckIn).toBeGreaterThan(0);
+    expect(s.pace.nextCheckIn).toBeLessThanOrEqual(30_000);
+  });
+
+  test('cooldown and one-on-screen rules hold', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.setScore(20));
+    await paceBridge(page, (b) => b.fastForward(50_000));
+    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBe(1);
+    await paceBridge(page, (b) => b.forcePaceCheck());
+    expect((await paceState(page)).orbs).toHaveLength(1);
+    await paceBridge(page, (b) => b.collectOrb('frenzy'));
+    expect((await paceState(page)).orbs).toHaveLength(0);
+    await paceBridge(page, (b) => b.fastForward(30_000));
+    await page.waitForTimeout(400);
+    await paceBridge(page, (b) => b.forcePaceCheck());
+    expect((await paceState(page)).orbs).toHaveLength(0);
+    await paceBridge(page, (b) => b.fastForward(50_000));
+    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBe(1);
+  });
+
+  test('Frenzy doubles points, stacks with a skin, extends per click up to the cap', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.forceOrb('frenzy'));
+    await paceBridge(page, (b) => b.collectOrb('frenzy'));
+    let s = await paceState(page);
+    expect(s.frenzyMs).toBeGreaterThan(19_000);
+    expect(s.frenzyMs).toBeLessThanOrEqual(20_000);
+    const before = s.score;
+    await paceBridge(page, (b) => b.boost(1));
+    s = await paceState(page);
+    expect(s.score - before).toBe(2);
+    expect(s.frenzyMs).toBeGreaterThan(19_050);
+    await paceBridge(page, (b) => b.selectSkin('hawk'));
+    const mid = (await paceState(page)).score;
+    await paceBridge(page, (b) => b.boost(4));
+    s = await paceState(page);
+    expect(s.score - mid).toBe(4 * 2.5);
+    for (let i = 0; i < 3; i++) {
+      await paceBridge(page, (b) => b.forceOrb('frenzy'));
+      await paceBridge(page, (b) => b.collectOrb('frenzy'));
+    }
+    await paceBridge(page, (b) => b.boost(300));
+    expect((await paceState(page)).frenzyMs).toBeLessThanOrEqual(40_000);
+  });
+
+  test('Frenzy ends after its duration', async ({ page }) => {
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.forceOrb('frenzy'));
+    await paceBridge(page, (b) => b.collectOrb('frenzy'));
+    await paceBridge(page, (b) => b.fastForward(21_000));
+    const s0 = (await paceState(page)).score;
+    await paceBridge(page, (b) => b.boost(1));
+    expect((await paceState(page)).score - s0).toBe(1);
+  });
+
+  test('talon clicks scale with the skin multiplier for the eagle but not the hawk', async ({ page }) => {
+    test.setTimeout(60_000);
+    await gotoGame(page, '?variant=2');
+    await paceBridge(page, (b) => b.selectSkin('eagle'));
+    await paceBridge(page, (b) => b.setScore(1999));
+    await paceBridge(page, (b) => b.placeChicken(820, 420));
+    await paceBridge(page, (b) => b.boost(1));
+    await page.waitForFunction(() => (window as unknown as { __chicken: PaceBridge }).__chicken.state().bird.phase === 'right', null, { timeout: 8000 });
+    const hawk = (await paceState(page)).bird;
+    expect(hawk.rightNeed).toBe(25);
+    await expect(page.getByTestId('bird-counter')).toHaveText('front claw 0 / 25');
+  });
+
+  test('eagle and phoenix talon counts halve with a x2 skin', async ({ page }) => {
+    test.setTimeout(60_000);
+    for (const [at, need] of [[9999, 25], [24999, 50]] as const) {
+      await gotoGame(page, '?variant=2');
+      await paceBridge(page, (b) => b.selectSkin('eagle'));
+      await page.evaluate((n) => (window as unknown as { __chicken: PaceBridge }).__chicken.setScore(n), at);
+      await paceBridge(page, (b) => b.placeChicken(820, 420));
+      await paceBridge(page, (b) => b.boost(1));
+      await page.waitForFunction(() => (window as unknown as { __chicken: PaceBridge }).__chicken.state().bird.phase === 'right', null, { timeout: 8000 });
+      const bird = (await paceState(page)).bird;
+      expect(bird.rightNeed).toBe(need);
+      expect(bird.leftNeed).toBe(need);
+      await expect(page.getByTestId('bird-counter')).toHaveText(`front claw 0 / ${need}`);
+      await page.getByTestId('bird-talon-right').click({ force: true, clickCount: 1 });
+      for (let i = 1; i < need; i++) await page.getByTestId('bird-talon-right').click({ force: true });
+      await page.waitForFunction(() => (window as unknown as { __chicken: PaceBridge }).__chicken.state().bird.phase !== 'right', null, { timeout: 3000 });
+    }
+  });
+});
+
+const MAX_ROCKET_SEQUENCE_MS = 14_000;
+const MIN_PILOT_SCORE_SPAN = 300;
+const PILOT_TELEPORT_WAIT_MS = 12_000;
+const MIN_PILOT_TRAVEL_PX = 120;
+
+test.describe('chicken game v2 pacing constants and plane', () => {
+  test('pace curve hits the 12 minute target and rocket phases are halved', () => {
+    expect(paceTarget(12 * 60_000)).toBe(25_000);
+    expect(paceTarget(30_000)).toBe(250);
+    expect(PACE_CURVE.map((p) => p.score)).toEqual([0, 250, 2000, 10_000, 17_000, 25_000]);
+    expect(DRIFT_MS + APPROACH_MS + BOARDING_MS + LIFTOFF_HOLD_MS + LIFTOFF_RISE_MS).toBeLessThanOrEqual(MAX_ROCKET_SEQUENCE_MS);
+    expect(EXPLODE_MS).toBeGreaterThanOrEqual(4000);
+    const at = (name: string) => ESCAPE_STAGES.find((s) => s.stage === name)?.threshold ?? 0;
+    expect(at('rocket') - at('pilot')).toBeGreaterThanOrEqual(MIN_PILOT_SCORE_SPAN);
+  });
+
+  test('the plane never pauses in the pilot stage and teleports exactly once', async ({ page }) => {
+    test.setTimeout(60_000);
+    await enterPilot(page);
+    const start = await seqState(page);
+    let travel = 0;
+    let last = start.pos;
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(350);
+      const s = await seqState(page);
+      expect(Math.hypot(s.pos.x - last.x, s.pos.y - last.y)).toBeGreaterThan(2);
+      travel += Math.hypot(s.pos.x - last.x, s.pos.y - last.y);
+      last = s.pos;
+    }
+    expect(travel).toBeGreaterThan(MIN_PILOT_TRAVEL_PX);
+    await expect
+      .poll(async () => (await paceState(page)).pilotTeleports, { timeout: PILOT_TELEPORT_WAIT_MS })
+      .toBe(1);
+    await page.waitForTimeout(3000);
+    expect((await paceState(page)).pilotTeleports).toBe(1);
+  });
+
+  test('the explosion has a shockwave, secondary blasts and a shaking stage', async ({ page }) => {
+    test.setTimeout(100_000);
+    await enterPilot(page);
+    await toRocket(page);
+    await expect.poll(async () => (await seqState(page)).seq, { timeout: 20_000 }).toBe('planeExit');
+    await page.evaluate(() => (window as unknown as { __chicken: SeqBridge }).__chicken.boost(3));
+    await expect(page.getByTestId('plane-explosion')).toBeAttached({ timeout: 10_000 });
+    await expect(page.locator('.escape-shock')).toHaveCount(2);
+    await expect(page.locator('.escape-fireball')).toHaveCount(5);
+    await expect(page.getByTestId('chicken-stage')).toHaveClass(/escape-shake/);
   });
 });

@@ -64,7 +64,12 @@ import {
   type FlightKind,
   type PlaneFlight,
   type RocketSeq,
+  PILOT_SPEED_SCALE,
+  PILOT_TELEPORT_AFTER_MS,
+  PILOT_TELEPORT_MIN_DIST_FRAC,
+  PILOT_TELEPORT_OUT_MS,
 } from './escape-sequence';
+import { playBoom } from './escape-boom';
 import dynamic from 'next/dynamic';
 import { hudZone, keepOutOfHud } from './hud-safe-zone';
 import { SpaceGate, type SpaceGateState } from './space-gate';
@@ -157,6 +162,20 @@ import {
   type CursorOffset,
   type OrbKind,
 } from './chicken-orbs';
+import {
+  CATCHUP_CHECK_MS,
+  CATCHUP_COOLDOWN_MS,
+  FRENZY_BLINK_MS,
+  FRENZY_CAP_MS,
+  FRENZY_DURATION_MS,
+  FRENZY_EXTEND_PER_CLICK_MS,
+  FRENZY_FACTOR,
+  PACE_END_SCORE,
+  behindFraction,
+  catchUpKind,
+  paceTarget,
+  talonWeightFor,
+} from './chicken-pacing';
 import {
   BANDAID_HP,
   CHICK_H,
@@ -682,6 +701,9 @@ interface ChickenStateSnapshot {
   cursors: number;
   cursorOffsets: CursorOffset[];
   cursorBuffMs: { x5: number; x3: number };
+  frenzyMs: number;
+  pilotTeleports: number;
+  pace: { target: number; actual: number; behindPct: number; nextCheckIn: number; playMs: number };
   pieces: number;
   splitLevels: number[];
   held: boolean;
@@ -745,6 +767,7 @@ interface ChickenBridge {
   openSheet: () => void;
   setScore: (n: number) => void;
   forceOrb: (kind: OrbKind) => void;
+  forcePaceCheck: () => void;
   forceBird: (kind: BirdKind) => void;
   placeChicken: (x: number, y: number) => void;
   useItem: (id: string) => void;
@@ -1163,7 +1186,14 @@ function ChickenGameInner() {
   const orbsRef = useRef<Orb[]>([]);
   const orbElsRef = useRef(new Map<number, HTMLDivElement>());
   const orbIdRef = useRef(0);
-  const orbFiredRef = useRef<Record<OrbKind, boolean>>({ multiply: false, cursor5: false, cursor3: false });
+  const orbFiredRef = useRef<Record<OrbKind, boolean>>({ multiply: false, cursor5: false, cursor3: false, frenzy: false });
+  const frenzyUntilRef = useRef(0);
+  const pilotTeleportsRef = useRef(0);
+  const frenzyElRef = useRef<HTMLDivElement | null>(null);
+  const playMsRef = useRef(0);
+  const lastCheckMsRef = useRef(0);
+  const lastCatchUpMsRef = useRef(Number.NEGATIVE_INFINITY);
+  const catchUpCountRef = useRef(0);
   const cloneMotionRef = useRef(new Map<number, CloneMotion>());
   const cloneElsRef = useRef(new Map<number, HTMLDivElement>());
   const cloneIdRef = useRef(0);
@@ -2046,6 +2076,7 @@ function ChickenGameInner() {
   const enterSeq = useCallback((next: RocketSeq, now: number) => {
     seqRef.current = next;
     seqStartRef.current = now;
+    if (next === 'explode') playBoom();
     setSeq(next);
   }, []);
 
@@ -2077,7 +2108,10 @@ function ChickenGameInner() {
         if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
       }
     }
-    if (next === 'pilot') flightRef.current = createFlight(facingRef.current >= 0 ? 0 : Math.PI);
+    if (next === 'pilot') {
+      pilotTeleportsRef.current = 0;
+      flightRef.current = createFlight(facingRef.current >= 0 ? 0 : Math.PI);
+    }
     if (next === 'rocket') {
       seqClicksRef.current = 0;
       pushRef.current = { x: 0, y: 0 };
@@ -2104,6 +2138,7 @@ function ChickenGameInner() {
     multiplyStartRef.current += ms;
     cursorBuffRef.current.x5Until += ms;
     cursorBuffRef.current.x3Until += ms;
+    frenzyUntilRef.current += ms;
     for (const pool of poolsRef.current) pool.born += ms;
     lastHitRef.current += ms;
   }, []);
@@ -2318,6 +2353,27 @@ function ChickenGameInner() {
     [spawnOrb]
   );
 
+  const runPaceCheck = useCallback(() => {
+    lastCheckMsRef.current = playMsRef.current;
+    const bird = birdRef.current;
+    if (
+      scoreRef.current >= PACE_END_SCORE ||
+      orbsRef.current.length > 0 ||
+      gateRef.current !== 'none' ||
+      bird.pending ||
+      isBirdBusy(bird) ||
+      playMsRef.current - lastCatchUpMsRef.current < CATCHUP_COOLDOWN_MS
+    ) {
+      return;
+    }
+    const behind = behindFraction(paceTarget(playMsRef.current), scoreRef.current);
+    const kind = catchUpKind(behind, catchUpCountRef.current);
+    if (!kind) return;
+    catchUpCountRef.current += 1;
+    lastCatchUpMsRef.current = playMsRef.current;
+    spawnOrb(kind);
+  }, [spawnOrb]);
+
   const removeClone = useCallback((id: number) => {
     cloneMotionRef.current.delete(id);
     cloneElsRef.current.delete(id);
@@ -2380,6 +2436,7 @@ function ChickenGameInner() {
       recordPlay({ type: 'powerup', key: riser.key, synth: riser.synth, at: Date.now() });
       const buff = cursorBuffRef.current;
       if (orb.kind === 'multiply') applyMultiply(now);
+      else if (orb.kind === 'frenzy') frenzyUntilRef.current = Math.max(now, frenzyUntilRef.current) + FRENZY_DURATION_MS;
       else if (orb.kind === 'cursor5') buff.x5Until = Math.max(now, buff.x5Until) + CURSOR_BUFF_MS;
       else buff.x3Until = Math.max(now, buff.x3Until) + CURSOR_BUFF_MS;
     },
@@ -2388,6 +2445,17 @@ function ChickenGameInner() {
 
   const tickAbilities = useCallback(
     (ts: number, dtMs: number, vw: number, vh: number) => {
+      if (scoreRef.current > 0 && gateRef.current === 'none' && !document.hidden) {
+        playMsRef.current += dtMs;
+        if (playMsRef.current - lastCheckMsRef.current >= CATCHUP_CHECK_MS) runPaceCheck();
+      }
+      const frenzyLeft = frenzyUntilRef.current - ts;
+      const frenzyEl = frenzyElRef.current;
+      if (frenzyEl) {
+        const live = frenzyLeft > 0;
+        frenzyEl.style.opacity = live ? (frenzyLeft < FRENZY_BLINK_MS && Math.floor(ts / 250) % 2 === 0 ? '0.45' : '1') : '0';
+        if (live) frenzyEl.textContent = `Frenzy x2 ${Math.ceil(frenzyLeft / 1000)}s`;
+      }
       const orbs = orbsRef.current;
       for (let i = orbs.length - 1; i >= 0; i--) {
         const orb = orbs[i];
@@ -2469,7 +2537,7 @@ function ChickenGameInner() {
         }
       }
     },
-    [removeOrb, removeClone, spawnFeathers]
+    [removeOrb, removeClone, spawnFeathers, runPaceCheck]
   );
 
   const hit = useCallback(
@@ -2504,7 +2572,8 @@ function ChickenGameInner() {
         visit.cooldownUntil = now + VISIT_COOLDOWN_MIN_MS + Math.random() * VISIT_COOLDOWN_SPREAD_MS;
       }
       const prevScore = scoreRef.current;
-      const next = prevScore + award * multRef.current;
+      const frenzyOn = now < frenzyUntilRef.current;
+      const next = prevScore + award * multRef.current * (frenzyOn ? FRENZY_FACTOR : 1);
       scoreRef.current = next;
       const shown = Math.floor(next);
       setScore(shown);
@@ -2514,6 +2583,7 @@ function ChickenGameInner() {
       const buff = cursorBuffRef.current;
       if (now < buff.x5Until) buff.x5Until += CURSOR_EXTEND_PER_CLICK_MS;
       if (now < buff.x3Until) buff.x3Until += CURSOR_EXTEND_PER_CLICK_MS;
+      if (frenzyOn) frenzyUntilRef.current = Math.min(frenzyUntilRef.current + FRENZY_EXTEND_PER_CLICK_MS, now + FRENZY_CAP_MS);
       speedRef.current = speedForScore(shown);
       const currentStage = stageRef.current;
       const rawStage = stageForScore(shown);
@@ -2651,6 +2721,15 @@ function ChickenGameInner() {
         chickens: 1 + kidMotionRef.current.size + cloneMotionRef.current.size,
         cursors: cursorOffsetsRef.current.length,
         cursorOffsets: cursorOffsetsRef.current,
+        pilotTeleports: pilotTeleportsRef.current,
+        frenzyMs: Math.max(0, frenzyUntilRef.current - performance.now()),
+        pace: {
+          target: paceTarget(playMsRef.current),
+          actual: scoreRef.current,
+          behindPct: behindFraction(paceTarget(playMsRef.current), scoreRef.current) * 100,
+          nextCheckIn: Math.max(0, CATCHUP_CHECK_MS - (playMsRef.current - lastCheckMsRef.current)),
+          playMs: playMsRef.current,
+        },
         cursorBuffMs: {
           x5: Math.max(0, cursorBuffRef.current.x5Until - performance.now()),
           x3: Math.max(0, cursorBuffRef.current.x3Until - performance.now()),
@@ -2769,7 +2848,10 @@ function ChickenGameInner() {
       selectSkin: (id: string) => selectSkin(id),
       spawnMartian: (kind?: string) => spawnMartianNow(MARTIAN_KINDS.find((k): k is MartianKind => k === kind)),
       martianClicks: () => readMartianClicks(),
+      forcePaceCheck: () => runPaceCheck(),
       fastForward: (ms: number) => {
+        playMsRef.current += ms;
+        frenzyUntilRef.current -= ms;
         shiftBirdTime(birdRef.current, ms);
         for (const o of orbsRef.current) o.bornAt -= ms;
         for (const c of cloneMotionRef.current.values()) c.vanishAt -= ms;
@@ -2798,7 +2880,7 @@ function ChickenGameInner() {
     return () => {
       if (bridgeWindow().__chicken === bridge) delete bridgeWindow().__chicken;
     };
-  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin]);
+  }, [hit, spawnKid, beginPortal, startKidMerge, spawnOrb, collectOrb, forceTossAt, setWoundState, grantItem, useItem, selectSkin, runPaceCheck]);
 
   const startBirdNow = useCallback(
     (ts: number, kind: BirdKind) => {
@@ -2835,6 +2917,7 @@ function ChickenGameInner() {
         }
       }
       startBird(bird, kind, ts, p.x + CHICKEN_W / 2, p.y + CHICKEN_H / 2, window.innerWidth, window.innerHeight, snapshot, hud, { w: CHICKEN_W, h: CHICKEN_H });
+      bird.talonWeight = talonWeightFor(kind, multRef.current);
       syncBirdUi(kind, false);
     },
     [removeKid, removeClone, syncBirdUi]
@@ -3063,7 +3146,7 @@ function ChickenGameInner() {
       const seqNow = seqRef.current;
       const seqElapsed = (ts - seqStartRef.current) * seqScaleRef.current;
       const flightKind: FlightKind =
-        stNow === 'pilot' && stagePhaseRef.current === 'live'
+        stNow === 'pilot'
           ? 'plane'
           : stNow === 'rocket'
             ? seqNow === 'planeExit' || seqNow === 'explode' || seqNow === 'drift'
@@ -3154,6 +3237,32 @@ function ChickenGameInner() {
 
       const tp = teleportRef.current;
       if (
+        stNow === 'pilot' &&
+        pilotTeleportsRef.current === 0 &&
+        tp.phase === 'idle' &&
+        ts - stageStartRef.current >= PILOT_TELEPORT_AFTER_MS
+      ) {
+        const cx0 = p.x + CHICKEN_W / 2;
+        const cy0 = p.y + CHICKEN_H / 2;
+        const minDist = Math.hypot(vw, vh) * PILOT_TELEPORT_MIN_DIST_FRAC;
+        let tx = cx0;
+        let ty = cy0;
+        for (let attempt = 0; attempt < 12; attempt++) {
+          tx = 140 + Math.random() * Math.max(120, vw - 280);
+          ty = 280 + Math.random() * Math.max(120, vh - 400);
+          if (Math.hypot(tx - cx0, ty - cy0) >= minDist) break;
+        }
+        pilotTeleportsRef.current = 1;
+        tp.phase = 'out';
+        tp.outUntil = ts + PILOT_TELEPORT_OUT_MS;
+        tp.origin = { x: cx0, y: cy0 };
+        tp.target = { x: tx, y: ty };
+        tp.decoys = false;
+        streaksRef.current.push(...shortStreaks(cx0, cy0, ts));
+        if (chickenElRef.current) chickenElRef.current.style.opacity = '0';
+        addGhost(tx - CHICKEN_W / 2, ty - CHICKEN_H / 2, true);
+      }
+      if (
         flying &&
         !rootBusy &&
         !scripted &&
@@ -3199,9 +3308,11 @@ function ChickenGameInner() {
         const { x: tx, y: ty } = tp.target;
         p.x = Math.max(0, Math.min(tx - CHICKEN_W / 2, vw - CHICKEN_W));
         p.y = Math.max(0, Math.min(ty - CHICKEN_H / 2, vh - CHICKEN_H));
-        const angle = Math.random() * Math.PI * 2;
-        p.vx = Math.cos(angle) * BASE_SPEED;
-        p.vy = Math.sin(angle) * BASE_SPEED;
+        if (stNow !== 'pilot') {
+          const angle = Math.random() * Math.PI * 2;
+          p.vx = Math.cos(angle) * BASE_SPEED;
+          p.vy = Math.sin(angle) * BASE_SPEED;
+        }
         streaksRef.current.push(...shortStreaks(tx, ty, ts));
         if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
         if (tp.origin && Math.random() < TELEPORT_AFTER_CHANCE) {
@@ -3271,7 +3382,7 @@ function ChickenGameInner() {
         } else {
           const speedScale =
             flightKind === 'plane'
-              ? 1
+              ? PILOT_SPEED_SCALE
               : seqNow === 'planeExit'
                 ? PLANE_EXIT_SCALE
                 : seqNow === 'explode'
@@ -3586,7 +3697,7 @@ function ChickenGameInner() {
           }
         }
         const anchor = stageAnchorRef.current;
-        if (phase !== 'live' && st !== 'moon') {
+        if (phase !== 'live' && st !== 'moon' && st !== 'pilot') {
           p.x = anchor.x + (st === 'rocket' ? (Math.random() - 0.5) * 3 : 0);
           p.y = anchor.y;
           p.vx = 0;
@@ -4013,7 +4124,7 @@ function ChickenGameInner() {
       data-variant="2"
       data-multicursor={overlayOffsets.length > 0 ? '1' : '0'}
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
-      className="fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)]"
+      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none chicken-hand-cursor [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
     >
       <GameScenery tier={tier} />
       {isSpaceStage(stage) && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
@@ -4285,6 +4396,11 @@ function ChickenGameInner() {
 
       {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
 
+      <div
+        ref={frenzyElRef}
+        data-testid="chicken-frenzy"
+        className="pointer-events-none fixed bottom-6 left-6 z-[60] rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white opacity-0 shadow-[0_0_0_2px_#ffb02e]"
+      />
       {orbViews.map((orb) => (
         <div
           key={orb.id}

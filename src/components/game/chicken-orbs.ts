@@ -1,4 +1,4 @@
-export type OrbKind = 'multiply' | 'cursor5' | 'cursor3';
+export type OrbKind = 'multiply' | 'cursor5' | 'cursor3' | 'frenzy';
 
 export interface CursorOffset {
   dx: number;
@@ -12,18 +12,20 @@ export const ORB_THRESHOLDS: Record<OrbKind, number> = {
   multiply: 500,
   cursor5: 750,
   cursor3: 1250,
+  frenzy: Number.POSITIVE_INFINITY,
 };
 
 export const ORB_LABELS: Record<OrbKind, string> = {
   multiply: 'Multiply x3',
   cursor5: 'Cursor x5',
   cursor3: 'Cursor x3',
+  frenzy: 'Frenzy x2',
 };
 
 export const ORB_LIFETIME_MS = 30_000;
 export const ORB_FADE_MS = 2000;
 export const ORB_RADIUS = 20.5;
-export const ORB_LABEL_PX: Record<OrbKind, number> = { multiply: 11, cursor5: 12.5, cursor3: 12.5 };
+export const ORB_LABEL_PX: Record<OrbKind, number> = { multiply: 11, cursor5: 12.5, cursor3: 12.5, frenzy: 11 };
 export const ORB_DRIFT_SPEED = 0.05;
 export const ORB_SPAWN_MARGIN = 80;
 export const ORB_WOBBLE_AMPLITUDE = 14;

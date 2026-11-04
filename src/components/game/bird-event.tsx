@@ -5,6 +5,7 @@ import { hudPushOut, hudZone } from './hud-safe-zone';
 import type { GameItemId } from '@/components/inventory';
 import manifest from '../../../public/game/birds/manifest.json';
 import { TapCursorGlyph } from './tap-cursor-icon';
+import { talonNeed } from './chicken-pacing';
 
 export type BirdKind = 'hawk' | 'eagle' | 'phoenix';
 export type BirdPhase = 'idle' | 'approach' | 'grab' | 'right' | 'recoil' | 'left' | 'hover' | 'depart' | 'recede' | 'done';
@@ -266,6 +267,7 @@ export interface BirdState {
   chicken: { w: number; h: number };
   rightClicks: number;
   leftClicks: number;
+  talonWeight: number;
   lastTapAt: number;
   hintShownAt: number;
   lookUntil: number;
@@ -320,6 +322,7 @@ export function createBirdState(): BirdState {
     chicken: { w: 70, h: 140 },
     rightClicks: 0,
     leftClicks: 0,
+    talonWeight: 1,
     lastTapAt: 0,
     hintShownAt: 0,
     lookUntil: 0,
@@ -619,7 +622,7 @@ export function tapTalon(s: BirdState, side: TalonSide, ts: number): TapResult {
   if (side === 'right' && s.phase === 'right') {
     s.rightClicks += 1;
     s.lastTapAt = ts;
-    if (s.rightClicks >= spec.rightClicks) {
+    if (s.rightClicks >= talonNeed(spec.rightClicks, s.talonWeight)) {
       s.phase = 'recoil';
       s.phaseAt = ts;
       s.hintShownAt = 0;
@@ -631,13 +634,13 @@ export function tapTalon(s: BirdState, side: TalonSide, ts: number): TapResult {
   if (side === 'left' && s.phase === 'left') {
     s.leftClicks += 1;
     s.lastTapAt = ts;
-    const freed = s.leftClicks >= spec.leftClicks;
+    const freed = s.leftClicks >= talonNeed(spec.leftClicks, s.talonWeight);
     if (freed || s.leftClicks % BIRD_LOOK_EVERY_TAPS === 0) {
       s.lookUntil = ts + BIRD_LOOK_MS;
       s.looks += 1;
     }
     if (spec.heat) {
-      s.burn = clamp(s.leftClicks / spec.leftClicks, 0, 1);
+      s.burn = clamp(s.leftClicks / talonNeed(spec.leftClicks, s.talonWeight), 0, 1);
       if (s.leftClicks % BIRD_PULSE_EVERY_TAPS === 0) {
         s.pulseAt = ts;
         s.pulses += 1;
@@ -760,7 +763,7 @@ function tickHeat(s: BirdState, els: BirdEls, ctx: BirdCtx, hold: Point, result:
   }
   const second = s.phase === 'recoil' || s.phase === 'left';
   const heat: HeatLevel = second ? 2 : 1;
-  const progress1 = clamp(s.rightClicks / spec.rightClicks, 0, 1);
+  const progress1 = clamp(s.rightClicks / talonNeed(spec.rightClicks, s.talonWeight), 0, 1);
   result.heat = heat;
   result.burn = s.burn;
   result.sizzle = second ? SIZZLE_T2_BASE + SIZZLE_T2_GAIN * s.burn : SIZZLE_T1_BASE + SIZZLE_T1_GAIN * progress1;
@@ -1070,7 +1073,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
       }
       if (els.counter) {
         const n = active === 'right' ? s.rightClicks : s.leftClicks;
-        const total = active === 'right' ? spec.rightClicks : spec.leftClicks;
+        const total = talonNeed(active === 'right' ? spec.rightClicks : spec.leftClicks, s.talonWeight);
         const text = `${active === 'right' ? 'front' : 'back'} claw ${n} / ${total}`;
         if (els.counter.textContent !== text) els.counter.textContent = text;
         const box = active === 'right' ? hits.right : hits.left;
@@ -1252,6 +1255,8 @@ export function birdStateView(s: BirdState) {
     fit: s.fit,
     rightClicks: s.rightClicks,
     leftClicks: s.leftClicks,
+    rightNeed: talonNeed(BIRD_SPECS[s.kind ?? 'hawk'].rightClicks, s.talonWeight),
+    leftNeed: talonNeed(BIRD_SPECS[s.kind ?? 'hawk'].leftClicks, s.talonWeight),
     hint: s.hintShownAt !== 0,
     looks: s.looks,
     calm: s.calm,

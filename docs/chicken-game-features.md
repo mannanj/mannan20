@@ -154,3 +154,23 @@ takes 3 tosses to destroy before rainbow leaks and pools. Every squeeze scores 1
 > "try to make the exposions look realistic too of th eplane real fires and stuff thanks" — "same for our other features thanks"
 
 Effects in every new feature are **photo-real**, not cartoon: the plane explosion, rocket exhaust and smoke, phoenix fire and heat shimmer, toasted feathers, black holes, rainbow-water pools, sweat, and the cosmos/Jupiter scenery and Martians. Use photographic sprite frames (licensed footage, or AI-generated and green-screen keyed via `scripts/birds/key.mjs`), with additive/screen blending, real smoke and ember particles, and lighting that matches the scene. Record every asset's source and cost in `docs/chicken-art-sources.md`. The chicken itself stays the existing rubber-chicken art. Existing shipped v2 effects that read as cartoon (rocket flame, black holes, rainbow pools, explosion debris) go on a polish pass after the feature chain.
+
+## Pacing & catch-up
+
+Target (Mannan, 2026-11-03): the whole game (0 to past the phoenix at 25,000) in 10-15 minutes for a good player. Constants live in `src/components/game/chicken-pacing.ts`; the sim is `bun scripts/pace-sim.mjs`.
+
+- Pace curve (play time, gates and hidden tab excluded): surf 250 at 0:30, hawk 2,000 at 2:30, eagle 10,000 at 6:30, Jupiter 17,000 at 9:30, phoenix 25,000 at 12:00, linear in between.
+- Check every 30 s of play. If the score is more than 10% under the curve and no orb is on screen and the last catch-up orb was 45 s ago or more, spawn one. `CATCHUP_LADDER` picks by how far behind: 10%+ Cursor x5 / Cursor x3 alternating, 25%+ Multiply x3, 45%+ Frenzy x2 (all points x2 for 20 s, +0.1 s per landed click, cap 40 s, stacks with the skin). Add an orb kind by adding a ladder entry and an `OrbKind`.
+- Eagle and phoenix talons: each talon needs `ceil(clicks / skin multiplier)` taps, fixed when the bird arrives. Hawk stays 25.
+- Rocket sequence phases roughly halved; the pilot stage now runs 350 to 700 (moon at 800), the plane never freezes, teleports once, and the explosion is bigger (4.8 s, shockwave, secondary blasts, shake, synthesized boom).
+- Test bridge: `state().pace = { target, actual, behindPct, nextCheckIn, playMs }`, `forcePaceCheck()`, `state().frenzyMs`, `state().pilotTeleports`.
+
+Simulated time to 25,000 (mean of 40 runs per cell, steady landed clicks per second):
+
+| Scenario | 3 clicks/s | 5 clicks/s | 8 clicks/s |
+|---|---|---|---|
+| Before (old talons and sequences, no catch-up) | 82.5 min | 48.7 min | 27.4 min |
+| New talons and sequences, no catch-up | 81.4 min | 48.0 min | 27.0 min |
+| After (catch-up orbs on) | 58.1 min | 32.4 min | 18.7 min |
+
+Reading: orbs and the talon change cut an 8 clicks/s run from 27 to 19 minutes, but the 10-15 minute target needs more than catch-up orbs (about 14,000 landed clicks are required today). Open decision for the pacing design doc: lower the score gates, raise skin multipliers, or make catch-up orbs more frequent.

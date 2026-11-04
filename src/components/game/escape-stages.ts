@@ -3,9 +3,9 @@ export type EscapeStage = 'none' | 'surf' | 'pilot' | 'rocket' | 'moon' | 'cosmo
 export const ESCAPE_STAGES: { stage: EscapeStage; threshold: number; introMs: number }[] = [
   { stage: 'none', threshold: 0, introMs: 0 },
   { stage: 'surf', threshold: 250, introMs: 1100 },
-  { stage: 'pilot', threshold: 350, introMs: 3800 },
-  { stage: 'rocket', threshold: 450, introMs: 0 },
-  { stage: 'moon', threshold: 540, introMs: 3400 },
+  { stage: 'pilot', threshold: 350, introMs: 2400 },
+  { stage: 'rocket', threshold: 700, introMs: 0 },
+  { stage: 'moon', threshold: 800, introMs: 3400 },
   { stage: 'cosmos', threshold: 10_000, introMs: 0 },
   { stage: 'jupiter', threshold: 17_000, introMs: 0 },
 ];
@@ -13,7 +13,7 @@ export const ESCAPE_STAGES: { stage: EscapeStage; threshold: number; introMs: nu
 export const COSMOS_START_SCORE = 10_000;
 export const COSMOS_FORCE_SCORE = 10_500;
 export const JUPITER_SCORE = 17_000;
-export const LIFTOFF_MS = 2600;
+export const LIFTOFF_MS = 1400;
 export const DESCENT_MS = 6000;
 
 export type CosmosBand = 'earth' | 'moon' | 'mars' | 'belt' | 'jupiter-approach';
@@ -50,7 +50,7 @@ export const SURF_TILT = 0.5;
 export const SURF_BOARD_BOTTOM = 140;
 export const ROCKET_LEG_BOTTOM = 165;
 export const ROCKET_MIN_SCALE = 0.42;
-export const ROCKET_ZOOM_MS = 14_000;
+export const ROCKET_ZOOM_MS = 7000;
 export const MOON_DESCENT_FRAC = 0.62;
 export const GOGGLE_PHASE_FRAC = 0.66;
 
