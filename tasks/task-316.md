@@ -19,3 +19,5 @@ Mannan (2026-11-03, verbatim):
 - [ ] **After the phoenix, the fire form:** from the phoenix release onward (and into the endless phase), the chicken is progressively flaming: photoreal flames licking along the silhouette outline (sharing the Task 316 outline emitter), embers trailing its flight, heat shimmer, and at the highest level fully "turned to fire" (the body reads as living flame while staying recognisable as the chicken). Thresholds as constants (e.g. flaming from the phoenix release, full fire form from ~35,000 or the first endless era).
 - [ ] The fire form pairs with the black/red-core lightning; the aura is replaced by flame emission in the fire form; vehicles and grabs still suppress it.
 - [ ] Performance within Task 309 budgets; screenshots of the brief phoenix-scene ignitions, the flaming stage and the full fire form to `~/Desktop/chicken-game-new-designs/11-aura/`.
+
+- Endless-phase placement, drops, orb pools and build order: `docs/chicken-endless-phase.md`.

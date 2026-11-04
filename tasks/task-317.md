@@ -10,3 +10,5 @@ Mannan (2026-11-03, verbatim):
 - [ ] **Performance (hard requirement):** at hundreds to 1000 chickens, switch to a frugal render path: a canvas or instanced sprite batch instead of DOM nodes above a threshold (e.g. >60), shared animation clocks, culled particles and feathers, no per-chicken filters or auras, and LOD (tiny chickens get simplified art). Profile with the Task 309 harness; target ≥50 fps at 1000 chickens on a 2020-class laptop; add an e2e perf check.
 - [ ] Jev strategy: a tree grab means clicking the tree (bark) or the sword; equip the sword and swipe clusters for points.
 - Location: `src/components/game/chicken-game-v2.tsx`, new `tree-boss.tsx`, `sword.ts`, `src/components/inventory/`, the split system (`chicken-split.ts`), `docs/chicken-orb-pacing.md` (endless registry)
+
+- Endless-phase placement, drops, orb pools and build order: `docs/chicken-endless-phase.md`.

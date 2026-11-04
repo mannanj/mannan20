@@ -14,3 +14,5 @@ Mannan (2026-11-03, verbatim):
 #### Addendum — drops (Mannan, verbatim)
 > "let some of them drop interesting items on click and interaction, not all of them will be interactable"
 - [ ] Mix of interactable and non-interactable creatures: some are clickable and can drop interesting items into the bag (shown with FlyToBag), others are pure spectacle (no click targets). Decide per creature in the endless-phase design (`docs/chicken-orb-pacing.md` registry): drop chance, the item, and its use (e.g. a buff, skin, cosmetic, or a key for a later event). Items should be fun and useful, not clutter.
+
+- Endless-phase placement, drops, orb pools and build order: `docs/chicken-endless-phase.md`.
