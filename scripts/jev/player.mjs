@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import os from 'node:os';
@@ -21,6 +21,7 @@ const BOARD_OPEN_MIN = 0.6;
 const FORCE_BOARD_EVERY_S = Number(process.env.FORCE_BOARD_EVERY_S ?? 0);
 const TOGGLE_ZONE = { halfW: 90, h: 44 };
 const VIEW = { width: 1280, height: 800 };
+const BLOCK_NEW_TABS = `document.addEventListener('click', (e) => { if (e.target.closest?.('a[target="_blank"]')) e.preventDefault(); }, true);`;
 const IN_FLIGHT = Number(process.env.IN_FLIGHT ?? 2);
 const SHOT_WIDTH = Number(process.env.JEV_W ?? 960);
 const SHOT_QUALITY = Number(process.env.JEV_Q ?? 50);
@@ -210,8 +211,11 @@ export async function play(opts = {}) {
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const context = await browser.newContext({ viewport: VIEW, recordVideo: { dir: videoDir, size: VIEW } });
   await context.addInitScript(AUDIO_TAP);
+  await context.addInitScript(BLOCK_NEW_TABS);
   const videoStartedAt = Date.now();
   const page = await context.newPage();
+  context.on('page', (extra) => extra.close().catch(() => {}));
+  const gameVideo = page.video();
   const savedOwner = readOwner();
   if (savedOwner) {
     await context.addCookies([{ name: OWNER_COOKIE, value: savedOwner, url: new URL(url).origin }]);
@@ -569,10 +573,10 @@ export async function play(opts = {}) {
   await context.close();
   await browser.close();
 
-  const webm = readdirSync(videoDir).find((f) => f.endsWith('.webm') && f !== 'audio.webm');
+  const webm = gameVideo ? await gameVideo.path() : null;
   const mp4 = path.join(outDir, `${label}-${stamp}.mp4`);
   if (webm) {
-    const video = ['-i', path.join(videoDir, webm)];
+    const video = ['-i', webm];
     const sound = audio ? ['-itsoffset', String(Math.max(0, (audio.startedAt - videoStartedAt) / 1000)), '-i', audioPath] : [];
     const mux = audio ? ['-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '160k'] : [];
     execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...video, ...sound, ...mux, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart', mp4]);
