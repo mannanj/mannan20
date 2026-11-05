@@ -126,7 +126,7 @@ export function InventoryBag({ forceClosed = false, onOpenChange }: InventoryBag
       {showLabel && (
         <span
           role="tooltip"
-          className="pointer-events-none absolute bottom-9 right-0 whitespace-nowrap rounded bg-black/85 px-2 py-1 text-center text-[11px] leading-tight text-white"
+          className="pointer-events-none absolute bottom-11 right-0 whitespace-nowrap rounded bg-black/85 px-2 py-1 text-center text-[11px] leading-tight text-white"
         >
           {tooltip ? <span className="font-medium text-amber-200">{tooltip} +1</span> : 'Inventory'}
         </span>

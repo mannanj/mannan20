@@ -473,7 +473,7 @@ function spawnToasted(s: BirdState, at: Point, ts: number): void {
   s.toastedSpawned += 1;
 }
 
-const HELMET_FRAMES: ReadonlySet<string> = new Set(['grab-body', 'fly-level', 'fly-up', 'fly-down', 'bank', 'away-3q']);
+const HELMET_FRAMES: ReadonlySet<string> = new Set(['grab-body', 'fly-level', 'fly-up', 'fly-down', 'bank', 'away-3q', 'away-far']);
 
 function frame(kind: BirdKind, name: FrameName): FrameAsset {
   const a = FRAMES[kind][name];

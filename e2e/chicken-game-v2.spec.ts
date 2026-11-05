@@ -1076,7 +1076,7 @@ async function useFeatherForSkin(page: Page, item: string, skin: string) {
   await expect.poll(async () => (await birdState(page)).skin).toBe(skin);
 }
 
-const distressOf = (page: Page) => page.getByTestId('chicken-svg').getAttribute('data-distress');
+const distressOf = (page: Page) => page.getByTestId('chicken').getByTestId('chicken-svg').getAttribute('data-distress');
 const aliveToasted = (page: Page) => page.locator('[data-testid="toasted-feather"][data-alive="1"]');
 const toastedInBag = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: BirdBridge }).__chicken.inventory()).then((items) => items.find((i) => i.id === 'toasted-feather')?.count ?? 0);
 
@@ -2010,7 +2010,7 @@ test.describe('chicken game v2 silhouette aura, late lightning and fire form', (
       expect(Math.abs(p.x - expected[i].x)).toBeLessThan(0.01);
       expect(Math.abs(p.y - expected[i].y)).toBeLessThan(0.01);
     });
-    const box = await page.getByTestId('chicken-svg').boundingBox();
+    const box = await page.getByTestId('chicken').getByTestId('chicken-svg').boundingBox();
     expect(box).not.toBeNull();
     if (!box) return;
     const margin = 14;
@@ -2047,7 +2047,7 @@ test.describe('chicken game v2 silhouette aura, late lightning and fire form', (
     const st = await auraState(page);
     expect(st.fire).toBe(1);
     await expect.poll(async () => (await auraState(page)).auraDrawn, { timeout: 20_000 }).toBe(true);
-    const filter = await page.getByTestId('chicken-svg').evaluate((el) => getComputedStyle(el).filter);
+    const filter = await page.getByTestId('chicken').getByTestId('chicken-svg').evaluate((el) => getComputedStyle(el).filter);
     expect(filter).toContain('sepia');
   });
 
@@ -2077,7 +2077,7 @@ test.describe('chicken game v2 silhouette aura, late lightning and fire form', (
 import { BIG_CAT_STAY_MS, CREATURE_ORDER, CREATURE_SPECS, KITTY_HOLD_MS, LION_MANE_CLICKS } from '../src/components/game/creature-event';
 
 const BIG_CAT_ORDER = CREATURE_ORDER.filter((k) => k === 'kitty' || k === 'tiger' || k === 'lion');
-import { ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_MIN_MS, ERA_SCORE_STEP } from '../src/components/game/endless-eras';
+import { ENDLESS_ERAS, ENDLESS_FROM, ERA_MAX_MS, ERA_MIN_MS, ERA_OVERRUN_MS, ERA_SCORE_STEP } from '../src/components/game/endless-eras';
 
 interface CreatureView {
   kind: string | null;
@@ -2772,7 +2772,7 @@ test.describe('Chicken v2 endless: rotation, phoenix 2 and the Mystery orb', () 
     await expect.poll(async () => (await rotState(page)).scene, { timeout: 5000 }).toBe(ENDLESS_ERAS[ROTATION_FIRST_INDEX].scene);
     for (let i = 1; i < ROTATION_LENGTH; i++) {
       await jumpTo(page, lapStartScore(2) + ERA_SCORE_STEP * i);
-      await page.evaluate((ms) => (window as unknown as { __chicken: RotationBridge }).__chicken.fastForward(ms), ERA_MIN_MS / 2 + 500);
+      await page.evaluate((ms) => (window as unknown as { __chicken: RotationBridge }).__chicken.fastForward(ms), (ERA_MAX_MS + ERA_OVERRUN_MS) / 2 + 500);
       await expect.poll(async () => (await rotEra(page)).id, { timeout: 30_000 }).toBe(ROTATION_IDS[i]);
       expect((await rotEra(page)).lap).toBe(2);
       expect((await rotEra(page)).phoenixDue).toBe(false);

@@ -85,6 +85,7 @@ import {
   drawSurf,
   introMsFor,
   COSMOS_FORCE_SCORE,
+  COSMOS_START_SCORE,
   LIFTOFF_MS,
   cosmosProgress,
   isSpaceStage,
@@ -3606,6 +3607,7 @@ function ChickenGameInner() {
 
   useEffect(() => {
     const jumpScore = (n: number) => {
+      if (n >= COSMOS_START_SCORE - 1) moundRef.current?.skip();
       for (const kind of Object.keys(ORB_THRESHOLDS) as OrbKind[]) {
         if (ORB_THRESHOLDS[kind] < n) orbFiredRef.current[kind] = true;
       }
@@ -4700,6 +4702,8 @@ function ChickenGameInner() {
           if (flightKind === 'plane') {
             p.x = Math.max(PLANE_HALF_W - CHICKEN_W / 2, Math.min(vw - PLANE_HALF_W - CHICKEN_W / 2, p.x));
           }
+          p.x = Math.max(0, Math.min(vw - CHICKEN_W, p.x));
+          p.y = Math.max(0, Math.min(vh - CHICKEN_H, p.y));
           keepOutOfHud(hudZone(vw), p, CHICKEN_W / 2, CHICKEN_H / 2, false, vw);
           const decay = Math.exp(-PUSH_DECAY_PER_MS * dtMs);
           push.x *= decay;
@@ -5536,7 +5540,7 @@ function ChickenGameInner() {
         data-covered={sceneCovers ? '1' : '0'}
         className={`absolute inset-0 pointer-events-none transition-opacity duration-[3000ms] ${sceneCovers ? 'opacity-0' : 'opacity-100'}`}
       >
-        {isSpaceStage(stage) && !stageLayersGone && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} />}
+        {isSpaceStage(stage) && !stageLayersGone && <CosmosFlight progressRef={cosmosProgressRef} landing={stage === 'jupiter'} credit={sceneUi === null} />}
         {!stageLayersGone && <EscapeScenery stage={stage} seq={seq} />}
       </div>
       <SpaceGate gate={gate} count={gateCount} onSkip={() => resumeFromGate(true)} onStart={startGateCountdown} />

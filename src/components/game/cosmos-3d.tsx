@@ -31,6 +31,7 @@ import { getSpaceBlobs, startSpacePreload } from './space-preload';
 interface CosmosFlightProps {
   progressRef: MutableRefObject<number>;
   landing: boolean;
+  credit: boolean;
 }
 
 const CREDIT_URL = 'https://sunsignal.app';
@@ -139,7 +140,7 @@ function smooth(t: number): number {
   return c * c * (3 - 2 * c);
 }
 
-export default function CosmosFlight({ progressRef, landing }: CosmosFlightProps) {
+export default function CosmosFlight({ progressRef, landing, credit }: CosmosFlightProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const landingRef = useRef(landing);
   landingRef.current = landing;
@@ -334,15 +335,17 @@ export default function CosmosFlight({ progressRef, landing }: CosmosFlightProps
           />
         </div>
       )}
-      <a
-        href={CREDIT_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-testid="sunsignal-credit-cosmos"
-        className="pointer-events-auto absolute bottom-12 right-4 z-[4] text-[11px] tracking-wide text-white/40 transition-colors hover:text-white/80 sm:bottom-3 sm:right-24"
-      >
-        provided by sunsignal.app
-      </a>
+      {credit && (
+        <a
+          href={CREDIT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="sunsignal-credit-cosmos"
+          className="pointer-events-auto absolute bottom-12 right-4 z-[4] text-[11px] tracking-wide text-white/40 transition-colors hover:text-white/80 sm:bottom-3 sm:right-24"
+        >
+          provided by sunsignal.app
+        </a>
+      )}
     </div>
   );
 }

@@ -53,6 +53,7 @@ export interface MoundControl {
   pull: () => MoundPoint | null;
   hitAt: (x: number, y: number) => boolean;
   wakePet: () => void;
+  skip: () => void;
 }
 
 interface MoundLayerProps {
@@ -126,6 +127,15 @@ export function MoundLayer({ controlRef, groundY, target, skin, tier, hit, bite,
         const m = moundsRef.current[index];
         portsRef.current.hit({ x: m.x, y: m.y - MOUND_ART_H * 0.7 }, MOUND_HEAD_POINTS);
         return true;
+      },
+      skip: () => {
+        doneRef.current = true;
+        if (phaseRef.current === 'idle') return;
+        portsRef.current.setCursorShape(null);
+        setPhase('idle');
+        setMounds([]);
+        setSplitOrb(false);
+        portsRef.current.onDone();
       },
       wakePet: () => {
         if (petRef.current !== 'none') return;
@@ -346,7 +356,7 @@ export function MoundLayer({ controlRef, groundY, target, skin, tier, hit, bite,
             portsRef.current.setCursorShape(splitShape(moundsRef.current));
             window.setTimeout(() => portsRef.current.setCursorShape(null), MOUND_SPLIT_MS);
           }}
-          className="fixed left-1/2 top-[38%] z-[60] flex h-[72px] w-[72px] -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] text-sm font-bold text-white shadow-[0_0_24px_6px_rgba(255,255,255,0.35)] [text-shadow:0_1px_3px_rgba(0,0,0,0.9)] animate-[chickenBob_1.2s_ease-in-out_infinite]"
+          className="fixed left-[72%] top-[40%] z-[60] flex h-[72px] w-[72px] -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] text-sm font-bold text-white shadow-[0_0_24px_6px_rgba(255,255,255,0.35)] [text-shadow:0_1px_3px_rgba(0,0,0,0.9)] animate-[chickenBob_1.2s_ease-in-out_infinite]"
         >
           {MOUND_COPY.split}
         </button>

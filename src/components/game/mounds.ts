@@ -18,6 +18,7 @@ export const MOUND_HIT_RADIUS = 50;
 export const MOUND_ART_W = 120;
 export const MOUND_ART_H = 120;
 export const MOUND_ITEM_ID = 'mongoose';
+export const MOUND_X_FRACS = [0.07, 0.18, 0.29, 0.4, 0.63, 0.77, 0.91];
 export const MOUND_FRONT_FRAC = 0.95;
 export const MOUND_BACK_FRAC = 0.9;
 
@@ -56,9 +57,8 @@ export interface MoundPoint {
 }
 
 export function moundLayout(vw: number, vh: number): MoundPoint[] {
-  const span = vw * 0.76;
-  return Array.from({ length: MOUND_COUNT }, (_, i) => ({
-    x: vw * 0.12 + (span * i) / (MOUND_COUNT - 1),
+  return MOUND_X_FRACS.map((frac, i) => ({
+    x: vw * frac,
     y: vh * (i % 2 === 0 ? MOUND_FRONT_FRAC : MOUND_BACK_FRAC),
   }));
 }

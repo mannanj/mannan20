@@ -52,6 +52,7 @@ const MOUTH_Y = 0.3;
 const EYE_X = 0.3;
 const EYE_Y = 0.14;
 const DART_SLOTS = Array.from({ length: MONKEY_DARTS }, (_, i) => i);
+const LEADERBOARD_CLEAR_PX = 64;
 
 export function MonkeyLayer({ controlRef, jungle, dartSound, speak, target, cursors, click, gearRef }: MonkeyLayerProps) {
   const { items, grant } = useInventory();
@@ -65,6 +66,7 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, target, curs
   const noteTimerRef = useRef(0);
   const callsRef = useRef(0);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const flipRef = useRef(false);
   const aimRef = useRef<HelperAim | null>(null);
   const dartsRef = useRef<(HTMLDivElement | null)[]>([]);
   const laserRef = useRef(false);
@@ -140,11 +142,11 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, target, curs
         const gun = gearRef.current?.heldBy('monkey');
         nextShot = now + (gun ? GUN_SHOT_MS : MONKEY_SHOT_MS);
         if (gun) {
-          if (box) gearRef.current?.fire(gun, { x: box.left + box.width * MOUTH_X, y: box.top + box.height * MOUTH_Y }, at);
+          if (box) gearRef.current?.fire(gun, { x: box.left + box.width * (flipRef.current ? 1 - MOUTH_X : MOUTH_X), y: box.top + box.height * MOUTH_Y }, at);
         } else if (laserRef.current) {
           portsRef.current.click(at, aimed.length * LASER_POINTS);
           if (box && beamRef.current) {
-            const eye = { x: box.left + box.width * EYE_X, y: box.top + box.height * EYE_Y };
+            const eye = { x: box.left + box.width * (flipRef.current ? 1 - EYE_X : EYE_X), y: box.top + box.height * EYE_Y };
             const beam = beamRef.current;
             beam.style.width = `${Math.hypot(at.x - eye.x, at.y - eye.y)}px`;
             const start = `translate(${eye.x}px, ${eye.y}px) rotate(${Math.atan2(at.y - eye.y, at.x - eye.x)}rad)`;
@@ -157,7 +159,7 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, target, curs
         const el = dartsRef.current[dart];
         dart = (dart + 1) % MONKEY_DARTS;
         if (box && el && !gun && !laserRef.current) {
-          const from = { x: box.left + box.width * MOUTH_X, y: box.top + box.height * MOUTH_Y };
+          const from = { x: box.left + box.width * (flipRef.current ? 1 - MOUTH_X : MOUTH_X), y: box.top + box.height * MOUTH_Y };
           const angle = Math.atan2(at.y - from.y, at.x - from.x);
           el.animate(
             [
@@ -181,6 +183,9 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, target, curs
 
   const shown = phase !== 'idle';
   const box = shown ? jevBox(window.innerWidth, window.innerHeight) : null;
+  const monkeyRight = box ? JEV_RIGHT_PX + box.w + HELPER_GAP_PX : 0;
+  const monkeyOnLeft = box ? window.innerWidth - monkeyRight - box.h < window.innerWidth / 2 + LEADERBOARD_CLEAR_PX : false;
+  flipRef.current = monkeyOnLeft;
 
   return (
     <>
@@ -226,10 +231,10 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, target, curs
             onClick={() => portsRef.current.speak()}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => gearRef.current?.give(e.dataTransfer.getData(ITEM_DRAG_TYPE), 'monkey')}
-            style={{ width: box.h, height: box.h, right: JEV_RIGHT_PX + box.w + HELPER_GAP_PX, transform: phase === 'rising' ? 'translateY(105%)' : undefined }}
+            style={{ width: box.h, height: box.h, ...(monkeyOnLeft ? { left: JEV_RIGHT_PX } : { right: monkeyRight }), transform: phase === 'rising' ? 'translateY(105%)' : undefined }}
             className="pointer-events-auto absolute bottom-0"
           >
-            <img src={phase === 'active' ? MONKEY_ART.shoot : MONKEY_ART.sit} alt="" draggable={false} className="h-full w-full object-contain object-bottom" />
+            <img src={phase === 'active' ? MONKEY_ART.shoot : MONKEY_ART.sit} alt="" draggable={false} className={`h-full w-full object-contain object-bottom ${monkeyOnLeft ? '-scale-x-100' : ''}`} />
           </div>
         </div>
       )}

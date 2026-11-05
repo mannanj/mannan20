@@ -10,6 +10,7 @@ const HEADS = {
   'fly-down': { x: 0.51, y: 0.1, r: 0.13 },
   bank: { x: 0.2, y: 0.47, r: 0.12 },
   'away-3q': { x: 0.75, y: 0.42, r: 0.13 },
+  'away-far': { x: 0.47, y: 0.45, r: 0.075 },
 };
 
 for (const [name, head] of Object.entries(HEADS)) {

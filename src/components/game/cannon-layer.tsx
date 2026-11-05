@@ -46,6 +46,8 @@ type CannonPhase = 'idle' | 'invite' | 'drag' | 'docked';
 const WAVE_SLOTS = Array.from({ length: CANNON_WAVES }, (_, i) => i);
 const RIPPLE_SLOTS = [0, 1, 2];
 const RIPPLE_MS = 620;
+const LABEL_ABOVE_PX = 104;
+const LABEL_EDGE_PX = 8;
 const INTERACTIVE = 'button, a, input, [data-hud], [data-testid^="inventory"]';
 
 export function CannonLayer({ controlRef, target, pickChicken, mult, blast, onDocked, skin, tier }: CannonLayerProps) {
@@ -101,7 +103,12 @@ export function CannonLayer({ controlRef, target, pickChicken, mult, blast, onDo
     const tick = () => {
       const at = dragRef.current && phaseRef.current === 'drag' ? dragRef.current : portsRef.current.target();
       const home = cannonHome(window.innerWidth, window.innerHeight);
-      if (labelRef.current) labelRef.current.style.transform = `translate(${at.x}px, ${at.y - 104}px) translateX(-50%)`;
+      if (labelRef.current) {
+        const half = labelRef.current.offsetWidth / 2 + LABEL_EDGE_PX;
+        const lx = Math.min(Math.max(at.x, half), window.innerWidth - half);
+        const ly = Math.max(at.y - LABEL_ABOVE_PX, LABEL_EDGE_PX);
+        labelRef.current.style.transform = `translate(${lx}px, ${ly}px) translateX(-50%)`;
+      }
       const line = lineRef.current;
       if (line) {
         line.setAttribute('x1', String(at.x));
