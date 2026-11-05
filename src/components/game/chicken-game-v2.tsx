@@ -185,7 +185,7 @@ import {
   ORB_FADE_MS,
   ORB_LABELS,
   ORB_LIFETIME_MS,
-  ORB_RADIUS,
+  orbRadius,
   ORB_LABEL_PX,
   ORB_SHARD_COLORS,
   ORB_SPAWN_MARGIN,
@@ -372,6 +372,8 @@ import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type OutlineFrame, type OutlinePoint } from './chicken-outline';
 import { drawEmbers, drawHeatShimmer, drawIgnition, drawOutlineFlames, drawFireBody, drawSilhouetteAura, emitEmbers, fireFilterFor, fireLevelFor, FIRE_BODY_START, lightningStyleFor, makeIgnition, strokeLightning, tickIgnition, updateEmbers, type Ember, type IgnitionState, type LightningStyle } from './chicken-fire';
 import { AppProvider } from '@/context/app-context';
+import { JevLayer, type JevControl } from './jev-layer';
+import { JEV_ART, JEV_ITEM_ID } from './jev-helper';
 import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
 import {
   FINAL_TIER,
@@ -1254,6 +1256,7 @@ function ChickenGameInner() {
   const sceneRef = useRef<EndlessScene | null>(null);
   const phoenix2Ref = useRef(false);
   const mysteryLastRef = useRef<OrbKind | null>(null);
+  const jevRef = useRef<JevControl | null>(null);
   const [mysteryReveal, setMysteryReveal] = useState<{ kind: OrbKind; x: number; y: number } | null>(null);
   const enterEraUi = useCallback((step: number) => {
     const clock = eraRef.current;
@@ -2159,6 +2162,7 @@ function ChickenGameInner() {
     creatureItemHandler = (id) => {
       if (id === YARN_BALL_ITEM_ID) magnetUntilRef.current = Math.max(performance.now(), magnetUntilRef.current) + MAGNET_DURATION_MS;
       if (id === GOLDEN_MANE_ITEM_ID) setManeOn(true);
+      if (id === JEV_ITEM_ID) jevRef.current?.wake();
       if (id === HYDRA_SCALE_ITEM_ID) shieldRef.current += 1;
       if (id === GATE_KEY_ITEM_ID && eraRef.current.index < eraIndexById(GATE_KEY_ERA_ID)) gateKeyRef.current?.();
       if (id === SWORD_ITEM_ID) {
@@ -2667,6 +2671,7 @@ function ChickenGameInner() {
       behind,
       ahead,
       lastKinds: lastKindsRef.current,
+      jevHeld: (jevRef.current?.busy() ?? false) || itemsRef.current.some((i) => i.id === JEV_ITEM_ID),
       activeKinds: active,
       clones: cloneMotionRef.current.size,
       goldens: goldenRef.current.size,
@@ -3039,6 +3044,7 @@ function ChickenGameInner() {
       else if (kind === 'eggs') layingRef.current = { left: layingRef.current.left + EGG_LAY_COUNT, nextAt: now };
       else if (kind === 'giant') giantUntilRef.current = Math.max(now, giantUntilRef.current) + GIANT_DURATION_MS;
       else if (kind === 'magnet') magnetUntilRef.current = Math.max(now, magnetUntilRef.current) + MAGNET_DURATION_MS;
+      else if (kind === 'jev') jevRef.current?.offer(orb.x, orb.y);
     },
     [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply]
   );
@@ -3268,7 +3274,7 @@ function ChickenGameInner() {
         const el = orbElsRef.current.get(orb.id);
         if (el) {
           const wobble = Math.sin(ts * ORB_WOBBLE_FREQUENCY + orb.phase) * ORB_WOBBLE_AMPLITUDE;
-          el.style.transform = `translate(${orb.x - ORB_RADIUS}px, ${orb.y + wobble - ORB_RADIUS}px)`;
+          el.style.transform = `translate(${orb.x - orbRadius(orb.kind)}px, ${orb.y + wobble - orbRadius(orb.kind)}px)`;
           const remaining = ORB_LIFETIME_MS - age;
           el.style.opacity = remaining < ORB_FADE_MS ? String(remaining / ORB_FADE_MS) : '1';
         }
@@ -4019,7 +4025,7 @@ function ChickenGameInner() {
           }
           continue;
         }
-        const orb = orbsRef.current.find((o) => pointInCircle(px, py, o.x, o.y, ORB_RADIUS));
+        const orb = orbsRef.current.find((o) => pointInCircle(px, py, o.x, o.y, orbRadius(o.kind)));
         if (orb) {
           collectOrb(orb.id);
           continue;
@@ -5732,19 +5738,29 @@ function ChickenGameInner() {
             else orbElsRef.current.delete(orb.id);
           }}
           onClick={() => collectOrb(orb.id)}
-          style={{ fontSize: ORB_LABEL_PX[orb.kind] }}
-          className="absolute top-0 left-0 z-20 h-[41px] w-[41px] cursor-pointer rounded-full will-change-transform"
+          style={{ fontSize: ORB_LABEL_PX[orb.kind], width: orbRadius(orb.kind) * 2, height: orbRadius(orb.kind) * 2 }}
+          className="absolute top-0 left-0 z-20 cursor-pointer rounded-full will-change-transform"
         >
           <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
+          {orb.kind === 'jev' ? (
+            <img src={JEV_ART.orb} alt="" draggable={false} className="absolute inset-[4px] h-[calc(100%-8px)] w-[calc(100%-8px)] rounded-full bg-[#10131a] object-cover" />
+          ) : (
           <div className={`${orbFont.className} absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-0.5 text-center leading-[0.8] tracking-[-0.01em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]`}>
             <span className="flex flex-col items-center">
               <span>{orbLabelLines(orb.kind)[0]}</span>
               <span>{orbLabelLines(orb.kind)[1]}</span>
             </span>
           </div>
+          )}
         </div>
       ))}
 
+      <JevLayer
+        controlRef={jevRef}
+        target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
+        click={(at) => hit(undefined, false, at)}
+        speak={() => playCreature('jeff')}
+      />
       {mysteryReveal && (
         <div
           data-testid="mystery-reveal"

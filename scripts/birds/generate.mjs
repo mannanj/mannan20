@@ -26,11 +26,16 @@ async function saveBudget() {
   await writeFile(BUDGET_FILE, JSON.stringify(budget, null, 2) + '\n');
 }
 
+async function refPart(file) {
+  const type = file.endsWith('.png') ? 'image/png' : 'image/jpeg';
+  return { type: 'image_url', image_url: { url: `data:${type};base64,${(await readFile(file)).toString('base64')}` } };
+}
+
 async function generate(job) {
   const model = job.model || DEFAULT_MODEL;
   const body = {
     model,
-    messages: [{ role: 'user', content: job.prompt }],
+    messages: [{ role: 'user', content: job.refs ? [{ type: 'text', text: job.prompt }, ...(await Promise.all(job.refs.map(refPart)))] : job.prompt }],
     modalities: ['image', 'text'],
     image_config: { aspect_ratio: job.aspect || '1:1' },
     usage: { include: true },

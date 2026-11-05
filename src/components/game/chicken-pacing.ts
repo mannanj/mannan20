@@ -89,6 +89,7 @@ export const ORB_REGISTRY: Record<OrbKind, OrbDef> = {
   giant: def('giant', 25_000, 8, 5, { catchUp: true }),
   magnet: def('magnet', 25_000, 8, 3),
   mystery: def('mystery', 25_000, 2, 4),
+  jev: def('jev', 3000, 6, 0),
 };
 
 export const ORB_REGISTRY_KINDS = Object.keys(ORB_REGISTRY) as OrbKind[];
@@ -153,6 +154,7 @@ export interface SchedulerContext {
   behind: number;
   ahead: boolean;
   lastKinds: OrbKind[];
+  jevHeld?: boolean;
   activeKinds: OrbKind[];
   clones: number;
   goldens: number;
@@ -164,6 +166,7 @@ export interface SchedulerContext {
 
 export function orbWeight(kind: OrbKind, ctx: SchedulerContext): number {
   const d = ORB_REGISTRY[kind];
+  if (kind === 'jev' && ctx.jevHeld) return 0;
   let w = d.weight;
   const recent = ctx.lastKinds.indexOf(kind);
   if (recent >= 0 && recent < RECENCY_PENALTIES.length) w *= RECENCY_PENALTIES[recent];

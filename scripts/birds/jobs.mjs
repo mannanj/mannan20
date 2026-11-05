@@ -126,4 +126,20 @@ jobs.push(
   tree('tree-chipped', 'living tree chipped/releasing frame', `${TREE} Its trunk is badly chipped: large patches of bark broken off exposing pale raw wood and splinters, loose bark chips falling, its arm-branches drooping open wide to the sides, mouth open in a dismayed gasp.`)
 );
 
+const JEV_STYLE = 'Photoreal 3D character render, cinematic studio lighting from the upper left, sharp detail, realistic skin pores and brushed steel. Isolated on a completely flat pure chroma green (#00FF00) background that fills the whole frame edge to edge, no shadow on the background, no text, no watermark.';
+const JEV_MAN = 'An original fictional man in his early thirties with short spiky light-brown hair, a square jaw and a calm, slightly blank stare, wearing a black collared button shirt over a black t-shirt. The left side of his face is torn back around the eye to reveal a polished steel eye socket with a glowing red robotic eye, small pistons and wires under ragged skin edges; the rest of his face is ordinary human skin.';
+jobs.push(
+  { id: 'jev-bust', bird: 'jev', name: 'bust', aspect: '1:1', purpose: 'Jev helper: head and shoulders, turned slightly to the left', prompt: `${JEV_STYLE} Subject: head and shoulders of ${JEV_MAN} His body is turned three-quarters toward the left of the frame and he looks to the left. The shoulders run off the bottom of the frame. Both arms are down, out of frame.` },
+  { id: 'jev-sleep', bird: 'jev', name: 'sleep', aspect: '1:1', purpose: 'Jev helper: asleep', prompt: `${JEV_STYLE} Subject: head and shoulders of ${JEV_MAN} He has fallen fast asleep sitting up: head tipped sideways onto his shoulder, human eye closed, mouth slightly open, and the robotic eye dim and dark with no glow. The shoulders run off the bottom of the frame.` },
+  { id: 'jev-arm-open', bird: 'jev', name: 'arm-open', aspect: '16:9', purpose: 'Jev helper: arm reaching left, hand open', prompt: `${JEV_STYLE} Subject: ONE single human arm in a black shirt sleeve, stretched out perfectly horizontally, the sleeve running off the right edge of the frame and the open hand at the left with fingers spread, reaching for something. The back of the hand has a strip of torn skin showing steel knuckles and wires. Nothing else in the frame.` },
+  { id: 'jev-arm-fist', bird: 'jev', name: 'arm-fist', aspect: '16:9', purpose: 'Jev helper: arm reaching left, hand squeezing', prompt: `${JEV_STYLE} Subject: ONE single human arm in a black shirt sleeve, stretched out perfectly horizontally, the sleeve running off the right edge of the frame and the hand at the left squeezed into a tight gripping fist. The back of the hand has a strip of torn skin showing steel knuckles and wires. Nothing else in the frame.` },
+);
+
+const JEV_REFS = (process.env.JEV_REFS ?? '').split(',').filter(Boolean);
+const JEV_EDIT = 'The first image is the person. Keep him the same recognisable person: same face, hair and black shirt, rendered as a photoreal 3D character. The second image shows the look to add: on his left side, skin torn back around the eye to a polished steel eye socket with machinery and ragged skin edges. Apply it to the person from the first image, keeping the rest of his face human.';
+jobs.push(
+  { id: 'jev-face', bird: 'jev', name: 'bust', aspect: '1:1', refs: JEV_REFS, purpose: 'Jev helper: bust from the reference photo', prompt: `${JEV_EDIT} Pose: head and shoulders, body three-quarters toward the left of the frame, glowing red robotic eye, calm blank stare, shoulders running off the bottom of the frame, no arms. Replace the background with flat pure chroma green (#00FF00) edge to edge, no shadow, no text.` },
+  { id: 'jev-face-sleep', bird: 'jev', name: 'sleep', aspect: '1:1', refs: JEV_REFS, purpose: 'Jev helper: asleep, from the reference photo', prompt: `${JEV_EDIT} Pose: fast asleep sitting up, head tipped sideways onto his shoulder, human eye closed, mouth slightly open, the robotic eye dark with no glow, shoulders running off the bottom of the frame. Replace the background with flat pure chroma green (#00FF00) edge to edge, no shadow, no text.` },
+);
+
 export default jobs;

@@ -11,7 +11,8 @@ export type OrbKind =
   | 'multiply100'
   | 'giant'
   | 'magnet'
-  | 'mystery';
+  | 'mystery'
+  | 'jev';
 
 export interface CursorOffset {
   dx: number;
@@ -35,6 +36,7 @@ export const ORB_THRESHOLDS: Record<OrbKind, number> = {
   giant: Number.POSITIVE_INFINITY,
   magnet: Number.POSITIVE_INFINITY,
   mystery: Number.POSITIVE_INFINITY,
+  jev: Number.POSITIVE_INFINITY,
 };
 
 export const ORB_LABELS: Record<OrbKind, string> = {
@@ -51,11 +53,13 @@ export const ORB_LABELS: Record<OrbKind, string> = {
   giant: 'Giant x2.5',
   magnet: 'Magnet pull',
   mystery: 'Mystery ???',
+  jev: 'Jev ?',
 };
 
 export const ORB_LIFETIME_MS = 30_000;
 export const ORB_FADE_MS = 2000;
 export const ORB_RADIUS = 20.5;
+export const JEV_ORB_RADIUS = 48;
 export const ORB_LABEL_PX: Record<OrbKind, number> = {
   multiply: 11,
   cursor5: 12.5,
@@ -70,6 +74,7 @@ export const ORB_LABEL_PX: Record<OrbKind, number> = {
   giant: 11,
   magnet: 11,
   mystery: 11,
+  jev: 11,
 };
 export const MYSTERY_REVEAL_MS = 1800;
 export const MYSTERY_EFFECTS: { kind: OrbKind; weight: number }[] = [
@@ -186,6 +191,10 @@ export function pickMysteryEffect(last: OrbKind | null, rng: () => number): OrbK
     if (roll < 0) return e.kind;
   }
   return options[options.length - 1].kind;
+}
+
+export function orbRadius(kind: OrbKind): number {
+  return kind === 'jev' ? JEV_ORB_RADIUS : ORB_RADIUS;
 }
 
 export function multiplyFactor(kind: OrbKind): number | null {
