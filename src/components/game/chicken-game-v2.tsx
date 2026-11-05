@@ -4230,7 +4230,7 @@ function ChickenGameInner() {
       if (bird.phase === 'done' && birdDoneAtRef.current === 0) birdDoneAtRef.current = ts;
       if (
         upcoming &&
-        ts >= birdDoneAtRef.current + BIRD_FOLLOW_GAP_MS &&
+        (birdDoneAtRef.current === 0 || ts >= birdDoneAtRef.current + BIRD_FOLLOW_GAP_MS) &&
         (birdForcedRef.current || stageRank(stageRef.current) >= stageRank('moon')) &&
         !rootSplitRef.current &&
         holdRef.current === null &&

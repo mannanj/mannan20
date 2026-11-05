@@ -12,4 +12,6 @@ Mannan's pacing pass (2026-11-04). All values live in `escape-stages.ts`, `chick
 - [x] Travel 40% slower; the chicken pauses less while being clicked
 - [x] Jungle monkey: grab it, use it from the bag, darts for 30s, 45s rest; Jev and the monkey use cursor power-ups
 - [x] Leaderboard: control on the sheet's top edge, Submit inside the inputs, email input in place of the link
+- [x] Collectable laser, ray gun and freeze gun; ice block with crack, heat and burst; guns drag to helpers for 15s, 5 minute cooldown
+- [x] Score commas, "Squeeze the chicken" hides after 100 squeezes, Martians 0.4x to 4x, leaderboard limit raised
 - Location: `src/components/game/`, `src/components/inventory/`, `scripts/birds/`

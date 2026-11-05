@@ -544,7 +544,7 @@ export default {
       if (!opId) return fail(400, "invalid_op_id");
       if (path === "/v1/scores/submit") {
         const kind = validKind(body.kind), name = validName(body.name), ownerId = validOwner(body.ownerId), score = body.score;
-        if (!kind || !name || !ownerId || !Number.isInteger(score) || (score as number) < 0 || (score as number) > 1_000_000) return fail(400, "invalid_input");
+        if (!kind || !name || !ownerId || !Number.isInteger(score) || (score as number) < 0 || (score as number) > 1_000_000_000_000) return fail(400, "invalid_input");
         const cookieName = body.cookieName === null || body.cookieName === undefined ? null : validName(body.cookieName); if (body.cookieName !== null && body.cookieName !== undefined && !cookieName) return fail(400, "invalid_input");
         return json(await state.submitScore({ opId, kind, name, ownerId, score: score as number, cookieName }));
       }

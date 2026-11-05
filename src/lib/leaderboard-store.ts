@@ -2,7 +2,7 @@ import { callPortfolioState, stateOperationId } from './portfolio-state-client';
 
 export const NAME_RE = /^[\p{L}\p{N} ._'-]{1,24}$/u;
 export const OWNER_COOKIE = 'chicken-owner';
-export const SCORE_MAX = 1_000_000;
+export const SCORE_MAX = 1_000_000_000_000;
 const TOP_N = 10;
 const KEEP_PER_BOARD = 200;
 const MAGIC_TTL_SECONDS = 900;
