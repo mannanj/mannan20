@@ -64,6 +64,10 @@ function Laser({ size }: { size: number }) {
   );
 }
 
+function Mongoose({ size }: { size: number }) {
+  return <img src="/game/jev/mongoose-run.webp" alt="" width={size} height={size} draggable={false} className="object-contain" />;
+}
+
 function GenericItem({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -122,6 +126,7 @@ const ART: Record<string, (size: number) => ReactNode> = {
   sword: (size) => <Sword size={size} />,
   jev: (size) => <SleepingJev size={size} />,
   monkey: (size) => <Monkey size={size} />,
+  mongoose: (size) => <Mongoose size={size} />,
   laser: (size) => <Laser size={size} />,
   'ray-gun': (size) => <Gun size={size} body="#6d3bd1" glow="#e58bff" />,
   'freeze-gun': (size) => <Gun size={size} body="#2f7fb8" glow="#bdeeff" />,

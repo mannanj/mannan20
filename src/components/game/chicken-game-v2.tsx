@@ -378,6 +378,12 @@ import { BirdCameo, cameoForScore, type CameoKind } from './bird-cameo';
 import { JEV_ART, JEV_ITEM_ID, MONKEY_ITEM_ID } from './jev-helper';
 import { MonkeyLayer, type MonkeyControl } from './monkey-layer';
 import { GearLayer, type GearControl } from './gear-layer';
+import { MoundLayer, type MoundControl } from './mound-layer';
+import { MONGOOSE_READY_KEY, MOUND_ITEM_ID } from './mounds';
+import { CannonLayer, type CannonControl } from './cannon-layer';
+import { CastHud, type CastStatus } from './cast-hud';
+import { CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY } from './cannon';
+import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
 import { ICE_COLORS, isGearItem, type GearId } from './gear';
 import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
 import {
@@ -977,6 +983,8 @@ interface ChickenBridge {
   era: () => { id: string | null; index: number; step: number; lap: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[]; phoenixDue: boolean; fireSkyUntilMs: number };
   forceEra: (id: string) => void;
   spawnGear: (id: GearId) => void;
+  forceMound: () => void;
+  forceCannon: () => void;
   forceScene: (name: string) => void;
   shield: () => number;
   swarm: (n: number) => void;
@@ -1052,6 +1060,10 @@ const PRELOAD_FALLBACK_DELAY_MS = 1500;
 
 const STREAK_MAX_LEN = 34;
 const BIRD_FOLLOW_GAP_MS = 4000;
+const CANNON_RETURN_Y = 120;
+const MOUND_PULL_LERP = 0.06;
+const MOUND_BURST_SHARDS = 18;
+const MOUND_DUST = '#b9b2a6';
 const SQUEEZE_HINT_CLICKS = 100;
 const ICE_BURST_SHARDS = 14;
 const DIRECT_CHICKEN = '[data-testid="chicken"], [data-testid="chicken-clone"]';
@@ -1276,6 +1288,9 @@ function ChickenGameInner() {
   const jevRef = useRef<JevControl | null>(null);
   const monkeyRef = useRef<MonkeyControl | null>(null);
   const gearRef = useRef<GearControl | null>(null);
+  const moundRef = useRef<MoundControl | null>(null);
+  const cannonRef = useRef<CannonControl | null>(null);
+  const cursorShapeRef = useRef<CursorOffset[] | null>(null);
   const [mysteryReveal, setMysteryReveal] = useState<{ kind: OrbKind; x: number; y: number } | null>(null);
   const enterEraUi = useCallback((step: number) => {
     const clock = eraRef.current;
@@ -1792,6 +1807,7 @@ function ChickenGameInner() {
 
   const beginHold = useCallback((id: number, e: ReactPointerEvent<HTMLDivElement>) => {
     if (gearRef.current?.heldBy('you')) return;
+    if (id === 0 && cannonRef.current?.grabChicken(e.clientX, e.clientY)) return;
     if (e.button !== 0 || holdRef.current || swordRef.current.equipped) return;
     const now = performance.now();
     const m = id === 0 ? null : chickMotionRef.current.get(id);
@@ -2198,6 +2214,7 @@ function ChickenGameInner() {
       if (id === JEV_ITEM_ID) jevRef.current?.wake();
       if (id === MONKEY_ITEM_ID) monkeyRef.current?.wake();
       if (isGearItem(id)) gearRef.current?.use(id);
+      if (id === MOUND_ITEM_ID) moundRef.current?.wakePet();
       if (id === HYDRA_SCALE_ITEM_ID) shieldRef.current += 1;
       if (id === GATE_KEY_ITEM_ID && eraRef.current.index < eraIndexById(GATE_KEY_ERA_ID)) gateKeyRef.current?.();
       if (id === SWORD_ITEM_ID) {
@@ -2628,6 +2645,7 @@ function ChickenGameInner() {
     const bird = birdRef.current;
     return (
       gateRef.current !== 'none' ||
+      moundRef.current?.active() === true ||
       ORB_BLOCKING_SEQS.includes(seqRef.current) ||
       bird.pending ||
       (bird.phase !== 'idle' && bird.phase !== 'done') ||
@@ -3052,6 +3070,37 @@ function ChickenGameInner() {
     if (added.length > 0) setCloneViews((v) => [...v, ...added]);
   }, []);
 
+  const pickChicken = useCallback((at: { x: number; y: number }) => {
+    const p = physicsRef.current;
+    const spots = [{ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2 }];
+    for (const m of cloneMotionRef.current.values()) spots.push({ x: m.x + m.w / 2, y: m.y + m.h / 2 });
+    return spots.find((c) => Math.hypot(c.x - at.x, c.y - at.y) <= CANNON_HIT_RADIUS) ?? null;
+  }, []);
+
+  const readCast = useCallback((): CastStatus[] => {
+    const owned = (id: string) => itemsRef.current.some((i) => i.id === id);
+    const cast: CastStatus[] = [];
+    if (owned(JEV_ITEM_ID)) cast.push({ id: 'jev', leftMs: Math.max(0, readJevReadyAt() - Date.now()), active: jevRef.current?.busy() ?? false });
+    if (owned(MONKEY_ITEM_ID)) cast.push({ id: 'monkey', leftMs: Math.max(0, readJevReadyAt(MONKEY_READY_KEY) - Date.now()), active: monkeyRef.current?.busy() ?? false });
+    if (cannonRef.current?.docked()) cast.push({ id: 'cannon', leftMs: cannonRef.current.leftMs(), active: cannonRef.current.armed() });
+    if (owned(MOUND_ITEM_ID)) cast.push({ id: 'mongoose', leftMs: Math.max(0, readJevReadyAt(MONGOOSE_READY_KEY) - Date.now()), active: false });
+    return cast;
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return;
+      const owned = (id: string) => itemsRef.current.some((i) => i.id === id);
+      if (e.key === CAST_KEYS.jev && owned(JEV_ITEM_ID)) jevRef.current?.wake();
+      if (e.key === CAST_KEYS.monkey && owned(MONKEY_ITEM_ID)) monkeyRef.current?.wake();
+      if (e.key === CAST_KEYS.cannon) cannonRef.current?.arm();
+      if (e.key === CAST_KEYS.mongoose && owned(MOUND_ITEM_ID)) moundRef.current?.wakePet();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const collectOrb = useCallback(
     (id: number) => {
       const orb = orbsRef.current.find((o) => o.id === id);
@@ -3379,10 +3428,11 @@ function ChickenGameInner() {
       const buff = cursorBuffRef.current;
       const x5 = ts < buff.x5Until;
       const x3 = ts < buff.x3Until;
-      const key = `${x5 ? 1 : 0}${x3 ? 1 : 0}`;
+      const shape = cursorShapeRef.current;
+      const key = `${x5 ? 1 : 0}${x3 ? 1 : 0}${shape ? 's' : ''}`;
       if (key !== cursorKeyRef.current) {
         cursorKeyRef.current = key;
-        const offsets = buildCursorOffsets(x5, x3);
+        const offsets = shape ?? buildCursorOffsets(x5, x3);
         cursorOffsetsRef.current = offsets;
         setOverlayOffsets(offsets.length > 1 ? offsets.filter((o) => !o.hidden) : []);
       }
@@ -3470,7 +3520,8 @@ function ChickenGameInner() {
       const currentStage = stageRef.current;
       const rawStage = stageForScore(shown);
       const cosmosOpen = shown >= COSMOS_FORCE_SCORE || (!bird.pending && !isBirdBusy(bird));
-      const scoreStage = isSpaceStage(rawStage) && !cosmosOpen ? currentStage : rawStage;
+      const moundHold = currentStage === 'moon' && moundRef.current?.holdsScene(shown) === true;
+      const scoreStage = isSpaceStage(rawStage) && (!cosmosOpen || moundHold) ? currentStage : rawStage;
       cosmosProgressRef.current = cosmosProgress(shown);
       const nextStage = scoreStage === 'moon' && currentStage === 'pilot' ? 'rocket' : scoreStage;
       if (seqRef.current === 'planeExit') seqClicksRef.current += 1;
@@ -3800,6 +3851,8 @@ function ChickenGameInner() {
       },
       setScore: jumpScore,
       spawnGear: (id: GearId) => gearRef.current?.spawn(id),
+      forceMound: () => moundRef.current?.start(),
+      forceCannon: () => cannonRef.current?.invite(),
       forceOrb: (kind: OrbKind) => {
         orbFiredRef.current[kind] = true;
         spawnOrb(kind);
@@ -4063,10 +4116,11 @@ function ChickenGameInner() {
         const px = e.clientX + offset.dx;
         const py = e.clientY + offset.dy;
         if (offset.dx === 0 && offset.dy === 0) {
+          if (moundRef.current?.hitAt(px, py)) continue;
           if (target?.closest(PASS_THROUGH_BLOCKERS)) continue;
           const pad = CURSOR_HIT_PAD;
           let under = 0;
-          if (!rootSplitRef.current && !isGripping(birdRef.current.phase) && pointInRect(px, py, p.x - pad, p.y - pad, CHICKEN_W + pad * 2, CHICKEN_H + pad * 2)) under += 1;
+          if (!rootSplitRef.current && !moundRef.current?.active() && !isGripping(birdRef.current.phase) && pointInRect(px, py, p.x - pad, p.y - pad, CHICKEN_W + pad * 2, CHICKEN_H + pad * 2)) under += 1;
           for (const motion of cloneMotionRef.current.values()) {
             if (pointInRect(px, py, motion.x - pad, motion.y - pad, motion.w + pad * 2, motion.h + pad * 2)) under += 1;
           }
@@ -4074,6 +4128,7 @@ function ChickenGameInner() {
           if (extra > 0) hit(undefined, true, { x: px, y: py }, extra);
           continue;
         }
+        if (moundRef.current?.hitAt(px, py)) continue;
         const orb = orbsRef.current.find((o) => pointInCircle(px, py, o.x, o.y, orbRadius(o.kind)));
         if (orb) {
           collectOrb(orb.id);
@@ -4226,7 +4281,11 @@ function ChickenGameInner() {
       const frameStartY = p.y;
       tickHold(ts, dtMs, dt);
       const bird = birdRef.current;
-      const upcoming = nextBird(bird);
+      const mound = moundRef.current;
+      if (mound?.shouldStart(sc) && stageRef.current === 'moon' && gateRef.current === 'none' && !isBirdBusy(bird) && !bird.pending) mound.start();
+      const cannon = cannonRef.current;
+      if (cannon?.shouldInvite(sc) && !mound?.active() && !isBirdBusy(bird) && !bird.pending && gateRef.current === 'none' && !isScriptedStage(stageRef.current)) cannon.invite();
+      const upcoming = mound?.active() ? null : nextBird(bird);
       if (bird.phase === 'done' && birdDoneAtRef.current === 0) birdDoneAtRef.current = ts;
       if (
         upcoming &&
@@ -4267,7 +4326,7 @@ function ChickenGameInner() {
         setUnlockToast(REAL_CHICKEN_TOAST);
         window.setTimeout(() => setUnlockToast(null), UNLOCK_TOAST_MS);
       }
-      if (sc >= ENDLESS_FROM) {
+      if (sc >= ENDLESS_FROM && !moundRef.current?.active()) {
         const nextStep = nextEraStep(clock, sc, playMsRef.current);
         if (nextStep !== null && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
           enterEraUi(nextStep);
@@ -4374,7 +4433,7 @@ function ChickenGameInner() {
           writeHeatVars(chickenElRef.current, burnLiveRef.current, birdTick.burn, birdTick.tint, regrow);
         }
       }
-      const rootBusy = rootSplitRef.current || holdRef.current !== null || isBirdBusy(bird) || gearRef.current?.freezeFactor(ts) === 0;
+      const rootBusy = rootSplitRef.current || holdRef.current !== null || isBirdBusy(bird) || gearRef.current?.freezeFactor(ts) === 0 || moundRef.current?.active() === true;
 
       const hyper = hyperRef.current;
       const stNow = stageRef.current;
@@ -5125,6 +5184,25 @@ function ChickenGameInner() {
         p.vy = 0;
         p.rotation = Math.sin(ts / HOLD_FLAP_MS) * HOLD_FLAP_DEG;
       }
+      const cannonDrag = cannonRef.current?.dragPoint();
+      if (cannonDrag) {
+        p.x = cannonDrag.x - CHICKEN_W / 2;
+        p.y = cannonDrag.y - CHICKEN_H / 2;
+      } else if (!scripted && (cannonRef.current?.docked() || jevRef.current?.busy() || monkeyRef.current?.busy())) {
+        const limit = zoneLimitY(vh, CHICKEN_H);
+        if (p.y > limit) {
+          p.y = limit;
+          if (p.vy > 0) p.vy = -p.vy;
+        }
+      }
+      const moundPull = moundRef.current?.pull();
+      if (moundPull) {
+        p.x = frameStartX + (moundPull.x - CHICKEN_W / 2 - frameStartX) * MOUND_PULL_LERP;
+        p.y = frameStartY + (moundPull.y - CHICKEN_H - frameStartY) * MOUND_PULL_LERP;
+      } else if (moundRef.current?.active()) {
+        p.x = frameStartX;
+        p.y = frameStartY;
+      }
       const iceFactor = gearRef.current?.freezeFactor(ts) ?? 1;
       if (iceFactor < 1 && !creatureHold && !isBirdBusy(bird) && !scripted) {
         p.x = frameStartX + (p.x - frameStartX) * iceFactor;
@@ -5133,7 +5211,7 @@ function ChickenGameInner() {
       if (chickenElRef.current) {
         const gripped = isGripping(bird.phase) ? 'none' : '';
         if (chickenElRef.current.style.pointerEvents !== gripped) chickenElRef.current.style.pointerEvents = gripped;
-        const hidden = rootSplitRef.current ? 'hidden' : 'visible';
+        const hidden = rootSplitRef.current || (moundRef.current?.active() && !moundRef.current.pull()) ? 'hidden' : 'visible';
         if (chickenElRef.current.style.visibility !== hidden) chickenElRef.current.style.visibility = hidden;
         renderRotRef.current = ((p.rotation + wobble + p.bank) * Math.PI) / 180;
         renderScaleRef.current.sx = (1 + sizeBoostRef.current) * stageScale;
@@ -5837,6 +5915,39 @@ function ChickenGameInner() {
         click={(at, count) => hit(undefined, true, at, count)}
         gearRef={gearRef}
       />
+      <MoundLayer
+        controlRef={moundRef}
+        groundY={() => groundYFor(window.innerHeight)}
+        target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
+        skin={skin}
+        tier={tier}
+        hit={(at, count) => hit(undefined, true, at, count)}
+        bite={(at) => hit(undefined, true, at, 1)}
+        setCursorShape={(shape) => {
+          cursorShapeRef.current = shape;
+        }}
+        burst={(at) => spawnShards(at.x, at.y, MOUND_BURST_SHARDS, MOUND_DUST)}
+        onDone={() => {
+          modeRef.current = 'flying';
+          physicsRef.current.vy = -BASE_SPEED;
+        }}
+      />
+      <CannonLayer
+        controlRef={cannonRef}
+        target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
+        pickChicken={pickChicken}
+        mult={() => multRef.current}
+        blast={(at, raw) => hit(undefined, false, at, raw)}
+        onDocked={() => {
+          const p = physicsRef.current;
+          p.x = window.innerWidth / 2 - CHICKEN_W / 2;
+          p.y = CANNON_RETURN_Y;
+          modeRef.current = 'flying';
+        }}
+        skin={skin}
+        tier={tier}
+      />
+      <CastHud read={readCast} />
       <GearLayer
         controlRef={gearRef}
         monkeyRef={monkeyRef}

@@ -14,4 +14,8 @@ Mannan's pacing pass (2026-11-04). All values live in `escape-stages.ts`, `chick
 - [x] Leaderboard: control on the sheet's top edge, Submit inside the inputs, email input in place of the link
 - [x] Collectable laser, ray gun and freeze gun; ice block with crack, heat and burst; guns drag to helpers for 15s, 5 minute cooldown
 - [x] Score commas, "Squeeze the chicken" hides after 100 squeezes, Martians 0.4x to 4x, leaderboard limit raised
+- [x] Moon mound scene at 800 (45s): heads pop, random swarms, Split ball matches the mounds, mongooses break them
+- [x] Mongoose: toss it at the chicken to befriend it, 3 points a second, 30s stay, 2 minute cooldown, in the bag
+- [x] Chicken cannon at 1,200: drag to the silhouette, sound-wave blast, 100 points, 5s cooldown
+- [x] Keys 1 Jev, 2 Monkey, 3 Cannon, 4 Mongoose with a HUD row; the chicken stays out of the bottom zone
 - Location: `src/components/game/`, `src/components/inventory/`, `scripts/birds/`

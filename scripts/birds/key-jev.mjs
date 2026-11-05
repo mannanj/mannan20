@@ -39,3 +39,4 @@ await sharp(bust)
 await write(await keyed('monkey-sit'), 'monkey-sit', 360);
 await write(await keyed('monkey-shoot'), 'monkey-shoot', 360);
 await sharp(path.join(RAW, 'jungle.png')).resize({ width: 1600 }).webp({ quality: 74 }).toFile(path.resolve(HERE, '../../public/game/scenes/jungle.webp'));
+for (const name of ['mongoose-run', 'mongoose-bite', 'mound', 'mound-broken']) await write(await keyed(name), name, 320);

@@ -14,6 +14,7 @@ export const TEST_SCENES: Record<string, number> = {
   'plane-exit': 348,
   rocket: 350,
   moon: 400,
+  mounds: 800,
   multiply: 175,
   'cursor-x5': 100,
   'cursor-x3': 250,

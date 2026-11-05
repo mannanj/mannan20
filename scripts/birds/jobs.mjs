@@ -149,4 +149,12 @@ jobs.push(
   { id: 'jungle-bg', bird: 'jev', name: 'jungle', aspect: '16:9', purpose: 'Jungle era background', prompt: 'Ultra-realistic wide photograph of a dense tropical jungle at dusk, huge mossy tree trunks, hanging vines and broad leaves framing the sides, soft shafts of warm light and mist in the middle distance, a dark leafy forest floor along the bottom of the frame, a thick horizontal branch high on the right side. The centre of the frame stays open and darker so bright objects read clearly over it. No animals, no people, no text, no watermark.' },
 );
 
+const MOUND_STYLE = 'Ultra-realistic photograph, sharp natural detail, soft light from the upper left. Isolated on a completely flat pure chroma green (#00FF00) background that fills the whole frame edge to edge, no shadow on the background, no ground, no text, no watermark.';
+jobs.push(
+  { id: 'mongoose-run', bird: 'jev', name: 'mongoose-run', aspect: '1:1', purpose: 'Mongoose running', prompt: `${MOUND_STYLE} Subject: ONE slender grey-brown mongoose in full side view running to the left, whole body and long tail in frame, alert eyes, mid stride.` },
+  { id: 'mongoose-bite', bird: 'jev', name: 'mongoose-bite', aspect: '1:1', purpose: 'Mongoose biting', prompt: `${MOUND_STYLE} Subject: ONE slender grey-brown mongoose lunging to the left with its mouth wide open showing small teeth, front paws reaching forward, whole body and long tail in frame.` },
+  { id: 'mound-whole', bird: 'jev', name: 'mound', aspect: '1:1', purpose: 'Termite mound', prompt: `${MOUND_STYLE} Subject: ONE tall conical termite mound of dry grey moon-coloured earth, rough lumpy texture, with a dark round hole in its top. It stands alone, flat at the base.` },
+  { id: 'mound-broken', bird: 'jev', name: 'mound-broken', aspect: '1:1', purpose: 'Broken termite mound', prompt: `${MOUND_STYLE} Subject: ONE termite mound of dry grey moon-coloured earth that has been smashed apart: only the jagged lower half remains, with broken chunks and crumbled dirt around its flat base.` },
+);
+
 export default jobs;

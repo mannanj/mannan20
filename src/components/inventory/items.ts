@@ -28,6 +28,7 @@ export const GAME_ITEMS = {
   sword: { label: 'Sword', max: 1, usable: true },
   jev: { label: 'Jev (asleep)', max: 1, usable: true },
   monkey: { label: 'Monkey', max: 1, usable: true },
+  mongoose: { label: 'Mongoose', max: 1, usable: true },
   laser: { label: 'Laser', max: 1, usable: true },
   'ray-gun': { label: 'Ray gun', max: 1, usable: true, draggable: true },
   'freeze-gun': { label: 'Freeze gun', max: 1, usable: true, draggable: true },
