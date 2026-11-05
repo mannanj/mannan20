@@ -91,6 +91,13 @@ export function tierForScore(score: number): number {
   return tier;
 }
 
+export const EVOLUTION_DECAY_MS = 3000;
+
+export function clicksAfterDecay(clicks: number): number {
+  const tier = tierForScore(clicks);
+  return tier === 0 ? 0 : TIERS[tier - 1].threshold;
+}
+
 export function tierProgress(score: number): number {
   const tier = tierForScore(score);
   if (tier === FINAL_TIER) return 1;

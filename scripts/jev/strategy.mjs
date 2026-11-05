@@ -29,8 +29,8 @@ export const QUESTIONS = {
   gate_start: box('the start arrow or start button of the "Scene ready" message in `screen`'),
   gate_download: noul('Does `screen` show a "Downloading scene" message with a progress bar?'),
   gate_skip: box('the small "skip instead?" link under the downloading progress bar in `screen`'),
-  orb: noul('Is there a small round glowing rainbow-coloured orb in `screen` with a text label such as "Multiply x3", "Multiply x5", "Cursor x5", "Cursor x3", "Frenzy x2" or "Chain Lightning"?'),
-  orb_box: box('the small round rainbow-coloured ability orb with a label like "Multiply x5", "Cursor x5", "Frenzy x2" or "Chain Lightning" in `screen`'),
+  orb: noul('Is there a small round glowing rainbow-coloured orb in `screen` with a text label such as "Multiply x3", "Multiply x5", "Cursor x5", "Cursor x3", "Points x2" or "Chain Lightning"?'),
+  orb_box: box('the small round rainbow-coloured ability orb with a label like "Multiply x5", "Cursor x5", "Points x2" or "Chain Lightning" in `screen`'),
   grip: noul('Is the text "help the chicken escape!" shown at the top of `screen`?'),
   counter: box('the yellow text label reading "front claw N / M" or "back claw N / M" in `screen`'),
   claw_side: {

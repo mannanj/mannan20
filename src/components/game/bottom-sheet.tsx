@@ -8,10 +8,11 @@ interface BottomSheetProps {
   onClose: () => void;
   label: string;
   testId: string;
+  header?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export function BottomSheet({ id, open, onClose, label, testId, children }: BottomSheetProps) {
+export function BottomSheet({ id, open, onClose, label, testId, header, children }: BottomSheetProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -30,7 +31,8 @@ export function BottomSheet({ id, open, onClose, label, testId, children }: Bott
       aria-hidden={!open}
       className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#121214]/95 backdrop-blur-md transition-transform duration-300 ease-out ${open ? 'translate-y-0' : 'pointer-events-none translate-y-full'}`}
     >
-      <div className="mx-auto max-h-[60vh] w-full max-w-5xl overflow-y-auto px-6 pt-5 pb-12">
+      {header}
+      <div className="mx-auto max-h-[60vh] w-full max-w-5xl overflow-y-auto px-6 pt-9 pb-8">
         {children}
       </div>
     </div>

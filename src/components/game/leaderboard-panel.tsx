@@ -5,6 +5,7 @@ import { BottomSheet } from './bottom-sheet';
 import { FeedbackPopup } from './feedback-popup';
 
 const PANEL_ID = 'chicken-leaderboard-panel';
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const NAME_COOKIE = 'chicken-name';
 const KIND_COOKIE = 'chicken-kind';
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
@@ -259,6 +260,34 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
 
   const entries = boards?.[tab] ?? [];
 
+  const toggle = (
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={PANEL_ID}
+        data-testid="chicken-leaderboard-link"
+        className={`${open ? 'absolute top-2' : 'fixed bottom-4'} left-1/2 z-50 flex -translate-x-1/2 cursor-pointer items-center gap-1.5 text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80`}
+      >
+        Leaderboard
+        <svg
+          data-testid="leaderboard-caret"
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden
+          className={`h-3 w-3 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+        >
+          <path
+            d="M2.5 7.5 L6 4 L9.5 7.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+  );
+
   return (
     <>
       <BottomSheet
@@ -267,9 +296,9 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
         onClose={onClose}
         label="Leaderboard"
         testId="chicken-leaderboard-panel"
+        header={open ? toggle : null}
       >
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-sm font-semibold tracking-wide text-white/90">Leaderboard</h2>
+        <div className="flex items-center justify-end gap-4">
           <div role="tablist" aria-label="Board" className="flex gap-1 rounded-full border border-white/10 p-0.5">
             {(['human', 'agent'] as const).map((kind) => (
               <button
@@ -318,6 +347,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="relative w-80 max-w-full">
           <input
             type="text"
             value={name}
@@ -325,8 +355,18 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
             maxLength={NAME_MAX}
             placeholder="Your name"
             data-testid="leaderboard-name-input"
-            className="w-44 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+            className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-3 pr-36 text-sm text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
           />
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!name.trim() || score < 1 || submitting}
+            data-testid="leaderboard-submit"
+            className="absolute right-1 top-1 bottom-1 cursor-pointer rounded-md bg-white/10 px-3 text-xs text-white/85 transition-colors hover:bg-white/15 disabled:cursor-default disabled:bg-transparent disabled:text-white/30"
+          >
+            {submitting ? 'Saving…' : `Submit (${score} Pts)`}
+          </button>
+          </div>
           <label className="flex cursor-pointer items-center gap-2 text-xs text-white/50">
             <input
               type="checkbox"
@@ -337,15 +377,6 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
             />
             I’m an agent/AI
           </label>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!name.trim() || score < 1 || submitting}
-            data-testid="leaderboard-submit"
-            className="cursor-pointer rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/10 disabled:cursor-default disabled:opacity-40"
-          >
-            {submitting ? 'Saving…' : `Add my score · ${score}`}
-          </button>
         </div>
 
         {nameTaken && (
@@ -376,14 +407,14 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
                 Rename all
               </button>
             </div>
-          ) : (
+          ) : claimFormOpen ? null : (
             <button
               type="button"
-              onClick={() => setClaimFormOpen((v) => !v)}
+              onClick={() => setClaimFormOpen(true)}
               data-testid="leaderboard-claim-toggle"
               className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
             >
-              Take your name with you — link your email
+              Save to your email?
             </button>
           )}
         </div>
@@ -418,24 +449,27 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
 
         {claimFormOpen && !identity?.verified && (
           <div className="mt-2">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-80 max-w-full">
               <input
                 type="email"
+                autoFocus
                 value={claimEmail}
                 onChange={(e) => setClaimEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 data-testid="leaderboard-claim-email"
-                className="w-52 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
+                className="w-full rounded-lg border border-white/10 bg-black/30 py-2 pl-3 pr-20 text-sm text-white outline-none transition-colors focus:border-[#4FC3F7]/50"
               />
-              <button
-                type="button"
-                onClick={requestMagicLink}
-                disabled={!claimEmail.trim() || claimPhase === 'sending'}
-                data-testid="leaderboard-claim-send"
-                className="cursor-pointer rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/10 disabled:cursor-default disabled:opacity-40"
-              >
-                {claimPhase === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
-              </button>
+              {EMAIL_SHAPE.test(claimEmail.trim()) && (
+                <button
+                  type="button"
+                  onClick={requestMagicLink}
+                  disabled={claimPhase === 'sending'}
+                  data-testid="leaderboard-claim-send"
+                  className="absolute right-1 top-1 bottom-1 cursor-pointer rounded-md bg-[#4FC3F7]/20 px-3 text-xs text-[#4FC3F7] transition-colors hover:bg-[#4FC3F7]/30 disabled:cursor-default disabled:opacity-60"
+                >
+                  {claimPhase === 'sending' ? 'Sending…' : 'Submit'}
+                </button>
+              )}
             </div>
             {claimMessage && (
               <p data-testid="leaderboard-claim-message" className="mt-1.5 text-xs text-white/45">
@@ -455,18 +489,14 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
         )}
 
         <div className="mt-5 border-t border-white/10 pt-4">
-          <p className="text-xs text-white/40">
-            Humans on one board, agents on another — don’t like the division?{' '}
-            <button
-              type="button"
-              onClick={() => setFeedbackOpen(true)}
-              data-testid="leaderboard-feedback-toggle"
-              className="cursor-pointer text-[#4FC3F7] underline-offset-2 hover:underline"
-            >
-              Send feedback
-            </button>
-            {' '}— we’d love to hear your voice.
-          </p>
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            data-testid="leaderboard-feedback-toggle"
+            className="cursor-pointer text-xs text-[#4FC3F7] underline-offset-2 hover:underline"
+          >
+            Send feedback
+          </button>
         </div>
       </BottomSheet>
 
@@ -481,31 +511,7 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
 
       <FeedbackPopup open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
 
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        aria-controls={PANEL_ID}
-        data-testid="chicken-leaderboard-link"
-        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 cursor-pointer items-center gap-1.5 text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
-      >
-        Leaderboard
-        <svg
-          data-testid="leaderboard-caret"
-          viewBox="0 0 12 12"
-          fill="none"
-          aria-hidden
-          className={`h-3 w-3 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
-        >
-          <path
-            d="M2.5 7.5 L6 4 L9.5 7.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+      {!open && toggle}
     </>
   );
 }

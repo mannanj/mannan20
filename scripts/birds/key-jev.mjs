@@ -36,3 +36,6 @@ await sharp(bust)
   .resize(200)
   .webp({ quality: 86, alphaQuality: 90 })
   .toFile(path.join(OUT, 'orb.webp'));
+await write(await keyed('monkey-sit'), 'monkey-sit', 360);
+await write(await keyed('monkey-shoot'), 'monkey-shoot', 360);
+await sharp(path.join(RAW, 'jungle.png')).resize({ width: 1600 }).webp({ quality: 74 }).toFile(path.resolve(HERE, '../../public/game/scenes/jungle.webp'));

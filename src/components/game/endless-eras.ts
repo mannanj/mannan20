@@ -1,14 +1,15 @@
 import type { OrbKind } from './chicken-orbs';
 import type { CreatureKind } from './creature-event';
 
-export const ENDLESS_FROM = 25_000;
-export const ERA_SCORE_STEP = 8_000;
-export const ERA_MAX_MS = 180_000;
+export const ENDLESS_FROM = 2000;
+export const ERA_SCORE_STEP = 6000;
+export const ERA_MAX_MS = 120_000
+export const ERA_MIN_MS = 75_000;
 export const ERA_TRANSITION_MS = 6_000;
 export const ERA_OVERRUN_MS = 20_000;
 export const DROP_BEHIND_BONUS = 1.5;
-export const FIRE_FORM_SCORE = 29_000;
-export const REAL_CHICKEN_UNLOCK_SCORE = 50_000;
+export const FIRE_FORM_SCORE = 3500;
+export const REAL_CHICKEN_UNLOCK_SCORE = 27_000;
 export const GATE_KEY_ERA_ID = 'forest';
 export const ROTATION_FIRST_INDEX = 1;
 export const CREATURE_SPEED_PER_LAP = 0.2;
@@ -18,7 +19,7 @@ export const PHOENIX2_TALON_SCALE = 1.5;
 export const PHOENIX2_FIRE_SKY_MS = 60_000;
 export const MYSTERY_ORB: OrbKind = 'mystery';
 
-export type EndlessScene = 'fire-sky' | 'night-yard' | 'temple' | 'temple-gate' | 'forest';
+export type EndlessScene = 'fire-sky' | 'night-yard' | 'jungle' | 'temple' | 'temple-gate' | 'forest';
 
 export interface EraCreature {
   kind: CreatureKind;
@@ -34,8 +35,8 @@ export interface EndlessEraDef {
   creatures: EraCreature[];
 }
 
-export const CAT_OFFSETS_MS: Record<CreatureKind, number> = { kitty: 15_000, tiger: 75_000, lion: 135_000, cyclops: 20_000, hydra: 90_000, cerberus: 30_000, tree: 20_000 };
-export const SECOND_TREE_AT_MS = 110_000;
+export const CAT_OFFSETS_MS: Record<CreatureKind, number> = { kitty: 8000, tiger: 35_000, lion: 65_000, cyclops: 10_000, hydra: 45_000, cerberus: 15_000, tree: 10_000 };
+export const SECOND_TREE_AT_MS = 55_000;
 export const TREES_PER_FOREST = 2;
 export const LATER_SWORD_TREE_CHANCE = 0.3;
 
@@ -61,9 +62,17 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     ],
   },
   {
+    id: 'jungle',
+    label: 'Jungle',
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 2,
+    scene: 'jungle',
+    pool: ['eggs', 'frenzy', 'cursor5', 'cursor3', 'multiply10'],
+    creatures: [],
+  },
+  {
     id: 'myth-1',
     label: 'Myth',
-    from: ENDLESS_FROM + ERA_SCORE_STEP * 2,
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 3,
     scene: 'temple',
     pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'giant'],
     creatures: [
@@ -74,7 +83,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
   {
     id: 'myth-2',
     label: 'The gate',
-    from: ENDLESS_FROM + ERA_SCORE_STEP * 3,
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 4,
     scene: 'temple-gate',
     pool: ['eggs', 'frenzy', 'multiply10', 'cursor5', 'magnet'],
     creatures: [{ kind: 'cerberus', atMs: CAT_OFFSETS_MS.cerberus }],
@@ -82,7 +91,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
   {
     id: GATE_KEY_ERA_ID,
     label: 'Enchanted forest',
-    from: ENDLESS_FROM + ERA_SCORE_STEP * 4,
+    from: ENDLESS_FROM + ERA_SCORE_STEP * 5,
     scene: 'forest',
     pool: ['eggs', 'frenzy', 'chain', 'multiply25', 'multiply100', 'cursor5'],
     creatures: [
@@ -146,9 +155,10 @@ export function eraIndexForScore(score: number): number {
 
 export function nextEraStep(clock: EraClock, score: number, playMs: number): number | null {
   const byScore = eraStepForScore(score);
-  if (byScore > clock.step) return byScore;
-  if (clock.step < 0) return null;
-  return playMs - clock.enteredAtMs >= ERA_MAX_MS ? clock.step + 1 : null;
+  if (clock.step < 0) return byScore >= 0 ? byScore : null;
+  const inEra = playMs - clock.enteredAtMs;
+  if (byScore > clock.step && inEra >= ERA_MIN_MS) return clock.step + 1;
+  return inEra >= ERA_MAX_MS ? clock.step + 1 : null;
 }
 
 export function enterEraStep(clock: EraClock, step: number, score: number, playMs: number): EndlessEraDef {

@@ -23,11 +23,11 @@ export interface CursorOffset {
 export const ORB_KINDS: OrbKind[] = ['multiply', 'cursor5', 'cursor3', 'frenzy', 'eggs'];
 
 export const ORB_THRESHOLDS: Record<OrbKind, number> = {
-  multiply: 300,
-  cursor5: 600,
-  cursor3: 900,
-  frenzy: 1200,
-  eggs: 2200,
+  multiply: 175,
+  cursor5: 100,
+  cursor3: 250,
+  frenzy: 450,
+  eggs: 700,
   multiply5: Number.POSITIVE_INFINITY,
   chain: Number.POSITIVE_INFINITY,
   multiply10: Number.POSITIVE_INFINITY,
@@ -43,14 +43,14 @@ export const ORB_LABELS: Record<OrbKind, string> = {
   multiply: 'Multiply x3',
   cursor5: 'Cursor x5',
   cursor3: 'Cursor x3',
-  frenzy: 'Frenzy x2',
+  frenzy: 'Points x2',
   eggs: 'Golden Eggs',
   multiply5: 'Multiply x5',
   chain: 'Chain Lightning',
   multiply10: 'Multiply x10',
   multiply25: 'Multiply x25',
   multiply100: 'Multiply x100',
-  giant: 'Giant x2.5',
+  giant: 'Points x2.5',
   magnet: 'Magnet pull',
   mystery: 'Mystery ???',
   jev: 'Jev ?',
@@ -124,10 +124,10 @@ export const MULTIPLY_BLINK_START_MS = 10_000;
 export const MULTIPLY_VANISH_EARLIEST_MS = 12_000;
 export const MAX_CHICKENS_ON_SCREEN = 150;
 export const CLONE_DOM_LIMIT = 60;
-export const CLONE_DRIFT_SPEED = 0.09;
+export const CLONE_DRIFT_SPEED = 0.054;
 export const CLONE_HOMING = 0.00022;
 export const CLONE_FLOCK_RADIUS = 130;
-export const CLONE_MAX_SPEED = 0.16;
+export const CLONE_MAX_SPEED = 0.096;
 export const CLONE_SPAWN_SPREAD = 40;
 export const BLACK_HOLE_LIFE_MS = 900;
 export const BLACK_HOLE_RADIUS = 16;
@@ -159,7 +159,7 @@ export const MAX_GOLDEN_CHICKENS = 3;
 export const GOLDEN_HIT_VALUE = 5;
 export const GOLDEN_W = 70;
 export const GOLDEN_H = 140;
-export const GOLDEN_SPEED = 0.14;
+export const GOLDEN_SPEED = 0.084;
 export const GOLDEN_TURN_MIN_MS = 900;
 export const GOLDEN_TURN_SPREAD_MS = 1800;
 export const GOLDEN_BURST_SHARDS = 28;
@@ -169,18 +169,19 @@ export const GOLDEN_COLORS = ['#ffd54a', '#ffb300', '#fff3b0', '#ffe082'];
 export const CURSOR_BUFF_MS = 30_000;
 export const CURSOR_EXTEND_PER_CLICK_MS = 50;
 export const CURSOR_CAP_MS = 60_000;
-export const CURSOR_X5_OFFSET = 30;
-export const CURSOR_X3_OFFSET = 21;
+export const CURSOR_X5_OFFSET = 45;
+export const CURSOR_X3_OFFSET = 32;
 export const CURSOR_RING_INNER_COUNT = 6;
-export const CURSOR_RING_INNER_RADIUS = 40;
+export const CURSOR_RING_INNER_RADIUS = 60;
 export const CURSOR_RING_OUTER_COUNT = 8;
-export const CURSOR_RING_OUTER_RADIUS = 78;
+export const CURSOR_RING_OUTER_RADIUS = 117;
 const TRIANGLE_COS = Math.cos(Math.PI / 6);
 const TRIANGLE_SIN = Math.sin(Math.PI / 6);
 export const MAX_CURSORS = 15;
-export const CURSOR_HAND_SIZE = 40;
-export const CURSOR_HAND_HOT_X = 20;
-export const CURSOR_HAND_HOT_Y = 19;
+export const CURSOR_HAND_SIZE = 60
+export const CURSOR_HIT_PAD = 15;
+export const CURSOR_HAND_HOT_X = 30;
+export const CURSOR_HAND_HOT_Y = 28.5;
 
 export function pickMysteryEffect(last: OrbKind | null, rng: () => number): OrbKind {
   const options = MYSTERY_EFFECTS.filter((e) => e.kind !== last);

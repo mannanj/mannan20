@@ -8,10 +8,10 @@ export interface Rgb {
 
 export type LightningStyle = 'ramp' | 'red' | 'black-red';
 
-export const LIGHTNING_RED_SCORE = 10_000;
-export const LIGHTNING_BLACK_SCORE = 25_000;
-export const FIRE_FLAMING_SCORE = 25_000;
-export const FIRE_FULL_SCORE = 35_000;
+export const LIGHTNING_RED_SCORE = 1000;
+export const LIGHTNING_BLACK_SCORE = 2000;
+export const FIRE_FLAMING_SCORE = 2000;
+export const FIRE_FULL_SCORE = 3500;
 export const MAX_EMBERS = 80;
 export const IGNITION_MIN_MS = 1000;
 export const IGNITION_SPREAD_MS = 1000;

@@ -8,10 +8,12 @@ export interface ItemDefinition {
   label: string;
   max: number;
   usable: boolean;
+  draggable?: boolean;
 }
 
 export const INVENTORY_STORAGE_KEY = 'article-inventory-v1';
 export const DEFAULT_ITEM_MAX = 12;
+export const ITEM_DRAG_TYPE = 'application/x-game-item';
 
 export const GAME_ITEMS = {
   'hawk-feather': { label: 'Hawk feather', max: 1, usable: true },
@@ -25,6 +27,10 @@ export const GAME_ITEMS = {
   'gate-key': { label: 'Gate key', max: 1, usable: true },
   sword: { label: 'Sword', max: 1, usable: true },
   jev: { label: 'Jev (asleep)', max: 1, usable: true },
+  monkey: { label: 'Monkey', max: 1, usable: true },
+  laser: { label: 'Laser', max: 1, usable: true },
+  'ray-gun': { label: 'Ray gun', max: 1, usable: true, draggable: true },
+  'freeze-gun': { label: 'Freeze gun', max: 1, usable: true, draggable: true },
 } as const satisfies Record<string, ItemDefinition>;
 
 export type GameItemId = keyof typeof GAME_ITEMS;

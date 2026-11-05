@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BagIcon } from './bag-icon';
 import { useInventory } from './inventory-context';
 import { ItemArt } from './item-art';
-import { definitionFor } from './items';
+import { ITEM_DRAG_TYPE, definitionFor } from './items';
 
 const BAG_SIZE = 40;
 const ROW_ART_SIZE = 28;
@@ -76,6 +76,8 @@ export function InventoryBag({ forceClosed = false, onOpenChange }: InventoryBag
               <div
                 key={item.id}
                 data-testid={`inventory-item-${item.id}`}
+                draggable={definitionFor(item.id)?.draggable ?? false}
+                onDragStart={(e) => e.dataTransfer.setData(ITEM_DRAG_TYPE, item.id)}
                 className="flex items-center gap-2 rounded-lg bg-black/20 px-2 py-1.5"
               >
                 <ItemArt id={item.id} size={ROW_ART_SIZE} />

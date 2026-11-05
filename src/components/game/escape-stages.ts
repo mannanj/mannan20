@@ -2,17 +2,17 @@ export type EscapeStage = 'none' | 'surf' | 'pilot' | 'rocket' | 'moon' | 'cosmo
 
 export const ESCAPE_STAGES: { stage: EscapeStage; threshold: number; introMs: number }[] = [
   { stage: 'none', threshold: 0, introMs: 0 },
-  { stage: 'surf', threshold: 250, introMs: 1100 },
-  { stage: 'pilot', threshold: 350, introMs: 2400 },
-  { stage: 'rocket', threshold: 700, introMs: 0 },
-  { stage: 'moon', threshold: 800, introMs: 3400 },
-  { stage: 'cosmos', threshold: 10_000, introMs: 0 },
-  { stage: 'jupiter', threshold: 17_000, introMs: 0 },
+  { stage: 'surf', threshold: 125, introMs: 1100 },
+  { stage: 'pilot', threshold: 200, introMs: 2400 },
+  { stage: 'rocket', threshold: 350, introMs: 0 },
+  { stage: 'moon', threshold: 400, introMs: 3400 },
+  { stage: 'cosmos', threshold: 1000, introMs: 0 },
+  { stage: 'jupiter', threshold: 1500, introMs: 0 },
 ];
 
-export const COSMOS_START_SCORE = 10_000;
-export const COSMOS_FORCE_SCORE = 10_500;
-export const JUPITER_SCORE = 17_000;
+export const COSMOS_START_SCORE = 1000;
+export const COSMOS_FORCE_SCORE = 1100;
+export const JUPITER_SCORE = 1500;
 export const LIFTOFF_MS = 1400;
 export const DESCENT_MS = 6000;
 

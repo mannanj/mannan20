@@ -7,15 +7,15 @@ export interface PacePoint {
 
 export const PACE_CURVE: PacePoint[] = [
   { minutes: 0, score: 0 },
-  { minutes: 0.5, score: 250 },
-  { minutes: 2.5, score: 2000 },
-  { minutes: 6.5, score: 10_000 },
-  { minutes: 9.5, score: 17_000 },
-  { minutes: 12, score: 25_000 },
+  { minutes: 0.75, score: 125 },
+  { minutes: 1.5, score: 400 },
+  { minutes: 3, score: 1000 },
+  { minutes: 4, score: 1500 },
+  { minutes: 5.5, score: 2000 },
 ];
 
 export const MS_PER_MINUTE = 60_000;
-export const PACE_END_SCORE = 25_000;
+export const PACE_END_SCORE = 2000;
 export const SCHEDULE_TICK_MS = 1000;
 
 export const ORB_GAP_MS = 20_000;
@@ -76,20 +76,20 @@ function def(kind: OrbKind, unlock: number, weight: number, strength: number, ex
 }
 
 export const ORB_REGISTRY: Record<OrbKind, OrbDef> = {
-  multiply: def('multiply', 300, 10, 1),
-  cursor5: def('cursor5', 600, 10, 3),
-  cursor3: def('cursor3', 900, 6, 2),
-  frenzy: def('frenzy', 1200, 8, 4, { catchUp: true }),
-  eggs: def('eggs', 2200, 9, 6, { catchUp: true }),
-  multiply5: def('multiply5', 2500, 8, 3, { catchUp: true }),
-  chain: def('chain', 5000, 8, 3),
-  multiply10: def('multiply10', 7000, 5, 5, { catchUp: true }),
-  multiply25: def('multiply25', 11_000, 2, 7, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS, catchUp: true }),
-  multiply100: def('multiply100', 18_000, 1, 8, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS }),
-  giant: def('giant', 25_000, 8, 5, { catchUp: true }),
-  magnet: def('magnet', 25_000, 8, 3),
-  mystery: def('mystery', 25_000, 2, 4),
-  jev: def('jev', 3000, 6, 0),
+  multiply: def('multiply', 175, 10, 1),
+  cursor5: def('cursor5', 100, 10, 3),
+  cursor3: def('cursor3', 250, 6, 2),
+  frenzy: def('frenzy', 450, 8, 4, { catchUp: true }),
+  eggs: def('eggs', 700, 9, 6, { catchUp: true }),
+  multiply5: def('multiply5', 800, 8, 3, { catchUp: true }),
+  chain: def('chain', 900, 8, 3),
+  multiply10: def('multiply10', 1000, 5, 5, { catchUp: true }),
+  multiply25: def('multiply25', 1500, 2, 7, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS, catchUp: true }),
+  multiply100: def('multiply100', 2000, 1, 8, { big: true, lifetimeMs: BIG_ORB_LIFETIME_MS }),
+  giant: def('giant', 2000, 8, 5, { catchUp: true }),
+  magnet: def('magnet', 2000, 8, 3),
+  mystery: def('mystery', 2000, 2, 4),
+  jev: def('jev', 700, 6, 0),
 };
 
 export const ORB_REGISTRY_KINDS = Object.keys(ORB_REGISTRY) as OrbKind[];
@@ -103,15 +103,15 @@ export interface EraDef {
 }
 
 export const ERA_REGISTRY: EraDef[] = [
-  { id: 'backyard', from: 0, scene: 'yard', introduces: [], event: null },
-  { id: 'escape', from: 250, scene: 'surf-plane-rocket', introduces: ['multiply'], event: 'rocket' },
-  { id: 'moon', from: 600, scene: 'moon', introduces: ['cursor5', 'cursor3', 'frenzy'], event: null },
-  { id: 'hawk', from: 2000, scene: 'moon', introduces: ['eggs', 'multiply5'], event: 'hawk' },
-  { id: 'moon-late', from: 5000, scene: 'moon', introduces: ['chain', 'multiply10'], event: null },
-  { id: 'eagle', from: 10_000, scene: 'cosmos', introduces: ['multiply25'], event: 'eagle' },
-  { id: 'jupiter', from: 17_000, scene: 'jupiter', introduces: ['multiply100'], event: 'martians' },
-  { id: 'phoenix', from: 25_000, scene: 'fire-sky', introduces: ['giant', 'magnet', 'mystery'], event: 'phoenix' },
-  { id: 'big-cats', from: 33_000, scene: 'night-yard', introduces: [], event: 'kitty' },
+  { id: 'backyard', from: 0, scene: 'yard', introduces: ['cursor5'], event: null },
+  { id: 'escape', from: 125, scene: 'surf-plane-rocket', introduces: ['multiply', 'cursor3'], event: 'rocket' },
+  { id: 'moon', from: 400, scene: 'moon', introduces: ['frenzy'], event: null },
+  { id: 'hawk', from: 500, scene: 'moon', introduces: ['eggs', 'multiply5'], event: 'hawk' },
+  { id: 'eagle', from: 600, scene: 'moon', introduces: ['chain'], event: 'eagle' },
+  { id: 'cosmos', from: 1000, scene: 'cosmos', introduces: ['multiply10'], event: null },
+  { id: 'jupiter', from: 1500, scene: 'jupiter', introduces: ['multiply25'], event: 'martians' },
+  { id: 'phoenix', from: 2000, scene: 'fire-sky', introduces: ['multiply100', 'giant', 'magnet', 'mystery'], event: 'phoenix' },
+  { id: 'big-cats', from: 8000, scene: 'night-yard', introduces: [], event: 'kitty' },
 ];
 
 export function eraForScore(score: number): EraDef {

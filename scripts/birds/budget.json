@@ -1,7 +1,7 @@
 {
   "cap_usd": 4.7,
   "stop_at_usd": 4.7,
-  "spent_usd": 4.491181,
+  "spent_usd": 4.692937,
   "calls": [
     {
       "at": "2026-11-03T01:38:13.627Z",
@@ -596,6 +596,30 @@
       "purpose": "Jev helper: bust from the reference photo",
       "cost_usd": 0.068393,
       "gen_id": "gen-1793850048-0K9lUGZmxFANsWRevrV5"
+    },
+    {
+      "at": "2026-11-05T04:18:33.963Z",
+      "id": "monkey-sit",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "Monkey helper: sitting",
+      "cost_usd": 0.0672525,
+      "gen_id": "gen-1793852306-IrR9bVY1LnwfxTVEruOQ"
+    },
+    {
+      "at": "2026-11-05T04:18:33.992Z",
+      "id": "monkey-shoot",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "Monkey helper: shooting darts",
+      "cost_usd": 0.067258,
+      "gen_id": "gen-1793852306-RRn7NmZTl9AmCpSAcKmG"
+    },
+    {
+      "at": "2026-11-05T04:18:34.747Z",
+      "id": "jungle-bg",
+      "model": "google/gemini-3.1-flash-image",
+      "purpose": "Jungle era background",
+      "cost_usd": 0.0672455,
+      "gen_id": "gen-1793852306-mnyx9EL1BmcPEFggWkvq"
     }
   ],
   "task_307_note": "Task 307 allowance: $0.60 on top of the $2.29 spent before it (cap 3.60, stop 2.89).",

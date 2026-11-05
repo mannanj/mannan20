@@ -21,6 +21,7 @@ const TEMPLE_BG = '/game/scenes/temple-ruins.webp';
 const GATE_BG = '/game/scenes/temple-gate.webp';
 const GATE_PAN_PX = 60;
 const FOREST_BG = '/game/scenes/forest.webp';
+const JUNGLE_BG = '/game/scenes/jungle.webp';
 
 interface EndlessSceneryProps {
   scene: EndlessScene | null;
@@ -76,6 +77,11 @@ export function EndlessScenery({ scene, groundFrac }: EndlessSceneryProps) {
           style={{ top: groundTop }}
         />
       </div>
+      <div
+        data-testid="jungle-scene"
+        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-[3000ms] ${scene === 'jungle' ? 'opacity-100' : 'opacity-0'}`}
+        style={{ backgroundImage: `url(${JUNGLE_BG})` }}
+      />
       <div
         data-testid="forest-scene"
         className={`absolute inset-0 bg-cover bg-[position:50%_65%] transition-opacity duration-[5000ms] ${scene === 'forest' ? 'opacity-100' : 'opacity-0'}`}

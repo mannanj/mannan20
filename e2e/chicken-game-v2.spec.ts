@@ -4,7 +4,7 @@ import { ESCAPE_STAGES } from '../src/components/game/escape-stages';
 import { ERA_REGISTRY, ORB_GAP_MIN_MS, ORB_REGISTRY, PACE_CURVE, SCHEDULE_TICK_MS, paceTarget, pickOrbKind, unlockedKinds, type SchedulerContext } from '../src/components/game/chicken-pacing';
 import { chickenOutline, insideChicken, OUTLINE_SAMPLES, type OutlinePattern } from '../src/components/game/chicken-outline';
 import { FIRE_FLAMING_SCORE, FIRE_FULL_SCORE, LIGHTNING_BLACK_SCORE, LIGHTNING_RED_SCORE } from '../src/components/game/chicken-fire';
-import { CLONE_DOM_LIMIT, GOLDEN_LIFE_MS, MAX_CHICKENS_ON_SCREEN, MAX_GOLDEN_CHICKENS, ORB_THRESHOLDS, type OrbKind } from '../src/components/game/chicken-orbs';
+import { CLONE_DOM_LIMIT, GOLDEN_LIFE_MS, MAX_CHICKENS_ON_SCREEN, MAX_GOLDEN_CHICKENS, ORB_LABELS, ORB_THRESHOLDS, type OrbKind } from '../src/components/game/chicken-orbs';
 
 const GUARD_MS = 900;
 
@@ -142,7 +142,7 @@ test.describe('chicken game v2 ability orbs', () => {
       [ORB_THRESHOLDS.multiply, 'multiply', 'Multiply x3'],
       [ORB_THRESHOLDS.cursor5, 'cursor5', 'Cursor x5'],
       [ORB_THRESHOLDS.cursor3, 'cursor3', 'Cursor x3'],
-      [ORB_THRESHOLDS.frenzy, 'frenzy', 'Frenzy x2'],
+      [ORB_THRESHOLDS.frenzy, 'frenzy', ORB_LABELS.frenzy],
       [ORB_THRESHOLDS.eggs, 'eggs', 'Golden Eggs'],
     ];
     for (const [threshold, kind, label] of cases) {

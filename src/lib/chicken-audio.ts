@@ -40,10 +40,11 @@ export const SCREAM_TUNING: Record<string, { weight: number; rateMul: number }> 
 const SCREAM_VOLUMES = new Map(SCREAMS.map((def) => [def.key, def.volume]));
 const SCREAM_FADE_OUT_MS = 28;
 
-export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar' | 'rumble' | 'snake' | 'bark' | 'creak' | 'chop' | 'swordpull' | 'slash' | 'jeff';
+export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar' | 'rumble' | 'snake' | 'bark' | 'creak' | 'chop' | 'swordpull' | 'slash' | 'jeff' | 'monkey';
 export const CREATURE_SOUNDS: Record<CreatureSoundKey, SoundDef> = {
   meow: { key: 'meow', file: 'cat-meow.mp3', volume: 0.7 },
   jeff: { key: 'jeff', file: 'my-name-jeff.mp3', volume: 1 },
+  monkey: { key: 'monkey', file: 'monkey-chatter.mp3', volume: 0.9 },
   hiss: { key: 'hiss', file: 'cat-hiss.mp3', volume: 0.6 },
   growl: { key: 'growl', file: 'tiger-growl.mp3', volume: 0.7 },
   roar: { key: 'roar', file: 'lion-roar.mp3', volume: 0.75 },
@@ -110,6 +111,7 @@ function loadWithFallback(def: SoundDef, onSettled: (howl: Howl | null) => void)
 }
 
 const SIZZLE_LOOP_S = 2.4;
+const DART_SOUND_S = 0.09;
 const SIZZLE_BASE_HZ = 3200;
 const SIZZLE_Q = 0.7;
 const SIZZLE_RAMP_S = 0.35;
@@ -173,6 +175,28 @@ class EffectsSynth {
     this.sizzleGain.gain.cancelScheduledValues(t);
     this.sizzleGain.gain.linearRampToValueAtTime(SIZZLE_MAX_GAIN * lv, t + SIZZLE_RAMP_S);
     this.sizzleFilter.frequency.linearRampToValueAtTime(SIZZLE_BASE_HZ * (1 + lv * 0.6), t + SIZZLE_RAMP_S);
+  }
+
+  dart(): void {
+    const t = this.ctx.currentTime;
+    const length = Math.ceil(this.ctx.sampleRate * DART_SOUND_S);
+    const buffer = this.ctx.createBuffer(1, length, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+    const puff = this.ctx.createBufferSource();
+    puff.buffer = buffer;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 3;
+    bp.frequency.setValueAtTime(3400, t);
+    bp.frequency.exponentialRampToValueAtTime(900, t + DART_SOUND_S);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(EXP_FLOOR, t);
+    gain.gain.exponentialRampToValueAtTime(0.16, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(EXP_FLOOR, t + DART_SOUND_S);
+    puff.connect(bp).connect(gain).connect(this.ctx.destination);
+    puff.start(t);
+    puff.stop(t + DART_SOUND_S);
   }
 
   crackle(): void {
@@ -559,6 +583,11 @@ class ChickenAudio {
   crackle(): void {
     this.resumeContext();
     this.ensureSynth()?.crackle();
+  }
+
+  dart(): void {
+    this.resumeContext();
+    this.ensureSynth()?.dart();
   }
 
   squeak(depth: number): void {

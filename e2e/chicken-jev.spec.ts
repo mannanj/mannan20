@@ -44,7 +44,7 @@ test('the Jev orb asks first, then Jev plays, sleeps, and waits out his cooldown
   await page.evaluate((key) => localStorage.setItem(key, '0'), JEV_READY_KEY);
   await page.getByTestId('inventory-use-jev').click();
   await expect(page.getByTestId('jev')).toHaveAttribute('data-phase', 'rising');
-  await expect(page.getByTestId('inventory-item-jev')).toHaveCount(0);
+  await expect(page.getByTestId('inventory-item-jev')).toHaveCount(1);
 });
 
 test('declining leaves Jev out of the game', async ({ page }) => {

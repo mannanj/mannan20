@@ -178,6 +178,7 @@ import {
   CURSOR_HAND_HOT_X,
   CURSOR_HAND_HOT_Y,
   CURSOR_HAND_SIZE,
+  CURSOR_HIT_PAD,
   MAX_CHICKENS_ON_SCREEN,
   MULTIPLY_FACTOR,
   ORB_COLLECT_SHARDS,
@@ -284,7 +285,7 @@ import {
   type SplitLevel,
   type Wound,
 } from './chicken-split';
-import { BURN_SPOT, DEFAULT_SKIN_ID, SKINS, SKIN_STORAGE_KEY, UNLOCKABLE_SKINS, readCharSpots, readUnlockedSkins, recordChar, skinById, skinMultiplier, unlockSkin, type CharSpot } from './chicken-skins';
+import { BURN_SPOT, DEFAULT_SKIN_ID, MYTHIC_BONUS, SKINS, stackedMultiplier, SKIN_STORAGE_KEY, UNLOCKABLE_SKINS, readCharSpots, readUnlockedSkins, recordChar, skinById, skinMultiplier, unlockSkin, type CharSpot } from './chicken-skins';
 import {
   BIRD_SPECS,
   BirdLayer,
@@ -373,7 +374,11 @@ import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type O
 import { drawEmbers, drawHeatShimmer, drawIgnition, drawOutlineFlames, drawFireBody, drawSilhouetteAura, emitEmbers, fireFilterFor, fireLevelFor, FIRE_BODY_START, lightningStyleFor, makeIgnition, strokeLightning, tickIgnition, updateEmbers, type Ember, type IgnitionState, type LightningStyle } from './chicken-fire';
 import { AppProvider } from '@/context/app-context';
 import { JevLayer, type JevControl } from './jev-layer';
-import { JEV_ART, JEV_ITEM_ID } from './jev-helper';
+import { BirdCameo, cameoForScore, type CameoKind } from './bird-cameo';
+import { JEV_ART, JEV_ITEM_ID, MONKEY_ITEM_ID } from './jev-helper';
+import { MonkeyLayer, type MonkeyControl } from './monkey-layer';
+import { GearLayer, type GearControl } from './gear-layer';
+import { ICE_COLORS, isGearItem, type GearId } from './gear';
 import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
 import {
   FINAL_TIER,
@@ -384,13 +389,15 @@ import {
   MERCY_RECOVERY_PER_MS,
   TIERS,
   mixHex,
+  EVOLUTION_DECAY_MS,
+  clicksAfterDecay,
   moodEyes,
   morphForScore,
   tierForScore,
   tierProgress,
 } from './chicken-tiers';
 
-const BASE_SPEED = 0.125;
+const BASE_SPEED = 0.075;
 const MIN_SPEED = 0.075;
 const AVOIDANCE_RADIUS = 110;
 const AVOIDANCE_STRENGTH = 0.08;
@@ -453,10 +460,12 @@ const SPEED_SCORE_CAP = 180;
 const SPEED_PER_SCORE = 0.011;
 const TIER_SPEED_BUMP = [1, 1.12, 1.28, 1.45, 1.65, 1.8];
 const GROUND_FRAC = 0.76;
-const GROUND_WANDER = 0.028;
+const GROUND_WANDER = 0.017;
 const GROUND_TURN_MIN_MS = 2600;
 const GROUND_TURN_SPREAD_MS = 3800;
 const GROUND_PAUSE_CHANCE = 0.35;
+const GROUND_PAUSE_CHANCE_ACTIVE = 0.08;
+const ACTIVE_PLAY_WINDOW_MS = 4000;
 const GROUND_ROT_LERP = 0.1;
 const GRAZE_DELAY_MIN_MS = 3800;
 const GRAZE_DELAY_SPREAD_MS = 5200;
@@ -967,6 +976,7 @@ interface ChickenBridge {
   setDropRoll: (roll: number | null) => void;
   era: () => { id: string | null; index: number; step: number; lap: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[]; phoenixDue: boolean; fireSkyUntilMs: number };
   forceEra: (id: string) => void;
+  spawnGear: (id: GearId) => void;
   forceScene: (name: string) => void;
   shield: () => number;
   swarm: (n: number) => void;
@@ -1041,6 +1051,11 @@ const PRELOAD_IDLE_TIMEOUT_MS = 4000;
 const PRELOAD_FALLBACK_DELAY_MS = 1500;
 
 const STREAK_MAX_LEN = 34;
+const BIRD_FOLLOW_GAP_MS = 4000;
+const SQUEEZE_HINT_CLICKS = 100;
+const ICE_BURST_SHARDS = 14;
+const DIRECT_CHICKEN = '[data-testid="chicken"], [data-testid="chicken-clone"]';
+const PASS_THROUGH_BLOCKERS = 'button, a, input, [data-hud], [data-testid="chicken-orb"], [data-testid^="inventory"], [data-testid^="bird"], [data-testid^="creature"]';
 const STREAK_MAX_COUNT = 5;
 
 function shortStreaks(x: number, y: number, now: number, count = 10): Streak[] {
@@ -1059,9 +1074,9 @@ function bridgeWindow(): BridgeWindow {
   return window as unknown as BridgeWindow;
 }
 
-function speedForScore(score: number): number {
+function speedForScore(score: number, clicks: number): number {
   const base = 1 + Math.min(score, SPEED_SCORE_CAP) * SPEED_PER_SCORE;
-  return base * TIER_SPEED_BUMP[tierForScore(score)];
+  return base * TIER_SPEED_BUMP[tierForScore(clicks)];
 }
 
 function smoothstep(t: number): number {
@@ -1206,6 +1221,8 @@ function ChickenGameInner() {
   const bgRocketElRef = useRef<HTMLDivElement>(null);
   const surfYRef = useRef(0);
   const [tier, setTier] = useState(0);
+  const [evo, setEvo] = useState(0);
+  const [cameo, setCameo] = useState<CameoKind | null>(null);
   const [flashTier, setFlashTier] = useState<number | null>(null);
   const [mercyCaption, setMercyCaption] = useState(false);
   const [mood, setMood] = useState<(typeof TIERS)[number]['eyes']>('calm');
@@ -1257,6 +1274,8 @@ function ChickenGameInner() {
   const phoenix2Ref = useRef(false);
   const mysteryLastRef = useRef<OrbKind | null>(null);
   const jevRef = useRef<JevControl | null>(null);
+  const monkeyRef = useRef<MonkeyControl | null>(null);
+  const gearRef = useRef<GearControl | null>(null);
   const [mysteryReveal, setMysteryReveal] = useState<{ kind: OrbKind; x: number; y: number } | null>(null);
   const enterEraUi = useCallback((step: number) => {
     const clock = eraRef.current;
@@ -1294,9 +1313,16 @@ function ChickenGameInner() {
   const [maneOn, setManeOn] = useState(false);
   const [swordOn, setSwordOn] = useState(false);
   const multRef = useRef(1);
+  const wornRef = useRef(new Set<string>());
   const screamOverrideRef = useRef<'hawk' | null>(null);
   const scoreRef = useRef(0);
   const tierRef = useRef(0);
+  const evoRef = useRef(0);
+  const evoIdleRef = useRef(0);
+  const birdDoneAtRef = useRef(0);
+  const birdForcedRef = useRef(false);
+  const squeezesRef = useRef(0);
+  const [squeezeHintGone, setSqueezeHintGone] = useState(false);
   const physicsRef = useRef<Physics>({
     x: 0, y: 0, vx: 0, vy: 0, rotation: 0, rv: 0, bank: 0,
   });
@@ -1462,7 +1488,7 @@ function ChickenGameInner() {
   const chainCanvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle, playCreature } = useChickenSounds();
+  const { progress, playScream, playPowerUp, playHawk, crackle, dart, squeak, sizzle, playCreature } = useChickenSounds();
 
   const recordPlay = useCallback((event: SoundEvent) => {
     const log = playsRef.current;
@@ -1495,7 +1521,7 @@ function ChickenGameInner() {
     const tier = tierRef.current;
     const def = TIERS[tier];
     const nextDef = TIERS[Math.min(tier + 1, FINAL_TIER)];
-    const m = morphForScore(scoreRef.current);
+    const m = morphForScore(evoRef.current);
     const skin = skinById(skinRef.current);
     const tierBody = mixHex(def.body, nextDef.body, m);
     const tierDark = mixHex(def.bodyDark, nextDef.bodyDark, m);
@@ -1519,7 +1545,7 @@ function ChickenGameInner() {
       x,
       y,
       tier: tierRef.current,
-      morph: morphForScore(scoreRef.current),
+      morph: morphForScore(evoRef.current),
       pre,
       born: performance.now(),
     };
@@ -1765,6 +1791,7 @@ function ChickenGameInner() {
   );
 
   const beginHold = useCallback((id: number, e: ReactPointerEvent<HTMLDivElement>) => {
+    if (gearRef.current?.heldBy('you')) return;
     if (e.button !== 0 || holdRef.current || swordRef.current.equipped) return;
     const now = performance.now();
     const m = id === 0 ? null : chickMotionRef.current.get(id);
@@ -2129,7 +2156,8 @@ function ChickenGameInner() {
   const selectSkin = useCallback((id: string) => {
     setSkin(id);
     skinRef.current = id;
-    multRef.current = skinMultiplier(id);
+    wornRef.current.add(id);
+    multRef.current = stackedMultiplier(wornRef.current);
     try {
       window.localStorage.setItem(SKIN_STORAGE_KEY, id);
     } catch {}
@@ -2147,7 +2175,8 @@ function ChickenGameInner() {
     if (saved && (SKINS.some((s) => s.id === saved) || unlocked.includes(saved))) {
       setSkin(saved);
       skinRef.current = saved;
-      multRef.current = skinMultiplier(saved);
+      wornRef.current.add(saved);
+      multRef.current = stackedMultiplier(wornRef.current);
     }
   }, []);
 
@@ -2160,9 +2189,15 @@ function ChickenGameInner() {
       selectSkin(skinId);
     };
     creatureItemHandler = (id) => {
+      if (id in MYTHIC_BONUS) {
+        wornRef.current.add(id);
+        multRef.current = stackedMultiplier(wornRef.current);
+      }
       if (id === YARN_BALL_ITEM_ID) magnetUntilRef.current = Math.max(performance.now(), magnetUntilRef.current) + MAGNET_DURATION_MS;
       if (id === GOLDEN_MANE_ITEM_ID) setManeOn(true);
       if (id === JEV_ITEM_ID) jevRef.current?.wake();
+      if (id === MONKEY_ITEM_ID) monkeyRef.current?.wake();
+      if (isGearItem(id)) gearRef.current?.use(id);
       if (id === HYDRA_SCALE_ITEM_ID) shieldRef.current += 1;
       if (id === GATE_KEY_ITEM_ID && eraRef.current.index < eraIndexById(GATE_KEY_ERA_ID)) gateKeyRef.current?.();
       if (id === SWORD_ITEM_ID) {
@@ -2214,7 +2249,7 @@ function ChickenGameInner() {
     p.rv = 0;
     const cx = p.x + CHICKEN_W / 2;
     const cy = p.y + CHICKEN_H / 2;
-    const color = auraRgbFor(scoreRef.current);
+    const color = auraRgbFor(evoRef.current);
     portalsRef.current.push({
       x: side === 'left' ? 10 : side === 'right' ? vw - 10 : cx,
       y: side === 'top' ? 10 : side === 'bottom' ? vh - 10 : cy,
@@ -3246,7 +3281,7 @@ function ChickenGameInner() {
       if (frenzyEl) {
         const live = frenzyLeft > 0;
         frenzyEl.style.opacity = live ? (frenzyLeft < FRENZY_BLINK_MS && Math.floor(ts / 250) % 2 === 0 ? '0.45' : '1') : '0';
-        if (live) frenzyEl.textContent = `Frenzy x2 ${Math.ceil(frenzyLeft / 1000)}s`;
+        if (live) frenzyEl.textContent = `${ORB_LABELS.frenzy} ${Math.ceil(frenzyLeft / 1000)}s`;
       }
       const chainLeft = chainUntilRef.current - ts;
       const chainEl = chainElRef.current;
@@ -3411,6 +3446,11 @@ function ChickenGameInner() {
         visit.phase = 'idle';
         visit.cooldownUntil = now + VISIT_COOLDOWN_MIN_MS + Math.random() * VISIT_COOLDOWN_SPREAD_MS;
       }
+      evoRef.current += 1;
+      evoIdleRef.current = now;
+      squeezesRef.current += 1;
+      if (squeezesRef.current === SQUEEZE_HINT_CLICKS) setSqueezeHintGone(true);
+      setEvo(evoRef.current);
       const prevScore = scoreRef.current;
       const frenzyOn = now < frenzyUntilRef.current;
       const next = prevScore + award * multRef.current * (frenzyOn ? FRENZY_FACTOR : 1) * (now < giantUntilRef.current ? GIANT_FACTOR : 1);
@@ -3424,7 +3464,9 @@ function ChickenGameInner() {
       if (now < buff.x5Until) buff.x5Until += CURSOR_EXTEND_PER_CLICK_MS;
       if (now < buff.x3Until) buff.x3Until += CURSOR_EXTEND_PER_CLICK_MS;
       if (frenzyOn) frenzyUntilRef.current = Math.min(frenzyUntilRef.current + FRENZY_EXTEND_PER_CLICK_MS, now + FRENZY_CAP_MS);
-      speedRef.current = speedForScore(shown);
+      speedRef.current = speedForScore(shown, evoRef.current);
+      const cameoKind = cameoForScore(Math.floor(prevScore), shown);
+      if (cameoKind) setCameo(cameoKind);
       const currentStage = stageRef.current;
       const rawStage = stageForScore(shown);
       const cosmosOpen = shown >= COSMOS_FORCE_SCORE || (!bird.pending && !isBirdBusy(bird));
@@ -3443,7 +3485,7 @@ function ChickenGameInner() {
       const cx = source ? source.x : p.x + CHICKEN_W / 2;
       const cy = source ? source.y : p.y + CHICKEN_H / 2;
       const previousTier = tierRef.current;
-      const newTier = tierForScore(shown);
+      const newTier = tierForScore(evoRef.current);
       if (newTier !== previousTier) {
         tierRef.current = newTier;
         setTier(newTier);
@@ -3517,6 +3559,7 @@ function ChickenGameInner() {
         if (ORB_THRESHOLDS[kind] < n) orbFiredRef.current[kind] = true;
       }
       scoreRef.current = n - 1;
+      evoRef.current = n - 1;
       hit();
     };
     const bridge: ChickenBridge = {
@@ -3536,8 +3579,8 @@ function ChickenGameInner() {
         magnetMs: Math.max(0, magnetUntilRef.current - performance.now()),
         tier: tierRef.current,
         mercy: mercyRef.current,
-        morph: morphForScore(scoreRef.current),
-        auraLevel: auraLevelFor(scoreRef.current, mercyRef.current),
+        morph: morphForScore(evoRef.current),
+        auraLevel: auraLevelFor(evoRef.current, mercyRef.current),
         rotation: physicsRef.current.rotation,
         vx: physicsRef.current.vx,
         vy: physicsRef.current.vy,
@@ -3756,6 +3799,7 @@ function ChickenGameInner() {
         ig.nextAt = ig.until;
       },
       setScore: jumpScore,
+      spawnGear: (id: GearId) => gearRef.current?.spawn(id),
       forceOrb: (kind: OrbKind) => {
         orbFiredRef.current[kind] = true;
         spawnOrb(kind);
@@ -3765,6 +3809,7 @@ function ChickenGameInner() {
         if (orb) collectOrb(orb.id);
       },
       forceBird: (kind: BirdKind) => {
+        birdForcedRef.current = true;
         queueBird(birdRef.current, kind);
       },
       placeChicken: (x: number, y: number) => {
@@ -4018,11 +4063,15 @@ function ChickenGameInner() {
         const px = e.clientX + offset.dx;
         const py = e.clientY + offset.dy;
         if (offset.dx === 0 && offset.dy === 0) {
+          if (target?.closest(PASS_THROUGH_BLOCKERS)) continue;
+          const pad = CURSOR_HIT_PAD;
+          let under = 0;
+          if (!rootSplitRef.current && !isGripping(birdRef.current.phase) && pointInRect(px, py, p.x - pad, p.y - pad, CHICKEN_W + pad * 2, CHICKEN_H + pad * 2)) under += 1;
           for (const motion of cloneMotionRef.current.values()) {
-            if (motion.sprite && pointInRect(px, py, motion.x, motion.y, motion.w, motion.h)) {
-              hit(undefined, true, { x: motion.x + motion.w / 2, y: motion.y + motion.h / 2 });
-            }
+            if (pointInRect(px, py, motion.x - pad, motion.y - pad, motion.w + pad * 2, motion.h + pad * 2)) under += 1;
           }
+          const extra = under - (target?.closest(DIRECT_CHICKEN) ? 1 : 0);
+          if (extra > 0) hit(undefined, true, { x: px, y: py }, extra);
           continue;
         }
         const orb = orbsRef.current.find((o) => pointInCircle(px, py, o.x, o.y, orbRadius(o.kind)));
@@ -4121,7 +4170,14 @@ function ChickenGameInner() {
       }
 
       heatRef.current = Math.max(0, heatRef.current - HEAT_DECAY_PER_MS * dtMs);
-      const nextMood = moodEyes(scoreRef.current, heatRef.current);
+      if (evoRef.current > 0 && ts - evoIdleRef.current >= EVOLUTION_DECAY_MS) {
+        evoRef.current = clicksAfterDecay(evoRef.current);
+        evoIdleRef.current = ts;
+        tierRef.current = tierForScore(evoRef.current);
+        setTier(tierRef.current);
+        setEvo(evoRef.current);
+      }
+      const nextMood = moodEyes(evoRef.current, heatRef.current);
       if (nextMood !== moodRef.current) {
         moodRef.current = nextMood;
         setMood(nextMood);
@@ -4166,16 +4222,23 @@ function ChickenGameInner() {
       const vh = window.innerHeight;
       const sc = scoreRef.current;
       const flying = modeRef.current === 'flying';
+      const frameStartX = p.x;
+      const frameStartY = p.y;
       tickHold(ts, dtMs, dt);
       const bird = birdRef.current;
       const upcoming = nextBird(bird);
+      if (bird.phase === 'done' && birdDoneAtRef.current === 0) birdDoneAtRef.current = ts;
       if (
         upcoming &&
+        ts >= birdDoneAtRef.current + BIRD_FOLLOW_GAP_MS &&
+        (birdForcedRef.current || stageRank(stageRef.current) >= stageRank('moon')) &&
         !rootSplitRef.current &&
         holdRef.current === null &&
         portalRef.current.phase === 'idle' &&
         teleportRef.current.phase === 'idle'
       ) {
+        birdDoneAtRef.current = 0;
+        birdForcedRef.current = false;
         startBirdNow(ts, upcoming);
       }
       const birdTick = tickBird(bird, birdElsRef.current, {
@@ -4311,7 +4374,7 @@ function ChickenGameInner() {
           writeHeatVars(chickenElRef.current, burnLiveRef.current, birdTick.burn, birdTick.tint, regrow);
         }
       }
-      const rootBusy = rootSplitRef.current || holdRef.current !== null || isBirdBusy(bird);
+      const rootBusy = rootSplitRef.current || holdRef.current !== null || isBirdBusy(bird) || gearRef.current?.freezeFactor(ts) === 0;
 
       const hyper = hyperRef.current;
       const stNow = stageRef.current;
@@ -4370,7 +4433,7 @@ function ChickenGameInner() {
             y: side === 'top' ? 10 : side === 'bottom' ? vh - 10 : p.y + CHICKEN_H / 2,
             side,
             born: ts,
-            color: auraRgbFor(sc),
+            color: auraRgbFor(evoRef.current),
           });
         }
       } else if (portal.phase === 'gone' && ts >= portal.until && portal.exit) {
@@ -4389,7 +4452,7 @@ function ChickenGameInner() {
           y: side === 'top' ? 10 : side === 'bottom' ? vh - 10 : ecy,
           side,
           born: ts,
-          color: auraRgbFor(sc),
+          color: auraRgbFor(evoRef.current),
         });
         spawnFeathers(ecx, ecy, 4);
         if (chickenElRef.current) chickenElRef.current.style.opacity = '1';
@@ -4523,7 +4586,7 @@ function ChickenGameInner() {
         if (ts >= g.nextTurnAt) {
           g.nextTurnAt = ts + GROUND_TURN_MIN_MS + Math.random() * GROUND_TURN_SPREAD_MS;
           g.vxTarget =
-            Math.random() < GROUND_PAUSE_CHANCE
+            Math.random() < (ts - lastHitRef.current < ACTIVE_PLAY_WINDOW_MS ? GROUND_PAUSE_CHANCE_ACTIVE : GROUND_PAUSE_CHANCE)
               ? 0
               : (Math.random() < 0.5 ? -1 : 1) * GROUND_WANDER;
         }
@@ -5062,6 +5125,11 @@ function ChickenGameInner() {
         p.vy = 0;
         p.rotation = Math.sin(ts / HOLD_FLAP_MS) * HOLD_FLAP_DEG;
       }
+      const iceFactor = gearRef.current?.freezeFactor(ts) ?? 1;
+      if (iceFactor < 1 && !creatureHold && !isBirdBusy(bird) && !scripted) {
+        p.x = frameStartX + (p.x - frameStartX) * iceFactor;
+        p.y = frameStartY + (p.y - frameStartY) * iceFactor;
+      }
       if (chickenElRef.current) {
         const gripped = isGripping(bird.phase) ? 'none' : '';
         if (chickenElRef.current.style.pointerEvents !== gripped) chickenElRef.current.style.pointerEvents = gripped;
@@ -5248,8 +5316,8 @@ function ChickenGameInner() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (stageRef.current === 'surf') drawSurf(ctx, vw, vh, ts, heatRef.current);
 
-        const auraRgb = auraRgbFor(sc);
-        const auraLevelNow = auraLevelFor(sc, mercy);
+        const auraRgb = auraRgbFor(evoRef.current);
+        const auraLevelNow = auraLevelFor(evoRef.current, mercy);
         auraDrawnRef.current = !shielded && (auraLevelNow > 0 || fireLevel > 0);
         if (!shielded && fireLevel > 0) {
           emitEmbers(embersRef.current, outlinePts, Math.ceil(EMBERS_PER_FRAME * fireLevel * dt), physicsRef.current.vx, ts);
@@ -5356,9 +5424,9 @@ function ChickenGameInner() {
     };
   }, [crackle, recordPlay, addGhost, spawnKid, removeKid, squeak, spawnFeathers, beginPortal, startKidMerge, tickAbilities, tickHold, tickChicks, enterStage, enterSeq, openGate]);
 
-  const morph = morphForScore(score);
-  const renderAuraLevel = auraLevelFor(score, 1);
-  const renderAuraRgb = auraRgbFor(score);
+  const morph = morphForScore(evo);
+  const renderAuraLevel = auraLevelFor(evo, 1);
+  const renderAuraRgb = auraRgbFor(evo);
   const auraVisible = !AURA_SHIELD_STAGES.includes(stage) && !birdUi.grip && !creatureUi.hold && !(stage === 'moon' && parked !== null);
   const renderFire = fireLevelFor(score);
   const fireFilter = fireFilterFor(auraVisible ? renderFire : 0, ignitionUi ? 1 : 0);
@@ -5421,9 +5489,11 @@ function ChickenGameInner() {
         <div data-testid="ground-scrim" className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
       )}
 
+      {!squeezeHintGone && (
       <div data-hud="" className={`absolute top-[225px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-base text-white/60 pointer-events-none ${TEXT_SCRIM}`}>
         Squeeze the chicken
       </div>
+      )}
 
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
         <button
@@ -5483,7 +5553,7 @@ function ChickenGameInner() {
       )}
 
       <div data-testid="chicken-score" data-hud="" className={`absolute top-[265px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-5xl font-bold text-white tabular-nums pointer-events-none [text-shadow:0_0_3px_rgba(0,0,0,0.6),0_2px_16px_rgba(0,0,0,0.55)]`}>
-        {score}
+        {score.toLocaleString('en-US')}
       </div>
 
       {mercyCaption && (
@@ -5585,13 +5655,15 @@ function ChickenGameInner() {
           onClick={() => hit(undefined, true)}
           className="absolute top-0 left-0 z-[3] will-change-transform"
         >
+          {clone.big && <EscapeVehicleBack stage={stage} phase={stagePhase} seq={seq} />}
           <ChickenSvg
-            className={clone.big ? 'w-[70px]' : 'w-[26px]'}
+            className={clone.big ? 'relative w-[70px]' : 'w-[26px]'}
             tier={clone.tier}
             morph={clone.big ? morph : 0}
             eyes="calm"
             skin={clone.big ? skin : undefined}
           />
+          {clone.big && <EscapeVehicleFront stage={stage} phase={stagePhase} seq={seq} />}
         </div>
       ))}
 
@@ -5755,11 +5827,35 @@ function ChickenGameInner() {
         </div>
       ))}
 
+      <MonkeyLayer
+        controlRef={monkeyRef}
+        jungle={sceneUi === 'jungle'}
+        dartSound={dart}
+        speak={() => playCreature('monkey')}
+        cursors={() => cursorOffsetsRef.current}
+        target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
+        click={(at, count) => hit(undefined, true, at, count)}
+        gearRef={gearRef}
+      />
+      <GearLayer
+        controlRef={gearRef}
+        monkeyRef={monkeyRef}
+        playable={() => gateRef.current === 'none' && !isScriptedStage(stageRef.current)}
+        score={() => scoreRef.current}
+        target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
+        hit={(at, count) => hit(undefined, true, at, count)}
+        burst={(at) => {
+          for (const color of ICE_COLORS) spawnShards(at.x, at.y, ICE_BURST_SHARDS, color);
+        }}
+      />
+      {cameo && <BirdCameo kind={cameo} onDone={() => setCameo(null)} />}
       <JevLayer
         controlRef={jevRef}
+        cursors={() => cursorOffsetsRef.current}
         target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
-        click={(at) => hit(undefined, false, at)}
+        click={(at, count) => hit(undefined, false, at, count)}
         speak={() => playCreature('jeff')}
+        gearRef={gearRef}
       />
       {mysteryReveal && (
         <div
@@ -5792,14 +5888,19 @@ function ChickenGameInner() {
               width={CURSOR_HAND_SIZE}
               height={CURSOR_HAND_SIZE}
               viewBox="0 0 40 40"
-              className="transition-transform duration-75 group-data-[pressed=true]:scale-[0.82]"
+              className="origin-center transition-transform duration-75 group-data-[pressed=true]:scale-x-[1.06] group-data-[pressed=true]:scale-y-[0.86]"
             >
-              <g stroke="#4a2e1a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+              <g className="group-data-[pressed=true]:opacity-0" stroke="#4a2e1a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
                 <path
                   d="M12 23 Q10.6 15.5 13.6 14.2 Q15.6 13.4 16.6 15 L16.6 10.6 Q16.6 8.2 18.6 8.2 Q20.6 8.2 20.6 10.6 L20.6 9 Q20.6 6.6 22.6 6.6 Q24.6 6.6 24.6 9 L24.6 10.8 Q24.6 8.8 26.4 8.8 Q28.4 8.8 28.4 11.2 L28.4 15.4 Q29.8 14 31.2 15.6 Q32.6 17.4 30.8 20 L26.2 26.6 Q24.2 29.6 20 29.6 Q15 29.6 13.2 26 Z"
                   fill="#F2B279"
                 />
                 <path d="M20.6 10.6 L20.6 16.2 M24.6 10.8 L24.6 16.4 M28.4 13.2 L27.8 17.2" fill="none" stroke="#c98f5c" strokeWidth="1.3" />
+              </g>
+              <g className="opacity-0 group-data-[pressed=true]:opacity-100" stroke="#4a2e1a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M11 25 Q10 19 13 17.5 Q14 14.4 17 15 Q18.5 13 21 14 Q23 12.4 25.4 14 Q28.6 13.4 29.6 16.8 Q31 21 29 26 Q27.6 31 20.5 31.6 Q13.5 31.6 11 25 Z" fill="#F2B279" />
+                <path d="M17 15 L17 19.4 M21 14 L21 19 M25.4 14 L25.4 19.4" fill="none" stroke="#c98f5c" strokeWidth="1.3" />
+                <path d="M12.4 22 Q17.4 19.8 23 22 Q24.4 23.4 22.6 24.6 Q16.6 26 13 26" fill="#EFA76C" />
               </g>
             </svg>
           </div>

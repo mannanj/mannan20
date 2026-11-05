@@ -142,4 +142,11 @@ jobs.push(
   { id: 'jev-face-sleep', bird: 'jev', name: 'sleep', aspect: '1:1', refs: JEV_REFS, purpose: 'Jev helper: asleep, from the reference photo', prompt: `${JEV_EDIT} Pose: fast asleep sitting up, head tipped sideways onto his shoulder, human eye closed, mouth slightly open, the robotic eye dark with no glow, shoulders running off the bottom of the frame. Replace the background with flat pure chroma green (#00FF00) edge to edge, no shadow, no text.` },
 );
 
+const MONKEY_STYLE = 'Ultra-realistic wildlife-style photograph, sharp fur detail, soft natural light from the upper left. Isolated on a completely flat pure chroma green (#00FF00) background that fills the whole frame edge to edge, no shadow on the background, no branch, no text, no watermark.';
+jobs.push(
+  { id: 'monkey-sit', bird: 'jev', name: 'monkey-sit', aspect: '1:1', purpose: 'Monkey helper: sitting', prompt: `${MONKEY_STYLE} Subject: ONE small brown capuchin monkey sitting upright, whole body in frame, facing three-quarters to the left, holding a short bamboo blowpipe across its lap, curious mischievous eyes, tail curled around its feet.` },
+  { id: 'monkey-shoot', bird: 'jev', name: 'monkey-shoot', aspect: '1:1', purpose: 'Monkey helper: shooting darts', prompt: `${MONKEY_STYLE} Subject: ONE small brown capuchin monkey sitting upright, whole body in frame, turned to the left, cheeks puffed, blowing through a short bamboo blowpipe held to its mouth with both hands and aimed up and to the left, focused eyes, tail curled around its feet.` },
+  { id: 'jungle-bg', bird: 'jev', name: 'jungle', aspect: '16:9', purpose: 'Jungle era background', prompt: 'Ultra-realistic wide photograph of a dense tropical jungle at dusk, huge mossy tree trunks, hanging vines and broad leaves framing the sides, soft shafts of warm light and mist in the middle distance, a dark leafy forest floor along the bottom of the frame, a thick horizontal branch high on the right side. The centre of the frame stays open and darker so bright objects read clearly over it. No animals, no people, no text, no watermark.' },
+);
+
 export default jobs;

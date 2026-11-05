@@ -110,7 +110,7 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
     legs: '#D9A92C',
     accessory: 'none',
     pattern: 'hawk',
-    multiplier: 1.25,
+    multiplier: 2.5,
   },
   {
     id: 'eagle',
@@ -127,7 +127,7 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
     legs: '#F2B61C',
     accessory: 'none',
     pattern: 'eagle',
-    multiplier: 2,
+    multiplier: 5,
   },
   {
     id: 'phoenix',
@@ -144,7 +144,7 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
     legs: '#B71C1C',
     accessory: 'none',
     pattern: 'phoenix',
-    multiplier: 3,
+    multiplier: 15,
   },
   {
     id: 'martian',
@@ -160,7 +160,7 @@ export const UNLOCKABLE_SKINS: ChickenSkin[] = [
     wattle: '#5FB59C',
     legs: '#C9D1DC',
     accessory: 'antennae',
-    multiplier: 3,
+    multiplier: 10,
   },
 ];
 
@@ -214,6 +214,14 @@ export function skinById(id: string | null | undefined): ChickenSkin {
 
 export function skinMultiplier(id: string | null | undefined): number {
   return skinById(id).multiplier ?? 1;
+}
+
+export const MYTHIC_BONUS: Record<string, number> = { 'golden-mane': 20, 'hydra-scale': 30, 'gate-key': 40, sword: 50 };
+
+export function stackedMultiplier(worn: Iterable<string>): number {
+  let sum = 0;
+  for (const id of worn) sum += MYTHIC_BONUS[id] ?? skinById(id).multiplier ?? 0;
+  return sum || 1;
 }
 
 export function readUnlockedSkins(): string[] {

@@ -40,6 +40,30 @@ function SleepingJev({ size }: { size: number }) {
   return <img src="/game/jev/sleep.webp" alt="" width={size} height={size} draggable={false} className="object-contain" />;
 }
 
+function Monkey({ size }: { size: number }) {
+  return <img src="/game/jev/monkey-sit.webp" alt="" width={size} height={size} draggable={false} className="object-contain" />;
+}
+
+function Gun({ size, body, glow }: { size: number; body: string; glow: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M6 13 H30 Q33 13 33 16 V20 H22 L20 32 H12 L14 20 H6 Z" fill={body} stroke="#10131a" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx="35" cy="17" r="3.4" fill={glow} stroke="#10131a" strokeWidth="1.2" />
+      <path d="M9 16 H26" stroke={glow} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Laser({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
+      <rect x="4" y="15" width="20" height="10" rx="3" fill="#2c3340" stroke="#10131a" strokeWidth="1.4" />
+      <path d="M24 20 H37" stroke="#ff2a2a" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="24" cy="20" r="3" fill="#ff8a8a" />
+    </svg>
+  );
+}
+
 function GenericItem({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -97,6 +121,10 @@ const ART: Record<string, (size: number) => ReactNode> = {
   'gate-key': (size) => <GateKey size={size} />,
   sword: (size) => <Sword size={size} />,
   jev: (size) => <SleepingJev size={size} />,
+  monkey: (size) => <Monkey size={size} />,
+  laser: (size) => <Laser size={size} />,
+  'ray-gun': (size) => <Gun size={size} body="#6d3bd1" glow="#e58bff" />,
+  'freeze-gun': (size) => <Gun size={size} body="#2f7fb8" glow="#bdeeff" />,
   'hawk-feather': (size) => <Feather size={size} fill="#b07a45" stroke="#4a2e1a" vein="#4a2e1a" />,
   'eagle-feather': (size) => <Feather size={size} fill="#f1e6cf" stroke="#3b2a18" vein="#6b4a2a" />,
   'phoenix-feather': (size) => <Feather size={size} fill="#ff7a1a" stroke="#8d1b00" vein="#fff176" />,

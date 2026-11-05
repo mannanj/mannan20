@@ -1,7 +1,8 @@
 export const JEV_ITEM_ID = 'jev';
 export const JEV_READY_KEY = 'chicken-jev-ready-at';
 
-export const JEV_ACTIVE_MS = 30_000;
+export const JEV_ACTIVE_MS = 20_000;
+export const HELPER_MAX_PLAY_MS = 40_000;
 export const JEV_COOLDOWN_MS = 300_000;
 export const JEV_RISE_MS = 3500;
 export const JEV_REACH_MS = 450;
@@ -14,6 +15,28 @@ export const JEV_SQUEEZE_MS = 70;
 export const JEV_RIGHT_PX = 80;
 export const JEV_PROMPT_EDGE_PX = 150;
 
+export const MONKEY_ITEM_ID = 'monkey';
+export const MONKEY_READY_KEY = 'chicken-monkey-ready-at';
+export const MONKEY_ACTIVE_MS = 20_000;
+export const MONKEY_COOLDOWN_MS = 45_000;
+export const MONKEY_RISE_MS = 1500;
+export const MONKEY_LEAVE_MS = 900;
+export const MONKEY_SHOT_MS = 125;
+export const MONKEY_DART_MS = 140;
+export const MONKEY_DARTS = 6;
+export const HELPER_GAP_PX = 16;
+
+export const MONKEY_ART = {
+  sit: '/game/jev/monkey-sit.webp',
+  shoot: '/game/jev/monkey-shoot.webp',
+};
+
+export const MONKEY_COPY = {
+  tag: 'monkey',
+  grab: 'Grab the monkey',
+  resting: (left: string) => `Monkey back in ${left}`,
+};
+
 export const JEV_ART = {
   orb: '/game/jev/orb.webp',
   bust: '/game/jev/bust.webp',
@@ -23,8 +46,8 @@ export const JEV_ART = {
 };
 
 export const JEV_COPY = {
-  ask: 'Activate Jev to help you play?',
-  yes: 'Activate',
+  ask: 'Call Jev to play?',
+  yes: 'Call',
   no: 'Not now',
   tag: 'jev',
   sleeping: (left: string) => `Jev wakes in ${left}`,
@@ -35,12 +58,16 @@ export interface JevPoint {
   y: number;
 }
 
+export function helperPlayMs(call: number, rng: () => number): number {
+  return call === 0 ? JEV_ACTIVE_MS : JEV_ACTIVE_MS + rng() * (HELPER_MAX_PLAY_MS - JEV_ACTIVE_MS);
+}
+
 export function jevBox(vw: number, vh: number): { w: number; h: number } {
   return { w: vw / 7, h: vh / 9 };
 }
 
 export function jevArmLength(vw: number): number {
-  return vw / 5;
+  return vw / 15;
 }
 
 export function jevArmAngle(shoulder: JevPoint, target: JevPoint): number {
@@ -56,16 +83,16 @@ export function formatJevWait(ms: number): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }
 
-export function readJevReadyAt(): number {
+export function readJevReadyAt(key = JEV_READY_KEY): number {
   try {
-    return Number(localStorage.getItem(JEV_READY_KEY)) || 0;
+    return Number(localStorage.getItem(key)) || 0;
   } catch {
     return 0;
   }
 }
 
-export function writeJevReadyAt(at: number): void {
+export function writeJevReadyAt(at: number, key = JEV_READY_KEY): void {
   try {
-    localStorage.setItem(JEV_READY_KEY, String(at));
+    localStorage.setItem(key, String(at));
   } catch {}
 }

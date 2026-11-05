@@ -103,7 +103,7 @@ export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
 };
 
 export const BIRD_ORDER: BirdKind[] = ['hawk', 'eagle', 'phoenix'];
-export const BIRD_TRIGGER_SCORE: Record<BirdKind, number> = { hawk: 2000, eagle: 10_000, phoenix: 25_000 };
+export const BIRD_TRIGGER_SCORE: Record<BirdKind, number> = { hawk: 500, eagle: 600, phoenix: 2000 };
 export const BIRD_PULSE_EVERY_TAPS = 5;
 export const TOASTED_MAX = 10;
 export const TOASTED_ALIVE_MAX = 12;
@@ -473,8 +473,11 @@ function spawnToasted(s: BirdState, at: Point, ts: number): void {
   s.toastedSpawned += 1;
 }
 
+const HELMET_FRAMES: ReadonlySet<string> = new Set(['grab-body', 'fly-level', 'fly-up', 'fly-down', 'bank', 'away-3q']);
+
 function frame(kind: BirdKind, name: FrameName): FrameAsset {
   const a = FRAMES[kind][name];
+  if (a && kind === 'hawk' && HELMET_FRAMES.has(name)) return { ...a, file: a.file.replace('.webp', '-helmet.webp') };
   if (!a) throw new Error(`missing bird frame ${kind}/${name}`);
   return a;
 }

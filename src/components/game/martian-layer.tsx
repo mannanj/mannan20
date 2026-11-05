@@ -26,6 +26,7 @@ interface Walker {
   id: number;
   kind: MartianKind;
   slot: number;
+  scale: number;
   side: 1 | -1;
   phase: WalkPhase;
   hop: number;
@@ -49,6 +50,8 @@ export interface MartianSpot {
   width: number;
 }
 const MARTIAN_CHICKEN_GAP_PX = 170;
+const MARTIAN_MIN_SCALE = 0.4;
+const MARTIAN_MAX_SCALE = 4;
 
 function pickKind(): MartianKind {
   return MARTIAN_KINDS[Math.floor(Math.random() * MARTIAN_KINDS.length)];
@@ -67,7 +70,8 @@ interface FriendProps {
 
 function Friend({ walker, count, labelOn, onPoke }: FriendProps) {
   const spec = MARTIAN_SPECS[walker.kind];
-  const width = spec.height * spec.aspect;
+  const height = spec.height * walker.scale;
+  const width = height * spec.aspect;
   const moving = walker.phase !== 'idle';
   const shifted = walker.phase === 'enter' ? offscreenClass(walker.side) : walker.phase === 'leave' ? offscreenClass(walker.side) : 'translate-x-0';
   const facing = walker.side === 1 ? 1 : -1;
@@ -96,7 +100,7 @@ function Friend({ walker, count, labelOn, onPoke }: FriendProps) {
             onPoke(walker.id, e.currentTarget);
           }}
           className="pointer-events-auto relative block min-h-[44px] min-w-[44px] cursor-pointer touch-manipulation"
-          style={{ width, height: spec.height }}
+          style={{ width, height }}
         >
           <div
             key={walker.hop}
@@ -172,7 +176,7 @@ export function MartianLayer({ active, blocked, onReward, avoidXFrac, occupiedRe
           .filter((w) => w.phase !== 'leave')
           .map((w) => {
             const spec = MARTIAN_SPECS[w.kind];
-            return { xFrac: w.slot / 100, width: spec.height * spec.aspect };
+            return { xFrac: w.slot / 100, width: spec.height * spec.aspect * w.scale };
           });
       }
       setWalkers(next);
@@ -210,7 +214,7 @@ export function MartianLayer({ active, blocked, onReward, avoidXFrac, occupiedRe
       const slot = pool[Math.floor(Math.random() * pool.length)];
       const id = nextIdRef.current++;
       const side: 1 | -1 = slot > 50 ? 1 : -1;
-      commit([...list, { id, kind: kind ?? pickKind(), slot, side, phase: 'enter', hop: 0 }]);
+      commit([...list, { id, kind: kind ?? pickKind(), slot, scale: MARTIAN_MIN_SCALE + Math.random() * (MARTIAN_MAX_SCALE - MARTIAN_MIN_SCALE), side, phase: 'enter', hop: 0 }]);
       requestAnimationFrame(() => requestAnimationFrame(() => setPhase(id, 'idle')));
       later(() => leave(id), MARTIAN_STAY_MS + MARTIAN_WALK_MS);
     },

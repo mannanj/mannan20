@@ -28,9 +28,10 @@ export function useChickenSounds() {
   );
   const playHawk = useCallback((): ScreamResult | null => getChickenAudio().playHawk(), []);
   const crackle = useCallback(() => getChickenAudio().crackle(), []);
+  const dart = useCallback(() => getChickenAudio().dart(), []);
   const squeak = useCallback((depth: number) => getChickenAudio().squeak(depth), []);
   const sizzle = useCallback((level: number) => getChickenAudio().sizzle(level), []);
   const playCreature = useCallback((key: CreatureSoundKey) => getChickenAudio().playCreature(key), []);
 
-  return { progress, playScream, playPowerUp, playHawk, crackle, squeak, sizzle, playCreature };
+  return { progress, playScream, playPowerUp, playHawk, crackle, dart, squeak, sizzle, playCreature };
 }
