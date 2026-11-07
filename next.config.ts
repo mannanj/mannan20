@@ -65,6 +65,14 @@ const nextConfig: NextConfig = {
         source: '/civics/',
         destination: '/civics/index.html',
       },
+      {
+        source: '/moon',
+        destination: '/moon/index.html',
+      },
+      {
+        source: '/moon/',
+        destination: '/moon/index.html',
+      },
     ];
   },
 };

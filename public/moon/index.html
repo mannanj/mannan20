@@ -1,0 +1,361 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="/moon/">
+<title>Planning</title>
+<link rel="stylesheet" href="vendor/segmented-toggle.css">
+<style>
+:root{--col:80px;--axis:64px;--hour:40px;--red:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;padding:76px 16px 16px;background:#fff;color:#000;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 12px 84px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid rgba(0,0,0,.08);transition:transform .3s ease,opacity .3s ease}
+#hdr.hide{transform:translateY(-100%);opacity:0;pointer-events:none}
+#hdr h1{margin:0;font:700 30px -apple-system,system-ui,sans-serif}
+.toggles{display:flex;gap:20px;align-items:center;font-family:-apple-system,system-ui,sans-serif}
+.tog{display:inline-flex;align-items:center;gap:8px;font:600 14px -apple-system,system-ui,sans-serif}
+.tog b{font-size:17px;font-weight:600;position:relative;top:2px}
+#hdr label{display:flex;align-items:center;gap:8px;font:500 14px -apple-system,system-ui,sans-serif;cursor:pointer}
+section{margin-bottom:40px}
+h2{margin:0 0 10px;font:600 28px -apple-system,system-ui,sans-serif;text-align:left}
+.scroll{overflow-x:auto;border:1px solid #000}
+.grid{display:grid;grid-template-columns:var(--axis) repeat(var(--n),var(--col));width:max-content}
+.grid>.ax{position:sticky;left:0;z-index:5;background:#fff;border-right:1px solid #ddd}
+.day{text-align:center;padding:8px 0;letter-spacing:.15em;border-right:1px solid #ddd;border-bottom:1px solid #000}
+.day.today{background:var(--red);color:#fff}
+.hd.ax{border-bottom:1px solid #000}
+.top{height:96px;position:relative;border-right:1px solid #ddd;border-bottom:1px solid #000}
+.top canvas{position:absolute;left:50%;top:34px;transform:translateX(-50%)}
+.top i{display:none;position:absolute;left:50%;top:22px;height:12px;border-left:1px solid #000}
+.top span{position:absolute;left:50%;top:15px;line-height:16px;transform:translateX(-50%);white-space:nowrap;font-size:13.5px;z-index:1}
+.top span small canvas.mi{position:static;transform:none;vertical-align:-2px;margin:0 1px;border-radius:50%;box-shadow:0 0 0 .75px rgba(0,0,0,.45)}
+.top span small{position:absolute;left:100%;bottom:0;margin-left:6px;font-size:11px;line-height:16px;white-space:nowrap}
+.has-dst .top{height:120px}
+.top b{position:absolute;left:0;right:4px;top:98px;text-align:right;font-weight:400;font-size:10px;white-space:nowrap}
+.time{position:relative;height:calc(var(--hour) * 24);border-right:1px solid #ddd;
+  background:repeating-linear-gradient(to bottom,#e8e8e8 0 1px,transparent 1px var(--hour))}
+.time.ax{background:#fff}
+.time.ax b{position:absolute;right:8px;transform:translateY(-50%);font-weight:400;font-size:11px;white-space:nowrap}
+.note{position:absolute;inset:0;padding:6px;outline:none;overflow-y:auto;white-space:pre-wrap;word-break:break-word;z-index:1}
+.note:focus{background:rgba(0,0,0,.03)}
+.mk{position:absolute;left:50%;height:0;z-index:2;pointer-events:none}
+.mk .body{position:absolute;left:-10px;top:-10px;width:20px;height:20px;pointer-events:auto}
+.mk .body canvas,.mk .body svg{position:absolute;left:0;top:0;width:20px;height:20px;overflow:visible}
+.mk>i{position:absolute;left:0;top:-17px;height:7px;border-left:1px solid #000}
+.mk em{position:absolute;left:0;top:-31px;transform:translateX(-50%);font-style:normal;font-size:9.5px;line-height:13px;white-space:nowrap}
+.mk>i{display:none}
+.mk em{top:-24px !important}
+.mk.rise em{top:12px !important}
+.mk.set em{top:-24px !important}
+.mk .band{opacity:.45}
+.mk .body canvas{z-index:0}
+.mk .body svg{z-index:1}
+.mk .hv{position:absolute;left:0;transform:translateX(-50%);font-weight:600;font-size:9.5px;line-height:13px;white-space:nowrap;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.mk.set .hv{top:-37px}
+.mk.rise .hv{top:-54px}
+.mk:has(.body:hover) .hv{opacity:1}
+/* rise hover: where the moon ends up once risen, mirroring the set case */
+.mk .body canvas.risen{top:-30px;opacity:0;transition:opacity .2s ease}
+.mk .body:hover canvas.risen{opacity:1}
+.mk .earth{opacity:0;transition:opacity .2s ease;pointer-events:none}
+.mk .body:hover .earth{opacity:1}
+.mk:has(.body:hover){z-index:8}
+.mk u{position:absolute;left:13px;top:-6px;text-decoration:none;font-size:9px;line-height:12px;white-space:nowrap}
+.now{position:absolute;left:0;right:0;height:0;border-top:1.5px solid var(--red);z-index:6;pointer-events:none}
+.now::before{content:"";position:absolute;left:-5px;top:-5.75px;width:10px;height:10px;border-radius:50%;background:var(--red)}
+.ax .now::before{left:1px}
+.glass{background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px) saturate(180%);backdrop-filter:blur(10px) saturate(180%);
+  border:.5px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.12);border-radius:6px;padding:0 5px}
+.now em{position:absolute;left:13px;bottom:1px;font:600 9.5px/13px ui-monospace,Menlo,monospace;font-style:normal;white-space:nowrap;color:var(--red)}
+.hov{position:absolute;left:0;right:0;height:0;border-top:1px solid #000;z-index:7;pointer-events:none}
+.hov em{position:absolute;right:100%;top:0;margin-right:3px;transform:translateY(-50%);font-style:normal;font-size:9.5px;line-height:14px;white-space:nowrap}
+#pop{position:fixed;z-index:10;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border:.5px solid rgba(0,0,0,.1);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px;display:none;pointer-events:none;font-size:12px;line-height:1.6;white-space:nowrap}
+#pop canvas{display:block;margin:0 auto 8px}
+#pop .ph{font:600 14px -apple-system,system-ui,sans-serif}
+</style></head><body>
+<header id="hdr"><h1>Planning</h1><div class="toggles"><span class="tog"><span id="months-toggle"></span><b>Months</b></span><span class="tog"><span id="dst-toggle"></span><b>DST</b></span><input type="checkbox" id="lunar-months" hidden><input type="checkbox" id="follow-dst" hidden></div></header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="earth" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2563eb" stop-opacity=".3"/><stop offset=".3" stop-color="#166534" stop-opacity=".38"/><stop offset=".55" stop-color="#8b5a2b" stop-opacity=".34"/><stop offset=".78" stop-color="#16a34a" stop-opacity=".32"/><stop offset="1" stop-color="#2563eb" stop-opacity=".3"/></linearGradient><linearGradient id="earthFull" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#2563eb" stop-opacity=".42"/><stop offset=".3" stop-color="#166534" stop-opacity=".45"/><stop offset=".5" stop-color="#8b5a2b" stop-opacity=".4"/><stop offset=".7" stop-color="#16a34a" stop-opacity=".42"/><stop offset="1" stop-color="#1d4ed8" stop-opacity=".45"/></linearGradient></defs></svg>
+<div id="app"></div>
+<div id="pop"><canvas></canvas><div class="ph"></div><div class="tm"></div></div>
+<script>
+// Data: data/moon_view_{zip}_{year}.json.gz from sun/data/moon/moon_view.py (Skyfield + JPL DE421 +
+// NASA MOON_ME frame + CAMS aerosol). Each event: R,U,V = screen right / zenith-up / toward viewer and
+// S = toward the Sun in lunar body coords; sky = atmospheric transmission at 650/550/450 nm.
+const ZIP='22310',CYCLES=4,HOUR=40,MEAN_DIAM=31.1;
+// Display only: deepen the physical sky cast a little so it reads on screen
+const COLOR_GAIN=0.45;
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],DOW=['S','M','T','W','Th','F','S'];
+const NAME={new:'New',first:'First Quarter',full:'Full',last:'Last Quarter'};
+const QN={new:'New Moon',first:'First Quarter',full:'Full Moon',last:'Last Quarter'};
+// the arrow crosses the horizon; its head lands on the far side of the line
+const ARROW={rise:'M10 7 L10 -10 M7.6 -7.6 L10 -10 L12.4 -7.6',set:'M10 13 L10 30 M7.6 27.6 L10 30 L12.4 27.6'};
+// curved horizon (Earth's limb), 5px off the moon: above it on rise, below on set
+const HORIZON={rise:'M-1.5 -4 Q10 -7 21.5 -4',set:'M-1.5 26 Q10 23 21.5 26'};
+// thin band just under the horizon: a slice of the same Earth image shown on hover
+// on hover, the horizon curve grows into the whole Earth: the circle through that curve
+// (chord 23, sagitta 1.5 → r≈44.8), shading the part of the moon's path we don't see
+const EARTH_R=44.8,EARTH_CY={rise:-5.5+EARTH_R,set:24.5+EARTH_R};
+// earth.png: pre-rendered once from NASA Blue Marble (22310 at the top limb); its disc fills 90% of the image
+const EARTH_IMG=EARTH_R*2/0.9;
+// the band shows the green of northern South America rather than the dark ocean at the limb
+const BAND_DX=8,BAND_DY=16;
+// hidden-line convention: the moon below the horizon is a dashed outline on the Earth
+// (rise: where it is now; set: where it goes, mirrored under the line)
+const EARTH={rise:'M-1.5 -4 Q10 -7 21.5 -4 L21.5 0 Q10 -3 -1.5 0 Z',set:'M-1.5 26 Q10 23 21.5 26 L21.5 30 Q10 27 -1.5 30 Z'};
+const pd=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fmt=m=>{const h=Math.floor(m/60),mm=Math.floor(m%60);return `${(h+11)%12+1}:${String(mm).padStart(2,'0')} ${h<12?'AM':'PM'}`};
+const hourLabel=h=>`${(h+11)%12+1} ${h<12?'AM':'PM'}`;
+const lab=x=>`${DN[x.getDay()]} ${MON[x.getMonth()]} ${x.getDate()}`;
+const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let store={};try{store=JSON.parse(get('moon-notes')||'{}')}catch(e){}
+
+let TZ='America/New_York',STD=-300;
+let offFmt=null;
+// UTC offset in minutes of TZ at an instant (e.g. -240 for EDT)
+function offsetAt(ms){
+  offFmt=offFmt||new Intl.DateTimeFormat('en-US',{timeZone:TZ,timeZoneName:'shortOffset'});
+  const p=offFmt.formatToParts(new Date(ms)).find(x=>x.type==='timeZoneName').value.match(/GMT([+-])(\d+)(?::(\d+))?/);
+  return p?(p[1]==='-'?-1:1)*(+p[2]*60+(+p[3]||0)):0;
+}
+// Clock reading of an instant: wall clock (follows DST) or standard time all year
+function clock(ms,follow){
+  const t=new Date(ms+(follow?offsetAt(ms):STD)*60000);
+  return {date:t.toISOString().slice(0,10),min:t.getUTCHours()*60+t.getUTCMinutes()+t.getUTCSeconds()/60};
+}
+function dstChangeOn(date){
+  const [y,m,d]=date.split('-').map(Number),noon=Date.UTC(y,m-1,d,12);
+  const a=offsetAt(noon-12*3600e3),b=offsetAt(noon+12*3600e3);
+  return a===b?null:{from:a,to:b};
+}
+
+const SYNODIC=29.53059;
+
+let lunar=true;
+// Lunar: months are synodic cycles. Calendar: same date next month = one month, remainder in days.
+function span(a,b){
+  const days=Math.round((pd(b)-pd(a))/864e5);
+  if(days<30)return {mo:0,d:days};
+  if(lunar){let mo=Math.floor(days/SYNODIC),d=Math.round(days-mo*SYNODIC);if(d>=30){mo++;d=0}return {mo,d}}
+  const A=pd(a);let mo=0;
+  while(new Date(A.getFullYear(),A.getMonth()+mo+1,A.getDate())<=pd(b))mo++;
+  return {mo,d:Math.round((pd(b)-new Date(A.getFullYear(),A.getMonth()+mo,A.getDate()))/864e5)};
+}
+function ago(date,today,j){
+  if(date===today)return '0d';
+  const past=date<today,sign=past?'-':'+',{mo,d}=past?span(date,today):span(today,date);
+  if(!mo)return `${sign}${d}d`;
+  return lunar?`${sign}${mo}<canvas class="mi" data-j="${j}" data-size="12"></canvas>${d?` ${d}d`:''}`:`${sign}${mo}mo${d?` ${d}d`:''}`;
+}
+function tint(sky){const mx=Math.max(...sky);return sky.map(v=>Math.pow(v/mx,COLOR_GAIN))}
+function dayTint(d){const t=[d.rise,d.peak,d.set].filter(Boolean).map(e=>tint(e.sky));return [0,1,2].map(c=>t.reduce((a,v)=>a+v[c],0)/t.length)}
+function phaseName(d,e){
+  if(d.phase)return QN[d.phase.type];
+  if(e.illum<3)return 'New Moon';if(e.illum>97)return 'Full Moon';
+  return (d.waxing?'Waxing ':'Waning ')+(e.illum<50?'Crescent':'Gibbous');
+}
+
+async function loadYear(y){
+  try{
+    const r=await fetch(`data/moon_view_${ZIP}_${y}.json.gz`,{cache:'no-cache'});
+    if(!r.ok)return null;
+    // hosts may already have decoded the gzip (Content-Encoding); only inflate real gzip bytes
+    const buf=new Uint8Array(await r.arrayBuffer());
+    if(buf[0]!==0x1f||buf[1]!==0x8b)return JSON.parse(new TextDecoder().decode(buf));
+    return await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
+  }catch(e){return null}
+}
+
+// Regroup every event onto the calendar day/minute of the chosen clock
+function regroup(events,phases,follow){
+  const days={};
+  const day=k=>days[k]||(days[k]={date:k,rise:null,peak:null,set:null,phase:null});
+  for(const e of events){
+    const ms=Date.parse(e.time),c=clock(ms,follow),d=day(c.date);
+    if(!d[e.kind])d[e.kind]={...e,min:c.min,shifted:false,ms};
+  }
+  const ph=phases.map(p=>{const ms=Date.parse(p.time),c=clock(ms,follow);day(c.date).phase={...p,min:c.min};return {...p,date:c.date}});
+  // events that land after a DST switch on its day read an hour off from the day before
+  for(const d of Object.values(days)){
+    const ch=dstChangeOn(d.date);if(!ch)continue;
+    d.dst=true;
+    for(const k of ['rise','peak','set'])if(d[k]&&offsetAt(d[k].ms)===ch.to)d[k].shifted=true;
+  }
+  return {days,news:ph.filter(p=>p.type==='new').map(p=>p.date)};
+}
+
+let jobs=[];
+function job(e,size,t,day){jobs.push({e,size,t,day});return jobs.length-1}
+
+function marker(e,kind,d){
+  const j=job(e,20,tint(e.sky),d);
+  const svg=kind==='peak'?'':`<svg viewBox="0 0 20 20"><image class="earth" href="earth.png" x="${10-EARTH_IMG/2}" y="${EARTH_CY[kind]-EARTH_IMG/2}" width="${EARTH_IMG}" height="${EARTH_IMG}"/><circle class="earth" cx="10" cy="${kind==='rise'?10:40}" r="9.6" fill="none" stroke="rgba(255,255,255,.9)" stroke-width=".9" stroke-dasharray="2 1.4"/><defs><clipPath id="eb${j}"><path d="${EARTH[kind]}"/></clipPath></defs><image class="band" href="earth.png" clip-path="url(#eb${j})" x="${10-EARTH_IMG/2-BAND_DX}" y="${EARTH_CY[kind]-EARTH_IMG/2-BAND_DY}" width="${EARTH_IMG}" height="${EARTH_IMG}"/><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round"><path d="${HORIZON[kind]}" stroke-width="1.4"/><path d="${ARROW[kind]}" stroke-width="1.1"/></g></svg>`;
+  return {min:e.min,html:dy=>`<div class="mk ${kind}" style="top:${(e.min/60*HOUR+dy).toFixed(1)}px"><em>${fmt(e.min)}</em><i></i><div class="body" data-j="${j}"><canvas data-j="${j}"></canvas>${kind==='rise'?`<canvas class="risen" data-j="${j}"></canvas>`:''}${svg}</div>${kind==='peak'?'':`<b class="hv">Moon ${kind==='rise'?'Rising':'Setting'}</b>`}</div>`};
+}
+
+function render(days,news,follow){
+  jobs=[];
+  const today=clock(Date.now(),follow).date;
+  let i=news.findLastIndex(d=>d<=today);
+  if(i<0)i=0;
+  const app=document.getElementById('app');app.innerHTML='';
+  for(let c=0;c<CYCLES&&i+c+1<news.length;c++){
+    const a=pd(news[i+c]),b=new Date(pd(news[i+c+1]).getTime()-864e5);
+    const list=[];for(let d=new Date(a);d<=b;d.setDate(d.getDate()+1)){const x=days[iso(d)];if(x)list.push(x)}
+    const fi=list.findIndex(d=>d.phase&&d.phase.type==='full');list.forEach((d,k)=>d.waxing=k<fi);
+    // the 'one lunar month' icon is this cycle's real full moon
+    const fullJ=fi>=0?job(list[fi].phase,11,[1,1,1],list[fi]):null;
+    let h=`<h2>${lab(a)} - ${lab(b)} (${list.length} days)</h2><div class="scroll"><div class="grid${list.some(d=>d.dst)?' has-dst':''}" style="--n:${list.length}"><div class="hd ax"></div>`;
+    h+=list.map(d=>{const x=pd(d.date);return `<div class="day" data-date="${d.date}">${DOW[x.getDay()]} ${x.getDate()}</div>`}).join('');
+    h+='<div class="top ax"></div>';
+    h+=list.map(d=>{const e=d.peak||d.set||d.rise;const j=job(e,52*e.diam/MEAN_DIAM,dayTint(d),d);
+      return `<div class="top"><canvas data-j="${j}"></canvas>${d.phase?`<i></i><span>${NAME[d.phase.type]}<small>${ago(d.date,today,fullJ)}</small></span>`:''}${d.dst?'<b>*DST Observed</b>':''}</div>`}).join('');
+    h+='<div class="time ax">'+[...Array(24)].map((_,k)=>k?`<b style="top:${k*HOUR}px">${hourLabel(k)}</b>`:'').join('')+'</div>';
+    h+=list.map(d=>{
+      const ms=[d.rise&&marker(d.rise,'rise',d),d.peak&&marker(d.peak,'peak',d),d.set&&marker(d.set,'set',d)].filter(Boolean).sort((p,q)=>p.min-q.min);
+      let last=-1e9;
+      // a marker (label + tick + moon) is ~42px tall; push a crowded one down rather than overlap
+      const out=ms.map(m=>{const y=m.min/60*HOUR,c=Math.max(y,last+42);last=c;return m.html(c-y)}).join('');
+      return `<div class="time" data-date="${d.date}"><div class="note" contenteditable="true" data-k="${d.date}"></div>${out}</div>`;
+    }).join('');
+    const sec=document.createElement('section');sec.innerHTML=h+'</div></div>';app.appendChild(sec);
+  }
+  document.querySelectorAll('.note').forEach(n=>{n.textContent=store[n.dataset.k]||'';n.addEventListener('input',()=>{store[n.dataset.k]=n.innerText;set('moon-notes',JSON.stringify(store))})});
+}
+
+function nowLine(top,label){
+  const l=document.createElement('div');l.className='now';l.style.top=top+'px';
+  if(label)l.innerHTML=`<em class="glass">${label}</em>`;
+  return l;
+}
+let follow=false;
+function tickNow(){
+  const c=clock(Date.now(),follow),y=c.min/60*HOUR;
+  document.querySelectorAll('.day.today').forEach(e=>e.classList.remove('today'));
+  document.querySelectorAll('.now').forEach(e=>e.remove());
+  document.querySelectorAll(`.day[data-date="${c.date}"]`).forEach(e=>e.classList.add('today'));
+  document.querySelectorAll(`.time[data-date="${c.date}"]`).forEach(e=>{
+    e.appendChild(nowLine(y));
+    const ax=e.parentElement.querySelector('.time.ax');if(!ax)return;
+    ax.appendChild(nowLine(y,fmt(c.min)));
+    ax.querySelectorAll('b').forEach(b=>b.style.visibility=Math.abs(parseFloat(b.style.top)-y)<16?'hidden':'');
+  });
+}
+function jumpToday(){
+  const h=document.querySelector('.day.today');if(!h)return;
+  const sc=h.closest('.scroll'),ax=sc.querySelector('.ax').offsetWidth;
+  sc.scrollLeft+=h.getBoundingClientRect().left-sc.getBoundingClientRect().left-ax;
+  window.scrollTo(0,h.closest('section').getBoundingClientRect().top+scrollY-document.getElementById('hdr').offsetHeight-8);
+}
+
+let draw=null;
+function loadTexture(){
+  return new Promise(res=>{const img=new Image();img.onload=()=>{
+    const tc=document.createElement('canvas');tc.width=img.width;tc.height=img.height;
+    const tx=tc.getContext('2d');tx.drawImage(img,0,0);
+    res({T:tx.getImageData(0,0,tc.width,tc.height).data,TW:tc.width,TH:tc.height});
+  };img.src='moon2k.jpg'});
+}
+function makeDraw({T,TW,TH}){
+  const dpr=Math.max(2,window.devicePixelRatio||1);
+  return (cv,m,size,tn)=>{
+    const css=Math.round(size),N=Math.round(css*dpr),half=N/2;
+    cv.width=N;cv.height=N;cv.style.width=css+'px';cv.style.height=css+'px';
+    const ctx=cv.getContext('2d'),out=ctx.createImageData(N,N),o=out.data;
+    // earthshine keeps the dark side faintly visible, so a new moon reads as barely lit, not a black disc
+    const earthshine=0.05+0.1*(1-m.illum/100),{R,U,V,S}=m;
+    for(let py=0;py<N;py++)for(let px=0;px<N;px++){
+      const x=(px+0.5-half)/half,y=-(py+0.5-half)/half,r2=x*x+y*y;
+      if(r2>1.0+2/N)continue;
+      const z=Math.sqrt(Math.max(0,1-r2));
+      const nx=x*R[0]+y*U[0]+z*V[0],ny=x*R[1]+y*U[1]+z*V[1],nz=x*R[2]+y*U[2]+z*V[2];
+      const lat=Math.asin(Math.max(-1,Math.min(1,nz))),lon=Math.atan2(ny,nx);
+      const ti=(Math.min(TH-1,((0.5-lat/Math.PI)*TH)|0)*TW+Math.min(TW-1,((lon/(2*Math.PI)+0.5)*TW)|0))*4;
+      const ci=nx*S[0]+ny*S[1]+nz*S[2];
+      // Lommel-Seeliger law: why the full moon looks flat instead of a shaded ball
+      const lit=ci>0?2*ci/(ci+z+1e-6):0;
+      const term=Math.min(1,Math.max(0,(ci+0.012)/0.024));
+      const L=lit*term*1.55+earthshine,k=(py*N+px)*4;
+      for(let c=0;c<3;c++)o[k+c]=Math.max(10,Math.min(255,Math.round(255*Math.pow(Math.min(1,T[ti+c]/255*L*tn[c]),1/1.15))));
+      o[k+3]=Math.round(255*Math.min(1,Math.max(0,(1-Math.sqrt(r2))*half+0.5)));
+    }
+    ctx.putImageData(out,0,0);
+  };
+}
+
+const hov=document.createElement('div');hov.className='hov';hov.innerHTML='<em class="glass"></em>';
+document.addEventListener('mousemove',e=>{
+  const cell=e.target.closest('.time:not(.ax)');
+  if(!cell){hov.remove();return}
+  const y=e.clientY-cell.getBoundingClientRect().top,m=Math.max(0,Math.min(1439,Math.round(y/HOUR*60)));
+  hov.style.top=(m/60*HOUR)+'px';hov.firstChild.textContent=fmt(m);
+  if(hov.parentElement!==cell)cell.appendChild(hov);
+});
+document.addEventListener('mouseleave',()=>hov.remove());
+const pop=document.getElementById('pop');
+document.addEventListener('mouseover',e=>{
+  const t=e.target.closest('.mk .body');
+  if(!t||!draw){if(!e.target.closest('#pop'))pop.style.display='none';return}
+  const{e:ev,t:tn,day:d}=jobs[+t.dataset.j];
+  draw(pop.querySelector('canvas'),ev,120,tn);
+  pop.querySelector('.ph').textContent=phaseName(d,ev);
+  pop.querySelector('.tm').innerHTML=[d.rise&&[d.rise.min,'Rise'],d.peak&&[d.peak.min,'Peak'],d.set&&[d.set.min,'Set']].filter(Boolean).sort((a,b)=>a[0]-b[0]).map(([m,l])=>`${fmt(m)} ${l}`).join('<br>');
+  pop.style.display='block';
+  const r=t.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
+  let x=r.right+10,y=r.top+r.height/2-h/2;
+  if(x+w>innerWidth-8)x=r.left-w-10;
+  pop.style.left=x+'px';pop.style.top=Math.max(8,Math.min(innerHeight-h-8,y))+'px';
+});
+document.addEventListener('scroll',()=>pop.style.display='none',true);
+
+const hdr=document.getElementById('hdr');let hideTimer=0;
+const showHeader=()=>{hdr.classList.remove('hide');clearTimeout(hideTimer);hideTimer=setTimeout(()=>hdr.classList.add('hide'),5000)};
+document.addEventListener('mousemove',e=>{if(e.clientY<=hdr.offsetHeight+24)showHeader()});
+
+(async()=>{
+  try{history.scrollRestoration='manual'}catch(e){}
+  showHeader();
+  const Y=new Date().getFullYear();
+  const [tex,...years]=await Promise.all([loadTexture(),...[Y-1,Y,Y+1,Y+2].map(loadYear)]);
+  const ok=years.filter(Boolean),events=[],phases=[];
+  if(ok[0])TZ=ok[0].timezone;
+  for(const yd of ok){for(const d of yd.days)for(const k of ['rise','peak','set'])if(d[k])events.push({...d[k],kind:k});phases.push(...yd.phases)}
+  phases.sort((a,b)=>a.time<b.time?-1:1);
+  // standard time = the zone's smaller UTC offset across the year
+  STD=Math.min(offsetAt(Date.UTC(Y,0,15)),offsetAt(Date.UTC(Y,6,15)));
+  draw=makeDraw(tex);
+  const box=document.getElementById('follow-dst');
+  follow=get('follow-dst')==='1';box.checked=follow;
+  const build=()=>{
+    const {days,news}=regroup(events,phases,follow);
+    render(days,news,follow);
+    tickNow();
+    requestAnimationFrame(()=>requestAnimationFrame(jumpToday));
+    document.querySelectorAll('canvas[data-j]').forEach(cv=>{const j=jobs[+cv.dataset.j];draw(cv,j.e,+cv.dataset.size||j.size,j.t)});
+  };
+  const lbox=document.getElementById('lunar-months');
+  lunar=get('lunar-months')!=='0';lbox.checked=lunar;
+  lbox.addEventListener('change',()=>{lunar=lbox.checked;set('lunar-months',lunar?'1':'0');build()});
+  box.addEventListener('change',()=>{follow=box.checked;set('follow-dst',follow?'1':'0');build()});
+  build();
+  setInterval(tickNow,30000);
+})();
+</script>
+<script type="module">
+// Toggles from ~/Documents/ui-components (@mannan-ui/segmented-toggle); they drive the hidden checkboxes the page reads
+import { mountSegmentedToggle } from './vendor/segmented-toggle.vanilla.js';
+const wire=(el,box,ariaLabel,options)=>{
+  const sync=()=>t.setValue(box.checked?options[0].value:options[1].value);
+  const t=mountSegmentedToggle(el,{options,ariaLabel,theme:'mono',value:box.checked?options[0].value:options[1].value,
+    // returning a Promise holds the toggle busy: paint the loader, rebuild, then release
+    onChange:v=>new Promise(res=>{const on=v===options[0].value;if(box.checked===on)return res();
+      box.checked=on;
+      // let the lens finish sliding first: the rebuild blocks the main thread and would freeze labels mid-transition
+      setTimeout(()=>{box.dispatchEvent(new Event('change'));requestAnimationFrame(()=>res())},340)})});
+  addEventListener('load',sync);setTimeout(sync,0);
+};
+wire(document.getElementById('months-toggle'),document.getElementById('lunar-months'),'Months',[{value:'lunar',label:'Lunar'},{value:'calendar',label:'Regular'}]);
+wire(document.getElementById('dst-toggle'),document.getElementById('follow-dst'),'Clock',[{value:'dst',label:'On'},{value:'standard',label:'Off'}]);
+</script></body></html>
