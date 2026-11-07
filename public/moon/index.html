@@ -24,13 +24,26 @@ h2{margin:0 0 10px;font:600 28px -apple-system,system-ui,sans-serif;text-align:l
 .day{text-align:center;padding:8px 0;letter-spacing:.15em;border-right:1px solid #ddd;border-bottom:1px solid #000}
 .day.today{background:var(--red);color:#fff}
 .hd.ax{border-bottom:1px solid #000}
-.top{height:96px;position:relative;border-right:1px solid #ddd;border-bottom:1px solid #000}
+.top{height:118px;position:relative;border-right:1px solid #ddd;border-bottom:1px solid #000}
 .top canvas{position:absolute;left:50%;top:34px;transform:translateX(-50%)}
 .top i{display:none;position:absolute;left:50%;top:22px;height:12px;border-left:1px solid #000}
 .top span{position:absolute;left:50%;top:15px;line-height:16px;transform:translateX(-50%);white-space:nowrap;font-size:13.5px;z-index:1}
 .top span small canvas.mi{position:static;transform:none;vertical-align:-2px;margin:0 1px;border-radius:50%;box-shadow:0 0 0 .75px rgba(0,0,0,.45)}
 .top span small{position:absolute;left:100%;bottom:0;margin-left:6px;font-size:11px;line-height:16px;white-space:nowrap}
-.has-dst .top{height:120px}
+.day{position:relative}
+.day .dstn{position:absolute;left:0;right:0;top:1px;font-weight:400;font-size:7px;line-height:8px;letter-spacing:0;white-space:nowrap;pointer-events:none}
+/* pin rows so the band can overlay row 2 without pushing the moon cells down */
+.grid>.hd,.grid>.day{grid-row:1}
+.grid>.top{grid-row:2}
+.grid>.top.ax{grid-column:1}
+.grid>.time{grid-row:3}
+.rit{grid-row:2;align-self:end;display:grid;grid-template-columns:repeat(var(--n),var(--col));height:22px;margin-bottom:1px;z-index:2}
+.rit-seg{display:flex;align-items:center;justify-content:center;font-size:10px;letter-spacing:.04em;border-right:1px solid #ddd;color:#555;background:#fff;white-space:nowrap;overflow:hidden;cursor:default}
+.rit-seg.work{background:#000;color:#fff;border-right-color:#333}
+.rit-seg.on{font-weight:700;color:#000}
+.rit-seg.work.on{color:#fff}
+.rit-seg:hover{box-shadow:inset 0 0 0 2px #000}
+.rit-seg.work:hover{box-shadow:inset 0 0 0 2px #fff}
 .top span.end{left:auto;right:6px;transform:none}
 .top span.end small{position:static;margin-left:6px}
 .top b{position:absolute;left:0;right:4px;top:98px;text-align:right;font-weight:400;font-size:10px;white-space:nowrap}
@@ -72,12 +85,19 @@ h2{margin:0 0 10px;font:600 28px -apple-system,system-ui,sans-serif;text-align:l
 .hov{position:absolute;left:0;right:0;height:0;border-top:1px solid #000;z-index:7;pointer-events:none}
 .hov em{position:absolute;right:100%;top:0;margin-right:3px;transform:translateY(-50%);font-style:normal;font-size:9.5px;line-height:14px;white-space:nowrap}
 #pop{position:fixed;z-index:10;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border:.5px solid rgba(0,0,0,.1);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px;display:none;pointer-events:none;font-size:12px;line-height:1.6;white-space:nowrap}
+#spop{position:fixed;z-index:11;display:none;pointer-events:auto;max-width:240px;padding:10px 12px;border-radius:12px;
+  background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+  border:.5px solid rgba(0,0,0,.1);box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:12px;line-height:1.5}
+#spop .ph{font:600 14px -apple-system,system-ui,sans-serif;display:flex;align-items:center;gap:6px}
+#spop .src{display:inline-flex;line-height:0}
+#spop .sub{color:#555;margin-bottom:4px;font-family:-apple-system,system-ui,sans-serif}
 #pop canvas{display:block;margin:0 auto 8px}
 #pop .ph{font:600 14px -apple-system,system-ui,sans-serif}
 </style></head><body>
 <header id="hdr"><h1>Planning</h1><div class="toggles"><span class="tog"><span id="months-toggle"></span><b>Months</b></span><span class="tog"><span id="dst-toggle"></span><b>DST</b></span><input type="checkbox" id="lunar-months" hidden><input type="checkbox" id="follow-dst" hidden></div></header>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="earth" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2563eb" stop-opacity=".3"/><stop offset=".3" stop-color="#166534" stop-opacity=".38"/><stop offset=".55" stop-color="#8b5a2b" stop-opacity=".34"/><stop offset=".78" stop-color="#16a34a" stop-opacity=".32"/><stop offset="1" stop-color="#2563eb" stop-opacity=".3"/></linearGradient><linearGradient id="earthFull" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#2563eb" stop-opacity=".42"/><stop offset=".3" stop-color="#166534" stop-opacity=".45"/><stop offset=".5" stop-color="#8b5a2b" stop-opacity=".4"/><stop offset=".7" stop-color="#16a34a" stop-opacity=".42"/><stop offset="1" stop-color="#1d4ed8" stop-opacity=".45"/></linearGradient></defs></svg>
 <div id="app"></div>
+<div id="spop"><div class="ph"><span></span><a class="src" href="https://www.slownorth.com/blogs/journal/moon-phase-ritual-guide" target="_blank" rel="noopener" title="Moon Magic: A Guide To Living In Alignment With The Moon's Phases" aria-label="Source: Moon Magic: A Guide To Living In Alignment With The Moon's Phases"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></a></div><div class="sub"></div><div class="tm"></div></div>
 <div id="pop"><canvas></canvas><div class="ph"></div><div class="tm"></div></div>
 <script>
 // Data: data/moon_view_{zip}_{year}.json.gz from sun/data/moon/moon_view.py (Skyfield + JPL DE421 +
@@ -197,6 +217,32 @@ function marker(e,kind,d){
   return {min:e.min,html:dy=>`<div class="mk ${kind}" style="top:${(e.min/60*HOUR+dy).toFixed(1)}px"><em>${fmt(e.min)}</em><i></i><div class="body" data-j="${j}"><canvas data-j="${j}"></canvas>${kind==='rise'?`<canvas class="risen" data-j="${j}"></canvas>`:''}${svg}</div>${kind==='peak'?'':`<b class="hv">Moon ${kind==='rise'?'Rising':'Setting'}</b>`}</div>`};
 }
 
+// Prototype: the intention cycle from the Slow North moon ritual guide, mapped onto the real phase days.
+// Day of each quarter phase gets its own cell; the days between take the following stage.
+// Goal work = the waxing half, the day after New Moon up to the day before Full Moon.
+const STAGE_ON={new:'Intend',first:'Act',full:'Celebrate',last:'Reflect'};
+const STAGE_AFTER={new:'Begin',first:'Refine',full:'Release',last:'Rest'};
+const STAGE_INFO={
+  Intend:['New Moon','Set the goal for this cycle.'],
+  Begin:['Waxing Crescent','First small steps. Daily affirmations, keep momentum.'],
+  Act:['First Quarter','Commit. Take one concrete step, make the plan real.'],
+  Refine:['Waxing Gibbous','Review progress and adjust the details.'],
+  Celebrate:['Full Moon','Mark what came to fruition. Gratitude.'],
+  Release:['Waning Gibbous','Let go of what is not working. Declutter.'],
+  Reflect:['Last Quarter','Look back on the cycle. Forgive, close loops.'],
+  Rest:['Waning Crescent','Sleep, recover, do less before the next New Moon.'],
+};
+// stage spans for a cycle: the day of each quarter phase, then the days up to the next one
+function stagesOf(list){
+  const ev=list.map((d,i)=>d.phase?{i,t:d.phase.type}:null).filter(Boolean),segs=[];
+  ev.forEach((e,k)=>{
+    segs.push({a:e.i,b:e.i,name:STAGE_ON[e.t],on:true});
+    const end=(k+1<ev.length?ev[k+1].i:list.length)-1;
+    if(end>e.i)segs.push({a:e.i+1,b:end,name:STAGE_AFTER[e.t]});
+  });
+  return segs;
+}
+const WORK=new Set(['Begin','Act','Refine']);
 function render(days,news,follow){
   jobs=[];
   const today=clock(Date.now(),follow).date;
@@ -209,12 +255,13 @@ function render(days,news,follow){
     const fi=list.findIndex(d=>d.phase&&d.phase.type==='full');list.forEach((d,k)=>d.waxing=k<fi);
     // the 'one lunar month' icon is this cycle's real full moon
     const fullJ=fi>=0?job(list[fi].phase,11,[1,1,1],list[fi]):null;
-    let h=`<h2>${lab(a)} - ${lab(b)} (${list.length} days)</h2><div class="scroll"><div class="grid${list.some(d=>d.dst)?' has-dst':''}" style="--n:${list.length}"><div class="hd ax"></div>`;
-    h+=list.map(d=>{const x=pd(d.date);return `<div class="day" data-date="${d.date}">${DOW[x.getDay()]} ${x.getDate()}</div>`}).join('');
+    let h=`<h2>${lab(a)} - ${lab(b)} (${list.length} days)</h2><div class="scroll"><div class="grid" style="--n:${list.length}"><div class="hd ax"></div>`;
+    h+=list.map(d=>{const x=pd(d.date);return `<div class="day" data-date="${d.date}">${DOW[x.getDay()]} ${x.getDate()}${d.dst?'<b class="dstn">*DST Observed</b>':''}</div>`}).join('');
     h+='<div class="top ax"></div>';
     h+=list.map((d,k)=>{const e=d.peak||d.set||d.rise;const j=job(e,52*e.diam/MEAN_DIAM,dayTint(d),d);
       const title=d.phase?NAME[d.phase.type]:k===list.length-1?'Last Day':'';
-      return `<div class="top"><canvas data-j="${j}"></canvas>${title?`<i></i><span${d.phase?'':' class="end"'}>${title}<small>${ago(d.date,today,fullJ)}</small></span>`:''}${d.dst?'<b>*DST Observed</b>':''}</div>`}).join('');
+      return `<div class="top" style="grid-column:${k+2}"><canvas data-j="${j}"></canvas>${title?`<i></i><span${d.phase?'':' class="end"'}>${title}<small>${ago(d.date,today,fullJ)}</small></span>`:''}</div>`}).join('');
+    h+='<div class="rit" style="grid-column:2 / span '+list.length+'">'+stagesOf(list).map(g=>`<div class="rit-seg${WORK.has(g.name)?' work':''}${g.on?' on':''}" style="grid-column:${g.a+1} / ${g.b+2}" data-name="${g.name}" data-a="${list[g.a].date}" data-b="${list[g.b].date}">${g.name}</div>`).join('')+'</div>';
     h+='<div class="time ax">'+[...Array(24)].map((_,k)=>k?`<b style="top:${k*HOUR}px">${hourLabel(k)}</b>`:'').join('')+'</div>';
     h+=list.map(d=>{
       const ms=[d.rise&&marker(d.rise,'rise',d),d.peak&&marker(d.peak,'peak',d),d.set&&marker(d.set,'set',d)].filter(Boolean).sort((p,q)=>p.min-q.min);
@@ -297,6 +344,24 @@ document.addEventListener('mousemove',e=>{
   if(hov.parentElement!==cell)cell.appendChild(hov);
 });
 document.addEventListener('mouseleave',()=>hov.remove());
+const spop=document.getElementById('spop');
+const span2=(a,b)=>{const A=pd(a),B=pd(b),n=Math.round((B-A)/864e5)+1;return [n,a===b?lab(A):`${lab(A)} – ${lab(B)}`]};
+let spopHide=0;
+document.addEventListener('mouseover',e=>{
+  if(e.target.closest('#spop')){clearTimeout(spopHide);return}
+  const t=e.target.closest('.rit-seg');
+  if(!t){clearTimeout(spopHide);spopHide=setTimeout(()=>spop.style.display='none',200);return}
+  clearTimeout(spopHide);
+  const [n,range]=span2(t.dataset.a,t.dataset.b),[phase,what]=STAGE_INFO[t.dataset.name];
+  spop.querySelector('.ph span').textContent=t.dataset.name;
+  spop.querySelector('.sub').textContent=`${phase} · ${what}`;
+  spop.querySelector('.tm').textContent=`${range} · ${n} day${n>1?'s':''}`;
+  spop.style.display='block';
+  const r=t.getBoundingClientRect(),w=spop.offsetWidth;
+  spop.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+'px';
+  spop.style.top=(r.bottom+6)+'px';
+});
+document.addEventListener('scroll',()=>spop.style.display='none',true);
 const pop=document.getElementById('pop');
 document.addEventListener('mouseover',e=>{
   const t=e.target.closest('.mk .body');
