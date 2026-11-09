@@ -370,7 +370,7 @@ import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
 import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
 import { tuningFor, type GameTuning, type GameVariant } from './game-tuning';
-import { useSavedScore } from './use-saved-score';
+import { readSavedScore, useSavedScore } from './use-saved-score';
 import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS, MYSTERY_REVEAL_MS, pickMysteryEffect } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type OutlineFrame, type OutlinePoint } from './chicken-outline';
@@ -1058,6 +1058,12 @@ if (typeof window !== 'undefined') warmOutlines();
 const loadSpaceFlight = () => import('./space-flight-3d');
 const SpaceFlight3D = dynamic(loadSpaceFlight, { ssr: false });
 const CosmosFlight = dynamic(() => import('./cosmos-3d'), { ssr: false });
+const CosmicOpening = dynamic(() => import('./cosmic-opening').then((m) => m.CosmicOpening), { ssr: false });
+const ChickenMonologue = dynamic(() => import('./chicken-monologue').then((m) => m.ChickenMonologue), { ssr: false });
+const BackyardFlock = dynamic(() => import('./backyard-flock').then((m) => m.BackyardFlock), { ssr: false });
+const BACKYARD_SCENE_SRC = '/game/v3/backyard.webp';
+const OPENING_SCORE = 2;
+type OpeningPhase = 'pending' | 'cosmos' | 'yard' | 'done';
 const PRELOAD_IDLE_TIMEOUT_MS = 4000;
 const PRELOAD_FALLBACK_DELAY_MS = 1500;
 
@@ -1245,12 +1251,23 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const [sheet, setSheet] = useState<'board' | null>(null);
   const [loaderPhase, setLoaderPhase] = useState<'loading' | 'fading' | 'done'>('loading');
   const jumpScoreRef = useRef<((n: number) => void) | null>(null);
+  const [opening, setOpening] = useState<OpeningPhase>(tuning.cosmicOpening ? 'pending' : 'done');
+  const [yardShown, setYardShown] = useState(false);
+  const [monologue, setMonologue] = useState<{ x: number; y: number; body: string; belly: string } | null>(null);
+  const haltedRef = useRef(false);
   useSavedScore({
     enabled: tuning.persistScore,
     ready: loaderPhase === 'done',
     score,
-    resume: (n) => jumpScoreRef.current?.(n),
+    resume: (n) => {
+      setOpening('done');
+      jumpScoreRef.current?.(n);
+    },
   });
+  useEffect(() => {
+    if (opening !== 'pending' || loaderPhase !== 'done') return;
+    setOpening(readSavedScore() > 0 ? 'done' : 'cosmos');
+  }, [opening, loaderPhase]);
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const [kids, setKids] = useState<Kid[]>([]);
   const [bonus, setBonus] = useState<{ amount: number; id: number } | null>(null);
@@ -3479,7 +3496,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
   const hit = useCallback(
     (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }, raw = 1) => {
-      if (gateRef.current !== 'none') return;
+      if (gateRef.current !== 'none' || haltedRef.current) return;
       const now = performance.now();
       const p = physicsRef.current;
       const plain = source !== undefined;
@@ -3519,6 +3536,12 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       scoreRef.current = next;
       const shown = Math.floor(next);
       setScore(shown);
+      const talkAt = tuning.monologueAt;
+      if (talkAt !== null && !haltedRef.current && prevScore < talkAt && shown >= talkAt) {
+        haltedRef.current = true;
+        const tierColors = TIERS[tierRef.current] ?? TIERS[0];
+        setMonologue({ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2, body: tierColors.body, belly: tierColors.belly });
+      }
       checkOrbSchedule(Math.floor(prevScore), shown);
       queueBirdsForScore(bird, Math.floor(prevScore), shown);
       if (!plain && noteCalmClick(bird)) restoreBirdSnapshot();
@@ -4213,7 +4236,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
   useEffect(() => {
     const animate = (ts: number) => {
-      if (gateRef.current !== 'none') {
+      if (gateRef.current !== 'none' || haltedRef.current) {
         lastTimeRef.current = ts;
         rafRef.current = requestAnimationFrame(animate);
         return;
@@ -5532,6 +5555,24 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         }
       : undefined;
 
+  const handoffFromYard = (point: { x: number; y: number }) => {
+    const p = physicsRef.current;
+    p.x = point.x - CHICKEN_W / 2;
+    p.y = point.y - CHICKEN_H / 2;
+    p.vx = facingRef.current * BASE_SPEED;
+    p.vy = -BASE_SPEED;
+    modeRef.current = 'flying';
+    evoIdleRef.current = performance.now();
+    lastHitRef.current = performance.now();
+    mercyRef.current = 1;
+    scoreRef.current = OPENING_SCORE;
+    evoRef.current = OPENING_SCORE;
+    squeezesRef.current = OPENING_SCORE;
+    setScore(OPENING_SCORE);
+    setEvo(OPENING_SCORE);
+    setOpening('done');
+  };
+
   return (
     <div
       data-testid="chicken-stage"
@@ -5545,7 +5586,11 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         data-hidden={stage === 'none' ? '0' : '1'}
         className={`absolute inset-0 pointer-events-none transition-[opacity,visibility] duration-[1800ms] ${stage === 'none' ? 'visible opacity-100' : 'invisible opacity-0'}`}
       >
-        <GameScenery tier={tier} />
+        {tuning.cosmicOpening ? (
+          <img src={BACKYARD_SCENE_SRC} alt="" draggable={false} data-testid="backyard-scene" className="absolute inset-0 h-full w-full object-cover" />
+        ) : (
+          <GameScenery tier={tier} />
+        )}
       </div>
       <div
         data-testid="stage-layers"
@@ -6043,6 +6088,15 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         score={score}
         siteSignIn={tuning.persistScore}
       />
+
+      {opening === 'cosmos' && (
+        <CosmicOpening onArrive={() => setYardShown(true)} onDone={() => setOpening('yard')} />
+      )}
+      {(opening === 'yard' || (opening === 'cosmos' && yardShown)) && (
+        <BackyardFlock squawk={() => playScream(1)} onHandoff={handoffFromYard} />
+      )}
+
+      {monologue && <ChickenMonologue from={monologue} body={monologue.body} belly={monologue.belly} />}
 
       {loaderPhase !== 'done' && (
         <SoundLoader progress={progress} fading={loaderPhase === 'fading'} />

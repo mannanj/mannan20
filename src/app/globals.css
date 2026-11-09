@@ -1758,6 +1758,36 @@ body.gem-rain-active #header > div:first-child {
   mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
 }
 
+@keyframes backyardSettle {
+  0% { transform: scale(1.12); filter: brightness(1.6) blur(6px); }
+  40% { filter: brightness(1.1) blur(0); }
+  100% { transform: scale(1); filter: none; }
+}
+
+@keyframes monologueBlink {
+  0%, 46%, 50%, 100% { transform: scaleY(1); }
+  48% { transform: scaleY(0.1); }
+}
+
+@keyframes monologueDrift {
+  0% { transform: scale(1.06) translateX(-1.5%); }
+  100% { transform: scale(1.12) translateX(1.5%); }
+}
+
+@keyframes trexMeander {
+  0% { transform: translateX(-105%) translateY(0); }
+  25% { transform: translateX(40%) translateY(-1.5%); }
+  50% { transform: translateX(110%) translateY(0); }
+  75% { transform: translateX(170%) translateY(-1.5%); }
+  100% { transform: translateX(300%) translateY(0); }
+}
+
+.monologue-cloud {
+  border-radius: 46% 54% 42% 58% / 55% 48% 52% 45%;
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.85), 0 0 60px 30px rgba(255, 255, 255, 0.45);
+  mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, #000 62%, transparent 100%);
+}
+
 .bird-ablaze {
   filter: url(#phoenix-fire);
 }

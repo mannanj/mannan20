@@ -27,4 +27,5 @@ export const MCP_TOOLS: McpToolInfo[] = [
   { name: "get_downloads", description: "Resume and cover letter, agent-fetchable" },
   { name: "how_to_contact", description: "Contact form and GitHub; email and phone are not published" },
   { name: "search", description: "Keyword search across everything, with URLs" },
+  { name: "get_my_inventory", description: "Signed in: your bag from the articles and the chicken game, and your best chicken score" },
 ];

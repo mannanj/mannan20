@@ -9,11 +9,13 @@ export interface GameTuning {
   disabledBirds: BirdKind[];
   cosmicOpening: boolean;
   persistScore: boolean;
+  monologueAt: number | null;
 }
 
 const V1_BASE_SPEED = 0.125;
 const V3_SPEED_BOOST = 1.3;
 const V3_CLICK_SCALE = 0.2;
+const V3_MONOLOGUE_SCORE = 600;
 
 export const V2_TUNING: GameTuning = {
   variant: 2,
@@ -22,6 +24,7 @@ export const V2_TUNING: GameTuning = {
   disabledBirds: [],
   cosmicOpening: false,
   persistScore: false,
+  monologueAt: null,
 };
 
 export const V3_TUNING: GameTuning = {
@@ -31,6 +34,7 @@ export const V3_TUNING: GameTuning = {
   disabledBirds: ['eagle'],
   cosmicOpening: true,
   persistScore: true,
+  monologueAt: V3_MONOLOGUE_SCORE,
 };
 
 export function tuningFor(variant: GameVariant): GameTuning {
