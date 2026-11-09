@@ -16,6 +16,7 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 - [x] Big monster clicks/HP −80% (lion mane, hydra/cerberus heads, tree HP, kitty)
 - [x] Remove the eagle; keep the phoenix and make its body itself fiery / on fire
 - [x] Kitty and cyclops smaller (60%)
+- [x] Pinching hand cursor: thumb and index pinch the spot clicked, closing on press
 - [x] Duels: tiger vs lion (lion wins), cyclops vs hydra (hydra wins), hydra vs cerberus (cerberus wins); each winner then goes for the chicken
 - [x] Scene picker, top right: dot + current scene name on Apple-style glass; caret expands the scenes in order; any played scene can be replayed any number of times (Backyard replays the cosmic opening)
 
@@ -33,7 +34,7 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 **Saved progress and sign-in**
 - [x] Score never resets in variant 3: saved in the browser, resumes after closing
 - [x] Leaderboard share offers magic sign-in (mannan.is email-code sign-in) to save the score to the account
-- [ ] Score + inventory saved to the `cloud` D1 for signed-in people (code done; migration 0013 not yet applied to remote D1, not deployed)
+- [x] Score + inventory saved to the `cloud` D1 for signed-in people (migration 0013 applied, deployed 2026-11-09)
 - [x] One bag per account across the blog, the game and the MCP. Sync only merges (max per item, capped); never erases items. Only a deliberate use/throw removes one
 - [x] MCP: signed-in users can see their bag
 - [x] Add the chicken game to the site_apps catalog so the MCP's list_apps shows it
