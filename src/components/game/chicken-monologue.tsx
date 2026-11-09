@@ -121,11 +121,15 @@ interface ChickenMonologueProps {
   from: { x: number; y: number };
   body: string;
   belly: string;
+  onChoose: (choice: MonologueChoice) => void;
 }
+
+export type MonologueChoice = 'continue' | 'mystery';
+const END_FADE_MS = 1400;
 
 type Stage = 'zoom' | 'talk' | 'choice' | 'end';
 
-export function ChickenMonologue({ from, body, belly }: ChickenMonologueProps) {
+export function ChickenMonologue({ from, body, belly, onChoose }: ChickenMonologueProps) {
   const [stage, setStage] = useState<Stage>('zoom');
   const [line, setLine] = useState(0);
   const [shownSyllables, setShownSyllables] = useState(0);
@@ -210,9 +214,10 @@ export function ChickenMonologue({ from, body, belly }: ChickenMonologueProps) {
     });
   }, [stage, line, fadeMusic]);
 
-  const choose = () => {
+  const choose = (choice: MonologueChoice) => {
     fadeMusic(0);
     setStage('end');
+    later(END_FADE_MS, () => onChoose(choice));
   };
 
   const spoken = SCRIPT[Math.min(line, SCRIPT.length - 1)];
@@ -222,7 +227,7 @@ export function ChickenMonologue({ from, body, belly }: ChickenMonologueProps) {
   const trex = imagining && line >= TREX_FROM_LINE;
 
   return (
-    <div data-testid="chicken-monologue" data-stage={stage} data-line={line} className="fixed inset-0 z-[70] overflow-hidden select-none" style={{ cursor: TALK_CURSOR }}>
+    <div data-testid="chicken-monologue" data-stage={stage} data-line={line} className={`fixed inset-0 z-[70] overflow-hidden select-none transition-opacity duration-[1400ms] ${stage === 'end' ? 'pointer-events-none opacity-0' : 'opacity-100'}`} style={{ cursor: TALK_CURSOR }}>
       <div className={`absolute inset-0 bg-black transition-opacity duration-[1400ms] ${zoomed ? 'opacity-80' : 'opacity-0'}`} />
       <div
         data-testid="monologue-imagination"
@@ -267,7 +272,7 @@ export function ChickenMonologue({ from, body, belly }: ChickenMonologueProps) {
         <div data-testid="monologue-choice" className="absolute inset-x-0 bottom-[8vh] flex animate-[fadeIn_0.8s_ease-out] flex-wrap items-center justify-center gap-4 px-6">
           <button
             type="button"
-            onClick={choose}
+            onClick={() => choose('continue')}
             data-testid="choice-continue"
             className="cursor-pointer rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-base text-white backdrop-blur-md transition-colors hover:bg-white/20"
           >
@@ -276,17 +281,12 @@ export function ChickenMonologue({ from, body, belly }: ChickenMonologueProps) {
           <span className="text-sm text-white/50">or</span>
           <button
             type="button"
-            onClick={choose}
+            onClick={() => choose('mystery')}
             data-testid="choice-mystery"
             className="cursor-pointer rounded-full border border-amber-200/40 bg-amber-200/10 px-5 py-2.5 text-base text-amber-100 backdrop-blur-md transition-colors hover:bg-amber-200/20"
           >
             ???
           </button>
-        </div>
-      )}
-      {stage === 'end' && (
-        <div data-testid="monologue-end" className="absolute inset-x-0 bottom-[10vh] animate-[fadeIn_1.2s_ease-out] text-center font-[family-name:var(--font-caption)] text-3xl text-white/90">
-          To be continued…
         </div>
       )}
     </div>

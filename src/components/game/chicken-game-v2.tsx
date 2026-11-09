@@ -325,6 +325,7 @@ import {
   creatureStateView,
   isCreatureHolding,
   queueCreature,
+  scaledSpecs,
   shiftCreatureTime,
   startCreature,
   tapCreatureBody,
@@ -367,7 +368,7 @@ import {
   wobbleOffset,
 } from './sword';
 import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
-import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
+import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, finishesFirstLap, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
 import { tuningFor, type GameTuning, type GameVariant } from './game-tuning';
 import { readSavedScore, useSavedScore } from './use-saved-score';
@@ -388,6 +389,10 @@ import { CastHud, type CastStatus } from './cast-hud';
 import { CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY } from './cannon';
 import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
 import { ICE_COLORS, isGearItem, type GearId } from './gear';
+import { CreatureDuel, type DuelDef } from './creature-duel';
+import { BACKYARD_SCENE_ID, ScenePicker, useSceneLog } from './scene-picker';
+import { VersionPicker } from './version-picker';
+import type { MonologueChoice } from './chicken-monologue';
 import { InventoryBag, InventoryProvider, isGameItemId, useInventory, type GameItemId, type InventoryItem } from '@/components/inventory';
 import {
   FINAL_TIER,
@@ -1062,6 +1067,21 @@ const CosmicOpening = dynamic(() => import('./cosmic-opening').then((m) => m.Cos
 const ChickenMonologue = dynamic(() => import('./chicken-monologue').then((m) => m.ChickenMonologue), { ssr: false });
 const BackyardFlock = dynamic(() => import('./backyard-flock').then((m) => m.BackyardFlock), { ssr: false });
 const BACKYARD_SCENE_SRC = '/game/v3/backyard.webp';
+const MONOLOGUE_SEEN_FLAG = 'chicken-v3-monologue-seen';
+
+function monologueSeen(): boolean {
+  try {
+    return localStorage.getItem(MONOLOGUE_SEEN_FLAG) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markMonologueSeen(): void {
+  try {
+    localStorage.setItem(MONOLOGUE_SEEN_FLAG, '1');
+  } catch {}
+}
 const OPENING_SCORE = 2;
 type OpeningPhase = 'pending' | 'cosmos' | 'yard' | 'done';
 const PRELOAD_IDLE_TIMEOUT_MS = 4000;
@@ -1252,21 +1272,29 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const [loaderPhase, setLoaderPhase] = useState<'loading' | 'fading' | 'done'>('loading');
   const jumpScoreRef = useRef<((n: number) => void) | null>(null);
   const [opening, setOpening] = useState<OpeningPhase>(tuning.cosmicOpening ? 'pending' : 'done');
+  const openingRef = useRef(opening);
+  openingRef.current = opening;
+  const pendingResumeRef = useRef<number | null>(null);
   const [yardShown, setYardShown] = useState(false);
   const [monologue, setMonologue] = useState<{ x: number; y: number; body: string; belly: string } | null>(null);
   const haltedRef = useRef(false);
+  const monologueStepRef = useRef<number | null>(null);
+  const replayingOpeningRef = useRef(false);
+  const [duel, setDuel] = useState<DuelDef | null>(null);
+  const duelRef = useRef<DuelDef | null>(null);
+  const [scenesOpen, setScenesOpen] = useState(false);
   useSavedScore({
     enabled: tuning.persistScore,
     ready: loaderPhase === 'done',
     score,
     resume: (n) => {
-      setOpening('done');
-      jumpScoreRef.current?.(n);
+      if (openingRef.current === 'done') jumpScoreRef.current?.(n);
+      else pendingResumeRef.current = n;
     },
   });
   useEffect(() => {
     if (opening !== 'pending' || loaderPhase !== 'done') return;
-    setOpening(readSavedScore() > 0 ? 'done' : 'cosmos');
+    setOpening('cosmos');
   }, [opening, loaderPhase]);
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const [kids, setKids] = useState<Kid[]>([]);
@@ -1298,7 +1326,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const birdUiRef = useRef(birdUi);
   const birdRef = useRef(Object.assign(createBirdState(), { clickScale: tuning.clickScale, disabled: tuning.disabledBirds }));
   const birdElsRef = useRef(createBirdEls());
-  const creatureRef = useRef(Object.assign(createCreatureState(), { clickScale: tuning.clickScale }));
+  const creatureRef = useRef(Object.assign(createCreatureState(), { clickScale: tuning.clickScale, specs: scaledSpecs(tuning.creatureSize) }));
   const creatureElsRef = useRef(createCreatureEls());
   const creatureHoldRef = useRef<{ x: number; y: number } | null>(null);
   const eraRef = useRef(createEraClock());
@@ -1308,6 +1336,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const [creatureUi, setCreatureUi] = useState<{ kind: CreatureKind | null; hold: boolean }>({ kind: null, hold: false });
   const creatureUiRef = useRef(creatureUi);
   const [eraUi, setEraUi] = useState<EndlessEraDef | null>(null);
+  const scenesPlayed = useSceneLog(eraUi?.id ?? BACKYARD_SCENE_ID, score, tuning.scenePicker);
   const [lapUi, setLapUi] = useState(1);
   const [sceneUi, setSceneUi] = useState<EndlessScene | null>(null);
   const sceneRef = useRef<EndlessScene | null>(null);
@@ -1322,9 +1351,9 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const [mysteryReveal, setMysteryReveal] = useState<{ kind: OrbKind; x: number; y: number } | null>(null);
   const enterEraUi = useCallback((step: number) => {
     const clock = eraRef.current;
-    setEraUi(enterEraStep(clock, step, scoreRef.current, playMsRef.current));
+    setEraUi(enterEraStep(clock, step, scoreRef.current, playMsRef.current, tuning.eraCreatures));
     setLapUi(clock.lap);
-  }, []);
+  }, [tuning.eraCreatures]);
   const shieldRef = useRef(0);
   const gateKeyRef = useRef<(() => void) | null>(null);
   const swordRef = useRef(createSwordState());
@@ -3496,7 +3525,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
   const hit = useCallback(
     (e?: ReactMouseEvent<HTMLDivElement>, extra?: boolean, source?: { x: number; y: number }, raw = 1) => {
-      if (gateRef.current !== 'none' || haltedRef.current) return;
+      if (gateRef.current !== 'none' || haltedRef.current || openingRef.current !== 'done') return;
       const now = performance.now();
       const p = physicsRef.current;
       const plain = source !== undefined;
@@ -3536,12 +3565,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       scoreRef.current = next;
       const shown = Math.floor(next);
       setScore(shown);
-      const talkAt = tuning.monologueAt;
-      if (talkAt !== null && !haltedRef.current && prevScore < talkAt && shown >= talkAt) {
-        haltedRef.current = true;
-        const tierColors = TIERS[tierRef.current] ?? TIERS[0];
-        setMonologue({ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2, body: tierColors.body, belly: tierColors.belly });
-      }
       checkOrbSchedule(Math.floor(prevScore), shown);
       queueBirdsForScore(bird, Math.floor(prevScore), shown);
       if (!plain && noteCalmClick(bird)) restoreBirdSnapshot();
@@ -4236,7 +4259,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
   useEffect(() => {
     const animate = (ts: number) => {
-      if (gateRef.current !== 'none' || haltedRef.current) {
+      if (gateRef.current !== 'none' || haltedRef.current || openingRef.current !== 'done') {
         lastTimeRef.current = ts;
         rafRef.current = requestAnimationFrame(animate);
         return;
@@ -4365,11 +4388,27 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       }
       if (sc >= ENDLESS_FROM && !moundRef.current?.active()) {
         const nextStep = nextEraStep(clock, sc, playMsRef.current);
-        if (nextStep !== null && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
+        if (nextStep !== null && !duelRef.current && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
+          if (tuning.monologueAtEnd && finishesFirstLap(clock, nextStep) && !monologueSeen()) {
+            haltedRef.current = true;
+            monologueStepRef.current = nextStep;
+            const tierColors = TIERS[tierRef.current] ?? TIERS[0];
+            setMonologue({ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2, body: tierColors.body, belly: tierColors.belly });
+            rafRef.current = requestAnimationFrame(animate);
+            return;
+          }
           enterEraUi(nextStep);
         }
         const due = dueCreature(clock, playMsRef.current);
-        if (due) queueCreature(creature, due);
+        if (due?.rival && (creatureOnScreen(creature) || creature.pending)) {
+          clock.queue.unshift(due);
+        } else if (due?.rival) {
+          const def: DuelDef = { rival: due.rival, winner: due.kind, banner: due.banner ?? '' };
+          duelRef.current = def;
+          setDuel(def);
+        } else if (due) {
+          queueCreature(creature, due.kind);
+        }
         if (clock.phoenixDue && !isBirdBusy(bird) && !bird.pending && !creatureOnScreen(creature)) {
           clock.phoenixDue = false;
           phoenix2Ref.current = true;
@@ -4383,6 +4422,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       }
       if (
         creature.pending &&
+        !duelRef.current &&
         !isBirdBusy(bird) &&
         !bird.pending &&
         !rootSplitRef.current &&
@@ -5565,12 +5605,52 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
     evoIdleRef.current = performance.now();
     lastHitRef.current = performance.now();
     mercyRef.current = 1;
+    openingRef.current = 'done';
+    setOpening('done');
+    if (replayingOpeningRef.current) {
+      replayingOpeningRef.current = false;
+      enterEraUi(stepForIndex(0, 1));
+      return;
+    }
+    const resumeAt = pendingResumeRef.current ?? readSavedScore();
+    pendingResumeRef.current = null;
+    if (resumeAt > OPENING_SCORE) {
+      jumpScoreRef.current?.(resumeAt);
+      return;
+    }
     scoreRef.current = OPENING_SCORE;
     evoRef.current = OPENING_SCORE;
     squeezesRef.current = OPENING_SCORE;
     setScore(OPENING_SCORE);
     setEvo(OPENING_SCORE);
-    setOpening('done');
+  };
+
+  const endDuel = (winner: CreatureKind) => {
+    duelRef.current = null;
+    setDuel(null);
+    queueCreature(creatureRef.current, winner);
+  };
+
+  const pickScene = (id: string) => {
+    duelRef.current = null;
+    setDuel(null);
+    if (id === BACKYARD_SCENE_ID) {
+      replayingOpeningRef.current = true;
+      setYardShown(false);
+      setOpening('cosmos');
+      return;
+    }
+    forceEra(id);
+  };
+
+  const finishMonologue = (choice: MonologueChoice) => {
+    markMonologueSeen();
+    setMonologue(null);
+    haltedRef.current = false;
+    const step = monologueStepRef.current;
+    monologueStepRef.current = null;
+    if (step !== null) enterEraUi(step);
+    if (choice === 'mystery') setScenesOpen(true);
   };
 
   return (
@@ -5635,6 +5715,10 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       )}
 
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
+        {opening === 'done' && <VersionPicker current={tuning.variant} />}
+        {tuning.scenePicker && opening === 'done' && (
+          <ScenePicker current={eraUi?.id ?? BACKYARD_SCENE_ID} played={scenesPlayed} open={scenesOpen} onOpenChange={setScenesOpen} onPick={pickScene} />
+        )}
         <button
           type="button"
           onClick={() => setSkinsOpen((v) => !v)}
@@ -5857,7 +5941,18 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         </div>
       )}
       {creatureUi.kind && <CreatureLayer kind={creatureUi.kind} els={creatureElsRef} onBody={onCreatureBody} onTarget={onCreatureTarget} />}
-      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
+      {duel && (
+        <CreatureDuel
+          duel={duel}
+          specs={creatureRef.current.specs}
+          groundY={groundYFor}
+          chickenX={() => physicsRef.current.x + CHICKEN_W / 2}
+          paused={() => gateRef.current !== 'none' || haltedRef.current || openingRef.current !== 'done'}
+          sound={playCreature}
+          onDone={endDuel}
+        />
+      )}
+      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="back" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} fiery={tuning.fieryPhoenix} />}
 
       {stage === 'rocket' && (seq === 'planeExit' || seq === 'explode') && (
         <div
@@ -5926,7 +6021,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         <EscapeGiggle show={stage === 'pilot' && stagePhase === 'intro-a'} />
       </div>
 
-      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} />}
+      {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} fiery={tuning.fieryPhoenix} />}
 
       <div
         ref={frenzyElRef}
@@ -6096,7 +6191,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         <BackyardFlock squawk={() => playScream(1)} onHandoff={handoffFromYard} />
       )}
 
-      {monologue && <ChickenMonologue from={monologue} body={monologue.body} belly={monologue.belly} />}
+      {monologue && <ChickenMonologue from={monologue} body={monologue.body} belly={monologue.belly} onChoose={finishMonologue} />}
 
       {loaderPhase !== 'done' && (
         <SoundLoader progress={progress} fading={loaderPhase === 'fading'} />

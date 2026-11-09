@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback, type MouseEvent as ReactMouse
 import { ChickenSvg } from './chicken-svg';
 import { GameScenery } from './game-scenery';
 import { LeaderboardPanel } from './leaderboard-panel';
+import { VersionPicker } from './version-picker';
 import { SoundLoader } from './sound-loader';
 import {
   drawFeather,
@@ -1937,6 +1938,7 @@ function ChickenGameInner() {
       </div>
 
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
+        <VersionPicker current="legacy" />
         <button
           type="button"
           onClick={() => setSkinsOpen((v) => !v)}

@@ -1296,6 +1296,7 @@ const TALON_STYLE: CSSProperties = { transformOrigin: '50% 0%' };
 const FLIGHT_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
 
 interface BirdLayerProps {
+  fiery?: boolean;
   kind: BirdKind;
   part: 'back' | 'front';
   els: RefObject<BirdEls>;
@@ -1310,8 +1311,8 @@ const TOASTED_SLOTS = Array.from({ length: TOASTED_ALIVE_MAX }, (_, i) => i);
 const PHOENIX_FIRE_FILTER_ID = 'phoenix-fire';
 const FIRE_SEEDS = '1;2;3;4;5;6;7;8';
 
-function ablaze(kind: BirdKind): string {
-  return kind === 'phoenix' ? 'bird-ablaze' : '';
+function ablaze(kind: BirdKind, fiery: boolean): string {
+  return fiery && kind === 'phoenix' ? 'bird-ablaze' : '';
 }
 
 function PhoenixFireFilter() {
@@ -1352,7 +1353,7 @@ function PhoenixFireFilter() {
   );
 }
 
-export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted }: BirdLayerProps) {
+export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted, fiery = false }: BirdLayerProps) {
   const spec = BIRD_SPECS[kind];
   const bind = <K extends keyof BirdEls>(key: K) => (el: BirdEls[K]) => {
     els.current[key] = el;
@@ -1361,8 +1362,8 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
     return (
       <>
         <div ref={bind('flash')} data-testid="bird-flash" className="bird-flash pointer-events-none fixed inset-0 z-20 [visibility:hidden]" />
-        {kind === 'phoenix' && <PhoenixFireFilter />}
-        <img ref={bind('body')} src={frame(kind, 'grab-body').file} alt="" draggable={false} data-testid="bird-body" className={`${LAYER} ${ablaze(kind)}`} style={FLIGHT_STYLE} />
+        {fiery && kind === 'phoenix' && <PhoenixFireFilter />}
+        <img ref={bind('body')} src={frame(kind, 'grab-body').file} alt="" draggable={false} data-testid="bird-body" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
         <img ref={bind('look')} alt="" draggable={false} data-testid="bird-look" className={LAYER} style={FLIGHT_STYLE} />
         <img
           ref={bind('talonL')}
@@ -1379,8 +1380,8 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
   }
   return (
     <div ref={bind('root')} data-testid="bird-root" data-kind={kind} data-phase="idle" data-talon="" data-hint="0" data-label="0" data-look="0" data-heat="0" data-pulse="0" className="contents">
-      <img ref={bind('flightPrev')} alt="" draggable={false} data-testid="bird-flight-prev" className={`${LAYER} ${ablaze(kind)}`} style={FLIGHT_STYLE} />
-      <img ref={bind('flight')} alt="" draggable={false} data-testid="bird-flight" className={`${LAYER} ${ablaze(kind)}`} style={FLIGHT_STYLE} />
+      <img ref={bind('flightPrev')} alt="" draggable={false} data-testid="bird-flight-prev" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
+      <img ref={bind('flight')} alt="" draggable={false} data-testid="bird-flight" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
       {spec.heat && (
         <>
           <div ref={bind('shimmer')} data-testid="bird-shimmer" className="bird-shimmer pointer-events-none absolute top-0 left-0 will-change-transform [visibility:hidden]" />

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ChickenGame } from '@/components/game/chicken-game';
 import { ChickenGameV2 } from '@/components/game/chicken-game-v2';
 import { TestStartMarker } from '@/components/game/test-start-marker';
-import { GAME_VARIANT_PARAM, gameVariantNumber, isNextGameVariant, testStartScene, testStartScore } from '@/lib/game-variant';
+import { GAME_VARIANT_PARAM, gameVersion, testStartScene, testStartScore } from '@/lib/game-variant';
 
 export const metadata: Metadata = {
   title: 'Floating Chicken Game',
@@ -16,7 +16,8 @@ interface GamePageProps {
 export default async function GamePage({ searchParams }: GamePageProps) {
   const params = await searchParams;
   const start = process.env.NODE_ENV === 'production' ? null : testStartScore(params.start);
-  const game = isNextGameVariant(params[GAME_VARIANT_PARAM]) ? <ChickenGameV2 variant={gameVariantNumber(params[GAME_VARIANT_PARAM])} /> : <ChickenGame />;
+  const version = gameVersion(params[GAME_VARIANT_PARAM]);
+  const game = version === 'legacy' ? <ChickenGame /> : <ChickenGameV2 variant={version} />;
   return (
     <>
       {game}

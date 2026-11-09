@@ -13,7 +13,7 @@ async function gotoGame(page: Page, query = '') {
       headers: { 'access-control-allow-origin': '*' },
     });
   });
-  await page.goto(`/game${query}`);
+  await page.goto(`/game?variant=legacy${query.replace('?', '&')}`);
   await page.getByTestId('chicken-loader').waitFor({ state: 'detached', timeout: 15_000 });
 }
 

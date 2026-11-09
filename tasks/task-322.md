@@ -15,14 +15,20 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 - [x] Bird attack clicks −80% (hawk 25→5, phoenix 100→20); feather clicks −80% (25→5)
 - [x] Big monster clicks/HP −80% (lion mane, hydra/cerberus heads, tree HP, kitty)
 - [x] Remove the eagle; keep the phoenix and make its body itself fiery / on fire
-- [ ] Monsters/scenes/birds Mannan picks to remove (list sent 2026-11-08, waiting on his picks)
+- [x] Kitty and cyclops smaller (60%)
+- [x] Duels: tiger vs lion (lion wins), cyclops vs hydra (hydra wins), hydra vs cerberus (cerberus wins); each winner then goes for the chicken
+- [x] Scene picker, top right: dot + current scene name on Apple-style glass; caret expands the scenes in order; any played scene can be replayed any number of times (Backyard replays the cosmic opening)
 
 **Monologue scene**
-- [x] At a set point the game pauses, the cursor changes, camera zooms on the chicken's upper body, it looks at the viewer and talks: mouth moves, chicken-speak audio ("ba ba baba ka")
+- [x] At the end of the first lap (after Enchanted forest) the game pauses, the cursor changes, camera zooms on the chicken's upper body, it looks at the viewer and talks: mouth moves, chicken-speak audio ("ba ba baba ka")
 - [x] Subtitles: chicken-speak spelled out, a "Translated" header, then the English
 - [x] Lines: "You know, my ancestors didn't bring me here for this. They once roamed the earth as kings." … then that it knows it is meant for more
 - [x] Background turns into an imagination cloud: dinosaurs, a T. rex meandering; imagination soundtrack generated via OpenRouter (Lyria), shipped as a static asset
-- [x] Choice: "Continue squeezing the chicken" or "???". The game stops there for now
+- [x] Choice: "Continue squeezing the chicken" or "???". Either one carries on into the repeat (lap 2); "???" also opens the scene picker
+
+**Entry and versions**
+- [x] `/game` opens v3: cosmic opening → backyard, every visit (returning players keep their saved score)
+- [x] Version picker top right in every version: v3 (most recent), v2, Legacy (`?variant=legacy`)
 
 **Saved progress and sign-in**
 - [x] Score never resets in variant 3: saved in the browser, resumes after closing
@@ -34,6 +40,6 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 
 - Location: `src/components/game/`, `src/components/inventory/`, `src/app/game/`, `src/app/api/game/`, `cloud-worker/migrations/`, `mcp-worker/src/`
 
-- Monologue triggers at score 600 (`V3_MONOLOGUE_SCORE` in `src/components/game/game-tuning.ts`).
+- Monologue triggers once, when the first lap finishes (`finishesFirstLap`), remembered in `chicken-v3-monologue-seen`.
 - Bee St: game uses only a stylized painting (`public/game/v3/backyard.webp`); the game-only splat copy with a decoy anchor lives in gitignored `.private/chicken-house/` (see its NOTE.md). Earth flight descends to the decoy lat/lon.
 - OpenRouter spend for assets: ~$0.46 (3 images, 1 Lyria clip).

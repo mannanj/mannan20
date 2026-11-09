@@ -24,6 +24,8 @@ export type EndlessScene = 'fire-sky' | 'night-yard' | 'jungle' | 'temple' | 'te
 export interface EraCreature {
   kind: CreatureKind;
   atMs: number;
+  rival?: CreatureKind;
+  banner?: string;
 }
 
 export interface EndlessEraDef {
@@ -161,7 +163,7 @@ export function nextEraStep(clock: EraClock, score: number, playMs: number): num
   return inEra >= ERA_MAX_MS ? clock.step + 1 : null;
 }
 
-export function enterEraStep(clock: EraClock, step: number, score: number, playMs: number): EndlessEraDef {
+export function enterEraStep(clock: EraClock, step: number, score: number, playMs: number, overrides: Record<string, EraCreature[]> = {}): EndlessEraDef {
   const index = eraIndexForStep(step);
   const era = ENDLESS_ERAS[index];
   clock.step = step;
@@ -169,7 +171,7 @@ export function enterEraStep(clock: EraClock, step: number, score: number, playM
   clock.lap = lapForStep(step);
   clock.enteredAtMs = playMs;
   clock.byTime = score < eraStepFrom(step);
-  clock.queue = [...era.creatures].sort((a, b) => a.atMs - b.atMs);
+  clock.queue = [...(overrides[era.id] ?? era.creatures)].sort((a, b) => a.atMs - b.atMs);
   clock.transitionUntilMs = playMs + ERA_TRANSITION_MS;
   clock.phoenixDue = clock.lap > 1 && index === ROTATION_FIRST_INDEX;
   clock.fireSkyUntilMs = clock.phoenixDue ? playMs + PHOENIX2_FIRE_SKY_MS : 0;
@@ -178,6 +180,10 @@ export function enterEraStep(clock: EraClock, step: number, score: number, playM
 
 export function enterEra(clock: EraClock, index: number, score: number, playMs: number): EndlessEraDef {
   return enterEraStep(clock, stepForIndex(index, Math.max(1, clock.lap)), score, playMs);
+}
+
+export function finishesFirstLap(clock: EraClock, nextStep: number): boolean {
+  return clock.lap === 1 && lapForStep(nextStep) > 1;
 }
 
 export function creatureDurationScale(lap: number): number {
@@ -197,11 +203,11 @@ export function eraScene(clock: EraClock, playMs: number): EndlessScene | null {
   return playMs < clock.fireSkyUntilMs ? 'fire-sky' : ENDLESS_ERAS[clock.index].scene;
 }
 
-export function dueCreature(clock: EraClock, playMs: number): CreatureKind | null {
+export function dueCreature(clock: EraClock, playMs: number): EraCreature | null {
   const next = clock.queue[0];
   if (!next || playMs - clock.enteredAtMs < next.atMs) return null;
   clock.queue.shift();
-  return next.kind;
+  return next;
 }
 
 export function currentEra(clock: EraClock): EndlessEraDef | null {

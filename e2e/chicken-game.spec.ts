@@ -98,7 +98,7 @@ async function serveSoundsLocally(page: Page) {
 
 async function gotoGame(page: Page) {
   await serveSoundsLocally(page);
-  await page.goto('/game');
+  await page.goto('/game?variant=legacy');
   const loader = page.getByTestId('chicken-loader');
   await expect(loader).toBeVisible();
   await loader.waitFor({ state: 'detached', timeout: 15_000 });
@@ -110,7 +110,7 @@ test.describe('chicken game', () => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(String(e)));
     await serveSoundsLocally(page);
-    await page.goto('/game');
+    await page.goto('/game?variant=legacy');
     const loader = page.getByTestId('chicken-loader');
     await expect(loader).toBeVisible();
     await expect(page.getByTestId('chicken-loader-fill')).toBeVisible();
@@ -303,7 +303,7 @@ test.describe('chicken game', () => {
     expect(cookies).toContain('chicken-name=Testy');
     expect(cookies).toContain('chicken-kind=agent');
 
-    await page.goto('/game');
+    await page.goto('/game?variant=legacy');
     await page.getByTestId('chicken-loader').waitFor({ state: 'detached', timeout: 15_000 });
     await page.getByTestId('chicken-leaderboard-link').click();
     await expect(page.getByTestId('leaderboard-name-input')).toHaveValue('Testy');
@@ -315,7 +315,7 @@ test.describe('chicken game', () => {
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.route('**/sounds/chicken/**', (route) => route.fulfill({ status: 404 }));
     await page.route(R2_GLOB, (route) => route.fulfill({ status: 404 }));
-    await page.goto('/game');
+    await page.goto('/game?variant=legacy');
     const loader = page.getByTestId('chicken-loader');
     await loader.waitFor({ state: 'detached', timeout: 20_000 });
     await bridge(page).ready();
