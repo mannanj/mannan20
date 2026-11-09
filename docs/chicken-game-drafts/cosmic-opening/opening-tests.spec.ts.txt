@@ -1,0 +1,226 @@
+import { test, expect, type Page } from '@playwright/test';
+import { V3_TUNING, scaledClicks } from '../src/components/game/game-tuning';
+import { SAVED_SCORE_KEY } from '../src/components/game/use-saved-score';
+import { DUEL_TOTAL_MS } from '../src/components/game/creature-duel';
+import { CREATURE_SPECS } from '../src/components/game/creature-event';
+import { ENDLESS_ERAS, ERA_MAX_MS } from '../src/components/game/endless-eras';
+
+interface V3Bridge {
+  state: () => { score: number; bird: { kind: string | null; phase: string; rightNeed: number; leftNeed: number } };
+  setScore: (n: number) => void;
+  forceBird: (kind: string) => void;
+  placeChicken: (x: number, y: number) => void;
+  forceEra: (id: string) => void;
+  forceCreature: (kind: string) => boolean;
+  fastForward: (ms: number) => void;
+  era: () => { id: string | null; lap: number; enteredAtMs: number };
+}
+
+const ALL_SCENES_SCORE = (ENDLESS_ERAS.at(-1)?.from ?? 0) + 500;
+const DUEL_WAIT_MS = 40_000;
+const fastForward = (page: Page, ms: number) => page.evaluate((n) => (window as unknown as { __chicken: V3Bridge }).__chicken.fastForward(n), ms);
+const forceEra = (page: Page, id: string) => page.evaluate((e) => (window as unknown as { __chicken: V3Bridge }).__chicken.forceEra(e), id);
+const forceCreature = (page: Page, kind: string) => page.evaluate((k) => (window as unknown as { __chicken: V3Bridge }).__chicken.forceCreature(k), kind);
+const eraOf = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: V3Bridge }).__chicken.era());
+
+const LEADERBOARD_GUARD_WAIT_MS = 1500;
+
+const bridge = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state());
+
+async function gotoV3(page: Page, saved?: number) {
+  await page.route('**/*.mp3', (route) => route.fulfill({ status: 404 }));
+  await page.route('**/api/game/leaderboard', (route) => route.fulfill({ json: { human: [], agent: [] } }));
+  if (saved !== undefined) {
+    await page.addInitScript(([key, value]) => localStorage.setItem(key, value), [SAVED_SCORE_KEY, String(saved)]);
+  }
+  await page.goto('/game?variant=3');
+  await page.waitForFunction(() => (window as unknown as { __chicken?: unknown }).__chicken !== undefined);
+  if (saved !== undefined) await throughTheYard(page);
+}
+
+async function throughTheYard(page: Page) {
+  await page.getByTestId('cosmic-skip').click({ timeout: 30_000 });
+  await page.getByTestId('backyard-chicken').first().click({ force: true });
+  await expect(page.getByTestId('backyard-flock')).toHaveAttribute('data-phase', 'alone', { timeout: 8000 });
+  await page.getByTestId('backyard-chosen').click({ force: true });
+  await expect(page.getByTestId('backyard-flock')).toHaveCount(0, { timeout: 4000 });
+}
+
+test.describe('Chicken v3', () => {
+  test('a new player gets the cosmic opening, then the backyard flock with no count yet', async ({ page }) => {
+    await gotoV3(page);
+    await expect(page.getByTestId('cosmic-opening')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('13.8 billion years ago')).toBeVisible();
+    await page.getByTestId('cosmic-skip').click();
+    await expect(page.getByTestId('cosmic-opening')).toHaveCount(0);
+    await expect(page.getByTestId('backyard-flock')).toHaveAttribute('data-phase', 'meander');
+    await expect(page.getByTestId('backyard-label')).toHaveText('Squeeze the chicken');
+    await expect(page.getByTestId('backyard-count')).toHaveCount(0);
+    await expect(page.getByTestId('backyard-chicken')).toHaveCount(7);
+  });
+
+  test('first squeeze freezes the flock and hides the cursor, the rest flee, the second squeeze hands off at 2', async ({ page }) => {
+    await gotoV3(page);
+    await page.getByTestId('cosmic-skip').click({ timeout: 30_000 });
+    const flock = page.getByTestId('backyard-flock');
+    await page.getByTestId('backyard-chicken').first().click({ force: true });
+    await expect(flock).toHaveAttribute('data-phase', 'frozen');
+    await expect(flock).toHaveClass(/cursor-none/);
+    await expect(flock).toHaveAttribute('data-phase', 'scatter', { timeout: 3000 });
+    await expect(flock).toHaveAttribute('data-phase', 'alone', { timeout: 5000 });
+    await expect(page.getByTestId('backyard-chicken')).toHaveCount(0);
+    await expect(page.getByTestId('backyard-count')).toHaveText('1');
+    await expect(flock).not.toHaveClass(/cursor-none/);
+    await page.getByTestId('backyard-chosen').click({ force: true });
+    await expect(page.getByTestId('backyard-count')).toHaveText('2');
+    await expect(flock).toHaveCount(0, { timeout: 4000 });
+    expect((await bridge(page)).score).toBe(2);
+    await expect(page.getByTestId('backyard-scene')).toBeVisible();
+  });
+
+  test('a returning player still flies in through the opening, then resumes their saved score', async ({ page }) => {
+    await gotoV3(page, 57);
+    await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 57, null, { timeout: 30_000 });
+    expect(await page.evaluate((k) => localStorage.getItem(k), SAVED_SCORE_KEY)).toBe('57');
+  });
+
+  test('plain /game opens v3 with the cosmic opening, and the version picker switches to v2 and legacy', async ({ page }) => {
+    await page.route('**/*.mp3', (route) => route.fulfill({ status: 404 }));
+    await page.route('**/api/game/leaderboard', (route) => route.fulfill({ json: { human: [], agent: [] } }));
+    await page.goto('/game');
+    await expect(page.getByTestId('cosmic-opening')).toBeVisible({ timeout: 30_000 });
+    await throughTheYard(page);
+    const picker = page.getByTestId('version-picker');
+    await expect(picker).toHaveAttribute('data-version', '3');
+    await page.getByTestId('version-picker-toggle').click();
+    await expect(page.getByTestId('version-picker-list').getByRole('link')).toHaveText([/v3\s*most recent/, 'v2', 'Legacy']);
+    await page.getByTestId('version-option-2').click();
+    await expect(page).toHaveURL(/variant=2/);
+    await expect(page.getByTestId('chicken-stage')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId('version-picker')).toHaveAttribute('data-version', '2');
+    await page.getByTestId('version-picker-toggle').click();
+    await page.getByTestId('version-option-legacy').click();
+    await expect(page).toHaveURL(/variant=legacy/);
+    await expect(page.getByTestId('version-picker')).toHaveAttribute('data-version', 'legacy', { timeout: 30_000 });
+    await expect(page.getByTestId('cosmic-opening')).toHaveCount(0);
+  });
+
+  test('no eagle in v3, and the phoenix needs 80% fewer talon clicks', async ({ page }) => {
+    await gotoV3(page, 2000);
+    await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 2000, null, { timeout: 30_000 });
+    await page.evaluate(() => (window as unknown as { __chicken: V3Bridge }).__chicken.forceBird('eagle'));
+    await page.waitForTimeout(1500);
+    expect((await bridge(page)).bird.kind).not.toBe('eagle');
+    await page.evaluate(() => {
+      const c = (window as unknown as { __chicken: V3Bridge }).__chicken;
+      c.placeChicken(820, 420);
+      c.forceBird('phoenix');
+    });
+    await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().bird.phase === 'right', null, { timeout: 15_000 });
+    expect((await bridge(page)).bird.rightNeed).toBe(scaledClicks(100, V3_TUNING.clickScale));
+  });
+
+  test('after the last scene of the first lap the chicken talks, then play carries on into the repeat', async ({ page }) => {
+    test.setTimeout(120_000);
+    await gotoV3(page, ALL_SCENES_SCORE);
+    await expect.poll(async () => (await eraOf(page)).id, { timeout: 30_000 }).toBe('forest');
+    expect((await eraOf(page)).lap).toBe(1);
+    await fastForward(page, ERA_MAX_MS + 1000);
+    const mono = page.getByTestId('chicken-monologue');
+    await expect(mono).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Translated')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('monologue-english')).toHaveText("My ancestors didn't bring me here for this.", { timeout: 15_000 });
+    await expect(page.getByTestId('monologue-imagination')).toHaveClass(/opacity-100/, { timeout: 15_000 });
+    await expect(page.getByTestId('monologue-trex')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('monologue-choice')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('choice-continue')).toHaveText('Continue squeezing the chicken');
+    await expect(page.getByTestId('choice-mystery')).toHaveText('???');
+    await page.getByTestId('choice-continue').click();
+    await expect(mono).toHaveCount(0, { timeout: 5000 });
+    const era = await eraOf(page);
+    expect(era.lap).toBe(2);
+    expect(era.id).toBe('big-cats');
+    expect(await page.evaluate(() => localStorage.getItem('chicken-v3-monologue-seen'))).toBe('1');
+  });
+
+  for (const [eraId, rival, winner] of [
+    ['myth-1', 'cyclops', 'hydra'],
+    ['myth-2', 'hydra', 'cerberus'],
+    ['big-cats', 'tiger', 'lion'],
+  ] as const) {
+    test(`in ${eraId} the ${rival} fights the ${winner}, loses, and the ${winner} goes for the chicken`, async ({ page }) => {
+      test.setTimeout(120_000);
+      await gotoV3(page, 2100);
+      await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 2100, null, { timeout: 30_000 });
+      await forceEra(page, eraId);
+      const at = Math.max(...(V3_TUNING.eraCreatures[eraId] ?? []).map((c) => c.atMs));
+      await fastForward(page, at + 100);
+      const duel = page.getByTestId('creature-duel');
+      await expect(duel).toHaveAttribute('data-rival', rival, { timeout: DUEL_WAIT_MS });
+      await expect(duel).toHaveAttribute('data-winner', winner);
+      await expect(page.getByTestId('duel-left')).toHaveAttribute('data-kind', rival);
+      await expect(page.getByTestId('duel-right')).toHaveAttribute('data-kind', winner);
+      await expect(page.getByTestId('duel-banner')).toContainText(`the ${CREATURE_SPECS[winner].label} wins`, { timeout: DUEL_TOTAL_MS });
+      await expect(duel).toHaveCount(0, { timeout: DUEL_TOTAL_MS });
+      await expect(page.getByTestId('creature-root')).toHaveAttribute('data-kind', winner, { timeout: 15_000 });
+    });
+  }
+
+  test('the kitty is smaller in v3', async ({ page }) => {
+    await gotoV3(page, 2100);
+    await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 2100, null, { timeout: 30_000 });
+    await forceCreature(page, 'kitty');
+    const img = page.getByTestId('creature-img');
+    await expect(img).toBeVisible({ timeout: 15_000 });
+    const box = await img.boundingBox();
+    const view = page.viewportSize();
+    if (!box || !view) throw new Error('no kitty box');
+    const basis = Math.min(view.height, view.width * 1.3);
+    expect(box.height).toBeLessThan(CREATURE_SPECS.kitty.heightFrac * basis * 1.3 * ((V3_TUNING.creatureSize.kitty ?? 1) + 0.1));
+  });
+
+  test('the scene picker shows the current scene, expands in order, and replays any played scene', async ({ page }) => {
+    await gotoV3(page, ALL_SCENES_SCORE);
+    await expect.poll(async () => (await eraOf(page)).id, { timeout: 30_000 }).toBe('forest');
+    const picker = page.getByTestId('scene-picker');
+    await expect(page.getByTestId('scene-picker-current')).toHaveText('Enchanted forest');
+    await expect(page.getByTestId('scene-picker-list')).toHaveCount(0);
+    await page.getByTestId('scene-picker-toggle').click();
+    const options = page.getByTestId('scene-picker-list').getByRole('button');
+    await expect(options).toHaveText([/Backyard/, /Fire form/, /Big cats/, /Jungle/, /Myth/, /The gate/, /Enchanted forest/]);
+    await page.getByTestId('scene-option-jungle').click();
+    await expect.poll(async () => (await eraOf(page)).id).toBe('jungle');
+    await expect(picker).toHaveAttribute('data-scene', 'jungle');
+    const first = (await eraOf(page)).enteredAtMs;
+    await fastForward(page, 5000);
+    await page.getByTestId('scene-picker-toggle').click();
+    await page.getByTestId('scene-option-jungle').click();
+    await expect.poll(async () => (await eraOf(page)).enteredAtMs).toBeGreaterThan(first);
+    await page.getByTestId('scene-picker-toggle').click();
+    await page.getByTestId('scene-option-backyard').click();
+    await expect(page.getByTestId('cosmic-opening')).toBeVisible();
+    await throughTheYard(page);
+    expect((await bridge(page)).score).toBeGreaterThanOrEqual(ALL_SCENES_SCORE);
+    await expect.poll(async () => (await eraOf(page)).id).toBe('fire');
+  });
+
+  test('a new player only sees scenes they have reached', async ({ page }) => {
+    await gotoV3(page, 2100);
+    await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 2100, null, { timeout: 30_000 });
+    await page.getByTestId('scene-picker-toggle').click();
+    await expect(page.getByTestId('scene-option-fire')).toBeEnabled();
+    await expect(page.getByTestId('scene-option-forest')).toBeDisabled();
+    await expect(page.getByTestId('scene-option-forest')).toContainText('???');
+  });
+
+  test('the leaderboard offers mannan.is sign-in to save the score and bag', async ({ page }) => {
+    await page.route('**/api/auth/me', (route) => route.fulfill({ json: { user: null } }));
+    await gotoV3(page, 5);
+    await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 5, null, { timeout: 30_000 });
+    await page.waitForTimeout(LEADERBOARD_GUARD_WAIT_MS);
+    await page.getByTestId('chicken-leaderboard-link').click();
+    await page.getByTestId('account-save-toggle').click();
+    await expect(page.getByTestId('account-save-form')).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible();
+  });
+});
