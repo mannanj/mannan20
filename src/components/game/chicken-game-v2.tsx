@@ -1031,6 +1031,7 @@ const YARN_BALL_ITEM_ID = 'yarn-ball';
 const GOLDEN_MANE_ITEM_ID = 'golden-mane';
 const HYDRA_SCALE_ITEM_ID = 'hydra-scale';
 const GATE_KEY_ITEM_ID = 'gate-key';
+const CITY_KEY_ITEM_ID = 'key-to-the-city';
 const SHIELD_TALON_WEIGHT = 2;
 const UNLOCK_TOAST_MS = 6000;
 const REAL_CHICKEN_TOAST = 'real-chicken mode unlocked';
@@ -3118,6 +3119,7 @@ function ChickenGameInner() {
         mysteryLastRef.current = kind;
         setMysteryReveal({ kind, x: Math.min(Math.max(orb.x, MYSTERY_REVEAL_EDGE_PX), window.innerWidth - MYSTERY_REVEAL_EDGE_PX), y: Math.max(orb.y, MYSTERY_REVEAL_MIN_Y) });
         window.setTimeout(() => setMysteryReveal(null), MYSTERY_REVEAL_MS);
+        if (!itemsRef.current.some((i) => i.id === CITY_KEY_ITEM_ID)) grantItem(CITY_KEY_ITEM_ID, { x: orb.x, y: orb.y });
       }
       lastKindsRef.current = [kind, ...lastKindsRef.current].slice(0, 2);
       if (ORB_REGISTRY[kind].big) lastBigAtRef.current = now;
@@ -3131,7 +3133,7 @@ function ChickenGameInner() {
       else if (kind === 'magnet') magnetUntilRef.current = Math.max(now, magnetUntilRef.current) + MAGNET_DURATION_MS;
       else if (kind === 'jev') jevRef.current?.offer(orb.x, orb.y);
     },
-    [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply]
+    [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply, grantItem]
   );
 
   const spriteFor = useCallback((big: boolean, tier: number): HTMLImageElement | null => {

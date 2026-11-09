@@ -2840,6 +2840,25 @@ test.describe('Chicken v2 endless: rotation, phoenix 2 and the Mystery orb', () 
     expect(new Set(seen).size).toBeGreaterThan(1);
   });
 
+  test('the first Mystery ??? orb drops the Key to the City into the bag once, and the article bag shows it', async ({ page }) => {
+    await gotoGame(page, '?variant=2&start=mystery');
+    const orb = page.locator('[data-testid="chicken-orb"][data-kind="mystery"]');
+    await expect(orb).toBeVisible({ timeout: 15_000 });
+    await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.collectOrb('mystery'));
+    await expect(page.locator('[data-testid="fly-to-bag"][data-item-id="key-to-the-city"]')).toBeAttached();
+    await page.getByTestId('inventory-bag').click();
+    await expect(page.getByTestId('inventory-item-key-to-the-city')).toContainText('Key to the City');
+    await expect(page.getByTestId('inventory-count-key-to-the-city')).toHaveText('x1');
+    await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.forceOrb('mystery'));
+    await expect(orb).toBeVisible();
+    await page.evaluate(() => (window as unknown as { __chicken: RotationBridge }).__chicken.collectOrb('mystery'));
+    await expect(page.locator('[data-testid="fly-to-bag"][data-item-id="key-to-the-city"]')).toHaveCount(0);
+    await expect(page.getByTestId('inventory-count-key-to-the-city')).toHaveText('x1');
+    await page.goto('/garden/article/seeking-community');
+    await page.getByTestId('inventory-bag').click();
+    await expect(page.getByText('Key to the City')).toBeVisible();
+  });
+
   test('the sword sits in the trunk: a 56 px+ target over the tree, the blade clipped into the bark and sliding out as it is pulled', async ({ page }) => {
     test.setTimeout(90_000);
     await gotoGame(page, '?variant=2&start=sword');

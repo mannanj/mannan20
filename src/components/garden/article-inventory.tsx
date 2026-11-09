@@ -15,6 +15,8 @@ import {
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { Modal } from "../modal";
+import { IdCardArt, ItemArt, maxFor } from "@/components/inventory";
+import { parseStoredItems } from "@/components/inventory/items";
 
 type InventoryItem = { id: string; label: string; count: number };
 
@@ -45,13 +47,6 @@ const InventoryContext = createContext<InventoryCtx | null>(null);
 
 const STORAGE_KEY = "article-inventory-v1";
 const SPLAT_STORAGE_KEY = "seeking-community-splats-v1";
-const ITEM_MAX: Record<string, number> = {
-  "easter-egg": 12,
-  "id-card": 1,
-  "ruby-gem": 1,
-};
-const DEFAULT_MAX = 12;
-const maxFor = (id: string) => ITEM_MAX[id] ?? DEFAULT_MAX;
 const SHOW_MAX_LABEL: Set<string> = new Set(["easter-egg"]);
 
 const BAG_OFFSET_X = 24 + 20;
@@ -84,6 +79,11 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       }
     } catch {}
     setHydrated(true);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) setItems(parseStoredItems(e.newValue));
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
@@ -202,66 +202,6 @@ function MiniEgg({ size }: { size: number }) {
         boxShadow: EGG_SHADOW,
       }}
     />
-  );
-}
-
-function IdCardArt({
-  width,
-  height,
-  rotate = 0,
-  glow = true,
-}: {
-  width: number;
-  height: number;
-  rotate?: number;
-  glow?: boolean;
-}) {
-  return (
-    <svg
-      width={width}
-      height={height}
-      viewBox="0 0 24 16"
-      fill="none"
-      aria-hidden="true"
-      style={{
-        transform: `rotate(${rotate}deg)`,
-        filter: glow
-          ? "drop-shadow(0 0 3px rgba(255,225,140,0.9)) drop-shadow(0 0 6px rgba(255,200,80,0.55))"
-          : "drop-shadow(0 1px 1px rgba(0,0,0,0.4))",
-        overflow: "visible",
-      }}
-    >
-      <rect
-        x="0.5"
-        y="0.5"
-        width="23"
-        height="15"
-        rx="1.6"
-        fill="#fef9e6"
-        stroke="#7a4a16"
-        strokeWidth="0.6"
-      />
-      <rect
-        x="2"
-        y="2.4"
-        width="6"
-        height="7"
-        rx="0.5"
-        fill="#b48050"
-        opacity="0.7"
-      />
-      <circle cx="5" cy="5" r="1.2" fill="#7a4a16" opacity="0.55" />
-      <path
-        d="M2.6 9.1 Q5 7.2 7.4 9.1"
-        fill="#7a4a16"
-        opacity="0.55"
-      />
-      <line x1="9.5" y1="3.2" x2="22" y2="3.2" stroke="#7a4a16" strokeWidth="0.7" opacity="0.55" />
-      <line x1="9.5" y1="5.2" x2="20" y2="5.2" stroke="#7a4a16" strokeWidth="0.55" opacity="0.45" />
-      <line x1="9.5" y1="7.2" x2="22" y2="7.2" stroke="#7a4a16" strokeWidth="0.55" opacity="0.45" />
-      <line x1="2" y1="11.3" x2="22" y2="11.3" stroke="#7a4a16" strokeWidth="0.4" opacity="0.35" />
-      <line x1="2" y1="13" x2="22" y2="13" stroke="#7a4a16" strokeWidth="0.4" opacity="0.35" />
-    </svg>
   );
 }
 
@@ -1358,7 +1298,7 @@ function InventoryHud({ items }: { items: InventoryItem[] }) {
                 ) : item.id === "egg-splat" ? (
                   <MiniSplat size={14} />
                 ) : (
-                  <span className="text-amber-300/80">•</span>
+                  <ItemArt id={item.id} size={14} />
                 )}
                 <span>
                   {item.label}

@@ -61,6 +61,11 @@ export function InventoryProvider({ children, onUse }: InventoryProviderProps) {
       setItems([]);
     }
     setHydrated(true);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === INVENTORY_STORAGE_KEY) setItems(parseStoredItems(e.newValue));
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   useEffect(() => {
