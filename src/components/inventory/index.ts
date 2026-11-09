@@ -5,3 +5,4 @@ export { GAME_ITEMS, ITEM_DRAG_TYPE, isGameItemId, type GameItemId, type Invento
 export { ItemArt } from './item-art';
 export { IdCardArt, KeyToTheCityArt } from './collectible-art';
 export { maxFor } from './items';
+export { useAccountSync, reportUse, mergeItems, SIGNED_IN_EVENT } from './use-account-sync';

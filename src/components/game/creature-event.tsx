@@ -1,5 +1,6 @@
 'use client';
 
+import { scaledClicks } from './game-tuning';
 import type { CSSProperties, RefObject } from 'react';
 import type { GameItemId } from '@/components/inventory';
 import type { CreatureSoundKey } from '@/lib/chicken-audio';
@@ -447,6 +448,7 @@ export interface HydraHead {
 }
 
 export interface CreatureState {
+  clickScale: number;
   kind: CreatureKind | null;
   phase: CreaturePhase;
   phaseAt: number;
@@ -496,6 +498,7 @@ function emptyHead(): HydraHead {
 
 export function createCreatureState(): CreatureState {
   return {
+    clickScale: 1,
     kind: null,
     phase: 'idle',
     phaseAt: 0,
@@ -662,7 +665,7 @@ function groundCenterY(spec: CreatureSpec, p: Pose, vh: number, groundY: number)
 export function startCreature(s: CreatureState, kind: CreatureKind, ctx: CreatureStartCtx): void {
   const spec = CREATURE_SPECS[kind];
   const fresh = createCreatureState();
-  Object.assign(s, fresh);
+  Object.assign(s, fresh, { clickScale: s.clickScale });
   s.kind = kind;
   s.enteredAt = ctx.ts;
   s.dropBonus = ctx.dropBonus;
@@ -705,7 +708,7 @@ export function shiftCreatureTime(s: CreatureState, ms: number): void {
 export function tapCreatureBody(s: CreatureState): boolean {
   if (s.phase !== 'hold') return false;
   s.bodyClicks += 1;
-  if (s.bodyClicks % KITTY_CLICKS_PER_SHORTEN === 0) {
+  if (s.bodyClicks % scaledClicks(KITTY_CLICKS_PER_SHORTEN, s.clickScale) === 0) {
     const minEnd = s.phaseAt + KITTY_HOLD_FLOOR_MS;
     s.holdEndsAt = Math.max(minEnd, s.holdEndsAt - KITTY_SHORTEN_MS);
   }
@@ -719,7 +722,7 @@ export interface TargetTap {
 
 function targetDone(spec: CreatureSpec, s: CreatureState, id: string): boolean {
   const target = spec.targets.find((t) => t.id === id);
-  return target !== undefined && (s.targetHits[id] ?? 0) >= target.clicks;
+  return target !== undefined && (s.targetHits[id] ?? 0) >= scaledClicks(target.clicks, s.clickScale);
 }
 
 export function targetActive(spec: CreatureSpec, s: CreatureState, id: string): boolean {
@@ -741,7 +744,7 @@ function tapHydraHead(s: CreatureState, targetId: string): TargetTap | null {
   if (!head || (head.state !== 'ready' && head.state !== 'strike' && head.state !== 'bite')) return null;
   head.clicks += 1;
   s.targetClicks += 1;
-  if (head.clicks < HYDRA_HEAD_CLICKS) return { raw: HYDRA_HEAD_RAW, completed: false };
+  if (head.clicks < scaledClicks(HYDRA_HEAD_CLICKS, s.clickScale)) return { raw: HYDRA_HEAD_RAW, completed: false };
   head.state = 'knocked';
   head.at = s.lastTs;
   s.knockbacks += 1;
@@ -941,14 +944,14 @@ function renderTree(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx:
     if (s.phase === 'hold' && !s.tamed) {
       const w = box.w * TREE_HP_BAR_W_FRAC;
       const hits = s.targetHits[TREE_BARK_ID] ?? 0;
-      const left = clamp(1 - hits / TREE_HP, 0, 1);
+      const left = clamp(1 - hits / scaledClicks(TREE_HP, s.clickScale), 0, 1);
       const above = box.y - TREE_HP_BAR_GAP - TREE_HP_BAR_H;
       const below = Math.min(box.y + box.h + TREE_HP_BAR_GAP, window.innerHeight - TREE_HP_BAR_FLOOR_PAD);
       const bar = { x: box.x + box.w / 2 - w / 2, y: above < TREE_HP_BAR_BANNER_BOTTOM ? below : above, w, h: TREE_HP_BAR_H };
       const push = hudPushOut(hudZone(ctx.vw), bar.x + bar.w / 2, bar.y + bar.h / 2, bar.w / 2, bar.h / 2);
       place(els.hp, { ...bar, x: bar.x + push.dx, y: bar.y + push.dy });
       els.hpFill.style.width = `${left * 100}%`;
-      els.hp.dataset.hp = String(Math.max(0, TREE_HP - hits));
+      els.hp.dataset.hp = String(Math.max(0, scaledClicks(TREE_HP, s.clickScale) - hits));
     } else {
       hide(els.hp);
     }
@@ -1431,7 +1434,7 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
       const anchor = biting ? { x: biting.pos.x - MIN_HIT_PX / 2, y: biting.pos.y - MIN_HIT_PX / 2, w: MIN_HIT_PX, h: MIN_HIT_PX } : headRect(spec, s, box, flipped);
       showHint(els.hint, `heads knocked back ${s.knockbacks} / ${HYDRA_KNOCKBACKS_TO_WIN}`, anchor, vw);
     } else if (target && hintDue) {
-      showHint(els.hint, `click the ${target.label} ${s.targetHits[target.id] ?? 0} / ${target.clicks}`, targetRect(spec, s, box, flipped, target.id), vw);
+      showHint(els.hint, `click the ${target.label} ${s.targetHits[target.id] ?? 0} / ${scaledClicks(target.clicks, s.clickScale)}`, targetRect(spec, s, box, flipped, target.id), vw);
     } else {
       hide(els.hint);
     }
@@ -1477,7 +1480,7 @@ export function creatureStateView(s: CreatureState) {
     swordIn: s.swordIn,
     swordPulls: s.swordPulls,
     speed: 1 / s.durationScale,
-    hp: s.kind === 'tree' ? Math.max(0, TREE_HP - (s.targetHits[TREE_BARK_ID] ?? 0)) : null,
+    hp: s.kind === 'tree' ? Math.max(0, scaledClicks(TREE_HP, s.clickScale) - (s.targetHits[TREE_BARK_ID] ?? 0)) : null,
   };
 }
 

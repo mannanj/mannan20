@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import { Modal } from "../modal";
 import { IdCardArt, ItemArt, maxFor } from "@/components/inventory";
 import { parseStoredItems } from "@/components/inventory/items";
+import { mergeItems, reportUse, useAccountSync } from "@/components/inventory/use-account-sync";
 
 type InventoryItem = { id: string; label: string; count: number };
 
@@ -119,12 +120,15 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const decrement = useCallback((id: string) => {
+    reportUse(id);
     setItems((prev) =>
       prev
         .map((i) => (i.id === id ? { ...i, count: i.count - 1 } : i))
         .filter((i) => i.count > 0),
     );
   }, []);
+
+  useAccountSync(items, hydrated, (server) => setItems((prev) => mergeItems(prev, server)));
 
   const replace = useCallback((next: InventoryItem[]) => {
     setItems(next);

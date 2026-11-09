@@ -1,9 +1,15 @@
 export const GAME_VARIANT_PARAM = 'variant';
 export const NEXT_GAME_VARIANT = '2';
+export const COSMIC_GAME_VARIANT = '3';
 
 export function isNextGameVariant(value: string | string[] | undefined): boolean {
   const v = Array.isArray(value) ? value[0] : value;
-  return v === NEXT_GAME_VARIANT;
+  return v === NEXT_GAME_VARIANT || v === COSMIC_GAME_VARIANT;
+}
+
+export function gameVariantNumber(value: string | string[] | undefined): 2 | 3 {
+  const v = Array.isArray(value) ? value[0] : value;
+  return v === COSMIC_GAME_VARIANT ? 3 : 2;
 }
 
 const MAX_TEST_START = 1_000_000;

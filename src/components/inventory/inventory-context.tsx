@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import { FlyToBag, type Point } from './fly-to-bag';
+import { mergeItems, reportUse, useAccountSync } from './use-account-sync';
 import {
   INVENTORY_STORAGE_KEY,
   labelFor,
@@ -89,10 +90,13 @@ export function InventoryProvider({ children, onUse }: InventoryProviderProps) {
   }, []);
 
   const remove = useCallback((id: string) => {
+    reportUse(id);
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, count: i.count - 1 } : i)).filter((i) => i.count > 0)
     );
   }, []);
+
+  useAccountSync(items, hydrated, (server) => setItems((prev) => mergeItems(prev, server)));
 
   const has = useCallback((id: string) => items.some((i) => i.id === id && i.count > 0), [items]);
 

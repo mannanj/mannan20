@@ -7,7 +7,9 @@ import type { D1Binding, D1PreparedStatement } from '@/lib/cf-bindings';
 export function accessTestDb(): D1Binding {
   const db = new Database(':memory:');
   db.run('PRAGMA foreign_keys = ON');
-  db.exec(readFileSync(join(import.meta.dir, '../../cloud-worker/migrations/0011_app_access.sql'), 'utf8'));
+  for (const file of ['0011_app_access.sql', '0013_game_progress.sql']) {
+    db.exec(readFileSync(join(import.meta.dir, '../../cloud-worker/migrations', file), 'utf8'));
+  }
   const stmt = (sql: string, args: unknown[] = []): D1PreparedStatement => ({
     bind: (...values) => stmt(sql, values),
     all: async <T,>() => ({ results: db.query(sql).all(...(args as never[])) as T[] }),

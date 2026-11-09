@@ -369,6 +369,8 @@ import {
 import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
 import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
+import { tuningFor, type GameTuning, type GameVariant } from './game-tuning';
+import { useSavedScore } from './use-saved-score';
 import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS, MYSTERY_REVEAL_MS, pickMysteryEffect } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
 import { chickenOutline, outlinePatternFor, projectOutline, warmOutlines, type OutlineFrame, type OutlinePoint } from './chicken-outline';
@@ -404,7 +406,6 @@ import {
   tierProgress,
 } from './chicken-tiers';
 
-const BASE_SPEED = 0.075;
 const MIN_SPEED = 0.075;
 const AVOIDANCE_RADIUS = 110;
 const AVOIDANCE_STRENGTH = 0.08;
@@ -1197,7 +1198,8 @@ function drawAura(
   drawSilhouetteAura(ctx, pts, ts, tier, level, rgb);
 }
 
-function ChickenGameInner() {
+function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
+  const BASE_SPEED = tuning.baseSpeed;
   const [score, setScore] = useState(0);
   const [stage, setStage] = useState<EscapeStage>('none');
   const [stagePhase, setStagePhase] = useState<StagePhase>('live');
@@ -1242,6 +1244,13 @@ function ChickenGameInner() {
   const [mood, setMood] = useState<(typeof TIERS)[number]['eyes']>('calm');
   const [sheet, setSheet] = useState<'board' | null>(null);
   const [loaderPhase, setLoaderPhase] = useState<'loading' | 'fading' | 'done'>('loading');
+  const jumpScoreRef = useRef<((n: number) => void) | null>(null);
+  useSavedScore({
+    enabled: tuning.persistScore,
+    ready: loaderPhase === 'done',
+    score,
+    resume: (n) => jumpScoreRef.current?.(n),
+  });
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const [kids, setKids] = useState<Kid[]>([]);
   const [bonus, setBonus] = useState<{ amount: number; id: number } | null>(null);
@@ -1270,9 +1279,9 @@ function ChickenGameInner() {
   const ignitionUiRef = useRef(false);
   const toastedGrantedRef = useRef(0);
   const birdUiRef = useRef(birdUi);
-  const birdRef = useRef(createBirdState());
+  const birdRef = useRef(Object.assign(createBirdState(), { clickScale: tuning.clickScale, disabled: tuning.disabledBirds }));
   const birdElsRef = useRef(createBirdEls());
-  const creatureRef = useRef(createCreatureState());
+  const creatureRef = useRef(Object.assign(createCreatureState(), { clickScale: tuning.clickScale }));
   const creatureElsRef = useRef(createCreatureEls());
   const creatureHoldRef = useRef<{ x: number; y: number } | null>(null);
   const eraRef = useRef(createEraClock());
@@ -3617,6 +3626,7 @@ function ChickenGameInner() {
       evoRef.current = n - 1;
       hit();
     };
+    jumpScoreRef.current = jumpScore;
     const bridge: ChickenBridge = {
       plays: playsRef.current,
       state: () => ({
@@ -4032,7 +4042,7 @@ function ChickenGameInner() {
       const shielded = shieldRef.current > 0;
       if (shielded) shieldRef.current -= 1;
       bird.talonWeight = talonWeightFor(kind, multRef.current) * (shielded ? SHIELD_TALON_WEIGHT : 1);
-      bird.talonScale = phoenix2Ref.current ? PHOENIX2_TALON_SCALE : 1;
+      bird.talonScale = (phoenix2Ref.current ? PHOENIX2_TALON_SCALE : 1) * tuning.clickScale;
       phoenix2Ref.current = false;
       syncBirdUi(kind, false);
     },
@@ -6031,6 +6041,7 @@ function ChickenGameInner() {
         onToggle={toggleSheet}
         onClose={() => setSheet(null)}
         score={score}
+        siteSignIn={tuning.persistScore}
       />
 
       {loaderPhase !== 'done' && (
@@ -6040,11 +6051,11 @@ function ChickenGameInner() {
   );
 }
 
-export function ChickenGameV2() {
+export function ChickenGameV2({ variant = 2 }: { variant?: GameVariant }) {
   return (
     <AppProvider>
       <InventoryProvider onUse={onUseItem}>
-        <ChickenGameInner />
+        <ChickenGameInner tuning={tuningFor(variant)} />
       </InventoryProvider>
     </AppProvider>
   );
