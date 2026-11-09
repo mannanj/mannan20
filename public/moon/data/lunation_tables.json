@@ -1,0 +1,167 @@
+{
+ "profile": "western-tropical-v1",
+ "orbs": {
+  "conjunction": 8.0,
+  "opposition": 8.0,
+  "square": 6.0,
+  "trine": 6.0,
+  "sextile": 4.0,
+  "quincunx": 2.0
+ },
+ "minor_body_orb_cap": {
+  "chiron": 3.0
+ },
+ "aspect_bodies": [
+  "mercury",
+  "venus",
+  "mars",
+  "jupiter",
+  "saturn",
+  "uranus",
+  "neptune",
+  "pluto",
+  "chiron"
+ ],
+ "retrograde_always_mentioned": [
+  "mars",
+  "mercury",
+  "venus"
+ ],
+ "lunation_window_degrees": 3.0,
+ "eclipse_node_limits": {
+  "solar": 15.35,
+  "lunar": 9.5
+ },
+ "rulers": {
+  "modern": {
+   "Aries": "mars",
+   "Taurus": "venus",
+   "Gemini": "mercury",
+   "Cancer": "moon",
+   "Leo": "sun",
+   "Virgo": "mercury",
+   "Libra": "venus",
+   "Scorpio": "pluto",
+   "Sagittarius": "jupiter",
+   "Capricorn": "saturn",
+   "Aquarius": "uranus",
+   "Pisces": "neptune"
+  },
+  "traditional": {
+   "Aries": "mars",
+   "Taurus": "venus",
+   "Gemini": "mercury",
+   "Cancer": "moon",
+   "Leo": "sun",
+   "Virgo": "mercury",
+   "Libra": "venus",
+   "Scorpio": "mars",
+   "Sagittarius": "jupiter",
+   "Capricorn": "saturn",
+   "Aquarius": "saturn",
+   "Pisces": "jupiter"
+  }
+ },
+ "sign_new": {
+  "Aries": "a fresh start that rewards courage and a first move",
+  "Taurus": "steady intentions about money, the body and what lasts",
+  "Gemini": "new conversations, learning and ideas worth following up",
+  "Cancer": "home, family and the need to feel safe",
+  "Leo": "creative work, play and being seen for what is yours",
+  "Virgo": "routines, health and the useful work of getting organised",
+  "Libra": "partnership, fairness and finding balance with others",
+  "Scorpio": "deep change, shared resources and what you are ready to transform",
+  "Sagittarius": "the bigger picture: travel, study, belief and aim",
+  "Capricorn": "long-range goals, structure and patient ambition",
+  "Aquarius": "friends, community and the future you want to help build",
+  "Pisces": "rest, intuition, imagination and letting go of control"
+ },
+ "sign_full": {
+  "Aries": "independence against partnership, and the anger or impatience that has built up",
+  "Taurus": "security and worth: what sustains you, and what you have been clinging to",
+  "Gemini": "facts versus beliefs, with news, talk and realisations coming to light",
+  "Cancer": "home against work, and feelings and family patterns that have been building",
+  "Leo": "your own voice against the group, with recognition and pride at stake",
+  "Virgo": "order against surrender: health, work and the details you have been avoiding",
+  "Libra": "relationships and what has gone out of balance in them",
+  "Scorpio": "trust, intimacy and shared money, with buried truths surfacing",
+  "Sagittarius": "meaning and honesty: what you believe versus what the facts say",
+  "Capricorn": "duty and ambition against home and feeling, with results now visible",
+  "Aquarius": "the group and your ideals against the personal, with a need for room",
+  "Pisces": "dreams, compassion and endings, asking what to forgive and release"
+ },
+ "planet_hard": {
+  "mercury": "so plans and messages need a second look before they are final",
+  "venus": "putting relationships, money and self-worth under strain",
+  "mars": "raising tempers, urgency and the risk of acting too fast",
+  "jupiter": "tempting overreach and over-promising",
+  "saturn": "adding delay, duty and a reality check that tests commitment",
+  "uranus": "bringing surprises, restlessness and sudden changes of course",
+  "neptune": "blurring facts with wishful thinking, so confusion and deception are possible",
+  "pluto": "forcing power issues and deep, sometimes compulsive change into the open",
+  "chiron": "touching an old wound that asks for healing rather than defence"
+ },
+ "planet_soft": {
+  "mercury": "helping clear thinking, talks and decisions",
+  "venus": "easing relationships, money matters and pleasure",
+  "mars": "giving energy, drive and the confidence to act",
+  "jupiter": "bringing optimism, luck and room to grow",
+  "saturn": "lending patience, structure and staying power",
+  "uranus": "opening fresh, inventive options",
+  "neptune": "heightening intuition, compassion and imagination",
+  "pluto": "giving depth, focus and the power to transform",
+  "chiron": "supporting healing and honest self-acceptance"
+ },
+ "planet_conjunct": {
+  "mercury": "putting communication, news and decisions at the centre",
+  "venus": "putting love, money and what you value at the centre",
+  "mars": "charging it with drive, courage and a short fuse",
+  "jupiter": "amplifying everything: optimism, excess and opportunity",
+  "saturn": "making it serious, with commitments, limits and hard work in view",
+  "uranus": "making it unpredictable, with sudden insights and breaks from routine",
+  "neptune": "making it dreamy and uncertain, with intuition up and clarity down",
+  "pluto": "making it intense, with power, endings and rebirth in play",
+  "chiron": "making it tender, with a core wound and its healing in focus"
+ },
+ "aspect_verb": {
+  "conjunction": "joins",
+  "opposition": "opposes",
+  "square": "squares",
+  "trine": "trines",
+  "sextile": "sextiles",
+  "quincunx": "is quincunx to"
+ },
+ "hard_aspects": [
+  "conjunction",
+  "opposition",
+  "quincunx",
+  "square"
+ ],
+ "node": {
+  "north": "a North Node eclipse, which pushes toward new ground and growth",
+  "south": "a South Node eclipse, which clears out the past and asks for release"
+ },
+ "eclipse": {
+  "solar": "A solar eclipse is a wild-card New Moon: doors open and close faster than usual, so set intentions lightly.",
+  "lunar": "A lunar eclipse is a Full Moon with the volume turned up: something completes or comes to light, and the right response is to let it."
+ },
+ "timing": {
+  "new": "Intentions set in the day or two after the New Moon run until the next New Moon.",
+  "full": "Its effects are strongest in the two or three days around the exact Full Moon and resolve over the following two weeks.",
+  "eclipse": "Its themes unfold over about six months."
+ },
+ "planet_names": {
+  "sun": "the Sun",
+  "moon": "the Moon",
+  "mercury": "Mercury",
+  "venus": "Venus",
+  "mars": "Mars",
+  "jupiter": "Jupiter",
+  "saturn": "Saturn",
+  "uranus": "Uranus",
+  "neptune": "Neptune",
+  "pluto": "Pluto",
+  "chiron": "Chiron",
+  "true_rahu": "the North Node"
+ }
+}

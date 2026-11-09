@@ -1,0 +1,2839 @@
+{
+ "summary": {
+  "lunations": 16,
+  "sources": 58,
+  "sign_agreement": "16/16",
+  "degree_within_0.1": "40/41",
+  "eclipse_agreement": "16/16",
+  "node_agreement": "6/6",
+  "aspect_pairs": {
+   "precision": 0.698,
+   "recall": 0.938,
+   "hits": 30,
+   "ours": 43,
+   "theirs": 32
+  },
+  "aspect_planets": {
+   "precision": 0.86,
+   "recall": 0.86,
+   "hits": 37,
+   "ours": 43,
+   "theirs": 43
+  },
+  "retrogrades": {
+   "precision": 0.444,
+   "recall": 0.857,
+   "hits": 12,
+   "ours": 27,
+   "theirs": 14
+  },
+  "theme_recall_mean": 0.716,
+  "theme_precision_mean": 0.347,
+  "theme_sources_scored": 58,
+  "unmapped_theme_keywords": [
+   [
+    "boundaries",
+    2
+   ],
+   [
+    "flexibility",
+    2
+   ],
+   [
+    "positive change",
+    1
+   ],
+   [
+    "career and public life",
+    1
+   ],
+   [
+    "simplicity",
+    1
+   ],
+   [
+    "final decisions",
+    1
+   ],
+   [
+    "change and fear",
+    1
+   ],
+   [
+    "mars in cancer",
+    1
+   ],
+   [
+    "movement",
+    1
+   ],
+   [
+    "complex problems",
+    1
+   ],
+   [
+    "new perspective",
+    1
+   ],
+   [
+    "career",
+    1
+   ],
+   [
+    "cardinal signs",
+    1
+   ],
+   [
+    "change",
+    1
+   ]
+  ],
+  "orbs": {
+   "conjunction": 8.0,
+   "opposition": 8.0,
+   "square": 6.0,
+   "trine": 6.0,
+   "sextile": 4.0,
+   "quincunx": 2.0
+  }
+ },
+ "lunations": [
+  {
+   "date_local": "2024-04-08",
+   "type": "new",
+   "utc": "2024-04-08T18:20:51+00:00",
+   "published_sign": "Aries",
+   "our_sign": "Aries",
+   "our_degree": 19.4,
+   "published_degrees": [
+    19.4,
+    19.4
+   ],
+   "published_eclipse": "solar",
+   "our_eclipse": "solar",
+   "our_node": "north",
+   "node_distance": 3.77,
+   "published_nodes": [
+    "north"
+   ],
+   "our_aspects": [
+    {
+     "planet": "chiron",
+     "aspect": "conjunction",
+     "orb": 0.0,
+     "from": "moon"
+    },
+    {
+     "planet": "mercury",
+     "aspect": "conjunction",
+     "orb": 5.4,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "chiron",
+     "conjunction"
+    ]
+   ],
+   "published_planets": [
+    "chiron",
+    "jupiter"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "mercury",
+     "conjunction"
+    ]
+   ],
+   "missed_planets": [
+    "jupiter"
+   ],
+   "extra_planets": [
+    "mercury"
+   ],
+   "our_retrogrades": [
+    "mercury"
+   ],
+   "published_retrogrades": [
+    "mercury"
+   ],
+   "ruler": {
+    "planet": "mars",
+    "traditional_planet": "mars",
+    "sign": "Pisces",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "communication / ideas",
+    "eclipse / fate",
+    "healing",
+    "identity / self",
+    "new beginnings",
+    "sudden change"
+   ],
+   "our_text": "New Moon at 19\u00b024' Aries, a total solar eclipse 4\u00b0 from the North Node: it seeds a fresh start that rewards courage and a first move. Chiron joins it (0.0\u00b0), making it tender, with a core wound and its healing in focus; Mercury joins it (5.4\u00b0), putting communication, news and decisions at the centre. Its ruler Mars is in Pisces; Mercury is retrograde, so review and re-reading beat fresh commitments. A solar eclipse is a wild-card New Moon: doors open and close faster than usual, so set intentions lightly. It is a North Node eclipse, which pushes toward new ground and growth; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-april-8-2024",
+     "themes": [
+      "independence",
+      "courage",
+      "self-assertion",
+      "new beginnings",
+      "authenticity",
+      "surrender to change"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "emotion",
+      "endings / release",
+      "new beginnings",
+      "sudden change"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "Aries New Moons are generally good for taking action"
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/april-2024-horoscope-and-astrology-forecast/",
+     "themes": [
+      "healing",
+      "collective wound",
+      "anger",
+      "aggression",
+      "peace and war",
+      "decisive action"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "healing"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "healing"
+     ],
+     "quote": "The April 8 solar eclipse, a new moon AND a supermoon, says \"time for action.\""
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/solar-eclipse-april-8-2024/",
+     "themes": [
+      "healing",
+      "spiritual awakening",
+      "fresh start",
+      "growth",
+      "renewal"
+     ],
+     "canonical": [
+      "expansion / optimism",
+      "healing",
+      "new beginnings",
+      "sudden change"
+     ],
+     "overlap": [
+      "healing",
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "all possibilities are on the table"
+    },
+    {
+     "site": "girlandhermoon.com",
+     "url": "https://girlandhermoon.com/aries-new-moon-solar-eclipse-april-2024-astrology-horoscopes/",
+     "themes": [
+      "new beginnings",
+      "self-expression",
+      "courage",
+      "healing",
+      "transformation",
+      "release",
+      "rebirth"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "emotion",
+      "endings / release",
+      "healing",
+      "new beginnings",
+      "power / transformation"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "healing",
+      "new beginnings"
+     ],
+     "quote": "Eclipses bring major change. They are a turning point."
+    }
+   ]
+  },
+  {
+   "date_local": "2024-09-17",
+   "type": "full",
+   "utc": "2024-09-18T02:34:28+00:00",
+   "published_sign": "Pisces",
+   "our_sign": "Pisces",
+   "our_degree": 25.68,
+   "published_degrees": [
+    25.683,
+    25.667
+   ],
+   "published_eclipse": "lunar",
+   "our_eclipse": "lunar",
+   "our_node": "north",
+   "node_distance": 10.94,
+   "published_nodes": [
+    "north"
+   ],
+   "our_aspects": [
+    {
+     "planet": "uranus",
+     "aspect": "sextile",
+     "orb": 1.46,
+     "from": "moon"
+    },
+    {
+     "planet": "venus",
+     "aspect": "quincunx",
+     "orb": 1.78,
+     "from": "moon"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "conjunction",
+     "orb": 2.92,
+     "from": "moon"
+    },
+    {
+     "planet": "pluto",
+     "aspect": "trine",
+     "orb": 4.1,
+     "from": "sun"
+    },
+    {
+     "planet": "jupiter",
+     "aspect": "square",
+     "orb": 5.08,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "jupiter",
+     "square"
+    ],
+    [
+     "neptune",
+     "conjunction"
+    ],
+    [
+     "neptune",
+     "opposition"
+    ],
+    [
+     "uranus",
+     "sextile"
+    ]
+   ],
+   "published_planets": [
+    "jupiter",
+    "neptune",
+    "uranus"
+   ],
+   "missed_pairs": [
+    [
+     "neptune",
+     "opposition"
+    ]
+   ],
+   "extra_pairs": [
+    [
+     "pluto",
+     "trine"
+    ],
+    [
+     "venus",
+     "quincunx"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [
+    "pluto",
+    "venus"
+   ],
+   "our_retrogrades": [
+    "neptune",
+    "pluto",
+    "uranus"
+   ],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "neptune",
+    "traditional_planet": "jupiter",
+    "sign": "Pisces",
+    "retrograde": true,
+    "aspect_to_lunation": {
+     "from_body": "moon",
+     "to_body": "neptune",
+     "aspect": "conjunction",
+     "angle": 0.0,
+     "orb": 2.92,
+     "applying": true
+    }
+   },
+   "our_themes": [
+    "confusion / illusion",
+    "culmination / revelation",
+    "eclipse / fate",
+    "emotion",
+    "endings / release",
+    "expansion / optimism",
+    "healing",
+    "intuition / spirituality",
+    "money / worth",
+    "new beginnings",
+    "power / transformation",
+    "relationships",
+    "sudden change"
+   ],
+   "our_text": "Full Moon at 25\u00b041' Pisces, a partial lunar eclipse 11\u00b0 from the North Node: it brings to a head dreams, compassion and endings, asking what to forgive and release. It sextiles Uranus (1.5\u00b0), opening fresh, inventive options; it is quincunx to Venus (1.8\u00b0), putting relationships, money and self-worth under strain; Neptune joins it (2.9\u00b0), making it dreamy and uncertain, with intuition up and clarity down. Its ruler Neptune (traditionally Jupiter) is retrograde in Pisces and joins the Full Moon itself; Uranus and Pluto are retrograde. A lunar eclipse is a Full Moon with the volume turned up: something completes or comes to light, and the right response is to let it. It is a North Node eclipse, which pushes toward new ground and growth; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-lunar-eclipse-on-september-17-2024",
+     "themes": [
+      "culmination",
+      "relationships",
+      "emotional heightening",
+      "health and service",
+      "boundaries",
+      "faith"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "emotion",
+      "expansion / optimism",
+      "relationships",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "emotion",
+      "expansion / optimism",
+      "relationships"
+     ],
+     "quote": "The Full Moon is a time of culmination and the promise of fulfillment of that which was started at the New Moon."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-september-2024/",
+     "themes": [
+      "sensitivity",
+      "intuition",
+      "spirituality",
+      "deception",
+      "suspicion",
+      "positive change"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "intuition / spirituality"
+     ],
+     "overlap": [
+      "confusion / illusion",
+      "intuition / spirituality"
+     ],
+     "quote": "The full moon in Pisces on September 17, 2024, is a partial lunar eclipse."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/2024-full-moons-calendar-and-astrology-forecast/",
+     "themes": [
+      "secret fantasies",
+      "creativity",
+      "dreams",
+      "compassion",
+      "empathy",
+      "healing"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "healing",
+      "intuition / spirituality"
+     ],
+     "overlap": [
+      "confusion / illusion",
+      "healing",
+      "intuition / spirituality"
+     ],
+     "quote": "Secret fantasies, your creativity, messages from dreams, people who inspire you to think beyond current limitations"
+    },
+    {
+     "site": "chaninicholas.com",
+     "url": "https://www.chani.com/what-you-need-to-know-about-septembers-lunar-eclipse-in-pisces-2024",
+     "themes": [
+      "creativity",
+      "idealism",
+      "boundaries",
+      "disillusionment",
+      "escapism",
+      "intuition",
+      "emotional release"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "endings / release",
+      "intuition / spirituality"
+     ],
+     "overlap": [
+      "confusion / illusion",
+      "endings / release",
+      "intuition / spirituality"
+     ],
+     "quote": "Lunar eclipses tend to heighten emotions, so keep your journal nearby."
+    }
+   ]
+  },
+  {
+   "date_local": "2024-10-02",
+   "type": "new",
+   "utc": "2024-10-02T18:49:16+00:00",
+   "published_sign": "Libra",
+   "our_sign": "Libra",
+   "our_degree": 10.06,
+   "published_degrees": [
+    10.067,
+    10.05
+   ],
+   "published_eclipse": "solar",
+   "our_eclipse": "solar",
+   "our_node": "south",
+   "node_distance": 3.41,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "mercury",
+     "aspect": "conjunction",
+     "orb": 1.48,
+     "from": "moon"
+    },
+    {
+     "planet": "mars",
+     "aspect": "square",
+     "orb": 5.72,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "mars",
+     "square"
+    ],
+    [
+     "mercury",
+     "conjunction"
+    ]
+   ],
+   "published_planets": [
+    "mars",
+    "mercury"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "venus",
+    "traditional_planet": "venus",
+    "sign": "Scorpio",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "balance",
+    "communication / ideas",
+    "eclipse / fate",
+    "endings / release",
+    "new beginnings",
+    "relationships",
+    "sudden change"
+   ],
+   "our_text": "New Moon at 10\u00b004' Libra, an annular solar eclipse 3\u00b0 from the South Node: it seeds partnership, fairness and finding balance with others. Mercury joins it (1.5\u00b0), putting communication, news and decisions at the centre; it squares Mars (5.7\u00b0), raising tempers, urgency and the risk of acting too fast. Its ruler Venus is in Scorpio. A solar eclipse is a wild-card New Moon: doors open and close faster than usual, so set intentions lightly. It is a South Node eclipse, which clears out the past and asks for release; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-october-2-2024",
+     "themes": [
+      "negotiation",
+      "balance",
+      "partnerships",
+      "harmony",
+      "assertiveness",
+      "independence"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "balance",
+      "communication / ideas",
+      "relationships",
+      "sudden change"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "balance",
+      "communication / ideas",
+      "relationships",
+      "sudden change"
+     ],
+     "quote": "Mercury aligns with the Sun and Moon, pointing to a lot of thought and discussion going into our new beginnings."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/new-moon-october-2024/",
+     "themes": [
+      "revelation",
+      "communication",
+      "new beginnings",
+      "crisis",
+      "hidden secrets"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "communication / ideas",
+      "culmination / revelation",
+      "new beginnings"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "communication / ideas",
+      "new beginnings"
+     ],
+     "quote": "This extremely powerful and intense solar eclipse will bring many current crises to a head."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/2024-new-moons-calendar-and-astrology-forecast/",
+     "themes": [
+      "synergy",
+      "networking",
+      "romantic relationships",
+      "art and music",
+      "beautification"
+     ],
+     "canonical": [
+      "balance",
+      "intuition / spirituality",
+      "relationships"
+     ],
+     "overlap": [
+      "balance",
+      "relationships"
+     ],
+     "quote": "Find synergies, network to build your contact list, nurture romantic relationships"
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-forecast-october-2024",
+     "themes": [
+      "new beginnings",
+      "transition",
+      "renewal",
+      "balance",
+      "turning point"
+     ],
+     "canonical": [
+      "balance",
+      "new beginnings"
+     ],
+     "overlap": [
+      "balance",
+      "new beginnings"
+     ],
+     "quote": "This Eclipse represents new beginnings and holds the promise of change."
+    }
+   ]
+  },
+  {
+   "date_local": "2024-11-15",
+   "type": "full",
+   "utc": "2024-11-15T21:28:30+00:00",
+   "published_sign": "Taurus",
+   "our_sign": "Taurus",
+   "our_degree": 24.01,
+   "published_degrees": [
+    24.017,
+    24.0
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "north",
+   "node_distance": 48.36,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "uranus",
+     "aspect": "conjunction",
+     "orb": 1.28,
+     "from": "moon"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "sextile",
+     "orb": 3.26,
+     "from": "moon"
+    },
+    {
+     "planet": "pluto",
+     "aspect": "trine",
+     "orb": 5.92,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "neptune",
+     "sextile"
+    ],
+    [
+     "uranus",
+     "conjunction"
+    ]
+   ],
+   "published_planets": [
+    "neptune",
+    "pluto",
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "pluto",
+     "trine"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [
+    "neptune",
+    "uranus"
+   ],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "venus",
+    "traditional_planet": "venus",
+    "sign": "Capricorn",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "culmination / revelation",
+    "emotion",
+    "endings / release",
+    "home / family",
+    "intuition / spirituality",
+    "money / worth",
+    "power / transformation",
+    "sudden change"
+   ],
+   "our_text": "Full Moon at 24\u00b001' Taurus: it brings to a head security and worth: what sustains you, and what you have been clinging to. Uranus joins it (1.3\u00b0), making it unpredictable, with sudden insights and breaks from routine; it sextiles Neptune (3.3\u00b0), heightening intuition, compassion and imagination; it trines Pluto (5.9\u00b0), giving depth, focus and the power to transform. Its ruler Venus is in Capricorn; Uranus and Neptune are retrograde. Its effects are strongest in the two or three days around the exact Full Moon and resolve over the following two weeks.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-on-november-15-2024",
+     "themes": [
+      "culmination",
+      "romance",
+      "intimacy",
+      "form vs transformation",
+      "surprise",
+      "breaking old patterns"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "power / transformation",
+      "relationships",
+      "sudden change"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "power / transformation",
+      "sudden change"
+     ],
+     "quote": "A Full Moon occurs when the Sun in Scorpio forms an opposition to the Moon in Taurus."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-november-2024/",
+     "themes": [
+      "sudden change",
+      "uncertainty",
+      "emotional instability",
+      "polarization",
+      "independence",
+      "perseverance"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "confusion / illusion",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "overlap": [
+      "sudden change"
+     ],
+     "quote": "Uranus provides higher awareness and flexibility to adapt to changing conditions and make the most of exciting opportunities."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/2024-full-moons-calendar-and-astrology-forecast/",
+     "themes": [
+      "simple joys",
+      "nature",
+      "music and artists",
+      "comfortable home",
+      "food"
+     ],
+     "canonical": [
+      "home / family",
+      "intuition / spirituality",
+      "money / worth"
+     ],
+     "overlap": [
+      "home / family",
+      "intuition / spirituality",
+      "money / worth"
+     ],
+     "quote": "The simple things that bring you joy, the beauty of nature, your favorite music and artists"
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-forecast-november-2024",
+     "themes": [
+      "grounding",
+      "wildcard disruption",
+      "emotional volatility",
+      "confusion",
+      "nature reconnection"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "money / worth",
+      "sudden change"
+     ],
+     "overlap": [
+      "money / worth",
+      "sudden change"
+     ],
+     "quote": "The Taurus Full Moon holds some erratic, wildcard energy due to the position of Uranus."
+    }
+   ]
+  },
+  {
+   "date_local": "2024-12-01",
+   "type": "new",
+   "utc": "2024-12-01T06:21:25+00:00",
+   "published_sign": "Sagittarius",
+   "our_sign": "Sagittarius",
+   "our_degree": 9.55,
+   "published_degrees": [
+    9.55,
+    9.533,
+    9.55
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "south",
+   "node_distance": 65.09,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "saturn",
+     "aspect": "square",
+     "orb": 3.36,
+     "from": "moon"
+    },
+    {
+     "planet": "mars",
+     "aspect": "trine",
+     "orb": 3.59,
+     "from": "moon"
+    },
+    {
+     "planet": "jupiter",
+     "aspect": "opposition",
+     "orb": 7.6,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "jupiter",
+     "opposition"
+    ],
+    [
+     "mars",
+     "trine"
+    ],
+    [
+     "saturn",
+     "square"
+    ]
+   ],
+   "published_planets": [
+    "jupiter",
+    "mars",
+    "saturn"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [
+    "jupiter",
+    "mercury"
+   ],
+   "published_retrogrades": [
+    "chiron",
+    "mercury",
+    "neptune"
+   ],
+   "ruler": {
+    "planet": "jupiter",
+    "traditional_planet": "jupiter",
+    "sign": "Gemini",
+    "retrograde": true,
+    "aspect_to_lunation": {
+     "from_body": "moon",
+     "to_body": "jupiter",
+     "aspect": "opposition",
+     "angle": 180.0,
+     "orb": 7.6,
+     "applying": false
+    }
+   },
+   "our_themes": [
+    "anger / conflict",
+    "communication / ideas",
+    "culmination / revelation",
+    "expansion / optimism",
+    "new beginnings",
+    "restriction / responsibility"
+   ],
+   "our_text": "New Moon at 9\u00b033' Sagittarius: it seeds the bigger picture: travel, study, belief and aim. It squares Saturn (3.4\u00b0), adding delay, duty and a reality check that tests commitment; it trines Mars (3.6\u00b0), giving energy, drive and the confidence to act; it opposes Jupiter (7.6\u00b0), tempting overreach and over-promising. Its ruler Jupiter is retrograde in Gemini and opposes the New Moon itself; Mercury is retrograde, so review and re-reading beat fresh commitments. Intentions set in the day or two after the New Moon run until the next New Moon.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-december-1-2024/",
+     "themes": [
+      "new beginnings",
+      "optimism",
+      "adventure",
+      "honesty",
+      "faith",
+      "expanded horizons"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "expansion / optimism",
+      "new beginnings"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "expansion / optimism",
+      "new beginnings"
+     ],
+     "quote": "The New Moon in Sagittarius marks the beginning of a new cycle."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/new-moon-december-2024/",
+     "themes": [
+      "crisis of confidence",
+      "responsibility",
+      "hardship",
+      "restriction",
+      "renewal",
+      "self-discipline"
+     ],
+     "canonical": [
+      "expansion / optimism",
+      "new beginnings",
+      "restriction / responsibility"
+     ],
+     "overlap": [
+      "expansion / optimism",
+      "new beginnings",
+      "restriction / responsibility"
+     ],
+     "quote": "The Sagittarius new moon on December 1, 2024, is square Saturn."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/december-2024-horoscope/",
+     "themes": [
+      "comfort-zone expansion",
+      "calculated risk",
+      "planning before action",
+      "caution vs overconfidence"
+     ],
+     "canonical": [
+      "expansion / optimism",
+      "home / family",
+      "restriction / responsibility",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "expansion / optimism",
+      "restriction / responsibility"
+     ],
+     "quote": "nudges you beyond the confines of your comfort zone"
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/2024-new-moons-calendar-and-astrology-forecast/",
+     "themes": [
+      "adventure",
+      "social expansion",
+      "travel",
+      "self-development",
+      "truth-speaking"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "expansion / optimism"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "expansion / optimism"
+     ],
+     "quote": "Turn each day into an adventure, broaden your social horizons, travel to a new location"
+    }
+   ]
+  },
+  {
+   "date_local": "2025-01-13",
+   "type": "full",
+   "utc": "2025-01-13T22:26:54+00:00",
+   "published_sign": "Cancer",
+   "our_sign": "Cancer",
+   "our_degree": 24.0,
+   "published_degrees": [
+    24.0,
+    23.983
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "south",
+   "node_distance": 65.62,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "uranus",
+     "aspect": "sextile",
+     "orb": 0.61,
+     "from": "moon"
+    },
+    {
+     "planet": "mars",
+     "aspect": "conjunction",
+     "orb": 3.08,
+     "from": "moon"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "trine",
+     "orb": 3.53,
+     "from": "moon"
+    },
+    {
+     "planet": "pluto",
+     "aspect": "opposition",
+     "orb": 7.48,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "mars",
+     "conjunction"
+    ],
+    [
+     "uranus",
+     "sextile"
+    ]
+   ],
+   "published_planets": [
+    "mars",
+    "neptune",
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "neptune",
+     "trine"
+    ],
+    [
+     "pluto",
+     "opposition"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [
+    "pluto"
+   ],
+   "our_retrogrades": [
+    "mars",
+    "uranus"
+   ],
+   "published_retrogrades": [
+    "mars",
+    "uranus"
+   ],
+   "ruler": {
+    "planet": "moon",
+    "traditional_planet": "moon",
+    "sign": "Cancer",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "culmination / revelation",
+    "emotion",
+    "endings / release",
+    "home / family",
+    "intuition / spirituality",
+    "power / transformation",
+    "sudden change"
+   ],
+   "our_text": "Full Moon at 24\u00b000' Cancer: it brings to a head home against work, and feelings and family patterns that have been building. It sextiles Uranus (0.6\u00b0), opening fresh, inventive options; Mars joins it (3.1\u00b0), charging it with drive, courage and a short fuse; it trines Neptune (3.5\u00b0), heightening intuition, compassion and imagination. Its ruler is the Moon, so the sign speaks for itself; Mars and Uranus are retrograde. Its effects are strongest in the two or three days around the exact Full Moon and resolve over the following two weeks.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-on-january-13-2025",
+     "themes": [
+      "culmination",
+      "emotional expression",
+      "home and family",
+      "nurturing",
+      "career and public life",
+      "accountability"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "emotion",
+      "home / family",
+      "restriction / responsibility"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "emotion",
+      "home / family"
+     ],
+     "quote": "The Full Moon is a time of culmination and the promise of fulfillment of that which was started at the New Moon."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-january-2025/",
+     "themes": [
+      "passion",
+      "courage",
+      "anger",
+      "conflict",
+      "fighting spirit",
+      "sudden change"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "sudden change"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "sudden change"
+     ],
+     "quote": "Thus, the major themes of the full moon January 2025 astrology are passion, courage, anger and conflict."
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-forecast-january-2025",
+     "themes": [
+      "home",
+      "family",
+      "security",
+      "comfort",
+      "inherited patterns",
+      "letting go"
+     ],
+     "canonical": [
+      "endings / release",
+      "home / family"
+     ],
+     "overlap": [
+      "endings / release",
+      "home / family"
+     ],
+     "quote": "\"All will be well\" is a mantra of this Full Moon."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-03-14",
+   "type": "full",
+   "utc": "2025-03-14T06:54:39+00:00",
+   "published_sign": "Virgo",
+   "our_sign": "Virgo",
+   "our_degree": 23.94,
+   "published_degrees": [
+    23.95,
+    23.933
+   ],
+   "published_eclipse": "lunar",
+   "our_eclipse": "lunar",
+   "our_node": "south",
+   "node_distance": 3.45,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "uranus",
+     "aspect": "trine",
+     "orb": 0.09,
+     "from": "moon"
+    },
+    {
+     "planet": "saturn",
+     "aspect": "opposition",
+     "orb": 1.62,
+     "from": "moon"
+    },
+    {
+     "planet": "mars",
+     "aspect": "trine",
+     "orb": 5.04,
+     "from": "sun"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "opposition",
+     "orb": 5.44,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "neptune",
+     "opposition"
+    ],
+    [
+     "saturn",
+     "opposition"
+    ],
+    [
+     "uranus",
+     "trine"
+    ]
+   ],
+   "published_planets": [
+    "neptune",
+    "saturn",
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "mars",
+     "trine"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [
+    "mars"
+   ],
+   "our_retrogrades": [
+    "venus"
+   ],
+   "published_retrogrades": [
+    "venus"
+   ],
+   "ruler": {
+    "planet": "mercury",
+    "traditional_planet": "mercury",
+    "sign": "Aries",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "confusion / illusion",
+    "culmination / revelation",
+    "eclipse / fate",
+    "emotion",
+    "endings / release",
+    "restriction / responsibility",
+    "sudden change",
+    "work / health / routine"
+   ],
+   "our_text": "Full Moon at 23\u00b057' Virgo, a total lunar eclipse 3\u00b0 from the South Node: it brings to a head order against surrender: health, work and the details you have been avoiding. It trines Uranus (0.1\u00b0), opening fresh, inventive options; Saturn sits with the Sun (1.6\u00b0), making it serious, with commitments, limits and hard work in view; it trines Mars (5.0\u00b0), giving energy, drive and the confidence to act. Its ruler Mercury is in Aries; Venus is retrograde. A lunar eclipse is a Full Moon with the volume turned up: something completes or comes to light, and the right response is to let it. It is a South Node eclipse, which clears out the past and asks for release; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-lunar-eclipse-on-march-14-2025",
+     "themes": [
+      "order",
+      "balance",
+      "work-rest routine",
+      "health",
+      "spirituality",
+      "illumination"
+     ],
+     "canonical": [
+      "balance",
+      "culmination / revelation",
+      "intuition / spirituality",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "work / health / routine"
+     ],
+     "quote": "This eclipse is about awakening to the need to enjoy more order in our lives."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-march-2025/",
+     "themes": [
+      "emotional clearing",
+      "restriction vs freedom",
+      "steady change",
+      "intuition",
+      "relationships"
+     ],
+     "canonical": [
+      "endings / release",
+      "intuition / spirituality",
+      "relationships",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "overlap": [
+      "endings / release",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "quote": "Saturn sextile Uranus is increasing in strength toward its first climax on April 4."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/march-2025-horoscope-and-astrology/",
+     "themes": [
+      "self-care",
+      "healthy habits",
+      "simplicity",
+      "revelation",
+      "wake-up call",
+      "life edit"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "endings / release",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "endings / release",
+      "work / health / routine"
+     ],
+     "quote": "Because this eclipse is opposed by minimalist Saturn and hazy Neptune"
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-forecast-march-2025",
+     "themes": [
+      "sudden endings",
+      "letting go",
+      "accelerated timeline",
+      "intuition",
+      "transformation",
+      "health and routines"
+     ],
+     "canonical": [
+      "endings / release",
+      "intuition / spirituality",
+      "power / transformation",
+      "sudden change",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "endings / release",
+      "sudden change",
+      "work / health / routine"
+     ],
+     "quote": "Blood Moon Eclipses fast-track our timeline and bring us closer to closing a chapter in our lives."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-03-29",
+   "type": "new",
+   "utc": "2025-03-29T10:57:49+00:00",
+   "published_sign": "Aries",
+   "our_sign": "Aries",
+   "our_degree": 9.0,
+   "published_degrees": [
+    9.0,
+    9.0,
+    9.0
+   ],
+   "published_eclipse": "solar",
+   "our_eclipse": "solar",
+   "our_node": "north",
+   "node_distance": 11.58,
+   "published_nodes": [
+    "north"
+   ],
+   "our_aspects": [],
+   "published_pairs": [
+    [
+     "mercury",
+     "conjunction"
+    ]
+   ],
+   "published_planets": [
+    "jupiter",
+    "mercury",
+    "pluto"
+   ],
+   "missed_pairs": [
+    [
+     "mercury",
+     "conjunction"
+    ]
+   ],
+   "extra_pairs": [],
+   "missed_planets": [
+    "jupiter",
+    "mercury",
+    "pluto"
+   ],
+   "extra_planets": [],
+   "our_retrogrades": [
+    "mercury",
+    "venus"
+   ],
+   "published_retrogrades": [
+    "mercury",
+    "venus"
+   ],
+   "ruler": {
+    "planet": "mars",
+    "traditional_planet": "mars",
+    "sign": "Cancer",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "communication / ideas",
+    "eclipse / fate",
+    "identity / self",
+    "new beginnings",
+    "sudden change"
+   ],
+   "our_text": "New Moon at 9\u00b000' Aries, a partial solar eclipse 12\u00b0 from the North Node: it seeds a fresh start that rewards courage and a first move. Its ruler Mars is in Cancer; Mercury and Venus are retrograde, so review and re-reading beat fresh commitments. A solar eclipse is a wild-card New Moon: doors open and close faster than usual, so set intentions lightly. It is a North Node eclipse, which pushes toward new ground and growth; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-march-29-2025",
+     "themes": [
+      "independence",
+      "courage",
+      "self-assertion",
+      "new beginnings",
+      "final decisions",
+      "endings and change"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "endings / release",
+      "new beginnings",
+      "sudden change"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "The New Moon loosely aligns with retrograde Mercury"
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/new-moon-march-2025/",
+     "themes": [
+      "fresh start",
+      "change and fear",
+      "renewal",
+      "illusion and deception",
+      "test of faith"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "new beginnings",
+      "restriction / responsibility"
+     ],
+     "overlap": [
+      "new beginnings"
+     ],
+     "quote": "This solar eclipse is a test of faith that causes fear about rapid change."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/march-2025-horoscope-and-astrology/",
+     "themes": [
+      "fresh start",
+      "momentum",
+      "bold projects",
+      "transformation",
+      "visibility",
+      "calculated risk"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "emotion",
+      "expansion / optimism",
+      "new beginnings",
+      "power / transformation"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "new beginnings"
+     ],
+     "quote": "This new moon sits at a friendly angle to expansive Jupiter and powerhouse Pluto."
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-aries-solar-eclipse-march-2025",
+     "themes": [
+      "relationships",
+      "authenticity",
+      "cycle completion",
+      "new beginnings",
+      "emotional release",
+      "patience"
+     ],
+     "canonical": [
+      "emotion",
+      "endings / release",
+      "new beginnings",
+      "relationships",
+      "restriction / responsibility"
+     ],
+     "overlap": [
+      "new beginnings"
+     ],
+     "quote": "Solar Eclipses are supercharged New Moons, and bring the start of a new lunar cycle."
+    },
+    {
+     "site": "elsaelsa.com",
+     "url": "https://elsaelsa.com/astrology/new-moon-solar-eclipse-in-aries-2025-strong-start/",
+     "themes": [
+      "new beginnings",
+      "strong start",
+      "Mars in Cancer",
+      "home and family security",
+      "intention setting"
+     ],
+     "canonical": [
+      "home / family",
+      "new beginnings"
+     ],
+     "overlap": [
+      "new beginnings"
+     ],
+     "quote": "The new moon partial eclipse in Aries will take place at nine degrees, in the early morning on March 29th, 2025."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-06-11",
+   "type": "full",
+   "utc": "2025-06-11T07:43:50+00:00",
+   "published_sign": "Sagittarius",
+   "our_sign": "Sagittarius",
+   "our_degree": 20.65,
+   "published_degrees": [
+    20.65,
+    20.65
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "south",
+   "node_distance": 87.57,
+   "published_nodes": [],
+   "our_aspects": [],
+   "published_pairs": [],
+   "published_planets": [
+    "mars"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [
+    "mars"
+   ],
+   "extra_planets": [],
+   "our_retrogrades": [],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "jupiter",
+    "traditional_planet": "jupiter",
+    "sign": "Cancer",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "culmination / revelation",
+    "emotion",
+    "endings / release",
+    "expansion / optimism"
+   ],
+   "our_text": "Full Moon at 20\u00b039' Sagittarius: it brings to a head meaning and honesty: what you believe versus what the facts say. Its ruler Jupiter is in Cancer. Its effects are strongest in the two or three days around the exact Full Moon and resolve over the following two weeks.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-on-june-11-2025/",
+     "themes": [
+      "communication",
+      "attitude",
+      "adventure",
+      "personal growth",
+      "emotional expression"
+     ],
+     "canonical": [
+      "communication / ideas",
+      "emotion",
+      "expansion / optimism"
+     ],
+     "overlap": [
+      "emotion",
+      "expansion / optimism"
+     ],
+     "quote": "It's time to express ourselves and to let things out of our systems."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-june-2025/",
+     "themes": [
+      "suffering",
+      "sacrifice",
+      "disappointment",
+      "dissolution",
+      "crisis of confidence",
+      "escapism"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "endings / release",
+      "expansion / optimism"
+     ],
+     "overlap": [
+      "endings / release",
+      "expansion / optimism"
+     ],
+     "quote": "The June 2025 full moon signifies a crisis of confidence in business, politics, and society"
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-sagittarius-full-moon-june-2025",
+     "themes": [
+      "truth",
+      "movement",
+      "expansion",
+      "healing",
+      "discord",
+      "action",
+      "transformation"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "culmination / revelation",
+      "expansion / optimism",
+      "healing",
+      "power / transformation"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "expansion / optimism"
+     ],
+     "quote": "Eris stirs the pot so that deeper harmony can emerge."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-08-23",
+   "type": "new",
+   "utc": "2025-08-23T06:06:33+00:00",
+   "published_sign": "Virgo",
+   "our_sign": "Virgo",
+   "our_degree": 0.38,
+   "published_degrees": [
+    0.383,
+    0.383,
+    0.0,
+    0.0
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "south",
+   "node_distance": 17.94,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "saturn",
+     "aspect": "quincunx",
+     "orb": 0.21,
+     "from": "moon"
+    },
+    {
+     "planet": "uranus",
+     "aspect": "square",
+     "orb": 1.0,
+     "from": "moon"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "quincunx",
+     "orb": 1.19,
+     "from": "moon"
+    },
+    {
+     "planet": "pluto",
+     "aspect": "quincunx",
+     "orb": 1.56,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "neptune",
+     "quincunx"
+    ],
+    [
+     "pluto",
+     "quincunx"
+    ],
+    [
+     "saturn",
+     "quincunx"
+    ],
+    [
+     "uranus",
+     "square"
+    ]
+   ],
+   "published_planets": [
+    "neptune",
+    "pluto",
+    "saturn",
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [
+    "neptune",
+    "pluto",
+    "saturn"
+   ],
+   "published_retrogrades": [
+    "neptune",
+    "saturn"
+   ],
+   "ruler": {
+    "planet": "mercury",
+    "traditional_planet": "mercury",
+    "sign": "Leo",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "confusion / illusion",
+    "new beginnings",
+    "power / transformation",
+    "restriction / responsibility",
+    "sudden change",
+    "work / health / routine"
+   ],
+   "our_text": "New Moon at 0\u00b023' Virgo: it seeds routines, health and the useful work of getting organised. It is quincunx to Saturn (0.2\u00b0), adding delay, duty and a reality check that tests commitment; it squares Uranus (1.0\u00b0), bringing surprises, restlessness and sudden changes of course; it is quincunx to Neptune (1.2\u00b0), blurring facts with wishful thinking, so confusion and deception are possible. Its ruler Mercury is in Leo; Saturn, Neptune and Pluto are retrograde. Intentions set in the day or two after the New Moon run until the next New Moon.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-on-august-23-2025",
+     "themes": [
+      "new beginnings",
+      "daily routines",
+      "health",
+      "organization",
+      "discrimination",
+      "detail-oriented work"
+     ],
+     "canonical": [
+      "new beginnings",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "new beginnings",
+      "work / health / routine"
+     ],
+     "quote": "A time of new beginnings, this New Moon presents an excellent opportunity for us to formulate some goals"
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/new-moon-august-2025/",
+     "themes": [
+      "pressure",
+      "urgency",
+      "sudden change",
+      "tension",
+      "restriction",
+      "renewal"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "new beginnings",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "overlap": [
+      "new beginnings",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "quote": "gives a sense of urgency that compels action"
+    },
+    {
+     "site": "elsaelsa.com",
+     "url": "https://elsaelsa.com/astrology/new-moon-in-virgo-brilliant-fix-or-breakthrough/",
+     "themes": [
+      "breakthrough",
+      "awakening",
+      "mental clarity",
+      "disillusionment",
+      "rebellion",
+      "new beginnings"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "culmination / revelation",
+      "new beginnings",
+      "sudden change"
+     ],
+     "overlap": [
+      "confusion / illusion",
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "It's very unusual to have all three outer planets hit like this."
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-virgo-new-moon-august-2025",
+     "themes": [
+      "grounding",
+      "structure",
+      "inner wisdom",
+      "uncertainty",
+      "trust",
+      "transformation",
+      "awakening"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "intuition / spirituality",
+      "money / worth",
+      "power / transformation",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "overlap": [
+      "confusion / illusion",
+      "power / transformation",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "quote": "It is that liminal space between the old being cleared and the new waiting to be reborn."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-09-21",
+   "type": "new",
+   "utc": "2025-09-21T19:54:07+00:00",
+   "published_sign": "Virgo",
+   "our_sign": "Virgo",
+   "our_degree": 29.09,
+   "published_degrees": [
+    29.083,
+    29.0,
+    29.0
+   ],
+   "published_eclipse": "solar",
+   "our_eclipse": "solar",
+   "our_node": "south",
+   "node_distance": 10.71,
+   "published_nodes": [
+    "south"
+   ],
+   "our_aspects": [
+    {
+     "planet": "saturn",
+     "aspect": "opposition",
+     "orb": 0.62,
+     "from": "moon"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "opposition",
+     "orb": 1.72,
+     "from": "moon"
+    },
+    {
+     "planet": "uranus",
+     "aspect": "trine",
+     "orb": 2.28,
+     "from": "moon"
+    },
+    {
+     "planet": "pluto",
+     "aspect": "trine",
+     "orb": 2.4,
+     "from": "moon"
+    },
+    {
+     "planet": "mercury",
+     "aspect": "conjunction",
+     "orb": 6.91,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "mercury",
+     "conjunction"
+    ],
+    [
+     "neptune",
+     "opposition"
+    ],
+    [
+     "saturn",
+     "opposition"
+    ]
+   ],
+   "published_planets": [
+    "mercury",
+    "neptune",
+    "pluto",
+    "saturn",
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "pluto",
+     "trine"
+    ],
+    [
+     "uranus",
+     "trine"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [
+    "neptune",
+    "pluto",
+    "saturn",
+    "uranus"
+   ],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "mercury",
+    "traditional_planet": "mercury",
+    "sign": "Libra",
+    "retrograde": false,
+    "aspect_to_lunation": {
+     "from_body": "moon",
+     "to_body": "mercury",
+     "aspect": "conjunction",
+     "angle": 0.0,
+     "orb": 6.91,
+     "applying": false
+    }
+   },
+   "our_themes": [
+    "communication / ideas",
+    "confusion / illusion",
+    "eclipse / fate",
+    "endings / release",
+    "new beginnings",
+    "power / transformation",
+    "restriction / responsibility",
+    "sudden change",
+    "work / health / routine"
+   ],
+   "our_text": "New Moon at 29\u00b005' Virgo, a partial solar eclipse 11\u00b0 from the South Node: it seeds routines, health and the useful work of getting organised. From the last degree of the sign, it marks an ending before the next chapter. It opposes Saturn (0.6\u00b0), adding delay, duty and a reality check that tests commitment; it opposes Neptune (1.7\u00b0), blurring facts with wishful thinking, so confusion and deception are possible; it trines Uranus (2.3\u00b0), opening fresh, inventive options. Its ruler Mercury is in Libra and joins the New Moon itself; Saturn, Uranus, Neptune and Pluto are retrograde. A solar eclipse is a wild-card New Moon: doors open and close faster than usual, so set intentions lightly. It is a South Node eclipse, which clears out the past and asks for release; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-september-21-2025/",
+     "themes": [
+      "new beginnings",
+      "work and health",
+      "daily routines",
+      "surrender",
+      "letting go",
+      "mindfulness"
+     ],
+     "canonical": [
+      "communication / ideas",
+      "endings / release",
+      "new beginnings",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "communication / ideas",
+      "endings / release",
+      "new beginnings",
+      "work / health / routine"
+     ],
+     "quote": "This eclipse opposes Saturn and Neptune and harmonizes with Uranus and Pluto."
+    },
+    {
+     "site": "elsaelsa.com",
+     "url": "https://elsaelsa.com/astrology/new-moon-eclipse-in-virgo-sept-21-2025-grand-design",
+     "themes": [
+      "balance",
+      "agreement",
+      "disruption",
+      "symmetry",
+      "balance of power"
+     ],
+     "canonical": [
+      "balance",
+      "communication / ideas",
+      "power / transformation",
+      "sudden change"
+     ],
+     "overlap": [
+      "communication / ideas",
+      "power / transformation",
+      "sudden change"
+     ],
+     "quote": "The chart is striking and unusual, in a good way."
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-virgo-solar-eclipse-september-2025",
+     "themes": [
+      "health",
+      "well-being",
+      "routines",
+      "structure",
+      "balance",
+      "new beginnings"
+     ],
+     "canonical": [
+      "balance",
+      "new beginnings",
+      "restriction / responsibility",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "new beginnings",
+      "restriction / responsibility",
+      "work / health / routine"
+     ],
+     "quote": "The New Moon Solar Eclipse arrives on September 21st at 29 degrees of Virgo."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-10-06",
+   "type": "full",
+   "utc": "2025-10-07T03:47:36+00:00",
+   "published_sign": "Aries",
+   "our_sign": "Aries",
+   "our_degree": 14.14,
+   "published_degrees": [
+    14.133,
+    14.133,
+    14.0
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "north",
+   "node_distance": 25.92,
+   "published_nodes": [],
+   "our_aspects": [],
+   "published_pairs": [],
+   "published_planets": [
+    "jupiter"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [
+    "jupiter"
+   ],
+   "extra_planets": [],
+   "our_retrogrades": [],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "mars",
+    "traditional_planet": "mars",
+    "sign": "Scorpio",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "culmination / revelation",
+    "emotion",
+    "endings / release",
+    "identity / self",
+    "new beginnings"
+   ],
+   "our_text": "Full Moon at 14\u00b008' Aries: it brings to a head independence against partnership, and the anger or impatience that has built up. Its ruler Mars is in Scorpio. Its effects are strongest in the two or three days around the exact Full Moon and resolve over the following two weeks.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-on-october-6-2025/",
+     "themes": [
+      "emotional expression",
+      "self-assertion vs compromise",
+      "autonomy vs companionship",
+      "relationships",
+      "leadership"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "emotion",
+      "relationships"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "emotion"
+     ],
+     "quote": "The Full Moon illuminates the conflict between \u201cme\u201d and \u201cyou,\u201d and between autonomy and sharing."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-october-2025/",
+     "themes": [
+      "independence",
+      "freedom",
+      "complex problems",
+      "new perspective",
+      "innovation",
+      "transformation"
+     ],
+     "canonical": [
+      "power / transformation",
+      "sudden change"
+     ],
+     "overlap": [],
+     "quote": "There are no planetary aspects to this full moon, but Mercury will have some influence because it is heavily aspected."
+    },
+    {
+     "site": "elsaelsa.com",
+     "url": "https://elsaelsa.com/astrology/full-moon-in-libra-oct-6-2025-striking-odd-deep/",
+     "themes": [
+      "future focus",
+      "couples",
+      "mixed news",
+      "intense communication",
+      "family"
+     ],
+     "canonical": [
+      "communication / ideas",
+      "culmination / revelation",
+      "expansion / optimism",
+      "home / family",
+      "relationships"
+     ],
+     "overlap": [
+      "culmination / revelation"
+     ],
+     "quote": "I picture a couple realizing their future (Jupiter) in a crowded space."
+    }
+   ]
+  },
+  {
+   "date_local": "2025-11-20",
+   "type": "new",
+   "utc": "2025-11-20T06:47:16+00:00",
+   "published_sign": "Scorpio",
+   "our_sign": "Scorpio",
+   "our_degree": 28.2,
+   "published_degrees": [
+    28.2,
+    28.2
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "south",
+   "node_distance": 72.76,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "mercury",
+     "aspect": "conjunction",
+     "orb": 0.26,
+     "from": "moon"
+    },
+    {
+     "planet": "neptune",
+     "aspect": "trine",
+     "orb": 1.29,
+     "from": "moon"
+    },
+    {
+     "planet": "uranus",
+     "aspect": "opposition",
+     "orb": 1.3,
+     "from": "moon"
+    },
+    {
+     "planet": "saturn",
+     "aspect": "trine",
+     "orb": 2.99,
+     "from": "moon"
+    },
+    {
+     "planet": "jupiter",
+     "aspect": "trine",
+     "orb": 3.17,
+     "from": "moon"
+    },
+    {
+     "planet": "pluto",
+     "aspect": "sextile",
+     "orb": 3.5,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "mercury",
+     "conjunction"
+    ],
+    [
+     "neptune",
+     "trine"
+    ],
+    [
+     "uranus",
+     "opposition"
+    ]
+   ],
+   "published_planets": [
+    "jupiter",
+    "mercury",
+    "neptune",
+    "pluto",
+    "saturn",
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "jupiter",
+     "trine"
+    ],
+    [
+     "pluto",
+     "sextile"
+    ],
+    [
+     "saturn",
+     "trine"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [
+    "jupiter",
+    "mercury",
+    "neptune",
+    "saturn",
+    "uranus"
+   ],
+   "published_retrogrades": [
+    "mercury"
+   ],
+   "ruler": {
+    "planet": "pluto",
+    "traditional_planet": "mars",
+    "sign": "Aquarius",
+    "retrograde": false,
+    "aspect_to_lunation": {
+     "from_body": "moon",
+     "to_body": "pluto",
+     "aspect": "sextile",
+     "angle": 60.0,
+     "orb": 3.5,
+     "applying": false
+    }
+   },
+   "our_themes": [
+    "communication / ideas",
+    "expansion / optimism",
+    "intuition / spirituality",
+    "money / worth",
+    "new beginnings",
+    "power / transformation",
+    "relationships",
+    "restriction / responsibility",
+    "sudden change"
+   ],
+   "our_text": "New Moon at 28\u00b012' Scorpio: it seeds deep change, shared resources and what you are ready to transform. Mercury joins it (0.3\u00b0), putting communication, news and decisions at the centre; it trines Neptune (1.3\u00b0), heightening intuition, compassion and imagination; it opposes Uranus (1.3\u00b0), bringing surprises, restlessness and sudden changes of course. Its ruler Pluto (traditionally Mars) is in Aquarius and sextiles the New Moon itself; Mercury, Jupiter, Saturn, Uranus and Neptune are retrograde, so review and re-reading beat fresh commitments. Intentions set in the day or two after the New Moon run until the next New Moon.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-on-november-20-2025/",
+     "themes": [
+      "intimacy",
+      "control",
+      "power",
+      "money",
+      "self-mastery",
+      "new beginnings"
+     ],
+     "canonical": [
+      "money / worth",
+      "new beginnings",
+      "power / transformation",
+      "relationships"
+     ],
+     "overlap": [
+      "money / worth",
+      "new beginnings",
+      "power / transformation",
+      "relationships"
+     ],
+     "quote": "Scorpio New Moon cycles favor working on our self-mastery skills."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/new-moon-november-2025/",
+     "themes": [
+      "unintended consequences",
+      "flexibility",
+      "sudden change",
+      "spiritual awakening",
+      "renewal"
+     ],
+     "canonical": [
+      "new beginnings",
+      "sudden change"
+     ],
+     "overlap": [
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "The number of harmonious blue aspects outweighs the challenging red aspects."
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-scorpio-new-moon-november-2025",
+     "themes": [
+      "new beginnings",
+      "awakening",
+      "authenticity",
+      "letting go",
+      "transformation",
+      "rebirth"
+     ],
+     "canonical": [
+      "emotion",
+      "endings / release",
+      "new beginnings",
+      "power / transformation",
+      "sudden change"
+     ],
+     "overlap": [
+      "new beginnings",
+      "power / transformation",
+      "sudden change"
+     ],
+     "quote": "The Scorpio New Moon is our chance to begin again, try something new, and venture out of our comfort zone."
+    }
+   ]
+  },
+  {
+   "date_local": "2026-01-03",
+   "type": "full",
+   "utc": "2026-01-03T10:02:54+00:00",
+   "published_sign": "Cancer",
+   "our_sign": "Cancer",
+   "our_degree": 13.03,
+   "published_degrees": [
+    13.033,
+    13.017,
+    13.0
+   ],
+   "published_eclipse": null,
+   "our_eclipse": null,
+   "our_node": "south",
+   "node_distance": 57.55,
+   "published_nodes": [],
+   "our_aspects": [
+    {
+     "planet": "venus",
+     "aspect": "opposition",
+     "orb": 0.78,
+     "from": "moon"
+    },
+    {
+     "planet": "mars",
+     "aspect": "opposition",
+     "orb": 1.51,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "mars",
+     "opposition"
+    ],
+    [
+     "venus",
+     "opposition"
+    ]
+   ],
+   "published_planets": [
+    "mars",
+    "venus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "moon",
+    "traditional_planet": "moon",
+    "sign": "Cancer",
+    "retrograde": false,
+    "aspect_to_lunation": null
+   },
+   "our_themes": [
+    "anger / conflict",
+    "culmination / revelation",
+    "emotion",
+    "endings / release",
+    "home / family",
+    "money / worth",
+    "relationships"
+   ],
+   "our_text": "Full Moon at 13\u00b002' Cancer: it brings to a head home against work, and feelings and family patterns that have been building. Venus sits with the Sun (0.8\u00b0), putting love, money and what you value at the centre; Mars sits with the Sun (1.5\u00b0), charging it with drive, courage and a short fuse. Its ruler is the Moon, so the sign speaks for itself. Its effects are strongest in the two or three days around the exact Full Moon and resolve over the following two weeks.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-on-january-3-2026/",
+     "themes": [
+      "culmination",
+      "balance",
+      "home and family",
+      "career",
+      "emotional expression"
+     ],
+     "canonical": [
+      "balance",
+      "culmination / revelation",
+      "emotion",
+      "home / family"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "emotion",
+      "home / family"
+     ],
+     "quote": "This Full Moon is about balancing our commitment to our career and families."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-january-2026/",
+     "themes": [
+      "true colors",
+      "honest reassessment",
+      "love relationships",
+      "intuition",
+      "polarization"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "culmination / revelation",
+      "intuition / spirituality",
+      "relationships"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "culmination / revelation",
+      "relationships"
+     ],
+     "quote": "The January 2026 full moon reveals what you truly love."
+    },
+    {
+     "site": "elsaelsa.com",
+     "url": "https://elsaelsa.com/astrology/full-moon-in-cancer-january-3-2026-productive-conflict",
+     "themes": [
+      "productive conflict",
+      "tension",
+      "control",
+      "cardinal signs",
+      "family",
+      "work-family balance"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "home / family",
+      "power / transformation",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "anger / conflict",
+      "home / family"
+     ],
+     "quote": "The full moon in Cancer takes place in the morning on Saturday, January 3rd at 13 degrees."
+    }
+   ]
+  },
+  {
+   "date_local": "2026-02-17",
+   "type": "new",
+   "utc": "2026-02-17T12:01:09+00:00",
+   "published_sign": "Aquarius",
+   "our_sign": "Aquarius",
+   "our_degree": 28.83,
+   "published_degrees": [
+    28.833,
+    28.817,
+    28.0
+   ],
+   "published_eclipse": "solar",
+   "our_eclipse": "solar",
+   "our_node": "north",
+   "node_distance": 10.11,
+   "published_nodes": [
+    "north"
+   ],
+   "our_aspects": [
+    {
+     "planet": "uranus",
+     "aspect": "square",
+     "orb": 1.29,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "uranus",
+     "square"
+    ]
+   ],
+   "published_planets": [
+    "uranus"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [],
+   "missed_planets": [],
+   "extra_planets": [],
+   "our_retrogrades": [],
+   "published_retrogrades": [],
+   "ruler": {
+    "planet": "uranus",
+    "traditional_planet": "saturn",
+    "sign": "Taurus",
+    "retrograde": false,
+    "aspect_to_lunation": {
+     "from_body": "moon",
+     "to_body": "uranus",
+     "aspect": "square",
+     "angle": 90.0,
+     "orb": 1.29,
+     "applying": false
+    }
+   },
+   "our_themes": [
+    "eclipse / fate",
+    "expansion / optimism",
+    "new beginnings",
+    "relationships",
+    "sudden change"
+   ],
+   "our_text": "New Moon at 28\u00b050' Aquarius, an annular solar eclipse 10\u00b0 from the North Node: it seeds friends, community and the future you want to help build. It squares Uranus (1.3\u00b0), bringing surprises, restlessness and sudden changes of course. Its ruler Uranus (traditionally Saturn) is in Taurus and squares the New Moon itself. A solar eclipse is a wild-card New Moon: doors open and close faster than usual, so set intentions lightly. It is a North Node eclipse, which pushes toward new ground and growth; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-february-17-2026/",
+     "themes": [
+      "friendship and community",
+      "innovation",
+      "detachment from the past",
+      "necessary endings",
+      "new beginnings"
+     ],
+     "canonical": [
+      "endings / release",
+      "new beginnings",
+      "relationships",
+      "sudden change"
+     ],
+     "overlap": [
+      "new beginnings",
+      "relationships",
+      "sudden change"
+     ],
+     "quote": "This New Moon clashes with Uranus, bringing rebellious, impulsive, abrupt, and innovative energy."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/new-moon-february-2026/",
+     "themes": [
+      "protest",
+      "rebellion",
+      "patience",
+      "flexibility",
+      "renewal",
+      "sacrifice"
+     ],
+     "canonical": [
+      "confusion / illusion",
+      "new beginnings",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "overlap": [
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "Avoid making radical changes, but be proactive about positive change."
+    },
+    {
+     "site": "elsaelsa.com",
+     "url": "https://elsaelsa.com/astrology/solar-eclipse-in-aquarius-2026-new-beginning-effects-by-house/",
+     "themes": [
+      "new beginnings",
+      "individuality",
+      "liberation",
+      "reboot",
+      "intentions"
+     ],
+     "canonical": [
+      "new beginnings",
+      "sudden change"
+     ],
+     "overlap": [
+      "new beginnings",
+      "sudden change"
+     ],
+     "quote": "The energy will be amplified, courtesy of Uranus in Taurus, squaring the sun and moon."
+    }
+   ]
+  },
+  {
+   "date_local": "2026-03-03",
+   "type": "full",
+   "utc": "2026-03-03T11:37:53+00:00",
+   "published_sign": "Virgo",
+   "our_sign": "Virgo",
+   "our_degree": 12.9,
+   "published_degrees": [
+    12.9,
+    12.9,
+    12.883
+   ],
+   "published_eclipse": "lunar",
+   "our_eclipse": "lunar",
+   "our_node": "south",
+   "node_distance": 3.91,
+   "published_nodes": [
+    "south"
+   ],
+   "our_aspects": [
+    {
+     "planet": "jupiter",
+     "aspect": "sextile",
+     "orb": 2.29,
+     "from": "moon"
+    },
+    {
+     "planet": "mercury",
+     "aspect": "opposition",
+     "orb": 7.59,
+     "from": "moon"
+    }
+   ],
+   "published_pairs": [
+    [
+     "jupiter",
+     "sextile"
+    ]
+   ],
+   "published_planets": [
+    "jupiter"
+   ],
+   "missed_pairs": [],
+   "extra_pairs": [
+    [
+     "mercury",
+     "opposition"
+    ]
+   ],
+   "missed_planets": [],
+   "extra_planets": [
+    "mercury"
+   ],
+   "our_retrogrades": [
+    "jupiter",
+    "mercury"
+   ],
+   "published_retrogrades": [
+    "jupiter",
+    "mercury"
+   ],
+   "ruler": {
+    "planet": "mercury",
+    "traditional_planet": "mercury",
+    "sign": "Pisces",
+    "retrograde": true,
+    "aspect_to_lunation": {
+     "from_body": "moon",
+     "to_body": "mercury",
+     "aspect": "opposition",
+     "angle": 180.0,
+     "orb": 7.59,
+     "applying": false
+    }
+   },
+   "our_themes": [
+    "communication / ideas",
+    "culmination / revelation",
+    "eclipse / fate",
+    "emotion",
+    "endings / release",
+    "expansion / optimism",
+    "sudden change",
+    "work / health / routine"
+   ],
+   "our_text": "Full Moon at 12\u00b054' Virgo, a total lunar eclipse 4\u00b0 from the South Node: it brings to a head order against surrender: health, work and the details you have been avoiding. It sextiles Jupiter (2.3\u00b0), bringing optimism, luck and room to grow; Mercury sits with the Sun (7.6\u00b0), putting communication, news and decisions at the centre. Its ruler Mercury is retrograde in Pisces and opposes the Full Moon itself; Jupiter is retrograde, so review and re-reading beat fresh commitments. A lunar eclipse is a Full Moon with the volume turned up: something completes or comes to light, and the right response is to let it. It is a South Node eclipse, which clears out the past and asks for release; its themes unfold over about six months.",
+   "sources": [
+    {
+     "site": "cafeastrology.com",
+     "url": "https://cafeastrology.com/events/full-moon-lunar-eclipse-on-march-3-2026/",
+     "themes": [
+      "balance",
+      "order",
+      "routines",
+      "work and health",
+      "revelation",
+      "relationships"
+     ],
+     "canonical": [
+      "balance",
+      "culmination / revelation",
+      "relationships",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "work / health / routine"
+     ],
+     "quote": "This eclipse in Virgo is about awakening to the need to enjoy more order in our lives."
+    },
+    {
+     "site": "astrostyle.com",
+     "url": "https://astrostyle.com/virgo-full-moon-meaning-and-astrology/",
+     "themes": [
+      "eclipse season",
+      "hidden truths",
+      "well-being",
+      "simplification",
+      "change",
+      "self-care"
+     ],
+     "canonical": [
+      "culmination / revelation",
+      "eclipse / fate",
+      "endings / release",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "culmination / revelation",
+      "eclipse / fate",
+      "endings / release",
+      "work / health / routine"
+     ],
+     "quote": "Since this one falls close to the karmic south node, circumstances could force your hand when it comes to making a change."
+    },
+    {
+     "site": "astrologyking.com",
+     "url": "https://astrologyking.com/full-moon-march-2026/",
+     "themes": [
+      "sudden change",
+      "tension",
+      "deliberation",
+      "strategy",
+      "emotional reset",
+      "relationships"
+     ],
+     "canonical": [
+      "anger / conflict",
+      "endings / release",
+      "relationships",
+      "restriction / responsibility",
+      "sudden change"
+     ],
+     "overlap": [
+      "endings / release",
+      "sudden change"
+     ],
+     "quote": "The full moon in March 2026 is a total lunar eclipse"
+    },
+    {
+     "site": "foreverconscious.com",
+     "url": "https://foreverconscious.com/intuitive-astrology-virgo-blood-moon-lunar-eclipse-march-2026",
+     "themes": [
+      "purification",
+      "release",
+      "simplification",
+      "mind-body connection",
+      "self-compassion"
+     ],
+     "canonical": [
+      "endings / release",
+      "healing",
+      "work / health / routine"
+     ],
+     "overlap": [
+      "endings / release",
+      "work / health / routine"
+     ],
+     "quote": "Rather than striving for perfection, Virgo reminds us to meet ourselves with compassion."
+    }
+   ]
+  }
+ ]
+}
