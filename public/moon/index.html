@@ -1,0 +1,796 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="/moon/">
+<title>Planning</title>
+<link rel="stylesheet" href="vendor/segmented-toggle.css">
+<style>
+:root{--col:80px;--axis:64px;--hour:40px;--red:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;padding:76px 16px 16px;background:#fff;color:#000;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 12px 84px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid rgba(0,0,0,.08);transition:transform .3s ease,opacity .3s ease}
+#hdr.hide{transform:translateY(-100%);opacity:0;pointer-events:none}
+#hdr h1{margin:0;font:700 30px -apple-system,system-ui,sans-serif}
+.toggles{display:flex;gap:20px;align-items:center;font-family:-apple-system,system-ui,sans-serif}
+.tog{display:inline-flex;align-items:center;gap:8px;font:600 14px -apple-system,system-ui,sans-serif}
+.tog b{font-size:17px;font-weight:600;position:relative;top:2px}
+#hdr label{display:flex;align-items:center;gap:8px;font:500 14px -apple-system,system-ui,sans-serif;cursor:pointer}
+section{margin-bottom:36px;padding-top:4px;content-visibility:auto;contain-intrinsic-size:auto var(--sec-h,1156px)}
+section.has-yr{contain-intrinsic-size:auto var(--sec-yr-h,1217px)}
+h2{margin:0 0 10px;font:600 28px -apple-system,system-ui,sans-serif;text-align:left}
+h1.yr{margin:8px 0 14px;font:700 40px -apple-system,system-ui,sans-serif}
+section+section h1.yr{margin-top:24px}
+#yfloat{position:fixed;left:4px;top:0;line-height:normal;z-index:19;margin:0;padding:0 12px;border-radius:0 0 12px 12px;font:700 40px -apple-system,system-ui,sans-serif;
+  background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 6px 20px rgba(0,0,0,.14);
+  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .3s ease}
+#yfloat.on{opacity:1}
+#scrub{position:fixed;right:8px;top:76px;bottom:12px;width:132px;z-index:18;opacity:0;pointer-events:none;transition:opacity .2s ease}
+#scrub.on{opacity:1}
+/* shown by scrolling it is only a display; it takes the pointer once summoned at the right edge */
+#scrub.on.live{pointer-events:auto}
+#scrub.on.peek{opacity:.22;pointer-events:none}
+#scrub .track{position:absolute;inset:0;cursor:pointer}
+#scrub .track::after{content:"";position:absolute;right:14px;top:10px;bottom:10px;border-right:2px solid #000}
+#scrub a{position:absolute;right:14px;top:0;height:0;display:flex;align-items:center;justify-content:flex-end;gap:4px;color:#000;
+  font:400 10px/12px -apple-system,system-ui,sans-serif;white-space:nowrap;transition:transform .1s ease-out}
+#scrub a i{width:4px;border-top:1px solid #000;transition:width .12s ease-out}
+#scrub a span{opacity:0;transition:opacity .12s,transform .1s ease-out;padding:0 4px;border-radius:4px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(8px) saturate(180%);backdrop-filter:blur(8px) saturate(180%)}
+#scrub a span b{font-weight:700;font-size:14px;line-height:16px;vertical-align:-1px}
+#scrub a span em{font-style:normal}
+#scrub a.lab span{opacity:1}
+#scrub a.lab i{width:8px}
+#scrub a.yr i,#scrub a.yr.hv i,#scrub a.yr.on i{width:16px}
+#scrub a.hv{color:#f87171}#scrub a.hv i{border-color:#f87171;width:12px}
+#scrub a.on{color:var(--red);font-weight:600}#scrub a.on i{border-color:var(--red);width:14px}
+h2 .mn{position:relative;display:inline-block;margin-right:10px;font:35px/1 'Apple Color Emoji',sans-serif;vertical-align:-4px}
+h2 .mn b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:600 15px/1 -apple-system,system-ui,sans-serif;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8)}
+h2 small{font-size:17px;font-weight:500;color:#666;margin-left:9.5px}
+.scroll{overflow-x:auto;border:1px solid #000}
+.grid{display:grid;grid-template-columns:var(--axis) repeat(var(--n),var(--col));width:max-content}
+.grid>.ax{position:sticky;left:0;z-index:5;background:#fff;border-right:1px solid #ddd}
+.day{text-align:center;padding:8px 0;letter-spacing:.15em;border-right:1px solid #ddd;border-bottom:1px solid #000}
+.day.today{background:var(--red);color:#fff}
+.hd.ax{border-bottom:1px solid #000}
+.top{height:118px;position:relative;border-right:1px solid #ddd;border-bottom:1px solid #000}
+.top canvas{position:absolute;left:50%;top:34px;transform:translateX(-50%)}
+.top i{display:none;position:absolute;left:50%;top:22px;height:12px;border-left:1px solid #000}
+.top span{position:absolute;left:50%;top:15px;line-height:16px;transform:translateX(-50%);white-space:nowrap;font-size:13.5px;z-index:1}
+.top span small canvas.mi{position:static;transform:none;vertical-align:-2px;margin:0 1px;border-radius:50%;box-shadow:0 0 0 .75px rgba(0,0,0,.45)}
+.top span small{position:absolute;left:100%;bottom:0;margin-left:6px;font-size:11px;line-height:16px;white-space:nowrap}
+.day{position:relative}
+.day .dstn{position:absolute;right:4px;bottom:1px;font-weight:400;font-size:7px;line-height:8px;letter-spacing:0;white-space:nowrap;pointer-events:none}
+/* pin rows so the band can overlay row 2 without pushing the moon cells down */
+.grid>.hd,.grid>.day{grid-row:1}
+.grid>.top{grid-row:2}
+.grid>.top.ax{grid-column:1}
+.grid>.time{grid-row:3}
+.rit{grid-row:2;align-self:end;display:grid;grid-template-columns:repeat(var(--n),var(--col));height:22px;margin-bottom:6px;z-index:2}
+/* glass tiles: dark glass for the goal-work stages, light glass with a hairline outline for the rest */
+.rit-seg{display:flex;align-items:center;justify-content:center;margin:0 1.5px;border-radius:7px;font-size:10px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;cursor:default;
+  color:#444;background:rgba(118,118,128,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 1px 2px rgba(0,0,0,.06);
+  -webkit-backdrop-filter:blur(12px) saturate(170%);backdrop-filter:blur(12px) saturate(170%);transition:background-color .15s}
+.rit-seg.work{color:#fff;background:rgba(0,0,0,.76);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 1px 3px rgba(0,0,0,.18)}
+.rit-seg.on{font-weight:700;color:#000}
+.rit-seg.work.on{color:#fff}
+.rit-seg:hover{background:rgba(118,118,128,.24)}
+.rit-seg.work:hover{background:rgba(0,0,0,.9)}
+.top span.end{left:auto;right:6px;transform:none}
+.top span.end small{position:static;margin-left:6px}
+.top b{position:absolute;left:0;right:4px;top:98px;text-align:right;font-weight:400;font-size:10px;white-space:nowrap}
+.time{position:relative;height:calc(var(--hour) * 24);border-right:1px solid #ddd;
+  background:repeating-linear-gradient(to bottom,#e8e8e8 0 1px,transparent 1px var(--hour))}
+.time.ax{background:#fff}
+.time.ax b{position:absolute;right:8px;transform:translateY(-50%);font-weight:400;font-size:11px;white-space:nowrap}
+.note{position:absolute;inset:0;padding:6px;outline:none;overflow-y:auto;white-space:pre-wrap;word-break:break-word;z-index:1}
+.note:focus{background:rgba(0,0,0,.03)}
+.mk{position:absolute;left:50%;height:0;z-index:2;pointer-events:none}
+.mk .body{position:absolute;left:-10px;top:-10px;width:20px;height:20px;pointer-events:auto}
+.mk .body canvas,.mk .body svg{position:absolute;left:0;top:0;width:20px;height:20px;overflow:visible}
+.mk>i{position:absolute;left:0;top:-17px;height:7px;border-left:1px solid #000}
+.mk em{position:absolute;left:0;top:-31px;transform:translateX(-50%);font-style:normal;font-size:9.5px;line-height:13px;white-space:nowrap}
+.mk>i{display:none}
+.mk em{top:-24px !important}
+.mk.rise em{top:12px !important}
+.mk.set em{top:-24px !important}
+/* within ~35 min of midnight the label would leave the cell (into the stage band above, past the table below): flip it to the moon's other side */
+.mk.lo em{top:12px !important}
+.mk.set.lo em{top:22px !important}
+.mk.rise.hi em{top:-34px !important}
+.mk .band{opacity:.45}
+.mk .body canvas{z-index:0}
+.mk .body svg{z-index:1}
+.mk .hv{position:absolute;left:0;transform:translateX(-50%);font-weight:600;font-size:9.5px;line-height:13px;white-space:nowrap;opacity:0;transition:opacity .2s ease;pointer-events:none}
+.mk.set .hv{top:-37px}
+.mk.rise .hv{top:-54px}
+.mk:has(.body:hover) .hv{opacity:1}
+/* rise hover: where the moon ends up once risen, mirroring the set case */
+.mk .body canvas.risen{top:-30px;opacity:0;transition:opacity .2s ease}
+.mk .body:hover canvas.risen{opacity:1}
+.mk .earth{opacity:0;transition:opacity .2s ease;pointer-events:none}
+.mk .body:hover .earth{opacity:1}
+.mk:has(.body:hover){z-index:8}
+.mk u{position:absolute;left:13px;top:-6px;text-decoration:none;font-size:9px;line-height:12px;white-space:nowrap}
+.now{position:absolute;left:0;right:0;height:0;border-top:1.5px solid var(--red);z-index:6;pointer-events:none}
+.now::before{content:"";position:absolute;left:-5px;top:-5.75px;width:10px;height:10px;border-radius:50%;background:var(--red)}
+.ax .now::before{left:1px}
+.glass{background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px) saturate(180%);backdrop-filter:blur(10px) saturate(180%);
+  border:.5px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.12);border-radius:6px;padding:0 5px}
+.now em{position:absolute;left:13px;bottom:1px;font:600 9.5px/13px ui-monospace,Menlo,monospace;font-style:normal;white-space:nowrap;color:var(--red)}
+.hov{position:absolute;left:0;right:0;height:0;border-top:1px solid #000;z-index:7;pointer-events:none}
+.hov em{position:absolute;right:100%;top:0;margin-right:3px;transform:translateY(-50%);font-style:normal;font-size:9.5px;line-height:14px;white-space:nowrap}
+#pop{position:fixed;z-index:10;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);border:.5px solid rgba(0,0,0,.1);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px;display:none;pointer-events:none;font-size:12px;line-height:1.6;white-space:nowrap}
+#spop{position:fixed;z-index:11;display:none;pointer-events:auto;max-width:280px;padding:10px 12px;border-radius:12px;
+  background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+  border:.5px solid rgba(0,0,0,.1);box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:12px;line-height:1.5}
+#spop .ph{font:600 14px -apple-system,system-ui,sans-serif;display:flex;align-items:center;justify-content:space-between;gap:6px}
+#spop .src{display:inline-flex;line-height:0}
+#spop .tm{white-space:nowrap}
+#spop .sub{color:#555;margin-bottom:4px;font-family:-apple-system,system-ui,sans-serif}
+#pop canvas{display:block;margin:0 auto 8px}
+#pop .ph{font:600 14px -apple-system,system-ui,sans-serif}
+/* lunar header dropdown: a wider variation of the moon hover card */
+h2.dd{cursor:pointer;user-select:none}
+h2 .car{display:inline-block;margin-left:9.5px;vertical-align:baseline;transition:transform .15s ease;transform-origin:50% 50%}
+h2.open .car{transform:rotate(180deg)}
+/* month details: a section that opens between the header and the calendar */
+.mdet{display:none;gap:16px;align-items:flex-start;margin:0 0 12px;font:13px/1.55 -apple-system,system-ui,sans-serif}
+h2.open+.mdet{display:flex}
+.mdet canvas{flex:none;border-radius:50%}
+.mdet .nm{font:600 16px -apple-system,system-ui,sans-serif}
+.mdet .tg{color:#555;margin-bottom:4px}
+.mdet ul{margin:0;padding:0;list-style:none;columns:2 300px;column-gap:28px}
+.mdet li{padding:1px 0;break-inside:avoid}
+.mdet .rd{margin:6px 0 0;max-width:640px;color:#333}
+.mdet .lk{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
+.mdet .lk a{display:inline-flex;align-items:center;gap:4px;color:#2563eb;text-decoration:none;font-weight:500}
+</style></head><body>
+<div id="yfloat" aria-hidden="true"></div><nav id="scrub" aria-label="Months"><div class="track"></div></nav><header id="hdr"><h1>Planning</h1><div class="toggles"><span class="tog"><span id="months-toggle"></span><b>Months</b></span><span class="tog"><span id="dst-toggle"></span><b>DST</b></span><input type="checkbox" id="lunar-months" hidden><input type="checkbox" id="follow-dst" hidden></div></header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="earth" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2563eb" stop-opacity=".3"/><stop offset=".3" stop-color="#166534" stop-opacity=".38"/><stop offset=".55" stop-color="#8b5a2b" stop-opacity=".34"/><stop offset=".78" stop-color="#16a34a" stop-opacity=".32"/><stop offset="1" stop-color="#2563eb" stop-opacity=".3"/></linearGradient><linearGradient id="earthFull" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#2563eb" stop-opacity=".42"/><stop offset=".3" stop-color="#166534" stop-opacity=".45"/><stop offset=".5" stop-color="#8b5a2b" stop-opacity=".4"/><stop offset=".7" stop-color="#16a34a" stop-opacity=".42"/><stop offset="1" stop-color="#1d4ed8" stop-opacity=".45"/></linearGradient></defs></svg>
+<div id="app"></div>
+<div id="spop"><div class="ph"><span></span><a class="src" href="https://www.slownorth.com/blogs/journal/moon-phase-ritual-guide" target="_blank" rel="noopener" title="Moon Magic: A Guide To Living In Alignment With The Moon's Phases" aria-label="Source: Moon Magic: A Guide To Living In Alignment With The Moon's Phases"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></a></div><div class="sub"></div><div class="tm"></div></div>
+<div id="pop"><canvas></canvas><div class="ph"></div><div class="tm"></div></div>
+<script>
+// Data: data/moon_view_{zip}_{year}.json.gz from sun/data/moon/moon_view.py (Skyfield + JPL DE421 +
+// NASA MOON_ME frame + CAMS aerosol). Each event: R,U,V = screen right / zenith-up / toward viewer and
+// S = toward the Sun in lunar body coords; sky = atmospheric transmission at 650/550/450 nm.
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ZIP='22310',THROUGH_YEARS=4,HOUR=40,MEAN_DIAM=31.1;
+// Display only: deepen the physical sky cast a little so it reads on screen
+const COLOR_GAIN=0.45;
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],DOW=['S','M','T','W','Th','F','S'];
+const NAME={new:'New',first:'First Quarter',full:'Full',last:'Last Quarter'};
+const QN={new:'New Moon',first:'First Quarter',full:'Full Moon',last:'Last Quarter'};
+// the arrow crosses the horizon; its head lands on the far side of the line
+const ARROW={rise:'M10 7 L10 -10 M7.6 -7.6 L10 -10 L12.4 -7.6',set:'M10 13 L10 30 M7.6 27.6 L10 30 L12.4 27.6'};
+// curved horizon (Earth's limb), 5px off the moon: above it on rise, below on set
+const HORIZON={rise:'M-1.5 -4 Q10 -7 21.5 -4',set:'M-1.5 26 Q10 23 21.5 26'};
+// thin band just under the horizon: a slice of the same Earth image shown on hover
+// on hover, the horizon curve grows into the whole Earth: the circle through that curve
+// (chord 23, sagitta 1.5 → r≈44.8), shading the part of the moon's path we don't see
+const EARTH_R=44.8,EARTH_CY={rise:-5.5+EARTH_R,set:24.5+EARTH_R};
+// earth.png: pre-rendered once from NASA Blue Marble (22310 at the top limb); its disc fills 90% of the image
+const EARTH_IMG=EARTH_R*2/0.9;
+// the band shows the green of northern South America rather than the dark ocean at the limb
+const BAND_DX=8,BAND_DY=16;
+// hidden-line convention: the moon below the horizon is a dashed outline on the Earth
+// (rise: where it is now; set: where it goes, mirrored under the line)
+const EARTH={rise:'M-1.5 -4 Q10 -7 21.5 -4 L21.5 0 Q10 -3 -1.5 0 Z',set:'M-1.5 26 Q10 23 21.5 26 L21.5 30 Q10 27 -1.5 30 Z'};
+const pd=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fmt=m=>{const h=Math.floor(m/60),mm=Math.floor(m%60);return `${(h+11)%12+1}:${String(mm).padStart(2,'0')} ${h<12?'AM':'PM'}`};
+const hourLabel=h=>`${(h+11)%12+1} ${h<12?'AM':'PM'}`;
+const lab=x=>`${DN[x.getDay()]} ${MON[x.getMonth()]} ${x.getDate()}`;
+const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const set=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+let store={};try{store=JSON.parse(get('moon-notes')||'{}')}catch(e){}
+
+let TZ='America/New_York',STD=-300;
+let offFmt=null;
+// UTC offset in minutes of TZ at an instant (e.g. -240 for EDT)
+function offsetAt(ms){
+  offFmt=offFmt||new Intl.DateTimeFormat('en-US',{timeZone:TZ,timeZoneName:'shortOffset'});
+  const p=offFmt.formatToParts(new Date(ms)).find(x=>x.type==='timeZoneName').value.match(/GMT([+-])(\d+)(?::(\d+))?/);
+  return p?(p[1]==='-'?-1:1)*(+p[2]*60+(+p[3]||0)):0;
+}
+// Clock reading of an instant: wall clock (follows DST) or standard time all year
+function clock(ms,follow){
+  const t=new Date(ms+(follow?offsetAt(ms):STD)*60000);
+  return {date:t.toISOString().slice(0,10),min:t.getUTCHours()*60+t.getUTCMinutes()+t.getUTCSeconds()/60};
+}
+function dstChangeOn(date){
+  const [y,m,d]=date.split('-').map(Number),noon=Date.UTC(y,m-1,d,12);
+  const a=offsetAt(noon-12*3600e3),b=offsetAt(noon+12*3600e3);
+  return a===b?null:{from:a,to:b};
+}
+
+const SYNODIC=29.53059;
+
+let lunar=true;
+// Lunar: months are synodic cycles. Calendar: same date next month = one month, remainder in days.
+function span(a,b){
+  const days=Math.round((pd(b)-pd(a))/864e5);
+  if(days<30)return {mo:0,d:days};
+  if(lunar){let mo=Math.floor(days/SYNODIC),d=Math.round(days-mo*SYNODIC);if(d>=30){mo++;d=0}return {mo,d}}
+  const A=pd(a);let mo=0;
+  while(new Date(A.getFullYear(),A.getMonth()+mo+1,A.getDate())<=pd(b))mo++;
+  return {mo,d:Math.round((pd(b)-new Date(A.getFullYear(),A.getMonth()+mo,A.getDate()))/864e5)};
+}
+function ago(date,today,j){
+  if(date===today)return '0d';
+  const past=date<today,sign=past?'-':'+',{mo,d}=past?span(date,today):span(today,date);
+  if(!mo)return `${sign}${d}d`;
+  // a calendar month with no full moon (e.g. Feb 2037) has no icon to draw: fall back to text
+  return lunar&&j!=null?`${sign}${mo}<canvas class="mi" data-j="${j}" data-size="12"></canvas>${d?` ${d}d`:''}`:`${sign}${mo}mo${d?` ${d}d`:''}`;
+}
+function tint(sky){const mx=Math.max(...sky);return sky.map(v=>Math.pow(v/mx,COLOR_GAIN))}
+function dayTint(d){const t=[d.rise,d.peak,d.set].filter(Boolean).map(e=>tint(e.sky));return [0,1,2].map(c=>t.reduce((a,v)=>a+v[c],0)/t.length)}
+function phaseName(d,e){
+  if(d.phase)return QN[d.phase.type];
+  if(e.illum<3)return 'New Moon';if(e.illum>97)return 'Full Moon';
+  return (d.waxing?'Waxing ':'Waning ')+(e.illum<50?'Crescent':'Gibbous');
+}
+
+async function loadYear(y){
+  try{
+    const r=await fetch(`data/moon_view_${ZIP}_${y}.json.gz`,{cache:'no-cache'});
+    if(!r.ok)return null;
+    // hosts may already have decoded the gzip (Content-Encoding); only inflate real gzip bytes
+    const buf=new Uint8Array(await r.arrayBuffer());
+    if(buf[0]!==0x1f||buf[1]!==0x8b)return JSON.parse(new TextDecoder().decode(buf));
+    return await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
+  }catch(e){return null}
+}
+
+// Regroup every event onto the calendar day/minute of the chosen clock
+function regroup(events,phases,follow){
+  const days={};
+  const day=k=>days[k]||(days[k]={date:k,rise:null,peak:null,set:null,phase:null});
+  for(const e of events){
+    const ms=Date.parse(e.time),c=clock(ms,follow),d=day(c.date);
+    if(!d[e.kind])d[e.kind]={...e,min:c.min,shifted:false,ms};
+  }
+  const ph=phases.map(p=>{const ms=Date.parse(p.time),c=clock(ms,follow);day(c.date).phase={...p,min:c.min};return {...p,date:c.date}});
+  // events that land after a DST switch on its day read an hour off from the day before
+  for(const d of Object.values(days)){
+    const ch=dstChangeOn(d.date);if(!ch)continue;
+    d.dst=true;
+    for(const k of ['rise','peak','set'])if(d[k]&&offsetAt(d[k].ms)===ch.to)d[k].shifted=true;
+  }
+  return {days,news:ph.filter(p=>p.type==='new').map(p=>p.date)};
+}
+
+let jobs=[],MONTHS=[];
+function job(e,size,t,day){jobs.push({e,size,t,day});return jobs.length-1}
+
+function marker(e,kind,d){
+  const j=job(e,20,tint(e.sky),d);
+  const svg=kind==='peak'?'':`<svg viewBox="0 0 20 20"><image class="earth" href="earth.png" x="${10-EARTH_IMG/2}" y="${EARTH_CY[kind]-EARTH_IMG/2}" width="${EARTH_IMG}" height="${EARTH_IMG}"/><circle class="earth" cx="10" cy="${kind==='rise'?10:40}" r="9.6" fill="none" stroke="rgba(255,255,255,.9)" stroke-width=".9" stroke-dasharray="2 1.4"/><defs><clipPath id="eb${j}"><path d="${EARTH[kind]}"/></clipPath></defs><image class="band" href="earth.png" clip-path="url(#eb${j})" x="${10-EARTH_IMG/2-BAND_DX}" y="${EARTH_CY[kind]-EARTH_IMG/2-BAND_DY}" width="${EARTH_IMG}" height="${EARTH_IMG}"/><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round"><path d="${HORIZON[kind]}" stroke-width="1.4"/><path d="${ARROW[kind]}" stroke-width="1.1"/></g></svg>`;
+  return {min:e.min,html:dy=>{const y=e.min/60*HOUR+dy;return `<div class="mk ${kind}${y<24?' lo':y>24*HOUR-26?' hi':''}" style="top:${y.toFixed(1)}px"><em>${fmt(e.min)}</em><i></i><div class="body" data-j="${j}"><canvas data-j="${j}"></canvas>${kind==='rise'?`<canvas class="risen" data-j="${j}"></canvas>`:''}${svg}</div>${kind==='peak'?'':`<b class="hv">Moon ${kind==='rise'?'Rising':'Setting'}</b>`}</div>`}};
+}
+
+// Prototype: the intention cycle from the Slow North moon ritual guide, mapped onto the real phase days.
+// Day of each quarter phase gets its own cell; the days between take the following stage.
+// Goal work = the waxing half, the day after New Moon up to the day before Full Moon.
+const STAGE_ON={new:'Intend',first:'Act',full:'Celebrate',last:'Reflect'};
+const STAGE_AFTER={new:'Begin',first:'Refine',full:'Release',last:'Rest'};
+const STAGE_INFO={
+  Intend:['New Moon','Set the goal for this cycle.'],
+  Begin:['Waxing Crescent','First small steps. Daily affirmations, keep momentum.'],
+  Act:['First Quarter','Commit. Take one concrete step, make the plan real.'],
+  Refine:['Waxing Gibbous','Review progress and adjust the details.'],
+  Celebrate:['Full Moon','Mark what came to fruition. Gratitude.'],
+  Release:['Waning Gibbous','Let go of what is not working. Declutter.'],
+  Reflect:['Last Quarter','Look back on the cycle. Forgive, close loops.'],
+  Rest:['Waning Crescent','Sleep, recover, do less before the next New Moon.'],
+};
+// stage spans for a cycle: the day of each quarter phase, then the days up to the next one
+function stagesOf(list){
+  const ev=list.map((d,i)=>d.phase?{i,t:d.phase.type}:null).filter(Boolean),segs=[];
+  ev.forEach((e,k)=>{
+    segs.push({a:e.i,b:e.i,name:STAGE_ON[e.t],on:true});
+    const end=(k+1<ev.length?ev[k+1].i:list.length)-1;
+    if(end>e.i)segs.push({a:e.i+1,b:end,name:STAGE_AFTER[e.t]});
+  });
+  return segs;
+}
+const WORK=new Set(['Begin','Act','Refine']);
+// Sections are lunar cycles (New Moon to the day before the next) or calendar months, per the Months toggle.
+function sections(news,today){
+  const y0=+today.slice(0,4),out=[];
+  if(lunar){
+    // from the cycle that holds Jan 1 of this year through every cycle that ends by Dec 31 of year + THROUGH_YEARS
+    const horizon=(y0+THROUGH_YEARS+1)+'-01-01';
+    let i=Math.max(0,news.findLastIndex(d=>d<=y0+'-01-01'));
+    for(;i+1<news.length&&news[i+1]<=horizon;i++){
+      const ny=news[i].slice(0,4);
+      out.push({key:news[i],a:pd(news[i]),b:new Date(pd(news[i+1]).getTime()-864e5),title:(a,b)=>`${lab(a)} - ${lab(b)}`,
+        moon:news.filter(x=>x.slice(0,4)===ny&&x<=news[i]).length});
+    }
+  }else{
+    for(let y=y0;y<=y0+THROUGH_YEARS;y++)for(let m=0;m<12;m++)
+      out.push({a:new Date(y,m,1),b:new Date(y,m+1,0),title:a=>MONTH_NAMES[a.getMonth()]});
+  }
+  return out;
+}
+// One pass over every day, in order: waxing/waning and the ritual stage each day is in, so a section that
+// starts mid-cycle (a calendar month) still knows both, and a stage's hover shows its whole span.
+function annotate(days){
+  const all=Object.keys(days).sort().map(k=>days[k]);
+  let last=null;
+  for(const d of all){if(d.phase)last=d.phase.type;d.waxing=last==='new'||last==='first'}
+  for(const g of stagesOf(all)){const st={name:g.name,on:g.on,a:all[g.a].date,b:all[g.b].date};for(let k=g.a;k<=g.b;k++)all[k].stage=st}
+}
+function stageRuns(list){
+  const runs=[];
+  list.forEach((d,k)=>{if(!d.stage)return;const r=runs.at(-1);if(r&&r.st===d.stage&&r.b===k-1)r.b=k;else runs.push({a:k,b:k,st:d.stage})});
+  return runs;
+}
+function render(days,news,follow){
+  jobs=[];
+  const today=clock(Date.now(),follow).date;
+  annotate(days);
+  const mi=new Map(MONTHS.map((c,k)=>[clock(Date.parse(c.new_utc),follow).date,k]));
+  const app=document.getElementById('app');app.innerHTML='';
+  let shownYear=0;
+  for(const S of sections(news,today)){
+    const {a,b}=S;
+    const list=[];for(let d=new Date(a);d<=b;d.setDate(d.getDate()+1)){const x=days[iso(d)];if(x)list.push(x)}
+    if(!list.length)continue;
+    const fi=list.findIndex(d=>d.phase&&d.phase.type==='full');
+    // the 'one lunar month' icon is this section's real full moon
+    const fullJ=fi>=0?job(list[fi].phase,11,[1,1,1],list[fi]):null;
+    // a year heading the first time a section reaches into that year
+    const yr=b.getFullYear(),yh=yr>shownYear?`<h1 class="yr">${yr}</h1>`:'';shownYear=Math.max(shownYear,yr);
+    // lunar: a new-moon emoji carrying this moon's number in its year
+    const badge=S.moon?`<span class="mn" title="Moon ${S.moon}">🌑<b>${S.moon}</b></span>`:'';
+    const k=S.key!=null?mi.get(S.key):undefined,dd=k!=null&&fi>=0;
+    const ddAttr=dd?` class="dd" tabindex="0" aria-expanded="false" data-mi="${k}" data-fj="${job(list[fi].phase,72,dayTint(list[fi]),list[fi])}"`:'';
+    let h=yh+`<h2${ddAttr}>${badge}${S.title(a,b)}<small>${list.length}d</small>${dd?'<svg class="car" width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="#666" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 2l6 6 6-6"/></svg>':''}</h2>${dd?'<div class="mdet"></div>':''}<div class="scroll"><div class="grid" style="--n:${list.length}"><div class="hd ax"></div>`;
+    h+=list.map(d=>{const x=pd(d.date);return `<div class="day" data-date="${d.date}">${DOW[x.getDay()]} ${x.getDate()}${d.dst?'<b class="dstn">*DST Observed</b>':''}</div>`}).join('');
+    h+='<div class="top ax"></div>';
+    h+=list.map((d,k)=>{const e=d.peak||d.set||d.rise;const j=job(e,52*e.diam/MEAN_DIAM,dayTint(d),d);
+      const title=d.phase?NAME[d.phase.type]:k===list.length-1?'Last Day':'';
+      return `<div class="top" style="grid-column:${k+2}"><canvas data-j="${j}"></canvas>${title?`<i></i><span${d.phase?'':' class="end"'}>${title}<small>${ago(d.date,today,fullJ)}</small></span>`:''}</div>`}).join('');
+    h+='<div class="rit" style="grid-column:2 / span '+list.length+'">'+stageRuns(list).map(g=>`<div class="rit-seg${WORK.has(g.st.name)?' work':''}${g.st.on?' on':''}" style="grid-column:${g.a+1} / ${g.b+2}" data-name="${g.st.name}" data-a="${g.st.a}" data-b="${g.st.b}">${g.st.name}</div>`).join('')+'</div>';
+    h+='<div class="time ax">'+[...Array(24)].map((_,k)=>k?`<b style="top:${k*HOUR}px">${hourLabel(k)}</b>`:'').join('')+'</div>';
+    h+=list.map(d=>{
+      const ms=[d.rise&&marker(d.rise,'rise',d),d.peak&&marker(d.peak,'peak',d),d.set&&marker(d.set,'set',d)].filter(Boolean).sort((p,q)=>p.min-q.min);
+      let last=-1e9;
+      // a marker (label + tick + moon) is ~42px tall; push a crowded one down rather than overlap
+      const out=ms.map(m=>{const y=m.min/60*HOUR,c=Math.max(y,last+42);last=c;return m.html(c-y)}).join('');
+      return `<div class="time" data-date="${d.date}"><div class="note" contenteditable="true" data-k="${d.date}"></div>${out}</div>`;
+    }).join('');
+    const sec=document.createElement('section');sec.innerHTML=h+'</div></div>';
+    // for the scroll index: the moon's number in its year, and any months that begin in this section
+    if(S.moon)sec.dataset.moon=S.moon;
+    sec.dataset.months=list.filter(d=>d.date.endsWith('-01')).map(d=>+d.date.slice(5,7)-1).join(',');
+    if(yh)sec.classList.add('has-yr');sec.dataset.year=a.getFullYear();sec.dataset.endyear=b.getFullYear();sec.dataset.startmonth=a.getMonth();
+    app.appendChild(sec);
+  }
+  document.querySelectorAll('.note').forEach(n=>{n.textContent=store[n.dataset.k]||'';n.addEventListener('input',()=>{store[n.dataset.k]=n.innerText;set('moon-notes',JSON.stringify(store))})});
+}
+
+function nowLine(top,label){
+  const l=document.createElement('div');l.className='now';l.style.top=top+'px';
+  if(label)l.innerHTML=`<em class="glass">${label}</em>`;
+  return l;
+}
+let follow=false;
+function tickNow(){
+  const c=clock(Date.now(),follow),y=c.min/60*HOUR;
+  document.querySelectorAll('.day.today').forEach(e=>e.classList.remove('today'));
+  document.querySelectorAll('.now').forEach(e=>e.remove());
+  document.querySelectorAll(`.day[data-date="${c.date}"]`).forEach(e=>e.classList.add('today'));
+  document.querySelectorAll(`.time[data-date="${c.date}"]`).forEach(e=>{
+    e.appendChild(nowLine(y));
+    const ax=e.parentElement.querySelector('.time.ax');if(!ax)return;
+    ax.appendChild(nowLine(y,fmt(c.min)));
+    ax.querySelectorAll('b').forEach(b=>b.style.visibility=Math.abs(parseFloat(b.style.top)-y)<16?'hidden':'');
+  });
+}
+function jumpToday(){
+  const h=document.querySelector('.day.today');if(!h)return;
+  const sc=h.closest('.scroll'),ax=sc.querySelector('.ax').offsetWidth;
+  sc.scrollLeft+=h.getBoundingClientRect().left-sc.getBoundingClientRect().left-ax;
+  window.scrollTo(0,h.closest('section').getBoundingClientRect().top+scrollY-document.getElementById('hdr').offsetHeight-8);
+}
+
+let draw=null;
+function loadTexture(){
+  return new Promise(res=>{const img=new Image();img.onload=()=>{
+    const tc=document.createElement('canvas');tc.width=img.width;tc.height=img.height;
+    const tx=tc.getContext('2d');tx.drawImage(img,0,0);
+    res({T:tx.getImageData(0,0,tc.width,tc.height).data,TW:tc.width,TH:tc.height});
+  };img.src='moon2k.jpg'});
+}
+function makeDraw({T,TW,TH}){
+  const dpr=Math.max(2,window.devicePixelRatio||1);
+  return (cv,m,size,tn)=>{
+    const css=Math.round(size),N=Math.round(css*dpr),half=N/2;
+    cv.width=N;cv.height=N;cv.style.width=css+'px';cv.style.height=css+'px';
+    const ctx=cv.getContext('2d'),out=ctx.createImageData(N,N),o=out.data;
+    // earthshine keeps the dark side faintly visible, so a new moon reads as barely lit, not a black disc
+    const earthshine=0.22+0.06*(1-m.illum/100),{R,U,V,S}=m;
+    for(let py=0;py<N;py++)for(let px=0;px<N;px++){
+      const x=(px+0.5-half)/half,y=-(py+0.5-half)/half,r2=x*x+y*y;
+      if(r2>1.0+2/N)continue;
+      const z=Math.sqrt(Math.max(0,1-r2));
+      const nx=x*R[0]+y*U[0]+z*V[0],ny=x*R[1]+y*U[1]+z*V[1],nz=x*R[2]+y*U[2]+z*V[2];
+      const lat=Math.asin(Math.max(-1,Math.min(1,nz))),lon=Math.atan2(ny,nx);
+      const ti=(Math.min(TH-1,((0.5-lat/Math.PI)*TH)|0)*TW+Math.min(TW-1,((lon/(2*Math.PI)+0.5)*TW)|0))*4;
+      const ci=nx*S[0]+ny*S[1]+nz*S[2];
+      // Lommel-Seeliger law: why the full moon looks flat instead of a shaded ball
+      const lit=ci>0?2*ci/(ci+z+1e-6):0;
+      const term=Math.min(1,Math.max(0,(ci+0.012)/0.024));
+      const sun=lit*term*1.55,k=(py*N+px)*4;
+      for(let c=0;c<3;c++)o[k+c]=Math.max(10,Math.min(255,Math.round(255*Math.pow(Math.min(1,T[ti+c]/255*(sun*tn[c]+earthshine)),1/1.15))));
+      o[k+3]=Math.round(255*Math.min(1,Math.max(0,(1-Math.sqrt(r2))*half+0.5)));
+    }
+    ctx.putImageData(out,0,0);
+  };
+}
+
+const hov=document.createElement('div');hov.className='hov';hov.innerHTML='<em class="glass"></em>';
+document.addEventListener('mousemove',e=>{
+  const cell=e.target.closest('.time:not(.ax)');
+  if(!cell){hov.remove();return}
+  const y=e.clientY-cell.getBoundingClientRect().top,m=Math.max(0,Math.min(1439,Math.round(y/HOUR*60)));
+  hov.style.top=(m/60*HOUR)+'px';hov.firstChild.textContent=fmt(m);
+  if(hov.parentElement!==cell)cell.appendChild(hov);
+});
+document.addEventListener('mouseleave',()=>hov.remove());
+const spop=document.getElementById('spop');
+const span2=(a,b)=>{const A=pd(a),B=pd(b),n=Math.round((B-A)/864e5)+1;return [n,a===b?lab(A):`${lab(A)} – ${lab(B)}`]};
+let spopHide=0;
+document.addEventListener('mouseover',e=>{
+  if(e.target.closest('#spop')){clearTimeout(spopHide);return}
+  const t=e.target.closest('.rit-seg');
+  if(!t){clearTimeout(spopHide);spopHide=setTimeout(()=>spop.style.display='none',200);return}
+  clearTimeout(spopHide);
+  const [n,range]=span2(t.dataset.a,t.dataset.b),[phase,what]=STAGE_INFO[t.dataset.name];
+  spop.querySelector('.ph span').textContent=t.dataset.name;
+  spop.querySelector('.sub').textContent=`${phase} · ${what}`;
+  spop.querySelector('.tm').textContent=`${range} · ${n}d`;
+  spop.style.display='block';
+  const r=t.getBoundingClientRect(),w=spop.offsetWidth;
+  spop.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+'px';
+  spop.style.top=(r.bottom+6)+'px';
+});
+document.addEventListener('scroll',()=>spop.style.display='none',true);
+// Lunar header dropdown: this moon month's facts from data/moon_months_{ZIP}.json, with sources
+const LINK_SVG=document.querySelector('#spop .src svg').outerHTML;
+const when=(utc,withTime=true)=>{const c=clock(Date.parse(utc),follow);return lab(pd(c.date))+(withTime?`, ${fmt(c.min)}`:'')};
+const km=n=>n.toLocaleString('en-US')+' km';
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+function monthFacts(c){
+  const f=c.full,li=[];
+  if(f){
+    li.push(`Full Moon ${when(f.utc)} · ${km(f.distance_km)}${f.kind?` · ${cap(f.kind)}`:''}`);
+    if(f.blue)li.push(f.blue==='calendar'?'Blue Moon: the second full moon this calendar month':'Seasonal Blue Moon: the third of four full moons this season');
+  }
+  if(c.perigee)li.push(`Closest ${when(c.perigee.utc,false)} · ${km(c.perigee.km)}`);
+  if(c.apogee)li.push(`Farthest ${when(c.apogee.utc,false)} · ${km(c.apogee.km)}`);
+  if(c.solar_eclipse){const e=c.solar_eclipse;li.push(`${e.type} solar eclipse ${when(e.utc)} · ${e.visible?'partly visible from here':'not visible from here'}`)}
+  if(c.lunar_eclipse){const e=c.lunar_eclipse;li.push(`${e.type} lunar eclipse ${when(e.utc)} · ${e.visible?'visible from here':'not visible from here'}`)}
+  if(c.season)li.push(`${c.season.name} ${when(c.season.utc)}`);
+  for(const m of c.showers||[])li.push(`${m.name} peak ${when(m.utc,false)} · Moon ${m.illum}% lit${m.illum<30?', dark skies':m.illum>70?', washed out':''}`);
+  return li;
+}
+// each lunar header toggles its own details section, filled on first open
+function toggleMonth(h){
+  const c=MONTHS[+h.dataset.mi],box=h.nextElementSibling;if(!c||!box?.classList.contains('mdet'))return;
+  if(!box.childElementCount){
+    const f=c.full;
+    box.innerHTML=`<canvas></canvas><div><div class="nm">${f?f.name:'Moon month'}</div><div class="tg">${f&&f.kind?cap(f.kind)+' · ':''}${f?f.illum+'% lit at full':''}</div>`+
+      `<ul>${monthFacts(c).map(x=>`<li>${x}</li>`).join('')}</ul>`+
+      (c.astro?`<p class="rd">${c.astro.reading.join(' ')}</p>`:'')+
+      `<div class="lk">${c.sources.map(x=>`<a href="${x.url}" target="_blank" rel="noopener" title="${x.title}">Link ${LINK_SVG}</a>`).join('')}</div></div>`;
+    const j=jobs[+h.dataset.fj];if(j&&draw)draw(box.querySelector('canvas'),j.e,j.size,j.t);
+  }
+  const open=!h.classList.contains('open');
+  h.classList.toggle('open',open);h.setAttribute('aria-expanded',String(open));
+  // sections below moved: refresh cached positions for the timeline and jumps
+  requestAnimationFrame(()=>{measure();syncActive()});
+}
+document.addEventListener('click',e=>{const h=e.target.closest('h2.dd');if(h)toggleMonth(h)});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches?.('h2.dd')){e.preventDefault();toggleMonth(e.target)}});
+const pop=document.getElementById('pop');
+document.addEventListener('mouseover',e=>{
+  const t=e.target.closest('.mk .body,.top>canvas');
+  if(!t||!draw){if(!e.target.closest('#pop'))pop.style.display='none';return}
+  const{e:ev,t:tn,day:d}=jobs[+t.dataset.j];
+  draw(pop.querySelector('canvas'),ev,120,tn);
+  pop.querySelector('.ph').textContent=phaseName(d,ev);
+  pop.querySelector('.tm').innerHTML=[d.rise&&[d.rise.min,'Rise'],d.peak&&[d.peak.min,'Peak'],d.set&&[d.set.min,'Set']].filter(Boolean).sort((a,b)=>a[0]-b[0]).map(([m,l])=>`${fmt(m)} ${l}`).join('<br>');
+  pop.style.display='block';
+  const r=t.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
+  let x=r.right+10,y=r.top+r.height/2-h/2;
+  if(x+w>innerWidth-8)x=r.left-w-10;
+  pop.style.left=x+'px';pop.style.top=Math.max(8,Math.min(innerHeight-h-8,y))+'px';
+});
+document.addEventListener('scroll',()=>pop.style.display='none',true);
+
+// ~1,000 days of moons: size every canvas now (no layout shift), paint each one only as it nears the viewport
+let drawObs=null,pumping=false;const drawQ=[];
+// paint queued moons ~6ms per frame so scrolling never waits on a whole section of them
+function pump(){if(pumping)return;pumping=true;requestAnimationFrame(function step(){
+  const end=performance.now()+6;
+  while(drawQ.length&&performance.now()<end){const cv=drawQ.shift();if(!cv.isConnected)continue;const j=jobs[+cv.dataset.j];draw(cv,j.e,+cv.dataset.size||j.size,j.t)}
+  if(drawQ.length)requestAnimationFrame(step);else pumping=false})}
+function lazyDraw(){
+  drawObs?.disconnect();
+  drawQ.length=0;
+  drawObs=new IntersectionObserver(es=>{es.forEach(x=>{if(!x.isIntersecting)return;drawObs.unobserve(x.target);drawQ.push(x.target)});pump()},{rootMargin:'600px'});
+  document.querySelectorAll('canvas[data-j]').forEach(cv=>{const j=jobs[+cv.dataset.j],css=Math.round(+cv.dataset.size||j.size)+'px';
+    cv.style.width=css;cv.style.height=css;drawObs.observe(cv)});
+}
+const hdr=document.getElementById('hdr');let hideTimer=0;
+const showHeader=()=>{hdr.classList.remove('hide');clearTimeout(hideTimer);hideTimer=setTimeout(()=>hdr.classList.add('hide'),5000)};
+document.addEventListener('mousemove',e=>{if(e.clientY<=hdr.offsetHeight+24)showHeader()});
+// Year float + fisheye month scrubber. Section tops are cached so scrolling never forces a layout.
+const yfloat=document.getElementById('yfloat'),scrub=document.getElementById('scrub'),track=scrub.querySelector('.track');
+const SHOW_MS=3000,PAD=10,LABEL_GAP=22,MAG=4,SIGMA=0.04;
+let secs=[],tops=[],items=[],active=-1,hovered=-1,picked=null,focusU=null,hdrH=60;
+let shownUntil=0,showTimer=0,auto=false,anim=0;let tableRight=1e9;
+const viewTop=()=>hdr.classList.contains('hide')?0:hdrH;
+const secIndexAt=y=>{let k=0;for(let i=0;i<tops.length;i++){if(tops[i]<=y)k=i;else break}return k};
+// Where a jump lands: the section's heading near the top, read live (off-screen sections only have
+// estimated heights until they render). A year heading sits at the top; a month/cycle heading leaves
+// room for the floating year card above it.
+function secTarget(i){
+  const s=secs[i];if(!s)return scrollY;
+  const yr=s.querySelector('h1.yr'),h=yr||s.querySelector('h2');
+  return Math.max(0,Math.round(h.getBoundingClientRect().top+scrollY-viewTop()-(yr?12:(yfloat.offsetHeight||48)+20)));
+}
+
+function measure(){
+  hdrH=hdr.offsetHeight;
+  secs=[...document.querySelectorAll('#app>section')];
+  tops=secs.map(s=>s.getBoundingClientRect().top+scrollY);
+  // the timeline's 2px line starts 2px outside the tables' right border
+  const tbl=document.querySelector('#app .scroll');
+  if(tbl){tableRight=tbl.getBoundingClientRect().right;scrub.style.right=(document.documentElement.clientWidth-tableRight-4-14)+'px'}
+  // estimated heights for off-screen sections = a real rendered one, so positions barely drift
+  const vis=secs.find(s=>{const r=s.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight&&!s.classList.contains('has-yr')});
+  if(vis){const app=document.getElementById('app'),h=vis.getBoundingClientRect().height,yh=document.querySelector('h1.yr');
+    app.style.setProperty('--sec-h',h+'px');if(yh)app.style.setProperty('--sec-yr-h',(h+yh.getBoundingClientRect().height+parseFloat(getComputedStyle(yh).marginTop)+parseFloat(getComputedStyle(yh).marginBottom))+'px')}
+  // the floating year sits exactly over where the year headings are, text aligned to theirs
+  const h=document.querySelector('h1.yr');if(h)yfloat.style.left=(h.getBoundingClientRect().left-12)+'px';
+}
+// The timeline shows a sliding window of WINDOW_YEARS around the month on screen; it slides as you
+// scroll, and while scrubbing, holding the pointer at either end reveals the previous / next year.
+const WINDOW_YEARS=3;let allItems=[],winStart=0,activeObj=null,hoverObj=null;
+function buildScrub(){
+  measure();
+  allItems=[];
+  const firstYear=secs.length?+secs[0].dataset.endyear:0;
+  secs.forEach((s,i)=>{
+    const months=s.dataset.months?s.dataset.months.split(',').map(Number):[];
+    const entries=lunar?[{name:`Moon ${s.dataset.moon}`,q:(+s.dataset.moon-1)%3===0,first:s.dataset.moon==='1'}]
+      :months.map(m=>({name:MONTH_NAMES[m],m,q:m%3===0,first:m===0}));
+    entries.forEach(e=>{
+      // a month that begins in the cycle's second calendar year (Jan in a Dec–Jan cycle) belongs to the end year
+      const year=lunar?+s.dataset.year:(e.m<+s.dataset.startmonth?+s.dataset.endyear:+s.dataset.year);
+      // the page opens on the cycle holding Jan 1, which starts the year before: file it under the first year
+      const win=Math.max(year,firstYear);
+      // a year gets its own tick and label, just before its first month
+      if(e.first)allItems.push({name:String(year),sec:i,year,win,yearMark:true});
+      allItems.push({...e,sec:i,year,win,yearMark:false});
+    });
+  });
+  activeObj=null;hoverObj=null;winStart=0;
+  syncActive(true);
+}
+const winYears=()=>{const ys=allItems.map(it=>it.win);return [ys[0]??0,ys.at(-1)??0]};
+const clampWin=w=>{const [a,b]=winYears();return Math.max(a,Math.min(b-WINDOW_YEARS+1,w))};
+function renderWindow(w){
+  winStart=clampWin(w);
+  items=allItems.filter(it=>it.win>=winStart&&it.win<winStart+WINDOW_YEARS);
+  items.forEach((it,k)=>it.u=items.length>1?k/(items.length-1):0.5);
+  track.innerHTML=items.map(it=>`<a class="${it.yearMark?'yr':''}"><span>${it.yearMark?`<b>${it.year}</b>`:`<em>${it.name}</em>`}</span><i></i></a>`).join('');
+  [...track.children].forEach((a,k)=>items[k].el=a);
+  active=items.indexOf(activeObj);hovered=items.indexOf(hoverObj);
+  items[active]?.el.classList.add('on');items[hovered]?.el.classList.add('hv');
+  layout();
+}
+// Fisheye (Sarkar–Brown graphical fisheye): g(x)=(d+1)x/(dx+1) on each side of the focus. The focus point
+// maps to itself, so the month under the pointer stays under it, the ends stay put, and the map is smooth
+// and monotonic (no jumps). Labels: years, the active and the hovered month always; others by priority
+// with a minimum gap (tighter while magnified); then shown labels are pushed apart so none overlap.
+const DISTORT=3;
+function fisheye(u){
+  if(focusU==null)return u;
+  const c=focusU,g=x=>(DISTORT+1)*x/(DISTORT*x+1);
+  return u>=c?c+(1-c)*g((u-c)/Math.max(1e-6,1-c)):c-c*g((c-u)/Math.max(1e-6,c));
+}
+function layout(){
+  const T=track.clientHeight-2*PAD,n=items.length;if(!n)return;
+  const ys=items.map(it=>fisheye(it.u)*T),gap=focusU==null?LABEL_GAP:14;
+  const order=items.map((_,k)=>k).sort((a,b)=>pri(b)-pri(a)),shown=[];
+  for(const k of order){const y=ys[k];
+    items[k].lab=k===active||k===hovered||items[k].yearMark||shown.every(s=>Math.abs(s-y)>=gap);
+    if(items[k].lab)shown.push(y)}
+  // push overlapping labels apart (the tick stays true; only the text shifts)
+  const labs=items.map((it,k)=>k).filter(k=>items[k].lab).sort((a,b)=>ys[a]-ys[b]);
+  const ly={},h=k=>items[k].yearMark?17:13;
+  labs.forEach((k,i)=>{const prev=labs[i-1];ly[k]=prev==null?ys[k]:Math.max(ys[k],ly[prev]+(h(prev)+h(k))/2)});
+  for(let i=labs.length-1;i>=0;i--){const k=labs[i],next=labs[i+1];const lim=next==null?T:ly[next]-(h(next)+h(k))/2;if(ly[k]>lim)ly[k]=lim}
+  items.forEach((it,k)=>{it.y=ys[k];it.el.style.transform=`translateY(${(PAD+ys[k]).toFixed(1)}px)`;
+    it.el.firstChild.style.transform=it.lab?`translateY(${(ly[k]-ys[k]).toFixed(1)}px)`:'';
+    it.el.classList.toggle('lab',it.lab)});
+}
+const pri=k=>(k===active||k===hovered?9:0)+(items[k].yearMark?4:0)+(items[k].q?2:0)+(focusU!=null?1/(1+Math.abs(items[k].u-focusU)*40):0);
+
+// active = the month the page is showing, always: scrolling, a hover preview landing, or a click
+function syncActive(force){
+  if(!allItems.length)return;
+  const i=secIndexAt(scrollY+viewTop()+40);let obj=allItems.find(it=>!it.yearMark);
+  for(const it of allItems){if(it.yearMark)continue;if(it.sec<=i)obj=it;else break}
+  if(obj===activeObj&&!force)return;
+  activeObj=obj;
+  const want=clampWin(obj.win-1);
+  // the window slides with the page, but holds still under the pointer while scrubbing
+  if(force||(focusU==null&&(obj.win<winStart||obj.win>=winStart+WINDOW_YEARS||want!==winStart)))renderWindow(want);
+  else{items[active]?.el.classList.remove('on');active=items.indexOf(obj);items[active]?.el.classList.add('on');layout()}
+}
+function setHovered(k){if(k===hovered)return;items[hovered]?.el.classList.remove('hv');hovered=k;hoverObj=items[k]??null;items[k]?.el.classList.add('hv')}
+
+// target may be a number or a function read every frame, so the scroll converges on the live position
+function animateTo(target){
+  cancelAnimationFrame(anim);auto=true;
+  const at=typeof target==='function'?target:()=>target;
+  const from=scrollY,t0=performance.now(),dur=Math.min(260,120+Math.abs(at()-from)/80);
+  let settle=0;
+  const step=t=>{const p=Math.min(1,(t-t0)/dur),e=1-(1-p)**3,y=at();
+    if(p<1){scrollTo(0,from+(y-from)*e);anim=requestAnimationFrame(step);return}
+    scrollTo(0,y);
+    // sections that just rendered can shift the target; re-aim until it holds
+    if(Math.abs(at()-scrollY)>1&&settle++<4){anim=requestAnimationFrame(step);return}
+    auto=false;measure();syncActive()};
+  anim=requestAnimationFrame(step);
+}
+function show(){if(!scrub.classList.contains('on')){measure();syncActive()}clearTimeout(showTimer);showTimer=setTimeout(hide,SHOW_MS);updateFloat(true)}
+function hide(){if(scrub.matches(':hover'))return show();scrub.classList.remove('live');updateFloat(false)}
+function updateFloat(on){
+  const top=viewTop();yfloat.style.transform=`translateY(${top}px)`;
+  const i=secIndexAt(scrollY+top);
+  // year heading of the section at the top, if its heading has scrolled away; hidden while any heading is on screen
+  let yr=null,inView=false;
+  secs.forEach((s,k)=>{if(!s.classList.contains('has-yr'))return;const y=tops[k]-scrollY;
+    if(y+70<=top)yr=s.querySelector('h1.yr').textContent;else if(y<innerHeight)inView=true});
+  if(yr&&!inView)yfloat.textContent=yr;
+  yfloat.classList.toggle('on',on&&!!yr&&!inView);
+  scrub.classList.toggle('on',on);
+}
+let settleT=0;
+addEventListener('scroll',()=>{show();syncActive();clearTimeout(settleT);settleT=setTimeout(()=>{if(!auto){measure();syncActive()}},150)},{passive:true});
+addEventListener('resize',()=>{buildScrub();updateFloat(scrub.classList.contains('on'))});
+new MutationObserver(()=>updateFloat(scrub.classList.contains('on'))).observe(hdr,{attributes:true,attributeFilter:['class']});
+
+// hover previews (snappy scroll to that month), leaving returns to the picked month, click picks
+// Intent: the timeline only scrubs once the pointer moves up or down along it (>=10px, mostly vertical).
+// Arriving sideways is reaching for a cell underneath: nothing moves, a click goes straight through to
+// the cell, and resting 2s fades the timeline so the cells are usable; moving to the far right edge or
+// out of the timeline's column brings it back.
+const DWELL_MS=2000,ARM_PX=10;let dwell=0,dwellAt=null,armed=false,enterAt=null;
+function enterPeek(){clearTimeout(dwell);scrub.classList.add('peek');focusU=null;setHovered(-1);layout()}
+function exitPeek(){scrub.classList.remove('peek')}
+// the far right edge of the window summons the timeline
+// Summon zone: the whole margin right of the tables (never over a cell), or leaving the window
+// through its right side, so a quick flick to the edge that overshoots still counts.
+const EDGE_PX=3;
+const inEdge=x=>x>=Math.min(innerWidth-EDGE_PX,tableRight+1);
+function summon(){exitPeek();scrub.classList.add('live');show()}
+document.addEventListener('mousemove',e=>{if(inEdge(e.clientX))summon()});
+document.documentElement.addEventListener('mouseleave',e=>{if(e.clientX>=tableRight-40&&e.clientY>0&&e.clientY<innerHeight)summon()});
+document.addEventListener('mousemove',e=>{
+  if(!scrub.classList.contains('peek'))return;
+  const r=scrub.getBoundingClientRect();
+  if(inEdge(e.clientX)||e.clientX<r.left||e.clientY<r.top||e.clientY>r.bottom)exitPeek();
+});
+document.documentElement.addEventListener('mouseleave',e=>{if(e.clientX<tableRight-40)exitPeek()});
+// The pointer is the focus. The hovered month is the nearest in display space, with a 3px dead zone so it
+// can't flicker between neighbours; the preview scroll waits ~60ms of steadiness so a fast sweep doesn't
+// drag the page through every month on the way.
+let previewT=0,edgeT=0,edgeDir=0;
+function scrubTo(e){
+  const r=track.getBoundingClientRect(),T=r.height-2*PAD,y=Math.max(0,Math.min(T,e.clientY-r.top-PAD));
+  focusU=y/T;
+  layout();
+  let k=0,best=1e9;items.forEach((it,j)=>{const dd=Math.abs(it.y-y);if(dd<best){best=dd;k=j}});
+  if(hovered>=0&&k!==hovered&&Math.abs(items[hovered].y-y)<best+3)k=hovered;
+  if(k!==hovered){setHovered(k);layout();clearTimeout(previewT);previewT=setTimeout(()=>{if(hovered>=0){const i=items[hovered].sec;animateTo(()=>secTarget(i))}},60)}
+  // holding at an end of the track slides the window a year that way
+  const dir=y<=8?-1:y>=T-8?1:0;
+  if(dir!==edgeDir){edgeDir=dir;clearInterval(edgeT);
+    if(dir)edgeT=setInterval(()=>{const w=clampWin(winStart+dir);if(w===winStart)return;
+      renderWindow(w);
+      // keep hovering the end the pointer is on, now showing the newly revealed year
+      const k2=dir>0?items.length-1:0;setHovered(-1);setHovered(k2);layout();const i2=items[k2].sec;animateTo(()=>secTarget(i2))},550)}
+}
+track.addEventListener('mouseenter',e=>{armed=false;enterAt=[e.clientX,e.clientY]});
+track.addEventListener('mousemove',e=>{
+  show();
+  if(!armed){
+    if(!enterAt)enterAt=[e.clientX,e.clientY];
+    const dx=Math.abs(e.clientX-enterAt[0]),dy=Math.abs(e.clientY-enterAt[1]);
+    if(dy>=ARM_PX&&dy>dx){armed=true;clearTimeout(dwell);if(picked==null)picked=scrollY}
+    else{
+      if(!dwellAt||Math.hypot(e.clientX-dwellAt[0],e.clientY-dwellAt[1])>6){dwellAt=[e.clientX,e.clientY];clearTimeout(dwell);dwell=setTimeout(enterPeek,DWELL_MS)}
+      return;
+    }
+  }
+  scrubTo(e);
+});
+track.addEventListener('mouseleave',e=>{
+  if(!inEdge(e.clientX))scrub.classList.remove('live');
+  clearInterval(edgeT);edgeDir=0;clearTimeout(previewT);clearTimeout(dwell);dwellAt=null;armed=false;enterAt=null;
+  focusU=null;setHovered(-1);syncActive(true);
+  if(picked!=null){animateTo(picked);picked=null}
+});
+// before scrubbing, a press belongs to the cell underneath
+track.addEventListener('mousedown',e=>{
+  if(armed)return;
+  e.preventDefault();enterPeek();
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const note=el?.closest?.('[contenteditable]');
+  if(note){note.focus();const sel=getSelection(),rg=document.caretRangeFromPoint?.(e.clientX,e.clientY);if(rg){sel.removeAllRanges();sel.addRange(rg)}}
+  else el?.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:e.clientX,clientY:e.clientY}));
+});
+track.addEventListener('click',()=>{if(!armed||hovered<0)return;const i=items[hovered].sec;picked=()=>secTarget(i);clearTimeout(previewT);animateTo(picked)});
+
+
+(async()=>{
+  try{history.scrollRestoration='manual'}catch(e){}
+  showHeader();
+  const Y=new Date().getFullYear();
+  const [tex,months,...years]=await Promise.all([loadTexture(),fetch(`data/moon_months_${ZIP}.json`,{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null),...[...Array(THROUGH_YEARS+2)].map((_,k)=>loadYear(Y-1+k))]);
+  MONTHS=months?.cycles||[];
+  const ok=years.filter(Boolean),events=[],phases=[];
+  if(ok[0])TZ=ok[0].timezone;
+  for(const yd of ok){for(const d of yd.days)for(const k of ['rise','peak','set'])if(d[k])events.push({...d[k],kind:k});phases.push(...yd.phases)}
+  phases.sort((a,b)=>a.time<b.time?-1:1);
+  // standard time = the zone's smaller UTC offset across the year
+  STD=Math.min(offsetAt(Date.UTC(Y,0,15)),offsetAt(Date.UTC(Y,6,15)));
+  draw=makeDraw(tex);
+  const box=document.getElementById('follow-dst');
+  follow=get('follow-dst')==='1';box.checked=follow;
+  const build=()=>{
+    const {days,news}=regroup(events,phases,follow);
+    render(days,news,follow);
+    tickNow();
+    requestAnimationFrame(()=>requestAnimationFrame(jumpToday));
+    lazyDraw();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{buildScrub();updateFloat(false);
+      // sections near the landing spot render a moment later; re-read positions once they have
+      setTimeout(()=>{measure();syncActive(true)},400)}));
+  };
+  const lbox=document.getElementById('lunar-months');
+  lunar=get('lunar-months')!=='0';lbox.checked=lunar;
+  [box,lbox].forEach(b=>b.dispatchEvent(new Event('sync')));
+  lbox.addEventListener('change',()=>{lunar=lbox.checked;set('lunar-months',lunar?'1':'0');build()});
+  box.addEventListener('change',()=>{follow=box.checked;set('follow-dst',follow?'1':'0');build()});
+  build();
+  setInterval(tickNow,30000);
+})();
+</script>
+<script type="module">
+// Toggles from ~/Documents/ui-components (@mannan-ui/segmented-toggle); they drive the hidden checkboxes the page reads
+import { mountSegmentedToggle } from './vendor/segmented-toggle.vanilla.js';
+const wire=(el,box,ariaLabel,options)=>{
+  const sync=()=>t.setValue(box.checked?options[0].value:options[1].value);
+  const t=mountSegmentedToggle(el,{options,ariaLabel,theme:'mono',value:box.checked?options[0].value:options[1].value,
+    // returning a Promise holds the toggle busy: paint the loader, rebuild, then release
+    onChange:v=>new Promise(res=>{const on=v===options[0].value;if(box.checked===on)return res();
+      box.checked=on;
+      // let the lens finish sliding first: the rebuild blocks the main thread and would freeze labels mid-transition
+      setTimeout(()=>{box.dispatchEvent(new Event('change'));requestAnimationFrame(()=>res())},340)})});
+  // the saved setting lands on the checkbox after the data loads; 'sync' redraws the toggle to match
+  box.addEventListener('sync',sync);addEventListener('load',sync);setTimeout(sync,0);
+};
+wire(document.getElementById('months-toggle'),document.getElementById('lunar-months'),'Months',[{value:'lunar',label:'Lunar'},{value:'calendar',label:'Regular'}]);
+wire(document.getElementById('dst-toggle'),document.getElementById('follow-dst'),'Clock',[{value:'dst',label:'On'},{value:'standard',label:'Off'}]);
+</script></body></html>

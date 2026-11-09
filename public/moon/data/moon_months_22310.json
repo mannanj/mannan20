@@ -1,0 +1,2762 @@
+{
+ "zipcode": "22310",
+ "timezone": "America/New_York",
+ "cycles": [
+  {
+   "new_utc": "2025-01-29T12:35:58+00:00",
+   "next_new_utc": "2025-02-28T00:44:49+00:00",
+   "full": {
+    "utc": "2025-02-12T13:53:23+00:00",
+    "name": "Snow Moon",
+    "distance_km": 392626,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-02-02T02:59:59+00:00",
+    "km": 367484
+   },
+   "apogee": {
+    "utc": "2025-02-18T00:59:59+00:00",
+    "km": 404847
+   },
+   "astro": {
+    "new_sign": "Aquarius",
+    "full_sign": "Leo",
+    "reading": [
+     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-02-28T00:44:49+00:00",
+   "next_new_utc": "2025-03-29T10:57:49+00:00",
+   "full": {
+    "utc": "2025-03-14T06:54:39+00:00",
+    "name": "Worm Moon",
+    "distance_km": 401499,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-03-01T20:59:59+00:00",
+    "km": 361980
+   },
+   "apogee": {
+    "utc": "2025-03-17T15:59:59+00:00",
+    "km": 405729
+   },
+   "lunar_eclipse": {
+    "utc": "2025-03-14T06:58:45+00:00",
+    "type": "Total",
+    "visible": true
+   },
+   "season": {
+    "utc": "2025-03-20T09:01:28+00:00",
+    "name": "March equinox"
+   },
+   "astro": {
+    "new_sign": "Pisces",
+    "full_sign": "Virgo",
+    "reading": [
+     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-03-29T10:57:49+00:00",
+   "next_new_utc": "2025-04-27T19:31:09+00:00",
+   "full": {
+    "utc": "2025-04-13T00:22:15+00:00",
+    "name": "Pink Moon",
+    "distance_km": 406006,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-03-30T04:59:59+00:00",
+    "km": 358135
+   },
+   "apogee": {
+    "utc": "2025-04-13T22:59:59+00:00",
+    "km": 406287
+   },
+   "solar_eclipse": {
+    "utc": "2025-03-29T10:47:49+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "showers": [
+    {
+     "name": "Lyrids",
+     "utc": "2025-04-22T04:58:47+00:00",
+     "illum": 38
+    }
+   ],
+   "astro": {
+    "new_sign": "Aries",
+    "full_sign": "Libra",
+    "reading": [
+     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-04-27T19:31:09+00:00",
+   "next_new_utc": "2025-05-27T03:02:21+00:00",
+   "full": {
+    "utc": "2025-05-12T16:55:56+00:00",
+    "name": "Flower Moon",
+    "distance_km": 405279,
+    "illum": 99.9,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-05-26T00:59:59+00:00",
+    "km": 359014
+   },
+   "apogee": {
+    "utc": "2025-05-11T00:59:59+00:00",
+    "km": 406256
+   },
+   "showers": [
+    {
+     "name": "Eta Aquariids",
+     "utc": "2025-05-05T18:20:26+00:00",
+     "illum": 62
+    }
+   ],
+   "astro": {
+    "new_sign": "Taurus",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-05-27T03:02:21+00:00",
+   "next_new_utc": "2025-06-25T10:31:37+00:00",
+   "full": {
+    "utc": "2025-06-11T07:43:50+00:00",
+    "name": "Strawberry Moon",
+    "distance_km": 399741,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-06-23T04:59:59+00:00",
+    "km": 363160
+   },
+   "apogee": {
+    "utc": "2025-06-07T10:59:59+00:00",
+    "km": 405580
+   },
+   "season": {
+    "utc": "2025-06-21T02:42:15+00:00",
+    "name": "June solstice"
+   },
+   "astro": {
+    "new_sign": "Gemini",
+    "full_sign": "Sagittarius",
+    "reading": [
+     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-06-25T10:31:37+00:00",
+   "next_new_utc": "2025-07-24T19:11:12+00:00",
+   "full": {
+    "utc": "2025-07-10T20:36:47+00:00",
+    "name": "Buck Moon",
+    "distance_km": 390732,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-07-20T13:59:59+00:00",
+    "km": 368012
+   },
+   "apogee": {
+    "utc": "2025-07-05T01:59:59+00:00",
+    "km": 404662
+   },
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Capricorn",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-07-24T19:11:12+00:00",
+   "next_new_utc": "2025-08-23T06:06:33+00:00",
+   "full": {
+    "utc": "2025-08-09T07:55:04+00:00",
+    "name": "Sturgeon Moon",
+    "distance_km": 380057,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-08-14T17:59:59+00:00",
+    "km": 369254
+   },
+   "apogee": {
+    "utc": "2025-08-01T20:59:59+00:00",
+    "km": 404201
+   },
+   "showers": [
+    {
+     "name": "Perseids",
+     "utc": "2025-08-12T11:01:44+00:00",
+     "illum": 88
+    }
+   ],
+   "astro": {
+    "new_sign": "Leo",
+    "full_sign": "Aquarius",
+    "reading": [
+     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-08-23T06:06:33+00:00",
+   "next_new_utc": "2025-09-21T19:54:07+00:00",
+   "full": {
+    "utc": "2025-09-07T18:08:53+00:00",
+    "name": "Corn Moon",
+    "distance_km": 369671,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-09-10T11:59:59+00:00",
+    "km": 364756
+   },
+   "apogee": {
+    "utc": "2025-08-29T15:59:59+00:00",
+    "km": 404585
+   },
+   "lunar_eclipse": {
+    "utc": "2025-09-07T18:11:47+00:00",
+    "type": "Total",
+    "visible": false
+   },
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-09-21T19:54:07+00:00",
+   "next_new_utc": "2025-10-21T12:25:10+00:00",
+   "full": {
+    "utc": "2025-10-07T03:47:36+00:00",
+    "name": "Harvest Moon",
+    "distance_km": 361457,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-10-08T12:59:59+00:00",
+    "km": 359808
+   },
+   "apogee": {
+    "utc": "2025-09-26T09:59:59+00:00",
+    "km": 405578
+   },
+   "solar_eclipse": {
+    "utc": "2025-09-21T19:42:07+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "season": {
+    "utc": "2025-09-22T18:19:20+00:00",
+    "name": "September equinox"
+   },
+   "showers": [
+    {
+     "name": "Draconids",
+     "utc": "2025-10-08T10:24:59+00:00",
+     "illum": 98
+    },
+    {
+     "name": "Orionids",
+     "utc": "2025-10-21T03:37:10+00:00",
+     "illum": 0
+    }
+   ],
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Aries",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-10-21T12:25:10+00:00",
+   "next_new_utc": "2025-11-20T06:47:16+00:00",
+   "full": {
+    "utc": "2025-11-05T13:19:18+00:00",
+    "name": "Hunter's Moon",
+    "distance_km": 356979,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-11-05T22:59:59+00:00",
+    "km": 356830
+   },
+   "apogee": {
+    "utc": "2025-10-23T23:59:59+00:00",
+    "km": 406462
+   },
+   "showers": [
+    {
+     "name": "Leonids",
+     "utc": "2025-11-17T09:08:14+00:00",
+     "illum": 7
+    }
+   ],
+   "astro": {
+    "new_sign": "Libra",
+    "full_sign": "Taurus",
+    "reading": [
+     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-11-20T06:47:16+00:00",
+   "next_new_utc": "2025-12-20T01:43:20+00:00",
+   "full": {
+    "utc": "2025-12-04T23:14:04+00:00",
+    "name": "Cold Moon",
+    "distance_km": 357218,
+    "illum": 99.8,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2025-12-04T10:59:59+00:00",
+    "km": 356967
+   },
+   "apogee": {
+    "utc": "2025-12-17T05:59:59+00:00",
+    "km": 406301
+   },
+   "showers": [
+    {
+     "name": "Geminids",
+     "utc": "2025-12-13T23:09:34+00:00",
+     "illum": 30
+    }
+   ],
+   "astro": {
+    "new_sign": "Scorpio",
+    "full_sign": "Gemini",
+    "reading": [
+     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2025-12-20T01:43:20+00:00",
+   "next_new_utc": "2026-01-18T19:51:58+00:00",
+   "full": {
+    "utc": "2026-01-03T10:02:54+00:00",
+    "name": "Wolf Moon",
+    "distance_km": 362312,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-01-01T21:59:59+00:00",
+    "km": 360361
+   },
+   "apogee": {
+    "utc": "2026-01-13T20:59:59+00:00",
+    "km": 405405
+   },
+   "season": {
+    "utc": "2025-12-21T15:03:05+00:00",
+    "name": "December solstice"
+   },
+   "showers": [
+    {
+     "name": "Ursids",
+     "utc": "2025-12-22T07:32:33+00:00",
+     "illum": 5
+    },
+    {
+     "name": "Quadrantids",
+     "utc": "2026-01-03T12:48:25+00:00",
+     "illum": 100
+    }
+   ],
+   "astro": {
+    "new_sign": "Sagittarius",
+    "full_sign": "Cancer",
+    "reading": [
+     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-01-18T19:51:58+00:00",
+   "next_new_utc": "2026-02-17T12:01:09+00:00",
+   "full": {
+    "utc": "2026-02-01T22:09:14+00:00",
+    "name": "Snow Moon",
+    "distance_km": 371386,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-01-29T21:59:59+00:00",
+    "km": 365894
+   },
+   "apogee": {
+    "utc": "2026-02-10T16:59:59+00:00",
+    "km": 404537
+   },
+   "astro": {
+    "new_sign": "Capricorn",
+    "full_sign": "Leo",
+    "reading": [
+     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-02-17T12:01:09+00:00",
+   "next_new_utc": "2026-03-19T01:23:28+00:00",
+   "full": {
+    "utc": "2026-03-03T11:37:53+00:00",
+    "name": "Worm Moon",
+    "distance_km": 382612,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-02-24T22:59:59+00:00",
+    "km": 370172
+   },
+   "apogee": {
+    "utc": "2026-03-10T13:59:59+00:00",
+    "km": 404344
+   },
+   "lunar_eclipse": {
+    "utc": "2026-03-03T11:33:41+00:00",
+    "type": "Total",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2026-02-17T12:12:09+00:00",
+    "type": "Annular",
+    "visible": false
+   },
+   "astro": {
+    "new_sign": "Aquarius",
+    "full_sign": "Virgo",
+    "reading": [
+     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-03-19T01:23:28+00:00",
+   "next_new_utc": "2026-04-17T11:51:48+00:00",
+   "full": {
+    "utc": "2026-04-02T02:11:57+00:00",
+    "name": "Pink Moon",
+    "distance_km": 393595,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-03-22T11:59:59+00:00",
+    "km": 366884
+   },
+   "apogee": {
+    "utc": "2026-04-07T07:59:59+00:00",
+    "km": 404935
+   },
+   "season": {
+    "utc": "2026-03-20T14:45:57+00:00",
+    "name": "March equinox"
+   },
+   "astro": {
+    "new_sign": "Pisces",
+    "full_sign": "Libra",
+    "reading": [
+     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-04-17T11:51:48+00:00",
+   "next_new_utc": "2026-05-16T20:01:02+00:00",
+   "full": {
+    "utc": "2026-05-01T17:23:10+00:00",
+    "name": "Flower Moon",
+    "distance_km": 402000,
+    "illum": 99.8,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-04-19T06:59:59+00:00",
+    "km": 361646
+   },
+   "apogee": {
+    "utc": "2026-05-04T21:59:59+00:00",
+    "km": 405815
+   },
+   "showers": [
+    {
+     "name": "Lyrids",
+     "utc": "2026-04-22T10:40:55+00:00",
+     "illum": 32
+    },
+    {
+     "name": "Eta Aquariids",
+     "utc": "2026-05-06T00:12:06+00:00",
+     "illum": 84
+    }
+   ],
+   "astro": {
+    "new_sign": "Aries",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-05-16T20:01:02+00:00",
+   "next_new_utc": "2026-06-15T02:54:10+00:00",
+   "full": {
+    "utc": "2026-05-31T08:45:12+00:00",
+    "name": "Flower Moon",
+    "distance_km": 406135,
+    "illum": 99.8,
+    "kind": "micromoon",
+    "blue": "calendar"
+   },
+   "perigee": {
+    "utc": "2026-05-17T13:59:59+00:00",
+    "km": 358082
+   },
+   "apogee": {
+    "utc": "2026-06-01T03:59:59+00:00",
+    "km": 406359
+   },
+   "astro": {
+    "new_sign": "Taurus",
+    "full_sign": "Sagittarius",
+    "reading": [
+     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-06-15T02:54:10+00:00",
+   "next_new_utc": "2026-07-14T09:43:36+00:00",
+   "full": {
+    "utc": "2026-06-29T23:56:41+00:00",
+    "name": "Strawberry Moon",
+    "distance_km": 405254,
+    "illum": 99.9,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-07-13T07:59:59+00:00",
+    "km": 359103
+   },
+   "apogee": {
+    "utc": "2026-06-28T06:59:59+00:00",
+    "km": 406278
+   },
+   "season": {
+    "utc": "2026-06-21T08:24:30+00:00",
+    "name": "June solstice"
+   },
+   "astro": {
+    "new_sign": "Gemini",
+    "full_sign": "Capricorn",
+    "reading": [
+     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-07-14T09:43:36+00:00",
+   "next_new_utc": "2026-08-12T17:36:44+00:00",
+   "full": {
+    "utc": "2026-07-29T14:35:43+00:00",
+    "name": "Buck Moon",
+    "distance_km": 399618,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-08-10T10:59:59+00:00",
+    "km": 363265
+   },
+   "apogee": {
+    "utc": "2026-07-25T16:59:59+00:00",
+    "km": 405575
+   },
+   "showers": [
+    {
+     "name": "Perseids",
+     "utc": "2026-08-12T16:47:23+00:00",
+     "illum": 0
+    }
+   ],
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Aquarius",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-08-12T17:36:44+00:00",
+   "next_new_utc": "2026-09-11T03:26:59+00:00",
+   "full": {
+    "utc": "2026-08-28T04:18:32+00:00",
+    "name": "Sturgeon Moon",
+    "distance_km": 390398,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-09-06T20:59:59+00:00",
+    "km": 368228
+   },
+   "apogee": {
+    "utc": "2026-08-22T07:59:59+00:00",
+    "km": 404678
+   },
+   "lunar_eclipse": {
+    "utc": "2026-08-28T04:12:53+00:00",
+    "type": "Partial",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2026-08-12T17:45:44+00:00",
+    "type": "Total",
+    "visible": true
+   },
+   "astro": {
+    "new_sign": "Leo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-09-11T03:26:59+00:00",
+   "next_new_utc": "2026-10-10T15:50:05+00:00",
+   "full": {
+    "utc": "2026-09-26T16:49:02+00:00",
+    "name": "Harvest Moon",
+    "distance_km": 379436,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-10-01T20:59:59+00:00",
+    "km": 369301
+   },
+   "apogee": {
+    "utc": "2026-09-19T02:59:59+00:00",
+    "km": 404261
+   },
+   "season": {
+    "utc": "2026-09-23T00:05:13+00:00",
+    "name": "September equinox"
+   },
+   "showers": [
+    {
+     "name": "Draconids",
+     "utc": "2026-10-08T16:12:39+00:00",
+     "illum": 4
+    }
+   ],
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Aries",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-10-10T15:50:05+00:00",
+   "next_new_utc": "2026-11-09T07:02:06+00:00",
+   "full": {
+    "utc": "2026-10-26T04:11:48+00:00",
+    "name": "Hunter's Moon",
+    "distance_km": 368873,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-10-28T17:59:59+00:00",
+    "km": 364386
+   },
+   "apogee": {
+    "utc": "2026-10-16T22:59:59+00:00",
+    "km": 404681
+   },
+   "showers": [
+    {
+     "name": "Orionids",
+     "utc": "2026-10-21T09:22:17+00:00",
+     "illum": 75
+    }
+   ],
+   "astro": {
+    "new_sign": "Libra",
+    "full_sign": "Taurus",
+    "reading": [
+     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-11-09T07:02:06+00:00",
+   "next_new_utc": "2026-12-09T00:51:51+00:00",
+   "full": {
+    "utc": "2026-11-24T14:53:33+00:00",
+    "name": "Beaver Moon",
+    "distance_km": 360765,
+    "illum": 99.8,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-11-25T20:59:59+00:00",
+    "km": 359336
+   },
+   "apogee": {
+    "utc": "2026-11-13T17:59:59+00:00",
+    "km": 405650
+   },
+   "showers": [
+    {
+     "name": "Leonids",
+     "utc": "2026-11-17T14:52:07+00:00",
+     "illum": 51
+    }
+   ],
+   "astro": {
+    "new_sign": "Scorpio",
+    "full_sign": "Gemini",
+    "reading": [
+     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2026-12-09T00:51:51+00:00",
+   "next_new_utc": "2027-01-07T20:24:23+00:00",
+   "full": {
+    "utc": "2026-12-24T01:28:14+00:00",
+    "name": "Cold Moon",
+    "distance_km": 356738,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2026-12-24T08:59:59+00:00",
+    "km": 356648
+   },
+   "apogee": {
+    "utc": "2026-12-11T06:59:59+00:00",
+    "km": 406436
+   },
+   "season": {
+    "utc": "2026-12-21T20:50:14+00:00",
+    "name": "December solstice"
+   },
+   "showers": [
+    {
+     "name": "Geminids",
+     "utc": "2026-12-14T04:52:32+00:00",
+     "illum": 22
+    },
+    {
+     "name": "Ursids",
+     "utc": "2026-12-22T13:20:22+00:00",
+     "illum": 96
+    },
+    {
+     "name": "Quadrantids",
+     "utc": "2027-01-03T18:37:06+00:00",
+     "illum": 14
+    }
+   ],
+   "astro": {
+    "new_sign": "Sagittarius",
+    "full_sign": "Cancer",
+    "reading": [
+     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-01-07T20:24:23+00:00",
+   "next_new_utc": "2027-02-06T15:56:07+00:00",
+   "full": {
+    "utc": "2027-01-22T12:17:23+00:00",
+    "name": "Wolf Moon",
+    "distance_km": 357644,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-01-21T21:59:59+00:00",
+    "km": 357288
+   },
+   "apogee": {
+    "utc": "2027-02-03T13:59:59+00:00",
+    "km": 406167
+   },
+   "astro": {
+    "new_sign": "Capricorn",
+    "full_sign": "Leo",
+    "reading": [
+     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-02-06T15:56:07+00:00",
+   "next_new_utc": "2027-03-08T09:29:28+00:00",
+   "full": {
+    "utc": "2027-02-20T23:23:39+00:00",
+    "name": "Snow Moon",
+    "distance_km": 363306,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-02-19T07:59:59+00:00",
+    "km": 361030
+   },
+   "apogee": {
+    "utc": "2027-03-03T05:59:59+00:00",
+    "km": 405183
+   },
+   "lunar_eclipse": {
+    "utc": "2027-02-20T23:12:54+00:00",
+    "type": "Penumbral",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2027-02-06T16:00:07+00:00",
+    "type": "Annular",
+    "visible": false
+   },
+   "astro": {
+    "new_sign": "Aquarius",
+    "full_sign": "Virgo",
+    "reading": [
+     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-03-08T09:29:28+00:00",
+   "next_new_utc": "2027-04-06T23:51:09+00:00",
+   "full": {
+    "utc": "2027-03-22T10:43:47+00:00",
+    "name": "Worm Moon",
+    "distance_km": 372527,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-03-19T04:59:59+00:00",
+    "km": 366461
+   },
+   "apogee": {
+    "utc": "2027-03-31T01:59:59+00:00",
+    "km": 404287
+   },
+   "season": {
+    "utc": "2027-03-20T20:24:41+00:00",
+    "name": "March equinox"
+   },
+   "astro": {
+    "new_sign": "Pisces",
+    "full_sign": "Libra",
+    "reading": [
+     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-04-06T23:51:09+00:00",
+   "next_new_utc": "2027-05-06T10:58:38+00:00",
+   "full": {
+    "utc": "2027-04-20T22:27:09+00:00",
+    "name": "Pink Moon",
+    "distance_km": 383429,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-04-14T00:59:59+00:00",
+    "km": 370041
+   },
+   "apogee": {
+    "utc": "2027-04-27T20:59:59+00:00",
+    "km": 404129
+   },
+   "showers": [
+    {
+     "name": "Lyrids",
+     "utc": "2027-04-22T16:21:48+00:00",
+     "illum": 96
+    },
+    {
+     "name": "Eta Aquariids",
+     "utc": "2027-05-06T05:48:07+00:00",
+     "illum": 0
+    }
+   ],
+   "astro": {
+    "new_sign": "Aries",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-05-06T10:58:38+00:00",
+   "next_new_utc": "2027-06-04T19:40:21+00:00",
+   "full": {
+    "utc": "2027-05-20T10:59:01+00:00",
+    "name": "Flower Moon",
+    "distance_km": 393901,
+    "illum": 99.8,
+    "kind": null,
+    "blue": "seasonal"
+   },
+   "perigee": {
+    "utc": "2027-05-09T19:59:59+00:00",
+    "km": 366657
+   },
+   "apogee": {
+    "utc": "2027-05-25T14:59:59+00:00",
+    "km": 404766
+   },
+   "astro": {
+    "new_sign": "Taurus",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-06-04T19:40:21+00:00",
+   "next_new_utc": "2027-07-04T03:02:05+00:00",
+   "full": {
+    "utc": "2027-06-19T00:44:21+00:00",
+    "name": "Strawberry Moon",
+    "distance_km": 401952,
+    "illum": 99.9,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-06-06T14:59:59+00:00",
+    "km": 361717
+   },
+   "apogee": {
+    "utc": "2027-06-22T04:59:59+00:00",
+    "km": 405675
+   },
+   "season": {
+    "utc": "2027-06-21T14:10:50+00:00",
+    "name": "June solstice"
+   },
+   "astro": {
+    "new_sign": "Gemini",
+    "full_sign": "Sagittarius",
+    "reading": [
+     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-07-04T03:02:05+00:00",
+   "next_new_utc": "2027-08-02T10:05:14+00:00",
+   "full": {
+    "utc": "2027-07-18T15:44:55+00:00",
+    "name": "Buck Moon",
+    "distance_km": 405979,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-07-04T20:59:59+00:00",
+    "km": 358289
+   },
+   "apogee": {
+    "utc": "2027-07-19T11:59:59+00:00",
+    "km": 406209
+   },
+   "lunar_eclipse": {
+    "utc": "2027-07-18T16:03:00+00:00",
+    "type": "Penumbral",
+    "visible": false
+   },
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Capricorn",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-08-02T10:05:14+00:00",
+   "next_new_utc": "2027-08-31T17:41:11+00:00",
+   "full": {
+    "utc": "2027-08-17T07:28:41+00:00",
+    "name": "Sturgeon Moon",
+    "distance_km": 405081,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-08-30T15:59:59+00:00",
+    "km": 359197
+   },
+   "apogee": {
+    "utc": "2027-08-15T13:59:59+00:00",
+    "km": 406098
+   },
+   "lunar_eclipse": {
+    "utc": "2027-08-17T07:13:47+00:00",
+    "type": "Penumbral",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2027-08-02T10:06:14+00:00",
+    "type": "Total",
+    "visible": false
+   },
+   "showers": [
+    {
+     "name": "Perseids",
+     "utc": "2027-08-12T22:34:57+00:00",
+     "illum": 84
+    }
+   ],
+   "astro": {
+    "new_sign": "Leo",
+    "full_sign": "Aquarius",
+    "reading": [
+     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-08-31T17:41:11+00:00",
+   "next_new_utc": "2027-09-30T02:36:05+00:00",
+   "full": {
+    "utc": "2027-09-15T23:03:31+00:00",
+    "name": "Harvest Moon",
+    "distance_km": 399353,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-09-27T19:59:59+00:00",
+    "km": 363434
+   },
+   "apogee": {
+    "utc": "2027-09-11T22:59:59+00:00",
+    "km": 405411
+   },
+   "season": {
+    "utc": "2027-09-23T06:01:43+00:00",
+    "name": "September equinox"
+   },
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-09-30T02:36:05+00:00",
+   "next_new_utc": "2027-10-29T13:36:34+00:00",
+   "full": {
+    "utc": "2027-10-15T13:47:00+00:00",
+    "name": "Hunter's Moon",
+    "distance_km": 389939,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-10-25T04:59:59+00:00",
+    "km": 368620
+   },
+   "apogee": {
+    "utc": "2027-10-09T15:59:59+00:00",
+    "km": 404567
+   },
+   "showers": [
+    {
+     "name": "Draconids",
+     "utc": "2027-10-08T22:00:38+00:00",
+     "illum": 63
+    },
+    {
+     "name": "Orionids",
+     "utc": "2027-10-21T15:18:14+00:00",
+     "illum": 62
+    }
+   ],
+   "astro": {
+    "new_sign": "Libra",
+    "full_sign": "Aries",
+    "reading": [
+     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-10-29T13:36:34+00:00",
+   "next_new_utc": "2027-11-28T03:24:26+00:00",
+   "full": {
+    "utc": "2027-11-14T03:25:55+00:00",
+    "name": "Beaver Moon",
+    "distance_km": 378766,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-11-18T23:59:59+00:00",
+    "km": 369327
+   },
+   "apogee": {
+    "utc": "2027-11-06T11:59:59+00:00",
+    "km": 404221
+   },
+   "showers": [
+    {
+     "name": "Leonids",
+     "utc": "2027-11-17T20:46:17+00:00",
+     "illum": 83
+    }
+   ],
+   "astro": {
+    "new_sign": "Scorpio",
+    "full_sign": "Taurus",
+    "reading": [
+     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-11-28T03:24:26+00:00",
+   "next_new_utc": "2027-12-27T20:12:19+00:00",
+   "full": {
+    "utc": "2027-12-13T16:08:48+00:00",
+    "name": "Cold Moon",
+    "distance_km": 368142,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2027-12-16T02:59:59+00:00",
+    "km": 364007
+   },
+   "apogee": {
+    "utc": "2027-12-04T08:59:59+00:00",
+    "km": 404698
+   },
+   "season": {
+    "utc": "2027-12-22T02:42:09+00:00",
+    "name": "December solstice"
+   },
+   "showers": [
+    {
+     "name": "Geminids",
+     "utc": "2027-12-14T10:43:49+00:00",
+     "illum": 99
+    },
+    {
+     "name": "Ursids",
+     "utc": "2027-12-22T19:11:48+00:00",
+     "illum": 25
+    }
+   ],
+   "astro": {
+    "new_sign": "Sagittarius",
+    "full_sign": "Gemini",
+    "reading": [
+     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2027-12-27T20:12:19+00:00",
+   "next_new_utc": "2028-01-26T15:12:31+00:00",
+   "full": {
+    "utc": "2028-01-12T04:03:05+00:00",
+    "name": "Wolf Moon",
+    "distance_km": 360268,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-01-13T07:59:59+00:00",
+    "km": 359035
+   },
+   "apogee": {
+    "utc": "2028-01-01T03:59:59+00:00",
+    "km": 405662
+   },
+   "lunar_eclipse": {
+    "utc": "2028-01-12T04:13:03+00:00",
+    "type": "Partial",
+    "visible": true
+   },
+   "showers": [
+    {
+     "name": "Quadrantids",
+     "utc": "2028-01-04T00:20:54+00:00",
+     "illum": 40
+    }
+   ],
+   "astro": {
+    "new_sign": "Capricorn",
+    "full_sign": "Cancer",
+    "reading": [
+     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-01-26T15:12:31+00:00",
+   "next_new_utc": "2028-02-25T10:37:25+00:00",
+   "full": {
+    "utc": "2028-02-10T15:03:46+00:00",
+    "name": "Snow Moon",
+    "distance_km": 356720,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-02-10T19:59:59+00:00",
+    "km": 356677
+   },
+   "apogee": {
+    "utc": "2028-01-28T15:59:59+00:00",
+    "km": 406403
+   },
+   "solar_eclipse": {
+    "utc": "2028-01-26T15:07:31+00:00",
+    "type": "Annular",
+    "visible": true
+   },
+   "astro": {
+    "new_sign": "Aquarius",
+    "full_sign": "Leo",
+    "reading": [
+     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-02-25T10:37:25+00:00",
+   "next_new_utc": "2028-03-26T04:31:19+00:00",
+   "full": {
+    "utc": "2028-03-11T01:06:05+00:00",
+    "name": "Worm Moon",
+    "distance_km": 358070,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-03-10T07:59:59+00:00",
+    "km": 357603
+   },
+   "apogee": {
+    "utc": "2028-03-22T23:59:59+00:00",
+    "km": 406070
+   },
+   "season": {
+    "utc": "2028-03-20T02:17:08+00:00",
+    "name": "March equinox"
+   },
+   "astro": {
+    "new_sign": "Pisces",
+    "full_sign": "Virgo",
+    "reading": [
+     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-03-26T04:31:19+00:00",
+   "next_new_utc": "2028-04-24T19:46:56+00:00",
+   "full": {
+    "utc": "2028-04-09T10:26:37+00:00",
+    "name": "Pink Moon",
+    "distance_km": 363866,
+    "illum": 99.8,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-04-07T15:59:59+00:00",
+    "km": 361375
+   },
+   "apogee": {
+    "utc": "2028-04-19T14:59:59+00:00",
+    "km": 405069
+   },
+   "showers": [
+    {
+     "name": "Lyrids",
+     "utc": "2028-04-21T22:11:35+00:00",
+     "illum": 8
+    }
+   ],
+   "astro": {
+    "new_sign": "Aries",
+    "full_sign": "Libra",
+    "reading": [
+     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-04-24T19:46:56+00:00",
+   "next_new_utc": "2028-05-24T08:16:19+00:00",
+   "full": {
+    "utc": "2028-05-08T19:48:56+00:00",
+    "name": "Flower Moon",
+    "distance_km": 372913,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-05-05T10:59:59+00:00",
+    "km": 366557
+   },
+   "apogee": {
+    "utc": "2028-05-17T09:59:59+00:00",
+    "km": 404241
+   },
+   "showers": [
+    {
+     "name": "Eta Aquariids",
+     "utc": "2028-05-05T11:35:39+00:00",
+     "illum": 85
+    }
+   ],
+   "astro": {
+    "new_sign": "Taurus",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-05-24T08:16:19+00:00",
+   "next_new_utc": "2028-06-22T18:27:33+00:00",
+   "full": {
+    "utc": "2028-06-07T06:08:49+00:00",
+    "name": "Strawberry Moon",
+    "distance_km": 383574,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-05-31T06:59:59+00:00",
+    "km": 369797
+   },
+   "apogee": {
+    "utc": "2028-06-14T04:59:59+00:00",
+    "km": 404183
+   },
+   "season": {
+    "utc": "2028-06-20T20:02:00+00:00",
+    "name": "June solstice"
+   },
+   "astro": {
+    "new_sign": "Gemini",
+    "full_sign": "Sagittarius",
+    "reading": [
+     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-06-22T18:27:33+00:00",
+   "next_new_utc": "2028-07-22T03:01:43+00:00",
+   "full": {
+    "utc": "2028-07-06T18:10:49+00:00",
+    "name": "Buck Moon",
+    "distance_km": 393955,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-06-26T03:59:59+00:00",
+    "km": 366555
+   },
+   "apogee": {
+    "utc": "2028-07-11T21:59:59+00:00",
+    "km": 404910
+   },
+   "lunar_eclipse": {
+    "utc": "2028-07-06T18:19:46+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Capricorn",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-07-22T03:01:43+00:00",
+   "next_new_utc": "2028-08-20T10:43:51+00:00",
+   "full": {
+    "utc": "2028-08-05T08:09:49+00:00",
+    "name": "Sturgeon Moon",
+    "distance_km": 402068,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-07-23T21:59:59+00:00",
+    "km": 361649
+   },
+   "apogee": {
+    "utc": "2028-08-08T12:59:59+00:00",
+    "km": 405870
+   },
+   "solar_eclipse": {
+    "utc": "2028-07-22T02:55:43+00:00",
+    "type": "Total",
+    "visible": false
+   },
+   "showers": [
+    {
+     "name": "Perseids",
+     "utc": "2028-08-12T04:30:48+00:00",
+     "illum": 63
+    }
+   ],
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Aquarius",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-08-20T10:43:51+00:00",
+   "next_new_utc": "2028-09-18T18:23:45+00:00",
+   "full": {
+    "utc": "2028-09-03T23:47:35+00:00",
+    "name": "Corn Moon",
+    "distance_km": 406158,
+    "illum": 99.9,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-08-21T03:59:59+00:00",
+    "km": 358081
+   },
+   "apogee": {
+    "utc": "2028-09-04T19:59:59+00:00",
+    "km": 406392
+   },
+   "astro": {
+    "new_sign": "Leo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-09-18T18:23:45+00:00",
+   "next_new_utc": "2028-10-18T02:56:49+00:00",
+   "full": {
+    "utc": "2028-10-03T16:24:59+00:00",
+    "name": "Harvest Moon",
+    "distance_km": 405158,
+    "illum": 99.8,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-10-17T00:59:59+00:00",
+    "km": 359003
+   },
+   "apogee": {
+    "utc": "2028-10-01T20:59:59+00:00",
+    "km": 406256
+   },
+   "season": {
+    "utc": "2028-09-22T11:45:18+00:00",
+    "name": "September equinox"
+   },
+   "showers": [
+    {
+     "name": "Draconids",
+     "utc": "2028-10-08T03:52:07+00:00",
+     "illum": 82
+    }
+   ],
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Aries",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-10-18T02:56:49+00:00",
+   "next_new_utc": "2028-11-16T13:18:02+00:00",
+   "full": {
+    "utc": "2028-11-02T09:17:21+00:00",
+    "name": "Hunter's Moon",
+    "distance_km": 399076,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-11-14T05:59:59+00:00",
+    "km": 363595
+   },
+   "apogee": {
+    "utc": "2028-10-29T06:59:59+00:00",
+    "km": 405584
+   },
+   "showers": [
+    {
+     "name": "Orionids",
+     "utc": "2028-10-20T20:59:45+00:00",
+     "illum": 11
+    }
+   ],
+   "astro": {
+    "new_sign": "Libra",
+    "full_sign": "Taurus",
+    "reading": [
+     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-11-16T13:18:02+00:00",
+   "next_new_utc": "2028-12-16T02:06:19+00:00",
+   "full": {
+    "utc": "2028-12-02T01:40:14+00:00",
+    "name": "Cold Moon",
+    "distance_km": 389147,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2028-12-11T11:59:59+00:00",
+    "km": 369020
+   },
+   "apogee": {
+    "utc": "2028-11-25T23:59:59+00:00",
+    "km": 404767
+   },
+   "showers": [
+    {
+     "name": "Leonids",
+     "utc": "2028-11-17T02:27:29+00:00",
+     "illum": 1
+    },
+    {
+     "name": "Geminids",
+     "utc": "2028-12-13T16:27:04+00:00",
+     "illum": 7
+    }
+   ],
+   "astro": {
+    "new_sign": "Scorpio",
+    "full_sign": "Gemini",
+    "reading": [
+     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2028-12-16T02:06:19+00:00",
+   "next_new_utc": "2029-01-14T17:24:31+00:00",
+   "full": {
+    "utc": "2028-12-31T16:48:31+00:00",
+    "name": "Cold Moon",
+    "distance_km": 377603,
+    "illum": 100.0,
+    "kind": null,
+    "blue": "calendar"
+   },
+   "perigee": {
+    "utc": "2029-01-05T03:59:59+00:00",
+    "km": 368886
+   },
+   "apogee": {
+    "utc": "2028-12-23T20:59:59+00:00",
+    "km": 404448
+   },
+   "lunar_eclipse": {
+    "utc": "2028-12-31T16:52:04+00:00",
+    "type": "Total",
+    "visible": false
+   },
+   "season": {
+    "utc": "2028-12-21T08:19:39+00:00",
+    "name": "December solstice"
+   },
+   "showers": [
+    {
+     "name": "Ursids",
+     "utc": "2028-12-22T00:49:19+00:00",
+     "illum": 33
+    },
+    {
+     "name": "Quadrantids",
+     "utc": "2029-01-03T06:07:25+00:00",
+     "illum": 92
+    }
+   ],
+   "astro": {
+    "new_sign": "Sagittarius",
+    "full_sign": "Cancer",
+    "reading": [
+     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-01-14T17:24:31+00:00",
+   "next_new_utc": "2029-02-13T10:31:31+00:00",
+   "full": {
+    "utc": "2029-01-30T06:03:37+00:00",
+    "name": "Wolf Moon",
+    "distance_km": 367047,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-02-01T11:59:59+00:00",
+    "km": 363315
+   },
+   "apogee": {
+    "utc": "2029-01-20T17:59:59+00:00",
+    "km": 404922
+   },
+   "solar_eclipse": {
+    "utc": "2029-01-14T17:12:31+00:00",
+    "type": "Partial",
+    "visible": true
+   },
+   "astro": {
+    "new_sign": "Capricorn",
+    "full_sign": "Leo",
+    "reading": [
+     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-02-13T10:31:31+00:00",
+   "next_new_utc": "2029-03-15T04:19:15+00:00",
+   "full": {
+    "utc": "2029-02-28T17:10:15+00:00",
+    "name": "Snow Moon",
+    "distance_km": 359659,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-03-01T18:59:59+00:00",
+    "km": 358617
+   },
+   "apogee": {
+    "utc": "2029-02-17T11:59:59+00:00",
+    "km": 405840
+   },
+   "astro": {
+    "new_sign": "Aquarius",
+    "full_sign": "Virgo",
+    "reading": [
+     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-03-15T04:19:15+00:00",
+   "next_new_utc": "2029-04-13T21:40:11+00:00",
+   "full": {
+    "utc": "2029-03-30T02:26:25+00:00",
+    "name": "Worm Moon",
+    "distance_km": 356681,
+    "illum": 99.8,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-03-30T05:59:59+00:00",
+    "km": 356661
+   },
+   "apogee": {
+    "utc": "2029-03-16T21:59:59+00:00",
+    "km": 406541
+   },
+   "season": {
+    "utc": "2029-03-20T08:01:58+00:00",
+    "name": "March equinox"
+   },
+   "astro": {
+    "new_sign": "Pisces",
+    "full_sign": "Libra",
+    "reading": [
+     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-04-13T21:40:11+00:00",
+   "next_new_utc": "2029-05-13T13:42:09+00:00",
+   "full": {
+    "utc": "2029-04-28T10:36:48+00:00",
+    "name": "Pink Moon",
+    "distance_km": 358381,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-04-27T15:59:59+00:00",
+    "km": 357837
+   },
+   "apogee": {
+    "utc": "2029-05-10T06:59:59+00:00",
+    "km": 406098
+   },
+   "showers": [
+    {
+     "name": "Lyrids",
+     "utc": "2029-04-22T03:58:24+00:00",
+     "illum": 54
+    },
+    {
+     "name": "Eta Aquariids",
+     "utc": "2029-05-05T17:31:00+00:00",
+     "illum": 47
+    }
+   ],
+   "astro": {
+    "new_sign": "Aries",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-05-13T13:42:09+00:00",
+   "next_new_utc": "2029-06-12T03:50:33+00:00",
+   "full": {
+    "utc": "2029-05-27T18:37:30+00:00",
+    "name": "Flower Moon",
+    "distance_km": 364264,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-05-25T22:59:59+00:00",
+    "km": 361603
+   },
+   "apogee": {
+    "utc": "2029-06-06T21:59:59+00:00",
+    "km": 405069
+   },
+   "astro": {
+    "new_sign": "Taurus",
+    "full_sign": "Sagittarius",
+    "reading": [
+     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-06-12T03:50:33+00:00",
+   "next_new_utc": "2029-07-11T15:51:04+00:00",
+   "full": {
+    "utc": "2029-06-26T03:22:21+00:00",
+    "name": "Strawberry Moon",
+    "distance_km": 373272,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-06-22T15:59:59+00:00",
+    "km": 366622
+   },
+   "apogee": {
+    "utc": "2029-07-04T15:59:59+00:00",
+    "km": 404274
+   },
+   "lunar_eclipse": {
+    "utc": "2029-06-26T03:22:11+00:00",
+    "type": "Total",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2029-06-12T04:04:33+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "season": {
+    "utc": "2029-06-21T01:48:17+00:00",
+    "name": "June solstice"
+   },
+   "astro": {
+    "new_sign": "Gemini",
+    "full_sign": "Capricorn",
+    "reading": [
+     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-07-11T15:51:04+00:00",
+   "next_new_utc": "2029-08-10T01:55:47+00:00",
+   "full": {
+    "utc": "2029-07-25T13:35:46+00:00",
+    "name": "Buck Moon",
+    "distance_km": 383898,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-07-18T10:59:59+00:00",
+    "km": 369707
+   },
+   "apogee": {
+    "utc": "2029-08-01T10:59:59+00:00",
+    "km": 404269
+   },
+   "solar_eclipse": {
+    "utc": "2029-07-11T15:36:04+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Aquarius",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-08-10T01:55:47+00:00",
+   "next_new_utc": "2029-09-08T10:44:23+00:00",
+   "full": {
+    "utc": "2029-08-24T01:51:14+00:00",
+    "name": "Sturgeon Moon",
+    "distance_km": 394277,
+    "illum": 99.9,
+    "kind": null,
+    "blue": "seasonal"
+   },
+   "perigee": {
+    "utc": "2029-08-13T09:59:59+00:00",
+    "km": 366398
+   },
+   "apogee": {
+    "utc": "2029-08-29T04:59:59+00:00",
+    "km": 405034
+   },
+   "showers": [
+    {
+     "name": "Perseids",
+     "utc": "2029-08-12T10:16:39+00:00",
+     "illum": 8
+    }
+   ],
+   "astro": {
+    "new_sign": "Leo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-09-08T10:44:23+00:00",
+   "next_new_utc": "2029-10-07T19:14:33+00:00",
+   "full": {
+    "utc": "2029-09-22T16:29:19+00:00",
+    "name": "Harvest Moon",
+    "distance_km": 402366,
+    "illum": 99.8,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-09-10T03:59:59+00:00",
+    "km": 361363
+   },
+   "apogee": {
+    "utc": "2029-09-25T19:59:59+00:00",
+    "km": 405977
+   },
+   "season": {
+    "utc": "2029-09-22T17:38:30+00:00",
+    "name": "September equinox"
+   },
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-10-07T19:14:33+00:00",
+   "next_new_utc": "2029-11-06T04:24:08+00:00",
+   "full": {
+    "utc": "2029-10-22T09:27:34+00:00",
+    "name": "Hunter's Moon",
+    "distance_km": 406277,
+    "illum": 99.9,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-10-08T10:59:59+00:00",
+    "km": 357745
+   },
+   "apogee": {
+    "utc": "2029-10-23T01:59:59+00:00",
+    "km": 406427
+   },
+   "showers": [
+    {
+     "name": "Draconids",
+     "utc": "2029-10-08T09:41:23+00:00",
+     "illum": 1
+    },
+    {
+     "name": "Orionids",
+     "utc": "2029-10-21T02:52:31+00:00",
+     "illum": 98
+    }
+   ],
+   "astro": {
+    "new_sign": "Libra",
+    "full_sign": "Aries",
+    "reading": [
+     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-11-06T04:24:08+00:00",
+   "next_new_utc": "2029-12-05T14:52:08+00:00",
+   "full": {
+    "utc": "2029-11-21T04:02:58+00:00",
+    "name": "Beaver Moon",
+    "distance_km": 404820,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2029-12-04T10:59:59+00:00",
+    "km": 359264
+   },
+   "apogee": {
+    "utc": "2029-11-19T02:59:59+00:00",
+    "km": 406257
+   },
+   "showers": [
+    {
+     "name": "Leonids",
+     "utc": "2029-11-17T08:17:59+00:00",
+     "illum": 87
+    }
+   ],
+   "astro": {
+    "new_sign": "Scorpio",
+    "full_sign": "Taurus",
+    "reading": [
+     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2029-12-05T14:52:08+00:00",
+   "next_new_utc": "2030-01-04T02:49:34+00:00",
+   "full": {
+    "utc": "2029-12-20T22:46:31+00:00",
+    "name": "Cold Moon",
+    "distance_km": 398120,
+    "illum": 100.0,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-01-01T14:59:59+00:00",
+    "km": 364231
+   },
+   "apogee": {
+    "utc": "2029-12-16T13:59:59+00:00",
+    "km": 405551
+   },
+   "lunar_eclipse": {
+    "utc": "2029-12-20T22:42:00+00:00",
+    "type": "Total",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2029-12-05T15:03:08+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "season": {
+    "utc": "2029-12-21T14:14:06+00:00",
+    "name": "December solstice"
+   },
+   "showers": [
+    {
+     "name": "Geminids",
+     "utc": "2029-12-13T22:14:53+00:00",
+     "illum": 61
+    },
+    {
+     "name": "Ursids",
+     "utc": "2029-12-22T06:44:13+00:00",
+     "illum": 98
+    },
+    {
+     "name": "Quadrantids",
+     "utc": "2030-01-03T11:57:58+00:00",
+     "illum": 1
+    }
+   ],
+   "astro": {
+    "new_sign": "Sagittarius",
+    "full_sign": "Gemini",
+    "reading": [
+     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-01-04T02:49:34+00:00",
+   "next_new_utc": "2030-02-02T16:07:31+00:00",
+   "full": {
+    "utc": "2030-01-19T15:54:22+00:00",
+    "name": "Wolf Moon",
+    "distance_km": 387810,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-01-28T15:59:59+00:00",
+    "km": 369511
+   },
+   "apogee": {
+    "utc": "2030-01-13T08:59:59+00:00",
+    "km": 404683
+   },
+   "astro": {
+    "new_sign": "Capricorn",
+    "full_sign": "Cancer",
+    "reading": [
+     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-02-02T16:07:31+00:00",
+   "next_new_utc": "2030-03-04T06:34:40+00:00",
+   "full": {
+    "utc": "2030-02-18T06:19:49+00:00",
+    "name": "Snow Moon",
+    "distance_km": 376426,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-02-22T09:59:59+00:00",
+    "km": 368374
+   },
+   "apogee": {
+    "utc": "2030-02-10T05:59:59+00:00",
+    "km": 404330
+   },
+   "astro": {
+    "new_sign": "Aquarius",
+    "full_sign": "Leo",
+    "reading": [
+     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-03-04T06:34:40+00:00",
+   "next_new_utc": "2030-04-02T22:02:33+00:00",
+   "full": {
+    "utc": "2030-03-19T17:56:30+00:00",
+    "name": "Worm Moon",
+    "distance_km": 366445,
+    "illum": 99.8,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-03-21T21:59:59+00:00",
+    "km": 362956
+   },
+   "apogee": {
+    "utc": "2030-03-10T01:59:59+00:00",
+    "km": 404783
+   },
+   "season": {
+    "utc": "2030-03-20T13:52:05+00:00",
+    "name": "March equinox"
+   },
+   "astro": {
+    "new_sign": "Pisces",
+    "full_sign": "Virgo",
+    "reading": [
+     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-04-02T22:02:33+00:00",
+   "next_new_utc": "2030-05-02T14:12:10+00:00",
+   "full": {
+    "utc": "2030-04-18T03:20:02+00:00",
+    "name": "Pink Moon",
+    "distance_km": 359659,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-04-19T03:59:59+00:00",
+    "km": 358696
+   },
+   "apogee": {
+    "utc": "2030-04-06T18:59:59+00:00",
+    "km": 405683
+   },
+   "showers": [
+    {
+     "name": "Lyrids",
+     "utc": "2030-04-22T09:47:10+00:00",
+     "illum": 76
+    }
+   ],
+   "astro": {
+    "new_sign": "Aries",
+    "full_sign": "Libra",
+    "reading": [
+     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-05-02T14:12:10+00:00",
+   "next_new_utc": "2030-06-01T06:21:21+00:00",
+   "full": {
+    "utc": "2030-05-17T11:19:09+00:00",
+    "name": "Flower Moon",
+    "distance_km": 357029,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-05-17T13:59:59+00:00",
+    "km": 357017
+   },
+   "apogee": {
+    "utc": "2030-05-04T03:59:59+00:00",
+    "km": 406373
+   },
+   "showers": [
+    {
+     "name": "Eta Aquariids",
+     "utc": "2030-05-05T23:09:14+00:00",
+     "illum": 10
+    }
+   ],
+   "astro": {
+    "new_sign": "Taurus",
+    "full_sign": "Scorpio",
+    "reading": [
+     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-06-01T06:21:21+00:00",
+   "next_new_utc": "2030-06-30T21:34:29+00:00",
+   "full": {
+    "utc": "2030-06-15T18:41:01+00:00",
+    "name": "Strawberry Moon",
+    "distance_km": 358781,
+    "illum": 100.0,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-06-14T23:59:59+00:00",
+    "km": 358192
+   },
+   "apogee": {
+    "utc": "2030-06-27T13:59:59+00:00",
+    "km": 405854
+   },
+   "lunar_eclipse": {
+    "utc": "2030-06-15T18:33:22+00:00",
+    "type": "Partial",
+    "visible": false
+   },
+   "solar_eclipse": {
+    "utc": "2030-06-01T06:28:21+00:00",
+    "type": "Annular",
+    "visible": false
+   },
+   "season": {
+    "utc": "2030-06-21T07:31:18+00:00",
+    "name": "June solstice"
+   },
+   "astro": {
+    "new_sign": "Gemini",
+    "full_sign": "Sagittarius",
+    "reading": [
+     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-06-30T21:34:29+00:00",
+   "next_new_utc": "2030-07-30T11:11:00+00:00",
+   "full": {
+    "utc": "2030-07-15T02:12:00+00:00",
+    "name": "Buck Moon",
+    "distance_km": 364536,
+    "illum": 99.9,
+    "kind": "supermoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-07-13T04:59:59+00:00",
+    "km": 361811
+   },
+   "apogee": {
+    "utc": "2030-07-25T04:59:59+00:00",
+    "km": 404853
+   },
+   "astro": {
+    "new_sign": "Cancer",
+    "full_sign": "Capricorn",
+    "reading": [
+     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-07-30T11:11:00+00:00",
+   "next_new_utc": "2030-08-28T23:07:22+00:00",
+   "full": {
+    "utc": "2030-08-13T10:44:25+00:00",
+    "name": "Sturgeon Moon",
+    "distance_km": 373399,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-08-09T22:59:59+00:00",
+    "km": 366766
+   },
+   "apogee": {
+    "utc": "2030-08-21T22:59:59+00:00",
+    "km": 404133
+   },
+   "showers": [
+    {
+     "name": "Perseids",
+     "utc": "2030-08-12T15:57:30+00:00",
+     "illum": 99
+    }
+   ],
+   "astro": {
+    "new_sign": "Leo",
+    "full_sign": "Aquarius",
+    "reading": [
+     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-08-28T23:07:22+00:00",
+   "next_new_utc": "2030-09-27T09:54:41+00:00",
+   "full": {
+    "utc": "2030-09-11T21:17:56+00:00",
+    "name": "Harvest Moon",
+    "distance_km": 383998,
+    "illum": 99.8,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-09-04T16:59:59+00:00",
+    "km": 369918
+   },
+   "apogee": {
+    "utc": "2030-09-18T17:59:59+00:00",
+    "km": 404217
+   },
+   "season": {
+    "utc": "2030-09-22T23:26:53+00:00",
+    "name": "September equinox"
+   },
+   "astro": {
+    "new_sign": "Virgo",
+    "full_sign": "Pisces",
+    "reading": [
+     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-09-27T09:54:41+00:00",
+   "next_new_utc": "2030-10-26T20:17:00+00:00",
+   "full": {
+    "utc": "2030-10-11T10:46:51+00:00",
+    "name": "Hunter's Moon",
+    "distance_km": 394483,
+    "illum": 99.9,
+    "kind": null,
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-09-30T14:59:59+00:00",
+    "km": 366375
+   },
+   "apogee": {
+    "utc": "2030-10-16T12:59:59+00:00",
+    "km": 405043
+   },
+   "showers": [
+    {
+     "name": "Draconids",
+     "utc": "2030-10-08T15:29:02+00:00",
+     "illum": 92
+    },
+    {
+     "name": "Orionids",
+     "utc": "2030-10-21T08:46:21+00:00",
+     "illum": 33
+    }
+   ],
+   "astro": {
+    "new_sign": "Libra",
+    "full_sign": "Aries",
+    "reading": [
+     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-10-26T20:17:00+00:00",
+   "next_new_utc": "2030-11-25T06:46:30+00:00",
+   "full": {
+    "utc": "2030-11-10T03:30:19+00:00",
+    "name": "Beaver Moon",
+    "distance_km": 402625,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-10-28T11:59:59+00:00",
+    "km": 361135
+   },
+   "apogee": {
+    "utc": "2030-11-13T04:59:59+00:00",
+    "km": 405971
+   },
+   "showers": [
+    {
+     "name": "Leonids",
+     "utc": "2030-11-17T14:16:01+00:00",
+     "illum": 58
+    }
+   ],
+   "astro": {
+    "new_sign": "Scorpio",
+    "full_sign": "Taurus",
+    "reading": [
+     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-11-25T06:46:30+00:00",
+   "next_new_utc": "2030-12-24T17:32:14+00:00",
+   "full": {
+    "utc": "2030-12-09T22:40:28+00:00",
+    "name": "Cold Moon",
+    "distance_km": 406297,
+    "illum": 100.0,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2030-11-25T20:59:59+00:00",
+    "km": 357524
+   },
+   "apogee": {
+    "utc": "2030-12-10T09:59:59+00:00",
+    "km": 406364
+   },
+   "lunar_eclipse": {
+    "utc": "2030-12-09T22:27:40+00:00",
+    "type": "Penumbral",
+    "visible": true
+   },
+   "solar_eclipse": {
+    "utc": "2030-11-25T06:50:30+00:00",
+    "type": "Total",
+    "visible": false
+   },
+   "season": {
+    "utc": "2030-12-21T20:09:37+00:00",
+    "name": "December solstice"
+   },
+   "showers": [
+    {
+     "name": "Geminids",
+     "utc": "2030-12-14T04:13:43+00:00",
+     "illum": 85
+    },
+    {
+     "name": "Ursids",
+     "utc": "2030-12-22T12:39:02+00:00",
+     "illum": 7
+    }
+   ],
+   "astro": {
+    "new_sign": "Sagittarius",
+    "full_sign": "Gemini",
+    "reading": [
+     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+    ]
+   },
+   "sources": []
+  },
+  {
+   "new_utc": "2030-12-24T17:32:14+00:00",
+   "next_new_utc": "2031-01-23T04:31:01+00:00",
+   "full": {
+    "utc": "2031-01-08T18:25:51+00:00",
+    "name": "Wolf Moon",
+    "distance_km": 404356,
+    "illum": 99.9,
+    "kind": "micromoon",
+    "blue": null
+   },
+   "perigee": {
+    "utc": "2031-01-21T21:59:59+00:00",
+    "km": 359626
+   },
+   "apogee": {
+    "utc": "2031-01-06T10:59:59+00:00",
+    "km": 406184
+   },
+   "showers": [
+    {
+     "name": "Quadrantids",
+     "utc": "2031-01-03T17:48:57+00:00",
+     "illum": 79
+    }
+   ],
+   "astro": {
+    "new_sign": "Capricorn",
+    "full_sign": "Cancer",
+    "reading": [
+     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+    ]
+   },
+   "sources": []
+  }
+ ]
+}

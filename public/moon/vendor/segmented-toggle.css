@@ -1,0 +1,160 @@
+/* Themeable via CSS custom properties. Defaults are the "greenlights" theme. */
+.mui-seg {
+  --seg-height: 24px;
+  --seg-border-width: 1px;
+  --seg-border: #101416;
+  --seg-bg: color-mix(in srgb, #f2b705 88%, #101416);
+  --seg-shadow: 2px 2px 0 #101416;
+  --seg-radius: 999px;
+  --seg-lens-inset: 2px;
+  --seg-lens-bg: #0d8a5a;
+  --seg-lens-shadow: 0 1px 2px color-mix(in srgb, #101416 45%, transparent);
+  --seg-lens-duration: 0.3s;
+  --seg-lens-easing: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --seg-padding-x: 8px;
+  --seg-font-family: inherit;
+  --seg-font-size: 12px;
+  --seg-font-weight: 700;
+  --seg-off-color: rgba(16, 20, 22, 0.74);
+  --seg-hover-color: #101416;
+  --seg-on-color: #f4f5ef;
+  --seg-focus-ring: 0 0 0 2px #f4f5ef, 0 0 0 4px #101416;
+
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: repeat(var(--seg-count, 2), 1fr);
+  align-items: stretch;
+  height: var(--seg-height);
+  box-sizing: border-box;
+  border: var(--seg-border-width) solid var(--seg-border);
+  border-radius: var(--seg-radius);
+  background: var(--seg-bg);
+  box-shadow: var(--seg-shadow);
+  overflow: hidden;
+}
+
+.mui-seg-lens {
+  z-index: 3;
+  position: absolute;
+  top: var(--seg-lens-inset);
+  bottom: var(--seg-lens-inset);
+  left: var(--seg-lens-inset);
+  width: calc(100% / var(--seg-count, 2) - 2 * var(--seg-lens-inset));
+  border-radius: var(--seg-radius);
+  transform: translateX(calc(var(--seg-index, 0) * (100% + 2 * var(--seg-lens-inset))));
+  transition: transform var(--seg-lens-duration) var(--seg-lens-easing);
+  pointer-events: none;
+}
+
+/* The visible pill. It holds a copy of every label in --seg-on-color and is clipped to the
+   selected column, so whatever the pill covers reads as selected at every frame of the
+   slide. Buttons underneath always show --seg-off-color. Colour never transitions, so a
+   slow or blocked main thread can't leave a label white-on-white mid-change. */
+.mui-seg-on {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--seg-count, 2), 1fr);
+  background: var(--seg-lens-bg);
+  clip-path: inset(
+    var(--seg-lens-inset)
+    calc((var(--seg-count, 2) - 1 - var(--seg-index, 0)) * 100% / var(--seg-count, 2) + var(--seg-lens-inset))
+    var(--seg-lens-inset)
+    calc(var(--seg-index, 0) * 100% / var(--seg-count, 2) + var(--seg-lens-inset))
+    round var(--seg-radius)
+  );
+  transition: clip-path var(--seg-lens-duration) var(--seg-lens-easing);
+  pointer-events: none;
+}
+.mui-seg-on > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--seg-padding-x);
+  color: var(--seg-on-color);
+  font-family: var(--seg-font-family);
+  font-size: var(--seg-font-size);
+  font-weight: var(--seg-font-weight);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mui-seg-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  margin: 0;
+  padding: 0 var(--seg-padding-x);
+  border: 0;
+  background: none;
+  color: var(--seg-off-color);
+  font-family: var(--seg-font-family);
+  font-size: var(--seg-font-size);
+  font-weight: var(--seg-font-weight);
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mui-seg-btn:not(.is-on):hover {
+  color: var(--seg-hover-color);
+}
+
+.mui-seg-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--seg-focus-ring);
+  border-radius: var(--seg-radius);
+}
+
+/* Busy: a change is being applied. Labels stay readable, the other options gray out,
+   a small spinner follows the selected label, and input is ignored. */
+.mui-seg.is-busy {
+  cursor: progress;
+}
+.mui-seg.is-busy .mui-seg-btn {
+  cursor: progress;
+  pointer-events: none;
+  color: var(--seg-busy-off-color, color-mix(in srgb, var(--seg-off-color) 55%, transparent));
+}
+.mui-seg.is-busy .mui-seg-on > span:not(.is-on) {
+  visibility: hidden;
+}
+/* the spinner is an arc sweeping around the selected pill: it overlaps nothing and never
+   changes the control's size */
+@property --seg-spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+.mui-seg.is-busy .mui-seg-lens::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--seg-spin), transparent 0 55%, var(--seg-spinner-color, var(--seg-on-color)) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: mui-seg-sweep 0.8s linear infinite;
+}
+@keyframes mui-seg-sweep {
+  to { --seg-spin: 360deg; }
+}
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mui-seg-lens,
+  .mui-seg-on {
+    transition: none;
+  }
+  .mui-seg.is-busy .mui-seg-lens::after {
+    animation: none;
+  }
+}
