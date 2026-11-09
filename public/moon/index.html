@@ -368,7 +368,7 @@ document.addEventListener('mouseover',e=>{
 document.addEventListener('scroll',()=>spop.style.display='none',true);
 const pop=document.getElementById('pop');
 document.addEventListener('mouseover',e=>{
-  const t=e.target.closest('.mk .body');
+  const t=e.target.closest('.mk .body,.top>canvas');
   if(!t||!draw){if(!e.target.closest('#pop'))pop.style.display='none';return}
   const{e:ev,t:tn,day:d}=jobs[+t.dataset.j];
   draw(pop.querySelector('canvas'),ev,120,tn);
