@@ -1,0 +1,200 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lunation readings</title>
+<style>
+:root{--red:#ef4444;--ink:#000;--mute:#666}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 16px 48px;background:#fff;color:var(--ink);font:15px/1.5 -apple-system,system-ui,sans-serif}
+main{max-width:860px;margin:0 auto}
+h1{margin:0 0 6px;font:700 34px/1.15 -apple-system,system-ui,sans-serif}
+h2{margin:36px 0 10px;font:600 24px/1.2 -apple-system,system-ui,sans-serif}
+h3{margin:22px 0 6px;font:600 17px/1.3 -apple-system,system-ui,sans-serif}
+p{margin:8px 0}
+a{color:inherit}
+.sub{color:var(--mute)}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 4px;font-size:14px}
+.glass{background:rgba(118,118,128,.08);-webkit-backdrop-filter:blur(12px) saturate(170%);backdrop-filter:blur(12px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 1px 3px rgba(0,0,0,.08);border-radius:14px;padding:14px 18px;margin:12px 0}
+.glass.hi{background:rgba(239,68,68,.06)}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+th,td{text-align:left;vertical-align:top;padding:6px 8px 6px 0}
+th{font-weight:600;color:var(--mute);font-size:13px}
+tr+tr td{box-shadow:inset 0 1px 0 rgba(0,0,0,.06)}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.k{font-weight:600}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;background:rgba(118,118,128,.14);font-size:12px;margin:0 4px 4px 0}
+.tag.on{background:var(--red);color:#fff}
+.stat{display:inline-block;min-width:120px;margin:4px 14px 4px 0}
+.stat b{display:block;font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mute);font-size:13px}
+.read{font-size:16px;line-height:1.55}
+details{margin:8px 0}summary{cursor:pointer;font-weight:600}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.ex{grid-template-columns:1fr}}
+.src{font-size:13.5px}.src li{margin:4px 0}
+ul{padding-left:20px;margin:6px 0}
+code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(118,118,128,.1);padding:1px 5px;border-radius:5px}
+.miss{color:var(--red)}
+#entry:empty{display:none}
+</style></head>
+<body><main>
+<h1>Lunation readings</h1>
+<p class="sub">How every New and Full Moon reading on the <a href="index.html">planning page</a> is computed, where the method comes from, how it was tested, and a workbook for reading one yourself. 1990–2030, ZIP 22310, tropical zodiac.</p>
+<nav class="toc"><a href="#entry">This lunation</a><a href="#method">Method</a><a href="#tables">Factor tables</a><a href="#sources">Sources</a><a href="#tests">Test results</a><a href="#workbook">Workbook</a><a href="#examples">Worked examples</a><a href="#decisions">Decisions</a></nav>
+
+<section id="entry"></section>
+
+<h2 id="method">Method</h2>
+<div class="glass">
+<p>Each reading is built from the sky at the exact instant of the lunation (JPL DE421 for the instant and eclipse geometry, Swiss Ephemeris for planetary longitudes; both agree to 0.0001°). Nothing is written per date by hand; a sentence appears only when the factor that justifies it was computed.</p>
+<ol>
+<li><span class="k">Sign and degree.</span> The Moon's tropical longitude at the New or Full Moon gives the sign, the degree (printed to the arc-minute) and the decan. 29° or later is flagged as the last degree.</li>
+<li><span class="k">Aspects, tightest first.</span> Conjunction, sextile, square, trine, quincunx and opposition from the lunation to Mercury–Pluto and Chiron, within the orbs in the table below. At a Full Moon each planet is measured from the Moon and from the Sun and the tighter side is kept (a planet opposite the Moon "sits with the Sun"). Chiron is capped at 3°. The reading names up to four.</li>
+<li><span class="k">Ruler.</span> The sign's modern ruler, with the traditional ruler noted where it differs (Scorpio, Aquarius, Pisces): its sign, whether it is retrograde, and whether it aspects the lunation itself.</li>
+<li><span class="k">Retrogrades.</span> Mercury, Venus and Mars whenever retrograde; outer planets only when they rule the sign or aspect the lunation.</li>
+<li><span class="k">Eclipse and node.</span> Whether the ephemeris found a solar or lunar eclipse, its type, the distance to the nearer lunar node and which node (North: growth; South: release).</li>
+<li><span class="k">Timing.</span> New Moon: intentions run to the next New Moon. Full Moon: strongest ±2–3 days, resolving over two weeks. Eclipse: about six months.</li>
+</ol>
+<p class="sub">Code: <code>astrology-app/api/astrology_engine/lunation.py</code> and <code>western_math.py</code> (profile <code>western-tropical-v1</code>); the moon generator calls it from <code>sun/data/moon/lunation_reading.py</code>. Write-up: <code>astrology-app/docs/lunation-readings/</code>.</p>
+</div>
+
+<h2 id="tables">Factor-to-meaning tables</h2>
+<p class="sub">Loaded from <code>data/lunation_tables.json</code>, which the generator exports from the same code that writes the readings, so this page cannot drift from what the readings say.</p>
+<div id="tables-out"></div>
+
+<h2 id="sources">Sources</h2>
+<div class="glass src">
+<p>Method and orbs were drawn from how these publish their lunation readings; full notes with quotes and access dates are in <code>docs/lunation-readings/research-notes.md</code>.</p>
+<ul>
+<li><a href="https://cafeastrology.com/events/" target="_blank" rel="noopener">Cafe Astrology</a> — dated New/Full Moon event pages: sign, degree, aspects ("aligns", "harmonizes", "squares"), ruler, eclipse node, "the energy is strongest…" timing.</li>
+<li><a href="https://astrologyking.com/" target="_blank" rel="noopener">Astrology King</a> (Jamie Partridge) — aspects with orbs, quincunxes, fixed stars; New Moon influence lasts to the next lunation, eclipses about six months.</li>
+<li><a href="https://astrostyle.com/" target="_blank" rel="noopener">AstroStyle</a> — sign themes, retrogrades, eclipse node framing.</li>
+<li><a href="https://chani.com/" target="_blank" rel="noopener">Chani Nicholas</a> — traditional rulers (Mars for Scorpio, Jupiter for Pisces), two-week editorial focus.</li>
+<li><a href="https://www.astro.com/astrowiki/en/Orb" target="_blank" rel="noopener">Astrodienst Astrowiki</a> — orb conventions; <a href="https://www.keplercollege.org/" target="_blank" rel="noopener">Kepler College</a> — applying aspects are stronger.</li>
+<li>Bernadette Brady, <em>Predictive Astrology: The Eagle and the Lark</em> — a lunation within ~19° of a node belongs to eclipse season; Jean Meeus, <em>Astronomical Algorithms</em> ch. 54 — eclipse certain below 15.35° (solar) / 9.5° (lunar) of the node, impossible beyond 18.5° / 12.3°.</li>
+<li><a href="https://www.farmersalmanac.com/" target="_blank" rel="noopener">Farmers' Almanac</a> — North Node eclipses pull forward, South Node eclipses release.</li>
+</ul>
+<p>Readings for 2026 link the dated Cafe Astrology page verified for that lunation; every other lunation links here, to the date's entry above.</p>
+</div>
+
+<h2 id="tests">Test results</h2>
+<div id="tests-out"></div>
+
+<h2 id="workbook">Workbook: how to read a lunation</h2>
+<div class="glass">
+<ol>
+<li><span class="k">Find the instant and the degree.</span> Read the Moon's sign and degree. Early degrees mean the theme is starting; the last degree (29°) means something is finishing. The sign tells you the arena (see the sign table): a New Moon seeds it, a Full Moon brings it to a head.</li>
+<li><span class="k">List the aspects, tightest first.</span> Anything within orb counts; under 1° dominates the reading. Hard aspects (conjunction, square, opposition, quincunx) add friction or focus; soft aspects (trine, sextile) add support. The planet says what kind: Saturn limits, Uranus surprises, Neptune blurs, Pluto intensifies, Jupiter expands, Mars drives, Venus relates, Mercury talks, Chiron heals.</li>
+<li><span class="k">Check the ruler.</span> The sign's ruler shows how the theme will actually play out: its sign colours it, retrograde slows it, an aspect to the lunation ties it in directly.</li>
+<li><span class="k">Note retrogrades.</span> Mercury retrograde: review rather than commit. Venus: relationships and money revisit the past. Mars: energy turns inward. Outer-planet retrogrades last months and matter only when the planet is involved.</li>
+<li><span class="k">Is it an eclipse?</span> A lunation within about 15° of a node (solar) or 9.5° (lunar) is one. North Node: a push toward new ground; South Node: a clearing. Eclipse effects run about six months, not two weeks.</li>
+<li><span class="k">Set the timing.</span> New Moon intentions in the first day or two, running to the next New Moon; Full Moon peaks for two or three days and resolves over two weeks.</li>
+</ol>
+<p>Compare your reading with the worked examples below: the computed factors on the left, what published astrologers said about the same lunation on the right.</p>
+</div>
+
+<h2 id="examples">Worked examples</h2>
+<p class="sub">Sixteen lunations from 2024–2026, each compared with three or more published readings. Loaded from <code>data/lunation_eval.json</code> (the output of <code>docs/lunation-readings/evaluate.py</code>).</p>
+<div id="examples-out"></div>
+
+<h2 id="decisions">Decisions</h2>
+<div class="glass">
+<ul>
+<li><span class="k">Tropical zodiac.</span> The moon page and every compared publisher use the tropical zodiac, so these readings do too, even though Mannan's astrology engine is otherwise Vedic (sidereal, Lahiri). The tropical profile <code>western-tropical-v1</code> was added beside <code>vedic-lahiri-v1</code>; the Vedic profile is unchanged.</li>
+<li><span class="k">Modern rulers first.</span> Of the compared sites that name a ruler, Cafe Astrology, Astrology King, Elsa Elsa and AstroStyle use the modern ruler (Uranus for Aquarius, Neptune for Pisces); Chani uses the traditional one. Readings name the modern ruler and add the traditional one in brackets.</li>
+<li><span class="k">Orbs.</span> 8° conjunction and opposition, 6° square and trine, 4° sextile, 2° quincunx, Chiron capped at 3°. Chosen to match what the corpus names (an opposition at 6.5° and quincunxes near 1° were named; a Mercury conjunction at 8.1° was named once and is the known miss).</li>
+<li><span class="k">Eclipse fact from the ephemeris.</span> The generator passes the computed eclipse (or "none") so the reading never infers one from node distance alone.</li>
+</ul>
+</div>
+</main>
+<script>
+let MANIFEST=null;
+const versioned=u=>{const v=MANIFEST?.[u.split('/').pop()];return v?`${u}?v=${v}`:u};
+async function loadJSON(u){const r=await fetch(versioned(u),{cache:MANIFEST?'default':'no-cache'});if(!r.ok)throw new Error(u);return r.json()}
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pname=(T,k)=>T.planet_names[k]?cap(T.planet_names[k].replace(/^the /,'')):cap(k);
+const local=iso=>new Date(iso).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'long',timeStyle:'short'});
+const nyDate=iso=>new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/New_York'});
+
+function factorsCard(T,kind,f,text,source,utc){
+  const asp=f.aspects.length?`<table><tr><th>Planet</th><th>Aspect</th><th>Orb</th><th>Measured from</th></tr>${f.aspects.map(a=>`<tr><td>${pname(T,a.planet)}</td><td>${a.aspect}</td><td class="n">${a.orb.toFixed(2)}°</td><td>${a.from}</td></tr>`).join('')}</table>`:'<p class="sub">No planet within orb.</p>';
+  const r=f.ruler;
+  return `<div class="glass hi"><h3 style="margin-top:0">${kind==='new'?'New':'Full'} Moon at ${esc(f.label)}</h3>
+  <p class="sub">${local(utc)} (America/New_York)${f.eclipse?` · ${f.eclipse_type?f.eclipse_type.toLowerCase()+' ':''}${f.eclipse} eclipse`:''} · ${f.node_distance}° from the ${f.node} node</p>
+  <p class="read">${esc(text)}</p>
+  ${asp}
+  <p>Ruler: ${pname(T,r.planet)}${r.traditional!==r.planet?` (traditionally ${pname(T,r.traditional)})`:''} in ${r.sign}${r.retrograde?', retrograde':''}.
+  ${f.retrogrades.length?`Retrograde: ${f.retrogrades.map(k=>pname(T,k)).join(', ')}.`:'No planet retrograde.'}</p>
+  ${source&&!source.url.startsWith('astrology.html')?`<p>Published reading for this date: <a href="${esc(source.url)}" target="_blank" rel="noopener">${esc(source.title)}</a></p>`:''}
+  </div>`;
+}
+
+function renderEntry(T,months,hash){
+  const el=document.getElementById('entry');
+  const day=hash.replace('#','');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(day)){el.innerHTML='';return}
+  for(const c of months.cycles){
+    const L=c.astro?.lunations;if(!L)continue;
+    if(nyDate(c.new_utc)===day){el.innerHTML=factorsCard(T,'new',L.new,c.astro.reading[0].text,c.astro.reading[0].source,c.new_utc);return}
+    if(c.full&&L.full&&nyDate(c.full.utc)===day){el.innerHTML=factorsCard(T,'full',L.full,c.astro.reading[1].text,c.astro.reading[1].source,c.full.utc);return}
+  }
+  el.innerHTML=`<div class="glass"><p>No lunation on ${esc(day)} in the data (1990–2030).</p></div>`;
+}
+
+function renderTables(T){
+  const signs=Object.keys(T.sign_new);
+  const planets=T.aspect_bodies;
+  let h=`<div class="glass"><h3 style="margin-top:0">Orbs</h3><table><tr><th>Aspect</th><th>Angle</th><th>Orb</th><th>Family</th></tr>${
+    [['conjunction',0],['sextile',60],['square',90],['trine',120],['quincunx',150],['opposition',180]].map(([a,d])=>`<tr><td>${a}</td><td class="n">${d}°</td><td class="n">${T.orbs[a]}°</td><td>${T.hard_aspects.includes(a)?'hard':'soft'}</td></tr>`).join('')}</table>
+    <p class="sub">${Object.entries(T.minor_body_orb_cap).map(([k,v])=>`${pname(T,k)} capped at ${v}°`).join('; ')}. Eclipse inferred from node distance only under ${T.eclipse_node_limits.solar}° (solar) / ${T.eclipse_node_limits.lunar}° (lunar) when no ephemeris fact is given.</p></div>`;
+  h+=`<div class="glass"><h3 style="margin-top:0">Signs</h3><table><tr><th>Sign</th><th>Ruler</th><th>New Moon seeds…</th><th>Full Moon brings to a head…</th></tr>${
+    signs.map(s=>`<tr><td class="k">${s}</td><td>${pname(T,T.rulers.modern[s])}${T.rulers.traditional[s]!==T.rulers.modern[s]?` (${pname(T,T.rulers.traditional[s])})`:''}</td><td>${esc(T.sign_new[s])}</td><td>${esc(T.sign_full[s])}</td></tr>`).join('')}</table></div>`;
+  h+=`<div class="glass"><h3 style="margin-top:0">Planets by aspect family</h3><table><tr><th>Planet</th><th>Conjunction</th><th>Hard (square, opposition, quincunx)</th><th>Soft (trine, sextile)</th></tr>${
+    planets.map(p=>`<tr><td class="k">${pname(T,p)}</td><td>${esc(T.planet_conjunct[p])}</td><td>${esc(T.planet_hard[p])}</td><td>${esc(T.planet_soft[p])}</td></tr>`).join('')}</table></div>`;
+  h+=`<div class="glass"><h3 style="margin-top:0">Eclipses, nodes, timing</h3><table>
+    <tr><td class="k">Solar eclipse</td><td>${esc(T.eclipse.solar)}</td></tr><tr><td class="k">Lunar eclipse</td><td>${esc(T.eclipse.lunar)}</td></tr>
+    <tr><td class="k">North Node</td><td>${esc(cap(T.node.north))}</td></tr><tr><td class="k">South Node</td><td>${esc(cap(T.node.south))}</td></tr>
+    <tr><td class="k">New Moon</td><td>${esc(T.timing.new)}</td></tr><tr><td class="k">Full Moon</td><td>${esc(T.timing.full)}</td></tr><tr><td class="k">Eclipse</td><td>${esc(T.timing.eclipse)}</td></tr>
+    <tr><td class="k">Retrogrades named</td><td>${T.retrograde_always_mentioned.map(k=>pname(T,k)).join(', ')} always; others when ruler or in aspect.</td></tr></table></div>`;
+  document.getElementById('tables-out').innerHTML=h;
+}
+
+function renderTests(E){
+  const s=E.summary,pct=x=>x==null?'–':Math.round(x*100)+'%';
+  const miss=E.lunations.filter(r=>r.missed_pairs.length||r.missed_planets.length);
+  document.getElementById('tests-out').innerHTML=`<div class="glass">
+  <p>${s.lunations} lunations, ${s.sources} published readings. "Published" below means the union of what that lunation's sources state. Precision: how much of what we compute the sources also name. Recall: how much of what the sources name we compute.</p>
+  <div><span class="stat"><b>${s.sign_agreement}</b><span>sign agrees</span></span><span class="stat"><b>${s["degree_within_0.1"]}</b><span>degree agrees (0.1°, or whole degree when the page prints one)</span></span><span class="stat"><b>${s.eclipse_agreement}</b><span>eclipse yes/no</span></span><span class="stat"><b>${s.node_agreement}</b><span>eclipse node</span></span></div>
+  <table><tr><th>Factual</th><th>Precision</th><th>Recall</th><th>Hits / ours / published</th></tr>
+  <tr><td>Aspects, planet + type</td><td class="n">${pct(s.aspect_pairs.precision)}</td><td class="n">${pct(s.aspect_pairs.recall)}</td><td class="n">${s.aspect_pairs.hits} / ${s.aspect_pairs.ours} / ${s.aspect_pairs.theirs}</td></tr>
+  <tr><td>Aspects, planet only (pages often omit the type)</td><td class="n">${pct(s.aspect_planets.precision)}</td><td class="n">${pct(s.aspect_planets.recall)}</td><td class="n">${s.aspect_planets.hits} / ${s.aspect_planets.ours} / ${s.aspect_planets.theirs}</td></tr>
+  <tr><td>Retrogrades named in the text</td><td class="n">${pct(s.retrogrades.precision)}</td><td class="n">${pct(s.retrogrades.recall)}</td><td class="n">${s.retrogrades.hits} / ${s.retrogrades.ours} / ${s.retrogrades.theirs}</td></tr></table>
+  <table><tr><th>Thematic</th><th>Mean per source</th></tr>
+  <tr><td>Theme recall: share of a source's theme keywords (mapped to ${20} canonical themes by a fixed synonym table) that our factors also imply</td><td class="n">${pct(s.theme_recall_mean)}</td></tr>
+  <tr><td>Theme precision: share of the themes our factors imply that the source also named</td><td class="n">${pct(s.theme_precision_mean)}</td></tr></table>
+  <h3>Misses</h3><ul>${miss.map(r=>`<li>${r.date_local} ${r.type}: published but not computed — ${[...r.missed_pairs.map(p=>cap(p[0])+' '+p[1]),...r.missed_planets.filter(p=>!r.missed_pairs.some(x=>x[0]===p)).map(p=>cap(p)+' (type not stated)')].join(', ')||'–'}${r.extra_pairs.length?`; computed but unnamed by any source — ${r.extra_pairs.map(p=>cap(p[0])+' '+p[1]).join(', ')}`:''}</li>`).join('')}</ul>
+  <p class="sub">Known reasons: a Mercury conjunction at 8.1° (just outside the 8° orb); Jupiter semisextiles (30°, not in the aspect set); a Full Moon planet counted once (a source listing "Neptune conjunct Moon" and "Neptune opposite Sun" is the same geometry); outer-planet retrogrades a page mentioned without the planet being engaged. Theme precision is low because a reading implies several themes per aspect while a page's keyword list is short.</p></div>`;
+}
+
+function renderExamples(T,E){
+  document.getElementById('examples-out').innerHTML=E.lunations.map(r=>`<details class="glass"><summary>${r.date_local} — ${r.type==='new'?'New':'Full'} Moon at ${r.our_degree.toFixed(1)}° ${r.our_sign}${r.our_eclipse?` (${r.our_eclipse} eclipse, ${r.our_node} node)`:''}</summary>
+  <div class="ex"><div><h3>Computed</h3><p class="read">${esc(r.our_text)}</p>
+  <p class="sub">Aspects: ${r.our_aspects.map(a=>`${pname(T,a.planet)} ${a.aspect} ${a.orb.toFixed(1)}°`).join('; ')||'none within orb'}.<br>Retrograde: ${r.our_retrogrades.map(k=>pname(T,k)).join(', ')||'none'}. Ruler ${pname(T,r.ruler.planet)} in ${r.ruler.sign}${r.ruler.retrograde?' (retrograde)':''}.</p>
+  <p>${r.missed_pairs.length||r.missed_planets.length?`<span class="miss">Not computed but published:</span> ${[...new Set([...r.missed_pairs.map(p=>pname(T,p[0])+' '+p[1]),...r.missed_planets.map(p=>pname(T,p))])].join(', ')}.`:'Every published aspect was computed.'}${r.extra_pairs.length?` Computed, not named by these sources: ${r.extra_pairs.map(p=>pname(T,p[0])+' '+p[1]).join(', ')}.`:''}</p></div>
+  <div><h3>Published</h3>${r.sources.map(s=>`<p><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.site)}</a>${s.quote?` — <em>${esc(s.quote)}</em>`:''}<br>${(s.themes||[]).map(t=>`<span class="tag${s.overlap.includes(canonKw(t))?' on':''}">${esc(t)}</span>`).join('')}</p>`).join('')}
+  <p class="sub">Red tags are themes our factors also imply.</p></div></div></details>`).join('');
+}
+// theme keyword -> canonical theme: the same synonym table as evaluate.py (first match wins)
+function canonKw(kw){kw=kw.toLowerCase();for(const [c,syns] of Object.entries(SYN))if(syns.some(x=>kw.includes(x)))return c;return null}
+const SYN={"new beginnings":["new beginnings","fresh start","beginning","renewal","reboot","start","intention","momentum","initiative","turning point","transition"],"endings / release":["endings","ending","release","letting go","surrender","completion","cycle completion","clearing","purification","closure","reset","necessary endings","detachment","dissolution","simplif","life edit"],"culmination / revelation":["culmination","revelation","illumination","truth","hidden","true colors","secrets","realis","wake-up","news","clarity","reassessment","honest"],"relationships":["relationship","partner","couples","love","romance","romantic","intimacy","companionship","compromise","synergy","networking","friend","community"],"home / family":["home","family","nurtur","inherited","roots","security","comfort","nest"],"work / health / routine":["health","routine","work","service","habit","organi","detail","self-care","well-being","wellbeing","order","discrimination","mind-body","productive","planning"],"money / worth":["money","finance","worth","value","resources","material","simple joys","food","nature","grounding","sustain"],"communication / ideas":["communication","talk","conversation","ideas","mental","learning","information","mind","negotiation","agreement","mixed news"],"power / transformation":["power","transformation","transform","control","rebirth","self-mastery","depth","compulsion","breaking old patterns","form vs transformation","death"],"sudden change":["sudden","surprise","unexpected","disruption","wildcard","wild card","shock","instability","volatil","rebellion","protest","liberation","breakthrough","awakening","innovation","independence","freedom","individuality","unintended","accelerated"],"healing":["healing","wound","self-compassion","compassion","acceptance","forgive"],"confusion / illusion":["confusion","illusion","deception","disillusion","escapism","suspicion","fantasy","fantasies","uncertainty","fog","sacrifice","suffering","disappointment"],"restriction / responsibility":["restriction","responsib","duty","discipline","hardship","limit","accountab","structure","patience","caution","reality check","commitment","test of","maturity","steady","perseverance","strategy","deliberation"],"expansion / optimism":["optimism","expansion","expanded","adventure","travel","growth","opportunity","luck","faith","belief","horizons","risk","overconfidence","confidence","self-development","comfort-zone","personal growth","future"],"anger / conflict":["anger","conflict","aggression","tension","fight","war","crisis","polariz","polaris","discord","urgency","pressure","assertion","assertive","courage","passion","action","decisive","bold","leadership"],"intuition / spirituality":["intuition","intuitive","spiritual","dream","psychic","faith","inner wisdom","trust","creativity","idealism","art","music","imagination","empathy","sensitivity","mindful"],"balance":["balance","harmony","fairness","symmetry","equilibrium","give-and-take","work-rest","work-family","autonomy vs","self-assertion vs","beautification"],"emotion":["emotion","feeling","mood","emotional expression","emotional release","heightening","expression","attitude","visibility","self-expression","authentic","being seen","recognition","pride","creative"],"identity / self":["identity","self","authenticity","individual","voice","autonomy","self-assertion","independence"],"eclipse / fate":["eclipse","fate","destiny","wild-card","karmic","collective"]};
+
+(async()=>{
+  try{const r=await fetch('data/manifest.json',{cache:'no-cache'});MANIFEST=r.ok?await r.json():null}catch(e){MANIFEST=null}
+  const [T,months,E]=await Promise.all([loadJSON('data/lunation_tables.json'),loadJSON('data/moon_months_22310.json'),loadJSON('data/lunation_eval.json')]);
+  renderTables(T);renderTests(E);renderExamples(T,E);
+  const go=()=>{renderEntry(T,months,location.hash);if(location.hash)document.getElementById('entry').scrollIntoView()};
+  go();addEventListener('hashchange',go);
+})().catch(e=>{document.getElementById('entry').innerHTML=`<div class="glass">Could not load data: ${esc(e.message)}</div>`});
+</script>
+</body></html>
