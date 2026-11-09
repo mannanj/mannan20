@@ -25,6 +25,7 @@ export const GAME_ITEMS = {
   'golden-mane': { label: 'Golden mane', max: 1, usable: true },
   'hydra-scale': { label: 'Hydra scale', max: 2, usable: true },
   'gate-key': { label: 'Gate key', max: 1, usable: true },
+  'key-to-the-city': { label: 'Key to the City', max: 1, usable: false },
   sword: { label: 'Sword', max: 1, usable: true },
   jev: { label: 'Jev (asleep)', max: 1, usable: true },
   monkey: { label: 'Monkey', max: 1, usable: true },

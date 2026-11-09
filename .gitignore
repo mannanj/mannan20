@@ -108,3 +108,5 @@ videos/sun-signal-light/transcripts/*.zip
 
 scripts/birds/raw/
 scripts/birds/review/
+
+.private/

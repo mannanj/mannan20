@@ -6,6 +6,7 @@ import type { GameItemId } from '@/components/inventory';
 import manifest from '../../../public/game/birds/manifest.json';
 import { TapCursorGlyph } from './tap-cursor-icon';
 import { talonNeed } from './chicken-pacing';
+import { scaledClicks } from './game-tuning';
 
 export type BirdKind = 'hawk' | 'eagle' | 'phoenix';
 export type BirdPhase = 'idle' | 'approach' | 'grab' | 'right' | 'recoil' | 'left' | 'hover' | 'depart' | 'recede' | 'done';
@@ -287,6 +288,8 @@ export interface BirdState {
   queue: BirdKind[];
   finished: BirdKind[];
   talonScale: number;
+  clickScale: number;
+  disabled: BirdKind[];
   pulseAt: number;
   pulses: number;
   burn: number;
@@ -343,6 +346,8 @@ export function createBirdState(): BirdState {
     queue: [],
     finished: [],
     talonScale: 1,
+    clickScale: 1,
+    disabled: [],
     pulseAt: 0,
     pulses: 0,
     burn: 0,
@@ -418,6 +423,7 @@ export function isBirdBusy(s: BirdState): boolean {
 }
 
 export function queueBird(s: BirdState, kind: BirdKind): boolean {
+  if (s.disabled.includes(kind)) return false;
   if (s.kind === kind && s.phase !== 'done') return false;
   if (s.finished.includes(kind) || s.queue.includes(kind)) return false;
   s.queue.push(kind);
@@ -591,7 +597,7 @@ function settleAnchor(s: BirdState, spec: BirdSpec, vw: number, vh: number): voi
 export function startBird(s: BirdState, kind: BirdKind, ts: number, cx: number, cy: number, vw: number, vh: number, snapshot: BirdSnapshot, hud: HudRect | null, chicken: { w: number; h: number }): void {
   const fresh = createBirdState();
   const queue = s.queue.filter((k) => k !== kind);
-  Object.assign(s, fresh, { kind, triggered: true, pending: false, snapshot, hud, chicken, queue, finished: s.finished });
+  Object.assign(s, fresh, { kind, triggered: true, pending: false, snapshot, hud, chicken, queue, finished: s.finished, clickScale: s.clickScale, disabled: s.disabled });
   s.phase = 'approach';
   s.phaseAt = ts;
   const fromRight = cx < vw / 2;
@@ -690,7 +696,7 @@ export function tapRecedingBird(s: BirdState, ts: number, groundY: number): 'ign
   if (!spec) return 'ignored';
   s.recoveryClicks += 1;
   s.flapAt = ts;
-  if (!s.feathered && s.recoveryClicks >= spec.featherClicks) {
+  if (!s.feathered && s.recoveryClicks >= scaledClicks(spec.featherClicks, s.clickScale)) {
     s.feathered = true;
     s.feather = { x: s.pos.x, y: s.pos.y, born: ts, groundY };
     return 'feather';
@@ -1290,6 +1296,7 @@ const TALON_STYLE: CSSProperties = { transformOrigin: '50% 0%' };
 const FLIGHT_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
 
 interface BirdLayerProps {
+  fiery?: boolean;
   kind: BirdKind;
   part: 'back' | 'front';
   els: RefObject<BirdEls>;
@@ -1301,7 +1308,52 @@ interface BirdLayerProps {
 
 const TOASTED_SLOTS = Array.from({ length: TOASTED_ALIVE_MAX }, (_, i) => i);
 
-export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted }: BirdLayerProps) {
+const PHOENIX_FIRE_FILTER_ID = 'phoenix-fire';
+const FIRE_SEEDS = '1;2;3;4;5;6;7;8';
+
+function ablaze(kind: BirdKind, fiery: boolean): string {
+  return fiery && kind === 'phoenix' ? 'bird-ablaze' : '';
+}
+
+function PhoenixFireFilter() {
+  return (
+    <svg width="0" height="0" aria-hidden="true" className="absolute">
+      <filter id={PHOENIX_FIRE_FILTER_ID} x="-35%" y="-45%" width="170%" height="180%" colorInterpolationFilters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.022 0.11" numOctaves="2" seed="1" result="noise">
+          <animate attributeName="seed" values={FIRE_SEEDS} dur="0.56s" calcMode="discrete" repeatCount="indefinite" />
+        </feTurbulence>
+        <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="fat" />
+        <feDisplacementMap in="fat" in2="noise" scale="46" xChannelSelector="R" yChannelSelector="G" result="licks" />
+        <feOffset in="licks" dy="-14" result="up" />
+        <feGaussianBlur in="up" stdDeviation="3.5" result="soft" />
+        <feFlood floodColor="#e81e00" floodOpacity="0.55" result="red" />
+        <feComposite in="red" in2="soft" operator="in" result="outer" />
+        <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="mid" />
+        <feDisplacementMap in="mid" in2="noise" scale="30" xChannelSelector="G" yChannelSelector="R" result="midLicks" />
+        <feOffset in="midLicks" dy="-8" result="midUp" />
+        <feGaussianBlur in="midUp" stdDeviation="1.6" result="midSoft" />
+        <feFlood floodColor="#ff7a00" floodOpacity="0.75" result="orange" />
+        <feComposite in="orange" in2="midSoft" operator="in" result="middle" />
+        <feDisplacementMap in="SourceAlpha" in2="noise" scale="16" xChannelSelector="R" yChannelSelector="G" result="core" />
+        <feOffset in="core" dy="-4" result="coreUp" />
+        <feFlood floodColor="#ffd34a" floodOpacity="0.9" result="gold" />
+        <feComposite in="gold" in2="coreUp" operator="in" result="inner" />
+        <feColorMatrix in="SourceGraphic" type="matrix" values="1.2 0.15 0 0 0.06  0.05 0.78 0 0 0  0 0 0.35 0 0  0 0 0 1 0" result="hot" />
+        <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 0.45  0 0 0 0 0.05  1.6 0 0 0 -0.55" result="flameNoise" />
+        <feComposite in="flameNoise" in2="SourceAlpha" operator="in" result="bodyFlames" />
+        <feBlend in="bodyFlames" in2="hot" mode="screen" result="burning" />
+        <feMerge>
+          <feMergeNode in="outer" />
+          <feMergeNode in="middle" />
+          <feMergeNode in="inner" />
+          <feMergeNode in="burning" />
+        </feMerge>
+      </filter>
+    </svg>
+  );
+}
+
+export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted, fiery = false }: BirdLayerProps) {
   const spec = BIRD_SPECS[kind];
   const bind = <K extends keyof BirdEls>(key: K) => (el: BirdEls[K]) => {
     els.current[key] = el;
@@ -1310,7 +1362,8 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
     return (
       <>
         <div ref={bind('flash')} data-testid="bird-flash" className="bird-flash pointer-events-none fixed inset-0 z-20 [visibility:hidden]" />
-        <img ref={bind('body')} src={frame(kind, 'grab-body').file} alt="" draggable={false} data-testid="bird-body" className={LAYER} style={FLIGHT_STYLE} />
+        {fiery && kind === 'phoenix' && <PhoenixFireFilter />}
+        <img ref={bind('body')} src={frame(kind, 'grab-body').file} alt="" draggable={false} data-testid="bird-body" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
         <img ref={bind('look')} alt="" draggable={false} data-testid="bird-look" className={LAYER} style={FLIGHT_STYLE} />
         <img
           ref={bind('talonL')}
@@ -1327,8 +1380,8 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
   }
   return (
     <div ref={bind('root')} data-testid="bird-root" data-kind={kind} data-phase="idle" data-talon="" data-hint="0" data-label="0" data-look="0" data-heat="0" data-pulse="0" className="contents">
-      <img ref={bind('flightPrev')} alt="" draggable={false} data-testid="bird-flight-prev" className={LAYER} style={FLIGHT_STYLE} />
-      <img ref={bind('flight')} alt="" draggable={false} data-testid="bird-flight" className={LAYER} style={FLIGHT_STYLE} />
+      <img ref={bind('flightPrev')} alt="" draggable={false} data-testid="bird-flight-prev" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
+      <img ref={bind('flight')} alt="" draggable={false} data-testid="bird-flight" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
       {spec.heat && (
         <>
           <div ref={bind('shimmer')} data-testid="bird-shimmer" className="bird-shimmer pointer-events-none absolute top-0 left-0 will-change-transform [visibility:hidden]" />

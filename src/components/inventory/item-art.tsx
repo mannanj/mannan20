@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { IdCardArt, KeyToTheCityArt } from './collectible-art';
 
 interface ItemArtProps {
   id: string;
@@ -123,6 +124,8 @@ const ART: Record<string, (size: number) => ReactNode> = {
   'golden-mane': (size) => <GoldenMane size={size} />,
   'hydra-scale': (size) => <HydraScale size={size} />,
   'gate-key': (size) => <GateKey size={size} />,
+  'key-to-the-city': (size) => <KeyToTheCityArt size={size} />,
+  'id-card': (size) => <IdCardArt width={size} height={Math.round((size * 2) / 3)} />,
   sword: (size) => <Sword size={size} />,
   jev: (size) => <SleepingJev size={size} />,
   monkey: (size) => <Monkey size={size} />,

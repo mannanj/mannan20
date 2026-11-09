@@ -43,6 +43,30 @@ async function appsFor(env: AccessEnv, caller: Caller): Promise<App[]> {
   return out;
 }
 
+interface MyInventory {
+  items: { id: string; count: number }[];
+  scores: Record<string, number>;
+}
+
+async function inventoryFor(env: AccessEnv, caller: Caller): Promise<MyInventory> {
+  if (!env.SITE_ORIGIN || !env.MCP_ACTOR_SECRET) throw new Error("not configured");
+  const token = await signActor({ sub: caller.email, email: caller.email }, env.MCP_ACTOR_SECRET);
+  const res = await fetch(`${env.SITE_ORIGIN}/api/inventory`, {
+    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
+    redirect: "manual",
+  });
+  if (!res.ok) throw new Error(`site returned ${res.status}`);
+  const body = (await res.json()) as { email?: unknown; items?: unknown; scores?: unknown };
+  if (body.email !== caller.email || !Array.isArray(body.items) || typeof body.scores !== "object" || body.scores === null) {
+    throw new Error("unexpected answer");
+  }
+  const items = (body.items as Record<string, unknown>[]).flatMap((raw) =>
+    typeof raw?.id === "string" && typeof raw.count === "number" ? [{ id: raw.id, count: raw.count }] : [],
+  );
+  const scores = Object.fromEntries(Object.entries(body.scores).filter(([, v]) => typeof v === "number")) as Record<string, number>;
+  return { items, scores };
+}
+
 const text = (value: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(value) }],
 });
@@ -176,6 +200,25 @@ export function createServer(
       }
     },
   );
+
+  if (caller) {
+    server.registerTool(
+      "get_my_inventory",
+      {
+        title: "Get my inventory",
+        description:
+          "Your mannan.is bag (the items collected in articles and the chicken game, with counts) and your best chicken game score. Needs a mannan.is sign-in.",
+        annotations: READ_ONLY,
+      },
+      async () => {
+        try {
+          return text({ ...(await inventoryFor(env, caller)), signedInAs: caller.email });
+        } catch {
+          return { content: [{ type: "text" as const, text: "Your inventory could not be loaded just now." }], isError: true };
+        }
+      },
+    );
+  }
 
   server.registerTool(
     "list_research",

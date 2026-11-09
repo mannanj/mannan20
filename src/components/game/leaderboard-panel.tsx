@@ -1,5 +1,6 @@
 'use client';
 
+import { AccountSave } from './account-save';
 import { useCallback, useEffect, useState } from 'react';
 import { BottomSheet } from './bottom-sheet';
 import { FeedbackPopup } from './feedback-popup';
@@ -47,9 +48,10 @@ interface LeaderboardPanelProps {
   onToggle: () => void;
   onClose: () => void;
   score: number;
+  siteSignIn?: boolean;
 }
 
-export function LeaderboardPanel({ open, onToggle, onClose, score }: LeaderboardPanelProps) {
+export function LeaderboardPanel({ open, onToggle, onClose, score, siteSignIn = false }: LeaderboardPanelProps) {
   const [boards, setBoards] = useState<Boards | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -388,7 +390,9 @@ export function LeaderboardPanel({ open, onToggle, onClose, score }: Leaderboard
           </p>
         )}
 
-        <div className="mt-3 text-xs text-white/40">
+        {siteSignIn && <AccountSave />}
+
+        <div className={`mt-3 text-xs text-white/40 ${siteSignIn ? 'hidden' : ''}`}>
           {identity?.verified ? (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span data-testid="leaderboard-identity">
