@@ -53,6 +53,7 @@ export function useSceneLog(current: string, score: number, enabled: boolean): S
 interface ScenePickerProps {
   current: string;
   played: Set<string>;
+  locked: string[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPick: (id: string) => void;
@@ -62,7 +63,7 @@ function Dot({ id }: { id: string }) {
   return <span className="h-2 w-2 shrink-0 rounded-full shadow-[0_0_0_1px_rgba(255,255,255,0.35)]" style={{ backgroundColor: SCENE_DOTS[id] ?? '#fff' }} />;
 }
 
-export function ScenePicker({ current, played, open, onOpenChange, onPick }: ScenePickerProps) {
+export function ScenePicker({ current, played, locked, open, onOpenChange, onPick }: ScenePickerProps) {
   const label = SCENES.find((s) => s.id === current)?.label ?? 'Backyard';
   const pick = useCallback(
     (id: string) => {
@@ -87,8 +88,9 @@ export function ScenePicker({ current, played, open, onOpenChange, onPick }: Sce
       {open && (
         <ol data-testid="scene-picker-list" className="flex w-full flex-col gap-0.5 border-t border-white/15 p-1.5">
           {SCENES.map((s, i) => {
-            const unlocked = played.has(s.id);
             const here = s.id === current;
+            const seen = played.has(s.id);
+            const unlocked = seen && !locked.includes(s.id);
             return (
               <li key={s.id}>
                 <button
@@ -101,7 +103,7 @@ export function ScenePicker({ current, played, open, onOpenChange, onPick }: Sce
                 >
                   <span className="w-3 text-[10px] tabular-nums text-white/45">{i + 1}</span>
                   <Dot id={s.id} />
-                  <span className="whitespace-nowrap">{unlocked ? s.label : '???'}</span>
+                  <span className="whitespace-nowrap">{seen ? s.label : '???'}</span>
                 </button>
               </li>
             );

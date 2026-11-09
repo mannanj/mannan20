@@ -386,7 +386,7 @@ import { MoundLayer, type MoundControl } from './mound-layer';
 import { MONGOOSE_READY_KEY, MOUND_ITEM_ID } from './mounds';
 import { CannonLayer, type CannonControl } from './cannon-layer';
 import { CastHud, type CastStatus } from './cast-hud';
-import { CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY } from './cannon';
+import { CAST_IDS, CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY, type CastId } from './cannon';
 import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
 import { ICE_COLORS, isGearItem, type GearId } from './gear';
 import { CreatureDuel, type DuelDef } from './creature-duel';
@@ -1296,6 +1296,10 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
     if (opening !== 'pending' || loaderPhase !== 'done') return;
     setOpening('cosmos');
   }, [opening, loaderPhase]);
+  useEffect(() => {
+    if (tuning.cosmicOpening) void import('./cosmic-opening');
+  }, [tuning.cosmicOpening]);
+  const openingCover = opening === 'pending' || (opening === 'cosmos' && !yardShown);
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const [kids, setKids] = useState<Kid[]>([]);
   const [bonus, setBonus] = useState<{ amount: number; id: number } | null>(null);
@@ -1395,6 +1399,8 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const birdForcedRef = useRef(false);
   const squeezesRef = useRef(0);
   const [squeezeHintGone, setSqueezeHintGone] = useState(false);
+  const [started, setStarted] = useState(false);
+  const startedRef = useRef(false);
   const physicsRef = useRef<Physics>({
     x: 0, y: 0, vx: 0, vy: 0, rotation: 0, rv: 0, bank: 0,
   });
@@ -3144,19 +3150,24 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
     return cast;
   }, []);
 
+  const castNow = useCallback((id: CastId) => {
+    const owned = (item: string) => itemsRef.current.some((i) => i.id === item);
+    if (id === 'jev' && owned(JEV_ITEM_ID)) jevRef.current?.wake();
+    if (id === 'monkey' && owned(MONKEY_ITEM_ID)) monkeyRef.current?.wake();
+    if (id === 'cannon') cannonRef.current?.arm();
+    if (id === 'mongoose' && owned(MOUND_ITEM_ID)) moundRef.current?.wakePet();
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return;
-      const owned = (id: string) => itemsRef.current.some((i) => i.id === id);
-      if (e.key === CAST_KEYS.jev && owned(JEV_ITEM_ID)) jevRef.current?.wake();
-      if (e.key === CAST_KEYS.monkey && owned(MONKEY_ITEM_ID)) monkeyRef.current?.wake();
-      if (e.key === CAST_KEYS.cannon) cannonRef.current?.arm();
-      if (e.key === CAST_KEYS.mongoose && owned(MOUND_ITEM_ID)) moundRef.current?.wakePet();
+      const id = CAST_IDS.find((c) => CAST_KEYS[c] === e.key);
+      if (id) castNow(id);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [castNow]);
 
   const collectOrb = useCallback(
     (id: number) => {
@@ -3557,6 +3568,10 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       evoRef.current += 1;
       evoIdleRef.current = now;
       squeezesRef.current += 1;
+      if (!startedRef.current && (e || extra)) {
+        startedRef.current = true;
+        setStarted(true);
+      }
       if (squeezesRef.current === SQUEEZE_HINT_CLICKS) setSqueezeHintGone(true);
       setEvo(evoRef.current);
       const prevScore = scoreRef.current;
@@ -5715,10 +5730,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       )}
 
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
-        {opening === 'done' && <VersionPicker current={tuning.variant} />}
-        {tuning.scenePicker && opening === 'done' && (
-          <ScenePicker current={eraUi?.id ?? BACKYARD_SCENE_ID} played={scenesPlayed} open={scenesOpen} onOpenChange={setScenesOpen} onPick={pickScene} />
-        )}
+        {opening === 'done' && !started && <VersionPicker current={tuning.variant} />}
         <button
           type="button"
           onClick={() => setSkinsOpen((v) => !v)}
@@ -5748,6 +5760,16 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
               </button>
             ))}
           </div>
+        )}
+        {tuning.scenePicker && opening === 'done' && (
+          <ScenePicker
+            current={eraUi?.id ?? BACKYARD_SCENE_ID}
+            played={scenesPlayed}
+            locked={tuning.cosmicOpening ? [] : [BACKYARD_SCENE_ID]}
+            open={scenesOpen}
+            onOpenChange={setScenesOpen}
+            onPick={pickScene}
+          />
         )}
       </div>
 
@@ -6103,7 +6125,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         skin={skin}
         tier={tier}
       />
-      <CastHud read={readCast} />
+      <CastHud read={readCast} onCast={castNow} />
       <GearLayer
         controlRef={gearRef}
         monkeyRef={monkeyRef}
@@ -6184,6 +6206,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         siteSignIn={tuning.persistScore}
       />
 
+      {openingCover && <div data-testid="opening-cover" className="fixed inset-0 z-[49] bg-black" />}
       {opening === 'cosmos' && (
         <CosmicOpening onArrive={() => setYardShown(true)} onDone={() => setOpening('yard')} />
       )}

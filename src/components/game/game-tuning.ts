@@ -56,7 +56,7 @@ export const V3_TUNING: GameTuning = {
   baseSpeed: V1_BASE_SPEED * V3_SPEED_BOOST,
   clickScale: V3_CLICK_SCALE,
   disabledBirds: ['eagle'],
-  cosmicOpening: true,
+  cosmicOpening: false,
   persistScore: true,
   monologueAtEnd: true,
   creatureSize: { kitty: V3_SMALL_KITTY, cyclops: V3_SMALL_CYCLOPS },

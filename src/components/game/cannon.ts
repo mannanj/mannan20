@@ -13,6 +13,7 @@ export const BOTTOM_ZONE_PX = 170;
 
 export const CAST_KEYS = { jev: '1', monkey: '2', cannon: '3', mongoose: '4' } as const;
 export type CastId = keyof typeof CAST_KEYS;
+export const CAST_IDS = Object.keys(CAST_KEYS) as CastId[];
 
 export const CANNON_COPY = {
   invite: 'Hold the chicken and drag it here',

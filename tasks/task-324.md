@@ -2,7 +2,7 @@
 
 Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below.
 
-**Opening**
+**Opening** (disabled 2026-11-09, see note below)
 - [x] Cosmic intro in the style of Sun Signal's welcome scene: a short history of the cosmos (big bang → stars → galaxies → solar system), one continuous zoom to Earth
 - [x] Smooth descent to a backyard: house styled after 4514 Bee St (from the Gaussian map in `~/Documents/visualizer/map`), approach simulated loosely, never a precise zoom-in that would identify the place
 - [x] A flock of game chickens meandering in the yard, looking wherever they like, not at the viewer
@@ -16,7 +16,7 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 - [x] Big monster clicks/HP −80% (lion mane, hydra/cerberus heads, tree HP, kitty)
 - [x] Remove the eagle; keep the phoenix and make its body itself fiery / on fire
 - [x] Kitty and cyclops smaller (60%)
-- [x] Pinching hand cursor: thumb and index pinch the spot clicked, closing on press
+- [ ] Squeezing cursor that pinches what it clicks. A first try (big cartoon hand with a sleeve) shipped and was reverted the same day: it did not read as a cursor. The old hand cursor is back
 - [x] Duels: tiger vs lion (lion wins), cyclops vs hydra (hydra wins), hydra vs cerberus (cerberus wins); each winner then goes for the chicken
 - [x] Scene picker, top right: dot + current scene name on Apple-style glass; caret expands the scenes in order; any played scene can be replayed any number of times (Backyard replays the cosmic opening)
 
@@ -28,8 +28,10 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 - [x] Choice: "Continue squeezing the chicken" or "???". Either one carries on into the repeat (lap 2); "???" also opens the scene picker
 
 **Entry and versions**
-- [x] `/game` opens v3: cosmic opening → backyard, every visit (returning players keep their saved score)
-- [x] Version picker top right in every version: v3 (most recent), v2, Legacy (`?variant=legacy`)
+- [x] `/game` opens v3 on the original loader, straight at the chicken (returning players keep their saved score)
+- [x] Version picker top right in every version: v3 (most recent), v2, Legacy (`?variant=legacy`). Hidden once the player squeezes the chicken in this visit
+- [x] Scene picker sits below Skins
+- [x] Helper chips (1 Jev, 2 Monkey, 3 Cannon, 4 Mongoose) can be tapped on touch screens; keys still work
 
 **Saved progress and sign-in**
 - [x] Score never resets in variant 3: saved in the browser, resumes after closing
@@ -44,3 +46,5 @@ Variant 3 = `/game?variant=3`. Everything from variant 2, plus the changes below
 - Monologue triggers once, when the first lap finishes (`finishesFirstLap`), remembered in `chicken-v3-monologue-seen`.
 - Bee St: game uses only a stylized painting (`public/game/v3/backyard.webp`); the game-only splat copy with a decoy anchor lives in gitignored `.private/chicken-house/` (see its NOTE.md). Earth flight descends to the decoy lat/lon.
 - OpenRouter spend for assets: ~$0.46 (3 images, 1 Lyria clip).
+
+**Note: cosmic opening disabled (2026-11-09).** The universe → backyard opening failed in practice: on a fresh load the loader faded out onto the backyard house for a moment before the space scene's code arrived, then cut hard to black. Mannan asked to turn it off and go back to the original loader that starts at the chicken. It is switched off with `cosmicOpening: false` in `V3_TUNING` (`game-tuning.ts`); all the code stays (`cosmic-opening.tsx`, `backyard-flock.tsx`, the `opening-cover` black layer that fixes the flash, the preload during the loader). While it is off, the scene picker's Backyard row cannot be replayed. To bring it back: flip the flag, then restore the opening tests that were removed from `e2e/chicken-game-v3.spec.ts` in this commit.
