@@ -18,6 +18,7 @@ body{margin:0;padding:76px 16px 16px;background:#fff;color:#000;font:13px ui-mon
 #hdr label{display:flex;align-items:center;gap:8px;font:500 14px -apple-system,system-ui,sans-serif;cursor:pointer}
 section{margin-bottom:40px}
 h2{margin:0 0 10px;font:600 28px -apple-system,system-ui,sans-serif;text-align:left}
+h2 small{font-size:17px;font-weight:500;color:#666;margin-left:8px}
 .scroll{overflow-x:auto;border:1px solid #000}
 .grid{display:grid;grid-template-columns:var(--axis) repeat(var(--n),var(--col));width:max-content}
 .grid>.ax{position:sticky;left:0;z-index:5;background:#fff;border-right:1px solid #ddd}
@@ -259,7 +260,7 @@ function render(days,news,follow){
     const fi=list.findIndex(d=>d.phase&&d.phase.type==='full');list.forEach((d,k)=>d.waxing=k<fi);
     // the 'one lunar month' icon is this cycle's real full moon
     const fullJ=fi>=0?job(list[fi].phase,11,[1,1,1],list[fi]):null;
-    let h=`<h2>${lab(a)} - ${lab(b)} (${list.length} days)</h2><div class="scroll"><div class="grid" style="--n:${list.length}"><div class="hd ax"></div>`;
+    let h=`<h2>${lab(a)} - ${lab(b)} <small>${list.length}d</small></h2><div class="scroll"><div class="grid" style="--n:${list.length}"><div class="hd ax"></div>`;
     h+=list.map(d=>{const x=pd(d.date);return `<div class="day" data-date="${d.date}">${DOW[x.getDay()]} ${x.getDate()}${d.dst?'<b class="dstn">*DST Observed</b>':''}</div>`}).join('');
     h+='<div class="top ax"></div>';
     h+=list.map((d,k)=>{const e=d.peak||d.set||d.rise;const j=job(e,52*e.diam/MEAN_DIAM,dayTint(d),d);
