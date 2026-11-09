@@ -47,7 +47,7 @@ section+section h1.yr{margin-top:24px}
 h2 .mn{position:relative;display:inline-block;margin-right:10px;font:35px/1 'Apple Color Emoji',sans-serif;vertical-align:-4px}
 h2 .mn b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:600 15px/1 -apple-system,system-ui,sans-serif;color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8)}
 h2 small{font-size:17px;font-weight:500;color:#666;margin-left:9.5px}
-.scroll{overflow-x:auto;border:1px solid #000}
+.scroll{overflow-x:auto;border:1px solid #000;border-radius:12px}
 .grid{display:grid;grid-template-columns:var(--axis) repeat(var(--n),var(--col));width:max-content}
 .grid>.ax{position:sticky;left:0;z-index:5;background:#fff;border-right:1px solid #ddd}
 .day{text-align:center;padding:8px 0;letter-spacing:.15em;border-right:1px solid #ddd;border-bottom:1px solid #000}
@@ -142,9 +142,9 @@ h2.open+.mdet{display:flex}
 .mdet .tg{color:#555;margin-bottom:4px}
 .mdet ul{margin:0;padding:0;list-style:none;columns:2 300px;column-gap:28px}
 .mdet li{padding:1px 0;break-inside:avoid}
-.mdet .rd{margin:6px 0 0;max-width:640px;color:#333}
-.mdet .lk{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
-.mdet .lk a{display:inline-flex;align-items:center;gap:4px;color:#2563eb;text-decoration:none;font-weight:500}
+.mdet .rd{margin:6px 0 0;color:#333}
+.mdet .rd p{margin:0}
+.mdet .rd a{margin-left:4px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;color:#2563eb;text-decoration:none;font-weight:500}
 </style></head><body>
 <div id="yfloat" aria-hidden="true"></div><nav id="scrub" aria-label="Months"><div class="track"></div></nav><header id="hdr"><h1>Planning</h1><div class="toggles"><span class="tog"><span id="months-toggle"></span><b>Months</b></span><span class="tog"><span id="dst-toggle"></span><b>DST</b></span><input type="checkbox" id="lunar-months" hidden><input type="checkbox" id="follow-dst" hidden></div></header>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="earth" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2563eb" stop-opacity=".3"/><stop offset=".3" stop-color="#166534" stop-opacity=".38"/><stop offset=".55" stop-color="#8b5a2b" stop-opacity=".34"/><stop offset=".78" stop-color="#16a34a" stop-opacity=".32"/><stop offset="1" stop-color="#2563eb" stop-opacity=".3"/></linearGradient><linearGradient id="earthFull" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#2563eb" stop-opacity=".42"/><stop offset=".3" stop-color="#166534" stop-opacity=".45"/><stop offset=".5" stop-color="#8b5a2b" stop-opacity=".4"/><stop offset=".7" stop-color="#16a34a" stop-opacity=".42"/><stop offset="1" stop-color="#1d4ed8" stop-opacity=".45"/></linearGradient></defs></svg>
@@ -391,11 +391,19 @@ function tickNow(){
     ax.querySelectorAll('b').forEach(b=>b.style.visibility=Math.abs(parseFloat(b.style.top)-y)<16?'hidden':'');
   });
 }
+// Launch: the current month's header at the top of the page (same spot as a timeline jump), and the
+// table scrolled sideways to today's column. The page never scrolls down to the current time.
 function jumpToday(){
   const h=document.querySelector('.day.today');if(!h)return;
   const sc=h.closest('.scroll'),ax=sc.querySelector('.ax').offsetWidth;
   sc.scrollLeft+=h.getBoundingClientRect().left-sc.getBoundingClientRect().left-ax;
-  window.scrollTo(0,h.closest('section').getBoundingClientRect().top+scrollY-document.getElementById('hdr').offsetHeight-8);
+  measure();const i=secs.indexOf(h.closest('section'));
+  // sections above render as we arrive and can shift the target; re-aim until it holds
+  auto=true;let n=0;
+  const step=()=>{scrollTo(0,secTarget(i));if(Math.abs(secTarget(i)-scrollY)>1&&n++<8)requestAnimationFrame(step);else{measure();syncActive(true);
+    // scroll events land a frame after the last scrollTo; keep them quiet until then
+    setTimeout(()=>{auto=false},150)}};
+  step();
 }
 
 let draw=null;
@@ -486,8 +494,7 @@ function toggleMonth(h){
     const f=c.full;
     box.innerHTML=`<canvas></canvas><div><div class="nm">${f?f.name:'Moon month'}</div><div class="tg">${f&&f.kind?cap(f.kind)+' · ':''}${f?f.illum+'% lit at full':''}</div>`+
       `<ul>${monthFacts(c).map(x=>`<li>${x}</li>`).join('')}</ul>`+
-      (c.astro?`<p class="rd">${c.astro.reading.join(' ')}</p>`:'')+
-      `<div class="lk">${c.sources.map(x=>`<a href="${x.url}" target="_blank" rel="noopener" title="${x.title}">Link ${LINK_SVG}</a>`).join('')}</div></div>`;
+      (c.astro?`<div class="rd">${c.astro.reading.map(x=>`<p>${x.text}${x.source?` <a href="${x.source.url}" target="_blank" rel="noopener" title="${x.source.title}">Link ${LINK_SVG}</a>`:''}</p>`).join('')}</div>`:'')+`</div>`;
     const j=jobs[+h.dataset.fj];if(j&&draw)draw(box.querySelector('canvas'),j.e,j.size,j.t);
   }
   const open=!h.classList.contains('open');
@@ -666,7 +673,10 @@ function updateFloat(on){
   scrub.classList.toggle('on',on);
 }
 let settleT=0;
-addEventListener('scroll',()=>{show();syncActive();clearTimeout(settleT);settleT=setTimeout(()=>{if(!auto){measure();syncActive()}},150)},{passive:true});
+// only scrolling you do brings up the timeline / floating year, not the launch jump or layout settling
+let userScrolled=false;
+for(const ev of ['wheel','touchmove','keydown','mousedown'])addEventListener(ev,()=>{userScrolled=true},{passive:true,capture:true});
+addEventListener('scroll',()=>{if((userScrolled&&!auto)||focusU!=null)show();syncActive();clearTimeout(settleT);settleT=setTimeout(()=>{if(!auto){measure();syncActive()}},150)},{passive:true});
 addEventListener('resize',()=>{buildScrub();updateFloat(scrub.classList.contains('on'))});
 new MutationObserver(()=>updateFloat(scrub.classList.contains('on'))).observe(hdr,{attributes:true,attributeFilter:['class']});
 
@@ -740,7 +750,8 @@ track.addEventListener('mousedown',e=>{
   if(note){note.focus();const sel=getSelection(),rg=document.caretRangeFromPoint?.(e.clientX,e.clientY);if(rg){sel.removeAllRanges();sel.addRange(rg)}}
   else el?.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:e.clientX,clientY:e.clientY}));
 });
-track.addEventListener('click',()=>{if(!armed||hovered<0)return;const i=items[hovered].sec;picked=()=>secTarget(i);clearTimeout(previewT);animateTo(picked)});
+// mouseup, not click: WebKit drops the click when the preview scroll moves the page between press and release
+track.addEventListener('mouseup',()=>{if(!armed||hovered<0)return;const i=items[hovered].sec;picked=()=>secTarget(i);clearTimeout(previewT);animateTo(picked)});
 
 
 (async()=>{

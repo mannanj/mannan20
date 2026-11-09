@@ -25,11 +25,22 @@
     "new_sign": "Aquarius",
     "full_sign": "Leo",
     "reading": [
-     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
-     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+     {
+      "text": "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+      "source": {
+       "title": "Aquarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+      "source": {
+       "title": "Leo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-02-28T00:44:49+00:00",
@@ -63,12 +74,29 @@
     "new_sign": "Pisces",
     "full_sign": "Virgo",
     "reading": [
-     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
-     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+      "source": {
+       "title": "Pisces New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+      "source": {
+       "title": "Virgo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-03-29T10:57:49+00:00",
@@ -105,12 +133,29 @@
     "new_sign": "Aries",
     "full_sign": "Libra",
     "reading": [
-     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
-     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+     {
+      "text": "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+      "source": {
+       "title": "Aries New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+      "source": {
+       "title": "Libra Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-04-27T19:31:09+00:00",
@@ -142,11 +187,22 @@
     "new_sign": "Taurus",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+      "source": {
+       "title": "Taurus New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Scorpio Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-05-27T03:02:21+00:00",
@@ -175,11 +231,22 @@
     "new_sign": "Gemini",
     "full_sign": "Sagittarius",
     "reading": [
-     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
-     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+     {
+      "text": "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+      "source": {
+       "title": "Gemini New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+      "source": {
+       "title": "Sagittarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-06-25T10:31:37+00:00",
@@ -204,11 +271,22 @@
     "new_sign": "Cancer",
     "full_sign": "Capricorn",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "Cancer New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+      "source": {
+       "title": "Capricorn Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-07-24T19:11:12+00:00",
@@ -240,11 +318,22 @@
     "new_sign": "Leo",
     "full_sign": "Aquarius",
     "reading": [
-     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
-     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date."
+     {
+      "text": "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+      "source": {
+       "title": "Leo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+      "source": {
+       "title": "Aquarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-08-23T06:06:33+00:00",
@@ -274,12 +363,29 @@
     "new_sign": "Virgo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "Virgo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Pisces Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-09-21T19:54:07+00:00",
@@ -325,12 +431,29 @@
     "new_sign": "Virgo",
     "full_sign": "Aries",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "Virgo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+      "source": {
+       "title": "Aries Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-10-21T12:25:10+00:00",
@@ -362,11 +485,22 @@
     "new_sign": "Libra",
     "full_sign": "Taurus",
     "reading": [
-     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
-     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+     {
+      "text": "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+      "source": {
+       "title": "Libra New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't.",
+      "source": {
+       "title": "Taurus Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-11-20T06:47:16+00:00",
@@ -398,11 +532,22 @@
     "new_sign": "Scorpio",
     "full_sign": "Gemini",
     "reading": [
-     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
-     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+     {
+      "text": "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+      "source": {
+       "title": "Scorpio New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+      "source": {
+       "title": "Gemini Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2025-12-20T01:43:20+00:00",
@@ -443,11 +588,22 @@
     "new_sign": "Sagittarius",
     "full_sign": "Cancer",
     "reading": [
-     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
-     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+     {
+      "text": "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+      "source": {
+       "title": "Sagittarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+      "source": {
+       "title": "Full Moon in Cancer, January 3, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-january-3-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-01-18T19:51:58+00:00",
@@ -472,11 +628,22 @@
     "new_sign": "Capricorn",
     "full_sign": "Leo",
     "reading": [
-     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
-     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+     {
+      "text": "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+      "source": {
+       "title": "Capricorn New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+      "source": {
+       "title": "Full Moon in Leo, February 1, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-february-1-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-02-17T12:01:09+00:00",
@@ -511,13 +678,36 @@
     "new_sign": "Aquarius",
     "full_sign": "Virgo",
     "reading": [
-     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
-     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+      "source": {
+       "title": "New Moon Solar Eclipse in Aquarius, February 17, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-february-17-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+      "source": {
+       "title": "Full Moon Lunar Eclipse in Virgo, March 3, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-lunar-eclipse-on-march-3-2026/"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-03-19T01:23:28+00:00",
@@ -546,11 +736,22 @@
     "new_sign": "Pisces",
     "full_sign": "Libra",
     "reading": [
-     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
-     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+     {
+      "text": "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+      "source": {
+       "title": "New Moon in Pisces, March 18, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-march-18-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+      "source": {
+       "title": "Full Moon in Libra, April 1, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-april-1-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-04-17T11:51:48+00:00",
@@ -587,11 +788,22 @@
     "new_sign": "Aries",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+      "source": {
+       "title": "New Moon in Aries, April 17, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-april-17-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Full Moon in Scorpio, May 1, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-may-1-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-05-16T20:01:02+00:00",
@@ -616,11 +828,22 @@
     "new_sign": "Taurus",
     "full_sign": "Sagittarius",
     "reading": [
-     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
-     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+     {
+      "text": "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+      "source": {
+       "title": "New Moon in Taurus, May 16, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-may-16-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+      "source": {
+       "title": "Full Moon in Sagittarius, May 31, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-may-31-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-06-15T02:54:10+00:00",
@@ -649,11 +872,22 @@
     "new_sign": "Gemini",
     "full_sign": "Capricorn",
     "reading": [
-     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
-     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours."
+     {
+      "text": "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+      "source": {
+       "title": "New Moon in Gemini, June 14, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-june-14-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+      "source": {
+       "title": "Full Moon in Capricorn, June 29, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-june-29-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-07-14T09:43:36+00:00",
@@ -685,11 +919,22 @@
     "new_sign": "Cancer",
     "full_sign": "Aquarius",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "New Moon in Cancer, July 14, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-july-14-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+      "source": {
+       "title": "Full Moon in Aquarius, July 29, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-july-29-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-08-12T17:36:44+00:00",
@@ -724,13 +969,36 @@
     "new_sign": "Leo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+      "source": {
+       "title": "New Moon Solar Eclipse in Leo, August 12, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-solar-eclipse-on-august-12-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Full Moon Lunar Eclipse in Pisces, August 28, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-lunar-eclipse-on-august-28-2026/"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-09-11T03:26:59+00:00",
@@ -766,11 +1034,22 @@
     "new_sign": "Virgo",
     "full_sign": "Aries",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "New Moon in Virgo, September 10, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-september-10-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+      "source": {
+       "title": "Full Moon in Aries, September 26, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-september-26-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-10-10T15:50:05+00:00",
@@ -802,11 +1081,22 @@
     "new_sign": "Libra",
     "full_sign": "Taurus",
     "reading": [
-     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
-     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+     {
+      "text": "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+      "source": {
+       "title": "New Moon in Libra, October 10, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-october-10-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't.",
+      "source": {
+       "title": "Full Moon in Taurus, October 26, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-october-26-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-11-09T07:02:06+00:00",
@@ -838,11 +1128,22 @@
     "new_sign": "Scorpio",
     "full_sign": "Gemini",
     "reading": [
-     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
-     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+     {
+      "text": "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+      "source": {
+       "title": "New Moon in Scorpio, November 9, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-november-9-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+      "source": {
+       "title": "Full Moon in Gemini, November 24, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-november-24-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2026-12-09T00:51:51+00:00",
@@ -888,11 +1189,22 @@
     "new_sign": "Sagittarius",
     "full_sign": "Cancer",
     "reading": [
-     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
-     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+     {
+      "text": "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+      "source": {
+       "title": "New Moon in Sagittarius, December 8, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/new-moon-on-december-8-2026/"
+      }
+     },
+     {
+      "text": "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+      "source": {
+       "title": "Full Moon in Cancer, December 23, 2026 \u2014 Cafe Astrology",
+       "url": "https://cafeastrology.com/events/full-moon-on-december-23-2026/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-01-07T20:24:23+00:00",
@@ -917,11 +1229,22 @@
     "new_sign": "Capricorn",
     "full_sign": "Leo",
     "reading": [
-     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
-     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+     {
+      "text": "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+      "source": {
+       "title": "Capricorn New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+      "source": {
+       "title": "Leo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-02-06T15:56:07+00:00",
@@ -956,13 +1279,36 @@
     "new_sign": "Aquarius",
     "full_sign": "Virgo",
     "reading": [
-     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
-     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+      "source": {
+       "title": "Aquarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+      "source": {
+       "title": "Virgo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-03-08T09:29:28+00:00",
@@ -991,11 +1337,22 @@
     "new_sign": "Pisces",
     "full_sign": "Libra",
     "reading": [
-     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
-     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+     {
+      "text": "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+      "source": {
+       "title": "Pisces New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+      "source": {
+       "title": "Libra Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-04-06T23:51:09+00:00",
@@ -1032,11 +1389,22 @@
     "new_sign": "Aries",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+      "source": {
+       "title": "Aries New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Scorpio Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-05-06T10:58:38+00:00",
@@ -1061,11 +1429,22 @@
     "new_sign": "Taurus",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+      "source": {
+       "title": "Taurus New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Scorpio Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-06-04T19:40:21+00:00",
@@ -1094,11 +1473,22 @@
     "new_sign": "Gemini",
     "full_sign": "Sagittarius",
     "reading": [
-     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
-     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+     {
+      "text": "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+      "source": {
+       "title": "Gemini New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+      "source": {
+       "title": "Sagittarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-07-04T03:02:05+00:00",
@@ -1128,12 +1518,29 @@
     "new_sign": "Cancer",
     "full_sign": "Capricorn",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "Cancer New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+      "source": {
+       "title": "Capricorn Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-08-02T10:05:14+00:00",
@@ -1175,13 +1582,36 @@
     "new_sign": "Leo",
     "full_sign": "Aquarius",
     "reading": [
-     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
-     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+      "source": {
+       "title": "Leo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+      "source": {
+       "title": "Aquarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-08-31T17:41:11+00:00",
@@ -1210,11 +1640,22 @@
     "new_sign": "Virgo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "Virgo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Pisces Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-09-30T02:36:05+00:00",
@@ -1251,11 +1692,22 @@
     "new_sign": "Libra",
     "full_sign": "Aries",
     "reading": [
-     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
-     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+     {
+      "text": "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+      "source": {
+       "title": "Libra New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+      "source": {
+       "title": "Aries Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-10-29T13:36:34+00:00",
@@ -1287,11 +1739,22 @@
     "new_sign": "Scorpio",
     "full_sign": "Taurus",
     "reading": [
-     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
-     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+     {
+      "text": "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+      "source": {
+       "title": "Scorpio New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't.",
+      "source": {
+       "title": "Taurus Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-11-28T03:24:26+00:00",
@@ -1332,11 +1795,22 @@
     "new_sign": "Sagittarius",
     "full_sign": "Gemini",
     "reading": [
-     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
-     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+     {
+      "text": "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+      "source": {
+       "title": "Sagittarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+      "source": {
+       "title": "Gemini Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2027-12-27T20:12:19+00:00",
@@ -1373,12 +1847,29 @@
     "new_sign": "Capricorn",
     "full_sign": "Cancer",
     "reading": [
-     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
-     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+      "source": {
+       "title": "Capricorn New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+      "source": {
+       "title": "Cancer Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-01-26T15:12:31+00:00",
@@ -1408,12 +1899,29 @@
     "new_sign": "Aquarius",
     "full_sign": "Leo",
     "reading": [
-     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
-     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+     {
+      "text": "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+      "source": {
+       "title": "Aquarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+      "source": {
+       "title": "Leo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-02-25T10:37:25+00:00",
@@ -1442,11 +1950,22 @@
     "new_sign": "Pisces",
     "full_sign": "Virgo",
     "reading": [
-     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
-     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry."
+     {
+      "text": "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+      "source": {
+       "title": "Pisces New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+      "source": {
+       "title": "Virgo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-03-26T04:31:19+00:00",
@@ -1478,11 +1997,22 @@
     "new_sign": "Aries",
     "full_sign": "Libra",
     "reading": [
-     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
-     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+     {
+      "text": "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+      "source": {
+       "title": "Aries New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+      "source": {
+       "title": "Libra Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-04-24T19:46:56+00:00",
@@ -1514,11 +2044,22 @@
     "new_sign": "Taurus",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+      "source": {
+       "title": "Taurus New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Scorpio Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-05-24T08:16:19+00:00",
@@ -1547,11 +2088,22 @@
     "new_sign": "Gemini",
     "full_sign": "Sagittarius",
     "reading": [
-     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
-     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+     {
+      "text": "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+      "source": {
+       "title": "Gemini New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+      "source": {
+       "title": "Sagittarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-06-22T18:27:33+00:00",
@@ -1581,12 +2133,29 @@
     "new_sign": "Cancer",
     "full_sign": "Capricorn",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "Cancer New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+      "source": {
+       "title": "Capricorn Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-07-22T03:01:43+00:00",
@@ -1623,12 +2192,29 @@
     "new_sign": "Cancer",
     "full_sign": "Aquarius",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "Cancer New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+      "source": {
+       "title": "Aquarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-08-20T10:43:51+00:00",
@@ -1653,11 +2239,22 @@
     "new_sign": "Leo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+     {
+      "text": "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+      "source": {
+       "title": "Leo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Pisces Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-09-18T18:23:45+00:00",
@@ -1693,11 +2290,22 @@
     "new_sign": "Virgo",
     "full_sign": "Aries",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "Virgo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+      "source": {
+       "title": "Aries Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-10-18T02:56:49+00:00",
@@ -1729,11 +2337,22 @@
     "new_sign": "Libra",
     "full_sign": "Taurus",
     "reading": [
-     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
-     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+     {
+      "text": "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+      "source": {
+       "title": "Libra New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't.",
+      "source": {
+       "title": "Taurus Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-11-16T13:18:02+00:00",
@@ -1770,11 +2389,22 @@
     "new_sign": "Scorpio",
     "full_sign": "Gemini",
     "reading": [
-     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
-     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter."
+     {
+      "text": "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+      "source": {
+       "title": "Scorpio New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+      "source": {
+       "title": "Gemini Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2028-12-16T02:06:19+00:00",
@@ -1820,12 +2450,29 @@
     "new_sign": "Sagittarius",
     "full_sign": "Cancer",
     "reading": [
-     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
-     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+      "source": {
+       "title": "Sagittarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+      "source": {
+       "title": "Cancer Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-01-14T17:24:31+00:00",
@@ -1855,12 +2502,29 @@
     "new_sign": "Capricorn",
     "full_sign": "Leo",
     "reading": [
-     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
-     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+     {
+      "text": "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+      "source": {
+       "title": "Capricorn New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+      "source": {
+       "title": "Leo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-02-13T10:31:31+00:00",
@@ -1885,11 +2549,22 @@
     "new_sign": "Aquarius",
     "full_sign": "Virgo",
     "reading": [
-     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
-     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry."
+     {
+      "text": "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+      "source": {
+       "title": "Aquarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+      "source": {
+       "title": "Virgo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-03-15T04:19:15+00:00",
@@ -1918,11 +2593,22 @@
     "new_sign": "Pisces",
     "full_sign": "Libra",
     "reading": [
-     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
-     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+     {
+      "text": "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+      "source": {
+       "title": "Pisces New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+      "source": {
+       "title": "Libra Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-04-13T21:40:11+00:00",
@@ -1959,11 +2645,22 @@
     "new_sign": "Aries",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+      "source": {
+       "title": "Aries New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Scorpio Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-05-13T13:42:09+00:00",
@@ -1988,11 +2685,22 @@
     "new_sign": "Taurus",
     "full_sign": "Sagittarius",
     "reading": [
-     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
-     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising."
+     {
+      "text": "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+      "source": {
+       "title": "Taurus New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+      "source": {
+       "title": "Sagittarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-06-12T03:50:33+00:00",
@@ -2031,13 +2739,36 @@
     "new_sign": "Gemini",
     "full_sign": "Capricorn",
     "reading": [
-     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
-     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+      "source": {
+       "title": "Gemini New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+      "source": {
+       "title": "Capricorn Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-07-11T15:51:04+00:00",
@@ -2067,12 +2798,29 @@
     "new_sign": "Cancer",
     "full_sign": "Aquarius",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "Cancer New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+      "source": {
+       "title": "Aquarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-08-10T01:55:47+00:00",
@@ -2104,11 +2852,22 @@
     "new_sign": "Leo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+     {
+      "text": "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+      "source": {
+       "title": "Leo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Pisces Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-09-08T10:44:23+00:00",
@@ -2137,11 +2896,22 @@
     "new_sign": "Virgo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "Virgo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Pisces Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-10-07T19:14:33+00:00",
@@ -2178,11 +2948,22 @@
     "new_sign": "Libra",
     "full_sign": "Aries",
     "reading": [
-     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
-     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+     {
+      "text": "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+      "source": {
+       "title": "Libra New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+      "source": {
+       "title": "Aries Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-11-06T04:24:08+00:00",
@@ -2214,11 +2995,22 @@
     "new_sign": "Scorpio",
     "full_sign": "Taurus",
     "reading": [
-     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
-     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+     {
+      "text": "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+      "source": {
+       "title": "Scorpio New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't.",
+      "source": {
+       "title": "Taurus Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2029-12-05T14:52:08+00:00",
@@ -2274,13 +3066,36 @@
     "new_sign": "Sagittarius",
     "full_sign": "Gemini",
     "reading": [
-     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
-     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+      "source": {
+       "title": "Sagittarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+      "source": {
+       "title": "Gemini Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-01-04T02:49:34+00:00",
@@ -2305,11 +3120,22 @@
     "new_sign": "Capricorn",
     "full_sign": "Cancer",
     "reading": [
-     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
-     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+     {
+      "text": "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+      "source": {
+       "title": "Capricorn New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+      "source": {
+       "title": "Cancer Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-02-02T16:07:31+00:00",
@@ -2334,11 +3160,22 @@
     "new_sign": "Aquarius",
     "full_sign": "Leo",
     "reading": [
-     "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
-     "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval."
+     {
+      "text": "New Moon in Aquarius: Think differently. Intentions for friends, community and the future you want to help make.",
+      "source": {
+       "title": "Aquarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Leo: Celebrate yourself. Credit is due; release the need for outside approval.",
+      "source": {
+       "title": "Leo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-03-04T06:34:40+00:00",
@@ -2367,11 +3204,22 @@
     "new_sign": "Pisces",
     "full_sign": "Virgo",
     "reading": [
-     "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
-     "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry."
+     {
+      "text": "New Moon in Pisces: Dream and soften. Set intentions around rest, intuition, art and letting go of control.",
+      "source": {
+       "title": "Pisces New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Virgo: Sort and simplify. See what's working, and let go of perfectionism and over-worry.",
+      "source": {
+       "title": "Virgo Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-04-02T22:02:33+00:00",
@@ -2403,11 +3251,22 @@
     "new_sign": "Aries",
     "full_sign": "Libra",
     "reading": [
-     "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
-     "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided."
+     {
+      "text": "New Moon in Aries: Begin boldly. Pick the one goal that excites you and take the first step before you feel ready.",
+      "source": {
+       "title": "Aries New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Libra: Relationships come into focus. Restore balance, and release what's one-sided.",
+      "source": {
+       "title": "Libra Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-05-02T14:12:10+00:00",
@@ -2439,11 +3298,22 @@
     "new_sign": "Taurus",
     "full_sign": "Scorpio",
     "reading": [
-     "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
-     "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want."
+     {
+      "text": "New Moon in Taurus: Plant slowly and for keeps. Set intentions around money, body and comfort that you can tend all season.",
+      "source": {
+       "title": "Taurus New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Scorpio: Truths surface. A powerful time to let go, forgive, and be honest about what you want.",
+      "source": {
+       "title": "Scorpio Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-06-01T06:21:21+00:00",
@@ -2482,13 +3352,36 @@
     "new_sign": "Gemini",
     "full_sign": "Sagittarius",
     "reading": [
-     "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
-     "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Gemini: Get curious. Start the conversation, the class or the note-taking habit; ideas multiply now.",
+      "source": {
+       "title": "Gemini New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Sagittarius: The big picture clears. Celebrate growth; release restlessness and over-promising.",
+      "source": {
+       "title": "Sagittarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-06-30T21:34:29+00:00",
@@ -2513,11 +3406,22 @@
     "new_sign": "Cancer",
     "full_sign": "Capricorn",
     "reading": [
-     "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
-     "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours."
+     {
+      "text": "New Moon in Cancer: Tend the nest. Intentions for home, family and feeling safe take root easily.",
+      "source": {
+       "title": "Cancer New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Capricorn: Effort pays off. Take stock of achievements, and lay down burdens that aren't yours.",
+      "source": {
+       "title": "Capricorn Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-07-30T11:11:00+00:00",
@@ -2549,11 +3453,22 @@
     "new_sign": "Leo",
     "full_sign": "Aquarius",
     "reading": [
-     "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
-     "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date."
+     {
+      "text": "New Moon in Leo: Make something that's yours. Creative projects, play and being seen are favoured.",
+      "source": {
+       "title": "Leo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/leo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aquarius: Your circle and ideals shine. Free yourself from what feels confining or out of date.",
+      "source": {
+       "title": "Aquarius Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aquarius-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-08-28T23:07:22+00:00",
@@ -2582,11 +3497,22 @@
     "new_sign": "Virgo",
     "full_sign": "Pisces",
     "reading": [
-     "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
-     "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently."
+     {
+      "text": "New Moon in Virgo: Refine the routine. Small daily habits, health and useful work are the seeds to plant.",
+      "source": {
+       "title": "Virgo New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/virgo-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Pisces: Dreams and intuition run high. Rest, forgive, and let one cycle end gently.",
+      "source": {
+       "title": "Pisces Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/pisces-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-09-27T09:54:41+00:00",
@@ -2623,11 +3549,22 @@
     "new_sign": "Libra",
     "full_sign": "Aries",
     "reading": [
-     "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
-     "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out."
+     {
+      "text": "New Moon in Libra: Rebalance. Set intentions for partnership, fairness and beauty, and for give-and-take in your relationships.",
+      "source": {
+       "title": "Libra New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/libra-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Aries: What you've started shows its strength; release impatience and anger that are burning you out.",
+      "source": {
+       "title": "Aries Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/aries-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-10-26T20:17:00+00:00",
@@ -2659,11 +3596,22 @@
     "new_sign": "Scorpio",
     "full_sign": "Taurus",
     "reading": [
-     "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
-     "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't."
+     {
+      "text": "New Moon in Scorpio: Go deep. Commit to a real change: what you'll transform, release or finally face.",
+      "source": {
+       "title": "Scorpio New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/scorpio-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Taurus: A harvest of the senses. Notice what truly sustains you, and let go of clinging to what doesn't.",
+      "source": {
+       "title": "Taurus Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/taurus-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-11-25T06:46:30+00:00",
@@ -2714,13 +3662,36 @@
     "new_sign": "Sagittarius",
     "full_sign": "Gemini",
     "reading": [
-     "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
-     "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
-     "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
-     "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go."
+     {
+      "text": "New Moon in Sagittarius: Aim far. Travel, study and faith in the bigger picture; set an adventurous intention.",
+      "source": {
+       "title": "Sagittarius New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/sagittarius-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Gemini: News and realisations arrive. Say what needs saying, then drop the mental chatter.",
+      "source": {
+       "title": "Gemini Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/gemini-full-moon-ritual"
+      }
+     },
+     {
+      "text": "A solar-eclipse New Moon is a wild-card beginning: doors open fast, so set intentions lightly and watch what unfolds.",
+      "source": {
+       "title": "What Solar & Lunar Eclipses Mean In Astrology \u2014 Bustle",
+       "url": "https://www.bustle.com/life/solar-lunar-eclipse-meaning-astrology"
+      }
+     },
+     {
+      "text": "A lunar-eclipse Full Moon is an emotional turning point: something completes or comes to light, so let it go.",
+      "source": {
+       "title": "The Ultimate Eclipse Guide \u2014 Astrology Hub",
+       "url": "https://astrologyhub.com/article/the-ultimate-eclipse-guide/"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   },
   {
    "new_utc": "2030-12-24T17:32:14+00:00",
@@ -2752,11 +3723,22 @@
     "new_sign": "Capricorn",
     "full_sign": "Cancer",
     "reading": [
-     "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
-     "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass."
+     {
+      "text": "New Moon in Capricorn: Build the long game. Concrete goals, structure and patient ambition are favoured.",
+      "source": {
+       "title": "Capricorn New Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/capricorn-new-moon-ritual"
+      }
+     },
+     {
+      "text": "Full Moon in Cancer: Feelings peak. Honour your needs and let old family patterns surface and pass.",
+      "source": {
+       "title": "Cancer Full Moon rituals \u2014 AstroStyle",
+       "url": "https://astrostyle.com/cancer-full-moon-ritual"
+      }
+     }
     ]
-   },
-   "sources": []
+   }
   }
  ]
 }
