@@ -5,6 +5,7 @@ import { ERA_REGISTRY, ORB_GAP_MIN_MS, ORB_REGISTRY, PACE_CURVE, SCHEDULE_TICK_M
 import { chickenOutline, insideChicken, OUTLINE_SAMPLES, type OutlinePattern } from '../src/components/game/chicken-outline';
 import { FIRE_FLAMING_SCORE, FIRE_FULL_SCORE, LIGHTNING_BLACK_SCORE, LIGHTNING_RED_SCORE } from '../src/components/game/chicken-fire';
 import { CLONE_DOM_LIMIT, CURSOR_HAND_HOT_X, CURSOR_HAND_HOT_Y, CURSOR_HIT_PAD, CURSOR_RING_INNER_RADIUS, CURSOR_RING_OUTER_RADIUS, CURSOR_X3_OFFSET, CURSOR_X5_OFFSET, GOLDEN_LIFE_MS, MAX_CHICKENS_ON_SCREEN, MAX_GOLDEN_CHICKENS, ORB_LABELS, ORB_THRESHOLDS, type OrbKind } from '../src/components/game/chicken-orbs';
+import { MARTIAN_CLICKS_GOAL } from '../src/components/game/martians';
 
 const GUARD_MS = 900;
 
@@ -32,7 +33,7 @@ test.describe('chicken game v2 leaderboard hardening', () => {
   test('variant 2 is served only for ?variant=2', async ({ page }) => {
     await gotoGame(page, '?variant=2');
     await expect(page.getByTestId('chicken-stage')).toHaveAttribute('data-variant', '2');
-    await gotoGame(page, '');
+    await gotoGame(page, '?variant=legacy');
     await expect(page.getByTestId('chicken-stage')).not.toHaveAttribute('data-variant', '2');
   });
 
@@ -80,8 +81,8 @@ test.describe('chicken game v2 leaderboard hardening', () => {
     expect(await sheetOpen(page)).toBe(false);
   });
 
-  test('the default game keeps the original toggle behavior', async ({ page }) => {
-    await gotoGame(page, '');
+  test('the legacy game keeps the original toggle behavior', async ({ page }) => {
+    await gotoGame(page, '?variant=legacy');
     await squeeze(page);
     await page.getByTestId('chicken-leaderboard-link').click();
     expect(await sheetOpen(page)).toBe(true);
@@ -704,7 +705,7 @@ test.describe('chicken game v2 inventory bag', () => {
   test('the bag renders only in variant 2', async ({ page }) => {
     await gotoGame(page, '?variant=2');
     await expect(page.getByTestId('inventory-bag')).toBeVisible();
-    await gotoGame(page, '');
+    await gotoGame(page, '?variant=legacy');
     await expect(page.getByTestId('inventory-bag')).toHaveCount(0);
   });
 
@@ -1544,23 +1545,23 @@ test.describe('chicken game v2 cosmos, Jupiter and Martians', () => {
     await expect(page.getByTestId('martian').first()).toHaveAttribute('data-kind', 'moss');
   });
 
-  test('100 clicks earn the item and the x3 skin; Martian clicks do not score', async ({ page }) => {
+  test(`${MARTIAN_CLICKS_GOAL} clicks earn the item and the x3 skin; Martian clicks do not score`, async ({ page }) => {
     await gotoGame(page, `?variant=2&start=${JUPITER_SCORE}`);
     const game = cosmosBridge(page);
     await expect.poll(async () => (await game.state()).stage).toBe('jupiter');
     const before = (await game.state()).score;
     await game.spawn('pip');
     await expect(page.getByTestId('martian')).toHaveCount(1);
-    await pokeMartian(page, 99);
-    await expect(page.getByTestId('martian-progress')).toHaveText('99/100');
+    await pokeMartian(page, MARTIAN_CLICKS_GOAL - 1);
+    await expect(page.getByTestId('martian-progress')).toHaveText(`${MARTIAN_CLICKS_GOAL - 1}/${MARTIAN_CLICKS_GOAL}`);
     expect((await game.inventory()).some((i) => i.id === 'martian-friend')).toBe(false);
     await pokeMartian(page, 1);
     await expect.poll(async () => (await game.inventory()).some((i) => i.id === 'martian-friend')).toBe(true);
     expect((await game.state()).score).toBe(before);
-    expect(await game.clicks()).toBe(100);
+    expect(await game.clicks()).toBe(MARTIAN_CLICKS_GOAL);
     await page.reload();
     await page.waitForFunction(() => (window as unknown as { __chicken?: unknown }).__chicken !== undefined);
-    expect(await game.clicks()).toBe(100);
+    expect(await game.clicks()).toBe(MARTIAN_CLICKS_GOAL);
     await game.useItem('martian-friend');
     await expect.poll(async () => (await game.state()).skin).toBe('martian');
     const worn = (await game.state()).score;

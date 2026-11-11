@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { verifyUpdatesEmail } from '@/lib/game-updates';
+import { accessDb } from '../../../access/shared';
 import {
   OWNER_COOKIE,
   consumeMagicToken,
@@ -26,6 +28,8 @@ export async function POST(request: Request) {
     if (!result) {
       return NextResponse.json({ error: 'invalid-token' }, { status: 400 });
     }
+    const db = accessDb();
+    if (db) await verifyUpdatesEmail(db, result.email.toLowerCase()).catch(() => undefined);
     const res = NextResponse.json({
       ok: true,
       names: result.names,

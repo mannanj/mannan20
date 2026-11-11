@@ -121,6 +121,35 @@ test.describe('Chicken v3', () => {
     expect(await page.evaluate(() => localStorage.getItem('chicken-v3-monologue-seen'))).toBe('1');
   });
 
+  test('??? shows Not yet implemented with an updates sign-up, then returns to the forest instead of restarting', async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.route('**/api/game/updates', (route) =>
+      route.request().method() === 'GET'
+        ? route.fulfill({ json: { email: null, subscribed: false } })
+        : route.fulfill({ json: { subscribed: true, email: 'p***@example.com', pending: true } })
+    );
+    await gotoV3(page, ALL_SCENES_SCORE);
+    await expect.poll(async () => (await eraOf(page)).id, { timeout: 30_000 }).toBe('forest');
+    await fastForward(page, ERA_MAX_MS + 1000);
+    await page.getByTestId('choice-mystery').click({ timeout: 90_000 });
+    const panel = page.getByTestId('mystery-panel');
+    await expect(panel).toBeVisible({ timeout: 5000 });
+    await expect(panel).toContainText('Not yet implemented');
+    const before = (await bridge(page)).score;
+    await page.waitForTimeout(1500);
+    expect((await bridge(page)).score).toBe(before);
+    await page.getByTestId('mystery-email').fill('player@example.com');
+    await page.getByTestId('mystery-subscribe-submit').click();
+    await expect(page.getByTestId('mystery-subscribe')).toHaveAttribute('data-state', 'pending');
+    await page.getByTestId('mystery-panel').screenshot({ path: 'test-results/mystery-panel.png' });
+    await page.getByTestId('mystery-continue').click();
+    await expect(panel).toHaveCount(0);
+    const era = await eraOf(page);
+    expect(era.id).toBe('forest');
+    expect(era.lap).toBe(1);
+    expect((await bridge(page)).score).toBeGreaterThanOrEqual(before);
+  });
+
   for (const [eraId, rival, winner] of [
     ['myth-1', 'cyclops', 'hydra'],
     ['myth-2', 'hydra', 'cerberus'],
@@ -138,8 +167,9 @@ test.describe('Chicken v3', () => {
       await expect(duel).toHaveAttribute('data-winner', winner);
       await expect(page.getByTestId('duel-left')).toHaveAttribute('data-kind', rival);
       await expect(page.getByTestId('duel-right')).toHaveAttribute('data-kind', winner);
-      await expect(page.getByTestId('duel-banner')).toContainText(`the ${CREATURE_SPECS[winner].label} wins`, { timeout: DUEL_TOTAL_MS });
-      await expect(duel).toHaveCount(0, { timeout: DUEL_TOTAL_MS });
+      await expect(page.getByTestId('duel-banner')).toHaveCount(0);
+      await expect(page.getByTestId('era-label')).toHaveCount(0);
+      await expect(duel).toHaveCount(0, { timeout: DUEL_TOTAL_MS * 2 });
       await expect(page.getByTestId('creature-root')).toHaveAttribute('data-kind', winner, { timeout: 15_000 });
     });
   }

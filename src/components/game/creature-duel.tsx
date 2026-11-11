@@ -18,6 +18,7 @@ interface CreatureDuelProps {
   paused: () => boolean;
   sound: (key: CreatureSoundKey) => void;
   onDone: (winner: CreatureKind) => void;
+  banner: boolean;
 }
 
 type Side = 'left' | 'right';
@@ -50,11 +51,13 @@ const BOB_MS = 220;
 const FADE_MASK = 'linear-gradient(180deg, #000 72%, transparent 97%)';
 const HYDRA_HEAD_FILE = '/game/creatures/snake-head.webp';
 const HYDRA_HEAD_ASPECT = 2.82;
-const HYDRA_HEAD_W_FRAC = 0.62;
+const HYDRA_HEAD_W_FRAC = 0.5;
+const HYDRA_NECK_Y_FRAC = 0.55;
+const HYDRA_NECK_TUCK = '-10%';
 const HYDRA_STUMPS = [
-  { x: 0.27, y: 0.06, rest: -72 },
-  { x: 0.5, y: 0.02, rest: -52 },
-  { x: 0.63, y: 0.08, rest: -30 },
+  { x: 0.28, y: 0.19, rest: -105 },
+  { x: 0.53, y: 0.06, rest: -84 },
+  { x: 0.7, y: 0.19, rest: -62 },
 ];
 const HYDRA_STRIKE_DEG = 58;
 const HYDRA_SWAY_DEG = 7;
@@ -142,7 +145,7 @@ function poseAt(f: Fighter, t: number, home: number, vw: number, exitDir: 1 | -1
   return { ...base, facing: exitDir, x: home + (edge - home) * e * e, lift: Math.abs(Math.sin(t / BOB_MS)) * BOB_PX };
 }
 
-export function CreatureDuel({ duel, specs, groundY, chickenX, paused, sound, onDone }: CreatureDuelProps) {
+export function CreatureDuel({ duel, specs, groundY, chickenX, paused, sound, onDone, banner }: CreatureDuelProps) {
   const [view, setView] = useState(() => ({ vw: window.innerWidth, vh: window.innerHeight }));
   const fighters = useMemo<Fighter[]>(
     () =>
@@ -193,7 +196,6 @@ export function CreatureDuel({ duel, specs, groundY, chickenX, paused, sound, on
       if (t >= WIN_FROM && !announced) {
         announced = true;
         setWinnerShown(true);
-        cbRef.current.sound(right.sound ?? 'roar');
       }
       if (t >= FIGHT_FROM && t < KO_FROM) {
         const clash = Math.floor((t - FIGHT_FROM) / CLASH_MS);
@@ -227,7 +229,7 @@ export function CreatureDuel({ duel, specs, groundY, chickenX, paused, sound, on
           if (!h) return;
           const stump = HYDRA_STUMPS[k];
           const sway = Math.sin(t / HYDRA_SWAY_MS + k * 1.7) * HYDRA_SWAY_DEG;
-          h.style.transform = `rotate(${stump.rest + sway + p.headDeg * (1 - k * 0.15)}deg)`;
+          h.style.transform = `rotate(${stump.rest + sway + p.headDeg * (1 - k * 0.15)}deg) translateX(${HYDRA_NECK_TUCK})`;
         });
         if (els.shadow) {
           els.shadow.style.transform = `translate(${p.x - (f.walk.w * SHADOW_W) / 2}px, ${floor - f.walk.h * SHADOW_H * 0.5}px)`;
@@ -248,9 +250,11 @@ export function CreatureDuel({ duel, specs, groundY, chickenX, paused, sound, on
   const winnerLabel = specs[duel.winner].label;
   return (
     <div data-testid="creature-duel" data-rival={duel.rival} data-winner={duel.winner} className="pointer-events-none contents">
+      {banner && (
       <div data-testid="duel-banner" className="pointer-events-none absolute left-1/2 top-[150px] z-[8] -translate-x-1/2 whitespace-nowrap rounded-full bg-black/45 px-4 py-1.5 text-sm font-semibold tracking-wide text-white/90 backdrop-blur-sm">
         {winnerShown ? `the ${winnerLabel} wins… and turns to the chicken` : duel.banner}
       </div>
+      )}
       {fighters.map((f, i) => (
         <div key={`shadow-${f.kind}`} ref={(el) => { elsRef.current[i].shadow = el; }} className="pointer-events-none absolute top-0 left-0 z-[3] rounded-[50%] bg-black/60 blur-[6px] will-change-transform" style={{ width: f.walk.w * SHADOW_W, height: f.walk.h * SHADOW_H }} />
       ))}
@@ -272,8 +276,8 @@ export function CreatureDuel({ duel, specs, groundY, chickenX, paused, sound, on
                   src={HYDRA_HEAD_FILE}
                   alt=""
                   draggable={false}
-                  className="absolute origin-left drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]"
-                  style={{ left: stump.x * f.walk.w, top: stump.y * f.walk.h - (f.walk.w * HYDRA_HEAD_W_FRAC) / HYDRA_HEAD_ASPECT / 2, width: f.walk.w * HYDRA_HEAD_W_FRAC, height: (f.walk.w * HYDRA_HEAD_W_FRAC) / HYDRA_HEAD_ASPECT }}
+                  className="absolute drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]"
+                  style={{ left: stump.x * f.walk.w, top: stump.y * f.walk.h - ((f.walk.w * HYDRA_HEAD_W_FRAC) / HYDRA_HEAD_ASPECT) * HYDRA_NECK_Y_FRAC, transformOrigin: `0 ${HYDRA_NECK_Y_FRAC * 100}%`, width: f.walk.w * HYDRA_HEAD_W_FRAC, height: (f.walk.w * HYDRA_HEAD_W_FRAC) / HYDRA_HEAD_ASPECT }}
                 />
               ))}
             <img ref={(el) => { elsRef.current[i].walk = el; }} src={f.walk.file} alt="" draggable={false} className="absolute bottom-0 left-1/2 -translate-x-1/2 drop-shadow-[0_10px_14px_rgba(0,0,0,0.45)]" style={spriteStyle(f.walk)} />

@@ -13,6 +13,10 @@ export interface GameTuning {
   persistScore: boolean;
   monologueAtEnd: boolean;
   creatureSize: Partial<Record<CreatureKind, number>>;
+  headlines: boolean;
+  cannonDock: boolean;
+  aimbot: boolean;
+  chickenScale: number;
   eraCreatures: Record<string, EraCreature[]>;
   scenePicker: boolean;
   fieryPhoenix: boolean;
@@ -21,8 +25,10 @@ export interface GameTuning {
 const V1_BASE_SPEED = 0.125;
 const V3_SPEED_BOOST = 1.3;
 const V3_CLICK_SCALE = 0.2;
-const V3_SMALL_KITTY = 0.6;
-const V3_SMALL_CYCLOPS = 0.6;
+const V3_CAT_SCALE = 1 / 3;
+const V3_CHICKEN_SCALE = 1.3;
+const V3_BOSS_SCALE = 1 / 5;
+const V3_OLD_SMALL = 0.6;
 const V3_KITTY_AT_MS = 8000;
 const V3_BIG_CAT_DUEL_AT_MS = 30_000;
 const V3_CYCLOPS_DUEL_AT_MS = 10_000;
@@ -46,6 +52,10 @@ export const V2_TUNING: GameTuning = {
   persistScore: false,
   monologueAtEnd: false,
   creatureSize: {},
+  headlines: true,
+  cannonDock: true,
+  aimbot: false,
+  chickenScale: 1,
   eraCreatures: {},
   scenePicker: false,
   fieryPhoenix: false,
@@ -59,7 +69,18 @@ export const V3_TUNING: GameTuning = {
   cosmicOpening: false,
   persistScore: true,
   monologueAtEnd: true,
-  creatureSize: { kitty: V3_SMALL_KITTY, cyclops: V3_SMALL_CYCLOPS },
+  creatureSize: {
+    kitty: V3_OLD_SMALL * V3_CAT_SCALE,
+    tiger: V3_CAT_SCALE,
+    lion: V3_CAT_SCALE,
+    cyclops: V3_OLD_SMALL * V3_BOSS_SCALE,
+    hydra: V3_BOSS_SCALE,
+    cerberus: V3_BOSS_SCALE,
+  },
+  headlines: false,
+  cannonDock: false,
+  aimbot: true,
+  chickenScale: V3_CHICKEN_SCALE,
   eraCreatures: V3_ERA_CREATURES,
   scenePicker: true,
   fieryPhoenix: true,

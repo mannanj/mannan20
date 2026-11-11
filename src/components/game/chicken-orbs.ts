@@ -2,6 +2,7 @@ export type OrbKind =
   | 'multiply'
   | 'cursor5'
   | 'cursor3'
+  | 'scatter'
   | 'frenzy'
   | 'eggs'
   | 'multiply5'
@@ -26,6 +27,7 @@ export const ORB_THRESHOLDS: Record<OrbKind, number> = {
   multiply: 175,
   cursor5: 100,
   cursor3: 250,
+  scatter: Number.POSITIVE_INFINITY,
   frenzy: 450,
   eggs: 700,
   multiply5: Number.POSITIVE_INFINITY,
@@ -43,6 +45,7 @@ export const ORB_LABELS: Record<OrbKind, string> = {
   multiply: 'Multiply x3',
   cursor5: 'Cursor x5',
   cursor3: 'Cursor x3',
+  scatter: 'Scatter',
   frenzy: 'Points x2',
   eggs: 'Golden Eggs',
   multiply5: 'Multiply x5',
@@ -64,6 +67,7 @@ export const ORB_LABEL_PX: Record<OrbKind, number> = {
   multiply: 11,
   cursor5: 12.5,
   cursor3: 12.5,
+  scatter: 11,
   frenzy: 11,
   eggs: 10,
   multiply5: 11,
@@ -167,6 +171,10 @@ export const GOLDEN_BURST_FEATHERS = 14;
 export const GOLDEN_COLORS = ['#ffd54a', '#ffb300', '#fff3b0', '#ffe082'];
 
 export const CURSOR_BUFF_MS = 30_000;
+export const SCATTER_BUFF_MS = 15_000;
+export const SCATTER_SHUFFLE_MS = 1200;
+export const SCATTER_COUNT = 8;
+export const SCATTER_RADIUS = 240;
 export const CURSOR_EXTEND_PER_CLICK_MS = 50;
 export const CURSOR_CAP_MS = 60_000;
 export const CURSOR_X5_OFFSET = 45;
@@ -216,6 +224,15 @@ function ring(count: number, radius: number, phase: number): CursorOffset[] {
     const a = phase + (i / count) * Math.PI * 2;
     return { dx: Math.round(Math.cos(a) * radius), dy: Math.round(Math.sin(a) * radius) };
   });
+}
+
+export function scatterOffsets(rng: () => number): CursorOffset[] {
+  const scattered = Array.from({ length: SCATTER_COUNT }, () => {
+    const a = rng() * Math.PI * 2;
+    const r = SCATTER_RADIUS * Math.sqrt(rng());
+    return { dx: Math.round(Math.cos(a) * r), dy: Math.round(Math.sin(a) * r) };
+  });
+  return [{ dx: 0, dy: 0, hidden: true }, ...scattered];
 }
 
 export function buildCursorOffsets(x5Active: boolean, x3Active: boolean): CursorOffset[] {

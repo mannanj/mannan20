@@ -42,12 +42,12 @@ const SCREAM_FADE_OUT_MS = 28;
 
 export type CreatureSoundKey = 'meow' | 'hiss' | 'growl' | 'roar' | 'rumble' | 'snake' | 'bark' | 'creak' | 'chop' | 'swordpull' | 'slash' | 'jeff' | 'monkey';
 export const CREATURE_SOUNDS: Record<CreatureSoundKey, SoundDef> = {
-  meow: { key: 'meow', file: 'cat-meow.mp3', volume: 0.7 },
+  meow: { key: 'meow', file: 'cat-meow.mp3', volume: 0.28 },
   jeff: { key: 'jeff', file: 'my-name-jeff.mp3', volume: 1 },
   monkey: { key: 'monkey', file: 'monkey-chatter.mp3', volume: 0.9 },
-  hiss: { key: 'hiss', file: 'cat-hiss.mp3', volume: 0.6 },
-  growl: { key: 'growl', file: 'tiger-growl.mp3', volume: 0.7 },
-  roar: { key: 'roar', file: 'lion-roar.mp3', volume: 0.75 },
+  hiss: { key: 'hiss', file: 'cat-hiss.mp3', volume: 0.24 },
+  growl: { key: 'growl', file: 'tiger-growl.mp3', volume: 0.28 },
+  roar: { key: 'roar', file: 'lion-roar.mp3', volume: 0.3 },
   rumble: { key: 'rumble', file: 'giant-rumble.mp3', volume: 0.6 },
   snake: { key: 'snake', file: 'snake-hiss.mp3', volume: 0.65 },
   bark: { key: 'bark', file: 'dog-bark.mp3', volume: 0.7 },

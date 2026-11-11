@@ -79,6 +79,7 @@ export const ORB_REGISTRY: Record<OrbKind, OrbDef> = {
   multiply: def('multiply', 175, 10, 1),
   cursor5: def('cursor5', 100, 10, 3),
   cursor3: def('cursor3', 250, 6, 2),
+  scatter: def('scatter', 100, 14, 3),
   frenzy: def('frenzy', 450, 8, 4, { catchUp: true }),
   eggs: def('eggs', 700, 9, 6, { catchUp: true }),
   multiply5: def('multiply5', 800, 8, 3, { catchUp: true }),

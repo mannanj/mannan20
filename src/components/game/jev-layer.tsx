@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useImperativeHandle, useRef, useState, type RefObject } from 'react';
 import { ITEM_DRAG_TYPE, useInventory } from '@/components/inventory';
-import { GUN_SHOT_MS } from './gear';
+import { GEAR_HOLDER_ATTR, GUN_SHOT_MS } from './gear';
+import { HelperMult, useHelperMult } from './helper-mult';
 import type { GearControl } from './gear-layer';
 import type { CursorOffset } from './chicken-orbs';
 import { HelperCrosshairs, activeCursors, type HelperAim } from './helper-crosshairs';
 import {
+  HELPER_WAKE_HOP,
+  HELPER_WAKE_MS,
   JEV_ACTIVE_MS,
   JEV_ART,
   JEV_CLICK_INTERVAL_MS,
@@ -41,7 +44,8 @@ export interface JevControl {
 
 interface JevLayerProps {
   controlRef: RefObject<JevControl | null>;
-  target: () => JevPoint;
+  targets: () => JevPoint[];
+  paused: boolean;
   cursors: () => CursorOffset[];
   click: (at: JevPoint, count: number) => void;
   speak: () => void;
@@ -52,14 +56,19 @@ type JevPhase = 'idle' | 'rising' | 'active' | 'asleep';
 
 const SHOULDER_X = 0.32;
 const SHOULDER_Y = 0.82;
+const JEV_RETARGET_MS = 700;
 
-export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }: JevLayerProps) {
-  const { grant } = useInventory();
+export function JevLayer({ controlRef, targets, paused, cursors, click, speak, gearRef }: JevLayerProps) {
+  const { items, grant } = useInventory();
+  const owned = items.some((i) => i.id === JEV_ITEM_ID);
+  const ownedRef = useRef(owned);
+  ownedRef.current = owned;
   const [phase, setPhase] = useState<JevPhase>('idle');
+  const mult = useHelperMult(gearRef, 'jev', owned || phase !== 'idle');
   const [prompt, setPrompt] = useState<JevPoint | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const portsRef = useRef({ target, cursors, click, speak, grant });
-  portsRef.current = { target, cursors, click, speak, grant };
+  const portsRef = useRef({ targets, paused, cursors, click, speak, grant });
+  portsRef.current = { targets, paused, cursors, click, speak, grant };
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
   const promptTimerRef = useRef(0);
@@ -79,6 +88,18 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
     setPhase('rising');
   }, []);
 
+  const wake = useCallback(() => {
+    if (phaseRef.current !== 'idle') return;
+    const left = readJevReadyAt() - Date.now();
+    if (left > 0) {
+      setNote(JEV_COPY.sleeping(formatJevWait(left)));
+      window.clearTimeout(noteTimerRef.current);
+      noteTimerRef.current = window.setTimeout(() => setNote(null), JEV_NOTE_MS);
+      return;
+    }
+    start();
+  }, [start]);
+
   useImperativeHandle(
     controlRef,
     () => ({
@@ -89,20 +110,10 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
         window.clearTimeout(promptTimerRef.current);
         promptTimerRef.current = window.setTimeout(() => setPrompt(null), JEV_PROMPT_MS);
       },
-      wake: () => {
-        if (phaseRef.current !== 'idle') return;
-        const left = readJevReadyAt() - Date.now();
-        if (left > 0) {
-          setNote(JEV_COPY.sleeping(formatJevWait(left)));
-          window.clearTimeout(noteTimerRef.current);
-          noteTimerRef.current = window.setTimeout(() => setNote(null), JEV_NOTE_MS);
-          return;
-        }
-        start();
-      },
+      wake,
       busy: () => phaseRef.current !== 'idle',
     }),
-    [start]
+    [wake]
   );
 
   useEffect(
@@ -116,7 +127,9 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
 
   useEffect(() => {
     if (phase !== 'rising') return;
-    const rise = bodyRef.current?.animate([{ transform: 'translateY(105%)' }, { transform: 'translateY(0)' }], { duration: JEV_RISE_MS, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' });
+    const rise = ownedRef.current
+      ? bodyRef.current?.animate(HELPER_WAKE_HOP, { duration: HELPER_WAKE_MS, easing: 'ease-out' })
+      : bodyRef.current?.animate([{ transform: 'translateY(105%)' }, { transform: 'translateY(0)' }], { duration: JEV_RISE_MS, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' });
     if (!rise) return;
     rise.onfinish = () => setPhase('active');
     return () => {
@@ -129,14 +142,28 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
     if (phase !== 'active') return;
     reachRef.current?.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: JEV_REACH_MS, easing: 'ease-out' });
     const begin = performance.now();
-    const endsAt = begin + helperPlayMs(callsRef.current, Math.random);
+    let endsAt = begin + helperPlayMs(callsRef.current, Math.random);
     callsRef.current += 1;
     let last = begin;
     let owed = 0;
     let nextGunShot = 0;
     let raf = 0;
+    let pick = 0;
+    let nextSwitch = begin + JEV_RETARGET_MS;
     const tick = (now: number) => {
-      const at = portsRef.current.target();
+      if (portsRef.current.paused) {
+        endsAt += now - last;
+        nextSwitch += now - last;
+        last = now;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      if (now >= nextSwitch) {
+        pick += 1;
+        nextSwitch = now + JEV_RETARGET_MS;
+      }
+      const list = portsRef.current.targets();
+      const at = list[pick % list.length];
       const box = bodyRef.current?.getBoundingClientRect();
       if (box && armRef.current) {
         const shoulder = { x: box.left + box.width * SHOULDER_X, y: box.top + box.height * SHOULDER_Y };
@@ -157,14 +184,12 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
       const due = jevClicksDue(owed);
       owed -= due * JEV_CLICK_INTERVAL_MS;
       const gun = gearRef.current?.heldBy('jev');
-      if (gun) {
-        if (now >= nextGunShot && box) {
-          nextGunShot = now + GUN_SHOT_MS;
-          gearRef.current?.fire(gun, { x: box.left, y: box.top }, at);
-        }
-      } else {
-        for (let i = 0; i < Math.min(due, JEV_MAX_CLICKS_PER_FRAME); i++) portsRef.current.click(at, aimed.length);
+      if (gun && now >= nextGunShot && box) {
+        nextGunShot = now + GUN_SHOT_MS;
+        gearRef.current?.fire(gun, { x: box.left, y: box.top }, at, false);
       }
+      const mult = gearRef.current?.mult('jev') ?? 1;
+      for (let i = 0; i < Math.min(due, JEV_MAX_CLICKS_PER_FRAME); i++) portsRef.current.click(at, aimed.length * mult);
       if (countRef.current) countRef.current.textContent = String(Math.max(0, Math.ceil((endsAt - now) / 1000)));
       if (now >= endsAt) {
         writeJevReadyAt(Date.now() + JEV_COOLDOWN_MS);
@@ -186,7 +211,8 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
     }, JEV_SLEEP_MS);
   }, [phase]);
 
-  const shown = phase !== 'idle';
+  const shown = phase !== 'idle' || owned;
+  const sleeping = phase === 'asleep' || phase === 'idle';
   const box = shown ? jevBox(window.innerWidth, window.innerHeight) : null;
   const armLength = shown ? jevArmLength(window.innerWidth) : 0;
 
@@ -233,7 +259,7 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
         </div>
       )}
       {box && (
-        <div data-testid="jev" data-phase={phase} className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">
+        <div data-testid="jev" data-phase={phase} className={`pointer-events-none fixed inset-0 z-[90] overflow-hidden ${paused ? 'invisible' : ''}`}>
           {phase === 'active' && (
             <>
               <div ref={armRef} data-testid="jev-arm" style={{ width: armLength, height: armLength / 3, transformOrigin: 'right center' }} className="absolute left-0 top-0">
@@ -249,11 +275,12 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
             ref={bodyRef}
             data-hud
             data-testid="jev-body"
+            {...{ [GEAR_HOLDER_ATTR]: 'jev' }}
             onMouseEnter={() => portsRef.current.speak()}
-            onClick={() => portsRef.current.speak()}
+            onClick={() => (phase === 'idle' ? wake() : portsRef.current.speak())}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => gearRef.current?.give(e.dataTransfer.getData(ITEM_DRAG_TYPE), 'jev')}
-            style={{ width: box.w, height: box.h, right: JEV_RIGHT_PX, transform: phase === 'rising' ? 'translateY(105%)' : undefined }}
+            style={{ width: box.w, height: box.h, right: JEV_RIGHT_PX, transform: phase === 'rising' && !owned ? 'translateY(105%)' : undefined }}
             className="pointer-events-auto absolute bottom-0"
           >
             {phase === 'active' && (
@@ -261,8 +288,9 @@ export function JevLayer({ controlRef, target, cursors, click, speak, gearRef }:
                 {JEV_ACTIVE_MS / 1000}
               </span>
             )}
-            {phase === 'asleep' && <span className="absolute -top-6 left-1/2 text-lg font-bold text-white/80 animate-pulse">z z z</span>}
-            <img src={phase === 'asleep' ? JEV_ART.sleep : JEV_ART.bust} alt="" draggable={false} className="h-full w-full object-contain object-bottom" />
+            {mult > 1 && <HelperMult mult={mult} testId="jev-mult" />}
+            {sleeping && <span className="absolute -top-6 left-1/2 text-lg font-bold text-white/80 animate-pulse">z z z</span>}
+            <img src={sleeping ? JEV_ART.sleep : JEV_ART.bust} alt="" draggable={false} className="h-full w-full object-contain object-bottom" />
           </div>
         </div>
       )}

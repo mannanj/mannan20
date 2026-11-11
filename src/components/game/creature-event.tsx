@@ -455,6 +455,7 @@ export interface HydraHead {
 
 export interface CreatureState {
   clickScale: number;
+  banners: boolean;
   specs: Record<CreatureKind, CreatureSpec>;
   kind: CreatureKind | null;
   phase: CreaturePhase;
@@ -506,6 +507,7 @@ function emptyHead(): HydraHead {
 export function createCreatureState(): CreatureState {
   return {
     clickScale: 1,
+    banners: true,
     specs: CREATURE_SPECS,
     kind: null,
     phase: 'idle',
@@ -692,7 +694,7 @@ function groundCenterY(spec: CreatureSpec, p: Pose, vh: number, groundY: number)
 export function startCreature(s: CreatureState, kind: CreatureKind, ctx: CreatureStartCtx): void {
   const spec = s.specs[kind];
   const fresh = createCreatureState();
-  Object.assign(s, fresh, { clickScale: s.clickScale, specs: s.specs });
+  Object.assign(s, fresh, { clickScale: s.clickScale, specs: s.specs, banners: s.banners });
   s.kind = kind;
   s.enteredAt = ctx.ts;
   s.dropBonus = ctx.dropBonus;
@@ -1468,7 +1470,7 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
   }
   if (els.banner) {
     const show = s.phase === 'hold' || (spec.mode !== 'grab' && (s.phase === 'act' || s.phase === 'enter')) || (spec.catchOnSwipe !== null && s.phase === 'act');
-    els.banner.style.opacity = show ? '1' : '0';
+    els.banner.style.opacity = show && s.banners ? '1' : '0';
     const biting = spec.mode === 'bite' && s.bitingHead !== null;
     els.banner.textContent = s.tamed ? (s.kind === 'tree' ? 'the tree lets go' : `the ${spec.label} is ${spec.holdAtHead ? 'asleep' : 'tamed'}`) : biting ? 'a hydra head has the chicken! knock that head back' : spec.banner;
   }

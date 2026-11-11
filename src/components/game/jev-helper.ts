@@ -3,28 +3,30 @@ export const JEV_READY_KEY = 'chicken-jev-ready-at';
 
 export const JEV_ACTIVE_MS = 20_000;
 export const HELPER_MAX_PLAY_MS = 40_000;
-export const JEV_COOLDOWN_MS = 300_000;
+export const JEV_COOLDOWN_MS = 20_000;
 export const JEV_RISE_MS = 3500;
 export const JEV_REACH_MS = 450;
 export const JEV_SLEEP_MS = 2600;
 export const JEV_PROMPT_MS = 12_000;
 export const JEV_NOTE_MS = 2500;
-export const JEV_CLICK_INTERVAL_MS = 25;
+export const JEV_CLICK_INTERVAL_MS = 50;
 export const JEV_MAX_CLICKS_PER_FRAME = 4;
 export const JEV_SQUEEZE_MS = 70;
-export const JEV_RIGHT_PX = 80;
+export const JEV_RIGHT_PX = 250;
 export const JEV_PROMPT_EDGE_PX = 150;
 
 export const MONKEY_ITEM_ID = 'monkey';
 export const MONKEY_READY_KEY = 'chicken-monkey-ready-at';
 export const MONKEY_ACTIVE_MS = 20_000;
-export const MONKEY_COOLDOWN_MS = 45_000;
+export const MONKEY_COOLDOWN_MS = 20_000;
 export const MONKEY_RISE_MS = 1500;
 export const MONKEY_LEAVE_MS = 900;
-export const MONKEY_SHOT_MS = 125;
+export const MONKEY_SHOT_MS = 250;
 export const MONKEY_DART_MS = 140;
 export const MONKEY_DARTS = 6;
 export const HELPER_GAP_PX = 16;
+export const HELPER_WAKE_MS = 450;
+export const HELPER_WAKE_HOP = [{ transform: 'translateY(0)' }, { transform: 'translateY(-6%)' }, { transform: 'translateY(0)' }];
 
 export const MONKEY_ART = {
   sit: '/game/jev/monkey-sit.webp',

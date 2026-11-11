@@ -33,6 +33,7 @@ export const GAME_ITEMS = {
   laser: { label: 'Laser', max: 1, usable: true },
   'ray-gun': { label: 'Ray gun', max: 1, usable: true, draggable: true },
   'freeze-gun': { label: 'Freeze gun', max: 1, usable: true, draggable: true },
+  cannon: { label: 'Cannon', max: 1, usable: true, draggable: true },
 } as const satisfies Record<string, ItemDefinition>;
 
 export type GameItemId = keyof typeof GAME_ITEMS;

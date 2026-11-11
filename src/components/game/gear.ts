@@ -1,4 +1,4 @@
-export const GEAR_ITEMS = ['laser', 'ray-gun', 'freeze-gun'] as const;
+export const GEAR_ITEMS = ['laser', 'ray-gun', 'freeze-gun', 'cannon'] as const;
 export type GearId = (typeof GEAR_ITEMS)[number];
 export type GunId = Exclude<GearId, 'laser'>;
 export type GunHolder = 'you' | 'jev' | 'monkey';
@@ -17,7 +17,14 @@ export const GUN_HIT_RADIUS = 110;
 export const GUN_MUZZLE = { x: 34, y: 28 };
 export const GUN_READY_KEY = 'chicken-gun-ready-';
 export const RAY_POINTS = 5;
+export const CANNONBALL_POINTS = 8;
 export const LASER_POINTS = 3;
+export const GEAR_MULT: Record<GearId, number> = { laser: 3, 'ray-gun': 2.5, 'freeze-gun': 1.5, cannon: 4 };
+export const GEAR_HOLDER_ATTR = 'data-gear-holder';
+
+export function multLabel(mult: number): string {
+  return `x${mult} points`;
+}
 
 export const FREEZE_SLOW_PER_SECOND = 3;
 export const ICE_SLOW_FACTOR = 0.35;

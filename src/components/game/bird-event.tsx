@@ -1297,6 +1297,7 @@ const FLIGHT_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
 
 interface BirdLayerProps {
   fiery?: boolean;
+  banner?: boolean;
   kind: BirdKind;
   part: 'back' | 'front';
   els: RefObject<BirdEls>;
@@ -1353,7 +1354,7 @@ function PhoenixFireFilter() {
   );
 }
 
-export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted, fiery = false }: BirdLayerProps) {
+export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToasted, fiery = false, banner = true }: BirdLayerProps) {
   const spec = BIRD_SPECS[kind];
   const bind = <K extends keyof BirdEls>(key: K) => (el: BirdEls[K]) => {
     els.current[key] = el;
@@ -1472,6 +1473,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
         data-testid="bird-counter"
         className="pointer-events-none absolute top-0 left-0 z-30 whitespace-nowrap rounded-md bg-black/50 px-1.5 py-0.5 text-base font-semibold text-[#ffd54a] [paint-order:stroke] [text-shadow:0_1px_0_#000,0_-1px_0_#000,1px_0_0_#000,-1px_0_0_#000,0_2px_6px_rgba(0,0,0,0.8)] will-change-transform [visibility:hidden]"
       />
+      {banner && (
       <div
         ref={bind('banner')}
         data-testid="bird-banner"
@@ -1479,6 +1481,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
       >
         {BIRD_BANNER_TEXT}
       </div>
+      )}
       <span className="sr-only">{spec.kind}</span>
     </div>
   );

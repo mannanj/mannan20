@@ -9,6 +9,7 @@ import {
   GEAR_FROM_SCORE,
   GEAR_ITEMS,
   GEAR_LIFE_MS,
+  GEAR_MULT,
   GEAR_SPAWN_CHANCE,
   GEAR_SPAWN_CHECK_MS,
   GEAR_SPAWN_MARGIN,
@@ -20,6 +21,7 @@ import {
   GUN_READY_KEY,
   GUN_SHOT_MS,
   RAY_POINTS,
+  CANNONBALL_POINTS,
   addFreezeShot,
   createIce,
   icePhase,
@@ -36,7 +38,8 @@ export interface GearControl {
   use: (id: GearId) => void;
   give: (id: string, holder: GunHolder) => void;
   heldBy: (holder: GunHolder) => GunId | null;
-  fire: (gun: GunId, from: JevPoint, at: JevPoint) => void;
+  fire: (gun: GunId, from: JevPoint, at: JevPoint, scoring?: boolean) => void;
+  mult: (holder: GunHolder) => number;
   freezeFactor: (now: number) => number;
   spawn: (id: GearId) => void;
 }
@@ -59,6 +62,13 @@ interface Pickup {
 
 const BOLT_SLOTS = Array.from({ length: 10 }, (_, i) => i);
 const BOLT_MS = 120;
+const RAY_BEAM_PX = 10;
+const RAY_FLASH_MS = 220;
+const BOLT_LOOK: Record<GunId, { size: number; background: string; shadow: string }> = {
+  'ray-gun': { size: RAY_BEAM_PX, background: 'linear-gradient(180deg,#d24dff,#fff 40%,#fff 60%,#7a2bff)', shadow: '0 0 18px 6px #b14dff, 0 0 40px 14px rgba(160,60,255,0.45)' },
+  'freeze-gun': { size: 10, background: 'radial-gradient(circle,#fff,#7fd6ff 70%)', shadow: '0 0 10px 3px #8fdcff' },
+  cannon: { size: 24, background: 'radial-gradient(circle at 35% 35%,#6b7078,#1a1c20 70%)', shadow: '0 0 14px 4px rgba(255,140,40,0.75)' },
+};
 const GUN_ART_SIZE = 56;
 const PICKUP_ART_SIZE = 48;
 const INTERACTIVE = 'button, a, input, [data-hud], [data-testid^="inventory"]';
@@ -115,7 +125,7 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
   const giveRef = useRef(give);
   giveRef.current = give;
 
-  const fire = (gun: GunId, from: JevPoint, at: JevPoint) => {
+  const fire = (gun: GunId, from: JevPoint, at: JevPoint, scoring = true) => {
     const chicken = portsRef.current.target();
     const el = boltsRef.current[boltRef.current];
     boltRef.current = (boltRef.current + 1) % BOLT_SLOTS.length;
@@ -123,20 +133,23 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
       const length = Math.hypot(at.x - from.x, at.y - from.y);
       const angle = Math.atan2(at.y - from.y, at.x - from.x);
       const ray = gun === 'ray-gun';
-      el.style.width = `${ray ? length : 16}px`;
-      el.style.height = ray ? '4px' : '10px';
-      el.style.background = ray ? 'linear-gradient(90deg,#fff,#d24dff 30%,#7a2bff)' : 'radial-gradient(circle,#fff,#7fd6ff 70%)';
-      el.style.boxShadow = ray ? '0 0 10px 2px #b14dff' : '0 0 10px 3px #8fdcff';
+      const look = BOLT_LOOK[gun];
+      el.style.width = `${ray ? length : look.size}px`;
+      el.style.height = `${look.size}px`;
+      el.style.background = look.background;
+      el.style.boxShadow = look.shadow;
       const start = `translate(${from.x}px, ${from.y}px) rotate(${angle}rad)`;
       el.animate(
         ray
-          ? [{ transform: start, opacity: 1 }, { transform: start, opacity: 0 }]
+          ? [{ transform: `${start} scaleY(1.6)`, opacity: 1 }, { transform: `${start} scaleY(0.4)`, opacity: 0 }]
           : [{ transform: start, opacity: 1 }, { transform: `translate(${at.x}px, ${at.y}px) rotate(${angle}rad)`, opacity: 1 }],
-        { duration: BOLT_MS, easing: 'linear' }
+        { duration: ray ? RAY_FLASH_MS : BOLT_MS, easing: ray ? 'ease-out' : 'linear' }
       );
     }
     if (Math.hypot(at.x - chicken.x, at.y - chicken.y) > GUN_HIT_RADIUS) return;
-    if (gun === 'ray-gun') portsRef.current.hit(chicken, RAY_POINTS);
+    if (gun === 'ray-gun' || gun === 'cannon') {
+      if (scoring) portsRef.current.hit(chicken, gun === 'cannon' ? CANNONBALL_POINTS : RAY_POINTS);
+    }
     else addFreezeShot(iceRef.current, performance.now(), Math.random);
   };
   const fireRef = useRef(fire);
@@ -153,13 +166,19 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
         monkey.equipLaser();
       },
       give: (id, holder) => {
-        if (id === 'ray-gun' || id === 'freeze-gun') giveRef.current(id, holder);
+        if (id === 'ray-gun' || id === 'freeze-gun' || id === 'cannon') giveRef.current(id, holder);
+        if (id === 'laser' && holder === 'monkey') monkeyRef.current?.equipLaser();
       },
       heldBy: (holder) => {
         for (const [gun, hold] of holdsRef.current) if (hold.holder === holder) return gun;
         return null;
       },
-      fire: (gun, from, at) => fireRef.current(gun, from, at),
+      fire: (gun, from, at, scoring) => fireRef.current(gun, from, at, scoring),
+      mult: (holder) => {
+        let best = holder === 'monkey' && monkeyRef.current?.hasLaser() ? GEAR_MULT.laser : 1;
+        for (const [gun, hold] of holdsRef.current) if (hold.holder === holder) best = Math.max(best, GEAR_MULT[gun]);
+        return best;
+      },
       freezeFactor: (now) => iceSpeedFactor(iceRef.current, now),
       spawn: (id) => placeRef.current(id),
     }),

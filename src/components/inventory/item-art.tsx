@@ -55,6 +55,18 @@ function Gun({ size, body, glow }: { size: number; body: string; glow: string })
   );
 }
 
+function CannonArt({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M6 22 L28 10 Q33 8 35 12 Q36 16 32 18 L12 30 Z" fill="#3a3f47" stroke="#10131a" strokeWidth="1.6" strokeLinejoin="round" />
+      <ellipse cx="33.5" cy="13.5" rx="2.4" ry="3.6" transform="rotate(-28 33.5 13.5)" fill="#10131a" />
+      <circle cx="14" cy="29" r="6" fill="#8a5a2b" stroke="#10131a" strokeWidth="1.6" />
+      <circle cx="14" cy="29" r="1.8" fill="#10131a" />
+      <path d="M10 18 L26 10" stroke="#ffb347" strokeWidth="1.6" strokeLinecap="round" opacity="0.8" />
+    </svg>
+  );
+}
+
 function Laser({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
@@ -133,6 +145,7 @@ const ART: Record<string, (size: number) => ReactNode> = {
   laser: (size) => <Laser size={size} />,
   'ray-gun': (size) => <Gun size={size} body="#6d3bd1" glow="#e58bff" />,
   'freeze-gun': (size) => <Gun size={size} body="#2f7fb8" glow="#bdeeff" />,
+  cannon: (size) => <CannonArt size={size} />,
   'hawk-feather': (size) => <Feather size={size} fill="#b07a45" stroke="#4a2e1a" vein="#4a2e1a" />,
   'eagle-feather': (size) => <Feather size={size} fill="#f1e6cf" stroke="#3b2a18" vein="#6b4a2a" />,
   'phoenix-feather': (size) => <Feather size={size} fill="#ff7a1a" stroke="#8d1b00" vein="#fff176" />,
