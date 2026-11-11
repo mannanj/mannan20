@@ -229,7 +229,7 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
       const pinched = hand ? nextPinched(pinchedRef.current, pinchRatio(hand)) : false;
       drawHand(canvasRef.current, hand, pinched);
       const live = phaseRef.current === 'on';
-      const flick = hand ? flickStep(flickRef.current, palmY(hand), performance.now()) : null;
+      const flick = hand ? flickStep(flickRef.current, palmY(hand), performance.now(), pinched) : null;
       if (flick) flickRef.current = flick.state;
       recorderRef.current?.frame(performance.now(), hand, pinched && !pinchedRef.current, flick?.flick ?? false);
       if (flick?.flick) {
