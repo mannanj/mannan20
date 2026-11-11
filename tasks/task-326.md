@@ -11,3 +11,4 @@ Mannan's ask (2026-11-10), quoted: "instead of the feathers for the hawk and bir
 - [ ] Key 0: all pets attack at once
 - Location: `src/components/game/`
 - [ ] Face mask mode ("occasional face mask mode where the main chicken pretends to fit in and sometimes it does, but sometimes it's obvious because it's wearing a black eye mask"): now and then the main chicken hides among lookalike chickens; sometimes it blends in, sometimes it wears a black eye mask that gives it away. Build on the teleport decoys
+- [ ] Enchanted forest ("for the tree scene draw steady movement of the background trees and occasional sense of as though they're alive though they aren't"): steady sway of the background trees plus rare eerie living moments (a slow lean, a breath). Keep it composited (transform only), per Fable's perf findings

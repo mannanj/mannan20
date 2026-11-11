@@ -811,7 +811,7 @@ function tickHeat(s: BirdState, els: BirdEls, ctx: BirdCtx, hold: Point, result:
 }
 
 function spriteOf(el: HTMLElement): HTMLImageElement | null {
-  return el.querySelector('img');
+  return el instanceof HTMLImageElement ? el : el.querySelector('img');
 }
 
 function setFrame(el: HTMLElement, kind: BirdKind, name: FrameName): FrameAsset {
