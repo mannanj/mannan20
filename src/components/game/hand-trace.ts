@@ -71,7 +71,7 @@ export function replayTrace(trace: HandTrace): Record<string, SegmentResult> {
     if (r) r.handFrames += 1;
     const pts: HandPoint[] = f.lm.map(([x, y]) => ({ x, y }));
     const next = nextPinched(pinched, pinchRatio(pts));
-    const step = flickStep(flick, palmY(pts), f.t);
+    const step = flickStep(flick, palmY(pts), f.t, next);
     flick = step.state;
     if (r && next && !pinched) r.pinches += 1;
     if (r && step.flick) r.flicks += 1;

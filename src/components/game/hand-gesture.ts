@@ -33,7 +33,7 @@ function gap(landmarks: HandPoint[], a: number, b: number): number {
 export function pinchRatio(landmarks: HandPoint[]): number {
   const size = gap(landmarks, MIDDLE_KNUCKLE, WRIST);
   if (size <= 0) return Number.POSITIVE_INFINITY;
-  return Math.min(gap(landmarks, THUMB_TIP, INDEX_TIP), gap(landmarks, THUMB_TIP, MIDDLE_TIP)) / size;
+  return gap(landmarks, THUMB_TIP, INDEX_TIP) / size;
 }
 
 export const FLICK_SPEED = 1.6;
@@ -42,6 +42,7 @@ export const FLICK_WINDOW_MS = 350;
 export const FLICK_COOLDOWN_MS = 200;
 export const CURSOR_HOLD_SPEED = 0.9;
 export const CURSOR_HOLD_AFTER_MS = 220;
+export const FLICK_AFTER_PINCH_MS = 200;
 
 export interface FlickState {
   lastY: number | null;
@@ -50,6 +51,7 @@ export interface FlickState {
   strokeAt: number;
   coolUntil: number;
   holdUntil: number;
+  pinchedUntil: number;
 }
 
 export interface FlickStep {
@@ -59,11 +61,15 @@ export interface FlickStep {
 }
 
 export function createFlick(): FlickState {
-  return { lastY: null, lastT: 0, strokeDir: 0, strokeAt: 0, coolUntil: 0, holdUntil: 0 };
+  return { lastY: null, lastT: 0, strokeDir: 0, strokeAt: 0, coolUntil: 0, holdUntil: 0, pinchedUntil: 0 };
 }
 
-export function flickStep(prev: FlickState, palmY: number, t: number): FlickStep {
+export function flickStep(prev: FlickState, palmY: number, t: number, pinched = false): FlickStep {
   const state = { ...prev, lastY: palmY, lastT: t };
+  if (pinched) {
+    state.pinchedUntil = t + FLICK_AFTER_PINCH_MS;
+    state.strokeDir = 0;
+  }
   if (prev.lastY === null || t <= prev.lastT) return { state, flick: false, holdCursor: t < prev.holdUntil };
   const v = (palmY - prev.lastY) / ((t - prev.lastT) / 1000);
   const speed = Math.abs(v);
@@ -71,7 +77,7 @@ export function flickStep(prev: FlickState, palmY: number, t: number): FlickStep
   if (speed >= CURSOR_HOLD_SPEED) state.holdUntil = t + CURSOR_HOLD_AFTER_MS;
   let flick = false;
   if (state.strokeDir !== 0 && t - state.strokeAt > FLICK_WINDOW_MS) state.strokeDir = 0;
-  if (t >= state.coolUntil) {
+  if (t >= state.coolUntil && t >= state.pinchedUntil) {
     if (state.strokeDir !== 0 && dir !== state.strokeDir && speed >= FLICK_SPEED * FLICK_RETURN_FRAC) {
       flick = true;
       state.strokeDir = 0;

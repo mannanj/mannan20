@@ -26,6 +26,7 @@ describe('hand trace replay', () => {
       for (let k = 0; k < 5; k++) push('pinch2', 0.25, 0.5);
       for (let k = 0; k < 5; k++) push('pinch2', 0.01, 0.5);
     }
+    for (let k = 0; k < 10; k++) push('flick', 0.25, 0.5);
     for (const palm of [0.5, 0.5, 0.6, 0.7, 0.62, 0.52, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]) push('flick', 0.25, palm);
     for (let k = 0; k < 20; k++) push('free', 0.25, 0.5 + Math.sin(k / 6) * 0.01);
     trace.frames = frames;

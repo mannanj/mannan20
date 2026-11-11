@@ -41,10 +41,16 @@ describe('hand gesture', () => {
     expect(s.x).toBeLessThan(100);
   });
 
-  test('a three-finger pinch (thumb meets the middle finger) also counts', () => {
-    const pts = hand({ x: 0.6, y: 0.2 }, { x: 0.4, y: 0.3 });
+  test('a three-finger pinch (thumb, index and middle tips meet) also counts', () => {
+    const pts = hand({ x: 0.41, y: 0.29 }, { x: 0.4, y: 0.3 });
     pts[MIDDLE_TIP] = { x: 0.41, y: 0.3 };
     expect(nextPinched(false, pinchRatio(pts))).toBe(true);
+  });
+
+  test('a pointing hand with the thumb tucked against the middle finger is not a pinch', () => {
+    const pts = hand({ x: 0.5, y: 0.1 }, { x: 0.4, y: 0.45 });
+    pts[MIDDLE_TIP] = { x: 0.41, y: 0.45 };
+    expect(nextPinched(false, pinchRatio(pts))).toBe(false);
   });
 
   const run = (ys: number[], stepMs = 33) => {
@@ -72,6 +78,17 @@ describe('hand gesture', () => {
 
   test('a single fast stroke without the return is not a squeeze', () => {
     expect(run([0.5, 0.5, 0.6, 0.7, 0.7, 0.7, 0.7]).some((o) => o.flick)).toBe(false);
+  });
+
+  test('a flick while pinching, or right after letting go, is not a second squeeze', () => {
+    const ys = [0.5, 0.5, 0.6, 0.7, 0.62, 0.52, 0.5, 0.5];
+    let st: FlickState = createFlick();
+    const flicks = ys.map((y, i) => {
+      const r = flickStep(st, y, 1000 + i * 33, i < 3);
+      st = r.state;
+      return r.flick;
+    });
+    expect(flicks.some(Boolean)).toBe(false);
   });
 
   test('flicks have a short cooldown', () => {
