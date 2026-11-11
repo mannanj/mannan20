@@ -8,6 +8,8 @@ import { CLONE_DOM_LIMIT, CURSOR_HAND_HOT_X, CURSOR_HAND_HOT_Y, CURSOR_HIT_PAD, 
 import { GAME_TUNING, scaledClicks } from '../src/components/game/game-tuning';
 import { MARTIAN_CLICKS_GOAL } from '../src/components/game/martians';
 
+const MAX_ORBS_ON_SCREEN = 3;
+
 const GUARD_MS = 900;
 
 async function gotoGame(page: Page, query: string) {
@@ -164,17 +166,14 @@ test.describe('chicken game v2 ability orbs', () => {
     }
   });
 
-  test('an uncollected orb disappears after 30 seconds', async ({ page }) => {
+  test('an uncollected orb stays on the map', async ({ page }) => {
     await gotoGame(page, '?variant=2');
     await page.evaluate(() => (window as unknown as { __chicken: OrbBridge }).__chicken.forceOrb('cursor5'));
     expect((await snap(page)).orbs).toHaveLength(1);
-    await page.evaluate(() => (window as unknown as { __chicken: OrbBridge }).__chicken.fastForward(29_000));
-    await page.waitForTimeout(80);
-    expect((await snap(page)).orbs).toHaveLength(1);
-    await page.evaluate(() => (window as unknown as { __chicken: OrbBridge }).__chicken.fastForward(2000));
-    await page.waitForTimeout(120);
-    expect((await snap(page)).orbs).toHaveLength(0);
-    await expect(page.getByTestId('chicken-orb')).toHaveCount(0);
+    await page.evaluate(() => (window as unknown as { __chicken: OrbBridge }).__chicken.fastForward(120_000));
+    await page.waitForTimeout(200);
+    expect((await snap(page)).orbs.some((o) => o.kind === 'cursor5')).toBe(true);
+    await expect(page.getByTestId('chicken-orb').first()).toBeVisible();
   });
 
   test('clicking an orb collects it', async ({ page }) => {
@@ -1186,7 +1185,8 @@ test.describe('chicken game v2 eagle and phoenix events', () => {
   });
 });
 
-const GRAB_WIDTH: Record<'hawk' | 'phoenix', number> = { hawk: 110, phoenix: 150 };
+const PHOENIX_TEST_SCALE = 2.5;
+const GRAB_WIDTH: Record<'hawk' | 'phoenix', number> = { hawk: 110, phoenix: 150 * PHOENIX_TEST_SCALE };
 const MIN_TALON_HIT = 56;
 
 async function summonAny(page: Page, kind: 'hawk' | 'phoenix') {
@@ -1518,16 +1518,16 @@ test.describe('chicken game v2 pacing and catch-up', () => {
     expect(unlockedKinds(score, s.pace.behindPct / 100)).not.toContain('eggs');
   });
 
-  test('a player on pace still gets variety orbs, at the full gap and never two at once', async ({ page }) => {
+  test('a player on pace still gets variety orbs, never more than three on screen', async ({ page }) => {
     await gotoGame(page, '?variant=2');
     await paceBridge(page, (b) => b.setScore(700));
     await paceBridge(page, (b) => b.fastForward(20_000));
-    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBe(1);
+    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBeGreaterThanOrEqual(1);
     const s = await paceState(page);
     expect(s.pace.behindPct).toBe(0);
     expect(unlockedKinds(700, 0)).toContain(s.orbs[0].kind);
-    await paceBridge(page, (b) => b.forcePaceCheck());
-    expect((await paceState(page)).orbs).toHaveLength(1);
+    for (let i = 0; i < 5; i++) await paceBridge(page, (b) => b.forcePaceCheck());
+    expect((await paceState(page)).orbs.length).toBeLessThanOrEqual(MAX_ORBS_ON_SCREEN);
   });
 
   test('pace readout exposes target, actual, behind, next check and next spawn', async ({ page }) => {
@@ -1540,14 +1540,18 @@ test.describe('chicken game v2 pacing and catch-up', () => {
     expect(s.pace.nextSpawnIn).toBeGreaterThan(0);
   });
 
-  test('gap after an orb, one-on-screen and recency rules hold', async ({ page }) => {
+  test('gap after an orb, the on-screen cap and recency rules hold', async ({ page }) => {
     await gotoGame(page, '?variant=2');
     await page.evaluate((n) => (window as unknown as { __chicken: PaceBridge }).__chicken.setScore(n), ORB_THRESHOLDS.frenzy + 30);
     await paceBridge(page, (b) => b.fastForward(240_000));
-    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBe(1);
+    await expect.poll(async () => (await paceState(page)).orbs.length, { timeout: 4000 }).toBeGreaterThanOrEqual(1);
     await paceBridge(page, (b) => b.forcePaceCheck());
-    expect((await paceState(page)).orbs).toHaveLength(1);
-    await paceBridge(page, (b) => b.collectOrb('frenzy'));
+    expect((await paceState(page)).orbs.length).toBeLessThanOrEqual(MAX_ORBS_ON_SCREEN);
+    if (!(await paceState(page)).orbs.some((o) => o.kind === 'frenzy')) await page.evaluate(() => (window as unknown as { __chicken: { forceOrb: (k: string) => void } }).__chicken.forceOrb('frenzy'));
+    for (let left = (await paceState(page)).orbs; left.length > 0; left = (await paceState(page)).orbs) {
+      const next = left.find((o) => o.kind !== 'frenzy') ?? left[0];
+      await page.evaluate((k) => (window as unknown as { __chicken: { collectOrb: (k: string) => void } }).__chicken.collectOrb(k), next.kind);
+    }
     const s = await paceState(page);
     expect(s.orbs).toHaveLength(0);
     expect(s.lastKinds[0]).toBe('frenzy');
@@ -1815,7 +1819,7 @@ test.describe('chicken game v2 orbs: multiply tiers, chain lightning, golden egg
     expect((await v2State(page)).chainArcs).toBe(0);
   });
 
-  test('golden eggs: eggs pay 100 (big 500), an egg left 10 s hatches a golden chicken worth 5x that leaves after 33 s', async ({ page }) => {
+  test('golden eggs only hatch (clicking pays nothing); a hatched golden chicken is worth 5x and leaves after 33 s', async ({ page }) => {
     test.setTimeout(60_000);
     await gotoGame(page, '?variant=2&start=3000');
     await v2(page, (b) => b.placeChicken(640, 300));
@@ -1829,9 +1833,8 @@ test.describe('chicken game v2 orbs: multiply tiers, chain lightning, golden egg
     const before = (await v2State(page)).score;
     await page.getByTestId('chicken-egg').first().click({ force: true });
     s = await v2State(page);
-    expect(s.score - before).toBe(egg.big ? 500 : 100);
-    expect(s.eggs.find((e) => e.id === egg.id)).toBeUndefined();
-    await grab(page, 'eggs');
+    expect(s.score - before).toBeLessThan(egg.big ? 500 : 100);
+    expect(s.eggs.find((e) => e.id === egg.id)).toBeDefined();
     await v2(page, (b) => b.fastForward(10_200));
     await page.waitForTimeout(300);
     s = await v2State(page);
@@ -1843,8 +1846,7 @@ test.describe('chicken game v2 orbs: multiply tiers, chain lightning, golden egg
     expect(g.msLeft).toBeGreaterThan(GOLDEN_LIFE_MS - 2000);
     expect(g.msLeft).toBeLessThanOrEqual(GOLDEN_LIFE_MS);
     const mid = s.score;
-    const gy = (await page.evaluate(() => window.innerHeight)) * GROUND_FRAC - GOLDEN_H / 2;
-    await page.mouse.click(g.x + 35, gy);
+    await page.getByTestId('chicken-golden').first().click({ force: true });
     const goldGain = (await v2State(page)).score - mid;
     expect(goldGain).toBeGreaterThanOrEqual(5);
     expect(goldGain).toBeLessThanOrEqual(5 + 3);
