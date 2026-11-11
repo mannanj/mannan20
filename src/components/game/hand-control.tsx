@@ -14,6 +14,7 @@ const WASM_BINARY = `${WASM_BASE}/vision_wasm_internal.wasm`;
 const DOWNLOAD_MB = 21;
 const COUNTDOWN_FROM = 3;
 const COUNTDOWN_STEP_MS = 1000;
+const COUNTDOWN_TICK_MS = 100;
 const CURSOR_PX = 44;
 const HAND_LINKS: [number, number][] = [
   [0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12],
@@ -263,14 +264,16 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
 
   useEffect(() => {
     if (phase !== 'countdown') return;
-    if (count <= 0) {
+    const startedAt = performance.now();
+    const id = window.setInterval(() => {
+      const left = COUNTDOWN_FROM - Math.floor((performance.now() - startedAt) / COUNTDOWN_STEP_MS);
+      if (left > 0) return setCount(left);
+      window.clearInterval(id);
       setPhase('on');
       portsRef.current.resume();
-      return;
-    }
-    const id = window.setTimeout(() => setCount((n) => n - 1), COUNTDOWN_STEP_MS);
-    return () => window.clearTimeout(id);
-  }, [phase, count]);
+    }, COUNTDOWN_TICK_MS);
+    return () => window.clearInterval(id);
+  }, [phase]);
 
   const start = () => {
     setCount(COUNTDOWN_FROM);
