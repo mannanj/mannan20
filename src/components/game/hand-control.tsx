@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GLASS_PANEL } from './version-picker';
+import { HAND_TRACE_PARAM } from './hand-trace';
+import { HandTracePanel, TraceRecorder } from './hand-trace-panel';
 import type { HandLandmarker } from '@mediapipe/tasks-vision';
 import { createFlick, flickStep, nextPinched, palmY, pinchRatio, screenPoint, smooth, type HandPoint } from './hand-gesture';
 
@@ -147,6 +149,9 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
   const pointRef = useRef<HandPoint | null>(null);
   const pinchedRef = useRef(false);
   const flickRef = useRef(createFlick());
+  const [recorder, setRecorder] = useState<TraceRecorder | null>(null);
+  const recorderRef = useRef<TraceRecorder | null>(null);
+  recorderRef.current = recorder;
   const checksRef = useRef(checks);
   checksRef.current = checks;
 
@@ -155,6 +160,10 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
     streamRef.current = null;
     pointRef.current = null;
     pinchedRef.current = false;
+  }, []);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has(HAND_TRACE_PARAM)) setRecorder(new TraceRecorder());
   }, []);
 
   useEffect(() => () => {
@@ -222,6 +231,7 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
       const live = phaseRef.current === 'on';
       const flick = hand ? flickStep(flickRef.current, palmY(hand), performance.now()) : null;
       if (flick) flickRef.current = flick.state;
+      recorderRef.current?.frame(performance.now(), hand, pinched && !pinchedRef.current, flick?.flick ?? false);
       if (flick?.flick) {
         cursorRef.current?.animate([{ scale: '1' }, { scale: '0.6' }, { scale: '1' }], { duration: 180 });
         const at = pointRef.current;
@@ -360,6 +370,8 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
           </div>
         </div>
       )}
+
+      {recorder && (phase === 'checking' || phase === 'countdown' || phase === 'on') && <HandTracePanel recorder={recorder} />}
 
       {phase === 'countdown' && (
         <div data-testid="hand-countdown" className="pointer-events-none fixed inset-0 z-[80] flex items-center justify-center bg-black/40">
