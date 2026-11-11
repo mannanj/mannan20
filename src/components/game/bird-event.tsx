@@ -360,11 +360,11 @@ export function createBirdState(): BirdState {
 
 export interface BirdEls {
   root: HTMLDivElement | null;
-  flight: HTMLImageElement | null;
-  flightPrev: HTMLImageElement | null;
+  flight: HTMLDivElement | null;
+  flightPrev: HTMLDivElement | null;
   hitR: HTMLDivElement | null;
   hitL: HTMLDivElement | null;
-  body: HTMLImageElement | null;
+  body: HTMLDivElement | null;
   look: HTMLImageElement | null;
   talonL: HTMLImageElement | null;
   talonR: HTMLImageElement | null;
@@ -810,11 +810,16 @@ function tickHeat(s: BirdState, els: BirdEls, ctx: BirdCtx, hold: Point, result:
   }
 }
 
-function setFrame(img: HTMLImageElement, kind: BirdKind, name: FrameName): FrameAsset {
+function spriteOf(el: HTMLElement): HTMLImageElement | null {
+  return el.querySelector('img');
+}
+
+function setFrame(el: HTMLElement, kind: BirdKind, name: FrameName): FrameAsset {
   const a = frame(kind, name);
-  if (img.dataset.frame !== name) {
-    img.dataset.frame = name;
-    img.src = a.file;
+  if (el.dataset.frame !== name) {
+    el.dataset.frame = name;
+    const img = spriteOf(el);
+    if (img) img.src = a.file;
   }
   return a;
 }
@@ -836,7 +841,8 @@ function placeFlight(s: BirdState, els: BirdEls, ts: number, name: FrameName, cx
   if (was !== name) {
     if (prev && was && cur.style.visibility === 'visible') {
       prev.dataset.frame = was;
-      prev.src = frame(s.kind, was).file;
+      const prevImg = spriteOf(prev);
+      if (prevImg) prevImg.src = frame(s.kind, was).file;
       s.swapAt = ts;
     }
     setFrame(cur, s.kind, name);
@@ -1294,6 +1300,7 @@ export function birdStateView(s: BirdState) {
 const LAYER = 'pointer-events-none absolute top-0 left-0 max-w-none select-none will-change-transform [visibility:hidden]';
 const TALON_STYLE: CSSProperties = { transformOrigin: '50% 0%' };
 const FLIGHT_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
+const SPRITE = 'block w-full max-w-none select-none';
 
 interface BirdLayerProps {
   fiery?: boolean;
@@ -1364,7 +1371,9 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
       <>
         <div ref={bind('flash')} data-testid="bird-flash" className="bird-flash pointer-events-none fixed inset-0 z-20 [visibility:hidden]" />
         {fiery && kind === 'phoenix' && <PhoenixFireFilter />}
-        <img ref={bind('body')} src={frame(kind, 'grab-body').file} alt="" draggable={false} data-testid="bird-body" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
+        <div ref={bind('body')} data-testid="bird-body" className={LAYER} style={FLIGHT_STYLE}>
+          <img src={frame(kind, 'grab-body').file} alt="" draggable={false} className={`${SPRITE} ${ablaze(kind, fiery)}`} />
+        </div>
         <img ref={bind('look')} alt="" draggable={false} data-testid="bird-look" className={LAYER} style={FLIGHT_STYLE} />
         <img
           ref={bind('talonL')}
@@ -1381,8 +1390,12 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
   }
   return (
     <div ref={bind('root')} data-testid="bird-root" data-kind={kind} data-phase="idle" data-talon="" data-hint="0" data-label="0" data-look="0" data-heat="0" data-pulse="0" className="contents">
-      <img ref={bind('flightPrev')} alt="" draggable={false} data-testid="bird-flight-prev" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
-      <img ref={bind('flight')} alt="" draggable={false} data-testid="bird-flight" className={`${LAYER} ${ablaze(kind, fiery)}`} style={FLIGHT_STYLE} />
+      <div ref={bind('flightPrev')} data-testid="bird-flight-prev" className={LAYER} style={FLIGHT_STYLE}>
+        <img alt="" draggable={false} className={`${SPRITE} ${ablaze(kind, fiery)}`} />
+      </div>
+      <div ref={bind('flight')} data-testid="bird-flight" className={LAYER} style={FLIGHT_STYLE}>
+        <img alt="" draggable={false} className={`${SPRITE} ${ablaze(kind, fiery)}`} />
+      </div>
       {spec.heat && (
         <>
           <div ref={bind('shimmer')} data-testid="bird-shimmer" className="bird-shimmer pointer-events-none absolute top-0 left-0 will-change-transform [visibility:hidden]" />

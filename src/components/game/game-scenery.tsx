@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useRef, useState } from 'react';
 
 const CYCLE_MS = 26000;
 const CROSSFADE_MS = 2600;
@@ -8,6 +8,14 @@ const SCENE_COUNT = 7;
 const BASE_OPACITY = 0.3;
 const ACCENT_OPACITY = 0.4;
 const TIER_ACCENT = ['#E8C76A', '#4FC3F7', '#7ED88A', '#FF7A5C', '#FFE082'];
+const NOISE_FREQ_MIN = 0.011;
+const NOISE_FREQ_MAX = 0.0145;
+const NOISE_FREQ_PERIOD_MS = 19000;
+const MORPH_SWING = 5.5;
+const MORPH_PERIOD_MS = 13000;
+const WOBBLE_STEP_MS = 400;
+
+const triangle = (t: number, periodMs: number) => 1 - Math.abs(((t / periodMs) % 1) * 2 - 1);
 
 declare global {
   interface Window {
@@ -397,58 +405,42 @@ function SceneLayer({
   const filterId = `${uid}-rough-${slot}`;
   const accent = TIER_ACCENT[Math.max(0, Math.min(tier, TIER_ACCENT.length - 1))];
   const morphBase = 7 + tier * 1.8;
+  const noiseRef = useRef<SVGFETurbulenceElement | null>(null);
+  const morphRef = useRef<SVGFEDisplacementMapElement | null>(null);
+
+  useEffect(() => {
+    const step = () => {
+      const now = performance.now();
+      noiseRef.current?.setAttribute('baseFrequency', (NOISE_FREQ_MIN + (NOISE_FREQ_MAX - NOISE_FREQ_MIN) * triangle(now, NOISE_FREQ_PERIOD_MS)).toFixed(5));
+      morphRef.current?.setAttribute('scale', (morphBase + MORPH_SWING * triangle(now, MORPH_PERIOD_MS)).toFixed(1));
+    };
+    step();
+    const id = setInterval(step, WOBBLE_STEP_MS);
+    return () => clearInterval(id);
+  }, [morphBase]);
+
   return (
     <div
       data-testid="scenery-slot"
       className="scenery-slot absolute inset-0 overflow-hidden"
       style={{ opacity: visible ? 1 : 0, transitionDuration: `${CROSSFADE_MS}ms` }}
     >
-      <svg
-        key={scene}
-        className="scenery-drift absolute inset-0 h-full w-full"
-        viewBox="0 0 1440 900"
-        preserveAspectRatio="xMidYMid slice"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.011"
-              numOctaves="2"
-              seed={slot === 0 ? 7 : 23}
-              result="noise"
-            >
-              <animate
-                attributeName="baseFrequency"
-                values="0.011;0.0145;0.011"
-                dur="19s"
-                repeatCount="indefinite"
-              />
-            </feTurbulence>
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="noise"
-              scale={morphBase.toFixed(1)}
-              xChannelSelector="R"
-              yChannelSelector="G"
-            >
-              <animate
-                attributeName="scale"
-                values={`${morphBase.toFixed(1)};${(morphBase + 5.5).toFixed(1)};${morphBase.toFixed(1)}`}
-                dur="13s"
-                repeatCount="indefinite"
-              />
-            </feDisplacementMap>
-          </filter>
-        </defs>
-        <Scene index={scene} filterId={filterId} tier={tier} accent={accent} />
-      </svg>
+      <div key={scene} className="scenery-drift absolute inset-0 will-change-transform">
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence ref={noiseRef} type="fractalNoise" baseFrequency={NOISE_FREQ_MIN} numOctaves="2" seed={slot === 0 ? 7 : 23} result="noise" />
+              <feDisplacementMap ref={morphRef} in="SourceGraphic" in2="noise" scale={morphBase.toFixed(1)} xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+          <Scene index={scene} filterId={filterId} tier={tier} accent={accent} />
+        </svg>
+      </div>
     </div>
   );
 }
 
-export function GameScenery({ tier }: { tier: number }) {
+export const GameScenery = memo(function GameScenery({ tier }: { tier: number }) {
   const uid = useId().replace(/:/g, '');
   const [visible, setVisible] = useState(0);
   const [slotScene, setSlotScene] = useState<[number, number]>([0, 1]);
@@ -496,4 +488,4 @@ export function GameScenery({ tier }: { tier: number }) {
       <SceneLayer scene={slotScene[1]} visible={visible === 1} uid={uid} slot={1} tier={tier} />
     </div>
   );
-}
+});

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import type { RocketSeq } from './escape-sequence';
 import { DESCENT_MS, isSpaceStage, type EscapeStage } from './escape-stages';
 import { BG_MARTIAN_COUNT, MARTIAN_KINDS, MARTIAN_SPECS } from './martians';
@@ -176,7 +176,7 @@ function JupiterGround() {
 
 const CROSSFADE_MS = 1800;
 
-export function EscapeScenery({ stage, seq = 'none' }: { stage: EscapeStage; seq?: RocketSeq }) {
+export const EscapeScenery = memo(function EscapeScenery({ stage, seq = 'none' }: { stage: EscapeStage; seq?: RocketSeq }) {
   const [shown, setShown] = useState<EscapeStage[]>([stage]);
   const [prevStage, setPrevStage] = useState(stage);
   if (stage !== prevStage) {
@@ -212,4 +212,4 @@ export function EscapeScenery({ stage, seq = 'none' }: { stage: EscapeStage; seq
       )}
     </>
   );
-}
+});

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { EndlessScene } from './endless-eras';
 
 const STARS = [
@@ -28,7 +29,7 @@ interface EndlessSceneryProps {
   groundFrac: number;
 }
 
-export function EndlessScenery({ scene, groundFrac }: EndlessSceneryProps) {
+export const EndlessScenery = memo(function EndlessScenery({ scene, groundFrac }: EndlessSceneryProps) {
   const groundTop = `${groundFrac * 100}%`;
   return (
     <div data-testid="endless-scene" data-scene={scene ?? 'none'} className="pointer-events-none absolute inset-0 z-[2]">
@@ -96,4 +97,4 @@ export function EndlessScenery({ scene, groundFrac }: EndlessSceneryProps) {
       </div>
     </div>
   );
-}
+});
