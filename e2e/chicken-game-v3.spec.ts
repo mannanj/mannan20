@@ -5,6 +5,8 @@ import { DUEL_TOTAL_MS } from '../src/components/game/creature-duel';
 import { CREATURE_SPECS } from '../src/components/game/creature-event';
 import { ENDLESS_ERAS, ERA_MAX_MS } from '../src/components/game/endless-eras';
 
+const AIMBOT_LEVEL_KEY = 'chicken-aimbot-level';
+
 interface V3Bridge {
   state: () => { score: number; bird: { kind: string | null; phase: string; rightNeed: number; leftNeed: number } };
   setScore: (n: number) => void;
@@ -63,6 +65,7 @@ test.describe('Chicken v3', () => {
   });
 
   test('plain /game opens the current game as v2; the picker offers v2 and Legacy until the first squeeze', async ({ page }) => {
+    await page.addInitScript(([key, value]) => localStorage.setItem(key, value), [AIMBOT_LEVEL_KEY, '1']);
     await gotoV3(page, undefined, '/game');
     const picker = page.getByTestId('version-picker');
     await expect(picker).toHaveAttribute('data-version', '2');

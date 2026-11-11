@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   useCallback,
@@ -392,7 +393,7 @@ import { MysteryPanel } from './mystery-panel';
 import { Aimbot, AimbotIcon, type AimbotClock } from './aimbot';
 import { DEFAULT_HAND_COLOR, HAND_COLORS, HAND_COLOR_KEY, HAND_CURSOR_CSS, handColor as handColorOf } from './hand-colors';
 import { GLASS_PANEL } from './version-picker';
-import { useRollingScore } from './rolling-score';
+import { RollingScoreText } from './rolling-score';
 import { HandControl } from './hand-control';
 import { CAST_IDS, CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY, type CastId } from './cannon';
 import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
@@ -790,6 +791,7 @@ interface GoldenMotion {
 interface GoldenView {
   id: number;
   scale: number;
+  style: { width: number };
 }
 
 function goldenScale(): number {
@@ -1263,8 +1265,8 @@ function drawAura(
 
 function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const CHICKEN_W = Math.round(BASE_CHICKEN_W * tuning.chickenScale);
+  const chickenWidth = useMemo(() => ({ width: CHICKEN_W }), [CHICKEN_W]);
   const CHICKEN_H = Math.round(BASE_CHICKEN_H * tuning.chickenScale);
-  const chickenWidth = { width: CHICKEN_W };
   const BASE_SPEED = tuning.baseSpeed * (typeof window !== 'undefined' && !window.matchMedia('(pointer: coarse)').matches ? DESKTOP_SPEED_SCALE : 1);
   const [score, setScore] = useState(0);
   const [stage, setStage] = useState<EscapeStage>('none');
@@ -1338,7 +1340,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
     } catch {}
   };
   const handPaint = handColorOf(handColor);
-  const shownScore = useRollingScore(score);
   const handPausedAtRef = useRef(0);
   const replayingOpeningRef = useRef(false);
   const [duel, setDuel] = useState<DuelDef | null>(null);
@@ -3417,7 +3418,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       until: now + GOLDEN_LIFE_MS,
       blinking: false,
     });
-    setGoldenViews((v) => [...v, { id, scale }]);
+    setGoldenViews((v) => [...v, { id, scale, style: { width: GOLDEN_W * scale } }]);
   }, []);
 
   const layEgg = useCallback((now: number) => {
@@ -5987,7 +5988,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       )}
 
       <div data-testid="chicken-score" data-hud="" className={`absolute top-[265px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-5xl font-bold text-white tabular-nums pointer-events-none [text-shadow:0_0_3px_rgba(0,0,0,0.6),0_2px_16px_rgba(0,0,0,0.55)]`}>
-        {shownScore.toLocaleString('en-US')}
+        <RollingScoreText value={score} />
       </div>
 
       {mercyCaption && (
@@ -6131,7 +6132,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           onClick={() => hit(undefined, true, { x: (goldenRef.current.get(g.id)?.x ?? 0) + (GOLDEN_W * g.scale) / 2, y: groundYFor(window.innerHeight) - (GOLDEN_H * g.scale) / 2 }, GOLDEN_HIT_VALUE)}
           className="absolute top-0 left-0 z-10 cursor-pointer will-change-transform [filter:sepia(1)_saturate(5)_hue-rotate(-8deg)_brightness(1.12)_drop-shadow(0_0_10px_rgba(255,200,60,0.85))]"
         >
-          <ChickenSvg style={{ width: GOLDEN_W * g.scale }} tier={tier} morph={morph} eyes="calm" skin={skin} />
+          <ChickenSvg style={g.style} tier={tier} morph={morph} eyes="calm" skin={skin} />
         </div>
       ))}
 

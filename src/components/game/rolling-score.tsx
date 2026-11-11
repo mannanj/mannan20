@@ -76,3 +76,8 @@ export function useRollingScore(value: number): number {
 
   return shown;
 }
+
+export function RollingScoreText({ value }: { value: number }) {
+  const shown = useRollingScore(value);
+  return <>{shown.toLocaleString('en-US')}</>;
+}
