@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { V3_TUNING, scaledClicks } from '../src/components/game/game-tuning';
+import { GAME_TUNING, scaledClicks } from '../src/components/game/game-tuning';
 import { SAVED_SCORE_KEY } from '../src/components/game/use-saved-score';
 import { DUEL_TOTAL_MS } from '../src/components/game/creature-duel';
 import { CREATURE_SPECS } from '../src/components/game/creature-event';
@@ -62,20 +62,18 @@ test.describe('Chicken v3', () => {
     await expect(page.getByTestId('version-picker')).toHaveCount(0);
   });
 
-  test('plain /game opens v3; the version picker switches versions until the first squeeze, then goes away', async ({ page }) => {
+  test('plain /game opens the current game as v2; the picker offers v2 and Legacy until the first squeeze', async ({ page }) => {
     await gotoV3(page, undefined, '/game');
     const picker = page.getByTestId('version-picker');
-    await expect(picker).toHaveAttribute('data-version', '3');
+    await expect(picker).toHaveAttribute('data-version', '2');
+    await expect(page.getByTestId('aimbot-toggle')).toBeVisible();
     await page.getByTestId('version-picker-toggle').click();
-    await expect(page.getByTestId('version-picker-list').getByRole('link')).toHaveText([/v3\s*most recent/, 'v2', 'Legacy']);
-    await page.getByTestId('version-option-2').click();
-    await expect(page).toHaveURL(/variant=2/);
-    await expect(page.getByTestId('chicken-stage')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByTestId('version-picker')).toHaveAttribute('data-version', '2');
-    await page.getByTestId('version-picker-toggle').click();
+    await expect(page.getByTestId('version-picker-list').getByRole('link')).toHaveText([/v2\s*most recent/, 'Legacy']);
     await page.getByTestId('version-option-legacy').click();
     await expect(page).toHaveURL(/variant=legacy/);
     await expect(page.getByTestId('version-picker')).toHaveAttribute('data-version', 'legacy', { timeout: 30_000 });
+    await gotoV3(page, undefined, '/game?variant=2');
+    await expect(page.getByTestId('aimbot-toggle')).toBeVisible();
     await gotoV3(page);
     await expect(page.getByTestId('version-picker')).toBeVisible();
     await squeeze(page);
@@ -95,7 +93,7 @@ test.describe('Chicken v3', () => {
       c.forceBird('phoenix');
     });
     await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().bird.phase === 'right', null, { timeout: 15_000 });
-    expect((await bridge(page)).bird.rightNeed).toBe(scaledClicks(100, V3_TUNING.clickScale));
+    expect((await bridge(page)).bird.rightNeed).toBe(scaledClicks(100, GAME_TUNING.clickScale));
   });
 
   test('after the last scene of the first lap the chicken talks, then play carries on into the repeat', async ({ page }) => {
@@ -160,7 +158,7 @@ test.describe('Chicken v3', () => {
       await gotoV3(page, 2100);
       await page.waitForFunction(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state().score >= 2100, null, { timeout: 30_000 });
       await forceEra(page, eraId);
-      const at = Math.max(...(V3_TUNING.eraCreatures[eraId] ?? []).map((c) => c.atMs));
+      const at = Math.max(...(GAME_TUNING.eraCreatures[eraId] ?? []).map((c) => c.atMs));
       await fastForward(page, at + 100);
       const duel = page.getByTestId('creature-duel');
       await expect(duel).toHaveAttribute('data-rival', rival, { timeout: DUEL_WAIT_MS });
@@ -184,7 +182,7 @@ test.describe('Chicken v3', () => {
     const view = page.viewportSize();
     if (!box || !view) throw new Error('no kitty box');
     const basis = Math.min(view.height, view.width * 1.3);
-    expect(box.height).toBeLessThan(CREATURE_SPECS.kitty.heightFrac * basis * 1.3 * ((V3_TUNING.creatureSize.kitty ?? 1) + 0.1));
+    expect(box.height).toBeLessThan(CREATURE_SPECS.kitty.heightFrac * basis * 1.3 * ((GAME_TUNING.creatureSize.kitty ?? 1) + 0.1));
   });
 
   test('the scene picker shows the current scene, expands in order, and replays any played scene', async ({ page }) => {

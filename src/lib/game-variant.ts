@@ -1,24 +1,20 @@
 export const GAME_VARIANT_PARAM = 'variant';
-export const NEXT_GAME_VARIANT = '2';
-
 export const LEGACY_GAME_VARIANT = 'legacy';
 
-export type GameVersion = 3 | 2 | 'legacy';
+export type GameVersion = 2 | 'legacy';
 
 export const GAME_VERSIONS: { version: GameVersion; label: string; note?: string }[] = [
-  { version: 3, label: 'v3', note: 'most recent' },
-  { version: 2, label: 'v2' },
+  { version: 2, label: 'v2', note: 'most recent' },
   { version: 'legacy', label: 'Legacy' },
 ];
 
 export function gameVersion(value: string | string[] | undefined): GameVersion {
   const v = Array.isArray(value) ? value[0] : value;
-  if (v === LEGACY_GAME_VARIANT) return 'legacy';
-  return v === NEXT_GAME_VARIANT ? 2 : 3;
+  return v === LEGACY_GAME_VARIANT ? 'legacy' : 2;
 }
 
 export function gameVersionHref(version: GameVersion): string {
-  return version === 3 ? '/game' : `/game?${GAME_VARIANT_PARAM}=${version}`;
+  return version === 2 ? '/game' : `/game?${GAME_VARIANT_PARAM}=${version}`;
 }
 
 const MAX_TEST_START = 1_000_000;

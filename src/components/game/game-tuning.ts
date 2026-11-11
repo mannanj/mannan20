@@ -2,10 +2,7 @@ import type { BirdKind } from './bird-event';
 import type { CreatureKind } from './creature-event';
 import type { EraCreature } from './endless-eras';
 
-export type GameVariant = 2 | 3;
-
 export interface GameTuning {
-  variant: GameVariant;
   baseSpeed: number;
   clickScale: number;
   disabledBirds: BirdKind[];
@@ -43,26 +40,7 @@ const V3_ERA_CREATURES: Record<string, EraCreature[]> = {
   'myth-2': [{ kind: 'cerberus', atMs: V3_GATE_DUEL_AT_MS, rival: 'hydra', banner: 'the hydra meets cerberus at the gate' }],
 };
 
-export const V2_TUNING: GameTuning = {
-  variant: 2,
-  baseSpeed: 0.075,
-  clickScale: 1,
-  disabledBirds: [],
-  cosmicOpening: false,
-  persistScore: false,
-  monologueAtEnd: false,
-  creatureSize: {},
-  headlines: true,
-  cannonDock: true,
-  aimbot: false,
-  chickenScale: 1,
-  eraCreatures: {},
-  scenePicker: false,
-  fieryPhoenix: false,
-};
-
-export const V3_TUNING: GameTuning = {
-  variant: 3,
+export const GAME_TUNING: GameTuning = {
   baseSpeed: V1_BASE_SPEED * V3_SPEED_BOOST,
   clickScale: V3_CLICK_SCALE,
   disabledBirds: ['eagle'],
@@ -85,10 +63,6 @@ export const V3_TUNING: GameTuning = {
   scenePicker: true,
   fieryPhoenix: true,
 };
-
-export function tuningFor(variant: GameVariant): GameTuning {
-  return variant === 3 ? V3_TUNING : V2_TUNING;
-}
 
 export function scaledClicks(clicks: number, scale: number): number {
   return Math.max(1, Math.round(clicks * scale));

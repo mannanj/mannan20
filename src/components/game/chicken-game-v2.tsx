@@ -373,7 +373,7 @@ import {
 import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
 import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, finishesFirstLap, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
-import { tuningFor, type GameTuning, type GameVariant } from './game-tuning';
+import { GAME_TUNING, type GameTuning } from './game-tuning';
 import { readSavedScore, useSavedScore } from './use-saved-score';
 import { GIANT_DURATION_MS, GIANT_FACTOR, MAGNET_DURATION_MS, MAGNET_MAX_SPEED, MAGNET_PULL_PER_MS, MYSTERY_REVEAL_MS, pickMysteryEffect } from './chicken-orbs';
 import { useChickenSounds } from '@/hooks/use-chicken-sounds';
@@ -441,6 +441,7 @@ const WOBBLE_AMPLITUDE = 3;
 const WOBBLE_FREQUENCY = 0.002;
 const BOUNCE_RANDOM = 0.3;
 const MAX_DT = 32;
+const CURRENT_VERSION = 2;
 const BASE_CHICKEN_W = 70;
 const BASE_CHICKEN_H = 140;
 const PARTICLE_FADE = 0.0008;
@@ -5797,7 +5798,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       )}
 
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
-        {opening === 'done' && !started && <VersionPicker current={tuning.variant} />}
+        {opening === 'done' && !started && <VersionPicker current={CURRENT_VERSION} />}
         <button
           type="button"
           onClick={() => setSkinsOpen((v) => !v)}
@@ -6302,11 +6303,11 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   );
 }
 
-export function ChickenGameV2({ variant = 2 }: { variant?: GameVariant }) {
+export function ChickenGameV2() {
   return (
     <AppProvider>
       <InventoryProvider onUse={onUseItem}>
-        <ChickenGameInner tuning={tuningFor(variant)} />
+        <ChickenGameInner tuning={GAME_TUNING} />
       </InventoryProvider>
     </AppProvider>
   );

@@ -17,7 +17,7 @@ export default async function GamePage({ searchParams }: GamePageProps) {
   const params = await searchParams;
   const start = process.env.NODE_ENV === 'production' ? null : testStartScore(params.start);
   const version = gameVersion(params[GAME_VARIANT_PARAM]);
-  const game = version === 'legacy' ? <ChickenGame /> : <ChickenGameV2 variant={version} />;
+  const game = version === 'legacy' ? <ChickenGame /> : <ChickenGameV2 />;
   return (
     <>
       {game}
