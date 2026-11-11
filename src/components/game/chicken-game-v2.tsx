@@ -392,6 +392,7 @@ import { CastHud, type CastStatus } from './cast-hud';
 import { WeaponTray } from './weapon-tray';
 import { MysteryPanel } from './mystery-panel';
 import { Aimbot, type AimbotClock } from './aimbot';
+import { HandControl } from './hand-control';
 import { CAST_IDS, CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY, type CastId } from './cannon';
 import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
 import { ICE_COLORS, isGearItem, type GearId } from './gear';
@@ -1293,6 +1294,8 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const monologueAtRef = useRef(0);
   const mysteryStepRef = useRef<number | null>(null);
   const [mysteryOpen, setMysteryOpen] = useState(false);
+  const [handPaused, setHandPaused] = useState(false);
+  const handPausedAtRef = useRef(0);
   const replayingOpeningRef = useRef(false);
   const [duel, setDuel] = useState<DuelDef | null>(null);
   const duelRef = useRef<DuelDef | null>(null);
@@ -5730,6 +5733,21 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
     resumeAfterMonologue(step);
   };
 
+  const pauseForHand = () => {
+    if (haltedRef.current) return;
+    haltedRef.current = true;
+    handPausedAtRef.current = performance.now();
+    setHandPaused(true);
+  };
+
+  const resumeFromHand = () => {
+    if (!handPausedAtRef.current) return;
+    shiftTimers(performance.now() - handPausedAtRef.current);
+    handPausedAtRef.current = 0;
+    haltedRef.current = false;
+    setHandPaused(false);
+  };
+
   const continueFromMystery = () => {
     setMysteryOpen(false);
     resumeAfterMonologue(mysteryStepRef.current);
@@ -6161,7 +6179,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         speak={() => playCreature('monkey')}
         cursors={() => cursorOffsetsRef.current}
         targets={helperTargets}
-        paused={monologue !== null || mysteryOpen}
+        paused={monologue !== null || mysteryOpen || handPaused}
         click={(at, count) => hit(undefined, false, at, count)}
         gearRef={gearRef}
       />
@@ -6200,6 +6218,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         />
       )}
       <CastHud read={readCast} onCast={castNow} />
+      {opening === 'done' && <HandControl pause={pauseForHand} resume={resumeFromHand} />}
       {tuning.aimbot && opening === 'done' && (
         <Aimbot clock={aimbotClockRef.current} target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })} onPhase={(ph) => setAimbotOn(ph === 'on')} />
       )}
@@ -6220,7 +6239,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         controlRef={jevRef}
         cursors={() => cursorOffsetsRef.current}
         targets={helperTargets}
-        paused={monologue !== null || mysteryOpen}
+        paused={monologue !== null || mysteryOpen || handPaused}
         click={(at, count) => hit(undefined, false, at, count)}
         speak={() => playCreature('jeff')}
         gearRef={gearRef}

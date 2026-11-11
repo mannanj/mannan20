@@ -44,6 +44,7 @@
     "sync:mcp": "node ../mcp-connector/bin/sync.mjs src/vendor/mcp-connector"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "1.1.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@tailwindcss/postcss": "^4.1.14",
