@@ -40,8 +40,19 @@ function Chip({ id, leftMs, active, onCast }: ChipProps) {
   );
 }
 
+const POP_OUT_MIN = 6;
+
+function PopIcon({ out }: { out: boolean }) {
+  return (
+    <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {out ? <path d="M10 2.5 H13.5 V6 M13.5 2.5 L8 8 M12 9.5 V13.5 H2.5 V4 H6.5" /> : <path d="M6 13.5 H2.5 V10 M2.5 13.5 L8 8 M4 6.5 V2.5 H13.5 V12 H9.5" />}
+    </svg>
+  );
+}
+
 export function CastHud({ read, onCast }: { read: () => CastStatus[]; onCast: (id: CastId) => void }) {
   const [cast, setCast] = useState<CastStatus[]>([]);
+  const [popped, setPopped] = useState(false);
 
   useEffect(() => {
     const tick = window.setInterval(() => {
@@ -52,11 +63,26 @@ export function CastHud({ read, onCast }: { read: () => CastStatus[]; onCast: (i
   }, [read]);
 
   if (cast.length === 0) return null;
+  const canPop = cast.length >= POP_OUT_MIN;
+  const chips = cast.map((c) => <Chip key={c.id} {...c} onCast={onCast} />);
+  if (popped && canPop) {
+    return (
+      <div data-testid="cast-popout" data-hud className="fixed right-6 top-1/3 z-[60] flex flex-col gap-1 rounded-xl border border-white/15 bg-black/70 p-2 backdrop-blur-md">
+        <button type="button" data-testid="cast-dock" aria-label="Dock pet controls" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); setPopped(false); }} className="self-end cursor-pointer rounded-md p-1 text-white/60 hover:bg-white/10 hover:text-white">
+          <PopIcon out={false} />
+        </button>
+        {chips}
+      </div>
+    );
+  }
   return (
-    <div data-testid="cast-hud" className="pointer-events-none fixed bottom-[124px] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-2">
-      {cast.map((c) => (
-        <Chip key={c.id} {...c} onCast={onCast} />
-      ))}
+    <div data-testid="cast-hud" className="relative">
+      <div className="pointer-events-auto flex max-w-[min(90vw,640px)] items-center gap-2 overflow-x-auto [scrollbar-width:none]">{chips}</div>
+      {canPop && (
+        <button type="button" data-testid="cast-popout-toggle" aria-label="Pop out pet controls" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); setPopped(true); }} className="absolute -right-2 -top-5 cursor-pointer rounded-md bg-black/60 p-1 text-white/70 hover:bg-black/80 hover:text-white">
+          <PopIcon out />
+        </button>
+      )}
     </div>
   );
 }

@@ -115,6 +115,10 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
   }, [owned, phase]);
 
   useEffect(() => {
+    if (owned && phase === 'idle') setPhase('active');
+  }, [owned, phase]);
+
+  useEffect(() => {
     if (phase !== 'rising' && phase !== 'leaving') return;
     const rising = phase === 'rising';
     const move = ownedRef.current
@@ -142,7 +146,7 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
   useEffect(() => {
     if (phase !== 'active') return;
     const begin = performance.now();
-    let endsAt = begin + helperPlayMs(callsRef.current, Math.random);
+    let endsAt = Number.POSITIVE_INFINITY;
     callsRef.current += 1;
     let nextShot = begin;
     let dart = 0;

@@ -3,6 +3,7 @@ export type OrbKind =
   | 'cursor5'
   | 'cursor3'
   | 'scatter'
+  | 'aimbot'
   | 'frenzy'
   | 'eggs'
   | 'multiply5'
@@ -28,6 +29,7 @@ export const ORB_THRESHOLDS: Record<OrbKind, number> = {
   cursor5: 100,
   cursor3: 250,
   scatter: Number.POSITIVE_INFINITY,
+  aimbot: Number.POSITIVE_INFINITY,
   frenzy: 450,
   eggs: 700,
   multiply5: Number.POSITIVE_INFINITY,
@@ -46,6 +48,7 @@ export const ORB_LABELS: Record<OrbKind, string> = {
   cursor5: 'Cursor x5',
   cursor3: 'Cursor x3',
   scatter: 'Scatter',
+  aimbot: 'Aimbot',
   frenzy: 'Points x2',
   eggs: 'Golden Eggs',
   multiply5: 'Multiply x5',
@@ -69,6 +72,7 @@ export const ORB_LABEL_PX: Record<OrbKind, number> = {
   cursor5: 12.5,
   cursor3: 12.5,
   scatter: 11,
+  aimbot: 11,
   frenzy: 11,
   eggs: 10,
   multiply5: 11,
@@ -187,10 +191,10 @@ export const CURSOR_RING_OUTER_RADIUS = 117;
 const TRIANGLE_COS = Math.cos(Math.PI / 6);
 const TRIANGLE_SIN = Math.sin(Math.PI / 6);
 export const MAX_CURSORS = 15;
-export const CURSOR_HAND_SIZE = 60
+export const CURSOR_HAND_SIZE = 78
 export const CURSOR_HIT_PAD = 15;
-export const CURSOR_HAND_HOT_X = 30;
-export const CURSOR_HAND_HOT_Y = 28.5;
+export const CURSOR_HAND_HOT_X = 39;
+export const CURSOR_HAND_HOT_Y = 37;
 
 export function pickMysteryEffect(last: OrbKind | null, rng: () => number): OrbKind {
   const options = MYSTERY_EFFECTS.filter((e) => e.kind !== last);

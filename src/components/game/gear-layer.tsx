@@ -21,6 +21,12 @@ import {
   GUN_READY_KEY,
   GUN_SHOT_MS,
   RAY_POINTS,
+  AUTO_SHOT_MS,
+  CANNON_FLIGHT_MS,
+  CANNON_SHOT_MS,
+  CANNON_SPLASH_POINTS,
+  CANNON_SPLASH_RADIUS,
+  GEAR_HOLDER_ATTR,
   CANNONBALL_POINTS,
   addFreezeShot,
   createIce,
@@ -50,6 +56,7 @@ interface GearLayerProps {
   playable: () => boolean;
   score: () => number;
   target: () => JevPoint;
+  targets: () => JevPoint[];
   hit: (at: JevPoint, count: number) => void;
   burst: (at: JevPoint) => void;
 }
@@ -67,24 +74,28 @@ const RAY_FLASH_MS = 220;
 const BOLT_LOOK: Record<GunId, { size: number; background: string; shadow: string }> = {
   'ray-gun': { size: RAY_BEAM_PX, background: 'linear-gradient(180deg,#d24dff,#fff 40%,#fff 60%,#7a2bff)', shadow: '0 0 18px 6px #b14dff, 0 0 40px 14px rgba(160,60,255,0.45)' },
   'freeze-gun': { size: 10, background: 'radial-gradient(circle,#fff,#7fd6ff 70%)', shadow: '0 0 10px 3px #8fdcff' },
-  cannon: { size: 24, background: 'radial-gradient(circle at 35% 35%,#6b7078,#1a1c20 70%)', shadow: '0 0 14px 4px rgba(255,140,40,0.75)' },
+  cannon: { size: 40, background: 'radial-gradient(circle at 35% 35%,#6b7078,#1a1c20 70%)', shadow: '0 0 14px 4px rgba(255,140,40,0.75)' },
 };
 const GUN_ART_SIZE = 56;
-const PICKUP_ART_SIZE = 48;
+const PICKUP_ART_SIZE = 84;
 const INTERACTIVE = 'button, a, input, [data-hud], [data-testid^="inventory"]';
 
 function gunKey(gun: GunId): string {
   return `${GUN_READY_KEY}${gun}`;
 }
 
-export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit, burst }: GearLayerProps) {
+export function GearLayer({ controlRef, monkeyRef, playable, score, target, targets, hit, burst }: GearLayerProps) {
   const { items, grant } = useInventory();
   const [pickup, setPickup] = useState<Pickup | null>(null);
   const [yourGun, setYourGun] = useState<GunId | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [phase, setPhase] = useState<IcePhase>('none');
-  const portsRef = useRef({ playable, score, target, hit, burst, grant, items });
-  portsRef.current = { playable, score, target, hit, burst, grant, items };
+  const portsRef = useRef({ playable, score, target, targets, hit, burst, grant, items });
+  portsRef.current = { playable, score, target, targets, hit, burst, grant, items };
+  const lastCannonRef = useRef(0);
+  const autoAtRef = useRef(new Map<GunId, number>());
+  const autoPickRef = useRef(0);
+  const splashRef = useRef<HTMLDivElement>(null);
   const iceRef = useRef(createIce());
   const holdsRef = useRef(new Map<GunId, { holder: GunHolder; until: number }>());
   const mouseRef = useRef<JevPoint>({ x: 0, y: 0 });
@@ -125,7 +136,30 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
   const giveRef = useRef(give);
   giveRef.current = give;
 
+  const splash = (at: JevPoint) => {
+    for (const t of portsRef.current.targets()) {
+      if (Math.hypot(t.x - at.x, t.y - at.y) <= CANNON_SPLASH_RADIUS) portsRef.current.hit(t, CANNON_SPLASH_POINTS);
+    }
+    const ring = splashRef.current;
+    if (ring) {
+      const d = CANNON_SPLASH_RADIUS * 2;
+      ring.animate(
+        [
+          { transform: `translate(${at.x - d / 2}px, ${at.y - d / 2}px) scale(0.2)`, opacity: 0.95 },
+          { transform: `translate(${at.x - d / 2}px, ${at.y - d / 2}px) scale(1)`, opacity: 0 },
+        ],
+        { duration: 450, easing: 'ease-out' }
+      );
+    }
+    portsRef.current.burst(at);
+  };
+
   const fire = (gun: GunId, from: JevPoint, at: JevPoint, scoring = true) => {
+    const now = performance.now();
+    if (gun === 'cannon') {
+      if (now - lastCannonRef.current < CANNON_SHOT_MS) return;
+      lastCannonRef.current = now;
+    }
     const chicken = portsRef.current.target();
     const el = boltsRef.current[boltRef.current];
     boltRef.current = (boltRef.current + 1) % BOLT_SLOTS.length;
@@ -143,12 +177,16 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
         ray
           ? [{ transform: `${start} scaleY(1.6)`, opacity: 1 }, { transform: `${start} scaleY(0.4)`, opacity: 0 }]
           : [{ transform: start, opacity: 1 }, { transform: `translate(${at.x}px, ${at.y}px) rotate(${angle}rad)`, opacity: 1 }],
-        { duration: ray ? RAY_FLASH_MS : BOLT_MS, easing: ray ? 'ease-out' : 'linear' }
+        { duration: ray ? RAY_FLASH_MS : gun === 'cannon' ? CANNON_FLIGHT_MS : BOLT_MS, easing: ray ? 'ease-out' : 'linear' }
       );
     }
+    if (gun === 'cannon') {
+      window.setTimeout(() => splash(at), CANNON_FLIGHT_MS);
+      return;
+    }
     if (Math.hypot(at.x - chicken.x, at.y - chicken.y) > GUN_HIT_RADIUS) return;
-    if (gun === 'ray-gun' || gun === 'cannon') {
-      if (scoring) portsRef.current.hit(chicken, gun === 'cannon' ? CANNONBALL_POINTS : RAY_POINTS);
+    if (gun === 'ray-gun') {
+      if (scoring) portsRef.current.hit(chicken, RAY_POINTS);
     }
     else addFreezeShot(iceRef.current, performance.now(), Math.random);
   };
@@ -205,6 +243,17 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
         ice.iceMs = 0;
       }
       setPhase(icePhase(iceRef.current, now));
+      for (const [gun, hold] of holdsRef.current) {
+        if (hold.holder === 'you' || !portsRef.current.playable()) continue;
+        if (now < (autoAtRef.current.get(gun) ?? 0)) continue;
+        autoAtRef.current.set(gun, now + AUTO_SHOT_MS[gun]);
+        const body = document.querySelector(`[${GEAR_HOLDER_ATTR}="${hold.holder}"]`)?.getBoundingClientRect();
+        const list = portsRef.current.targets();
+        if (!body || list.length === 0) continue;
+        autoPickRef.current += 1;
+        const at = list[autoPickRef.current % list.length];
+        fireRef.current(gun, { x: body.left + body.width / 2, y: body.top + body.height * 0.25 }, at, true);
+      }
       if (firingRef.current && now >= nextShotRef.current) {
         nextShotRef.current = now + GUN_SHOT_MS;
         for (const [gun, hold] of holdsRef.current) {
@@ -287,7 +336,7 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
             portsRef.current.grant(pickup.id, { x: e.clientX, y: e.clientY });
             setPickup(null);
           }}
-          className="fixed z-[35] flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/10 shadow-[0_0_24px_6px_rgba(120,200,255,0.45)] animate-[chickenBob_1.6s_ease-in-out_infinite]"
+          className="fixed z-[35] flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/10 shadow-[0_0_24px_6px_rgba(120,200,255,0.45)] animate-[chickenBob_1.6s_ease-in-out_infinite]"
         >
           <ItemArt id={pickup.id} size={PICKUP_ART_SIZE} />
         </button>
@@ -309,6 +358,7 @@ export function GearLayer({ controlRef, monkeyRef, playable, score, target, hit,
             className="absolute left-0 top-0 rounded-full opacity-0"
           />
         ))}
+        <div ref={splashRef} data-testid="gear-splash" className="absolute left-0 top-0 rounded-full border-4 border-[#ffb347] bg-[radial-gradient(circle,rgba(255,180,70,0.45),rgba(255,120,30,0.15)_60%,transparent_70%)] opacity-0" style={{ width: CANNON_SPLASH_RADIUS * 2, height: CANNON_SPLASH_RADIUS * 2 }} />
         {yourGun && (
           <div ref={gunElRef} data-testid="gear-cursor" data-gun={yourGun} className="absolute left-0 top-0">
             <div className="-translate-x-2 -translate-y-2">

@@ -14,11 +14,11 @@ export function Caret({ open }: { open: boolean }) {
   );
 }
 
-export function VersionPicker({ current }: { current: GameVersion }) {
+export function VersionPicker({ current, openUp = false }: { current: GameVersion; openUp?: boolean }) {
   const [open, setOpen] = useState(false);
   const here = GAME_VERSIONS.find((v) => v.version === current) ?? GAME_VERSIONS[0];
   return (
-    <div data-testid="version-picker" data-version={String(current)} className={`flex flex-col items-end ${GLASS_PANEL}`}>
+    <div data-testid="version-picker" data-version={String(current)} className={`flex ${openUp ? 'flex-col-reverse items-start' : 'flex-col items-end'} ${GLASS_PANEL}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -31,7 +31,7 @@ export function VersionPicker({ current }: { current: GameVersion }) {
         <Caret open={open} />
       </button>
       {open && (
-        <ul data-testid="version-picker-list" className="flex w-full flex-col gap-0.5 border-t border-white/15 p-1.5">
+        <ul data-testid="version-picker-list" className={`flex w-full flex-col gap-0.5 p-1.5 ${openUp ? 'border-b' : 'border-t'} border-white/15`}>
           {GAME_VERSIONS.map((v) => {
             const active = v.version === current;
             return (

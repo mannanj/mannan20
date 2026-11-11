@@ -48,7 +48,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'Fire form',
     from: ENDLESS_FROM,
     scene: 'fire-sky',
-    pool: ['giant', 'magnet', 'eggs', 'frenzy', 'multiply10', 'cursor5', 'scatter', 'multiply25'],
+    pool: ['giant', 'magnet', 'eggs', 'frenzy', 'multiply10', 'cursor5', 'scatter', 'aimbot', 'multiply25'],
     creatures: [],
   },
   {
@@ -56,7 +56,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'Big cats',
     from: ENDLESS_FROM + ERA_SCORE_STEP,
     scene: 'night-yard',
-    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'scatter', 'cursor3'],
+    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'scatter', 'aimbot', 'cursor3'],
     creatures: [
       { kind: 'kitty', atMs: CAT_OFFSETS_MS.kitty },
       { kind: 'tiger', atMs: CAT_OFFSETS_MS.tiger },
@@ -68,7 +68,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'Jungle',
     from: ENDLESS_FROM + ERA_SCORE_STEP * 2,
     scene: 'jungle',
-    pool: ['eggs', 'frenzy', 'cursor5', 'scatter', 'cursor3', 'multiply10'],
+    pool: ['eggs', 'frenzy', 'cursor5', 'scatter', 'aimbot', 'cursor3', 'multiply10'],
     creatures: [],
   },
   {
@@ -76,7 +76,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'Myth',
     from: ENDLESS_FROM + ERA_SCORE_STEP * 3,
     scene: 'temple',
-    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'scatter', 'giant'],
+    pool: ['eggs', 'frenzy', 'multiply5', 'cursor5', 'scatter', 'aimbot', 'giant'],
     creatures: [
       { kind: 'cyclops', atMs: CAT_OFFSETS_MS.cyclops },
       { kind: 'hydra', atMs: CAT_OFFSETS_MS.hydra },
@@ -87,7 +87,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'The gate',
     from: ENDLESS_FROM + ERA_SCORE_STEP * 4,
     scene: 'temple-gate',
-    pool: ['eggs', 'frenzy', 'multiply10', 'cursor5', 'scatter', 'magnet'],
+    pool: ['eggs', 'frenzy', 'multiply10', 'cursor5', 'scatter', 'aimbot', 'magnet'],
     creatures: [{ kind: 'cerberus', atMs: CAT_OFFSETS_MS.cerberus }],
   },
   {
@@ -95,7 +95,7 @@ export const ENDLESS_ERAS: EndlessEraDef[] = [
     label: 'Enchanted forest',
     from: ENDLESS_FROM + ERA_SCORE_STEP * 5,
     scene: 'forest',
-    pool: ['eggs', 'frenzy', 'chain', 'multiply25', 'multiply100', 'cursor5', 'scatter'],
+    pool: ['eggs', 'frenzy', 'chain', 'multiply25', 'multiply100', 'cursor5', 'scatter', 'aimbot'],
     creatures: [
       { kind: 'tree', atMs: CAT_OFFSETS_MS.tree },
       { kind: 'tree', atMs: SECOND_TREE_AT_MS },

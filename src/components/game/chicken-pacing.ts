@@ -80,6 +80,7 @@ export const ORB_REGISTRY: Record<OrbKind, OrbDef> = {
   cursor5: def('cursor5', 100, 10, 3),
   cursor3: def('cursor3', 250, 6, 2),
   scatter: def('scatter', 100, 14, 3),
+  aimbot: def('aimbot', 150, 12, 3),
   frenzy: def('frenzy', 450, 8, 4, { catchUp: true }),
   eggs: def('eggs', 700, 9, 6, { catchUp: true }),
   multiply5: def('multiply5', 800, 8, 3, { catchUp: true }),
@@ -156,6 +157,7 @@ export interface SchedulerContext {
   ahead: boolean;
   lastKinds: OrbKind[];
   jevHeld?: boolean;
+  aimbotOwned?: boolean;
   activeKinds: OrbKind[];
   clones: number;
   goldens: number;
@@ -168,6 +170,7 @@ export interface SchedulerContext {
 export function orbWeight(kind: OrbKind, ctx: SchedulerContext): number {
   const d = ORB_REGISTRY[kind];
   if (kind === 'jev' && ctx.jevHeld) return 0;
+  if (kind === 'aimbot' && ctx.aimbotOwned) return 0;
   let w = d.weight;
   const recent = ctx.lastKinds.indexOf(kind);
   if (recent >= 0 && recent < RECENCY_PENALTIES.length) w *= RECENCY_PENALTIES[recent];

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref
 import { ITEM_DRAG_TYPE, useInventory } from '@/components/inventory';
 import { GEAR_HOLDER_ATTR, GUN_SHOT_MS } from './gear';
 import { HelperMult, useHelperMult } from './helper-mult';
+import { AboveBadge } from './above-badge';
 import type { GearControl } from './gear-layer';
 import type { CursorOffset } from './chicken-orbs';
 import { HelperCrosshairs, activeCursors, type HelperAim } from './helper-crosshairs';
@@ -18,7 +19,6 @@ import {
   JEV_ITEM_ID,
   JEV_MAX_CLICKS_PER_FRAME,
   JEV_NOTE_MS,
-  JEV_PROMPT_EDGE_PX,
   JEV_PROMPT_MS,
   JEV_REACH_MS,
   JEV_RIGHT_PX,
@@ -54,6 +54,22 @@ interface JevLayerProps {
 
 type JevPhase = 'idle' | 'rising' | 'active' | 'asleep';
 
+const JEV_CALLED_KEY = 'chicken-jev-called';
+
+function jevCalledBefore(): boolean {
+  try {
+    return localStorage.getItem(JEV_CALLED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markJevCalled(): void {
+  try {
+    localStorage.setItem(JEV_CALLED_KEY, '1');
+  } catch {}
+}
+
 const SHOULDER_X = 0.32;
 const SHOULDER_Y = 0.82;
 const JEV_RETARGET_MS = 700;
@@ -65,7 +81,7 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
   ownedRef.current = owned;
   const [phase, setPhase] = useState<JevPhase>('idle');
   const mult = useHelperMult(gearRef, 'jev', owned || phase !== 'idle');
-  const [prompt, setPrompt] = useState<JevPoint | null>(null);
+  const [asking, setAsking] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const portsRef = useRef({ targets, paused, cursors, click, speak, grant });
   portsRef.current = { targets, paused, cursors, click, speak, grant };
@@ -84,6 +100,7 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
   const countRef = useRef<HTMLSpanElement>(null);
 
   const start = useCallback(() => {
+    markJevCalled();
     portsRef.current.speak();
     setPhase('rising');
   }, []);
@@ -105,10 +122,11 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
     () => ({
       offer: (x, y) => {
         portsRef.current.speak();
-        const edge = JEV_PROMPT_EDGE_PX;
-        setPrompt({ x: Math.min(Math.max(x, edge), window.innerWidth - edge), y: Math.min(Math.max(y, edge / 2), window.innerHeight - edge) });
+        if (!ownedRef.current) portsRef.current.grant(JEV_ITEM_ID, { x, y });
+        if (jevCalledBefore()) return;
+        setAsking(true);
         window.clearTimeout(promptTimerRef.current);
-        promptTimerRef.current = window.setTimeout(() => setPrompt(null), JEV_PROMPT_MS);
+        promptTimerRef.current = window.setTimeout(() => setAsking(false), JEV_PROMPT_MS);
       },
       wake,
       busy: () => phaseRef.current !== 'idle',
@@ -124,6 +142,10 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
     },
     []
   );
+
+  useEffect(() => {
+    if (owned && phase === 'idle' && jevCalledBefore()) setPhase('active');
+  }, [owned, phase]);
 
   useEffect(() => {
     if (phase !== 'rising') return;
@@ -142,7 +164,7 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
     if (phase !== 'active') return;
     reachRef.current?.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: JEV_REACH_MS, easing: 'ease-out' });
     const begin = performance.now();
-    let endsAt = begin + helperPlayMs(callsRef.current, Math.random);
+    let endsAt = Number.POSITIVE_INFINITY;
     callsRef.current += 1;
     let last = begin;
     let owed = 0;
@@ -190,7 +212,6 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
       }
       const mult = gearRef.current?.mult('jev') ?? 1;
       for (let i = 0; i < Math.min(due, JEV_MAX_CLICKS_PER_FRAME); i++) portsRef.current.click(at, aimed.length * mult);
-      if (countRef.current) countRef.current.textContent = String(Math.max(0, Math.ceil((endsAt - now) / 1000)));
       if (now >= endsAt) {
         writeJevReadyAt(Date.now() + JEV_COOLDOWN_MS);
         setPhase('asleep');
@@ -218,41 +239,6 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
 
   return (
     <>
-      {prompt && (
-        <div
-          data-testid="jev-prompt"
-          data-hud
-          style={{ left: prompt.x, top: prompt.y }}
-          className="fixed z-[110] w-[260px] -translate-x-1/2 rounded-xl bg-black/85 p-3 text-center text-sm text-white shadow-[0_0_0_1px_rgba(255,59,59,0.6),0_0_24px_rgba(255,0,0,0.25)]"
-        >
-          <p className="mb-2 font-semibold">{JEV_COPY.ask}</p>
-          <div className="flex justify-center gap-2">
-            <button
-              type="button"
-              data-testid="jev-activate"
-              onClick={() => {
-                window.clearTimeout(promptTimerRef.current);
-                setPrompt(null);
-                setPhase('rising');
-              }}
-              className="cursor-pointer rounded-full bg-[#d11] px-4 py-1.5 font-semibold text-white"
-            >
-              {JEV_COPY.yes}
-            </button>
-            <button
-              type="button"
-              data-testid="jev-decline"
-              onClick={() => {
-                window.clearTimeout(promptTimerRef.current);
-                setPrompt(null);
-              }}
-              className="cursor-pointer rounded-full bg-white/15 px-4 py-1.5 text-white"
-            >
-              {JEV_COPY.no}
-            </button>
-          </div>
-        </div>
-      )}
       {note && (
         <div data-testid="jev-note" className="pointer-events-none fixed bottom-24 right-6 z-[110] rounded-full bg-black/80 px-3 py-1 text-sm font-semibold text-white">
           {note}
@@ -283,13 +269,43 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
             style={{ width: box.w, height: box.h, right: JEV_RIGHT_PX, transform: phase === 'rising' && !owned ? 'translateY(105%)' : undefined }}
             className="pointer-events-auto absolute bottom-0"
           >
-            {phase === 'active' && (
-              <span ref={countRef} data-testid="jev-countdown" className="absolute -top-7 left-1/2 -translate-x-1/2 rounded-full bg-black/75 px-2.5 text-lg font-bold tabular-nums leading-6 text-[#ff4040]">
-                {JEV_ACTIVE_MS / 1000}
-              </span>
-            )}
             {mult > 1 && <HelperMult mult={mult} testId="jev-mult" />}
-            {sleeping && <span className="absolute -top-6 left-1/2 text-lg font-bold text-white/80 animate-pulse">z z z</span>}
+            {asking && phase === 'idle' && (
+              <div
+                data-testid="jev-prompt"
+                data-hud
+                onClick={(e) => e.stopPropagation()}
+                className="pointer-events-auto absolute bottom-full left-1/2 mb-3 w-[240px] -translate-x-1/2 rounded-xl bg-black/85 p-3 text-center text-sm text-white shadow-[0_0_0_1px_rgba(255,59,59,0.6),0_0_24px_rgba(255,0,0,0.25)]"
+              >
+                <p className="mb-2 font-semibold">{JEV_COPY.ask}</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    data-testid="jev-activate"
+                    onClick={() => {
+                      window.clearTimeout(promptTimerRef.current);
+                      setAsking(false);
+                      markJevCalled();
+                      start();
+                    }}
+                    className="cursor-pointer rounded-full bg-[#d11] px-4 py-1.5 font-semibold text-white"
+                  >
+                    {JEV_COPY.yes}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="jev-decline"
+                    onClick={() => {
+                      window.clearTimeout(promptTimerRef.current);
+                      setAsking(false);
+                    }}
+                    className="cursor-pointer rounded-full bg-white/15 px-4 py-1.5 text-white"
+                  >
+                    {JEV_COPY.no}
+                  </button>
+                </div>
+              </div>
+            )}
             <img src={sleeping ? JEV_ART.sleep : JEV_ART.bust} alt="" draggable={false} className="h-full w-full object-contain object-bottom" />
           </div>
         </div>

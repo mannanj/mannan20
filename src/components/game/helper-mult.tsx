@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type RefObject } from 'react';
 import { multLabel, type GunHolder } from './gear';
+import { AboveBadge } from './above-badge';
 import type { GearControl } from './gear-layer';
 
 const MULT_POLL_MS = 250;
@@ -20,8 +21,8 @@ export function useHelperMult(gearRef: RefObject<GearControl | null>, holder: Gu
 
 export function HelperMult({ mult, testId }: { mult: number; testId: string }) {
   return (
-    <span data-testid={testId} className="absolute -top-14 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/75 px-2.5 py-0.5 text-sm font-bold tabular-nums text-[#ffd84d]">
+    <AboveBadge testId={testId} tone="value">
       {multLabel(mult)}
-    </span>
+    </AboveBadge>
   );
 }

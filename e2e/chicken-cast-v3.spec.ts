@@ -44,12 +44,15 @@ test.describe('v3 helpers and weapons', () => {
   });
 
   test('aimbot locks on: Space or a click anywhere hits the chicken, then it cools down', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('chicken-aimbot-level', '1'));
     await openV3(page);
     const toggle = page.getByTestId('aimbot-toggle');
     await expect(toggle).toHaveAttribute('data-phase', 'ready');
     await toggle.click();
     await expect(toggle).toHaveAttribute('data-phase', 'on');
     await expect(page.getByTestId('aimbot-marker')).toBeVisible();
+    await expect(page.getByTestId('aimbot-active')).toHaveText('Active');
+    await expect(page.getByTestId('aimbot-hint')).toHaveText('Click or press Space');
     const before = await scoreOf(page);
     await page.keyboard.press(' ');
     await page.mouse.click(30, 300);

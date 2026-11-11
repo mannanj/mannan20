@@ -130,7 +130,6 @@ import {
 } from './chicken-effects';
 import {
   BIG_EGG_CHANCE,
-  BIG_EGG_POINTS,
   BIG_EGG_SCALE,
   BLACK_HOLE_LIFE_MS,
   BLACK_HOLE_RADIUS,
@@ -158,7 +157,6 @@ import {
   EGG_HATCH_MS,
   EGG_LAY_COUNT,
   EGG_LAY_INTERVAL_MS,
-  EGG_POINTS,
   EGG_W,
   GOLDEN_BLINK_MS,
   GOLDEN_BURST_FEATHERS,
@@ -391,7 +389,10 @@ import { CannonLayer, type CannonControl } from './cannon-layer';
 import { CastHud, type CastStatus } from './cast-hud';
 import { WeaponTray } from './weapon-tray';
 import { MysteryPanel } from './mystery-panel';
-import { Aimbot, type AimbotClock } from './aimbot';
+import { Aimbot, AimbotIcon, type AimbotClock } from './aimbot';
+import { DEFAULT_HAND_COLOR, HAND_COLORS, HAND_COLOR_KEY, HAND_CURSOR_CSS, handColor as handColorOf } from './hand-colors';
+import { GLASS_PANEL } from './version-picker';
+import { useRollingScore } from './rolling-score';
 import { HandControl } from './hand-control';
 import { CAST_IDS, CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY, type CastId } from './cannon';
 import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
@@ -443,6 +444,17 @@ const WOBBLE_FREQUENCY = 0.002;
 const BOUNCE_RANDOM = 0.3;
 const MAX_DT = 32;
 const CURRENT_VERSION = 2;
+const ORB_EXPIRE = false;
+const MAX_ORBS_ON_SCREEN = 3;
+const SIZE_EVENT_MIN_MS = 18_000;
+const SIZE_EVENT_SPREAD_MS = 20_000;
+const SIZE_HOLD_MIN_MS = 5000;
+const SIZE_HOLD_SPREAD_MS = 3000;
+const SIZE_EASE = 0.04;
+const SIZE_SMALL = [0.7, 0.85] as const;
+const SIZE_BIG = [1.2, 1.4] as const;
+const AIMBOT_LEVEL_KEY = 'chicken-aimbot-level';
+const AIMBOT_MAX_LEVEL = 3;
 const BASE_CHICKEN_W = 70;
 const BASE_CHICKEN_H = 140;
 const PARTICLE_FADE = 0.0008;
@@ -480,6 +492,11 @@ const BRIDGE_LOG_CAP = 600;
 const SPEED_SCORE_CAP = 180;
 const SPEED_PER_SCORE = 0.011;
 const TIER_SPEED_BUMP = [1, 1.12, 1.28, 1.45, 1.65, 1.8];
+const LATE_SPEED_SCORE_STEP = 1000;
+const LATE_SPEED_PER_STEP = 0.05;
+const LATE_SPEED_CAP = 0.75;
+const HEAT_SPEED_GAIN = 0.35;
+const DESKTOP_SPEED_SCALE = 0.5;
 const GROUND_FRAC = 0.76;
 const GROUND_WANDER = 0.017;
 const GROUND_TURN_MIN_MS = 2600;
@@ -566,6 +583,10 @@ const CEREMONY_TICK_MS = 1000;
 const CEREMONY_COOLDOWN_MIN_MS = 45_000;
 const CEREMONY_COOLDOWN_SPREAD_MS = 45_000;
 const MEGA_SQUEEZE_MS = 1300;
+const MEGA_SQUEEZE_POINTS = 25;
+const GOLDEN_SCALE_MIN = 0.6;
+const GOLDEN_SCALE_MAX = 1.2;
+const GOLDEN_SCALE_SKEW = 1.6;
 const EDGE_WILD_CHANCE = 0.22;
 const EDGE_WRAP_CHANCE = 0.1;
 const EDGE_PORTAL_CHANCE = 0.08;
@@ -760,6 +781,7 @@ interface EggView {
 interface GoldenMotion {
   x: number;
   vx: number;
+  scale: number;
   nextTurnAt: number;
   until: number;
   blinking: boolean;
@@ -767,6 +789,11 @@ interface GoldenMotion {
 
 interface GoldenView {
   id: number;
+  scale: number;
+}
+
+function goldenScale(): number {
+  return GOLDEN_SCALE_MIN + Math.pow(Math.random(), GOLDEN_SCALE_SKEW) * (GOLDEN_SCALE_MAX - GOLDEN_SCALE_MIN);
 }
 
 interface ChainArc {
@@ -1125,7 +1152,8 @@ function bridgeWindow(): BridgeWindow {
 }
 
 function speedForScore(score: number, clicks: number): number {
-  const base = 1 + Math.min(score, SPEED_SCORE_CAP) * SPEED_PER_SCORE;
+  const late = Math.min(LATE_SPEED_CAP, (Math.max(0, score - SPEED_SCORE_CAP) / LATE_SPEED_SCORE_STEP) * LATE_SPEED_PER_STEP);
+  const base = 1 + Math.min(score, SPEED_SCORE_CAP) * SPEED_PER_SCORE + late;
   return base * TIER_SPEED_BUMP[tierForScore(clicks)];
 }
 
@@ -1237,7 +1265,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const CHICKEN_W = Math.round(BASE_CHICKEN_W * tuning.chickenScale);
   const CHICKEN_H = Math.round(BASE_CHICKEN_H * tuning.chickenScale);
   const chickenWidth = { width: CHICKEN_W };
-  const BASE_SPEED = tuning.baseSpeed;
+  const BASE_SPEED = tuning.baseSpeed * (typeof window !== 'undefined' && !window.matchMedia('(pointer: coarse)').matches ? DESKTOP_SPEED_SCALE : 1);
   const [score, setScore] = useState(0);
   const [stage, setStage] = useState<EscapeStage>('none');
   const [stagePhase, setStagePhase] = useState<StagePhase>('live');
@@ -1296,6 +1324,21 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const [mysteryOpen, setMysteryOpen] = useState(false);
   const [handPaused, setHandPaused] = useState(false);
   const [handSlot, setHandSlot] = useState<HTMLDivElement | null>(null);
+  const [handColor, setHandColor] = useState(DEFAULT_HAND_COLOR);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(HAND_COLOR_KEY);
+      if (saved && HAND_COLORS.some((c) => c.id === saved)) setHandColor(saved);
+    } catch {}
+  }, []);
+  const pickHandColor = (id: string) => {
+    setHandColor(id);
+    try {
+      localStorage.setItem(HAND_COLOR_KEY, id);
+    } catch {}
+  };
+  const handPaint = handColorOf(handColor);
+  const shownScore = useRollingScore(score);
   const handPausedAtRef = useRef(0);
   const replayingOpeningRef = useRef(false);
   const [duel, setDuel] = useState<DuelDef | null>(null);
@@ -1453,6 +1496,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const lastCrackleAtRef = useRef(0);
   const speedRef = useRef(1);
   const heatRef = useRef(0);
+  const sizeRef = useRef({ scale: 1, target: 1, nextAt: SIZE_EVENT_MIN_MS });
   const moodRef = useRef<(typeof TIERS)[number]['eyes']>('calm');
   const mercyRef = useRef(1);
   const mercyCaptionRef = useRef(false);
@@ -1577,7 +1621,31 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const cursorKeyRef = useRef('00');
   const scatteringRef = useRef(false);
   const aimbotClockRef = useRef<AimbotClock>({ until: 0, coolUntil: 0 });
-  const [aimbotOn, setAimbotOn] = useState(false);
+  const [aimbotLevel, setAimbotLevel] = useState(0);
+  const aimbotLevelRef = useRef(0);
+  aimbotLevelRef.current = aimbotLevel;
+  const aimPointsRef = useRef<() => { x: number; y: number }[]>(() => []);
+  const unlockAimbot = useCallback(() => {
+    const next = Math.min(AIMBOT_MAX_LEVEL, aimbotLevelRef.current + 1);
+    aimbotLevelRef.current = next;
+    setAimbotLevel(next);
+    try {
+      localStorage.setItem(AIMBOT_LEVEL_KEY, String(next));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      const saved = Number(localStorage.getItem(AIMBOT_LEVEL_KEY));
+      if (Number.isFinite(saved) && saved > 0) setAimbotLevel(Math.min(AIMBOT_MAX_LEVEL, Math.floor(saved)));
+    } catch {}
+  }, []);
+  const aimHit = () => {
+    const p = physicsRef.current;
+    const points = aimPointsRef.current();
+    for (const at of points.length > 0 ? points : [{ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2 }]) hitRef.current(undefined, false, at);
+  };
+  const aimHitRef = useRef(aimHit);
+  aimHitRef.current = aimHit;
   const aimOn = () => tuning.aimbot && performance.now() < aimbotClockRef.current.until;
   const aimOnRef = useRef(aimOn);
   aimOnRef.current = aimOn;
@@ -2815,6 +2883,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       ahead,
       lastKinds: lastKindsRef.current,
       jevHeld: (jevRef.current?.busy() ?? false) || itemsRef.current.some((i) => i.id === JEV_ITEM_ID),
+      aimbotOwned: !tuning.aimbot || aimbotLevelRef.current >= AIMBOT_MAX_LEVEL,
       activeKinds: active,
       clones: cloneMotionRef.current.size,
       goldens: goldenRef.current.size,
@@ -2828,7 +2897,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const runPaceCheck = useCallback(
     (force = false) => {
       lastCheckMsRef.current = playMsRef.current;
-      if (orbsRef.current.length > 0 || orbsBlocked()) return;
+      if (orbsRef.current.length >= MAX_ORBS_ON_SCREEN || orbsBlocked()) return;
       const fixed = fixedQueueRef.current.shift();
       if (fixed) {
         spawnOrb(fixed);
@@ -3111,7 +3180,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       { x: p.x, y: p.y, big: true, tier: tierRef.current },
     ];
     for (const motion of goldenRef.current.values()) {
-      sources.push({ x: motion.x, y: groundYFor(vh) - GOLDEN_H, big: true, tier: tierRef.current });
+      sources.push({ x: motion.x, y: groundYFor(vh) - GOLDEN_H * motion.scale, big: true, tier: tierRef.current });
     }
     for (const motion of kidMotionRef.current.values()) {
       sources.push({ x: motion.x, y: kidY, big: false, tier: Math.floor(Math.random() * (tierRef.current + 1)) });
@@ -3191,8 +3260,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return;
       if (e.key === ' ' && aimOnRef.current()) {
         e.preventDefault();
-        const p = physicsRef.current;
-        hitRef.current(undefined, false, { x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2 });
+        aimHitRef.current();
         return;
       }
       const id = CAST_IDS.find((c) => CAST_KEYS[c] === e.key);
@@ -3232,6 +3300,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       else if (kind === 'giant') giantUntilRef.current = Math.max(now, giantUntilRef.current) + GIANT_DURATION_MS;
       else if (kind === 'magnet') magnetUntilRef.current = Math.max(now, magnetUntilRef.current) + MAGNET_DURATION_MS;
       else if (kind === 'jev') jevRef.current?.offer(orb.x, orb.y);
+      else if (kind === 'aimbot') unlockAimbot();
     },
     [removeOrb, spawnShards, playPowerUp, recordPlay, applyMultiply, grantItem]
   );
@@ -3339,14 +3408,16 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
   const spawnGolden = useCallback((x: number, now: number) => {
     const id = ++goldenIdRef.current;
+    const scale = goldenScale();
     goldenRef.current.set(id, {
       x,
+      scale,
       vx: (Math.random() < 0.5 ? -1 : 1) * GOLDEN_SPEED,
       nextTurnAt: now + GOLDEN_TURN_MIN_MS + Math.random() * GOLDEN_TURN_SPREAD_MS,
       until: now + GOLDEN_LIFE_MS,
       blinking: false,
     });
-    setGoldenViews((v) => [...v, { id }]);
+    setGoldenViews((v) => [...v, { id, scale }]);
   }, []);
 
   const layEgg = useCallback((now: number) => {
@@ -3390,11 +3461,13 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         }
         if (el) el.style.transform = `translate(${egg.x}px, ${egg.y}px)`;
       }
-      const goldY = groundY - GOLDEN_H;
       for (const [id, g] of goldenRef.current) {
+        const gw = GOLDEN_W * g.scale;
+        const gh = GOLDEN_H * g.scale;
+        const goldY = groundY - gh;
         if (ts >= g.until) {
-          const cx = g.x + GOLDEN_W / 2;
-          const cy = goldY + GOLDEN_H / 2;
+          const cx = g.x + gw / 2;
+          const cy = goldY + gh / 2;
           for (const color of GOLDEN_COLORS) spawnShards(cx, cy, GOLDEN_BURST_SHARDS / GOLDEN_COLORS.length, color);
           spawnFeathers(cx, cy, GOLDEN_BURST_FEATHERS);
           streaksRef.current.push(...shortStreaks(cx, cy, ts, 12));
@@ -3406,8 +3479,8 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           g.nextTurnAt = ts + GOLDEN_TURN_MIN_MS + Math.random() * GOLDEN_TURN_SPREAD_MS;
         }
         g.x += g.vx * dtMs;
-        if (g.x < 0 || g.x > vw - GOLDEN_W) g.vx = -g.vx;
-        g.x = Math.max(0, Math.min(vw - GOLDEN_W, g.x));
+        if (g.x < 0 || g.x > vw - gw) g.vx = -g.vx;
+        g.x = Math.max(0, Math.min(vw - gw, g.x));
         if (!g.blinking && g.until - ts < GOLDEN_BLINK_MS) g.blinking = true;
         const el = goldenElsRef.current.get(id);
         if (el) {
@@ -3433,6 +3506,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       if (frenzyEl) {
         const live = frenzyLeft > 0;
         frenzyEl.style.opacity = live ? (frenzyLeft < FRENZY_BLINK_MS && Math.floor(ts / 250) % 2 === 0 ? '0.45' : '1') : '0';
+        frenzyEl.style.display = live ? 'block' : 'none';
         if (live) frenzyEl.textContent = `${ORB_LABELS.frenzy} ${Math.ceil(frenzyLeft / 1000)}s`;
       }
       const chainLeft = chainUntilRef.current - ts;
@@ -3440,6 +3514,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       if (chainEl) {
         const live = chainLeft > 0;
         chainEl.style.opacity = live ? (chainLeft < CHAIN_BLINK_MS && Math.floor(ts / 250) % 2 === 0 ? '0.45' : '1') : '0';
+        chainEl.style.display = live ? 'block' : 'none';
         if (live) chainEl.textContent = `Chain Lightning ${Math.ceil(chainLeft / 1000)}s`;
       }
       tickEggs(ts, dtMs, vw, vh);
@@ -3447,7 +3522,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       for (let i = orbs.length - 1; i >= 0; i--) {
         const orb = orbs[i];
         const age = ts - orb.bornAt;
-        if (age >= ORB_LIFETIME_MS) {
+        if (ORB_EXPIRE && age >= ORB_LIFETIME_MS) {
           removeOrb(orb.id);
           continue;
         }
@@ -3463,7 +3538,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           const wobble = Math.sin(ts * ORB_WOBBLE_FREQUENCY + orb.phase) * ORB_WOBBLE_AMPLITUDE;
           el.style.transform = `translate(${orb.x - orbRadius(orb.kind)}px, ${orb.y + wobble - orbRadius(orb.kind)}px)`;
           const remaining = ORB_LIFETIME_MS - age;
-          el.style.opacity = remaining < ORB_FADE_MS ? String(remaining / ORB_FADE_MS) : '1';
+          el.style.opacity = ORB_EXPIRE && remaining < ORB_FADE_MS ? String(remaining / ORB_FADE_MS) : '1';
         }
       }
 
@@ -3555,22 +3630,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       }
     },
     [removeOrb, removeClone, spawnFeathers, runPaceCheck, tickEggs, tickCloneMerges]
-  );
-
-  const clickEgg = useCallback(
-    (id: number) => {
-      const egg = eggsRef.current.find((x) => x.id === id);
-      if (!egg || egg.hatchingAt !== null) return;
-      const scale = egg.big ? BIG_EGG_SCALE : 1;
-      const cx = egg.x + (EGG_W * scale) / 2;
-      const cy = egg.y + (EGG_H * scale) / 2;
-      removeEgg(id);
-      for (const color of GOLDEN_COLORS) spawnShards(cx, cy, egg.big ? 6 : 3, color);
-      const points = (egg.big ? BIG_EGG_POINTS : EGG_POINTS) / Math.max(1, multRef.current);
-      hitRef.current(undefined, true, { x: cx, y: cy }, points);
-      setBonus({ amount: egg.big ? BIG_EGG_POINTS : EGG_POINTS, id: performance.now() });
-    },
-    [removeEgg, spawnShards]
   );
 
   const hit = useCallback(
@@ -4226,10 +4285,8 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       if (target?.closest(SHEET_SAFE_SELECTOR)) return;
       if (performance.now() < suppressClickUntilRef.current) return;
       const p = physicsRef.current;
-      if (aimOnRef.current()) {
-        hit(undefined, false, { x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2 });
-        return;
-      }
+      const aimed = aimOnRef.current() && !target?.closest(PASS_THROUGH_BLOCKERS);
+      if (aimed) aimHitRef.current();
       const kidY = groundYFor(window.innerHeight) - KID_H;
       const goldY = groundYFor(window.innerHeight) - GOLDEN_H;
       for (const offset of cursorOffsetsRef.current) {
@@ -4240,7 +4297,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           if (target?.closest(PASS_THROUGH_BLOCKERS)) continue;
           const pad = CURSOR_HIT_PAD;
           let under = 0;
-          if (!rootSplitRef.current && !moundRef.current?.active() && !isGripping(birdRef.current.phase) && pointInRect(px, py, p.x - pad, p.y - pad, CHICKEN_W + pad * 2, CHICKEN_H + pad * 2)) under += 1;
+          if (!aimed && !rootSplitRef.current && !moundRef.current?.active() && !isGripping(birdRef.current.phase) && pointInRect(px, py, p.x - pad, p.y - pad, CHICKEN_W + pad * 2, CHICKEN_H + pad * 2)) under += 1;
           for (const motion of cloneMotionRef.current.values()) {
             if (pointInRect(px, py, motion.x - pad, motion.y - pad, motion.w + pad * 2, motion.h + pad * 2)) under += 1;
           }
@@ -4254,7 +4311,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           collectOrb(orb.id);
           continue;
         }
-        if (!rootSplitRef.current && pointInRect(px, py, p.x, p.y, CHICKEN_W, CHICKEN_H)) hit(undefined, true);
+        if (!aimed && !rootSplitRef.current && pointInRect(px, py, p.x, p.y, CHICKEN_W, CHICKEN_H)) hit(undefined, true);
         for (const piece of chickMotionRef.current.values()) {
           const size = chickSize(piece.level);
           if (pointInRect(px, py, piece.x - size.w / 2, piece.y - size.h / 2, size.w, size.h)) {
@@ -4271,18 +4328,14 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           if (pointInRect(px, py, motion.x, motion.y, motion.w, motion.h)) hit(undefined, true);
         }
         for (const g of goldenRef.current.values()) {
-          if (pointInRect(px, py, g.x, goldY, GOLDEN_W, GOLDEN_H)) hit(undefined, true, { x: g.x + GOLDEN_W / 2, y: goldY + GOLDEN_H / 2 }, GOLDEN_HIT_VALUE);
-        }
-        for (const egg of [...eggsRef.current]) {
-          const scale = egg.big ? BIG_EGG_SCALE : 1;
-          if (pointInRect(px, py, egg.x, egg.y, EGG_W * scale, EGG_H * scale)) clickEgg(egg.id);
+          if (pointInRect(px, py, g.x, goldY + GOLDEN_H * (1 - g.scale), GOLDEN_W * g.scale, GOLDEN_H * g.scale)) hit(undefined, true, { x: g.x + (GOLDEN_W * g.scale) / 2, y: goldY + GOLDEN_H - (GOLDEN_H * g.scale) / 2 }, GOLDEN_HIT_VALUE);
         }
       }
       const now = performance.now();
       if (now < chainUntilRef.current && now - lastHitRef.current < CHAIN_CLICK_WINDOW_MS) {
         const targets: { x: number; y: number }[] = [];
         for (const motion of cloneMotionRef.current.values()) targets.push({ x: motion.x + motion.w / 2, y: motion.y + motion.h / 2 });
-        for (const g of goldenRef.current.values()) targets.push({ x: g.x + GOLDEN_W / 2, y: goldY + GOLDEN_H / 2 });
+        for (const g of goldenRef.current.values()) targets.push({ x: g.x + (GOLDEN_W * g.scale) / 2, y: goldY + GOLDEN_H - (GOLDEN_H * g.scale) / 2 });
         for (const motion of kidMotionRef.current.values()) targets.push({ x: motion.x + KID_W / 2, y: kidY + KID_H / 2 });
         if (!rootSplitRef.current) targets.push({ x: p.x + CHICKEN_W / 2, y: p.y + CHICKEN_H / 2 });
         const near = targets
@@ -4306,7 +4359,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       window.removeEventListener('mousedown', onDown);
       window.removeEventListener('mouseup', onUp);
     };
-  }, [hit, collectOrb, clickKid, clickEgg]);
+  }, [hit, collectOrb, clickKid]);
 
   useEffect(() => {
     return () => {
@@ -4352,6 +4405,22 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         setTier(tierRef.current);
         setEvo(evoRef.current);
       }
+      const size = sizeRef.current;
+      if (ts >= size.nextAt) {
+        if (size.target === 1) {
+          const [lo, hi] = Math.random() < 0.5 ? SIZE_SMALL : SIZE_BIG;
+          size.target = lo + Math.random() * (hi - lo);
+          size.nextAt = ts + SIZE_HOLD_MIN_MS + Math.random() * SIZE_HOLD_SPREAD_MS;
+        } else {
+          size.target = 1;
+          size.nextAt = ts + SIZE_EVENT_MIN_MS + Math.random() * SIZE_EVENT_SPREAD_MS;
+        }
+      }
+      if (Math.abs(size.scale - size.target) > 0.002) {
+        size.scale += (size.target - size.scale) * SIZE_EASE * dt;
+        const rubberEl = rubberElRef.current;
+        if (rubberEl) rubberEl.style.scale = size.scale.toFixed(3);
+      }
       const nextMood = moodEyes(evoRef.current, heatRef.current);
       if (nextMood !== moodRef.current) {
         moodRef.current = nextMood;
@@ -4372,6 +4441,9 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
             rubber.classList.add('chicken-mega-squeeze');
             squeak(1);
             recordPlay({ type: 'squeak', at: Date.now() });
+            const mp = physicsRef.current;
+            hitRef.current(undefined, false, { x: mp.x + CHICKEN_W / 2, y: mp.y + CHICKEN_H / 2 }, MEGA_SQUEEZE_POINTS);
+            setBonus({ amount: MEGA_SQUEEZE_POINTS, id: performance.now() });
             if (megaTimerRef.current) clearTimeout(megaTimerRef.current);
             megaTimerRef.current = setTimeout(() => {
               rubber.classList.remove('chicken-mega-squeeze');
@@ -4615,7 +4687,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       const hyperFactor =
         hyper.phase === 'burst' ? hyper.mult : hyper.phase === 'recover' ? HYPER_RECOVER_FACTOR : 1;
 
-      const sp = speedRef.current * mercy * hyperFactor;
+      const sp = speedRef.current * mercy * hyperFactor * (1 + (HEAT_SPEED_GAIN * heatRef.current) / HEAT_MAX);
 
       const portal = portalRef.current;
       if (portal.phase === 'splat' && ts >= portal.until) {
@@ -5672,7 +5744,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
     const vh = window.innerHeight;
     for (const m of cloneMotionRef.current.values()) list.push({ x: m.x + m.w / 2, y: m.y + m.h / 2 });
     for (const m of kidMotionRef.current.values()) list.push({ x: m.x + KID_W / 2, y: groundYFor(vh) - KID_H / 2 });
-    for (const g of goldenRef.current.values()) list.push({ x: g.x + GOLDEN_W / 2, y: groundYFor(vh) - GOLDEN_H / 2 });
+    for (const g of goldenRef.current.values()) list.push({ x: g.x + (GOLDEN_W * g.scale) / 2, y: groundYFor(vh) - (GOLDEN_H * g.scale) / 2 });
     for (const c of chickMotionRef.current.values()) list.push({ x: c.x, y: c.y });
     return list;
   };
@@ -5768,10 +5840,11 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   return (
     <div
       data-testid="chicken-stage"
+      data-hand={handColor}
       data-variant="2"
       data-multicursor={overlayOffsets.length > 0 ? '1' : '0'}
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
-      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none ${swordOn ? SWORD_CURSOR_CLASS : aimbotOn ? 'cursor-none' : 'chicken-hand-cursor'} [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
+      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none ${swordOn ? SWORD_CURSOR_CLASS : 'chicken-hand-cursor'} [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
     >
       <div
         data-testid="ground-scenery"
@@ -5829,22 +5902,22 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
         <div className="flex items-center gap-2">
           <div ref={setHandSlot} className="contents" />
-          {opening === 'done' && !started && <VersionPicker current={CURRENT_VERSION} />}
+          <button
+            type="button"
+            onClick={() => setSkinsOpen((v) => !v)}
+            aria-expanded={skinsOpen}
+            data-testid="chicken-skins-toggle"
+            className={`flex cursor-pointer items-center px-3.5 py-1.5 text-xs font-medium tracking-wide text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${GLASS_PANEL}`}
+          >
+            Skins
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setSkinsOpen((v) => !v)}
-          aria-expanded={skinsOpen}
-          data-testid="chicken-skins-toggle"
-          className="cursor-pointer text-xs font-medium tracking-wide text-white/40 transition-colors hover:text-white/80"
-        >
-          Skins
-        </button>
         {skinsOpen && (
           <div
             data-testid="chicken-skins-panel"
-            className="flex gap-2 rounded-xl border border-white/10 bg-black/50 p-2 backdrop-blur-md"
+            className="flex flex-col items-end gap-2 rounded-xl border border-white/10 bg-black/50 p-2 backdrop-blur-md"
           >
+            <div className="flex gap-2">
             {[...SKINS, ...UNLOCKABLE_SKINS.filter((s) => unlockedSkins.includes(s.id))].map((s) => (
               <button
                 key={s.id}
@@ -5859,6 +5932,22 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
                 <span className="sr-only">{s.name}</span>
               </button>
             ))}
+            </div>
+            <div data-testid="hand-colors" className="flex items-center gap-1.5 border-t border-white/10 pt-2">
+              <span className="mr-1 text-[11px] text-white/55">Hand</span>
+              {HAND_COLORS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  title={c.name}
+                  aria-pressed={handColor === c.id}
+                  data-testid={`hand-color-${c.id}`}
+                  onClick={() => pickHandColor(c.id)}
+                  className={`h-6 w-6 cursor-pointer rounded-full border-2 transition-transform hover:scale-110 ${handColor === c.id ? 'border-white' : 'border-white/20'}`}
+                  style={{ backgroundColor: c.fill }}
+                />
+              ))}
+            </div>
           </div>
         )}
         {tuning.scenePicker && opening === 'done' && (
@@ -5873,7 +5962,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         )}
       </div>
 
-      {countdown !== null && (
+      {countdown !== null && tuning.headlines && (
         <div
           ref={countdownElRef}
           data-testid="chicken-countdown"
@@ -5898,7 +5987,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       )}
 
       <div data-testid="chicken-score" data-hud="" className={`absolute top-[265px] left-1/2 -translate-x-1/2 ${HUD_LAYER} text-5xl font-bold text-white tabular-nums pointer-events-none [text-shadow:0_0_3px_rgba(0,0,0,0.6),0_2px_16px_rgba(0,0,0,0.55)]`}>
-        {score.toLocaleString('en-US')}
+        {shownScore.toLocaleString('en-US')}
       </div>
 
       {mercyCaption && (
@@ -6023,8 +6112,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
             if (el) eggElsRef.current.set(egg.id, el);
             else eggElsRef.current.delete(egg.id);
           }}
-          onClick={() => clickEgg(egg.id)}
-          className="absolute top-0 left-0 z-10 cursor-pointer will-change-transform"
+          className="pointer-events-none absolute top-0 left-0 z-10 will-change-transform"
           style={{ width: EGG_W * (egg.big ? BIG_EGG_SCALE : 1), height: EGG_H * (egg.big ? BIG_EGG_SCALE : 1) }}
         >
           <div className="golden-egg h-full w-full rounded-[50%_50%_50%_50%/58%_58%_42%_42%] bg-[radial-gradient(ellipse_at_36%_26%,#fffbe6_0%,#ffe27a_22%,#f2b705_55%,#b57600_84%,#7a4d00_100%)] shadow-[0_5px_8px_rgba(0,0,0,0.35),inset_-5px_-7px_12px_rgba(110,60,0,0.5),inset_3px_4px_8px_rgba(255,255,255,0.45)]" />
@@ -6040,10 +6128,10 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
             if (el) goldenElsRef.current.set(g.id, el);
             else goldenElsRef.current.delete(g.id);
           }}
-          onClick={() => hit(undefined, true, { x: (goldenRef.current.get(g.id)?.x ?? 0) + GOLDEN_W / 2, y: groundYFor(window.innerHeight) - GOLDEN_H / 2 }, GOLDEN_HIT_VALUE)}
+          onClick={() => hit(undefined, true, { x: (goldenRef.current.get(g.id)?.x ?? 0) + (GOLDEN_W * g.scale) / 2, y: groundYFor(window.innerHeight) - (GOLDEN_H * g.scale) / 2 }, GOLDEN_HIT_VALUE)}
           className="absolute top-0 left-0 z-10 cursor-pointer will-change-transform [filter:sepia(1)_saturate(5)_hue-rotate(-8deg)_brightness(1.12)_drop-shadow(0_0_10px_rgba(255,200,60,0.85))]"
         >
-          <ChickenSvg style={chickenWidth} tier={tier} morph={morph} eyes="calm" skin={skin} />
+          <ChickenSvg style={{ width: GOLDEN_W * g.scale }} tier={tier} morph={morph} eyes="calm" skin={skin} />
         </div>
       ))}
 
@@ -6148,16 +6236,24 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
       {birdUi.kind && <BirdLayer kind={birdUi.kind} part="front" els={birdElsRef} onTalon={onTalon} onBird={onBird} onFeather={onFeather} onToasted={onToasted} fiery={tuning.fieryPhoenix} banner={tuning.headlines} />}
 
-      <div
-        ref={frenzyElRef}
-        data-testid="chicken-frenzy"
-        className="pointer-events-none fixed bottom-6 left-6 z-[60] rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white opacity-0 shadow-[0_0_0_2px_#ffb02e]"
-      />
-      <div
-        ref={chainElRef}
-        data-testid="chicken-chain"
-        className="pointer-events-none fixed bottom-[4.25rem] left-6 z-[60] rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white opacity-0 shadow-[0_0_0_2px_#78beff]"
-      />
+      <style>{HAND_CURSOR_CSS}</style>
+      <div data-testid="bottom-left-bar" className="fixed bottom-3 left-4 z-[60] flex items-end gap-2">
+        {opening === 'done' && !started && <VersionPicker current={CURRENT_VERSION} openUp />}
+        {tuning.aimbot && aimbotLevel > 0 && opening === 'done' && (
+          <Aimbot clock={aimbotClockRef.current} level={aimbotLevel} targets={helperTargets} pointsRef={aimPointsRef} />
+        )}
+        <CastHud read={readCast} onCast={castNow} />
+        <div
+          ref={frenzyElRef}
+          data-testid="chicken-frenzy"
+          className="pointer-events-none hidden rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white shadow-[0_0_0_2px_#ffb02e]"
+        />
+        <div
+          ref={chainElRef}
+          data-testid="chicken-chain"
+          className="pointer-events-none hidden rounded-full bg-black/70 px-4 py-1.5 text-sm font-semibold tracking-wide text-white shadow-[0_0_0_2px_#78beff]"
+        />
+      </div>
       {orbViews.map((orb) => (
         <div
           key={orb.id}
@@ -6178,6 +6274,11 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           ) : (
           <div className={`${orbFont.className} absolute inset-0 flex items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.45),rgba(255,255,255,0.08)_55%,transparent_75%)] px-0.5 text-center leading-[0.8] tracking-[-0.01em] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.9),0_0_6px_rgba(0,0,0,0.6)]`}>
             <span className="flex flex-col items-center">
+              {orb.kind === 'aimbot' && (
+                <span className="mb-1">
+                  <AimbotIcon size={26} />
+                </span>
+              )}
               <span>{orbLabelLines(orb.kind)[0]}</span>
               <span>{orbLabelLines(orb.kind)[1]}</span>
             </span>
@@ -6231,11 +6332,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
           tier={tier}
         />
       )}
-      <CastHud read={readCast} onCast={castNow} />
       {opening === 'done' && <HandControl pause={pauseForHand} resume={resumeFromHand} toggleSlot={handSlot} />}
-      {tuning.aimbot && opening === 'done' && (
-        <Aimbot clock={aimbotClockRef.current} target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })} onPhase={(ph) => setAimbotOn(ph === 'on')} />
-      )}
       <WeaponTray onGive={(id, holder) => gearRef.current?.give(id, holder)} onUse={(id) => gearRef.current?.use(id)} />
       <GearLayer
         controlRef={gearRef}
@@ -6243,6 +6340,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         playable={() => gateRef.current === 'none' && !isScriptedStage(stageRef.current)}
         score={() => scoreRef.current}
         target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
+        targets={helperTargets}
         hit={(at, count) => hit(undefined, true, at, count)}
         burst={(at) => {
           for (const color of ICE_COLORS) spawnShards(at.x, at.y, ICE_BURST_SHARDS, color);
@@ -6283,7 +6381,8 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
                 el.style.transform = `translate(${mouseRef.current.x + offset.dx - CURSOR_HAND_HOT_X}px, ${mouseRef.current.y + offset.dy - CURSOR_HAND_HOT_Y}px)`;
               }
             }}
-            className="absolute top-0 left-0 will-change-transform"
+            className={`absolute top-0 left-0 will-change-transform ${offset.dx === 0 && offset.dy === 0 ? 'drop-shadow-[0_0_3px_#ffd84d] drop-shadow-[0_0_8px_rgba(255,216,77,0.85)]' : ''}`}
+            data-main={offset.dx === 0 && offset.dy === 0 ? '1' : '0'}
           >
             <svg
               width={CURSOR_HAND_SIZE}
@@ -6294,14 +6393,14 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
               <g className="group-data-[pressed=true]:opacity-0" stroke="#4a2e1a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
                 <path
                   d="M12 23 Q10.6 15.5 13.6 14.2 Q15.6 13.4 16.6 15 L16.6 10.6 Q16.6 8.2 18.6 8.2 Q20.6 8.2 20.6 10.6 L20.6 9 Q20.6 6.6 22.6 6.6 Q24.6 6.6 24.6 9 L24.6 10.8 Q24.6 8.8 26.4 8.8 Q28.4 8.8 28.4 11.2 L28.4 15.4 Q29.8 14 31.2 15.6 Q32.6 17.4 30.8 20 L26.2 26.6 Q24.2 29.6 20 29.6 Q15 29.6 13.2 26 Z"
-                  fill="#F2B279"
+                  fill={handPaint.fill}
                 />
-                <path d="M20.6 10.6 L20.6 16.2 M24.6 10.8 L24.6 16.4 M28.4 13.2 L27.8 17.2" fill="none" stroke="#c98f5c" strokeWidth="1.3" />
+                <path d="M20.6 10.6 L20.6 16.2 M24.6 10.8 L24.6 16.4 M28.4 13.2 L27.8 17.2" fill="none" stroke={handPaint.shade} strokeWidth="1.3" />
               </g>
               <g className="opacity-0 group-data-[pressed=true]:opacity-100" stroke="#4a2e1a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
-                <path d="M11 25 Q10 19 13 17.5 Q14 14.4 17 15 Q18.5 13 21 14 Q23 12.4 25.4 14 Q28.6 13.4 29.6 16.8 Q31 21 29 26 Q27.6 31 20.5 31.6 Q13.5 31.6 11 25 Z" fill="#F2B279" />
-                <path d="M17 15 L17 19.4 M21 14 L21 19 M25.4 14 L25.4 19.4" fill="none" stroke="#c98f5c" strokeWidth="1.3" />
-                <path d="M12.4 22 Q17.4 19.8 23 22 Q24.4 23.4 22.6 24.6 Q16.6 26 13 26" fill="#EFA76C" />
+                <path d="M11 25 Q10 19 13 17.5 Q14 14.4 17 15 Q18.5 13 21 14 Q23 12.4 25.4 14 Q28.6 13.4 29.6 16.8 Q31 21 29 26 Q27.6 31 20.5 31.6 Q13.5 31.6 11 25 Z" fill={handPaint.fill} />
+                <path d="M17 15 L17 19.4 M21 14 L21 19 M25.4 14 L25.4 19.4" fill="none" stroke={handPaint.shade} strokeWidth="1.3" />
+                <path d="M12.4 22 Q17.4 19.8 23 22 Q24.4 23.4 22.6 24.6 Q16.6 26 13 26" fill={handPaint.palm} />
               </g>
             </svg>
           </div>

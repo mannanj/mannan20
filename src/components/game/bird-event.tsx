@@ -9,6 +9,10 @@ import { talonNeed } from './chicken-pacing';
 import { scaledClicks } from './game-tuning';
 
 export type BirdKind = 'hawk' | 'eagle' | 'phoenix';
+
+const PHOENIX_SIZE_SCALE = 2.5;
+const TAP_ON_CLAW_DX = 6;
+const TAP_ON_CLAW_DY = 2;
 export type BirdPhase = 'idle' | 'approach' | 'grab' | 'right' | 'recoil' | 'left' | 'hover' | 'depart' | 'recede' | 'done';
 export type TalonSide = 'right' | 'left';
 type FrameName = 'fly-up' | 'fly-level' | 'fly-down' | 'bank' | 'away-3q' | 'away-far' | 'grab-body' | 'talon-left' | 'talon-right' | 'feather';
@@ -86,7 +90,7 @@ export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
   },
   phoenix: {
     kind: 'phoenix',
-    bodyWidth: 150,
+    bodyWidth: 150 * PHOENIX_SIZE_SCALE,
     anchorShift: { x: 0.1, y: -0.03 },
     chickenOffset: { x: 0.02, y: 0.55 },
     right: { h: 0.42, dx: -0.06, dy: -0.1, xMark: { x: 0.55, y: 0.7 } },
@@ -99,7 +103,7 @@ export const BIRD_SPECS: Record<BirdKind, BirdSpec> = {
     multiplier: 3,
     featherClicks: 25,
     heat: true,
-    flightSpan: 115,
+    flightSpan: 115 * PHOENIX_SIZE_SCALE,
   },
 };
 
@@ -193,6 +197,7 @@ const HINT_EDGE_PAD = 44;
 const HINT_LABEL_W = 128;
 const HINT_LABEL_PAD = 8;
 const COUNTER_GAP = 10;
+export const BIRD_COUNTER_HINT_MS = 5000;
 const LOOK_WIDTH_FRAC = 0.9;
 const WINGBEAT_CYCLE: FrameName[] = ['fly-up', 'fly-level', 'fly-down', 'fly-level'];
 
@@ -936,7 +941,7 @@ function drawHint(els: BirdEls, target: Rect, mark: { x: number; y: number }, vw
   set(els.x2, { x1: String(xc + R), y1: String(yc - R), x2: String(xc - R), y2: String(yc + R) });
   set(els.shaft, { x1: String(tail.x), y1: String(tail.y), x2: String(shaftEnd.x), y2: String(shaftEnd.y) });
   set(els.head, { points: `${head.x},${head.y} ${p1.x},${p1.y} ${p2.x},${p2.y}` });
-  if (els.cursor) els.cursor.setAttribute('transform', `translate(${tail.x + 4} ${tail.y + 4})`);
+  if (els.cursor) els.cursor.setAttribute('transform', `translate(${xc - TAP_ON_CLAW_DX} ${yc - TAP_ON_CLAW_DY})`);
   if (els.label) {
     const labelY = tail.y + 84 > vh - HINT_LABEL_PAD ? tail.y - 40 : tail.y + 84;
     els.label.setAttribute('x', String(Math.max(HINT_LABEL_PAD, Math.min(vw - HINT_LABEL_W - HINT_LABEL_PAD, tail.x - 8))));
@@ -1093,7 +1098,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
         root.dataset.hint = hintOn ? '1' : '0';
         root.dataset.label = labelOn ? '1' : '0';
       }
-      if (els.counter) {
+      if (els.counter && ts - since >= BIRD_COUNTER_HINT_MS) {
         const n = active === 'right' ? s.rightClicks : s.leftClicks;
         const total = talonNeed((active === 'right' ? spec.rightClicks : spec.leftClicks) * s.talonScale, s.talonWeight);
         const text = `${active === 'right' ? 'front' : 'back'} claw ${n} / ${total}`;
@@ -1109,6 +1114,8 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
         const finalY = y + push.dy;
         els.counter.style.transform = `translate(${x.toFixed(1)}px, ${finalY.toFixed(1)}px)`;
         show(els.counter, true, 1);
+      } else {
+        show(els.counter, false);
       }
     } else {
       hideHint(els);
@@ -1457,12 +1464,6 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
         onClick={(e) => onFeather(e.clientX, e.clientY)}
       />
       <svg ref={bind('hint')} data-testid="bird-hint" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible [visibility:hidden]">
-        <g stroke="#ff1a1a" strokeWidth="6" strokeLinecap="round" fill="none">
-          <line ref={bind('x1')} data-testid="bird-hint-x" />
-          <line ref={bind('x2')} />
-          <line ref={bind('shaft')} strokeWidth="5" />
-        </g>
-        <polygon ref={bind('head')} fill="#ff1a1a" />
         <g ref={bind('cursor')}>
           <TapCursorGlyph x={0} y={0} scale={1.1} />
         </g>
