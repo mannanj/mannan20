@@ -114,4 +114,10 @@ describe('leaderboard store (memory fallback)', () => {
     const result = await store.renameIdentity({ ownerId: second, to: 'Dana', from: 'Eve' });
     expect(result.ok).toBe(false);
   });
+
+  test('accepts memory and state-worker magic token formats', () => {
+    expect(store.MAGIC_TOKEN_RE.test(store.newMagicToken())).toBe(true);
+    expect(store.MAGIC_TOKEN_RE.test(`do1_${'a'.repeat(64)}`)).toBe(true);
+    expect(store.MAGIC_TOKEN_RE.test('nope')).toBe(false);
+  });
 });
