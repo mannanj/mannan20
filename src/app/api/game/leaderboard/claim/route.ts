@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifyUpdatesEmail } from '@/lib/game-updates';
 import { accessDb } from '../../../access/shared';
 import {
+  MAGIC_TOKEN_RE,
   OWNER_COOKIE,
   consumeMagicToken,
   maskEmail,
@@ -11,7 +12,6 @@ import {
 export const dynamic = 'force-dynamic';
 
 const OWNER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
-const TOKEN_RE = /^[a-f0-9]{32,128}$/;
 
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     body && typeof body === 'object' && typeof (body as Record<string, unknown>).token === 'string'
       ? ((body as Record<string, unknown>).token as string)
       : '';
-  if (!TOKEN_RE.test(token)) {
+  if (!MAGIC_TOKEN_RE.test(token)) {
     return NextResponse.json({ error: 'invalid-token' }, { status: 400 });
   }
   const device = readCookieValue(request.headers.get('cookie'), OWNER_COOKIE);

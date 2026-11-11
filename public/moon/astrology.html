@@ -117,29 +117,17 @@ const pname=(T,k)=>T.planet_names[k]?cap(T.planet_names[k].replace(/^the /,'')):
 const local=iso=>new Date(iso).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'long',timeStyle:'short'});
 const nyDate=iso=>new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/New_York'});
 
-function factorsCard(T,kind,f,text,source,utc){
-  const asp=f.aspects.length?`<table><tr><th>Planet</th><th>Aspect</th><th>Orb</th><th>Measured from</th></tr>${f.aspects.map(a=>`<tr><td>${pname(T,a.planet)}</td><td>${a.aspect}</td><td class="n">${a.orb.toFixed(2)}°</td><td>${a.from}</td></tr>`).join('')}</table>`:'<p class="sub">No planet within orb.</p>';
-  const r=f.ruler;
-  return `<div class="glass hi"><h3 style="margin-top:0">${kind==='new'?'New':'Full'} Moon at ${esc(f.label)}</h3>
-  <p class="sub">${local(utc)} (America/New_York)${f.eclipse?` · ${f.eclipse_type?f.eclipse_type.toLowerCase()+' ':''}${f.eclipse} eclipse`:''} · ${f.node_distance}° from the ${f.node} node</p>
-  <p class="read">${esc(text)}</p>
-  ${asp}
-  <p>Ruler: ${pname(T,r.planet)}${r.traditional!==r.planet?` (traditionally ${pname(T,r.traditional)})`:''} in ${r.sign}${r.retrograde?', retrograde':''}.
-  ${f.retrogrades.length?`Retrograde: ${f.retrogrades.map(k=>pname(T,k)).join(', ')}.`:'No planet retrograde.'}</p>
-  ${source&&!source.url.startsWith('astrology.html')?`<p>Published reading for this date: <a href="${esc(source.url)}" target="_blank" rel="noopener">${esc(source.title)}</a></p>`:''}
-  </div>`;
-}
-
-function renderEntry(T,months,hash){
+// One lunation's full computed reading (the page's details panel shows its first two sentences).
+// The chart factors behind it are kept off the public site; see Method for how they are computed.
+function renderEntry(R,hash){
   const el=document.getElementById('entry');
   const day=hash.replace('#','');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(day)){el.innerHTML='';return}
-  for(const c of months.cycles){
-    const L=c.astro?.lunations;if(!L)continue;
-    if(nyDate(c.new_utc)===day){el.innerHTML=factorsCard(T,'new',L.new,c.astro.reading[0].text,c.astro.reading[0].source,c.new_utc);return}
-    if(c.full&&L.full&&nyDate(c.full.utc)===day){el.innerHTML=factorsCard(T,'full',L.full,c.astro.reading[1].text,c.astro.reading[1].source,c.full.utc);return}
-  }
-  el.innerHTML=`<div class="glass"><p>No lunation on ${esc(day)} in the data (1990–2030).</p></div>`;
+  const r=R.readings[day];
+  if(!r){el.innerHTML=`<div class="glass"><p>No lunation on ${esc(day)} in the data (1990–2030).</p></div>`;return}
+  el.innerHTML=`<div class="glass hi"><h3 style="margin-top:0">${r.kind==='new'?'New':'Full'} Moon at ${esc(r.label)}</h3>
+  <p class="sub">${local(r.utc)} (America/New_York)</p>
+  <p class="read">${esc(r.text)}</p></div>`;
 }
 
 function renderTables(T){
@@ -191,9 +179,9 @@ const SYN={"new beginnings":["new beginnings","fresh start","beginning","renewal
 
 (async()=>{
   try{const r=await fetch('data/manifest.json',{cache:'no-cache'});MANIFEST=r.ok?await r.json():null}catch(e){MANIFEST=null}
-  const [T,months,E]=await Promise.all([loadJSON('data/lunation_tables.json'),loadJSON('data/moon_months_22310.json'),loadJSON('data/lunation_eval.json')]);
+  const [T,R,E]=await Promise.all([loadJSON('data/lunation_tables.json'),loadJSON('data/lunation_readings_22310.json'),loadJSON('data/lunation_eval.json')]);
   renderTables(T);renderTests(E);renderExamples(T,E);
-  const go=()=>{renderEntry(T,months,location.hash);if(location.hash)document.getElementById('entry').scrollIntoView()};
+  const go=()=>{renderEntry(R,location.hash);if(location.hash)document.getElementById('entry').scrollIntoView()};
   go();addEventListener('hashchange',go);
 })().catch(e=>{document.getElementById('entry').innerHTML=`<div class="glass">Could not load data: ${esc(e.message)}</div>`});
 </script>

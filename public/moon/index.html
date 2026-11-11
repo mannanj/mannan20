@@ -635,7 +635,7 @@ function openPick(el){
   pickFor=el;pick.style.display='block';
   const r=el.getBoundingClientRect();
   pick.style.left=Math.max(8,Math.min(innerWidth-pick.offsetWidth-8,r.left))+'px';
-  pick.style.top=Math.min(innerHeight-pick.offsetHeight-8,r.bottom+6)+'px';
+  pick.style.top=Math.max(8,Math.min(innerHeight-pick.offsetHeight-8,r.bottom+6))+'px';
   pick.querySelector('.cur')?.scrollIntoView({block:'center'});
 }
 function closePick(){pick.style.display='none';pickFor=null}

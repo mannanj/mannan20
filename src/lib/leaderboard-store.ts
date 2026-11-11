@@ -1,6 +1,7 @@
 import { callPortfolioState, stateOperationId } from './portfolio-state-client';
 
 export const NAME_RE = /^[\p{L}\p{N} ._'-]{1,24}$/u;
+export const MAGIC_TOKEN_RE = /^(do1_)?[a-f0-9]{32,128}$/i;
 export const OWNER_COOKIE = 'chicken-owner';
 export const SCORE_MAX = 1_000_000_000_000;
 const TOP_N = 10;

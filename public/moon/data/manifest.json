@@ -1,7 +1,8 @@
 {
  "lunation_eval.json": "201ca14af540",
+ "lunation_readings_22310.json": "7af157720725",
  "lunation_tables.json": "4def9f85198f",
- "moon_months_22310.json": "6e4d8b1802fc",
+ "moon_months_22310.json": "c415cf86ad5b",
  "moon_view_22310_1990.json.gz": "8bd97cc8a699",
  "moon_view_22310_1991.json.gz": "c95796024656",
  "moon_view_22310_1992.json.gz": "e6e609f085a4",
@@ -38,9 +39,9 @@
  "moon_view_22310_2023.json.gz": "30a3c36220dc",
  "moon_view_22310_2024.json.gz": "a8ba13065f49",
  "moon_view_22310_2025.json.gz": "c7c0790938ac",
- "moon_view_22310_2026.json.gz": "8f8c38d0755d",
- "moon_view_22310_2027.json.gz": "2d26e499b998",
- "moon_view_22310_2028.json.gz": "72da01837abf",
- "moon_view_22310_2029.json.gz": "84d8d04bbcfe",
- "moon_view_22310_2030.json.gz": "84d1a020d8e9"
+ "moon_view_22310_2026.json.gz": "2249f4199b15",
+ "moon_view_22310_2027.json.gz": "993866dcdf30",
+ "moon_view_22310_2028.json.gz": "d8824a1ef2dd",
+ "moon_view_22310_2029.json.gz": "4ca8fb9576bd",
+ "moon_view_22310_2030.json.gz": "eb3c62223037"
 }

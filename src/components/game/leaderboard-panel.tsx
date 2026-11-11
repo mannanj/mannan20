@@ -111,6 +111,8 @@ export function LeaderboardPanel({ open, onToggle, onClose, score, siteSignIn = 
             data.names.length > 0 ? ` — your names: ${data.names.join(', ')}` : '';
           setClaimToast({ text: `Signed in as ${data.email}${suffix}`, ok: true });
           void fetchIdentity();
+        } else if (res.status >= 500) {
+          setClaimToast({ text: 'Sign-in is unavailable right now — try the link again in a minute.', ok: false });
         } else {
           setClaimToast({ text: 'Sign-in link expired — request a new one.', ok: false });
         }
