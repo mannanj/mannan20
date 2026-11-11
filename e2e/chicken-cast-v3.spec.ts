@@ -14,16 +14,14 @@ async function openV3(page: Page) {
 }
 
 test.describe('v3 helpers and weapons', () => {
-  test('Jev and the monkey sit asleep at the bottom once owned; key 2 wakes the monkey', async ({ page }) => {
+  test('once owned, Jev waits at the bottom for his first call and the monkey is active straight away', async ({ page }) => {
     await openV3(page);
     await bridge(page, 'grantItem', 'jev');
     await bridge(page, 'grantItem', 'monkey');
     await expect(page.getByTestId('jev')).toHaveAttribute('data-phase', 'idle', { timeout: 4000 });
-    await expect(page.getByTestId('monkey')).toHaveAttribute('data-phase', 'idle');
+    await expect(page.getByTestId('monkey')).toHaveAttribute('data-phase', /rising|active/);
     await expect(page.getByTestId('jev-body')).toBeVisible();
     await expect(page.getByTestId('monkey-body')).toBeVisible();
-    await page.keyboard.press('2');
-    await expect(page.getByTestId('monkey')).toHaveAttribute('data-phase', /rising|active/);
     await expect(page.getByTestId('cast-cannon')).toHaveCount(0);
   });
 
