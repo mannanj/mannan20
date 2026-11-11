@@ -172,6 +172,7 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
     let raf = 0;
     let pick = 0;
     let nextSwitch = begin + JEV_RETARGET_MS;
+    let armSize = { w: 0, h: 0 };
     const tick = (now: number) => {
       if (portsRef.current.paused) {
         endsAt += now - last;
@@ -188,11 +189,10 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
       const at = list[pick % list.length];
       const box = bodyRef.current?.getBoundingClientRect();
       if (box && armRef.current) {
+        if (armSize.w === 0) armSize = { w: armRef.current.offsetWidth, h: armRef.current.offsetHeight };
         const shoulder = { x: box.left + box.width * SHOULDER_X, y: box.top + box.height * SHOULDER_Y };
         const arm = armRef.current;
-        arm.style.left = `${shoulder.x - arm.offsetWidth}px`;
-        arm.style.top = `${shoulder.y - arm.offsetHeight / 2}px`;
-        arm.style.transform = `rotate(${jevArmAngle(shoulder, at)}rad)`;
+        arm.style.transform = `translate(${shoulder.x - armSize.w}px, ${shoulder.y - armSize.h / 2}px) rotate(${jevArmAngle(shoulder, at)}rad)`;
       }
       const squeezed = Math.floor(now / JEV_SQUEEZE_MS) % 2 === 0;
       if (fistRef.current && openRef.current) {

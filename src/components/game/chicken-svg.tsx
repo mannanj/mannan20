@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { memo, useId } from 'react';
 import { TIERS, mixHex } from './chicken-tiers';
 import { BURN_SPOT, BURN_STAGES, CHAR_FEATHER_OPACITY, skinById, type CharSpot } from './chicken-skins';
 
@@ -191,7 +191,7 @@ function WoundMark({ hp, open, uid }: { hp: number; open: boolean; uid: string }
   );
 }
 
-export function ChickenSvg({
+export const ChickenSvg = memo(function ChickenSvg({
   className,
   style,
   onClick,
@@ -440,4 +440,4 @@ export function ChickenSvg({
       </g>
     </svg>
   );
-}
+});
