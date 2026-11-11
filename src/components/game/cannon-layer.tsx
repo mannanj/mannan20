@@ -48,6 +48,8 @@ const RIPPLE_SLOTS = [0, 1, 2];
 const RIPPLE_MS = 620;
 const LABEL_ABOVE_PX = 104;
 const LABEL_EDGE_PX = 8;
+const GUIDE_FROM_CHICKEN_TOP_PX = 70;
+const GUIDE_ABOVE_CANNON_PX = 14;
 const INTERACTIVE = 'button, a, input, [data-hud], [data-testid^="inventory"]';
 
 export function CannonLayer({ controlRef, target, pickChicken, mult, blast, onDocked, skin, tier }: CannonLayerProps) {
@@ -62,7 +64,7 @@ export function CannonLayer({ controlRef, target, pickChicken, mult, blast, onDo
   const dragRef = useRef<CannonPoint | null>(null);
   const readyAtRef = useRef(0);
   const labelRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<SVGLineElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
   const aimRef = useRef<HTMLDivElement>(null);
   const gunRef = useRef<HTMLDivElement>(null);
   const wavesRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -111,10 +113,12 @@ export function CannonLayer({ controlRef, target, pickChicken, mult, blast, onDo
       }
       const line = lineRef.current;
       if (line) {
-        line.setAttribute('x1', String(at.x));
-        line.setAttribute('y1', String(at.y + 70));
-        line.setAttribute('x2', String(home.x));
-        line.setAttribute('y2', String(home.y - CANNON_SIZE / 2 - 14));
+        const x1 = at.x;
+        const y1 = at.y + GUIDE_FROM_CHICKEN_TOP_PX;
+        const dx = home.x - x1;
+        const dy = home.y - CANNON_SIZE / 2 - GUIDE_ABOVE_CANNON_PX - y1;
+        line.style.width = `${Math.hypot(dx, dy).toFixed(1)}px`;
+        line.style.transform = `translate(${x1.toFixed(1)}px, ${y1.toFixed(1)}px) rotate(${Math.atan2(dy, dx).toFixed(4)}rad)`;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -211,15 +215,14 @@ export function CannonLayer({ controlRef, target, pickChicken, mult, blast, onDo
     <>
       {!docked && (
         <div data-testid="cannon-invite" className="pointer-events-none fixed inset-0 z-[70]">
-          <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
-            <defs>
-              <marker id="cannon-arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
-                <path d="M0 0 L6 3 L0 6 Z" fill="#fff" />
-              </marker>
-            </defs>
-            <line ref={lineRef} stroke="#fff" strokeWidth="2.5" strokeDasharray="9 8" markerEnd="url(#cannon-arrow)" />
-          </svg>
-          <div ref={labelRef} className="absolute left-0 top-0 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-sm font-semibold text-white">
+          <div
+            ref={lineRef}
+            aria-hidden="true"
+            className="absolute left-0 top-0 h-[2.5px] w-0 origin-left will-change-transform bg-[repeating-linear-gradient(90deg,#fff_0_9px,transparent_9px_17px)]"
+          >
+            <span className="absolute right-0 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[7.5px] border-l-[15px] border-y-transparent border-l-white" />
+          </div>
+          <div ref={labelRef} className="absolute left-0 top-0 whitespace-nowrap rounded-full bg-black/80 px-3 py-1 text-sm font-semibold text-white will-change-transform">
             {CANNON_COPY.invite}
           </div>
           <div data-testid="cannon-silhouette" className="absolute left-1/2 -translate-x-1/2 rounded-full border-2 border-dashed border-white/70 p-1 opacity-70 brightness-0 invert" style={{ bottom: CANNON_BOTTOM_PX }}>
