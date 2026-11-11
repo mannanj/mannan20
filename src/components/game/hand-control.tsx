@@ -6,7 +6,7 @@ import { GLASS_PANEL } from './version-picker';
 import { HAND_TRACE_PARAM } from './hand-trace';
 import { HandTracePanel, TraceRecorder } from './hand-trace-panel';
 import type { HandLandmarker } from '@mediapipe/tasks-vision';
-import { createFlick, flickStep, nextPinched, palmY, pinchRatio, screenPoint, smooth, type HandPoint } from './hand-gesture';
+import { INDEX_TIP, createFlick, flickStep, nextPinched, palmY, pinchRatio, screenPoint, smooth, type HandPoint } from './hand-gesture';
 
 const TASKS_VERSION = '1.1.1';
 const WASM_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${TASKS_VERSION}/wasm`;
@@ -14,6 +14,16 @@ const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmark
 const WASM_LOADER = `${WASM_BASE}/vision_wasm_internal.js`;
 const WASM_BINARY = `${WASM_BASE}/vision_wasm_internal.wasm`;
 const DOWNLOAD_MB = 21;
+const VIDEO_W = 1280;
+const VIDEO_H = 720;
+const SQUEEZE_LABEL_MS = 700;
+const STEPS: { key: keyof Checks; label: string }[] = [
+  { key: 'camera', label: 'Camera on' },
+  { key: 'hand', label: 'Show your hand' },
+  { key: 'move', label: 'Move your hand' },
+  { key: 'pinch', label: 'Pinch (thumb + index finger, or thumb + index and middle finger)' },
+  { key: 'swipe', label: 'Swipe your hand down and up' },
+];
 const COUNTDOWN_FROM = 3;
 const COUNTDOWN_STEP_MS = 1000;
 const COUNTDOWN_TICK_MS = 100;
@@ -28,8 +38,13 @@ type HandPhase = 'off' | 'ask' | 'loading' | 'checking' | 'countdown' | 'on' | '
 interface Checks {
   camera: boolean;
   hand: boolean;
+  move: boolean;
   pinch: boolean;
+  swipe: boolean;
 }
+
+const NO_CHECKS: Checks = { camera: false, hand: false, move: false, pinch: false, swipe: false };
+const MOVE_DISTANCE = 0.25;
 
 interface HandControlProps {
   pause: () => void;
@@ -133,7 +148,7 @@ function drawHand(canvas: HTMLCanvasElement | null, landmarks: HandPoint[] | nul
 
 export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
   const [phase, setPhase] = useState<HandPhase>('off');
-  const [checks, setChecks] = useState<Checks>({ camera: false, hand: false, pinch: false });
+  const [checks, setChecks] = useState<Checks>(NO_CHECKS);
   const [count, setCount] = useState(COUNTDOWN_FROM);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
@@ -144,6 +159,9 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  const squeezeLabelRef = useRef<HTMLDivElement>(null);
+  const squeezesRef = useRef(0);
+  const travelRef = useRef<{ last: HandPoint | null; total: number }>({ last: null, total: 0 });
   const streamRef = useRef<MediaStream | null>(null);
   const landmarkerRef = useRef<HandLandmarker | null>(null);
   const pointRef = useRef<HandPoint | null>(null);
@@ -177,12 +195,13 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
   };
 
   const begin = async () => {
-    setChecks({ camera: false, hand: false, pinch: false });
+    setChecks(NO_CHECKS);
+    travelRef.current = { last: null, total: 0 };
     setProgress(landmarkerRef.current ? 1 : 0);
     setPhase('loading');
     try {
       const [stream, landmarker] = await Promise.all([
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } }),
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: VIDEO_W }, height: { ideal: VIDEO_H } } }),
         landmarkerRef.current ? Promise.resolve(landmarkerRef.current) : createLandmarker(setProgress),
       ]);
       landmarkerRef.current = landmarker;
@@ -201,6 +220,8 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
     setPhase('off');
     portsRef.current.resume();
   };
+  const cancelRef = useRef(cancel);
+  cancelRef.current = cancel;
 
   const stop = () => {
     stopCamera();
@@ -225,6 +246,11 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
       const landmarker = landmarkerRef.current;
       if (!video || !landmarker || video.readyState < 2 || video.currentTime === lastVideoTime) return;
       lastVideoTime = video.currentTime;
+      const canvas = canvasRef.current;
+      if (canvas && video.videoWidth && (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+      }
       const hand = landmarker.detectForVideo(video, performance.now()).landmarks[0] ?? null;
       const pinched = hand ? nextPinched(pinchedRef.current, pinchRatio(hand)) : false;
       drawHand(canvasRef.current, hand, pinched);
@@ -235,8 +261,11 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
       if (flick?.flick) {
         cursorRef.current?.animate([{ scale: '1' }, { scale: '0.6' }, { scale: '1' }], { duration: 180 });
         const at = pointRef.current;
-        if (live && at) for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) fire(type, at.x, at.y);
-        if (phaseRef.current === 'checking' && checksRef.current.hand && !checksRef.current.pinch) setChecks((prev) => ({ ...prev, pinch: true }));
+        if (live && at) {
+          for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) fire(type, at.x, at.y);
+          showSqueeze();
+        }
+        if (phaseRef.current === 'checking' && checksRef.current.hand && !checksRef.current.swipe) setChecks((prev) => ({ ...prev, swipe: true }));
       }
       if (hand && !flick?.holdCursor) {
         const point = smooth(pointRef.current, screenPoint(hand, window.innerWidth, window.innerHeight));
@@ -250,6 +279,13 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
       if (phaseRef.current === 'checking') {
         const c = checksRef.current;
         if (hand && !c.hand) setChecks((prev) => ({ ...prev, hand: true }));
+        if (hand && c.hand && !c.move) {
+          const tip = hand[INDEX_TIP];
+          const travel = travelRef.current;
+          if (travel.last) travel.total += Math.hypot(tip.x - travel.last.x, tip.y - travel.last.y);
+          travel.last = { x: tip.x, y: tip.y };
+          if (travel.total >= MOVE_DISTANCE) setChecks((prev) => ({ ...prev, move: true }));
+        }
         if (pinched && c.hand && !c.pinch) setChecks((prev) => ({ ...prev, pinch: true }));
       }
       if (pinched !== pinchedRef.current) {
@@ -264,12 +300,44 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
             fire('pointerup', at.x, at.y);
             fire('mouseup', at.x, at.y);
             fire('click', at.x, at.y);
+            showSqueeze();
           }
         }
       }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
+  }, [phase]);
+
+  const showSqueeze = useCallback(() => {
+    squeezesRef.current += 1;
+    const label = squeezeLabelRef.current;
+    if (!label) return;
+    const count = label.querySelector('[data-testid="hand-squeeze-count"]');
+    if (count) count.textContent = `+1 · ${squeezesRef.current}`;
+    label.dataset.count = String(squeezesRef.current);
+    label.animate(
+      [
+        { opacity: 0, transform: 'translate(0, -50%) scale(0.9)' },
+        { opacity: 1, transform: 'translate(0, -50%) scale(1)', offset: 0.15 },
+        { opacity: 1, transform: 'translate(0, -50%) scale(1)', offset: 0.75 },
+        { opacity: 0, transform: 'translate(0, -80%) scale(1)' },
+      ],
+      { duration: SQUEEZE_LABEL_MS, easing: 'ease-out' }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (phase === 'off') portsRef.current.resume();
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== 'ask') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') cancelRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [phase]);
 
   useEffect(() => {
@@ -290,7 +358,7 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
     setPhase('countdown');
   };
 
-  const ready = checks.camera && checks.hand && checks.pinch;
+  const ready = checks.camera && checks.hand && checks.move && (checks.pinch || checks.swipe);
   const stepClass = (done: boolean) => (done ? 'text-[#7cf0a8]' : 'text-white/55');
 
   return (
@@ -317,33 +385,43 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
         )}
 
       {phase === 'ask' && (
-        <div data-hud data-testid="hand-ask" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 px-4" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-          <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-white/15 bg-neutral-900/90 p-6 text-center text-white shadow-2xl backdrop-blur-xl">
-            <h2 className="text-lg font-semibold">Play the game with your hands?</h2>
-            <p className="text-sm text-white/65">Your camera tracks one hand: your index finger moves the cursor, and a pinch or a quick flick squeezes. The hand tracker is a one-time {DOWNLOAD_MB} MB download. Video stays on this device.</p>
-            <div className="flex gap-2">
-              <button type="button" data-testid="hand-no" onClick={cancel} className="flex-1 cursor-pointer rounded-xl bg-white/10 px-4 py-2.5 font-medium transition-colors hover:bg-white/20">
-                Not now
-              </button>
-              <button type="button" data-testid="hand-yes" onClick={() => void begin()} className="flex-1 cursor-pointer rounded-xl bg-[#ffd84d] px-4 py-2.5 font-semibold text-black transition-colors hover:bg-[#ffe27a]">
-                Yes, use my hands
-              </button>
-            </div>
+        <div data-hud data-testid="hand-ask" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 px-4" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => {
+          e.stopPropagation();
+          if (e.target === e.currentTarget) cancel();
+        }}>
+          <div className="relative flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-white/15 bg-neutral-900/90 p-6 text-center text-white shadow-2xl backdrop-blur-xl">
+            <button type="button" data-testid="hand-close" aria-label="Close" onClick={cancel} className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 4 L12 12 M12 4 L4 12" />
+              </svg>
+            </button>
+            <h2 className="px-6 text-lg font-semibold">Play the game with your hands?</h2>
+            <p className="text-sm text-white/65">Your camera will be turned on and be used to operate your cursor. No video is stored or streamed to our servers, and all computation is done on device.</p>
+            <button type="button" data-testid="hand-yes" onClick={() => void begin()} className="w-full cursor-pointer rounded-xl bg-[#ffd84d] px-4 py-2.5 font-semibold text-black transition-colors hover:bg-[#ffe27a]">
+              Use my hands
+            </button>
           </div>
         </div>
       )}
 
       {(phase === 'loading' || phase === 'checking' || phase === 'error') && (
-        <div data-hud data-testid="hand-check" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 px-4" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-          <div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-white/15 bg-neutral-900/90 p-5 text-white shadow-2xl backdrop-blur-xl">
-            <h2 className="text-lg font-semibold">Play with your hand</h2>
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-black">
-              <video ref={videoRef} data-testid="hand-video" muted playsInline className="h-full w-full -scale-x-100 object-cover" />
-              <canvas ref={canvasRef} width={640} height={480} className="pointer-events-none absolute inset-0 h-full w-full" />
+        <div data-hud data-testid="hand-check" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 px-4" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => {
+          e.stopPropagation();
+          if (e.target === e.currentTarget) cancel();
+        }}>
+          <div className="relative flex w-full max-w-4xl flex-col gap-4 rounded-2xl border border-white/15 bg-neutral-900/90 p-5 pt-12 text-white shadow-2xl backdrop-blur-xl">
+            <button type="button" data-testid="hand-cancel" aria-label="Close" onClick={cancel} className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white">
+              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 4 L12 12 M12 4 L4 12" />
+              </svg>
+            </button>
+            <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
+              <video ref={videoRef} data-testid="hand-video" autoPlay muted playsInline onLoadedMetadata={(e) => void e.currentTarget.play().catch(() => undefined)} className="h-full w-full -scale-x-100 object-contain" />
+              <canvas ref={canvasRef} width={VIDEO_W} height={VIDEO_H} className="pointer-events-none absolute inset-0 h-full w-full object-contain" />
               {phase === 'loading' && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-sm text-white/70">
                   <span>{progress < 1 ? `Downloading the hand tracker… ${Math.round(progress * DOWNLOAD_MB)} of ${DOWNLOAD_MB} MB` : 'Starting the camera…'}</span>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
+                  <div className="h-2 w-full max-w-md overflow-hidden rounded-full bg-white/15">
                     <div data-testid="hand-progress" data-progress={progress.toFixed(2)} className="h-full rounded-full bg-[#7cf0a8] transition-[width] duration-200" style={{ width: `${Math.round(progress * 100)}%` }} />
                   </div>
                 </div>
@@ -352,21 +430,24 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
             {phase === 'error' ? (
               <p data-testid="hand-error" className="text-sm text-[#ff9a9a]">{error}</p>
             ) : (
-              <ol data-testid="hand-steps" className="flex flex-col gap-1 text-sm">
-                <li data-testid="hand-step-camera" data-done={checks.camera ? '1' : '0'} className={stepClass(checks.camera)}>1. Camera on</li>
-                <li data-testid="hand-step-hand" data-done={checks.hand ? '1' : '0'} className={stepClass(checks.hand)}>2. Show your hand — your index finger moves the cursor</li>
-                <li data-testid="hand-step-pinch" data-done={checks.pinch ? '1' : '0'} className={stepClass(checks.pinch)}>3. Pinch (thumb + index, or + middle) or flick your hand down and up — that squeezes</li>
+              <ol data-testid="hand-steps" className="flex flex-col gap-2 text-sm">
+                {STEPS.map((step) => (
+                  <li key={step.key} data-testid={`hand-step-${step.key}`} data-done={checks[step.key] ? '1' : '0'} className={`flex items-center gap-2.5 ${checks[step.key] ? 'text-white' : 'text-white/55'}`}>
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${checks[step.key] ? 'bg-[#3ccf6e]' : 'border border-white/30'}`}>
+                      {checks[step.key] && (
+                        <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="#06210f" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3.5 8.5 L6.5 11.5 L12.5 4.5" />
+                        </svg>
+                      )}
+                    </span>
+                    {step.label}
+                  </li>
+                ))}
               </ol>
             )}
-            <p className="text-xs text-white/45">Video stays on this device. Nothing is uploaded.</p>
-            <div className="flex gap-2">
-              <button type="button" data-testid="hand-cancel" onClick={cancel} className="flex-1 cursor-pointer rounded-xl bg-white/10 px-4 py-2.5 font-medium transition-colors hover:bg-white/20">
-                Cancel
-              </button>
-              <button type="button" data-testid="hand-start" disabled={!ready} onClick={start} className="flex-1 cursor-pointer rounded-xl bg-[#ffd84d] px-4 py-2.5 font-semibold text-black transition-colors hover:bg-[#ffe27a] disabled:cursor-not-allowed disabled:opacity-40">
-                Start
-              </button>
-            </div>
+            <button type="button" data-testid="hand-start" disabled={!ready} onClick={start} className="w-full cursor-pointer rounded-xl bg-[#ffd84d] px-4 py-3 font-semibold text-black transition-colors hover:bg-[#ffe27a] disabled:cursor-not-allowed disabled:opacity-40">
+              Start
+            </button>
           </div>
         </div>
       )}
@@ -383,12 +464,16 @@ export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
 
       {(phase === 'countdown' || phase === 'on') && (
         <>
-          <div data-testid="hand-preview" className="pointer-events-none fixed bottom-[13rem] left-6 z-[60] h-[90px] w-[120px] overflow-hidden rounded-lg border border-white/20 bg-black">
-            <video ref={videoRef} muted playsInline className="h-full w-full -scale-x-100 object-cover" />
-            <canvas ref={canvasRef} width={640} height={480} className="absolute inset-0 h-full w-full" />
+          <div data-testid="hand-preview" className="pointer-events-none fixed bottom-[13rem] left-6 z-[60] h-[90px] w-[160px] overflow-hidden rounded-lg border border-white/20 bg-black">
+            <video ref={videoRef} autoPlay muted playsInline onLoadedMetadata={(e) => void e.currentTarget.play().catch(() => undefined)} className="h-full w-full -scale-x-100 object-contain" />
+            <canvas ref={canvasRef} width={VIDEO_W} height={VIDEO_H} className="absolute inset-0 h-full w-full object-contain" />
           </div>
           <div ref={cursorRef} data-testid="hand-cursor" data-pinched="0" className="group pointer-events-none fixed left-0 top-0 z-[95] will-change-transform" style={{ width: CURSOR_PX, height: CURSOR_PX }}>
             <div className="h-full w-full rounded-full border-[3px] border-[#7cf0a8] bg-[#7cf0a8]/20 shadow-[0_0_14px_rgba(124,240,168,0.7)] transition-transform duration-100 group-data-[pinched=1]:scale-75 group-data-[pinched=1]:border-[#ffd84d] group-data-[pinched=1]:bg-[#ffd84d]/40" />
+            <div ref={squeezeLabelRef} data-testid="hand-squeeze-label" className="absolute left-full top-1/2 ml-2 flex -translate-y-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-black/80 px-2.5 py-1 text-xs font-semibold text-white opacity-0">
+              <span className="text-[#ffd84d]">Squeeze detected</span>
+              <span data-testid="hand-squeeze-count" className="tabular-nums text-[#7cf0a8]">+1 · 0</span>
+            </div>
           </div>
         </>
       )}

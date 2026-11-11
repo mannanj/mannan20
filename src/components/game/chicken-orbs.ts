@@ -61,7 +61,8 @@ export const ORB_LABELS: Record<OrbKind, string> = {
 
 export const ORB_LIFETIME_MS = 30_000;
 export const ORB_FADE_MS = 2000;
-export const ORB_RADIUS = 20.5;
+export const ORB_SIZE_SCALE = 2;
+export const ORB_RADIUS = 20.5 * ORB_SIZE_SCALE;
 export const JEV_ORB_RADIUS = 48;
 export const ORB_LABEL_PX: Record<OrbKind, number> = {
   multiply: 11,
@@ -202,6 +203,10 @@ export function pickMysteryEffect(last: OrbKind | null, rng: () => number): OrbK
   return options[options.length - 1].kind;
 }
 
+export function orbLabelPx(kind: OrbKind): number {
+  return kind === 'jev' ? ORB_LABEL_PX[kind] : ORB_LABEL_PX[kind] * ORB_SIZE_SCALE;
+}
+
 export function orbRadius(kind: OrbKind): number {
   return kind === 'jev' ? JEV_ORB_RADIUS : ORB_RADIUS;
 }
@@ -232,7 +237,7 @@ export function scatterOffsets(rng: () => number): CursorOffset[] {
     const r = SCATTER_RADIUS * Math.sqrt(rng());
     return { dx: Math.round(Math.cos(a) * r), dy: Math.round(Math.sin(a) * r) };
   });
-  return [{ dx: 0, dy: 0, hidden: true }, ...scattered];
+  return [{ dx: 0, dy: 0 }, ...scattered];
 }
 
 export function buildCursorOffsets(x5Active: boolean, x3Active: boolean): CursorOffset[] {

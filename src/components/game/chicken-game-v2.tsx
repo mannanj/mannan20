@@ -190,7 +190,7 @@ import {
   ORB_LABELS,
   ORB_LIFETIME_MS,
   orbRadius,
-  ORB_LABEL_PX,
+  orbLabelPx,
   ORB_SHARD_COLORS,
   ORB_SPAWN_MARGIN,
   ORB_THRESHOLDS,
@@ -4318,7 +4318,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   }, []);
 
   useEffect(() => {
-    const animate = (ts: number) => {
+    const step = (ts: number) => {
       if (gateRef.current !== 'none' || haltedRef.current || openingRef.current !== 'done') {
         lastTimeRef.current = ts;
         rafRef.current = requestAnimationFrame(animate);
@@ -5636,6 +5636,16 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       rafRef.current = requestAnimationFrame(animate);
     };
 
+    const animate = (ts: number) => {
+      try {
+        step(ts);
+      } catch (err) {
+        console.error('chicken loop frame failed', err);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
     rafRef.current = requestAnimationFrame(animate);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -5761,7 +5771,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       data-variant="2"
       data-multicursor={overlayOffsets.length > 0 ? '1' : '0'}
       onPointerDownCapture={sheet === 'board' ? closeSheetOnOutside : undefined}
-      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none ${swordOn ? SWORD_CURSOR_CLASS : scattering || aimbotOn ? 'cursor-none' : 'chicken-hand-cursor'} [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
+      className={`fixed inset-0 bg-[#0b0b0b] overflow-hidden select-none ${swordOn ? SWORD_CURSOR_CLASS : aimbotOn ? 'cursor-none' : 'chicken-hand-cursor'} [&_[data-testid=chicken-leaderboard-link]]:text-white/60 [&_[data-testid=chicken-leaderboard-link]]:[text-shadow:0_0_2px_rgba(0,0,0,0.65),0_1px_10px_rgba(0,0,0,0.6)] ${stage === 'rocket' && seq === 'explode' ? 'escape-shake' : ''}`}
     >
       <div
         data-testid="ground-scenery"
@@ -6159,7 +6169,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
             else orbElsRef.current.delete(orb.id);
           }}
           onClick={() => collectOrb(orb.id)}
-          style={{ fontSize: ORB_LABEL_PX[orb.kind], width: orbRadius(orb.kind) * 2, height: orbRadius(orb.kind) * 2 }}
+          style={{ fontSize: orbLabelPx(orb.kind), width: orbRadius(orb.kind) * 2, height: orbRadius(orb.kind) * 2 }}
           className="absolute top-0 left-0 z-20 cursor-pointer rounded-full will-change-transform"
         >
           <div className="absolute inset-0 rounded-full bg-[conic-gradient(#ff3b3b,#ffb02e,#f6ec3a,#3ddc6a,#35b6ff,#8a5cff,#ff3b3b)] animate-[orbSpin_7s_linear_infinite]" />
