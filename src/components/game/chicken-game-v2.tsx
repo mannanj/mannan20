@@ -1295,6 +1295,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const mysteryStepRef = useRef<number | null>(null);
   const [mysteryOpen, setMysteryOpen] = useState(false);
   const [handPaused, setHandPaused] = useState(false);
+  const [handSlot, setHandSlot] = useState<HTMLDivElement | null>(null);
   const handPausedAtRef = useRef(0);
   const replayingOpeningRef = useRef(false);
   const [duel, setDuel] = useState<DuelDef | null>(null);
@@ -5816,7 +5817,10 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       )}
 
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
-        {opening === 'done' && !started && <VersionPicker current={CURRENT_VERSION} />}
+        <div className="flex items-center gap-2">
+          <div ref={setHandSlot} className="contents" />
+          {opening === 'done' && !started && <VersionPicker current={CURRENT_VERSION} />}
+        </div>
         <button
           type="button"
           onClick={() => setSkinsOpen((v) => !v)}
@@ -6218,7 +6222,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         />
       )}
       <CastHud read={readCast} onCast={castNow} />
-      {opening === 'done' && <HandControl pause={pauseForHand} resume={resumeFromHand} />}
+      {opening === 'done' && <HandControl pause={pauseForHand} resume={resumeFromHand} toggleSlot={handSlot} />}
       {tuning.aimbot && opening === 'done' && (
         <Aimbot clock={aimbotClockRef.current} target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })} onPhase={(ph) => setAimbotOn(ph === 'on')} />
       )}

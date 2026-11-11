@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { GLASS_PANEL } from './version-picker';
 import type { HandLandmarker } from '@mediapipe/tasks-vision';
 import { createFlick, flickStep, nextPinched, palmY, pinchRatio, screenPoint, smooth, type HandPoint } from './hand-gesture';
 
@@ -29,6 +31,7 @@ interface Checks {
 interface HandControlProps {
   pause: () => void;
   resume: () => void;
+  toggleSlot: HTMLElement | null;
 }
 
 async function download(url: string, onBytes: (received: number, total: number) => void): Promise<Uint8Array> {
@@ -116,7 +119,7 @@ function drawHand(canvas: HTMLCanvasElement | null, landmarks: HandPoint[] | nul
   }
 }
 
-export function HandControl({ pause, resume }: HandControlProps) {
+export function HandControl({ pause, resume, toggleSlot }: HandControlProps) {
   const [phase, setPhase] = useState<HandPhase>('off');
   const [checks, setChecks] = useState<Checks>({ camera: false, hand: false, pinch: false });
   const [count, setCount] = useState(COUNTDOWN_FROM);
@@ -270,22 +273,26 @@ export function HandControl({ pause, resume }: HandControlProps) {
 
   return (
     <>
+      {toggleSlot &&
+        createPortal(
       <button
-        type="button"
-        data-hud
-        data-testid="hand-toggle"
-        data-phase={phase}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (phase === 'off' || phase === 'error') ask();
-          else if (phase === 'on') stop();
-        }}
-        className={`fixed bottom-[10rem] left-6 z-[60] flex cursor-pointer touch-manipulation items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold tracking-wide transition-colors ${phase === 'on' ? 'bg-[#7cf0a8] text-black' : 'bg-black/70 text-white hover:bg-black/85'}`}
-      >
-        <span className={`h-2 w-2 rounded-full ${phase === 'on' ? 'bg-black' : 'bg-[#7cf0a8]'}`} />
-        {phase === 'on' ? 'Stop hand control' : 'Hand control'}
-      </button>
+            type="button"
+            data-hud
+            data-testid="hand-toggle"
+            data-phase={phase}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (phase === 'off' || phase === 'error') ask();
+              else if (phase === 'on') stop();
+            }}
+            className={`flex cursor-pointer touch-manipulation items-center gap-2 px-3.5 py-1.5 text-xs font-medium tracking-wide [text-shadow:0_1px_2px_rgba(0,0,0,0.35)] ${GLASS_PANEL} ${phase === 'on' ? 'text-[#7cf0a8]' : 'text-white/90'}`}
+          >
+            <span className="h-2 w-2 rounded-full bg-[#7cf0a8]" />
+            {phase === 'on' ? 'Stop hand control' : 'Hand control'}
+          </button>,
+          toggleSlot
+        )}
 
       {phase === 'ask' && (
         <div data-hud data-testid="hand-ask" className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 px-4" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
