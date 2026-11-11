@@ -9,6 +9,7 @@ Mannan's ask (2026-11-11), quoted: "in the main screen when it says squeeze the 
 - [ ] Shared game state: story moments (speech, ???), pause, era/scene changes apply to everyone
 - [ ] A party is resumable from its link at any time by anyone; the creator need not be present (state persisted server-side)
 - [ ] Separate leaderboard for party / multiplayer play vs solo play ("i want party mode or multiplayer mode to have its own separate leaderboard vs solo play"); the leaderboard panel shows both (Solo / Party tabs)
+- [ ] Disclaimer right before starting a party / multiplayer / share link: "Your leaderboard score won't be eligible for solo mode" (confirm to continue)
 - [ ] Per-person score saved to their own account (browser identity + sign-in tokens; the existing mannan.is sign-in used by the game); leaderboard counts it
 - [ ] Floating account dropdown top right, the shared MCP account menu used across Mannan's apps (see `src/components/upload/account-menu.tsx`), with "Make this a party game"; its sign-in also counts as leaderboard sign-in
 - [ ] Real-time layer: Mannan's "live party cursors" library. Not found on disk under that name; closest is `~/Documents/ai-energy-tool/experiments/rt-partyserver` (PartyServer + Yjs on a Durable Object, deployed as aet-rt-experiment). Confirm with Mannan before building. Load it asynchronously with progress; the game waits to start until the host / first person has it loaded
