@@ -2120,7 +2120,7 @@ test.describe('chicken game v2 kitty', () => {
     await waitCreaturePhase(page, ['hold']);
     const holdMs = (await creatureOf(page)).holdMs;
     const t0 = Date.now();
-    for (let i = 0; i < 9; i++) await page.getByTestId('creature-body').click({ force: true, position: { x: 2, y: 30 } });
+    for (let i = 0; i < 9; i++) await page.getByTestId('creature-body').click({ force: true });
     await waitCreaturePhase(page, ['leave', 'done']);
     expect(Date.now() - t0).toBeLessThan(holdMs);
     await expect.poll(

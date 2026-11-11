@@ -158,7 +158,8 @@ export const BIG_CAT_STAY_MS: [number, number] = [5000, 10_000];
 export const LION_MANE_CLICKS = 15;
 export const LION_MANE_RAW = 2;
 export const CREATURE_HINT_DELAY_MS = 1500;
-export const MIN_HIT_PX = 56;
+export const MIN_HIT_PX = 64;
+const HIT_GROW = 1.3;
 export const CLEARANCE_PX = 40;
 const ASSET_BASE = '/game/creatures';
 const STAND_DIST_FRAC = 0.32;
@@ -865,6 +866,30 @@ function headRect(spec: CreatureSpec, s: CreatureState, box: Rect, flipped: bool
   return { x: box.x + relX * box.w, y: box.y + head.y * box.h, w: head.w * box.w, h: head.h * box.h };
 }
 
+function hitRect(r: Rect): Rect {
+  return atLeast({ x: r.x - (r.w * (HIT_GROW - 1)) / 2, y: r.y - (r.h * (HIT_GROW - 1)) / 2, w: r.w * HIT_GROW, h: r.h * HIT_GROW }, MIN_HIT_PX);
+}
+
+function nearestTarget(els: CreatureEls, x: number, y: number, fallback: string): string {
+  const candidates: [string, HTMLElement | null][] = [
+    ...Object.entries(els.targets),
+    ...els.heads.map((h, i): [string, HTMLElement | null] => [hydraTargetId(i), h.hit]),
+  ];
+  let best = fallback;
+  let bestD = Number.POSITIVE_INFINITY;
+  for (const [id, el] of candidates) {
+    if (!el || el.style.visibility !== 'visible') continue;
+    const r = el.getBoundingClientRect();
+    if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+    const d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
+    if (d < bestD) {
+      bestD = d;
+      best = id;
+    }
+  }
+  return best;
+}
+
 function atLeast(r: Rect, min: number): Rect {
   const w = Math.max(r.w, min);
   const h = Math.max(r.h, min);
@@ -1360,7 +1385,7 @@ function renderHydraHeads(spec: CreatureSpec, s: CreatureState, els: CreatureEls
     }
     if (el.hit) {
       if (head.state === 'knocked') hide(el.hit);
-      else place(el.hit, atLeast({ x: jaw.x - headH * 0.7, y: jaw.y - headH / 2, w: headH * 1.4, h: headH }, MIN_HIT_PX));
+      else place(el.hit, hitRect({ x: jaw.x - headH * 0.7, y: jaw.y - headH / 2, w: headH * 1.4, h: headH }));
       el.hit.dataset.clicks = String(head.clicks);
       el.hit.dataset.state = head.state;
     }
@@ -1417,7 +1442,7 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
     place(els.shadow, { x: s.pos.x - sw / 2, y: ctx.groundY - sh / 2, w: sw, h: sh });
   }
   if (els.body) {
-    if (spec.bodyTarget && s.phase === 'hold') place(els.body, atLeast(box, MIN_HIT_PX));
+    if (spec.bodyTarget && s.phase === 'hold') place(els.body, hitRect(box));
     else hide(els.body);
   }
   if (els.eye && asset.eye) {
@@ -1447,7 +1472,7 @@ function render(spec: CreatureSpec, s: CreatureState, els: CreatureEls, ctx: Cre
       hide(el);
       continue;
     }
-    const head = atLeast(targetRect(spec, s, box, flipped, target.id), MIN_HIT_PX);
+    const head = hitRect(targetRect(spec, s, box, flipped, target.id));
     place(el, head);
     el.dataset.clicks = String(s.targetHits[target.id] ?? 0);
   }
@@ -1568,7 +1593,7 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
               data-testid={`creature-target-${hydraTargetId(i)}`}
               data-clicks="0"
               className={`${HIT} rounded-full`}
-              onClick={(e) => onTarget(hydraTargetId(i), e.clientX, e.clientY)}
+              onClick={(e) => onTarget(nearestTarget(els.current, e.clientX, e.clientY, hydraTargetId(i)), e.clientX, e.clientY)}
             />
           </div>
         ))}
@@ -1628,7 +1653,7 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
           data-testid={`creature-target-${t.id}`}
           data-clicks="0"
           className={`${HIT} rounded-full`}
-          onClick={(e) => onTarget(t.id, e.clientX, e.clientY)}
+          onClick={(e) => onTarget(nearestTarget(els.current, e.clientX, e.clientY, t.id), e.clientX, e.clientY)}
         />
       ))}
       <div
