@@ -57,6 +57,16 @@ async function download(url: string, onBytes: (received: number, total: number) 
   return out;
 }
 
+const SOFTWARE_RENDERERS = /swiftshader|llvmpipe|softpipe|software/i;
+
+function hasHardwareWebgl(): boolean {
+  const gl = document.createElement('canvas').getContext('webgl2');
+  if (!gl) return false;
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+  return !SOFTWARE_RENDERERS.test(renderer);
+}
+
 async function createLandmarker(onProgress: (fraction: number) => void): Promise<HandLandmarker> {
   const { HandLandmarker: Landmarker } = await import('@mediapipe/tasks-vision');
   const seen = { wasm: [0, 0], model: [0, 0] };
@@ -79,8 +89,7 @@ async function createLandmarker(onProgress: (fraction: number) => void): Promise
   const files = { wasmLoaderPath: WASM_LOADER, wasmBinaryPath: wasmUrl };
   const make = (delegate: 'GPU' | 'CPU') =>
     Landmarker.createFromOptions(files, { baseOptions: { modelAssetBuffer: model, delegate }, runningMode: 'VIDEO', numHands: 1 });
-  const gpu = document.createElement('canvas').getContext('webgl2') !== null;
-  if (!gpu) return make('CPU');
+  if (!hasHardwareWebgl()) return make('CPU');
   try {
     return await make('GPU');
   } catch {
