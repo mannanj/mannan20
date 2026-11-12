@@ -6,7 +6,7 @@
 <style>
 :root{--col:80px;--axis:64px;--hour:40px;--red:#ef4444}
 *{box-sizing:border-box}
-body{margin:0;padding:76px 16px 16px;background:#fff;color:#000;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+body{margin:0;padding:76px 16px 16px;touch-action:manipulation;-webkit-text-size-adjust:100%;background:#fff;color:#000;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
 #hdr{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
   padding:12px 20px 12px 84px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
   border-bottom:1px solid rgba(0,0,0,.08);transition:transform .3s ease,opacity .3s ease}
@@ -177,6 +177,11 @@ h2.open+.mdet{display:flex}
 <div id="spop"><div class="ph"><span></span><a class="src" href="https://www.slownorth.com/blogs/journal/moon-phase-ritual-guide" target="_blank" rel="noopener" title="Moon Magic: A Guide To Living In Alignment With The Moon's Phases" aria-label="Source: Moon Magic: A Guide To Living In Alignment With The Moon's Phases"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></a></div><div class="sub"></div><div class="tm"></div></div>
 <div id="pop"><canvas></canvas><div class="ph"></div><div class="tm"></div></div>
 <script>
+// Phones and tablets (no hover): day notes are read-only so a tap never opens the keyboard or zooms in; a tap shows the moon / stage pop-ups.
+const TOUCH=matchMedia("(hover: none)").matches;
+// a tap can nudge a scroller; don't let that close the pop-up the tap just opened
+let lastTap=0;addEventListener('click',()=>{lastTap=Date.now()},true);
+const tapJustNow=()=>TOUCH&&Date.now()-lastTap<500;
 // Data: data/moon_view_{zip}_{year}.json.gz from sun/data/moon/moon_view.py (Skyfield + JPL DE421 +
 // NASA MOON_ME frame + CAMS aerosol). Each event: R,U,V = screen right / zenith-up / toward viewer and
 // S = toward the Sun in lunar body coords; sky = atmospheric transmission at 650/550/450 nm.
@@ -416,7 +421,7 @@ function render(days,news,follow){
       let last=-1e9;
       // a marker (label + tick + moon) is ~42px tall; push a crowded one down rather than overlap
       const out=ms.map(m=>{const y=m.min/60*HOUR,c=Math.max(y,last+42);last=c;return m.html(c-y)}).join('');
-      return `<div class="time" data-date="${d.date}"><div class="note" contenteditable="true" data-k="${d.date}"></div>${out}</div>`;
+      return `<div class="time" data-date="${d.date}"><div class="note"${TOUCH?'':' contenteditable="true"'} data-k="${d.date}"></div>${out}</div>`;
     }).join('');
     return h+'</div></div>'};
     const sec=document.createElement('section');sec.innerHTML=h+'<div class="ph"></div>';sec._body=body;sec._make=body;
@@ -562,7 +567,7 @@ document.addEventListener('mouseleave',()=>hov.remove());
 const spop=document.getElementById('spop');
 const span2=(a,b)=>{const A=pd(a),B=pd(b),n=Math.round((B-A)/864e5)+1;return [n,a===b?lab(A):`${lab(A)} – ${lab(B)}`]};
 let spopHide=0;
-document.addEventListener('mouseover',e=>{
+const showSpop=e=>{
   if(e.target.closest('#spop')){clearTimeout(spopHide);return}
   const t=e.target.closest('.rit-seg');
   if(!t){clearTimeout(spopHide);spopHide=setTimeout(()=>spop.style.display='none',200);return}
@@ -575,8 +580,9 @@ document.addEventListener('mouseover',e=>{
   const r=t.getBoundingClientRect(),w=spop.offsetWidth;
   spop.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+'px';
   spop.style.top=(r.bottom+6)+'px';
-});
-document.addEventListener('scroll',()=>spop.style.display='none',true);
+};
+document.addEventListener(TOUCH?'click':'mouseover',showSpop);
+document.addEventListener('scroll',()=>{if(!tapJustNow())spop.style.display='none'},true);
 // Lunar header dropdown: this moon month's facts from data/moon_months_{ZIP}.json, with sources
 const LINK_SVG=document.querySelector('#spop .src svg').outerHTML;
 const when=(utc,withTime=true)=>{const c=clock(Date.parse(utc),follow);return lab(pd(c.date))+(withTime?`, ${fmt(c.min)}`:'')};
@@ -648,7 +654,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePick();else if((e.key==='Enter'||e.key===' ')&&e.target.matches?.('[data-pick]')){e.preventDefault();e.target.click()}});
 const pop=document.getElementById('pop');
-document.addEventListener('mouseover',e=>{
+const showPop=e=>{
   const t=e.target.closest('.mk .body,.top>canvas');
   if(!t||!draw){if(!e.target.closest('#pop'))pop.style.display='none';return}
   const{e:ev,t:tn,day:d}=jobs[+t.dataset.j];
@@ -659,9 +665,11 @@ document.addEventListener('mouseover',e=>{
   const r=t.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
   let x=r.right+10,y=r.top+r.height/2-h/2;
   if(x+w>innerWidth-8)x=r.left-w-10;
+  if(x<8)x=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2)),y=r.bottom+10>innerHeight-h-8?r.top-h-10:r.bottom+10;
   pop.style.left=x+'px';pop.style.top=Math.max(8,Math.min(innerHeight-h-8,y))+'px';
-});
-document.addEventListener('scroll',()=>pop.style.display='none',true);
+};
+document.addEventListener(TOUCH?'click':'mouseover',showPop);
+document.addEventListener('scroll',()=>{if(!tapJustNow())pop.style.display='none'},true);
 
 // ~1,000 days of moons: size every canvas now (no layout shift), paint each one only as it nears the viewport
 let drawObs=null,pumping=false;const drawQ=[];
