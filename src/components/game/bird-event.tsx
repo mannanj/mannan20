@@ -11,6 +11,7 @@ import { scaledClicks } from './game-tuning';
 export type BirdKind = 'hawk' | 'eagle' | 'phoenix';
 
 const PHOENIX_SIZE_SCALE = 2.5;
+const SPRITE_RES: Record<BirdKind, number> = { hawk: 1, eagle: 1, phoenix: 0.5 };
 const TAP_ON_CLAW_DX = 6;
 const TAP_ON_CLAW_DY = 2;
 export type BirdPhase = 'idle' | 'approach' | 'grab' | 'right' | 'recoil' | 'left' | 'hover' | 'depart' | 'recede' | 'done';
@@ -853,12 +854,12 @@ function placeFlight(s: BirdState, els: BirdEls, ts: number, name: FrameName, cx
     setFrame(cur, s.kind, name);
   }
   const t = s.swapAt ? clamp((ts - s.swapAt) / XFADE_MS, 0, 1) : 1;
-  place(cur, spanRect(frame(s.kind, name), cx, cy, span), extra);
+  placeSprite(cur, s.kind, spanRect(frame(s.kind, name), cx, cy, span), extra);
   show(cur, opacity > 0, opacity * t);
   if (!prev) return;
   const old = prev.dataset.frame as FrameName | undefined;
   if (t < 1 && old && opacity > 0) {
-    place(prev, spanRect(frame(s.kind, old), cx, cy, span), extra);
+    placeSprite(prev, s.kind, spanRect(frame(s.kind, old), cx, cy, span), extra);
     show(prev, true, opacity * (1 - t));
   } else show(prev, false);
 }
@@ -903,6 +904,21 @@ function place(el: HTMLElement | null, r: Rect, extra = ''): void {
   const w = `${r.w.toFixed(1)}px`;
   if (el.style.width !== w) el.style.width = w;
   el.style.transform = `translate(${r.x.toFixed(1)}px, ${r.y.toFixed(1)}px)${extra}`;
+}
+
+function placeSprite(el: HTMLElement | null, kind: BirdKind, r: Rect, extra = ''): void {
+  if (!el || r.w <= 0) return;
+  let base = Number(el.dataset.base);
+  if (!base || el.dataset.baseKind !== kind) {
+    base = Math.round(BIRD_SPECS[kind].bodyWidth * SPRITE_RES[kind]);
+    el.dataset.base = String(base);
+    el.dataset.baseKind = kind;
+    el.style.width = `${base}px`;
+  }
+  const k = r.w / base;
+  const tx = r.x + (r.w - base) / 2;
+  const ty = r.y + (r.h - r.h / k) / 2;
+  el.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(4)})${extra}`;
 }
 
 function show(el: HTMLElement | SVGElement | null, visible: boolean, opacity = 1): void {
@@ -1066,7 +1082,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
       const span = spec.flightSpan + (bodySpan(L) - spec.flightSpan) * ge;
       placeFlight(s, els, ts, name, cx, cy, span, ` rotate(${(s.bank * (1 - ge)).toFixed(1)}deg)`, grabT < 1 ? 1 - ge : 0);
     }
-    place(els.body, { ...L.body, x: L.body.x + bodyShift.x, y: L.body.y + bodyShift.y });
+    placeSprite(els.body, s.kind, { ...L.body, x: L.body.x + bodyShift.x, y: L.body.y + bodyShift.y });
     show(els.body, true, ge * (1 - lookK));
     if (els.look) {
       const a = setFrame(els.look, s.kind, 'fly-level');
@@ -1177,7 +1193,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
     const flap = flapOpacity(s, ts);
     const body = { ...L.body, y: L.body.y + bob - lift };
     s.pos = { x: body.x + body.w / 2, y: body.y + body.h / 2 };
-    place(els.body, body);
+    placeSprite(els.body, s.kind, body);
     show(els.body, true, 1 - flap * 0.9);
     if (els.look) {
       const a = setFrame(els.look, s.kind, 'fly-down');
@@ -1215,7 +1231,7 @@ export function tickBird(s: BirdState, els: BirdEls, ctx: BirdCtx): BirdTickResu
     const L = layoutFor(spec, s.anchor.x, s.anchor.y, s.chicken.w, s.chicken.h, s.fit);
     const w = L.body.w;
     placeFlight(s, els, ts, name, s.pos.x, s.pos.y + bob, bodySpan(L) * s.scale, ` rotate(${s.bank.toFixed(1)}deg) scaleY(${beat.toFixed(4)})`, t < 1 ? opacity * fadeIn : 0);
-    place(els.body, { ...L.body, x: s.pos.x - L.body.w / 2, y: s.pos.y - L.body.h / 2 }, ` scale(${s.scale.toFixed(4)})`);
+    placeSprite(els.body, s.kind, { ...L.body, x: s.pos.x - L.body.w / 2, y: s.pos.y - L.body.h / 2 }, ` scale(${s.scale.toFixed(4)})`);
     show(els.body, fadeIn < 1, 1 - fadeIn);
     show(els.look, false);
     show(els.talonL, false);
@@ -1324,7 +1340,6 @@ interface BirdLayerProps {
 const TOASTED_SLOTS = Array.from({ length: TOASTED_ALIVE_MAX }, (_, i) => i);
 
 const PHOENIX_FIRE_FILTER_ID = 'phoenix-fire';
-const FIRE_SEEDS = '1;2;3;4;5;6;7;8';
 
 function ablaze(kind: BirdKind, fiery: boolean): string {
   return fiery && kind === 'phoenix' ? 'bird-ablaze' : '';
@@ -1334,9 +1349,7 @@ function PhoenixFireFilter() {
   return (
     <svg width="0" height="0" aria-hidden="true" className="absolute">
       <filter id={PHOENIX_FIRE_FILTER_ID} x="-35%" y="-45%" width="170%" height="180%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.022 0.11" numOctaves="2" seed="1" result="noise">
-          <animate attributeName="seed" values={FIRE_SEEDS} dur="0.56s" calcMode="discrete" repeatCount="indefinite" />
-        </feTurbulence>
+        <feTurbulence type="fractalNoise" baseFrequency="0.022 0.11" numOctaves="2" seed="1" result="noise" />
         <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="fat" />
         <feDisplacementMap in="fat" in2="noise" scale="46" xChannelSelector="R" yChannelSelector="G" result="licks" />
         <feOffset in="licks" dy="-14" result="up" />
