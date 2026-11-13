@@ -1,0 +1,10 @@
+# Local loop only (not part of the launched config): read assertions locally, keep the driver running.
+services:
+  gamelogic:
+    environment:
+      ANTITHESIS_SDK_LOCAL_OUTPUT: /tmp/sdk.jsonl
+  driver:
+    environment:
+      ANTITHESIS_SDK_LOCAL_OUTPUT: /tmp/sdk.jsonl
+      DRIVER_NO_EVENTUALLY: "${DRIVER_NO_EVENTUALLY:-1}"
+      DRIVER_EVENTUALLY_AFTER_S: "${DRIVER_EVENTUALLY_AFTER_S:-0}"

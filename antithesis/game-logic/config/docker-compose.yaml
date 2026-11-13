@@ -1,0 +1,24 @@
+services:
+  gamelogic:
+    container_name: gamelogic
+    hostname: gamelogic
+    platform: linux/amd64
+    build:
+      context: ../../..
+      dockerfile: antithesis/game-logic/gamelogic/Dockerfile
+    image: chicken-gamelogic:latest
+    environment:
+      PORT: "8080"
+
+  driver:
+    container_name: driver
+    hostname: driver
+    platform: linux/amd64
+    build:
+      context: ../../..
+      dockerfile: antithesis/game-logic/driver/Dockerfile
+    image: chicken-driver:latest
+    environment:
+      GAME_URL: http://gamelogic:8080
+    depends_on:
+      - gamelogic
