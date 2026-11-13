@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useImperativeHandle, useRef, useState, type RefObject } from 'react';
-import { ITEM_DRAG_TYPE, useInventory } from '@/components/inventory';
+import { useInventory } from '@/components/inventory';
 import { GEAR_HOLDER_ATTR, GUN_SHOT_MS } from './gear';
-import { HelperMult, useHelperMult } from './helper-mult';
+import { PetGunPicker } from './pet-gun-picker';
 import { AboveBadge } from './above-badge';
 import type { GearControl } from './gear-layer';
 import type { CursorOffset } from './chicken-orbs';
@@ -19,9 +19,7 @@ import {
   JEV_ITEM_ID,
   JEV_MAX_CLICKS_PER_FRAME,
   JEV_NOTE_MS,
-  JEV_PROMPT_MS,
   JEV_REACH_MS,
-  JEV_RIGHT_PX,
   JEV_RISE_MS,
   JEV_SLEEP_MS,
   JEV_SQUEEZE_MS,
@@ -29,7 +27,8 @@ import {
   helperPlayMs,
   jevArmAngle,
   jevArmLength,
-  jevBox,
+  petBox,
+  shownPets,
   jevClicksDue,
   readJevReadyAt,
   writeJevReadyAt,
@@ -54,22 +53,6 @@ interface JevLayerProps {
 
 type JevPhase = 'idle' | 'rising' | 'active' | 'asleep';
 
-const JEV_CALLED_KEY = 'chicken-jev-called';
-
-function jevCalledBefore(): boolean {
-  try {
-    return localStorage.getItem(JEV_CALLED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function markJevCalled(): void {
-  try {
-    localStorage.setItem(JEV_CALLED_KEY, '1');
-  } catch {}
-}
-
 const SHOULDER_X = 0.32;
 const SHOULDER_Y = 0.82;
 const JEV_RETARGET_MS = 700;
@@ -80,14 +63,11 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
   const ownedRef = useRef(owned);
   ownedRef.current = owned;
   const [phase, setPhase] = useState<JevPhase>('idle');
-  const mult = useHelperMult(gearRef, 'jev', owned || phase !== 'idle');
-  const [asking, setAsking] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const portsRef = useRef({ targets, paused, cursors, click, speak, grant });
   portsRef.current = { targets, paused, cursors, click, speak, grant };
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
-  const promptTimerRef = useRef(0);
   const callsRef = useRef(0);
   const noteTimerRef = useRef(0);
   const sleepTimerRef = useRef(0);
@@ -100,7 +80,6 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
   const countRef = useRef<HTMLSpanElement>(null);
 
   const start = useCallback(() => {
-    markJevCalled();
     portsRef.current.speak();
     setPhase('rising');
   }, []);
@@ -123,10 +102,6 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
       offer: (x, y) => {
         portsRef.current.speak();
         if (!ownedRef.current) portsRef.current.grant(JEV_ITEM_ID, { x, y });
-        if (jevCalledBefore()) return;
-        setAsking(true);
-        window.clearTimeout(promptTimerRef.current);
-        promptTimerRef.current = window.setTimeout(() => setAsking(false), JEV_PROMPT_MS);
       },
       wake,
       busy: () => phaseRef.current !== 'idle',
@@ -136,7 +111,6 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
 
   useEffect(
     () => () => {
-      window.clearTimeout(promptTimerRef.current);
       window.clearTimeout(noteTimerRef.current);
       window.clearTimeout(sleepTimerRef.current);
     },
@@ -144,7 +118,7 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
   );
 
   useEffect(() => {
-    if (owned && phase === 'idle' && jevCalledBefore()) setPhase('active');
+    if (owned && phase === 'idle') setPhase('active');
   }, [owned, phase]);
 
   useEffect(() => {
@@ -234,7 +208,7 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
 
   const shown = phase !== 'idle' || owned;
   const sleeping = phase === 'asleep' || phase === 'idle';
-  const box = shown ? jevBox(window.innerWidth, window.innerHeight) : null;
+  const box = shown ? petBox('jev', shownPets((p) => (p === 'jev' ? shown : items.some((i) => i.id === p))), window.innerWidth, window.innerHeight) : null;
   const armLength = shown ? jevArmLength(window.innerWidth) : 0;
 
   return (
@@ -264,46 +238,12 @@ export function JevLayer({ controlRef, targets, paused, cursors, click, speak, g
             {...{ [GEAR_HOLDER_ATTR]: 'jev' }}
             onMouseEnter={() => portsRef.current.speak()}
             onClick={() => (phase === 'idle' ? wake() : portsRef.current.speak())}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => gearRef.current?.give(e.dataTransfer.getData(ITEM_DRAG_TYPE), 'jev')}
-            style={{ width: box.w, height: box.h, right: JEV_RIGHT_PX, transform: phase === 'rising' && !owned ? 'translateY(105%)' : undefined }}
-            className="pointer-events-auto absolute bottom-0"
+            style={{ width: box.w, height: box.h, left: box.left, bottom: box.bottom, transform: phase === 'rising' && !owned ? 'translateY(105%)' : undefined }}
+            className="pointer-events-auto absolute"
           >
-            {mult > 1 && <HelperMult mult={mult} testId="jev-mult" />}
-            {asking && phase === 'idle' && (
-              <div
-                data-testid="jev-prompt"
-                data-hud
-                onClick={(e) => e.stopPropagation()}
-                className="pointer-events-auto absolute bottom-full left-1/2 mb-3 w-[240px] -translate-x-1/2 rounded-xl bg-black/85 p-3 text-center text-sm text-white shadow-[0_0_0_1px_rgba(255,59,59,0.6),0_0_24px_rgba(255,0,0,0.25)]"
-              >
-                <p className="mb-2 font-semibold">{JEV_COPY.ask}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    data-testid="jev-activate"
-                    onClick={() => {
-                      window.clearTimeout(promptTimerRef.current);
-                      setAsking(false);
-                      markJevCalled();
-                      start();
-                    }}
-                    className="cursor-pointer rounded-full bg-[#d11] px-4 py-1.5 font-semibold text-white"
-                  >
-                    {JEV_COPY.yes}
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="jev-decline"
-                    onClick={() => {
-                      window.clearTimeout(promptTimerRef.current);
-                      setAsking(false);
-                    }}
-                    className="cursor-pointer rounded-full bg-white/15 px-4 py-1.5 text-white"
-                  >
-                    {JEV_COPY.no}
-                  </button>
-                </div>
+            {owned && (
+              <div className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2">
+                <PetGunPicker pet="jev" name="Jev" />
               </div>
             )}
             <img src={sleeping ? JEV_ART.sleep : JEV_ART.bust} alt="" draggable={false} className="h-full w-full object-contain object-bottom" />

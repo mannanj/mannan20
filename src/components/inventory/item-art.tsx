@@ -67,12 +67,25 @@ function CannonArt({ size }: { size: number }) {
   );
 }
 
-function Laser({ size }: { size: number }) {
+function RayGun({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="1 4 38 32" aria-hidden="true">
+      <path d="M3 12 H27 Q31 12 31 16 V21 H20 L17 34 H8 L11 21 H3 Z" fill="#6d3bd1" stroke="#10131a" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M27 14 H33 M27 19 H33" stroke="#10131a" strokeWidth="1.4" />
+      <rect x="31" y="12.5" width="3" height="8" rx="1" fill="#b98bff" stroke="#10131a" strokeWidth="1.2" />
+      <circle cx="36.5" cy="16.5" r="2.8" fill="#e58bff" stroke="#10131a" strokeWidth="1.2" />
+      <path d="M6 15.5 H24" stroke="#e58bff" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="13" cy="27" r="1.6" fill="#e58bff" />
+    </svg>
+  );
+}
+
+function ThunderGun({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true">
-      <rect x="4" y="15" width="20" height="10" rx="3" fill="#2c3340" stroke="#10131a" strokeWidth="1.4" />
-      <path d="M24 20 H37" stroke="#ff2a2a" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="24" cy="20" r="3" fill="#ff8a8a" />
+      <path d="M5 12 H29 Q33 12 33 16 V20 H22 L19 32 H11 L13 20 H5 Z" fill="#2b3550" stroke="#10131a" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M33 13 L38 10 L36 16 L39 15 L33 23 L35 17 L32 18 Z" fill="#ffe14d" stroke="#10131a" strokeWidth="1" strokeLinejoin="round" />
+      <path d="M10 14 L16 14 L13 17 L19 17" stroke="#ffe14d" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
@@ -142,8 +155,8 @@ const ART: Record<string, (size: number) => ReactNode> = {
   jev: (size) => <SleepingJev size={size} />,
   monkey: (size) => <Monkey size={size} />,
   mongoose: (size) => <Mongoose size={size} />,
-  laser: (size) => <Laser size={size} />,
-  'ray-gun': (size) => <Gun size={size} body="#6d3bd1" glow="#e58bff" />,
+  'ray-gun': (size) => <RayGun size={size} />,
+  'thunder-gun': (size) => <ThunderGun size={size} />,
   'freeze-gun': (size) => <Gun size={size} body="#2f7fb8" glow="#bdeeff" />,
   cannon: (size) => <CannonArt size={size} />,
   'hawk-feather': (size) => <Feather size={size} fill="#b07a45" stroke="#4a2e1a" vein="#4a2e1a" />,

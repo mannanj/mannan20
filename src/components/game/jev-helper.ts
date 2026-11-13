@@ -1,3 +1,5 @@
+import { PETS, type PetId } from './gear';
+
 export const JEV_ITEM_ID = 'jev';
 export const JEV_READY_KEY = 'chicken-jev-ready-at';
 
@@ -7,12 +9,10 @@ export const JEV_COOLDOWN_MS = 20_000;
 export const JEV_RISE_MS = 3500;
 export const JEV_REACH_MS = 450;
 export const JEV_SLEEP_MS = 2600;
-export const JEV_PROMPT_MS = 12_000;
 export const JEV_NOTE_MS = 2500;
 export const JEV_CLICK_INTERVAL_MS = 400;
 export const JEV_MAX_CLICKS_PER_FRAME = 4;
 export const JEV_SQUEEZE_MS = 70;
-export const JEV_RIGHT_PX = 250;
 export const JEV_PROMPT_EDGE_PX = 150;
 
 export const MONKEY_ITEM_ID = 'monkey';
@@ -24,7 +24,12 @@ export const MONKEY_LEAVE_MS = 900;
 export const MONKEY_SHOT_MS = 1000;
 export const MONKEY_DART_MS = 140;
 export const MONKEY_DARTS = 6;
-export const HELPER_GAP_PX = 16;
+export const PET_BAND = 0.8;
+export const PET_MAX_HEIGHT = 0.16;
+export const PET_SLOT_FILL = 0.45;
+export const PET_STAGGER = 0.6;
+export const PET_NARROW_PX = 640;
+export const PET_NARROW_BOTTOM_PX = 60;
 export const HELPER_WAKE_MS = 450;
 export const HELPER_WAKE_HOP = [{ transform: 'translateY(0)' }, { transform: 'translateY(-6%)' }, { transform: 'translateY(0)' }];
 
@@ -48,9 +53,6 @@ export const JEV_ART = {
 };
 
 export const JEV_COPY = {
-  ask: 'Call Jev to play?',
-  yes: 'Call',
-  no: 'Not now',
   tag: 'jev',
   sleeping: (left: string) => `Jev wakes in ${left}`,
 };
@@ -64,8 +66,31 @@ export function helperPlayMs(call: number, rng: () => number): number {
   return call === 0 ? JEV_ACTIVE_MS : JEV_ACTIVE_MS + rng() * (HELPER_MAX_PLAY_MS - JEV_ACTIVE_MS);
 }
 
-export function jevBox(vw: number, vh: number): { w: number; h: number } {
-  return { w: vw / 7, h: vh / 9 };
+export const PET_WIDTH: Record<PetId, number> = { jev: 2, monkey: 1 };
+
+export interface PetBox {
+  w: number;
+  h: number;
+  left: number;
+  bottom: number;
+}
+
+export function petBox(pet: PetId, shown: readonly PetId[], vw: number, vh: number): PetBox {
+  const index = Math.max(0, shown.indexOf(pet));
+  const count = Math.max(1, shown.length);
+  const slots = count % 2 === 1 && count > 1 ? count + 1 : count;
+  const slot = slots > count && index >= count / 2 ? index + 1 : index;
+  const slotW = (vw * PET_BAND) / slots;
+  const h = Math.min(vh * PET_MAX_HEIGHT, slotW * PET_SLOT_FILL);
+  const w = h * PET_WIDTH[pet];
+  const center = (vw * (1 - PET_BAND)) / 2 + slotW * (slot + 0.5);
+  const crowded = Math.max(...shown.map((p) => h * PET_WIDTH[p])) > slotW;
+  const base = vw < PET_NARROW_PX ? PET_NARROW_BOTTOM_PX : 0;
+  return { w, h, left: center - w / 2, bottom: base + (crowded && slot % 2 === 1 ? h * PET_STAGGER : 0) };
+}
+
+export function shownPets(owned: (pet: PetId) => boolean): PetId[] {
+  return PETS.filter(owned);
 }
 
 export function jevArmLength(vw: number): number {

@@ -1,18 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useImperativeHandle, useRef, useState, type RefObject } from 'react';
-import { ITEM_DRAG_TYPE, useInventory } from '@/components/inventory';
+import { useInventory } from '@/components/inventory';
 import { GEAR_HOLDER_ATTR, multLabel } from './gear';
 import type { GearControl } from './gear-layer';
 import type { CursorOffset } from './chicken-orbs';
 import { HelperCrosshairs, activeCursors, type HelperAim } from './helper-crosshairs';
-import { HelperMult, useHelperMult } from './helper-mult';
+import { PetGunPicker } from './pet-gun-picker';
 import {
-  HELPER_GAP_PX,
   HELPER_WAKE_HOP,
   HELPER_WAKE_MS,
   JEV_NOTE_MS,
-  JEV_RIGHT_PX,
   MONKEY_ART,
   MONKEY_COOLDOWN_MS,
   MONKEY_COPY,
@@ -25,7 +23,8 @@ import {
   MONKEY_SHOT_MS,
   formatJevWait,
   helperPlayMs,
-  jevBox,
+  petBox,
+  shownPets,
   readJevReadyAt,
   writeJevReadyAt,
   type JevPoint,
@@ -34,8 +33,6 @@ import {
 export interface MonkeyControl {
   wake: () => void;
   busy: () => boolean;
-  equipLaser: () => void;
-  hasLaser: () => boolean;
 }
 
 interface MonkeyLayerProps {
@@ -54,11 +51,7 @@ type MonkeyPhase = 'idle' | 'rising' | 'active' | 'leaving';
 
 const MOUTH_X = 0.12;
 const MOUTH_Y = 0.3;
-const EYE_X = 0.3;
-const EYE_Y = 0.14;
 const DART_SLOTS = Array.from({ length: MONKEY_DARTS }, (_, i) => i);
-const LEADERBOARD_CLEAR_PX = 64;
-const LASER_FLASH_MS = 240;
 
 export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, paused, cursors, click, gearRef }: MonkeyLayerProps) {
   const { items, grant } = useInventory();
@@ -75,10 +68,7 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
   const flipRef = useRef(false);
   const aimRef = useRef<HelperAim | null>(null);
   const dartsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const laserRef = useRef(false);
-  const beamRef = useRef<HTMLDivElement>(null);
   const owned = items.some((i) => i.id === MONKEY_ITEM_ID);
-  const mult = useHelperMult(gearRef, 'monkey', owned || phase !== 'idle');
   const ownedRef = useRef(owned);
   ownedRef.current = owned;
 
@@ -100,10 +90,6 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
     () => ({
       wake,
       busy: () => phaseRef.current !== 'idle',
-      equipLaser: () => {
-        laserRef.current = true;
-      },
-      hasLaser: () => laserRef.current,
     }),
     [wake]
   );
@@ -174,26 +160,12 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
         portsRef.current.click(at, aimed.length * (gearRef.current?.mult('monkey') ?? 1));
         if (gun) {
           if (box) gearRef.current?.fire(gun, { x: box.left + box.width * (flipRef.current ? 1 - MOUTH_X : MOUTH_X), y: box.top + box.height * MOUTH_Y }, at, false);
-        } else if (laserRef.current) {
-          if (box && beamRef.current) {
-            const eye = { x: box.left + box.width * (flipRef.current ? 1 - EYE_X : EYE_X), y: box.top + box.height * EYE_Y };
-            const beam = beamRef.current;
-            beam.style.width = `${Math.hypot(at.x - eye.x, at.y - eye.y)}px`;
-            const start = `translate(${eye.x}px, ${eye.y}px) rotate(${Math.atan2(at.y - eye.y, at.x - eye.x)}rad)`;
-            beam.animate(
-              [
-                { transform: `${start} scaleY(1.6)`, opacity: 1 },
-                { transform: `${start} scaleY(0.3)`, opacity: 0 },
-              ],
-              { duration: LASER_FLASH_MS, easing: 'ease-out' }
-            );
-          }
         } else {
           portsRef.current.dartSound();
         }
         const el = dartsRef.current[dart];
         dart = (dart + 1) % MONKEY_DARTS;
-        if (box && el && !gun && !laserRef.current) {
+        if (box && el && !gun) {
           const from = { x: box.left + box.width * (flipRef.current ? 1 - MOUTH_X : MOUTH_X), y: box.top + box.height * MOUTH_Y };
           const angle = Math.atan2(at.y - from.y, at.x - from.x);
           el.animate(
@@ -218,9 +190,8 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
 
   const shown = phase !== 'idle' || owned;
   const sleeping = phase === 'idle';
-  const box = shown ? jevBox(window.innerWidth, window.innerHeight) : null;
-  const monkeyRight = box ? JEV_RIGHT_PX + box.w + HELPER_GAP_PX : 0;
-  const monkeyOnLeft = box ? window.innerWidth - monkeyRight - box.h < window.innerWidth / 2 + LEADERBOARD_CLEAR_PX : false;
+  const box = shown ? petBox('monkey', shownPets((p) => (p === 'monkey' ? shown : items.some((i) => i.id === p))), window.innerWidth, window.innerHeight) : null;
+  const monkeyOnLeft = box ? box.left + box.w / 2 < window.innerWidth / 2 : false;
   flipRef.current = monkeyOnLeft;
 
   return (
@@ -248,7 +219,6 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
       {box && (
         <div data-testid="monkey" data-phase={phase} className={`pointer-events-none fixed inset-0 z-[90] overflow-hidden ${paused ? 'invisible' : ''}`}>
           {phase === 'active' && <HelperCrosshairs aimRef={aimRef} tag={MONKEY_COPY.tag} testId="monkey-crosshair" />}
-          <div ref={beamRef} data-testid="monkey-beam" style={{ transformOrigin: 'left center' }} className="absolute left-0 top-0 h-[9px] -translate-y-1/2 rounded-full bg-[linear-gradient(180deg,#ff2020,#fff_40%,#fff_60%,#ff2020)] opacity-0 shadow-[0_0_16px_6px_#ff2020,0_0_40px_14px_rgba(255,30,30,0.45)]" />
           {DART_SLOTS.map((slot) => (
             <div
               key={slot}
@@ -266,13 +236,15 @@ export function MonkeyLayer({ controlRef, jungle, dartSound, speak, targets, pau
             {...{ [GEAR_HOLDER_ATTR]: 'monkey' }}
             onMouseEnter={() => portsRef.current.speak()}
             onClick={() => (sleeping ? wake() : portsRef.current.speak())}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => gearRef.current?.give(e.dataTransfer.getData(ITEM_DRAG_TYPE), 'monkey')}
-            style={{ width: box.h, height: box.h, ...(monkeyOnLeft ? { left: JEV_RIGHT_PX } : { right: monkeyRight }), transform: phase === 'rising' && !owned ? 'translateY(105%)' : undefined }}
-            className="pointer-events-auto absolute bottom-0"
+            style={{ width: box.w, height: box.h, left: box.left, bottom: box.bottom, transform: phase === 'rising' && !owned ? 'translateY(105%)' : undefined }}
+            className="pointer-events-auto absolute"
           >
             {sleeping && <span className="absolute -top-6 left-1/2 text-lg font-bold text-white/80 animate-pulse">z z z</span>}
-            {mult > 1 && <HelperMult mult={mult} testId="monkey-mult" />}
+            {owned && (
+              <div className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2">
+                <PetGunPicker pet="monkey" name="Monkey" />
+              </div>
+            )}
             <img src={phase === 'active' ? MONKEY_ART.shoot : MONKEY_ART.sit} alt="" draggable={false} className={`h-full w-full object-contain object-bottom ${monkeyOnLeft ? '-scale-x-100' : ''} ${sleeping ? 'brightness-75' : ''}`} />
           </div>
         </div>

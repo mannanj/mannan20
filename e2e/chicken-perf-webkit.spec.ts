@@ -50,7 +50,7 @@ test('crowded fire-era scene keeps frame times under budget on WebKit', async ({
     };
     requestAnimationFrame(tick);
   });
-  await page.goto('/game');
+  await page.goto('/game?mute=1');
   await page.waitForFunction(() => '__chicken' in window);
   await page.waitForSelector('[data-testid="chicken-loader"]', { state: 'detached', timeout: 60_000 });
   await page.waitForTimeout(SETTLE_MS);

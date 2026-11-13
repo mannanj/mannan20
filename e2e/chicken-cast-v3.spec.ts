@@ -1,55 +1,47 @@
 import { test, expect, type Page } from '@playwright/test';
-import { GEAR_MULT, multLabel } from '../src/components/game/gear';
+import { GEAR_MULT, multBadge } from '../src/components/game/gear';
+import { PET_BAND, PET_NARROW_BOTTOM_PX } from '../src/components/game/jev-helper';
 
 const bridge = (page: Page, fn: string, ...args: unknown[]) =>
   page.evaluate(([name, rest]) => (window as unknown as { __chicken: Record<string, (...a: unknown[]) => unknown> }).__chicken[name as string](...(rest as unknown[])), [fn, args] as const);
 const scoreOf = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: { state: () => { score: number } } }).__chicken.state().score);
 
-async function openV3(page: Page) {
+async function openV3(page: Page, query = '') {
   await page.route('**/*.mp3', (route) => route.fulfill({ status: 404 }));
   await page.route('**/api/game/leaderboard', (route) => route.fulfill({ json: { human: [], agent: [] } }));
-  await page.goto('/game?variant=3');
+  await page.goto(`/game?variant=3${query}`);
   await page.waitForFunction(() => (window as unknown as { __chicken?: unknown }).__chicken !== undefined);
   await page.waitForSelector('[data-testid="chicken-loader"]', { state: 'detached', timeout: 30_000 });
 }
 
-test.describe('v3 helpers and weapons', () => {
-  test('once owned, Jev waits at the bottom for his first call and the monkey is active straight away', async ({ page }) => {
-    await openV3(page);
+test.describe('v3 pets and weapons', () => {
+  test('owned pets go straight to work across the middle of the bottom edge', async ({ page }) => {
+    await openV3(page, '&mute=1');
     await bridge(page, 'grantItem', 'jev');
     await bridge(page, 'grantItem', 'monkey');
-    await expect(page.getByTestId('jev')).toHaveAttribute('data-phase', 'idle', { timeout: 4000 });
-    await expect(page.getByTestId('monkey')).toHaveAttribute('data-phase', /rising|active/);
-    await expect(page.getByTestId('jev-body')).toBeVisible();
-    await expect(page.getByTestId('monkey-body')).toBeVisible();
-    await expect(page.getByTestId('cast-cannon')).toHaveCount(0);
+    await expect(page.getByTestId('jev')).toHaveAttribute('data-phase', 'active', { timeout: 4000 });
+    await expect(page.getByTestId('monkey')).toHaveAttribute('data-phase', 'active', { timeout: 4000 });
+    const vw = page.viewportSize()!.width;
+    const band = { left: (vw * (1 - PET_BAND)) / 2, right: (vw * (1 + PET_BAND)) / 2 };
+    for (const id of ['jev-body', 'monkey-body']) {
+      const box = (await page.getByTestId(id).boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(band.left - 1);
+      expect(box.x + box.width).toBeLessThanOrEqual(band.right + 1);
+    }
+    await expect(page.getByTestId('cast-jev')).toHaveCount(0);
+    await expect(page.getByTestId('weapon-tray')).toHaveCount(0);
   });
 
-  test('dragging a weapon from the tray onto the monkey shows its multiplier', async ({ page }) => {
-    await openV3(page);
-    await bridge(page, 'grantItem', 'monkey');
-    await bridge(page, 'grantItem', 'ray-gun');
-    const weapon = page.getByTestId('weapon-ray-gun');
-    await expect(weapon).toBeVisible({ timeout: 4000 });
-    const from = await weapon.boundingBox();
-    const to = await page.getByTestId('monkey-body').boundingBox();
-    await page.mouse.move(from!.x + from!.width / 2, from!.y + from!.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(to!.x + to!.width / 2, to!.y + to!.height / 2, { steps: 8 });
-    await page.mouse.up();
-    await expect(page.getByTestId('monkey-mult')).toHaveText(multLabel(GEAR_MULT['ray-gun']), { timeout: 2000 });
-    await page.getByTestId('weapon-tray').screenshot({ path: 'test-results/weapon-tray.png' });
-  });
-
-  test('aimbot locks on: Space or a click anywhere hits the chicken, then it cools down', async ({ page }) => {
-    await page.addInitScript(() => localStorage.setItem('chicken-aimbot-level', '1'));
-    await openV3(page);
+  test('aimbot is one icon: Space or a click anywhere hits the chicken, then it cools down', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('chicken-aimbot-level', '3'));
+    await openV3(page, '&mute=1');
     const toggle = page.getByTestId('aimbot-toggle');
     await expect(toggle).toHaveAttribute('data-phase', 'ready');
+    await expect(toggle).toHaveText('');
+    await expect(page.getByTestId('aimbot-extra-2')).toHaveCount(0);
     await toggle.click();
     await expect(toggle).toHaveAttribute('data-phase', 'on');
     await expect(page.getByTestId('aimbot-marker')).toBeVisible();
-    await expect(page.getByTestId('aimbot-active')).toHaveText('Active');
     await expect(page.getByTestId('aimbot-hint')).toHaveText('Click or press Space');
     const before = await scoreOf(page);
     await page.keyboard.press(' ');
@@ -59,18 +51,39 @@ test.describe('v3 helpers and weapons', () => {
     await expect(toggle).toHaveAttribute('data-phase', 'cooling');
     await expect(page.getByTestId('aimbot-marker')).toHaveCount(0);
   });
+
+  test('the sound toggle mutes the game and remembers it', async ({ page }) => {
+    await page.addInitScript(() => {
+      if (!sessionStorage.getItem('seeded')) {
+        sessionStorage.setItem('seeded', '1');
+        localStorage.setItem('chicken-sound-muted', '0');
+      }
+    });
+    await openV3(page);
+    const toggle = page.getByTestId('sound-toggle');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await page.reload();
+    await page.waitForSelector('[data-testid="chicken-loader"]', { state: 'detached', timeout: 30_000 });
+    await expect(page.getByTestId('sound-toggle')).toHaveAttribute('aria-pressed', 'true');
+  });
 });
 
-test.describe('v3 helper keys on a touch screen', () => {
+test.describe('v3 pets on a phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('tapping the 2 chip works like the key, without squeezing', async ({ page }) => {
-    await openV3(page);
+  test('pets sit above the bottom controls and take a gun from their dropdown', async ({ page }) => {
+    await openV3(page, '&mute=1');
     await bridge(page, 'grantItem', 'monkey');
-    await expect(page.getByTestId('cast-monkey')).toBeVisible({ timeout: 4000 });
-    const before = await scoreOf(page);
-    await page.getByTestId('cast-monkey').tap();
-    await expect(page.getByTestId('monkey')).toHaveAttribute('data-phase', /rising|active/);
-    expect(await scoreOf(page)).toBe(before);
+    await bridge(page, 'grantItem', 'ray-gun');
+    const body = page.getByTestId('monkey-body');
+    await expect(body).toBeVisible({ timeout: 4000 });
+    const box = (await body.boundingBox())!;
+    expect(box.y + box.height).toBeLessThanOrEqual(844 - PET_NARROW_BOTTOM_PX + 1);
+    await page.getByTestId('monkey-gun-toggle').tap();
+    await page.getByTestId('monkey-gun-ray-gun').tap();
+    await expect(page.getByTestId('monkey-gun-toggle')).toContainText(multBadge(GEAR_MULT['ray-gun']));
+    await page.screenshot({ path: 'test-results/pets-phone.png' });
   });
 });

@@ -30,13 +30,15 @@ export const GAME_ITEMS = {
   jev: { label: 'Jev (asleep)', max: 1, usable: true },
   monkey: { label: 'Monkey', max: 1, usable: true },
   mongoose: { label: 'Mongoose', max: 1, usable: true },
-  laser: { label: 'Laser', max: 1, usable: true },
   'ray-gun': { label: 'Ray gun', max: 1, usable: true, draggable: true },
+  'thunder-gun': { label: 'Thunder gun', max: 1, usable: true, draggable: true },
   'freeze-gun': { label: 'Freeze gun', max: 1, usable: true, draggable: true },
   cannon: { label: 'Cannon', max: 1, usable: true, draggable: true },
 } as const satisfies Record<string, ItemDefinition>;
 
 export type GameItemId = keyof typeof GAME_ITEMS;
+
+export const RETIRED_ITEMS: ReadonlySet<string> = new Set(['laser']);
 
 export const GARDEN_ITEM_MAX: Record<string, number> = {
   'easter-egg': 12,

@@ -61,12 +61,11 @@ export function Aimbot({ clock, level, targets, pointsRef }: AimbotProps) {
   const [phase, setPhase] = useState<AimbotPhase>('ready');
   const phaseRef = useRef<AimbotPhase>('ready');
   const [left, setLeft] = useState(0);
-  const [extras, setExtras] = useState<boolean[]>(Array.from({ length: EXTRA_MARKERS }, () => false));
   const markerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const pointsNowRef = useRef<AimPoint[]>([]);
   const portsRef = useRef({ targets });
   portsRef.current = { targets };
-  const active = [true, ...extras.map((on, i) => on && level >= i + 2)];
+  const active = Array.from({ length: EXTRA_MARKERS + 1 }, (_, i) => level >= i + 1);
 
   useEffect(() => {
     pointsRef.current = () => (phaseRef.current === 'on' ? pointsNowRef.current : []);
@@ -142,28 +141,14 @@ export function Aimbot({ clock, level, targets, pointsRef }: AimbotProps) {
           data-testid="aimbot-toggle"
           data-phase={phase}
           aria-pressed={phase === 'on'}
+          aria-label="Aimbot"
+          title="Aimbot"
           disabled={phase === 'cooling'}
           onClick={flip}
-          className={`flex cursor-pointer touch-manipulation items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold tracking-wide transition-colors disabled:cursor-not-allowed ${phase === 'cooling' ? 'bg-black/60 text-white/45' : 'bg-black/70 text-white hover:bg-black/85'}`}
+          className={`flex h-10 w-10 cursor-pointer touch-manipulation items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed ${phase === 'on' ? 'bg-black/80 ring-2 ring-[#7cf0a8]' : phase === 'cooling' ? 'bg-black/60' : 'bg-black/70 hover:bg-black/85'}`}
         >
-          <AimbotIcon dim={phase === 'cooling'} />
-          Aimbot
-          {phase === 'on' && <span data-testid="aimbot-active" className="text-xs font-semibold text-[#7cf0a8]">Active</span>}
+          <AimbotIcon dim={phase === 'cooling'} size={22} />
         </button>
-        {extras.map((on, i) =>
-          level >= i + 2 ? (
-            <button
-              key={i}
-              type="button"
-              data-testid={`aimbot-extra-${i + 2}`}
-              aria-pressed={on}
-              onClick={() => setExtras((prev) => prev.map((v, k) => (k === i ? !v : v)))}
-              className={`flex h-8 min-w-8 cursor-pointer touch-manipulation items-center justify-center rounded-full bg-black/70 px-2 text-xs font-bold tabular-nums transition-colors hover:bg-black/85 ${on ? 'text-[#7cf0a8] ring-1 ring-[#7cf0a8]/60' : 'text-white/70'}`}
-            >
-              #{i + 2}
-            </button>
-          ) : null
-        )}
       </div>
       {phase === 'on' &&
         active.map((isOn, i) =>

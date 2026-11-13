@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BagIcon } from './bag-icon';
 import { useInventory } from './inventory-context';
 import { ItemArt } from './item-art';
-import { ITEM_DRAG_TYPE, definitionFor } from './items';
+import { ITEM_DRAG_TYPE, RETIRED_ITEMS, definitionFor } from './items';
 
 const BAG_SIZE = 40;
 const ROW_ART_SIZE = 28;
@@ -70,7 +70,7 @@ export function InventoryBag({ forceClosed = false, onOpenChange }: InventoryBag
           className="absolute bottom-12 right-0 flex max-h-[60vh] w-56 flex-col gap-1 overflow-y-auto rounded-xl border border-[#2a1305] bg-[#2a1708]/95 p-2 text-[#f3e3c7] shadow-xl backdrop-blur-md"
         >
           {items.length === 0 && <div className="px-2 py-3 text-center text-xs text-[#f3e3c7]/60">Empty</div>}
-          {items.map((item) => {
+          {items.filter((item) => !RETIRED_ITEMS.has(item.id)).map((item) => {
             const usable = definitionFor(item.id)?.usable ?? false;
             return (
               <div

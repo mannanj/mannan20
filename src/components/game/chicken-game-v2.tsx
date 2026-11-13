@@ -388,16 +388,18 @@ import { MoundLayer, type MoundControl } from './mound-layer';
 import { MONGOOSE_READY_KEY, MOUND_ITEM_ID } from './mounds';
 import { CannonLayer, type CannonControl } from './cannon-layer';
 import { CastHud, type CastStatus } from './cast-hud';
-import { WeaponTray } from './weapon-tray';
 import { MysteryPanel } from './mystery-panel';
 import { Aimbot, AimbotIcon, type AimbotClock } from './aimbot';
 import { DEFAULT_HAND_COLOR, HAND_COLORS, HAND_COLOR_KEY, HAND_CURSOR_CSS, handColor as handColorOf } from './hand-colors';
 import { GLASS_PANEL } from './version-picker';
 import { RollingScoreText } from './rolling-score';
 import { HandControl } from './hand-control';
+import { SoundToggle } from './sound-toggle';
+import { installSoundMute } from '@/lib/sound-mute';
 import { CAST_IDS, CAST_KEYS, CANNON_HIT_RADIUS, zoneLimitY, type CastId } from './cannon';
-import { MONKEY_READY_KEY, readJevReadyAt } from './jev-helper';
-import { ICE_COLORS, isGearItem, type GearId } from './gear';
+import { readJevReadyAt } from './jev-helper';
+import { ICE_COLORS, PETS, isGearItem, type GunId } from './gear';
+import { assignPetGun, petGun } from './pet-guns';
 import { CreatureDuel, type DuelDef } from './creature-duel';
 import { BACKYARD_SCENE_ID, ScenePicker, useSceneLog } from './scene-picker';
 import { VersionPicker } from './version-picker';
@@ -419,6 +421,8 @@ import {
   tierForScore,
   tierProgress,
 } from './chicken-tiers';
+
+installSoundMute();
 
 const MIN_SPEED = 0.075;
 const AVOIDANCE_RADIUS = 110;
@@ -1026,7 +1030,7 @@ interface ChickenBridge {
   setDropRoll: (roll: number | null) => void;
   era: () => { id: string | null; index: number; step: number; lap: number; byTime: boolean; enteredAtMs: number; playMs: number; queued: string[]; phoenixDue: boolean; fireSkyUntilMs: number };
   forceEra: (id: string) => void;
-  spawnGear: (id: GearId) => void;
+  spawnGear: (id: GunId) => void;
   forceMound: () => void;
   forceCannon: () => void;
   forceScene: (name: string) => void;
@@ -1963,7 +1967,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   );
 
   const beginHold = useCallback((id: number, e: ReactPointerEvent<HTMLDivElement>) => {
-    if (gearRef.current?.heldBy('you')) return;
     if (id === 0 && cannonRef.current?.grabChicken(e.clientX, e.clientY)) return;
     if (e.button !== 0 || holdRef.current || swordRef.current.equipped) return;
     const now = performance.now();
@@ -2370,7 +2373,11 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       if (id === GOLDEN_MANE_ITEM_ID) setManeOn(true);
       if (id === JEV_ITEM_ID) jevRef.current?.wake();
       if (id === MONKEY_ITEM_ID) monkeyRef.current?.wake();
-      if (isGearItem(id)) gearRef.current?.use(id);
+      if (isGearItem(id)) {
+        const pets = PETS.filter((p) => itemsRef.current.some((i) => i.id === p));
+        const pet = pets.find((p) => !petGun(p)) ?? pets[0];
+        if (pet) assignPetGun(pet, id);
+      }
       if (id === MOUND_ITEM_ID) moundRef.current?.wakePet();
       if (id === HYDRA_SCALE_ITEM_ID) shieldRef.current += 1;
       if (id === GATE_KEY_ITEM_ID && eraRef.current.index < eraIndexById(GATE_KEY_ERA_ID)) gateKeyRef.current?.();
@@ -3240,8 +3247,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   const readCast = useCallback((): CastStatus[] => {
     const owned = (id: string) => itemsRef.current.some((i) => i.id === id);
     const cast: CastStatus[] = [];
-    if (owned(JEV_ITEM_ID)) cast.push({ id: 'jev', leftMs: Math.max(0, readJevReadyAt() - Date.now()), active: jevRef.current?.busy() ?? false });
-    if (owned(MONKEY_ITEM_ID)) cast.push({ id: 'monkey', leftMs: Math.max(0, readJevReadyAt(MONKEY_READY_KEY) - Date.now()), active: monkeyRef.current?.busy() ?? false });
     if (cannonRef.current?.docked()) cast.push({ id: 'cannon', leftMs: cannonRef.current.leftMs(), active: cannonRef.current.armed() });
     if (owned(MOUND_ITEM_ID)) cast.push({ id: 'mongoose', leftMs: Math.max(0, readJevReadyAt(MONGOOSE_READY_KEY) - Date.now()), active: false });
     return cast;
@@ -3249,8 +3254,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
 
   const castNow = useCallback((id: CastId) => {
     const owned = (item: string) => itemsRef.current.some((i) => i.id === item);
-    if (id === 'jev' && owned(JEV_ITEM_ID)) jevRef.current?.wake();
-    if (id === 'monkey' && owned(MONKEY_ITEM_ID)) monkeyRef.current?.wake();
     if (id === 'cannon') cannonRef.current?.arm();
     if (id === 'mongoose' && owned(MOUND_ITEM_ID)) moundRef.current?.wakePet();
   }, []);
@@ -4024,7 +4027,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         ig.nextAt = ig.until;
       },
       setScore: jumpScore,
-      spawnGear: (id: GearId) => gearRef.current?.spawn(id),
+      spawnGear: (id: GunId) => gearRef.current?.spawn(id),
       forceMound: () => moundRef.current?.start(),
       forceCannon: () => cannonRef.current?.invite(),
       forceOrb: (kind: OrbKind) => {
@@ -5903,6 +5906,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       <div className="absolute top-4 right-5 z-40 flex flex-col items-end gap-2">
         <div className="flex items-center gap-2">
           <div ref={setHandSlot} className="contents" />
+          <SoundToggle className={GLASS_PANEL} />
           <button
             type="button"
             onClick={() => setSkinsOpen((v) => !v)}
@@ -6334,10 +6338,8 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
         />
       )}
       {opening === 'done' && <HandControl pause={pauseForHand} resume={resumeFromHand} toggleSlot={handSlot} />}
-      <WeaponTray onGive={(id, holder) => gearRef.current?.give(id, holder)} onUse={(id) => gearRef.current?.use(id)} />
       <GearLayer
         controlRef={gearRef}
-        monkeyRef={monkeyRef}
         playable={() => gateRef.current === 'none' && !isScriptedStage(stageRef.current)}
         score={() => scoreRef.current}
         target={() => ({ x: physicsRef.current.x + CHICKEN_W / 2, y: physicsRef.current.y + CHICKEN_H / 2 })}
