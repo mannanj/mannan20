@@ -1540,8 +1540,8 @@ export function creatureStateView(s: CreatureState) {
 
 const LAYER = 'pointer-events-none absolute top-0 left-0 max-w-none select-none object-contain will-change-transform [visibility:hidden]';
 const IMG_STYLE: CSSProperties = { transformOrigin: '50% 50%' };
-const HIT = 'absolute top-0 left-0 z-[6] cursor-pointer will-change-transform [visibility:hidden]';
-const HIT_TOP = 'absolute top-0 left-0 z-[7] cursor-pointer will-change-transform [visibility:hidden]';
+const HIT = 'absolute top-0 left-0 z-[10] cursor-pointer will-change-transform [visibility:hidden]';
+const HIT_TOP = 'absolute top-0 left-0 z-[11] cursor-pointer will-change-transform [visibility:hidden]';
 const FEATHER_SLOT_INDEXES = Array.from({ length: FEATHER_SLOTS }, (_, i) => i);
 const HYDRA_SLOT_INDEXES = Array.from({ length: HYDRA_HEADS_MAX }, (_, i) => i);
 
@@ -1561,17 +1561,17 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
   return (
     <div ref={bind('root')} data-testid="creature-root" data-kind={kind} data-mode={spec.mode} data-phase="idle" data-misses="0" data-tamed="0" data-heads="0" data-knockbacks="0" data-biting="0" className="contents">
       <div ref={bind('shadow')} data-testid="creature-shadow" className="pointer-events-none absolute top-0 left-0 z-[3] rounded-[50%] bg-black/60 blur-[6px] will-change-transform [visibility:hidden]" />
-      <img ref={bind('imgB')} alt="" draggable={false} data-testid="creature-prev" className={`${LAYER} z-[4]`} style={IMG_STYLE} />
-      <img ref={bind('imgA')} alt="" draggable={false} data-testid="creature-img" className={`${LAYER} z-[4] drop-shadow-[0_10px_14px_rgba(0,0,0,0.45)]`} style={IMG_STYLE} />
+      <img ref={bind('imgB')} alt="" draggable={false} data-testid="creature-prev" className={`${LAYER} z-[8]`} style={IMG_STYLE} />
+      <img ref={bind('imgA')} alt="" draggable={false} data-testid="creature-img" className={`${LAYER} z-[8] drop-shadow-[0_10px_14px_rgba(0,0,0,0.45)]`} style={IMG_STYLE} />
       {spec.bodyTarget && (
-        <img ref={bind('front')} alt="" draggable={false} data-testid="creature-front" className={`${LAYER} z-[6]`} style={{ ...IMG_STYLE, clipPath: PAW_FRONT_CLIP }} />
+        <img ref={bind('front')} alt="" draggable={false} data-testid="creature-front" className={`${LAYER} z-[10]`} style={{ ...IMG_STYLE, clipPath: PAW_FRONT_CLIP }} />
       )}
       {spec.bodyTarget && <div ref={bind('body')} data-testid="creature-body" className={HIT} onClick={(e) => onBody(e.clientX, e.clientY)} />}
       {hasEye && (
         <div
           ref={bind('eye')}
           data-testid="creature-eye"
-          className="pointer-events-none absolute top-0 left-0 z-[5] rounded-full bg-[radial-gradient(circle_at_35%_35%,#5a3a1a_0_18%,#120a04_45%,#000_100%)] shadow-[0_0_6px_rgba(0,0,0,0.6)] will-change-transform [visibility:hidden]"
+          className="pointer-events-none absolute top-0 left-0 z-[9] rounded-full bg-[radial-gradient(circle_at_35%_35%,#5a3a1a_0_18%,#120a04_45%,#000_100%)] shadow-[0_0_6px_rgba(0,0,0,0.6)] will-change-transform [visibility:hidden]"
         />
       )}
       {spec.mode === 'bite' &&
@@ -1584,7 +1584,7 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
               alt=""
               draggable={false}
               data-testid="hydra-head"
-              className={`${LAYER} z-[5] drop-shadow-[0_6px_8px_rgba(0,0,0,0.45)]`}
+              className={`${LAYER} z-[9] drop-shadow-[0_6px_8px_rgba(0,0,0,0.45)]`}
             />
             <div
               ref={(el) => {
@@ -1607,7 +1607,7 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
             draggable={false}
             src={TREE_SWORD_IMG}
             data-testid="tree-sword"
-            className={`${LAYER} z-[5] drop-shadow-[0_4px_6px_rgba(0,0,0,0.65)]`}
+            className={`${LAYER} z-[9] drop-shadow-[0_4px_6px_rgba(0,0,0,0.65)]`}
             style={IMG_STYLE}
           />
           <div
@@ -1615,7 +1615,7 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
               els.current.swordSlit = el;
             }}
             data-testid="tree-sword-slit"
-            className={`${LAYER} z-[5] rounded-[50%] bg-[radial-gradient(ellipse_at_50%_50%,rgba(0,0,0,0.92),rgba(20,10,4,0.75)_55%,transparent_100%)]`}
+            className={`${LAYER} z-[9] rounded-[50%] bg-[radial-gradient(ellipse_at_50%_50%,rgba(0,0,0,0.92),rgba(20,10,4,0.75)_55%,transparent_100%)]`}
             style={IMG_STYLE}
           />
           <div
@@ -1673,7 +1673,7 @@ export function CreatureLayer({ kind, els, onBody, onTarget }: CreatureLayerProp
             els.current.feathers[i] = el;
           }}
           data-testid="creature-feather"
-          className="pointer-events-none absolute top-0 left-0 z-[7] h-5 w-2.5 rounded-[50%_50%_50%_50%/60%_60%_40%_40%] bg-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.35)] [visibility:hidden]"
+          className="pointer-events-none absolute top-0 left-0 z-[11] h-5 w-2.5 rounded-[50%_50%_50%_50%/60%_60%_40%_40%] bg-white/90 shadow-[0_1px_2px_rgba(0,0,0,0.35)] [visibility:hidden]"
         />
       ))}
     </div>
