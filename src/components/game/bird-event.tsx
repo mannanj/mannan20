@@ -816,16 +816,19 @@ function tickHeat(s: BirdState, els: BirdEls, ctx: BirdCtx, hold: Point, result:
   }
 }
 
-function spriteOf(el: HTMLElement): HTMLImageElement | null {
-  return el instanceof HTMLImageElement ? el : el.querySelector('img');
+function setSprite(el: HTMLElement, src: string): void {
+  if (el instanceof HTMLImageElement) {
+    el.src = src;
+    return;
+  }
+  for (const img of el.querySelectorAll('img')) img.src = src;
 }
 
 function setFrame(el: HTMLElement, kind: BirdKind, name: FrameName): FrameAsset {
   const a = frame(kind, name);
   if (el.dataset.frame !== name) {
     el.dataset.frame = name;
-    const img = spriteOf(el);
-    if (img) img.src = a.file;
+    setSprite(el, a.file);
   }
   return a;
 }
@@ -847,8 +850,7 @@ function placeFlight(s: BirdState, els: BirdEls, ts: number, name: FrameName, cx
   if (was !== name) {
     if (prev && was && cur.style.visibility === 'visible') {
       prev.dataset.frame = was;
-      const prevImg = spriteOf(prev);
-      if (prevImg) prevImg.src = frame(s.kind, was).file;
+      setSprite(prev, frame(s.kind, was).file);
       s.swapAt = ts;
     }
     setFrame(cur, s.kind, name);
@@ -1339,44 +1341,53 @@ interface BirdLayerProps {
 
 const TOASTED_SLOTS = Array.from({ length: TOASTED_ALIVE_MAX }, (_, i) => i);
 
-const PHOENIX_FIRE_FILTER_ID = 'phoenix-fire';
+const FLAME_SEEDS = [1, 5];
 
-function ablaze(kind: BirdKind, fiery: boolean): string {
-  return fiery && kind === 'phoenix' ? 'bird-ablaze' : '';
+function BirdSprite({ kind, fiery, src }: { kind: BirdKind; fiery: boolean; src?: string }) {
+  if (!(fiery && kind === 'phoenix')) return <img src={src} alt="" draggable={false} className={SPRITE} />;
+  return (
+    <div className="flame-stack relative">
+      {FLAME_SEEDS.map((seed, i) => (
+        <img key={seed} src={src} alt="" draggable={false} className={`${SPRITE} ${i ? 'absolute inset-0' : ''}`} />
+      ))}
+    </div>
+  );
 }
 
 function PhoenixFireFilter() {
   return (
     <svg width="0" height="0" aria-hidden="true" className="absolute">
-      <filter id={PHOENIX_FIRE_FILTER_ID} x="-35%" y="-45%" width="170%" height="180%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.022 0.11" numOctaves="2" seed="1" result="noise" />
-        <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="fat" />
-        <feDisplacementMap in="fat" in2="noise" scale="46" xChannelSelector="R" yChannelSelector="G" result="licks" />
-        <feOffset in="licks" dy="-14" result="up" />
-        <feGaussianBlur in="up" stdDeviation="3.5" result="soft" />
-        <feFlood floodColor="#e81e00" floodOpacity="0.55" result="red" />
-        <feComposite in="red" in2="soft" operator="in" result="outer" />
-        <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="mid" />
-        <feDisplacementMap in="mid" in2="noise" scale="30" xChannelSelector="G" yChannelSelector="R" result="midLicks" />
-        <feOffset in="midLicks" dy="-8" result="midUp" />
-        <feGaussianBlur in="midUp" stdDeviation="1.6" result="midSoft" />
-        <feFlood floodColor="#ff7a00" floodOpacity="0.75" result="orange" />
-        <feComposite in="orange" in2="midSoft" operator="in" result="middle" />
-        <feDisplacementMap in="SourceAlpha" in2="noise" scale="16" xChannelSelector="R" yChannelSelector="G" result="core" />
-        <feOffset in="core" dy="-4" result="coreUp" />
-        <feFlood floodColor="#ffd34a" floodOpacity="0.9" result="gold" />
-        <feComposite in="gold" in2="coreUp" operator="in" result="inner" />
-        <feColorMatrix in="SourceGraphic" type="matrix" values="1.2 0.15 0 0 0.06  0.05 0.78 0 0 0  0 0 0.35 0 0  0 0 0 1 0" result="hot" />
-        <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 0.45  0 0 0 0 0.05  1.6 0 0 0 -0.55" result="flameNoise" />
-        <feComposite in="flameNoise" in2="SourceAlpha" operator="in" result="bodyFlames" />
-        <feBlend in="bodyFlames" in2="hot" mode="screen" result="burning" />
-        <feMerge>
-          <feMergeNode in="outer" />
-          <feMergeNode in="middle" />
-          <feMergeNode in="inner" />
-          <feMergeNode in="burning" />
-        </feMerge>
-      </filter>
+      {FLAME_SEEDS.map((seed) => (
+        <filter key={seed} id={`phoenix-fire-${seed}`} x="-35%" y="-45%" width="170%" height="180%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.022 0.11" numOctaves="2" seed={seed} result="noise" />
+          <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="fat" />
+          <feDisplacementMap in="fat" in2="noise" scale="46" xChannelSelector="R" yChannelSelector="G" result="licks" />
+          <feOffset in="licks" dy="-14" result="up" />
+          <feGaussianBlur in="up" stdDeviation="3.5" result="soft" />
+          <feFlood floodColor="#e81e00" floodOpacity="0.55" result="red" />
+          <feComposite in="red" in2="soft" operator="in" result="outer" />
+          <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="mid" />
+          <feDisplacementMap in="mid" in2="noise" scale="30" xChannelSelector="G" yChannelSelector="R" result="midLicks" />
+          <feOffset in="midLicks" dy="-8" result="midUp" />
+          <feGaussianBlur in="midUp" stdDeviation="1.6" result="midSoft" />
+          <feFlood floodColor="#ff7a00" floodOpacity="0.75" result="orange" />
+          <feComposite in="orange" in2="midSoft" operator="in" result="middle" />
+          <feDisplacementMap in="SourceAlpha" in2="noise" scale="16" xChannelSelector="R" yChannelSelector="G" result="core" />
+          <feOffset in="core" dy="-4" result="coreUp" />
+          <feFlood floodColor="#ffd34a" floodOpacity="0.9" result="gold" />
+          <feComposite in="gold" in2="coreUp" operator="in" result="inner" />
+          <feColorMatrix in="SourceGraphic" type="matrix" values="1.2 0.15 0 0 0.06  0.05 0.78 0 0 0  0 0 0.35 0 0  0 0 0 1 0" result="hot" />
+          <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 0.45  0 0 0 0 0.05  1.6 0 0 0 -0.55" result="flameNoise" />
+          <feComposite in="flameNoise" in2="SourceAlpha" operator="in" result="bodyFlames" />
+          <feBlend in="bodyFlames" in2="hot" mode="screen" result="burning" />
+          <feMerge>
+            <feMergeNode in="outer" />
+            <feMergeNode in="middle" />
+            <feMergeNode in="inner" />
+            <feMergeNode in="burning" />
+          </feMerge>
+        </filter>
+      ))}
     </svg>
   );
 }
@@ -1392,7 +1403,7 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
         <div ref={bind('flash')} data-testid="bird-flash" className="bird-flash pointer-events-none fixed inset-0 z-20 [visibility:hidden]" />
         {fiery && kind === 'phoenix' && <PhoenixFireFilter />}
         <div ref={bind('body')} data-testid="bird-body" className={LAYER} style={FLIGHT_STYLE}>
-          <img src={frame(kind, 'grab-body').file} alt="" draggable={false} className={`${SPRITE} ${ablaze(kind, fiery)}`} />
+          <BirdSprite kind={kind} fiery={fiery} src={frame(kind, 'grab-body').file} />
         </div>
         <img ref={bind('look')} alt="" draggable={false} data-testid="bird-look" className={LAYER} style={FLIGHT_STYLE} />
         <img
@@ -1411,10 +1422,10 @@ export function BirdLayer({ kind, part, els, onTalon, onBird, onFeather, onToast
   return (
     <div ref={bind('root')} data-testid="bird-root" data-kind={kind} data-phase="idle" data-talon="" data-hint="0" data-label="0" data-look="0" data-heat="0" data-pulse="0" className="contents">
       <div ref={bind('flightPrev')} data-testid="bird-flight-prev" className={LAYER} style={FLIGHT_STYLE}>
-        <img alt="" draggable={false} className={`${SPRITE} ${ablaze(kind, fiery)}`} />
+        <BirdSprite kind={kind} fiery={fiery} />
       </div>
       <div ref={bind('flight')} data-testid="bird-flight" className={LAYER} style={FLIGHT_STYLE}>
-        <img alt="" draggable={false} className={`${SPRITE} ${ablaze(kind, fiery)}`} />
+        <BirdSprite kind={kind} fiery={fiery} />
       </div>
       {spec.heat && (
         <>

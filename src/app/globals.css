@@ -1788,8 +1788,27 @@ body.gem-rain-active #header > div:first-child {
   mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, #000 62%, transparent 100%);
 }
 
-.bird-ablaze {
-  filter: url(#phoenix-fire);
+.flame-stack > img:first-child {
+  filter: url(#phoenix-fire-1);
+}
+
+.flame-stack > img:last-child {
+  filter: url(#phoenix-fire-5);
+  will-change: opacity;
+  animation: flameFlicker 1.3s linear infinite;
+}
+
+@keyframes flameFlicker {
+  0% { opacity: 0; }
+  11% { opacity: 0.85; }
+  19% { opacity: 0.35; }
+  31% { opacity: 1; }
+  42% { opacity: 0.15; }
+  55% { opacity: 0.7; }
+  63% { opacity: 0.25; }
+  78% { opacity: 0.95; }
+  88% { opacity: 0.4; }
+  100% { opacity: 0; }
 }
 
 .bird-flash {
