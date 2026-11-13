@@ -370,7 +370,7 @@ import {
   wobbleOffset,
 } from './sword';
 import { LATER_SWORD_TREE_CHANCE, TREES_PER_FOREST } from './endless-eras';
-import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, finishesFirstLap, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
+import { DROP_BEHIND_BONUS, ENDLESS_ERAS, GATE_KEY_ERA_ID, PHOENIX2_TALON_SCALE, REAL_CHICKEN_UNLOCK_SCORE, eraIndexById, ENDLESS_FROM, ERA_MAX_MS, ERA_OVERRUN_MS, ERA_TRANSITION_MS, createEraClock, creatureDurationScale, currentEra, dropScaleForLap, dueCreature, enterEraStep, finishesLap, eraScene, lapStartScore, nextEraStep, poolForLap, sceneCoversStage, shiftEraTime, stepForIndex, type EndlessEraDef, type EndlessScene } from './endless-eras';
 import { EndlessScenery } from './endless-scenery';
 import { GAME_TUNING, type GameTuning } from './game-tuning';
 import { readSavedScore, useSavedScore } from './use-saved-score';
@@ -1108,20 +1108,14 @@ const CosmicOpening = dynamic(() => import('./cosmic-opening').then((m) => m.Cos
 const ChickenMonologue = dynamic(() => import('./chicken-monologue').then((m) => m.ChickenMonologue), { ssr: false });
 const BackyardFlock = dynamic(() => import('./backyard-flock').then((m) => m.BackyardFlock), { ssr: false });
 const BACKYARD_SCENE_SRC = '/game/v3/backyard.webp';
-const MONOLOGUE_SEEN_FLAG = 'chicken-v3-monologue-seen';
+const MONOLOGUE_OFF_FLAG = 'chicken-monologue-off';
 
-function monologueSeen(): boolean {
+function monologueOff(): boolean {
   try {
-    return localStorage.getItem(MONOLOGUE_SEEN_FLAG) === '1';
+    return localStorage.getItem(MONOLOGUE_OFF_FLAG) === '1';
   } catch {
     return false;
   }
-}
-
-function markMonologueSeen(): void {
-  try {
-    localStorage.setItem(MONOLOGUE_SEEN_FLAG, '1');
-  } catch {}
 }
 const OPENING_SCORE = 2;
 type OpeningPhase = 'pending' | 'cosmos' | 'yard' | 'done';
@@ -4525,7 +4519,7 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
       if (sc >= ENDLESS_FROM && !moundRef.current?.active()) {
         const nextStep = nextEraStep(clock, sc, playMsRef.current);
         if (nextStep !== null && !duelRef.current && (!creatureOnScreen(creature) || playMsRef.current - clock.enteredAtMs > ERA_MAX_MS + ERA_OVERRUN_MS)) {
-          if (tuning.monologueAtEnd && finishesFirstLap(clock, nextStep) && !monologueSeen()) {
+          if (tuning.monologueAtEnd && finishesLap(clock, nextStep) && !monologueOff()) {
             haltedRef.current = true;
             monologueStepRef.current = nextStep;
             const tierColors = TIERS[tierRef.current] ?? TIERS[0];
@@ -5808,7 +5802,6 @@ function ChickenGameInner({ tuning }: { tuning: GameTuning }) {
   };
 
   const finishMonologue = (choice: MonologueChoice) => {
-    markMonologueSeen();
     setMonologue(null);
     const step = monologueStepRef.current;
     monologueStepRef.current = null;

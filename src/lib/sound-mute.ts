@@ -2,6 +2,7 @@ const MUTE_KEY = 'chicken-sound-muted';
 const MUTE_PARAM = 'mute';
 
 const masters = new Set<GainNode>();
+const media = new Set<WeakRef<HTMLMediaElement>>();
 const listeners = new Set<(muted: boolean) => void>();
 let muted = false;
 let installed = false;
@@ -12,6 +13,16 @@ function readMuted(): boolean {
     return localStorage.getItem(MUTE_KEY) === '1';
   } catch {
     return false;
+  }
+}
+
+function muteMedia(el: HTMLMediaElement, on: boolean): void {
+  if (on && !el.muted) {
+    el.muted = true;
+    el.dataset.soundMuted = '1';
+  } else if (!on && el.dataset.soundMuted) {
+    el.muted = false;
+    delete el.dataset.soundMuted;
   }
 }
 
@@ -35,6 +46,15 @@ export function installSoundMute(): void {
     return connect.call(this, master, ...args.slice(1));
   };
   AudioNode.prototype.connect = routed as typeof AudioNode.prototype.connect;
+  const play = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+    if (!this.dataset.soundTracked) {
+      this.dataset.soundTracked = '1';
+      media.add(new WeakRef(this));
+    }
+    muteMedia(this, muted);
+    return play.call(this);
+  };
 }
 
 export function isSoundMuted(): boolean {
@@ -44,6 +64,11 @@ export function isSoundMuted(): boolean {
 export function setSoundMuted(next: boolean): void {
   muted = next;
   for (const master of masters) master.gain.value = next ? 0 : 1;
+  for (const ref of media) {
+    const el = ref.deref();
+    if (el) muteMedia(el, next);
+    else media.delete(ref);
+  }
   try {
     localStorage.setItem(MUTE_KEY, next ? '1' : '0');
   } catch {}

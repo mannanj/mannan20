@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const DINO_SRC = '/game/v3/dino-valley.webp';
 const TREX_SRC = '/game/v3/trex.webp';
@@ -126,6 +126,12 @@ interface ChickenMonologueProps {
 
 export type MonologueChoice = 'continue' | 'mystery';
 const END_FADE_MS = 1400;
+const BUST_VH = 46;
+const BUST_VIEW_H = 220;
+const BUST_DRAWN_BOTTOM = 260;
+const BUST_BELOW_CENTER = (BUST_DRAWN_BOTTOM - BUST_VIEW_H / 2) / BUST_VIEW_H;
+const IMAGINE_SCALE = 0.42;
+const CAPTION_GAP_PX = 6;
 
 type Stage = 'zoom' | 'talk' | 'choice' | 'end';
 
@@ -138,6 +144,8 @@ export function ChickenMonologue({ from, body, belly, onChoose }: ChickenMonolog
   const ctxRef = useRef<AudioContext | null>(null);
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const timersRef = useRef<number[]>([]);
+  const captionRef = useRef<HTMLDivElement | null>(null);
+  const [captionTop, setCaptionTop] = useState<number | null>(null);
 
   const later = (ms: number, fn: () => void) => {
     timersRef.current.push(window.setTimeout(fn, ms));
@@ -214,6 +222,20 @@ export function ChickenMonologue({ from, body, belly, onChoose }: ChickenMonolog
     });
   }, [stage, line, fadeMusic]);
 
+  useLayoutEffect(() => {
+    const el = captionRef.current;
+    if (!el) return;
+    const measure = () => setCaptionTop(el.getBoundingClientRect().top);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [stage]);
+
   const choose = (choice: MonologueChoice) => {
     fadeMusic(0);
     setStage('end');
@@ -225,6 +247,8 @@ export function ChickenMonologue({ from, body, belly, onChoose }: ChickenMonolog
   const cluckShown = cluckSyllables.slice(0, shownSyllables).join(' ');
   const imagining = stage !== 'zoom' && line >= IMAGINE_FROM_LINE && stage !== 'end';
   const trex = imagining && line >= TREX_FROM_LINE;
+  const tucked = imagining && captionTop !== null;
+  const bustTop = tucked ? `calc(${captionTop - CAPTION_GAP_PX}px - ${BUST_VH * BUST_BELOW_CENTER * IMAGINE_SCALE}vh)` : '44%';
 
   return (
     <div data-testid="chicken-monologue" data-stage={stage} data-line={line} className={`fixed inset-0 z-[70] overflow-hidden select-none transition-opacity duration-[1400ms] ${stage === 'end' ? 'pointer-events-none opacity-0' : 'opacity-100'}`} style={{ cursor: TALK_CURSOR }}>
@@ -247,18 +271,19 @@ export function ChickenMonologue({ from, body, belly, onChoose }: ChickenMonolog
         </div>
       </div>
       <div
+        data-testid="monologue-bust"
         className="absolute h-[46vh] w-[42vh] transition-all ease-[cubic-bezier(.2,.8,.2,1)]"
         style={{
           transitionDuration: `${ZOOM_MS}ms`,
           left: zoomed ? '50%' : from.x,
-          top: zoomed ? '44%' : from.y,
-          transform: `translate(-50%, -50%) scale(${zoomed ? 1 : 0.18})`,
+          top: zoomed ? bustTop : from.y,
+          transform: `translate(-50%, -50%) scale(${zoomed ? (tucked ? IMAGINE_SCALE : 1) : 0.18})`,
         }}
       >
         <ChickenBust body={body} belly={belly} open={mouth} />
       </div>
       {stage === 'talk' && (
-        <div data-testid="monologue-subtitles" className="absolute inset-x-0 bottom-[7vh] flex flex-col items-center gap-1 px-6 text-center">
+        <div ref={captionRef} data-testid="monologue-subtitles" className="absolute inset-x-0 bottom-[7vh] flex flex-col items-center gap-1 px-6 text-center">
           <p data-testid="monologue-cluck" className="m-0 min-h-[1.6em] text-lg italic text-amber-200 [text-shadow:0_2px_8px_rgba(0,0,0,0.8)]">
             {cluckShown}
           </p>
@@ -269,7 +294,7 @@ export function ChickenMonologue({ from, body, belly, onChoose }: ChickenMonolog
         </div>
       )}
       {stage === 'choice' && (
-        <div data-testid="monologue-choice" className="absolute inset-x-0 bottom-[8vh] flex animate-[fadeIn_0.8s_ease-out] flex-wrap items-center justify-center gap-4 px-6">
+        <div ref={captionRef} data-testid="monologue-choice" className="absolute inset-x-0 bottom-[8vh] flex animate-[fadeIn_0.8s_ease-out] flex-wrap items-center justify-center gap-4 px-6">
           <button
             type="button"
             onClick={() => choose('continue')}

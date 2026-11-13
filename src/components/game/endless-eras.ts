@@ -182,8 +182,8 @@ export function enterEra(clock: EraClock, index: number, score: number, playMs: 
   return enterEraStep(clock, stepForIndex(index, Math.max(1, clock.lap)), score, playMs);
 }
 
-export function finishesFirstLap(clock: EraClock, nextStep: number): boolean {
-  return clock.lap === 1 && lapForStep(nextStep) > 1;
+export function finishesLap(clock: EraClock, nextStep: number): boolean {
+  return lapForStep(nextStep) > clock.lap;
 }
 
 export function creatureDurationScale(lap: number): number {

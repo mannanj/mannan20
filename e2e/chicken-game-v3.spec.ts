@@ -26,10 +26,12 @@ const forceCreature = (page: Page, kind: string) => page.evaluate((k) => (window
 const eraOf = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: V3Bridge }).__chicken.era());
 
 const LEADERBOARD_GUARD_WAIT_MS = 1500;
+const MONOLOGUE_SETTLE_MS = 1600;
+const MONOLOGUE_FLUSH_PX = 24;
 
 const bridge = (page: Page) => page.evaluate(() => (window as unknown as { __chicken: V3Bridge }).__chicken.state());
 
-async function gotoV3(page: Page, saved?: number, path = '/game?variant=3') {
+async function gotoV3(page: Page, saved?: number, path = '/game?variant=3&mute=1') {
   await page.route('**/*.mp3', (route) => route.fulfill({ status: 404 }));
   await page.route('**/api/game/leaderboard', (route) => route.fulfill({ json: { human: [], agent: [] } }));
   if (saved !== undefined) {
@@ -111,6 +113,13 @@ test.describe('Chicken v3', () => {
     await expect(page.getByTestId('monologue-english')).toHaveText("My ancestors didn't bring me here for this.", { timeout: 15_000 });
     await expect(page.getByTestId('monologue-imagination')).toHaveClass(/opacity-100/, { timeout: 15_000 });
     await expect(page.getByTestId('monologue-trex')).toBeVisible({ timeout: 15_000 });
+    await page.waitForTimeout(MONOLOGUE_SETTLE_MS);
+    const body = (await page.getByTestId('monologue-bust').locator('ellipse').first().boundingBox())!;
+    const captions = (await page.getByTestId('monologue-subtitles').boundingBox())!;
+    expect(body.y + body.height).toBeLessThanOrEqual(captions.y + 2);
+    expect(captions.y - (body.y + body.height)).toBeLessThan(MONOLOGUE_FLUSH_PX);
+    expect(body.height).toBeLessThan(page.viewportSize()!.height * 0.25);
+    await page.screenshot({ path: 'test-results/monologue-tucked.png' });
     await expect(page.getByTestId('monologue-choice')).toBeVisible({ timeout: 60_000 });
     await expect(page.getByTestId('choice-continue')).toHaveText('Continue squeezing the chicken');
     await expect(page.getByTestId('choice-mystery')).toHaveText('???');
@@ -119,7 +128,6 @@ test.describe('Chicken v3', () => {
     const era = await eraOf(page);
     expect(era.lap).toBe(2);
     expect(era.id).toBe('big-cats');
-    expect(await page.evaluate(() => localStorage.getItem('chicken-v3-monologue-seen'))).toBe('1');
   });
 
   test('??? shows Not yet implemented with an updates sign-up, then returns to the forest instead of restarting', async ({ page }) => {

@@ -14,7 +14,7 @@ const GUARD_MS = 900;
 
 async function gotoGame(page: Page, query: string) {
   await page.addInitScript(() => {
-    localStorage.setItem('chicken-v3-monologue-seen', '1');
+    localStorage.setItem('chicken-monologue-off', '1');
     localStorage.removeItem('chicken-v3-score');
   });
   await page.route('**/*.mp3', (route) => route.fulfill({ status: 404 }));
