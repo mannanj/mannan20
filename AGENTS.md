@@ -72,3 +72,27 @@ component/API response into client code.
    force-pushes and fresh clones. Assume existing clones and caches retain it.
 6. Record the incident using secret type and affected locations only; never
    include the value itself.
+
+## Private apps live in their own repo, not here
+
+This repo is pushed to GitHub, so it holds the site and thin glue only. A private app under
+mannan.is (its pages, scripts, styles, data) never gets committed here, not even for one deploy.
+
+- **Code:** the app keeps its code in its own repo, pushed to the encrypted `gec` remote.
+- **Deploy:** the app deploys as its own Worker on two routes in the mannan.is zone:
+  `mannan.is/<app>` and `mannan.is/<app>/*` (two patterns, so `/<app>*` can't catch other paths).
+  Routes take precedence over this site's custom domain, so nothing here changes.
+- **Examples:**
+  - `/sun`: `~/Documents/moon/sun/worker/` (Worker `mannan-sun`)
+  - `/calendar`: `~/Documents/calendar` (Worker `calendar`)
+  - `/plan`: `~/Documents/visualizer/plan` (Worker `mannan-plan`)
+- **Shared with the site:** the app is on the same host, so it uses the site's sign-in
+  (`/api/auth/me`, `/mcp/sign-in?next=/<app>/`, `/api/auth/sign-out`) and session cookie, with no
+  bridge needed. Its menus reuse the shared pieces: the calendar's account menu and
+  `~/Documents/mcp-connector` (see `~/Documents/mcp/README.md` §6).
+- **What is allowed here:** thin glue for a private app (a sign-in bridge, a binding, a redirect),
+  and public code that names the app and says in one line what it does.
+- **If app code was committed here by mistake:** before anything is pushed, rewrite the local
+  commits to drop it (`git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch
+  <path>' -- <branch> --not --remotes=origin`, after `git bundle create` as a backup). Deleting the
+  files in a new commit is not enough: the older commits still contain them.
