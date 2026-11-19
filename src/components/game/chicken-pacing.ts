@@ -194,6 +194,7 @@ export function pickOrbKind(ctx: SchedulerContext): OrbKind | null {
     const eligible = strong.filter((k) => !ORB_REGISTRY[k].big || orbWeight(k, ctx) > 0);
     const candidates = eligible.filter((k) => k !== ctx.lastKinds[0]);
     const list = candidates.length > 0 ? candidates : eligible;
+    if (list.length === 0) return null;
     return list.reduce((best, k) => (ORB_REGISTRY[k].strength > ORB_REGISTRY[best].strength ? k : best), list[0]);
   }
   const weights = pool.map((k) => orbWeight(k, ctx));
@@ -202,9 +203,10 @@ export function pickOrbKind(ctx: SchedulerContext): OrbKind | null {
   let roll = ctx.rng() * total;
   for (let i = 0; i < pool.length; i++) {
     roll -= weights[i];
-    if (roll <= 0) return pool[i];
+    if (roll < 0) return pool[i];
   }
-  return pool[pool.length - 1];
+  for (let i = pool.length - 1; i >= 0; i--) if (weights[i] > 0) return pool[i];
+  return null;
 }
 
 export function orbGapMs(behind: number, ahead: boolean, rng: () => number): number {
