@@ -125,6 +125,9 @@ export interface OwnerEnv {
   MCP_GRANT_SECRET: string;
   MCP_ACTOR_SECRET: string;
   MCP_VAULT_SECRET: string;
+  HUB_GREENLIGHTS_SECRET?: string;
+  HUB_MEETTIME_SECRET?: string;
+  HUB_EVENTEVERY_SECRET?: string;
   HUB_ORIGIN: string;
   VAULT: DurableObjectNamespace<import("./hub/vault").OwnerVault>;
 }

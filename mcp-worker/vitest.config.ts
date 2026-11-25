@@ -6,7 +6,7 @@ export default defineConfig({
     cloudflareTest({
       wrangler: { configPath: "./wrangler.jsonc" },
       miniflare: {
-        bindings: { MCP_GRANT_SECRET: "test-grant-secret", MCP_ACTOR_SECRET: "test-actor-secret", MCP_VAULT_SECRET: "test-vault-secret" },
+        bindings: { MCP_GRANT_SECRET: "test-grant-secret", MCP_ACTOR_SECRET: "test-actor-secret", MCP_VAULT_SECRET: "test-vault-secret", HUB_GREENLIGHTS_SECRET: "test-hub-greenlights-secret-0123456789" },
         workers: [
           {
             name: "portfolio-state-worker",

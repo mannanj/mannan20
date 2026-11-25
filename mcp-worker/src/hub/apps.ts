@@ -13,6 +13,8 @@ import {
   type LinkedTokens,
   type SignInFlow,
 } from "../vendor/mcp-connector/linked-app";
+import { consentResponse, grantRedirect } from "../vendor/mcp-connector/consent";
+import { signMcpGrant } from "../vendor/grant";
 import { formPage, sameOriginPost } from "../vendor/mcp-connector/form-page";
 import { subFetch } from "./proxy";
 import { REGISTRY, getApp, guardedFetch, pinManifest, serverOf, toolHash, type HubApp, type ManifestTool } from "./registry";
@@ -22,6 +24,7 @@ import { sealPurpose, type HubSession, type LinkRow, type LinkStatus } from "./v
 const flowCookieName = (id: string) => `__Host-hub_flow_${id}`;
 const flowPurpose = (id: string) => `hubflow:${id}`;
 
+const STATE_PATTERN = /^[A-Za-z0-9._~-]{8,256}$/;
 const REVIEW_TIMEOUT_MS = 8_000;
 const FORBIDDEN = "That request could not be verified.";
 
@@ -124,7 +127,7 @@ function renderPage(
   }).join("");
   return shell(`<h1>Your apps</h1>
 ${notice ? `<p class="n">${esc(notice)}</p>` : ""}
-<p>Each app asks on its own site. Mannan MCP holds a separate key per app; revoke any time.</p>
+<p>Each app asks first. Mannan MCP holds a separate key per app; revoke any time.</p>
 <ul>
 <li><div><strong>Mannan</strong><span class="s linked">Signed in as ${esc(OWNER_EMAIL)} — Upload included</span></div></li>
 ${rows}
@@ -198,6 +201,31 @@ async function authorize(request: Request, env: AppEnv, app: HubApp): Promise<Re
   return redirect(started.location, {
     "set-cookie": `${flowCookieName(app.id)}=${sealed}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
   });
+}
+
+async function identity(request: Request, env: AppEnv, app: HubApp): Promise<Response> {
+  if (!app.signIn) return plain(404, "Not found");
+  const secret = env[app.signIn.secret];
+  if (!secret) return plain(503, "Signing in to that app is not switched on yet.");
+  const state = new URL(request.url).searchParams.get("state") ?? "";
+  if (!STATE_PATTERN.test(state)) return plain(400, "Invalid request.");
+  if (request.method === "GET") {
+    const session = await currentSession(request, env);
+    if (!session) return plain(403, "Your sign-in here ended. Start connecting again.");
+    return consentResponse({
+      appName: app.name,
+      siteUrl: app.signIn.siteUrl,
+      account: OWNER_EMAIL,
+      abilities: app.abilities.map((ability) => `It will be able to ${ability.charAt(0).toLowerCase()}${ability.slice(1)}.`),
+      action: `/apps/${app.id}/identity?state=${encodeURIComponent(state)}`,
+      fields: { csrf: session.csrf },
+      cancelHref: "/apps",
+    });
+  }
+  const checked = await mutation(request, env);
+  if (checked instanceof Response) return checked;
+  const grant = await signMcpGrant({ sub: OWNER_EMAIL, email: OWNER_EMAIL, state }, secret);
+  return grantRedirect(app.signIn.url, grant, state);
 }
 
 async function callback(request: Request, env: AppEnv, app: HubApp): Promise<Response> {
@@ -408,12 +436,14 @@ export async function handleAppsRequest(request: Request, env: AppEnv): Promise<
   }
   if (pathname === "/apps/login") return request.method === "GET" ? login(request, env) : plain(405, "Method not allowed.");
   if (pathname === "/apps/continue") return continueFlow(request, env);
-  const match = /^\/apps\/([a-z]+)\/(authorize|callback|revoke|confirm-tools|review)$/.exec(pathname);
+  const match = /^\/apps\/([a-z]+)\/(authorize|identity|callback|revoke|confirm-tools|review)$/.exec(pathname);
   const app = match ? getApp(match[1]) : undefined;
   if (!match || !app) return plain(404, "Not found");
   switch (match[2]) {
     case "authorize":
       return authorize(request, env, app);
+    case "identity":
+      return identity(request, env, app);
     case "callback":
       return callback(request, env, app);
     case "revoke":

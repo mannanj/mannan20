@@ -11,13 +11,14 @@ export interface HubApp {
   /** null = public app, no sign-in and no vault row. */
   scope: string | null;
   abilities: string[];
+  signIn?: { url: string; siteUrl: string; secret: "HUB_GREENLIGHTS_SECRET" | "HUB_MEETTIME_SECRET" | "HUB_EVENTEVERY_SECRET" };
 }
 
 export const REGISTRY: readonly HubApp[] = [
   { id: "calendar", name: "Calendar", mcpUrl: "https://calendar-mcp.mannanteam.workers.dev/mcp", scope: "calendar", abilities: ["Read and change calendar events", "Manage scheduling links"] },
-  { id: "greenlights", name: "Greenlights", mcpUrl: "https://greenlights-mcp.mannanteam.workers.dev/mcp", scope: "plan", abilities: ["Plan drive windows", "Validate places", "Create invites"] },
-  { id: "meettime", name: "MeetTime", mcpUrl: "https://meettime-mcp.mannanteam.workers.dev/mcp", scope: "meet", abilities: ["Work with MeetTime meetings"] },
-  { id: "eventevery", name: "Event Every", mcpUrl: "https://event-every-mcp.mannanteam.workers.dev/mcp", scope: "account", abilities: ["Read and add events"] },
+  { id: "greenlights", name: "Greenlights", mcpUrl: "https://greenlights-mcp.mannanteam.workers.dev/mcp", scope: "plan", abilities: ["Plan drive windows", "Validate places", "Create invites"], signIn: { url: "https://gogo.green/api/mcp/mannan", siteUrl: "https://gogo.green", secret: "HUB_GREENLIGHTS_SECRET" } },
+  { id: "meettime", name: "MeetTime", mcpUrl: "https://meettime-mcp.mannanteam.workers.dev/mcp", scope: "meet", abilities: ["Work with MeetTime meetings"], signIn: { url: "https://meettime.mannanteam.workers.dev/api/mcp/mannan", siteUrl: "https://meettime.mannanteam.workers.dev", secret: "HUB_MEETTIME_SECRET" } },
+  { id: "eventevery", name: "Event Every", mcpUrl: "https://event-every-mcp.mannanteam.workers.dev/mcp", scope: "account", abilities: ["Read and add events"], signIn: { url: "https://eventevery.com/api/mcp/mannan", siteUrl: "https://eventevery.com", secret: "HUB_EVENTEVERY_SECRET" } },
   { id: "sun", name: "Sun Signal", mcpUrl: "https://mcp.sunsignal.app/mcp", scope: null, abilities: ["Solar timing data"] },
 ];
 

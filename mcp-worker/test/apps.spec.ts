@@ -1,3 +1,4 @@
+import { verifyMcpGrant } from "../src/vendor/grant";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SELF } from "cloudflare:test";
 import { seal } from "../src/vendor/mcp-connector/linked-app";
@@ -66,7 +67,7 @@ describe("owner sign-in lands on /apps", () => {
     expect(res.headers.get("x-frame-options")).toBe("DENY");
     expect(res.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
     expect(html).toContain("Signed in as hello@mannan.is — Upload included");
-    expect(html).toContain("Each app asks on its own site. Mannan MCP holds a separate key per app; revoke any time.");
+    expect(html).toContain("Each app asks first. Mannan MCP holds a separate key per app; revoke any time.");
     expect(html).toContain("Public, no sign-in");
     const order = ["Mannan", "Calendar", "Greenlights", "MeetTime", "Event Every", "Sun Signal"].map((n) => html.indexOf(`<strong>${n}</strong>`));
     expect(order.every((i) => i > 0)).toBe(true);
@@ -467,5 +468,38 @@ describe("/apps/login rate limit (F9)", () => {
     expect(limited.status).toBe(429);
     expect(limited.headers.get("set-cookie")).toBeNull();
     expect(keys).toEqual(["apps-login:9.9.9.9", "apps-login:9.9.9.9"]);
+  });
+});
+
+describe("signing in to an app with the mannan.is account", () => {
+  const path = "/apps/greenlights/identity?state=state-12345";
+
+  it("asks first, then signs a grant for this state to the app only", async () => {
+    const s = await ownerSession();
+    const page = await SELF.fetch(`${HUB_URL}${path}`, { headers: { cookie: s.cookie } });
+    expect(page.headers.get("referrer-policy")).toBe("same-origin");
+    const html = await page.text();
+    expect(html).toContain("Connect an assistant?");
+    expect(html).not.toContain("grant=");
+    const res = await postApps(path, s);
+    expect(res.status).toBe(302);
+    const to = new URL(res.headers.get("location")!);
+    expect(to.origin + to.pathname).toBe("https://gogo.green/api/mcp/mannan");
+    const grant = to.searchParams.get("grant")!;
+    const secret = "test-hub-greenlights-secret-0123456789";
+    const ok = await verifyMcpGrant(grant, secret, { expectedState: "state-12345" });
+    expect(ok.ok && ok.payload.email).toBe("hello@mannan.is");
+    expect((await verifyMcpGrant(grant, secret, { expectedState: "other-state" })).ok).toBe(false);
+  });
+
+  it("refuses no session, bad csrf, another origin, bad state, and apps without it", async () => {
+    const s = await ownerSession();
+    expect((await SELF.fetch(`${HUB_URL}${path}`)).status).toBe(403);
+    expect((await postApps(path, s, { cookie: null })).status).toBe(403);
+    expect((await postApps(path, s, { csrf: "wrong" })).status).toBe(403);
+    expect((await postApps(path, s, { origin: "https://evil.example" })).status).toBe(403);
+    expect((await postApps("/apps/greenlights/identity?state=x", s)).status).toBe(400);
+    expect((await postApps("/apps/calendar/identity?state=state-12345", s)).status).toBe(404);
+    expect((await postApps("/apps/meettime/identity?state=state-12345", s)).status).toBe(503);
   });
 });
