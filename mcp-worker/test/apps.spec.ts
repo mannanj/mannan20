@@ -61,7 +61,7 @@ describe("owner sign-in lands on /apps", () => {
     const s = await ownerSession();
     const res = await SELF.fetch(`${HUB_URL}/apps`, { headers: { cookie: s.cookie } });
     const html = await res.text();
-    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect(res.headers.get("cache-control")).toBe("no-store, private");
     expect(res.headers.get("referrer-policy")).toBe("same-origin");
     expect(res.headers.get("x-frame-options")).toBe("DENY");
     expect(res.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");

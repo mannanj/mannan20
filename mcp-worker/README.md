@@ -96,3 +96,9 @@ Required configuration:
 - Worker secrets: `MCP_GRANT_SECRET` (same value as the site's `UPLOADS_MCP_GRANT_SECRET`), `MCP_ACTOR_SECRET` (same value as the site's `UPLOADS_MCP_ACTOR_SECRET`).
 - Worker vars/bindings in `wrangler.jsonc`: `SITE_ORIGIN`, `OAUTH_KV`.
 - Site env: `UPLOADS_MCP_GRANT_SECRET`, `UPLOADS_MCP_CALLBACK_URL` (`https://mcp.mannanteam.workers.dev/callback`), `UPLOADS_MCP_ACTOR_SECRET`.
+
+## Pages with forms
+
+`/authorize`, `/apps` and the tool review are served by `formPage()` and checked by `sameOriginPost()`, both from
+`@mannan/mcp-connector` (copied to `src/vendor/mcp-connector/form-page.ts`). Never set `no-referrer` on them: browsers
+then send `Origin: null` and every button answers 403. Full write-up: `~/Documents/mcp/README.md` §2.8.

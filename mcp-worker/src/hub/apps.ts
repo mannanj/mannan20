@@ -13,6 +13,7 @@ import {
   type LinkedTokens,
   type SignInFlow,
 } from "../vendor/mcp-connector/linked-app";
+import { formPage, sameOriginPost } from "../vendor/mcp-connector/form-page";
 import { subFetch } from "./proxy";
 import { REGISTRY, getApp, guardedFetch, pinManifest, serverOf, toolHash, type HubApp, type ManifestTool } from "./registry";
 import { SESSION_COOKIE, clearSessionCookie, vaultFor } from "./session";
@@ -20,14 +21,6 @@ import { sealPurpose, type HubSession, type LinkRow, type LinkStatus } from "./v
 
 const flowCookieName = (id: string) => `__Host-hub_flow_${id}`;
 const flowPurpose = (id: string) => `hubflow:${id}`;
-
-const PAGE_HEADERS = {
-  "content-type": "text/html; charset=utf-8",
-  "cache-control": "no-store",
-  "referrer-policy": "same-origin",
-  "x-frame-options": "DENY",
-  "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",
-};
 
 const REVIEW_TIMEOUT_MS = 8_000;
 const FORBIDDEN = "That request could not be verified.";
@@ -48,18 +41,9 @@ async function currentSession(request: Request, env: AppEnv): Promise<HubSession
   return vaultFor(env).getSession(sid);
 }
 
-/** Same-origin check for every mutation, on top of the per-session csrf token. */
-function sameOrigin(request: Request, env: AppEnv): boolean {
-  const site = request.headers.get("sec-fetch-site");
-  if (site && site !== "same-origin") return false;
-  const origin = request.headers.get("origin");
-  if (origin) return origin === env.HUB_ORIGIN;
-  return site === "same-origin";
-}
-
 async function mutation(request: Request, env: AppEnv): Promise<{ session: HubSession; form: FormData } | Response> {
   if (request.method !== "POST") return plain(405, "Method not allowed.");
-  if (!sameOrigin(request, env)) return plain(403, FORBIDDEN);
+  if (!sameOriginPost(request, env.HUB_ORIGIN)) return plain(403, FORBIDDEN);
   const session = await currentSession(request, env);
   if (!session) return plain(403, FORBIDDEN);
   const form = await request.formData().catch(() => null);
@@ -114,7 +98,7 @@ ${inner}
 </main>
 </body>
 </html>`;
-  return new Response(html, { headers: PAGE_HEADERS });
+  return formPage(html);
 }
 
 function renderPage(

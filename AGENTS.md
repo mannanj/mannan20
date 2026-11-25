@@ -96,3 +96,9 @@ mannan.is (its pages, scripts, styles, data) never gets committed here, not even
   commits to drop it (`git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch
   <path>' -- <branch> --not --remotes=origin`, after `git bundle create` as a backup). Deleting the
   files in a new commit is not enough: the older commits still contain them.
+
+## MCP servers and sign-in pages
+
+Read `~/Documents/mcp/README.md` before changing `mcp-worker/` or `src/app/api/mcp/`. A server-rendered page with a POST
+form uses the shared `consent` or `form-page` from `~/Documents/mcp-connector`, never hand-written headers or origin
+checks, and never `Referrer-Policy: no-referrer` (§2.8). Document new lessons there once; link to them from here.

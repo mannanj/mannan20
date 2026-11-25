@@ -1,5 +1,6 @@
 import type { AuthRequest } from "@cloudflare/workers-oauth-provider";
 import { verifyMcpGrant } from "./vendor/grant";
+import { formPage } from "./vendor/mcp-connector/form-page";
 import { OWNER_EMAIL } from "./owner-api";
 import { vaultFor, sessionCookie } from "./hub/session";
 import type { AppEnv, CallerProps } from "./types";
@@ -92,15 +93,7 @@ export async function handleAuthorize(request: Request, env: AppEnv): Promise<Re
     expirationTtl: STATE_TTL_SECONDS,
   });
 
-  return new Response(CHOICE_HTML(state), {
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-      "referrer-policy": "no-referrer",
-      "x-frame-options": "DENY",
-      "content-security-policy": "frame-ancestors 'none'",
-    },
-  });
+  return formPage(CHOICE_HTML(state));
 }
 
 async function handleChoice(request: Request, env: AppEnv): Promise<Response> {
