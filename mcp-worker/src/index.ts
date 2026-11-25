@@ -317,4 +317,6 @@ export default new OAuthProvider<WorkerEnv>({
   tokenEndpoint: "/token",
   clientRegistrationEndpoint: "/register",
   scopesSupported: ["uploads"],
+  refreshTokenTTL: 90 * 24 * 60 * 60,
+  clientRegistrationTTL: 120 * 24 * 60 * 60,
 });
