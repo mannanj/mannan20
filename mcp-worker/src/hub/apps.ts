@@ -24,7 +24,7 @@ const flowPurpose = (id: string) => `hubflow:${id}`;
 const PAGE_HEADERS = {
   "content-type": "text/html; charset=utf-8",
   "cache-control": "no-store",
-  "referrer-policy": "no-referrer",
+  "referrer-policy": "same-origin",
   "x-frame-options": "DENY",
   "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",
 };

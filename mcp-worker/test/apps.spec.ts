@@ -62,7 +62,7 @@ describe("owner sign-in lands on /apps", () => {
     const res = await SELF.fetch(`${HUB_URL}/apps`, { headers: { cookie: s.cookie } });
     const html = await res.text();
     expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(res.headers.get("referrer-policy")).toBe("same-origin");
     expect(res.headers.get("x-frame-options")).toBe("DENY");
     expect(res.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
     expect(html).toContain("Signed in as hello@mannan.is — Upload included");
@@ -96,6 +96,15 @@ describe("csrf and origin on every mutation", () => {
     const s = await ownerSession();
     const res = await postApps("/apps/calendar/revoke", s, { origin: null, headers: { "sec-fetch-site": "same-origin" } });
     expect(res.status).toBe(302);
+  });
+
+  it("the page's own forms keep their Origin, and an opaque Origin is still refused", async () => {
+    const s = await ownerSession();
+    const page = await SELF.fetch(`${HUB_URL}/apps`, { headers: { cookie: s.cookie } });
+    expect(await page.text()).toContain('method="post"');
+    expect(page.headers.get("referrer-policy")).toBe("same-origin");
+    const opaque = await postApps("/apps/calendar/revoke", s, { origin: "null", headers: { "sec-fetch-site": "same-origin" } });
+    expect(opaque.status).toBe(403);
   });
 
   it("GET on a mutation path is not a mutation", async () => {
